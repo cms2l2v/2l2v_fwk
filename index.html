@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>UserCode by pfs</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>UserCode</h1>
+        <p>UserCode area</p>
+
+        <p class="view"><a href="https://github.com/pfs/usercode">View the Project on GitHub <small>pfs/usercode</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/pfs/usercode/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/pfs/usercode/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/pfs/usercode">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>installation</h1>
+
+<p>export SCRAM_ARCH=slc5_amd64_gcc462
+scramv1 project CMSSW CMSSW_5_3_9
+cd CMSSW_5_3_9/src/
+cvs co -p UserCode/CMG/UserArea/EWKV/TAGS.txt | sh</p>
+
+<h1>
+<a name="create-a-local-pat-tuple" class="anchor" href="#create-a-local-pat-tuple"><span class="octicon octicon-link"></span></a>create a local pat-tuple</h1>
+
+<p>runOverSamples.py -j data/vbfz_samples.json -R "tmp&gt;5000" -n 1 -d aoddir -p "-castor=/afs/cern.ch/user/p/psilva/work/ntuples -cfg=$CMSSW_BASE/src/UserCode/EWKV/test/runDataAnalyzer_mc_cfg.py" -t lljj -s 8nh</p>
+
+<p>runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json -d /store/cmst3/user/psilva/539_ntuples -o ~/work/top_539/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True" -s 8nh
+runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -d /store/cmst3/user/psilva/539_ntuples -o ~/work/top_539/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True" -s 8nh
+runPlotter --iLumi 19683 --inDir ~/work/top_539/ --json data/top_samples.json --outFile ~/work/top_539/plotter_raw.root --noPlot
+runPlotter --iLumi 19683 --inDir ~/work/top_539/ --json data/top_syst_samples.json --outFile ~/work/top_539/plotter_syst.root --noPlot</p>
+
+<p>runPlotter --iLumi 19683 --inDir ~/work/top_539/ --outDir ~/work/top_539/plots --json data/top_samples.json --outFile ~/work/top_539/plotter.root --noLog  --showUnc  --plotExt .pdf</p>
+
+<p>PDF variations</p>
+
+<p>runLocalAnalysisOverSamples.py -e computePDFvariations -j data/top_samples.json -d /store/cmst3/user/psilva/539_ntuples -o ~/work/top_539/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True" -t MC -s 8nh</p>
+
+<p>EWK Z+2jets</p>
+
+<p>runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_samples.json -d /store/cmst3/user/psilva/539_ntuples -o ~/work/ewkzp2j_539 -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @useMVA=True" -s 8nh
+runPlotter --iLumi 19683 --inDir ~/work/ewkzp2j_539/ --json data/vbfz_samples.json --outFile ~/work/ewkzp2j_539/plotter.root </p>
+
+<p>runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d /store/cmst3/user/psilva/539_ntuples -o ~/work/ewkzp2j_539 -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @useMVA=True" -s 8nh
+runPlotter --iLumi 19683 --inDir ~/work/ewkzp2j_539/ --json data/vbfz_photon_samples.json --outFile ~/work/ewkzp2j_539/plotter_g_raw.root </p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/pfs">pfs</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
