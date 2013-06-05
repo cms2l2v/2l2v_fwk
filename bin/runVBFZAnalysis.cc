@@ -664,9 +664,7 @@ int main(int argc, char* argv[])
 	  jesCor->setJetPt(rawJet.pt());
 	  jesCor->setJetA(jets[ijet].getVal("area"));
 	  jesCor->setRho(ev.rho);
-	  jesCor->setNPV(ev.nvtx);
-	  float newJECSF=jesCor->getCorrection()
-;
+	  float newJECSF=jesCor->getCorrection();
 	  jets[ijet].SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
 	  jets[ijet] *= newJECSF;
 	  jets[ijet].setVal("torawsf",1./newJECSF);

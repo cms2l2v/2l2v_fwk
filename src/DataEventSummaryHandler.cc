@@ -384,6 +384,7 @@ bool DataEventSummaryHandler::attach(TTree *t)
   t_->SetBranchAddress("jn_neutHadFrac", evSummary_.jn_neutHadFrac);
   t_->SetBranchAddress("jn_neutEmFrac",  evSummary_.jn_neutEmFrac);
   t_->SetBranchAddress("jn_chHadFrac",   evSummary_.jn_chHadFrac);
+  t_->SetBranchAddress("jn_area",        evSummary_.jn_area);
   t_->SetBranchAddress("jn_tchp",        evSummary_.jn_tchp);
   t_->SetBranchAddress("jn_jp",          evSummary_.jn_jp);
   t_->SetBranchAddress("jn_csv",         evSummary_.jn_csv);
