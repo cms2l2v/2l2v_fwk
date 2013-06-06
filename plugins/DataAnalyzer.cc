@@ -166,7 +166,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.f_bits |= tagResultH.isValid() ? ((*tagResultH) << ifilt) : 0;
     }
 
-
   //
   // GENERATOR LEVEL
   //
@@ -208,22 +207,23 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	  }
 	if(genEventInfoProd->binningValues().size()>0) ev.pthat = genEventInfoProd->binningValues()[0];
       }
-    
+
     //matrix element info
     Handle<LHEEventProduct> lheH;
     event.getByType(lheH);
     if(lheH.isValid()) ev.nup=lheH->hepeup().NUP;
 
     //generator level event
+    ev.mcn=0;
     Handle<View<Candidate> > genParticlesH;
     event.getByLabel(analysisCfg_.getParameter<edm::InputTag>("genSource"), genParticlesH);
 
-    ev.mcn=0;
-
     //analyze first hard process
+    bool isSherpa(false);
     for(size_t i = 0; i < genParticlesH->size(); ++ i)
       {
 	const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
+	if(abs(p.pdgId())==2212 && p.status()==4) isSherpa=true; //this is only used by sherpa
 	if(p.status()!=3 && !(p.status()==1 && abs(p.pdgId()==22) && p.pt()>20) ) continue;
 	ev.mc_id[ev.mcn]=p.pdgId();
 	ev.mc_status[ev.mcn]=p.status();
@@ -255,9 +255,9 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
 	if(p.status()!=3 || abs(p.pdgId())!=5) continue;
 
-	const reco::Candidate *fs = utils::cmssw::getGeneratorFinalStateFor(&p);
+	const reco::Candidate *fs = utils::cmssw::getGeneratorFinalStateFor(&p,isSherpa);
 	if(fs->numberOfDaughters()==0) continue;
-	fs = utils::cmssw::getGeneratorFinalStateFor( fs->daughter(0) );
+	fs = utils::cmssw::getGeneratorFinalStateFor( fs->daughter(0), isSherpa );
 	for(size_t j=0; j<fs->numberOfDaughters(); j++)
 	  {
 	    const reco::Candidate *d=fs->daughter(j);

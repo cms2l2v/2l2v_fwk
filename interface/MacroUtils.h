@@ -24,7 +24,7 @@ namespace utils
   {
     
     //retrieve last state before decay
-    const reco::Candidate *getGeneratorFinalStateFor(const reco::Candidate *p);
+    const reco::Candidate *getGeneratorFinalStateFor(const reco::Candidate *p, bool isSherpa);
 
     //check pdg id code for b-flavored hadrons
     bool isBhadron(int pdgId);

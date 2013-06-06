@@ -668,7 +668,7 @@ int main(int argc, char* argv[])
 	  jets[ijet].SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
 	  jets[ijet] *= newJECSF;
 	  jets[ijet].setVal("torawsf",1./newJECSF);
-
+	  cout << toRawSF*newJECSF << endl;
 	  if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
 	  
 	  //cross-clean with selected leptons and photons

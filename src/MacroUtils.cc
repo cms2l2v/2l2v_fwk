@@ -48,7 +48,7 @@ namespace utils
     }
  
     //
-    const reco::Candidate *getGeneratorFinalStateFor(const reco::Candidate *p)
+    const reco::Candidate *getGeneratorFinalStateFor(const reco::Candidate *p, bool isSherpa)
     {
       if(p==0) return 0;
       
@@ -68,7 +68,6 @@ namespace utils
 	if(nextState==prevState) break;
 	prevState=nextState;
       }while(1);
-      
       return prevState;
     }
 
