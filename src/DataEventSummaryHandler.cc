@@ -1,4 +1,5 @@
-#include "UserCode/EWKV/interface/DataEventSummaryHandler.h"
+#include "UserCode/2l2v_fwk/interface/DataEventSummaryHandler.h"
+#include "TVector2.h"
 
 using namespace std;
 
@@ -253,6 +254,7 @@ bool DataEventSummaryHandler::attach(TTree *t)
   t_->SetBranchAddress("pf_px",     &evSummary_.pf_px);
   t_->SetBranchAddress("pf_py",     &evSummary_.pf_py);
   t_->SetBranchAddress("pf_pz",     &evSummary_.pf_pz);
+  t_->SetBranchAddress("pf_en",     &evSummary_.pf_en);
 
   //generator level info
   t_->SetBranchAddress("ngenITpu",    &evSummary_.ngenITpu);
@@ -615,4 +617,102 @@ data::PhysicsObjectCollection_t DataEventSummaryHandler::getPhysicsObject(int co
       break;
     }
   return coll;
+}
+
+//
+void physics::utils::setJetDirections(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf)
+{
+  int istart=jet.get("pfstart");
+  int iend=jet.get("pfend");
+  
+  //jet direction (all, charged, neutral)
+  LorentzVector null(0,0,0,0);
+  std::vector<LorentzVector> J(3,null);
+  for(int ipf=istart; ipf<=iend; ipf++)
+    {
+      int charge=pf[ipf].get("charge");
+      J[0]             += pf[ipf]; 
+      J[1+(charge==0)] += pf[ipf]; 
+    }
+
+  //save for posterity
+  data::PhysicsObject_t J_all(J[0].px(),J[0].py(),J[0].pz(),J[0].energy());
+  jet.setObject("J_all", J_all);
+  data::PhysicsObject_t J_ch(J[1].px(),J[1].py(),J[1].pz(),J[1].energy());
+  jet.setObject("J_ch",  J_ch);
+  data::PhysicsObject_t J_neut(J[2].px(),J[2].py(),J[2].pz(),J[2].energy());
+  jet.setObject("J_neut",J_neut);
+}
+
+
+//
+void physics::utils::setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf)
+{
+  //first define the directions
+  if(jet.objs.find("J_all")==jet.objs.end()) physics::utils::setJetDirections(jet,pf);
+
+  //compute the pulls
+  TVector2 null(0,0);
+  std::vector<TVector2> t(3,null);
+  std::vector<const data::PhysicsObject_t *> J;
+  J.push_back( &(jet.getObject("J_all")) );
+  J.push_back( &(jet.getObject("J_ch")) );
+  J.push_back( &(jet.getObject("J_neut")) );
+  for(int ipf=jet.get("pfstart"); ipf<=jet.get("pfend"); ipf++)
+    {
+      int charge=pf[ipf].get("charge");
+      if(J[0]->pt()>0)
+	{
+	  TVector2 r( pf[ipf].eta()-J[0]->eta(), deltaPhi( pf[ipf].phi(), J[0]->phi() ) );
+	  t[0] += (pf[ipf].pt()/J[0]->pt()) * r.Mod() * r;
+	}
+      if(J[1]->pt()>0 && charge!=0)
+	{
+	  TVector2 r( pf[ipf].eta()-J[1]->eta(), deltaPhi( pf[ipf].phi(), J[1]->phi() ) );
+	  t[1] += (pf[ipf].pt()/J[1]->pt()) * r.Mod() * r;
+	} 
+      if(J[2]->pt()>0 && charge==0)
+	{
+	  TVector2 r( pf[ipf].eta()-J[2]->eta(), deltaPhi( pf[ipf].phi(), J[2]->phi() ) );
+	  t[2] += (pf[ipf].pt()/J[2]->pt()) * r.Mod() * r;
+	} 
+    }
+
+  data::PhysicsObject_t t_all(t[0].X(),t[0].Y(),0,t[0].Mod());
+  jet.setObject("t_all",t_all);
+  data::PhysicsObject_t t_ch(t[1].X(),t[1].Y(),0,t[1].Mod());
+  jet.setObject("t_ch",t_ch);
+  data::PhysicsObject_t t_neut(t[2].X(),t[2].Y(),0,t[2].Mod());
+  jet.setObject("t_neut",t_neut);
+
+}
+
+//
+std::vector<float> physics::utils::pullDeltaTheta(data::PhysicsObject_t &jet1, data::PhysicsObject_t &jet2, data::PhysicsObjectCollection_t &pf)
+{
+  std::vector<float> pullSummary(6,0);
+
+  if(jet1.objs.find("t_all")==jet1.objs.end()) setJetPulls(jet1,pf);
+  if(jet2.objs.find("t_all")==jet2.objs.end()) setJetPulls(jet2,pf);
+
+  TString tag[]={"all","ch","neut"};
+  for(size_t i=0; i<3; i++)
+    {
+      const data::PhysicsObject_t &J1=jet1.getObject("J_"+tag[i]);
+      const data::PhysicsObject_t &t1=jet1.getObject("t_"+tag[i]);
+      
+      const data::PhysicsObject_t &J2=jet2.getObject("J_"+tag[i]);
+      const data::PhysicsObject_t &t2=jet2.getObject("t_"+tag[i]);
+
+      float dphijj=deltaPhi(J1.phi(),J2.phi());
+      float dyjj=J2.y()-J1.y();
+
+      TVector2 jj(dyjj,dphijj);
+      pullSummary[physics::utils::toJ1_ALL+i]=deltaPhi(t1.py(),jj.Phi());
+
+      jj=TVector2(-dyjj,dphijj);
+      pullSummary[physics::utils::toJ2_ALL+i]=deltaPhi(t2.py(),jj.Phi());
+    }
+
+  return pullSummary;
 }

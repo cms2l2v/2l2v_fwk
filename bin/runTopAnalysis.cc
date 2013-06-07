@@ -2,13 +2,13 @@
 #include <boost/shared_ptr.hpp>
 #include <fstream>
 
-#include "UserCode/EWKV/interface/MacroUtils.h"
-#include "UserCode/EWKV/interface/SmartSelectionMonitor.h"
-#include "UserCode/EWKV/interface/DataEventSummaryHandler.h"
-#include "UserCode/EWKV/interface/LxyAnalysis.h"
-#include "UserCode/EWKV/interface/UEAnalysis.h"
-#include "UserCode/EWKV/interface/BTVAnalysis.h"
-#include "UserCode/EWKV/interface/LeptonEfficiencySF.h"
+#include "UserCode/2l2v_fwk/interface/MacroUtils.h"
+#include "UserCode/2l2v_fwk/interface/SmartSelectionMonitor.h"
+#include "UserCode/2l2v_fwk/interface/DataEventSummaryHandler.h"
+#include "UserCode/2l2v_fwk/interface/LxyAnalysis.h"
+#include "UserCode/2l2v_fwk/interface/UEAnalysis.h"
+#include "UserCode/2l2v_fwk/interface/BTVAnalysis.h"
+#include "UserCode/2l2v_fwk/interface/LeptonEfficiencySF.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
-  //UEAnalysis ueAn(controlHistos);
+  UEAnalysis ueAn(controlHistos);
   BTVAnalysis btvAn(controlHistos,runSystematics);
   LxyAnalysis lxyAn(controlHistos,runSystematics);
   
@@ -496,9 +496,10 @@ int main(int argc, char* argv[])
       float nbtags(0);
       for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
       if(!isOS || nbtags<2) continue;
+      
       //PF candidates
-      //data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-      //ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
+      data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+      ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
     }
   if(nDuplicates) cout << "[Warning] found " << nDuplicates << " duplicate events in this ntuple" << endl;
 

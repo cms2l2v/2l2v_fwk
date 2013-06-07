@@ -4,7 +4,7 @@ import os,sys
 import json
 import optparse
 import commands
-from UserCode.EWKV.storeTools_cff import fillFromStore
+from UserCode.2l2v_fwk.storeTools_cff import fillFromStore
 
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)

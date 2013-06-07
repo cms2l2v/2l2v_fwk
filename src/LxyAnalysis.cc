@@ -1,4 +1,4 @@
-#include "UserCode/EWKV/interface/LxyAnalysis.h"
+#include "UserCode/2l2v_fwk/interface/LxyAnalysis.h"
 #include <Math/VectorUtil.h>
 
 using namespace std;
@@ -10,6 +10,8 @@ LxyAnalysis::LxyAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 {
   //start monitoring histograms of this analysis
   mon_->addHistogram( new TH2F ("bjetlxybhad",    "; L_{xy}(reco) [cm]; B-hadron; Jets", 50,0,5, 4,0,4) );
+  TH1 *h=mon_->addHistogram( new TH1F ("lxybhad",    "; L_{xy}(reco) [cm]; B-hadron; Jets",5,0,5) );
+  h->GetXaxis()->SetBinLabel(1,"B^{0}");  h->GetXaxis()->SetBinLabel(2,"B^{+}");  h->GetXaxis()->SetBinLabel(3,"B^{0}_{s}");  h->GetXaxis()->SetBinLabel(4,"B^{+}_{c}");  h->GetXaxis()->SetBinLabel(5,"Others");
   for(size_t i=0; i<4; i++)
     {
       TString pf(""); pf+=i;
@@ -100,12 +102,13 @@ void LxyAnalysis::analyze(data::PhysicsObjectCollection_t & leptons,
 	  mon_->fillHisto("bjetlxyrespt", ch,leadingLxy-genLxy,lxyJet->pt(),weight);
             
 	  int absid=abs(bHad->get("id"));
-	  int bHadronBin(3); //other not so relevant
-	  if(absid==511 || absid==10511 || absid==513 || absid==10513 || absid==20513 || absid==515) bHadronBin=0;       //B0 family
-	  else if(absid==521 || absid==10521 || absid==523 || absid==10523 || absid==20523 || absid==525) bHadronBin=1;  //B+ family
-	  else if(absid==531 || absid==10531 || absid==533 || absid==10533 || absid==20533 || absid==535) bHadronBin=2;  //B0s family
-	  //  else if(absid==541 || absid==10541 || absid==543 || absid==10543 || absid==20543 || absid==545) bHadronBin=3;  //B+c family
+	  int bHadronBin(3),fullBHadronBin(4); //other not so relevant
+	  if(absid==511 || absid==10511 || absid==513 || absid==10513 || absid==20513 || absid==515) {bHadronBin=0;fullBHadronBin=0;}       //B0 family
+	  else if(absid==521 || absid==10521 || absid==523 || absid==10523 || absid==20523 || absid==525) {bHadronBin=1;fullBHadronBin=1;}  //B+ family
+	  else if(absid==531 || absid==10531 || absid==533 || absid==10533 || absid==20533 || absid==535) {bHadronBin=2;fullBHadronBin=2;}  //B0s family
+	  else if(absid==541 || absid==10541 || absid==543 || absid==10543 || absid==20543 || absid==545) {bHadronBin=3;fullBHadronBin=3;}  //B+c family
 	  mon_->fillHisto("bjetlxybhad",   ch,leadingLxy, bHadronBin,weight);
+	  mon_->fillHisto("lxybhad",   ch,fullBHadronBin,weight);
 	  
 	  if(genParton.pt()>0)
 	    {

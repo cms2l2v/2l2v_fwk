@@ -1,7 +1,7 @@
 #ifndef dataeventsummaryhandler_h
 #define dataeventsummaryhandler_h
 
-#include "UserCode/EWKV/interface/DataEventSummary.h"
+#include "UserCode/2l2v_fwk/interface/DataEventSummary.h"
 
 #include "TTree.h"
 
@@ -76,5 +76,17 @@ class DataEventSummaryHandler{
   TTree *t_;
   DataEventSummary evSummary_;
 };
+
+namespace physics
+{
+  namespace utils
+  {
+    //based on http://arxiv.org/pdf/1001.5027v3.pdf
+    enum JetPullTypes {toJ1_ALL,toJ1_CH,toJ1_NEUT,toJ2_ALL,toJ2_CH,toJ2_NEUT};
+    std::vector<float> pullDeltaTheta(data::PhysicsObject_t &jet1, data::PhysicsObject_t &jet2, data::PhysicsObjectCollection_t &pf);
+    void setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf);
+    void setJetDirections(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf);
+  }
+}
 
 #endif
