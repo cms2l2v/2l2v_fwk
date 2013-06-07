@@ -31,10 +31,13 @@
         <h2>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
-<p>export SCRAM_ARCH=slc5_amd64_gcc462
-scramv1 project CMSSW CMSSW_5_3_9
-cd CMSSW_5_3_9/src/
-curl -O <a href="https://raw.github.com/pfs/usercode/master/TAGS.txt">https://raw.github.com/pfs/usercode/master/TAGS.txt</a> | sh</p>
+<p>export SCRAM_ARCH=slc5_amd64_gcc462</p>
+
+<p>scramv1 project CMSSW CMSSW_5_3_9</p>
+
+<p>cd CMSSW_5_3_9/src/</p>
+
+<p>curl -O <a href="https://raw.github.com/pfs/usercode/master/TAGS.txt">https://raw.github.com/pfs/usercode/master/TAGS.txt</a> | sh</p>
 
 <h2>
 <a name="ntuples" class="anchor" href="#ntuples"><span class="octicon octicon-link"></span></a>Ntuples</h2>
@@ -42,10 +45,9 @@ curl -O <a href="https://raw.github.com/pfs/usercode/master/TAGS.txt">https://ra
 <h3>
 <a name="creating" class="anchor" href="#creating"><span class="octicon octicon-link"></span></a>Creating</h3>
 
-<p>Crab files are found in test/grid
-To create locally at CERN:</p>
+<p>Crab files are found in test/grid. To create locally at CERN:</p>
 
-<p>runOverSamples.py -j data/vbfz_samples.json -R "tmp&gt;5000" -n 1 -d aoddir -p "-castor=/afs/cern.ch/user/p/psilva/work/ntuples -cfg=$CMSSW_BASE/src/UserCode/EWKV/test/runDataAnalyzer_mc_cfg.py" -t lljj -s 8nh</p>
+<p>runOverSamples.py -j data/vbfz_samples.json -R "tmp&gt;5000" -n 1 -d aoddir -p "-castor=/afs/cern.ch/user/p/psilva/work/ntuples -cfg=$CMSSW_BASE/src/UserCode/2l2v_fwk/test/runDataAnalyzer_mc_cfg.py" -t lljj -s 8nh</p>
 
 <h3>
 <a name="analysing" class="anchor" href="#analysing"><span class="octicon octicon-link"></span></a>Analysing</h3>
@@ -55,9 +57,11 @@ To create locally at CERN:</p>
 <h2>
 <a name="analysis-specific" class="anchor" href="#analysis-specific"><span class="octicon octicon-link"></span></a>Analysis specific</h2>
 
-<p>If you need set your stuff under test/analysis_subdir
-In general to run an executable or script you can do:
-runLocalAnalysisOverSamples.py -e my_exe -j data/my_samples.json -d my_input_dir -o my_output_dir -c test/runAnalysis_cfg.py.templ -p "@par1=val1 @par2=val2" -s queue</p>
+<p>If you need set your stuff under test/analysis_subdir</p>
+
+<p>In general to run an executable or script you can do:</p>
+
+<p>runLocalAnalysisOverSamples.py -e my_exe -j data/my_samples.json -d my_input_dir -o my_output_dir -c test/runAnalysis_cfg.py.templ -p "@par1=val1 @par2=val2" -s queue</p>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/pfs">pfs</a></p>
