@@ -146,7 +146,7 @@ process.kt6PFJetsCentral = kt4PFJets.clone( rParam = cms.double(0.6),
                                             Rho_EtaMax = cms.double(2.5),
                                             Ghost_EtaMax = cms.double(2.5) )
 
-from UserCode.2l2v_fwk.btvDefaultSequence_cff import *
+from UserCode.llvv_fwk.btvDefaultSequence_cff import *
 btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
 
 # cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis
@@ -159,7 +159,7 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
 
 
 #the analyzer
-process.load("UserCode.2l2v_fwk.dataAnalyzer_cfi")
+process.load("UserCode.llvv_fwk.dataAnalyzer_cfi")
 if isTauEmbed:
     process.dataAnalyzer.cfg.triggerCats[2]=1113
     process.dataAnalyzer.cfg.triggerCats[3]=1113

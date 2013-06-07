@@ -18,7 +18,7 @@ cvs co -r V00-00-08                   RecoMET/METAnalyzers
 cvs co -r V15-02-06                   RecoParticleFlow/PFProducer                      
 cvs co -r V02-02-06                   RecoVertex/AdaptiveVertexFinder                  
 cvs co                                -d bTag/CommissioningCommonSetup UserCode/bTag/CommissioningCommonSetup     
-git clone git@github.com:pfs/2l2v_fwk UserCode/2l2v_fwk
+git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
 cvs co -r V00-03-01                   -d CMGTools/External UserCode/CMG/CMGTools/External
 cvs co -r beforePFIsoEst_migration    -d EGamma/EGammaAnalysisTools UserCode/EGamma/EGammaAnalysisTools                       
 cvs co -r V09-00-01                   RecoEgamma/EgammaTools                           

@@ -1,4 +1,4 @@
-<use name="UserCode/2l2v_fwk"/>
+<use name="UserCode/llvv_fwk"/>
 <use name="lhapdf"/>
 <environment>
   <bin name="runTopAnalysis"       file="runTopAnalysis.cc"></bin> 

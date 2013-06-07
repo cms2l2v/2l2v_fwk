@@ -1,4 +1,4 @@
-#include "UserCode/2l2v_fwk/interface/LxyAnalysis.h"
+#include "UserCode/llvv_fwk/interface/LxyAnalysis.h"
 #include <Math/VectorUtil.h>
 
 using namespace std;
@@ -23,6 +23,7 @@ LxyAnalysis::LxyAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
   mon_->addHistogram( new TH2F ("ptbvslxy",       "; b quark p_{T} [GeV]; L_{xy} [cm]; Events",100, 0, 200, 50, 0, 5) );
   mon_->addHistogram( new TH2F ("topptvslxy",     "; Top p_{T} [GeV]; L_{xy} [cm]; Events",100, 0, 1000, 50, 0, 5) );
   mon_->addHistogram( new TH1F ("jetlxy",         ";L_{xy} [cm]; Jets", 50, 0.,5) );
+  mon_->addHistogram( new TH1F ("jetlxyntk",      ";Number of tracks in sec. vertex; Jets", 5, 0.,5) );
 }
 
 //
@@ -91,6 +92,13 @@ void LxyAnalysis::analyze(data::PhysicsObjectCollection_t & leptons,
     }
   float genLxy(-1);
   if(bHad) genLxy=bHad->getVal("lxy");
+
+  const data::PhysicsObject_t &svx=lxyJet->getObject("svx");
+  if(passFiducialCut)
+    {
+      mon_->fillHisto("jetlxy",ch,leadingLxy,weight);
+      mon_->fillHisto("jetlxyntk",ch,svx.info.find("ntrk")->second,weight);
+    }
 
   //resolution plots
   if(genLxy>0 && abs(flavId)==5)

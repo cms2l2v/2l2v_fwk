@@ -2,13 +2,13 @@
 #include <boost/shared_ptr.hpp>
 #include <fstream>
 
-#include "UserCode/2l2v_fwk/interface/MacroUtils.h"
-#include "UserCode/2l2v_fwk/interface/SmartSelectionMonitor.h"
-#include "UserCode/2l2v_fwk/interface/DataEventSummaryHandler.h"
-#include "UserCode/2l2v_fwk/interface/LxyAnalysis.h"
-#include "UserCode/2l2v_fwk/interface/UEAnalysis.h"
-#include "UserCode/2l2v_fwk/interface/BTVAnalysis.h"
-#include "UserCode/2l2v_fwk/interface/LeptonEfficiencySF.h"
+#include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
+#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
+#include "UserCode/llvv_fwk/interface/LxyAnalysis.h"
+#include "UserCode/llvv_fwk/interface/UEAnalysis.h"
+#include "UserCode/llvv_fwk/interface/BTVAnalysis.h"
+#include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -295,7 +295,7 @@ int main(int argc, char* argv[])
 	      if(muCor){
 		TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
 		muCor->applyPtCorrection(p4 , id<0 ? -1 : 1 );
-		muCor->applyPtSmearing(p4, id<0 ? -1 : 1, false);
+		if(isMC) muCor->applyPtSmearing(p4, id<0 ? -1 : 1, false);
 		leptons[ilep].SetPxPyPzE(p4.Px(),p4.Py(),p4.Pz(),p4.E());
 	      }
 

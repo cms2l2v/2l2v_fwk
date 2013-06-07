@@ -15,7 +15,7 @@ curl -O https://raw.github.com/pfs/usercode/master/TAGS.txt | sh
 
 Crab files are found in test/grid. To create locally at CERN:
 
-runOverSamples.py -j data/vbfz_samples.json -R "tmp>5000" -n 1 -d aoddir -p "-castor=/afs/cern.ch/user/p/psilva/work/ntuples -cfg=$CMSSW_BASE/src/UserCode/2l2v_fwk/test/runDataAnalyzer_mc_cfg.py" -t lljj -s 8nh
+runOverSamples.py -j data/vbfz_samples.json -R "tmp>5000" -n 1 -d aoddir -p "-castor=/afs/cern.ch/user/p/psilva/work/ntuples -cfg=$CMSSW_BASE/src/UserCode/llvv_fwk/test/runDataAnalyzer_mc_cfg.py" -t lljj -s 8nh
 
 ### Analysing
 
