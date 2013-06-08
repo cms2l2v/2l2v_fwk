@@ -624,7 +624,8 @@ void physics::utils::setJetDirections(data::PhysicsObject_t &jet, data::PhysicsO
 {
   int istart=jet.get("pfstart");
   int iend=jet.get("pfend");
-  
+  if(istart<0 || iend<0) return;
+
   //jet direction (all, charged, neutral)
   LorentzVector null(0,0,0,0);
   std::vector<LorentzVector> J(3,null);
@@ -650,6 +651,7 @@ void physics::utils::setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObject
 {
   //first define the directions
   if(jet.objs.find("J_all")==jet.objs.end()) physics::utils::setJetDirections(jet,pf);
+  if(jet.objs.find("J_all")==jet.objs.end()) return;
 
   //compute the pulls
   TVector2 null(0,0);
@@ -694,7 +696,8 @@ std::vector<float> physics::utils::pullDeltaTheta(data::PhysicsObject_t &jet1, d
 
   if(jet1.objs.find("t_all")==jet1.objs.end()) setJetPulls(jet1,pf);
   if(jet2.objs.find("t_all")==jet2.objs.end()) setJetPulls(jet2,pf);
-
+  if(jet1.objs.find("t_all")==jet1.objs.end() || jet2.objs.find("t_all")==jet2.objs.end()) { pullSummary.clear(); return pullSummary; }
+  
   TString tag[]={"all","ch","neut"};
   for(size_t i=0; i<3; i++)
     {

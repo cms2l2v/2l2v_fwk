@@ -23,7 +23,7 @@ LxyAnalysis::LxyAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
   mon_->addHistogram( new TH2F ("ptbvslxy",       "; b quark p_{T} [GeV]; L_{xy} [cm]; Events",100, 0, 200, 50, 0, 5) );
   mon_->addHistogram( new TH2F ("topptvslxy",     "; Top p_{T} [GeV]; L_{xy} [cm]; Events",100, 0, 1000, 50, 0, 5) );
   mon_->addHistogram( new TH1F ("jetlxy",         ";L_{xy} [cm]; Jets", 50, 0.,5) );
-  mon_->addHistogram( new TH1F ("jetlxyntk",      ";Number of tracks in sec. vertex; Jets", 5, 0.,5) );
+  mon_->addHistogram( new TH1F ("jetlxyntk",      ";Number of tracks in sec. vertex; Jets", 10, 0.,10.) );
 }
 
 //

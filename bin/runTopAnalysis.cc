@@ -68,8 +68,10 @@ int main(int argc, char* argv[])
   int mcTruthMode     = runProcess.getParameter<int>("mctruthmode");
   double xsec         = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
-  TString out        = runProcess.getParameter<std::string>("outdir");
+  TString out          = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
+  std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
+   
 
   //jet energy scale uncertainties
   gSystem->ExpandPathName(jecDir);
@@ -78,6 +80,18 @@ int main(int argc, char* argv[])
 
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor=utils::cmssw::getMuonCorrector(jecDir,url);
+
+  //re-scale dy in the signal region
+  std::map<TString,float> dySFmap;
+  if(weightsFile.size() && url.Contains("DY") && isMC)
+    {
+      TFile *dyF=TFile::Open(weightsFile[0].c_str());
+      TH1* dysfH=(TH1 *)dyF->Get("dysf");
+      for(int ibin=1; ibin<=dysfH->GetXaxis()->GetNbins(); ibin++) { dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin); 
+	cout << dysfH->GetXaxis()->GetBinLabel(ibin) << " " << dysfH->GetBinContent(ibin) << endl;
+      }
+      dyF->Close();
+    }
 
   //
   // check input file
@@ -334,13 +348,14 @@ int main(int argc, char* argv[])
       weight *= llScaleFactor;
       
       //set the channel
-      std::vector<TString> ch;
+      TString chName;
       bool isOS(dilId<0);
       bool isSameFlavor(false);
-      if     (abs(dilId)==11*11 && eeTrigger)   { ch.push_back("ee");  isSameFlavor=true; }
-      else if(abs(dilId)==11*13 && emuTrigger)  { ch.push_back("emu"); }
-      else if(abs(dilId)==13*13 && mumuTrigger) { ch.push_back("mumu"); isSameFlavor=true; }
+      if     (abs(dilId)==11*11 && eeTrigger)   { chName="ee";  isSameFlavor=true; }
+      else if(abs(dilId)==11*13 && emuTrigger)  { chName="emu"; }
+      else if(abs(dilId)==13*13 && mumuTrigger) { chName="mumu"; isSameFlavor=true; }
       else                                       continue;
+      std::vector<TString> ch(1,chName);
       if(isSameFlavor) ch.push_back("ll");
             
       //select the jets
@@ -410,16 +425,19 @@ int main(int argc, char* argv[])
       bool passJetSelection(selJets.size()>=2);
       bool passMetSelection( !isSameFlavor || met[0].pt()>40);
 
-      //control distributions
       std::vector<TString> ctrlCategs;
-      if(isOS && passDilSelection && passJetSelection  && passMetSelection)   ctrlCategs.push_back("");
-      if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("eq1jets");
+      float dyWeight(1.0);
+      if(isOS && passDilSelection && passJetSelection  && passMetSelection)   { ctrlCategs.push_back("");        if(dySFmap.find(chName)!=dySFmap.end()) dyWeight=dySFmap[chName]; }
+      if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   { ctrlCategs.push_back("eq1jets"); if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) dyWeight=dySFmap[chName+"eq1jets"];}
       if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("lowmet");
       if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("eq1jetslowmet");
       if(isOS && isZcand          && passJetSelection  && passMetSelection)   ctrlCategs.push_back("z");
       if(isOS && isZcand          && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("zeq1jets");
       if(isOS && isZcand          && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("zlowmet");
       if(isOS && isZcand          && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("zeq1jetslowmet");
+      weight *= dyWeight;
+
+      //control distributions
       for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	{
 	  for(size_t ilep=0; ilep<2; ilep++)

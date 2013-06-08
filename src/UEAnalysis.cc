@@ -16,14 +16,14 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   mon_->addHistogram( new TH1F("mtttbar",";t#bar{t} transverse mass [GeV];Events",25,0,1000));
 
   //color flow
-  mon_->addHistogram( new TH1F("allj1pull",";#Delta#theta_{t} [rad];Events",100,-3.2,3.2) );
-  mon_->addHistogram( new TH1F("chj1pull",";#Delta#theta_{t} [rad];Events",100,-3.2,3.2) );
-  mon_->addHistogram( new TH1F("allj1pull",";#Delta#theta_{t} [rad];Events",100,-3.2,3.2) );
-  mon_->addHistogram( new TH1F("chj2pull",";#Delta#theta_{t} [rad];Events",100,-3.2,3.2) );
+  mon_->addHistogram( new TH1F("allj1pull",";#Delta#theta_{t} [rad];Events",50,0,3.2) );
+  mon_->addHistogram( new TH1F("chj1pull",";#Delta#theta_{t} [rad];Events",50,0,3.2) );
+  mon_->addHistogram( new TH1F("allj2pull",";#Delta#theta_{t} [rad];Events",50,02,3.2) );
+  mon_->addHistogram( new TH1F("chj2pull",";#Delta#theta_{t} [rad];Events",50,0,3.2) );
 
 
-  mon_->addHistogram( new TH2F("alljpull",";#Delta#theta_{t} [rad];|#vec{t}|;Jets",100,-3.2,3.2,100,0,0.1) );
-  mon_->addHistogram( new TH2F("chjpull",";#Delta#theta_{t} [rad];|#vec{t}|;Jets",100,-3.2,3.2,100,0,0.1) );
+  mon_->addHistogram( new TH2F("alljpull",";#Delta#theta_{t} [rad];|#vec{t}|;Jets",50,0,3.2,100,0,0.1) );
+  mon_->addHistogram( new TH2F("chjpull",";#Delta#theta_{t} [rad];|#vec{t}|;Jets",50,0,3.2,100,0,0.1) );
 
   ueReg_.push_back("");
   ueReg_.push_back("away");
@@ -91,7 +91,6 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   std::vector<float> pullSummary=physics::utils::pullDeltaTheta(jets[0].pt()>jets[1].pt()?jets[0]:jets[1],
 								jets[0].pt()>jets[1].pt()?jets[1]:jets[0],
 								pf);
-
   
   //study UE with charged PF
   std::vector<int> chCount(4,0);
@@ -131,16 +130,19 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   mon_->fillHisto("ptttbar",  ch, rec_ttbar.pt(), weight);
   mon_->fillHisto("mtttbar",  ch, rec_ttbar.Mt(), weight);
 
-  mon_->fillHisto("allj1pull", ch, pullSummary[physics::utils::toJ1_ALL], weight);
-  mon_->fillHisto("allj2pull",  ch, pullSummary[physics::utils::toJ2_ALL], weight);
-  mon_->fillHisto("chj1pull", ch, pullSummary[physics::utils::toJ1_CH], weight);
-  mon_->fillHisto("chj2pull",  ch, pullSummary[physics::utils::toJ2_CH], weight);
+  if(pullSummary.size()==6)
+    {
+      mon_->fillHisto("allj1pull", ch, fabs(pullSummary[physics::utils::toJ1_ALL]), weight);
+      mon_->fillHisto("allj2pull",  ch, fabs(pullSummary[physics::utils::toJ2_ALL]), weight);
+      mon_->fillHisto("chj1pull", ch, fabs(pullSummary[physics::utils::toJ1_CH]), weight);
+      mon_->fillHisto("chj2pull",  ch, fabs(pullSummary[physics::utils::toJ2_CH]), weight);
+    }
   for(size_t ijet=0; ijet<2; ijet++)
     {
       const data::PhysicsObject_t &t_all=jets[ijet].getObject("t_all");
       const data::PhysicsObject_t &t_ch =jets[ijet].getObject("t_ch");
-      mon_->fillHisto("alljpull", ch, t_all.py(), t_all.energy(), weight);
-      mon_->fillHisto("chjpull",  ch, t_all.py(), t_ch.energy(), weight);
+      mon_->fillHisto("alljpull", ch, fabs(t_all.py()), t_all.energy(), weight);
+      mon_->fillHisto("chjpull",  ch, fabs(t_all.py()), t_ch.energy(),  weight);
     }
 
   for(size_t ireg=0; ireg<4; ireg++)

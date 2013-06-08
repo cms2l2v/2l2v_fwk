@@ -6,5 +6,6 @@
   <bin name="runVBFZAnalysis"      file="runVBFZAnalysis.cc"></bin> 
   <bin name="runPlotter"           file="runPlotter.cc"></bin> 
   <bin name="computePDFvariations" file="computePDFvariations.cc"></bin> 
+  <bin name="fitDYforTop"          file="fitDYforTop.cc"></bin> 
 </environment>
 <Flags CXXFLAGS="-g"/>
