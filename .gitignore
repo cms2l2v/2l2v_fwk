@@ -5,6 +5,7 @@
 *.aux
 *.log
 *.pdf
+LSFJOB*
 # no python compiled files:
 *pyc
 # no python init file
