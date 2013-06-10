@@ -42,6 +42,7 @@ bool isSim=false;
 bool do2D  = true;
 bool do1D  = true;
 bool doTex = true;
+bool doPowers = true;
 bool StoreInFile = true;
 bool doPlot = true;
 bool splitCanvas = false;
@@ -838,6 +839,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 std::string toLatexRounded(double value, double error){
    if(value==0.0 && error==0.0)return string("");
 
+   if(!doPowers){
+     char tmpchar[255];
+     sprintf(tmpchar,"$%.0f\\pm%.0f$",value,error);
+     return string(tmpchar);
+   }
    double power = floor(log10(value));
    if(power<=-3)     {power=power+3;
    }else if(power>=2){power=power-2;
@@ -845,6 +851,7 @@ std::string toLatexRounded(double value, double error){
 
    value = value / pow(10,power);
    error = error / pow(10,power);
+   
    int ValueFloating = 1+std::max(-1*log10(error),0.0);
    int ErrorFloating = ValueFloating;
 
@@ -1025,6 +1032,7 @@ int main(int argc, char* argv[]){
         printf("--no1D   --> Skip processing of 1D objects\n");
         printf("--no2D   --> Skip processing of 2D objects\n");
         printf("--noTex  --> Do not create latex table (when possible)\n");
+        printf("--noPowers --> Do not use powers of 10 for numbers in tables\n");
         printf("--noRoot --> Do not make a summary .root file\n");
         printf("--noPlot --> Do not creates plot files (useful to speedup processing)\n");
 	printf("--plotExt --> extension to save\n");
@@ -1063,6 +1071,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
      if(arg.find("--no1D"  )!=string::npos){ do1D = false;    }
      if(arg.find("--noTex" )!=string::npos){ doTex= false;    }
+     if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
      if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt   = argv[i+1];  i++;  printf("saving plots as = %s\n", plotExt.c_str());  }
