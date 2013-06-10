@@ -8,8 +8,13 @@
 	 "mctruthmode":1,
          "data":[
 	      {
-               "dtag":"MC8TeV_DYToMuMu_M20",
-               "split":3,
+               "dtag":"MC8TeV_DYToMuMu_M20_powheg",
+               "split":10,
+                "xsec":1510.0
+              },
+	      {
+               "dtag":"MC8TeV_DYToEE_M20_powheg",
+               "split":10,
                 "xsec":1510.0
               }
  	  ]
