@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from CMGTools.External.pujetidproducer_cfi import pileupJetIdProducerChs
+pileupJetIdProducerChs.algos[0].tmvaWeights=cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml")  
 
 dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                cfg=cms.PSet( metFilters=cms.vstring('HBHENoiseFilter',

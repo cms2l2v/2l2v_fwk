@@ -8,8 +8,8 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
 {
   TString recType[]={"raw","t1","t12"};
   for(size_t i=0; i<3; i++){
-    mon_->addHistogram( new TH2F("thrustresponse_"+recType[i],";#phi(#vec{H}_{T}+#vec{S}_{T}) [rad]; #phi(t#bar{t}) [rad];Events",50,-3.4,3.4,50,-3.4,3.4) );
-    mon_->addHistogram( new TProfile("thrustprofile_"+recType[i],";|#vec{H}_{T}+#vec{S}_{T}| [GeV];#Delta#phi(#vec{H}_{T}+#vec{S}_{T},t#bar{t}) [rad];Events",25,0.,250.) );
+    mon_->addHistogram( new TH2F("thrustphiresponse_"+recType[i],";Generated #phi(t#bar{t}) [rad]; #Delta #phi(t#bar{t}) [rad];Events",50,0,3.4,50,0,3.4) );
+    mon_->addHistogram( new TH2F("thrustptresponse_"+recType[i],";Generated p_{T}(t#bar{t}) [GeV]; #Delta p_{T}(t#bar{t})/p_{T} (t#bar{t}); Events",60,0,300,50,-50,50) );
   }
   
   mon_->addHistogram( new TH1F("ptttbar",";t#bar{t} transverse momentum [GeV];Events",25,0,250));
@@ -31,20 +31,20 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   ueReg_.push_back("transverse");
   for(size_t ireg=0; ireg<ueReg_.size(); ireg++)
     {
-      mon_->addHistogram( new TH1F("nch"+ueReg_[ireg],";Charged particles;Events",30,0,30));
-      mon_->addHistogram( new TH1F("ptflux"+ueReg_[ireg],";Charged p_{T} flux [GeV];Events",25,0,50));
+      mon_->addHistogram( new TH1F("nch"+ueReg_[ireg],";Charged particles;Events",100,0,100));
+      mon_->addHistogram( new TH1F("ptflux"+ueReg_[ireg],";Charged p_{T} flux [GeV];Events",50,0,100));
       mon_->addHistogram( new TH1F("avgptflux"+ueReg_[ireg],";Average p_{T} flux [GeV];Events",25,0,5));
 
-      mon_->addHistogram( new TH2F("nchprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged particles;Events",25,0,250, 30,0,30));
-      mon_->addHistogram( new TH2F("ptfluxprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged p_{T} flux [GeV];Events",25,0,250,25,0,50));
-      mon_->addHistogram( new TH2F("avgptfluxprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Average p_{T} flux [GeV];Events",25,0,250,25,0,5));
+      mon_->addHistogram( new TH2F("nchprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged particles;Events",25,0,250, 100,0,100));
+      mon_->addHistogram( new TH2F("ptfluxprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged p_{T} flux [GeV];Events",25,0,250,50,0,100));
+      mon_->addHistogram( new TH2F("avgptfluxprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Average p_{T} flux [GeV];Events",25,0,250,20,0,5));
 
-      mon_->addHistogram( new TH2F("nchprofmt"+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged particles;Events",25,0,1000,30,0,30));
-      mon_->addHistogram( new TH2F("ptfluxprofmt"+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged p_{T} flux [GeV];Events",25,0,1000,25,0,50));
+      mon_->addHistogram( new TH2F("nchprofmt"+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged particles;Events",25,0,1000,100,0,100));
+      mon_->addHistogram( new TH2F("ptfluxprofmt"+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged p_{T} flux [GeV];Events",25,0,1000,50,0,100));
       mon_->addHistogram( new TH2F("avgptfluxprofmt"+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Average p_{T} flux [GeV];Events",25,0,1000,25,0,5));
 
       if(ireg==0)
-	mon_->addHistogram( new TH2F("ptfluxprofphi",";#Delta#phi[^{0}];Charged p_{T} flux [GeV];Events",25,0,180,25,0,50));
+	mon_->addHistogram( new TH2F("ptfluxprofphi",";#Delta#phi[^{0}];Charged p_{T} flux [GeV];Events",25,0,180,50,0,100));
     }
 }
 
@@ -76,12 +76,12 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   LorentzVector gen_ttbar=top+antitop;
   if(gen_ttbar.pt()>0)
     {
-      mon_->fillHisto("thrustresponse_raw",  ch, (htlep+met[0]).phi(), gen_ttbar.phi(), weight);
-      mon_->fillHisto("thrustresponse_t1",   ch, (htlep+met[2]).phi(), gen_ttbar.phi(), weight);
-      mon_->fillHisto("thrustresponse_t12",  ch, (htlep+met[3]).phi(), gen_ttbar.phi(), weight);
-      mon_->fillProfile("thrustprofile_raw", ch, (htlep+met[0]).pt(), deltaPhi((htlep+met[0]).phi(), gen_ttbar.phi()), weight);
-      mon_->fillProfile("thrustprofile_t1",  ch, (htlep+met[2]).pt(), deltaPhi((htlep+met[2]).phi(), gen_ttbar.phi()), weight);
-      mon_->fillProfile("thrustprofile_t12", ch, (htlep+met[3]).pt(), deltaPhi((htlep+met[3]).phi(), gen_ttbar.phi()), weight);
+      mon_->fillHisto("thrustphiresponse_raw",  ch, fabs(gen_ttbar.phi()), fabs(deltaPhi((htlep+met[0]).phi(),gen_ttbar.phi())), weight);
+      mon_->fillHisto("thrustphiresponse_t1",   ch, fabs(gen_ttbar.phi()), fabs(deltaPhi((htlep+met[2]).phi(),gen_ttbar.phi())), weight);
+      mon_->fillHisto("thrustphiresponse_t12",  ch, fabs(gen_ttbar.phi()), fabs(deltaPhi((htlep+met[3]).phi(),gen_ttbar.phi())), weight);
+      mon_->fillHisto("thrustptresponse_raw",   ch, gen_ttbar.pt(),        (htlep+met[0]).pt()-gen_ttbar.pt(),                   weight);
+      mon_->fillHisto("thrustptresponse_t1",    ch, gen_ttbar.pt(),        (htlep+met[2]).pt()-gen_ttbar.pt(),                   weight);
+      mon_->fillHisto("thrustptresponse_t12",   ch, gen_ttbar.pt(),        (htlep+met[3]).pt()-gen_ttbar.pt(),                   weight);
     }
 
   //using raw met as the estimator

@@ -28,6 +28,19 @@
 	   ]
 	},
 	{
+	 "tag":"t#bar{t}systtunep11tev",
+         "isdata":false,
+         "spimpose":true,
+         "color":"8",
+	 "lcolor":1,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJets_TuneP11TeV",
+                "xsec":245.8
+                }
+	   ]
+	},
+	{
 	 "tag":"t#bar{t}systtunep11nocr",
          "isdata":false,
          "spimpose":true,

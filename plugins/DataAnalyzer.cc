@@ -706,13 +706,15 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       const reco::Candidate *genParton = jet->genParton();
       const reco::GenJet *genJet       = jet->genJet();
 
-      //pre-selection
-      float nhf    = ( jet->neutralHadronEnergy() + jet->HFHadronEnergy() ) / jet->energy();
-      float nef    = jet->neutralEmEnergyFraction();
-      float nconst = jet->numberOfDaughters();
-      float cef    = jet->chargedEmEnergyFraction();
-      float chf    = jet->chargedHadronEnergyFraction();
+      //pre-selection (note: raw jet energy must be used otherwise you'll have large inefficiencies for |eta|>3!!!!)
+      //float rawJetEn = jet->chargedHadronEnergy() + jet->neutralHadronEnergy() + jet->photonEnergy() + jet->electronEnergy() + jet->muonEnergy() + jet->HFHadronEnergy() +jet->HFEMEnergy();
+      float rawJetEn( jet->correctedJet("Uncorrected").energy() );
+      float nhf( (jet->neutralHadronEnergy() + jet->HFHadronEnergy())/rawJetEn );
+      float nef( jet->neutralEmEnergy()/rawJetEn );
+      float cef( jet->chargedEmEnergy()/rawJetEn );
+      float chf( jet->chargedHadronEnergy()/rawJetEn );
       float nch    = jet->chargedMultiplicity();
+      float nconst = jet->numberOfDaughters();
       bool passLooseId(nhf<0.99  && nef<0.99 && nconst>1);
       bool passMediumId(nhf<0.95 && nef<0.95 && nconst>1);
       bool passTightId(nhf<0.90  && nef<0.90 && nconst>1);
@@ -721,7 +723,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	passMediumId &= (chf>0 && nch>0 && cef<0.99);
 	passTightId  &= (chf>0 && nch>0 && cef<0.99);
       }
-      if(jet->pt()<10 || fabs(jet->eta())>4.7 || !passLooseId) continue;
+      if(jet->pt()<10 || fabs(jet->eta())>4.7 /*|| !passLooseId*/) continue;
       
       //save information
       ev.jn_px[ev.jn]          = jet->px();
