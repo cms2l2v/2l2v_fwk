@@ -90,6 +90,8 @@ int main(int argc, char* argv[])
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
 
+  float minJetPtToApply(30);
+
 
   std::vector<int> jacknifeCfg=runProcess.getParameter<std::vector<int> >("jacknife");
   int jacknife(jacknifeCfg[0]), jacks(jacknifeCfg[1]);
@@ -214,13 +216,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("nup",";NUP;Events",10,0,10) );
   mon.addHistogram( new TH1F("nupfilt",";NUP;Events",10,0,10) );
 
-  h=mon.addHistogram( new TH1F ("jeteventflow", ";;Events", 5,0,5) );
-  h->GetXaxis()->SetBinLabel(1,"=0 jets");
-  h->GetXaxis()->SetBinLabel(2,"=1 jets");
-  h->GetXaxis()->SetBinLabel(3,"=2 jets");
-  h->GetXaxis()->SetBinLabel(4,"=3 jets");
-  h->GetXaxis()->SetBinLabel(5,"#geq 4 jets"); 
-
   //pileup control
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
@@ -254,12 +249,29 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zmass",   ";M^{ll};Events", 100,40,250) );
 
   //jet control
-  mon.addHistogram( new TH1F("jetpt"       , ";p_{T} [GeV];Events",50,0,250) );
-  mon.addHistogram( new TH1F("jeteta"       , ";|#eta|;Events",25,0,5) );
-  h=mon.addHistogram( new TH1F("njets",  ";Jet multiplicity (p_{T}>30 GeV);Events",5,0,5) );
-  
+  mon.addHistogram( new TH2F("jetptvseta", ";p_{T} [GeV];|#eta|;Events",50,0,400,25,0,5) );
+  mon.addHistogram( new TH1F("jetgt3pt",        ";p_{T} [GeV];Events",50,0,400) );
+  mon.addHistogram( new TH1F("jetgt3nhf",       ";Neutral hadron fraction;Events",50,0,1) );
+  mon.addHistogram( new TH1F("jetgt3nemf",      ";Neutral e.m. fraction;Events",50,0,1) );
+  mon.addHistogram( new TH1F("jetgt3chf",       ";Charged hadron fraction;Events",50,0,1) );
+  mon.addHistogram( new TH1F("jetgt3ptrms",     ";p_{T} RMS [GeV];Events",50,0,0.2) );
+  for(size_t ijesvar=0; ijesvar<3; ijesvar++)
+    {
+      TString pf("");
+      if(ijesvar==1) pf+="_jesup";
+      if(ijesvar==2) pf+="_jesdown";
+      mon.addHistogram( new TH1F("jetpt"+pf       , ";p_{T} [GeV];Events",50,0,400) );
+      mon.addHistogram( new TH1F("jeteta"+pf       , ";|#eta|;Events",25,0,5) );
+      h=mon.addHistogram( new TH1F ("njets"+pf, ";Jet multiplicity;Events", 5,0,5) );
+      h->GetXaxis()->SetBinLabel(1,"=0 jets");
+      h->GetXaxis()->SetBinLabel(2,"=1 jets");
+      h->GetXaxis()->SetBinLabel(3,"=2 jets");
+      h->GetXaxis()->SetBinLabel(4,"=3 jets");
+      h->GetXaxis()->SetBinLabel(5,"#geq 4 jets"); 
+    }
+
   //vbf control
-  mon.addHistogram( new TH2F("njetsvsavginstlumi",  ";;Jet multiplicity (p_{T}>30 GeV);Events",5,0,5,10,0,5000) );
+  mon.addHistogram( new TH2F("njetsvsavginstlumi",  ";;Jet multiplicity;Events",5,0,5,10,0,5000) );
   mon.addHistogram( new TH1F("vbfcandjeteta"     , ";#eta;Jets",                                 50,0,5) );
   mon.addHistogram( new TH1F("vbfcandjetpt"      , ";p_{T} [GeV];Jets",                        50,0,500) );
   mon.addHistogram( new TH1F("vbfcandjet1eta"    , ";#eta;Jets",                                 50,0,5) );
@@ -305,9 +317,9 @@ int main(int argc, char* argv[])
   //statistical analysis
   std::vector<double> optim_Cuts2_jet_pt1; 
   std::vector<double> optim_Cuts2_jet_pt2; 
-  for(double jet_pt1=30;jet_pt1<=130;jet_pt1+=10)
+  for(double jet_pt1=minJetPtToApply;jet_pt1<=130;jet_pt1+=5)
     {
-      for(double jet_pt2=30;jet_pt2<=jet_pt1;jet_pt2+=10)
+      for(double jet_pt2=minJetPtToApply;jet_pt2<=jet_pt1;jet_pt2+=5)
 	{
 	  optim_Cuts2_jet_pt1.push_back(jet_pt1);
 	  optim_Cuts2_jet_pt2.push_back(jet_pt2);
@@ -653,7 +665,7 @@ int main(int argc, char* argv[])
       //JET/MET ANALYSIS
       //
       data::PhysicsObjectCollection_t selJets;
-      int njets30(0);
+      int njets(0);
       for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
 	  //correct jet
@@ -680,9 +692,11 @@ int main(int argc, char* argv[])
 	  Int_t idbits=jets[ijet].get("idbits");
 	  bool passPFloose( ((idbits>>0) & 0x1));
 	  if(!passPFloose) continue;
-	  int puId = ((idbits>>3) & 0xf);
-	  bool passLoosePU( (puId>>2) & 0x1 );
-	  if(!passLoosePU) continue;
+	  //bool passPFmedium( ((idbits>>1) & 0x1));
+	  //if(!passPFmedium) continue;
+	  //int puId = ((idbits>>3) & 0xf);
+	  // bool passLoosePU( (puId>>2) & 0x1 );
+	  //if(!passLoosePU) continue;
 	  
 	  //add scale/resolution uncertainties
 	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
@@ -695,7 +709,7 @@ int main(int argc, char* argv[])
 	  jets[ijet].setVal("jesdown", isMC ? smearPt[1] : jets[ijet].pt());
 
 	  selJets.push_back(jets[ijet]);
-	  if(jets[ijet].pt()>30) njets30++;
+	  if(jets[ijet].pt()>minJetPtToApply) njets++;
 	}
       std::sort(selJets.begin(), selJets.end(), data::PhysicsObject_t::sortByPt);
       
@@ -706,7 +720,7 @@ int main(int argc, char* argv[])
       int ncjv(0), ncjv15(0),ncjv20(0), htcjv(0), htcjv15(0),htcjv20(0);
       float pt3(0), ystar3(0);
       float ptmiss(0),metL(0);
-      if(njets30>=2)
+      if(njets>=2)
 	{
 	  LorentzVector jet1=selJets[0];
 	  LorentzVector jet2=selJets[1];
@@ -792,7 +806,7 @@ int main(int argc, char* argv[])
 	  if(passZmass)                                      mon.fillHisto("eventflow",tags,1,weight);
 	  if(passZmass && passZpt)                           mon.fillHisto("eventflow",tags,2,weight);
 	  if(passZmass && passZpt && passZeta)               mon.fillHisto("eventflow",tags,3,weight);
-	  if(passZmass && passZpt && passZeta && njets30>1)  mon.fillHisto("eventflow",tags,4,weight);
+	  if(passZmass && passZpt && passZeta && njets>1)  mon.fillHisto("eventflow",tags,4,weight);
 
 	  mon.fillHisto("zmass",    tags, zll.mass(), weight);  
 	  if(passZmass){
@@ -811,15 +825,9 @@ int main(int argc, char* argv[])
 	    mon.fillHisto("zpt"      , tags, zll.pt(),  weight);      
 	    mon.fillHisto("zeta"     , tags, zll.eta(), weight);
 	    mon.fillHisto("zy"       , tags, zy,        weight);
-	    mon.fillHisto("jeteventflow",tags, njets30, weight);
-	    for(size_t ijet=0; ijet<selJets.size(); ijet++)
-	      {
-		mon.fillHisto("jetpt",  tags, selJets[ijet].pt(),weight);
-		mon.fillHisto("jeteta", tags, fabs(selJets[ijet].eta()),weight);
-	      }
-
+	    
 	    //balance control
-	    if(njets30==1){
+	    if(njets==1){
 	      float dphi=deltaPhi(selJets[0].phi(),zll.phi());
 	      if(fabs(dphi)>2.7){
 	    
@@ -846,9 +854,36 @@ int main(int argc, char* argv[])
 	      mon.fillHisto("leadpt"    ,  tags, leadingLep.pt(),  weight);
 	      mon.fillHisto("trailereta",  tags, trailerLep.eta(), weight);
 	      mon.fillHisto("trailerpt",   tags, trailerLep.pt(),  weight);
-	      mon.fillHisto("njets",       tags, njets30,          weight);
-
-	      if(njets30>=2)
+	    
+	      //analyze jet kinematics
+	      for(size_t ijesvar=0; ijesvar<3; ijesvar++)
+		{
+		  TString pf("");
+		  int njets_ivar(0);
+		  for(size_t ijet=0; ijet<selJets.size(); ijet++)
+		    {
+		      float pt( selJets[ijet].pt() );
+		      if(ijesvar==1) { pf="_jesup";   pt=selJets[ijet].getVal("jesup"); }
+		      if(ijesvar==2) { pf="_jesdown"; pt=selJets[ijet].getVal("jesdown"); }
+		      if(pt>minJetPtToApply){
+			njets_ivar++;
+			if(ijesvar==0){
+			  mon.fillHisto("jetptvseta",  tags,pt,fabs(selJets[ijet].eta()),weight);
+			  mon.fillHisto("jetgt3pt",    tags,pt,weight);
+			  mon.fillHisto("jetgt3nhf",   tags,selJets[ijet].getVal("neutHadFrac"),weight);
+			  mon.fillHisto("jetgt3nemf",  tags,selJets[ijet].getVal("neutEmFrac"), weight);
+			  mon.fillHisto("jetgt3chf",   tags,selJets[ijet].getVal("chHadFrac"),  weight);
+			  mon.fillHisto("jetgt3ptrms", tags,selJets[ijet].getVal("ptRMS"),      weight);
+			}
+			mon.fillHisto("jetpt"+pf,  tags, pt, weight);
+			mon.fillHisto("jeteta"+pf, tags, fabs(selJets[ijet].eta()), weight);
+		      }
+		    }
+		  mon.fillHisto("njets"+pf,tags, njets_ivar, weight);
+		}
+	      
+	      
+	      if(njets>=2)
 		{
 		  std::vector<TString> selTags;
 		  selTags = getDijetCategories(mjj,detajj,tags);
@@ -862,7 +897,7 @@ int main(int argc, char* argv[])
 	      
 		  mon.fillHisto("qt",                 selTags, zll.pt(), weight,true);      
 		  mon.fillHisto("rapidity"     ,      selTags, fabs(zy),    weight);
-		  mon.fillHisto("njetsvsavginstlumi", selTags, njets30,ev.instLumi,weight);
+		  mon.fillHisto("njetsvsavginstlumi", selTags, njets,ev.instLumi,weight);
 		  mon.fillHisto("vbfcandjetpt",       selTags, maxPt,weight);
 		  mon.fillHisto("vbfcandjetpt",       selTags, minPt,weight);
 		  mon.fillHisto("vbfcandjet1pt",      selTags, maxPt,weight);
@@ -948,14 +983,16 @@ int main(int argc, char* argv[])
 		  if(ivar==2) pt=jets[ijet].getVal("jesdown");
 		  if(ivar==3) pt=jets[ijet].getVal("jerup");
 		  if(ivar==4) pt=jets[ijet].getVal("jerdown");
-		  if(pt<30 || fabs(jets[ijet].eta())>4.7) continue;
+		  if(pt<minJetPtToApply || fabs(jets[ijet].eta())>4.7) continue;
 	      
 		  Int_t idbits=jets[ijet].get("idbits");
 		  bool passPFloose( ((idbits>>0) & 0x1));
 		  if(!passPFloose) continue;
-	      	  int puId = ((idbits>>3) & 0xf);
-		  bool passLoosePU( (puId>>2) & 0x1 );
-		  if(!passLoosePU) continue;
+		  //bool passPFmedium( ((idbits>>1) & 0x1));
+		  //if(!passPFmedium) continue;
+	      	  //int puId = ((idbits>>3) & 0xf);
+		  //bool passLoosePU( (puId>>2) & 0x1 );
+		  //if(!passLoosePU) continue;
 
 		  data::PhysicsObject_t iSelJet(jets[ijet]);
 		  iSelJet *= pt/rawpt;
@@ -1016,9 +1053,9 @@ int main(int argc, char* argv[])
 	    //
 	    //N-1 CONTROL
 	    //
-	    if(           passZeta && (njets30>=2))   { mon.fillHisto("zptNM1"      ,   tags, zll.pt(),     weight); }
-	    if(passZpt             && (njets30>=2))   { mon.fillHisto("zetaNM1"     ,   tags, zll.eta(),    weight);  mon.fillHisto("zyNM1"     , tags, zy,    weight);}
-	    if(passZpt && passZeta && (njets30>=2))
+	    if(           passZeta && (njets>=2))   { mon.fillHisto("zptNM1"      ,   tags, zll.pt(),     weight); }
+	    if(passZpt             && (njets>=2))   { mon.fillHisto("zetaNM1"     ,   tags, zll.eta(),    weight);  mon.fillHisto("zyNM1"     , tags, zy,    weight);}
+	    if(passZpt && passZeta && (njets>=2))
 	      {
 		mon.fillHisto  ("mjjvsdetajj",       tags, detajj, mjj, weight);
 		mon.fillHisto  ("detajjvsmjj",       tags, mjj,    detajj, weight);

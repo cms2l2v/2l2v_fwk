@@ -9,6 +9,7 @@
 #include "TStyle.h"
 #include "TLegend.h"
 #include "TPaveText.h"
+#include "THStack.h"
 
 #include <iostream>
 
@@ -37,6 +38,95 @@ void showCMSHeader(TObject *data=0, TObject *mc=0)
   leg->Draw();
 }
 
+void drawDistributionWithVariations(TString dist="mumu_jetpt")
+{
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetPalette(1);
+  TString ch[]={"#alpha^{4}_{EW}-ll+2j","VV","QCD-W+jets","Top","Z#rightarrow ll"};
+  int colors[]={804,592,809,824,831};
+  const size_t nch(sizeof(ch)/sizeof(TString));
+  
+
+  THStack *stack=new THStack("MC","MC");
+  TH1 *totalMC=0,*totalMCup=0,*totalMCdown=0;
+  TLegend *leg=new TLegend(0.7,0.7,0.9,0.9,"","brNDC"); leg->SetBorderSize(0); leg->SetFillStyle(0); leg->SetTextFont(42);
+  TFile *llF=TFile::Open("~/work/ewkzp2j_539/plotter.root");
+  for(size_t i=0; i<nch; i++)
+    {
+      TH1 *h=(TH1 *)llF->Get(ch[i]+"/"+dist);            
+      h->SetTitle(ch[i]);
+      h->SetFillColor(colors[i]);
+      h->SetFillStyle(1001);
+      //      cout << ch[i]+"/"+dist << " " << h << endl;
+      h->SetDirectory(0);
+      TH1 *hup=(TH1 *)llF->Get(ch[i]+"/"+dist+"_jesup");        hup->SetDirectory(0);
+      TH1 *hdown=(TH1 *)llF->Get(ch[i]+"/"+dist+"_jesdown");    hdown->SetDirectory(0);
+      if(totalMC==0){
+	totalMC=(TH1 *)h->Clone("totalmc");         totalMC->Reset("ICE");     totalMC->SetDirectory(0);
+	totalMCup=(TH1 *)h->Clone("totalmcup");     totalMCup->Reset("ICE");   totalMCup->SetDirectory(0);
+	totalMCdown=(TH1 *)h->Clone("totalmcdown"); totalMCdown->Reset("ICE"); totalMCdown->SetDirectory(0);
+      }
+      stack->Add(h,"HIST");
+      totalMC->Add(h);
+      totalMCup->Add(hup);
+      totalMCdown->Add(hdown);
+      leg->AddEntry(h,h->GetTitle(),"F");
+    }
+  TH1 *data=(TH1*)llF->Get("data/"+dist); data->SetDirectory(0);
+  leg->AddEntry(data,"data","p");
+  llF->Close();
+
+  TCanvas *c=new TCanvas("c","c",600,600);
+  TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
+  t1->Draw();
+  t1->SetLogy();
+  t1->cd();
+  stack->Draw("");
+  stack->GetXaxis()->SetTitle(data->GetXaxis()->GetTitle());
+  stack->GetYaxis()->SetTitle(data->GetYaxis()->GetTitle());
+  stack->GetYaxis()->SetRangeUser(0.5,data->GetMaximum()*1.1);
+  data->Draw("e1same");
+  leg->Draw();
+  showCMSHeader();
+
+  c->cd();
+  TPad* t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);
+  t2->Draw();
+  t2->cd();
+  t2->SetGridy(true);
+  t2->SetPad(0,0.0,1.0,0.2);
+  t2->SetTopMargin(0);
+  t2->SetBottomMargin(0.5);
+  TH1 *nomRatio=(TH1 *)data->Clone("nomratio"); 
+  nomRatio->Divide(totalMC); 
+  nomRatio->SetDirectory(0); 
+  nomRatio->SetMarkerStyle(20); 
+  nomRatio->SetMarkerColor(1); 
+  nomRatio->SetLineColor(1); 
+  nomRatio->Draw("e1");
+  nomRatio->GetYaxis()->SetTitle("Data/#Sigma MC");
+  nomRatio->GetXaxis()->SetTitle("");
+  nomRatio->GetYaxis()->SetRangeUser(0.46,1.54);
+  nomRatio->GetYaxis()->SetTitleSize(0.12);
+  nomRatio->GetYaxis()->SetTitleOffset(0.5);
+  nomRatio->GetYaxis()->SetLabelSize(0.1);
+  nomRatio->GetXaxis()->SetTitleSize(0.12);
+  nomRatio->GetXaxis()->SetLabelSize(0.1);
+  TH1 *upRatio=(TH1 *)data->Clone("upratio"); 
+  upRatio->Divide(totalMCup); 
+  upRatio->SetLineColor(kRed);
+  upRatio->Draw("histsame");
+  TH1 *downRatio=(TH1 *)data->Clone("downratio"); 
+  downRatio->Divide(totalMCdown); 
+  downRatio->SetLineColor(kBlue);
+  downRatio->Draw("histsame");
+
+  c->cd();
+  c->Modified();
+  c->Update();
+}
+
 
 void profileDistributions()
 {
@@ -45,13 +135,13 @@ void profileDistributions()
   gStyle->SetPalette(1);
 
   TFile *llF=TFile::Open("~/work/ewkzp2j_539/plotter.root");
-  TFile *gF=TFile::Open("~/work/ewkzp2j_539/plotter_g_raw.root");
+  //  TFile *gF=TFile::Open("~/work/ewkzp2j_539/plotter_g_raw.root");
   
   TString profs[]={//"recoilbalancevseta",
-		   "recoilbalancevseta30to50",
+    //"recoilbalancevseta30to50",
 		   "recoilbalancevseta50toInf"};
   TString cats[]={//"inclusive",
-		  "30<p_{T}/GeV<50",
+    // "30<p_{T}/GeV<50",
 		  "p_{T}>50 GeV"};
   const size_t nprofs=sizeof(profs)/sizeof(TString);
 
@@ -67,27 +157,18 @@ void profileDistributions()
   TObjArray toSave;
   for(size_t ich=0; ich<nch; ich++)
     {
-      TCanvas *c=new TCanvas("c"+ch[ich],"c"+ch[ich],600,600); c->Divide(1,3);
-      TCanvas *cg=new TCanvas("cg","cg",600,600);              cg->Divide(1,3);
+      TCanvas *c=new TCanvas("c"+ch[ich],"c"+ch[ich],600,600); c->Divide(1,nprofs);
+      TCanvas *cg=new TCanvas("cg","cg",600,600);              cg->Divide(1,nprofs);
 
-      TCanvas *cr=new TCanvas("cr"+ch[ich],"cr"+ch[ich],600,600); cr->Divide(1,3);
-      TCanvas *cgr=new TCanvas("cgr","cgr",600,600);              cgr->Divide(1,3);
+      TCanvas *cr=new TCanvas("cr"+ch[ich],"cr"+ch[ich],600,600); cr->Divide(1,nprofs);
+      TCanvas *cgr=new TCanvas("cgr","cgr",600,600);              cgr->Divide(1,nprofs);
 
       for(size_t i=0; i<nprofs; i++)
 	{
 	  TH2 *dyMC   = (TH2 *) llF->Get("Z#rightarrow ll/"+ch[ich]+"_"+profs[i]); 
 	  TH2 *dyData = (TH2 *) llF->Get("data/"+ch[ich]+"_"+profs[i]);            
-	  cout << dyMC << " " << dyData << endl;
 	  dyMC->SetDirectory(0);
 	  dyData->SetDirectory(0);
-
-	  TH2 *gMC   = (TH2 *) gF->Get("#gamma+jets/"+ch[ich]+"_"+profs[i]); 
-	  cout << gMC << endl;
-	  gMC->Add(    (TH2 *) gF->Get("Multijets/"+ch[ich]+"_"+profs[i]) ); 
-	  TH2 *gData = (TH2 *) gF->Get("data (#gamma)/"+ch[ich]+"_"+profs[i]);            
-	  cout << gData << endl;
-	  gMC->SetDirectory(0);
-	  gData->SetDirectory(0);
 	  
 	  TH1D *dyMCProfH   = dyMC->ProfileX("dymcprof");
 	  TGraphErrors *dyMCProf   = new TGraphErrors(dyMCProfH);
@@ -103,6 +184,13 @@ void profileDistributions()
 	  TGraph *dyRatio = new TGraph(dyDataProfH); 
 	  dyRatio->SetName(ch[ich]+profs[i]+"dydata2mc");
 
+	  /*
+	  TH2 *gMC   = (TH2 *) gF->Get("#gamma+jets/"+ch[ich]+"_"+profs[i]); 
+	  gMC->Add(    (TH2 *) gF->Get("Multijets/"+ch[ich]+"_"+profs[i]) ); 
+	  TH2 *gData = (TH2 *) gF->Get("data (#gamma)/"+ch[ich]+"_"+profs[i]);            
+	  gMC->SetDirectory(0);
+	  gData->SetDirectory(0);
+
 	  TH1D *gMCProfH = gMC->ProfileX("gmcprof");
 	  TGraphErrors *gMCProf    = new TGraphErrors(gMCProfH);    
 	  gMCProf->SetMarkerStyle(24);  
@@ -116,10 +204,12 @@ void profileDistributions()
 	  gDataProfH->Divide(gMCProfH);
 	  TGraph *gRatio = new TGraph(gDataProfH);
 	  gRatio->SetName(ch[ich]+profs[i]+"gdata2mc");
-	  
+	  */
 	  toSave.Add(dyRatio);
+	  
+	  /*
 	  toSave.Add(gRatio);
-
+	  */
 	  //
 	  TPad *p=(TPad *)c->cd(i+1);
 	  if(i<nprofs-1) p->SetBottomMargin(0.01);
@@ -166,6 +256,7 @@ void profileDistributions()
 	  pt->Clone()->Draw();
 
 	  //
+	  /*
 	  p=(TPad *)cg->cd(i+1);
 	  if(i<nprofs-1) p->SetBottomMargin(0.01);
 	  if(i>0) p->SetTopMargin(0);
@@ -193,6 +284,7 @@ void profileDistributions()
 	  gRatio->Draw("l");
 	  if(i==0) showCMSHeader();
 	  pt->Clone()->Draw();
+	  */
 	}
 
       c->SaveAs(ch[ich]+"jetresponse.pdf");
@@ -201,7 +293,7 @@ void profileDistributions()
       cgr->SaveAs("gjetresponseSF.pdf");
     }
   llF->Close();
-  gF->Close();
+  // gF->Close();
   
 
   //save the results

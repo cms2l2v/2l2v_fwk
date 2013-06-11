@@ -43,42 +43,52 @@
          "data":[
 	        {	
 		 "dtag":"MC8TeV_GJets_50to80",
+		 "split":2,
 		 "xsec":3322.309
 	        },
 	        {	
 		  "dtag":"MC8TeV_GJets_80to120",
+		  "split":2,
 		  "xsec":558.2865
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_120to170",
+ 		  "split":2,
 		  "xsec":108.0068
 	        },		
 	        {
 		  "dtag":"MC8TeV_GJets_170to300",
+		  "split":2,
 		  "xsec":30.12207
 		},
 	        {
 	  	  "dtag":"MC8TeV_GJets_300to470",
+ 		  "split":2,
 		  "xsec":2.138632
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_470to800",
+		  "split":2,
 		  "xsec":0.2119244
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_800to1400",
+		  "split":2,
 		  "xsec":0.007077847
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_1400to1800",
+		  "split":2,
 		  "xsec":0.00004510327
 		},
 	        {
 		  "dtag":"MC8TeV_GJets_1800toInf",
+		  "split":2,
 		  "xsec":0.000001867141
 	        },
 	        {	
 		  "dtag":"MC8TeV_DiPhotons",
+	 	  "split":2,
 		  "xsec":75.39	
 	        }
 	    ]

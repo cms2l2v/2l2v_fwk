@@ -435,22 +435,24 @@ int main(int argc, char* argv[])
       if(isOS && isZcand          && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("zeq1jets");
       if(isOS && isZcand          && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("zlowmet");
       if(isOS && isZcand          && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("zeq1jetslowmet");
-      weight *= dyWeight;
 
       //control distributions
       for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	{
+	  float iweight(weight);
+	  if(passMetSelection) iweight *= dyWeight;
+
 	  for(size_t ilep=0; ilep<2; ilep++)
 	    {
 	      if(abs(selLeptons[ilep].get("id"))!=11) continue;
-	      controlHistos.fillHisto(ctrlCategs[icat]+"emva", ch, selLeptons[ilep].getVal("mvatrig"), weight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"emva", ch, selLeptons[ilep].getVal("mvatrig"), iweight);
 	    }
-	  controlHistos.fillHisto(ctrlCategs[icat]+"mll",          ch, mll,            weight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"ptll",         ch, ll.pt(),        weight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"mtsum",        ch, mtsum,          weight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"dilarccosine", ch, thetall,        weight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"met",          ch, met[0].pt(),    weight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"njets",        ch, selJets.size(), weight);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"mll",          ch, mll,            iweight);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"ptll",         ch, ll.pt(),        iweight);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"mtsum",        ch, mtsum,          iweight);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"dilarccosine", ch, thetall,        iweight);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"met",          ch, met[0].pt(),    iweight);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"njets",        ch, selJets.size(), iweight);
 	  
 	  for(size_t ijet=0; ijet<looseJets.size(); ijet++)
 	    {
@@ -462,11 +464,11 @@ int main(int argc, char* argv[])
 	      else if(abs(flavId)>6)                flavId=1;
 	      else if(abs(flavId)==0)               flavId=0;
 	      else                                  flavId=2;
-	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"pt",        ch, looseJets[ijet].pt(), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"eta",       ch, fabs(looseJets[ijet].eta()), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"flav",      ch, abs(flavId), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"nobsmearpt",ch, abs(flavId)==5 ? looseJets[ijet].pt() : looseJets[ijet].getVal("jer"), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"smearpt",   ch,                                         looseJets[ijet].getVal("jer"), weight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"pt",        ch, looseJets[ijet].pt(), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"eta",       ch, fabs(looseJets[ijet].eta()), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"flav",      ch, abs(flavId), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"nobsmearpt",ch, abs(flavId)==5 ? looseJets[ijet].pt() : looseJets[ijet].getVal("jer"), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"pt"+label+"smearpt",   ch,                                         looseJets[ijet].getVal("jer"), iweight);
 	    }
 	  
 	  for(size_t ijet=0; ijet<selJets.size(); ijet++)
@@ -478,16 +480,16 @@ int main(int argc, char* argv[])
 	      else if(abs(flavId)>6)                flavId=1;
 	      else if(abs(flavId)==0)               flavId=0;
 	      else                                  flavId=2;
-	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"pt",        ch, selJets[ijet].pt(), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"eta",       ch, fabs(selJets[ijet].eta()), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"flav",      ch, abs(flavId), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"nobsmearpt",ch, abs(flavId)==5 ? selJets[ijet].pt() : selJets[ijet].getVal("jer"), weight);
-	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"smearpt",   ch,                                       selJets[ijet].getVal("jer"), weight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"pt",        ch, selJets[ijet].pt(), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"eta",       ch, fabs(selJets[ijet].eta()), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"flav",      ch, abs(flavId), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"nobsmearpt",ch, abs(flavId)==5 ? selJets[ijet].pt() : selJets[ijet].getVal("jer"), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"smearpt",   ch,                                       selJets[ijet].getVal("jer"), iweight);
 	    }
 	}
 
       
-      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weight,weightUp,weightDown);
+      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weight*dyWeight,weightUp*dyWeight,weightDown*dyWeight);
       if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 
       //select the event
@@ -498,18 +500,20 @@ int main(int argc, char* argv[])
       controlHistos.fillHisto("evtflow", ch, 2, weight);
 
       if(passMetSelection) {
-	controlHistos.fillHisto("evtflow", ch, 3, weight);
+	
+	float iweight = weight*dyWeight;
+	controlHistos.fillHisto("evtflow", ch, 3, iweight);
 
 	if(isOS) {
-	  controlHistos.fillHisto("evtflow", ch, 4, weight);
+	  controlHistos.fillHisto("evtflow", ch, 4, iweight);
 	  if(spyEvents){
 	    spyEvents->getEvent().cat=dilId;
-	    evSummaryWeight=xsecWeight*weight;
+	    evSummaryWeight=xsecWeight*iweight;
 	    spyEvents->getTree()->Fill();
 	  }
 	}
       }
-
+      
       //UE event analysis (no need to require MET, after 2-btags the events will be pure in ttbar)
       float nbtags(0);
       for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
