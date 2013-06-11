@@ -27,7 +27,7 @@
            ]
         },
 	{
-	"tag":"W+jets/multijets",
+	"tag":"W+jets,multijets",
         "isdata":false,
 	"color":"809",
 	"lcolor":1,
