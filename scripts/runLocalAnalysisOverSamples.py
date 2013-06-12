@@ -1,26 +1,9 @@
 #!/usr/bin/env python
 import os,sys
 import json
-import ROOT
-import getopt
+import optparse
 import commands
 import LaunchOnCondor
-
-#print usage
-def usage() :
-    print ' '
-    print 'runLocalAnalysisOverSamples.py [options]'
-    print '  -s : submit to queue'
-    print '  -e : executable name'
-    print '  -j : json file containing the samples'
-    print '  -d : input dir with the event summaries'
-    print '  -o : output directory'
-    print '  -c : templated configuration file to steer the job'
-    print '  -l : luminosity (pb)'
-    print '  -p : extra parameters configure'
-    print '  -t : tag to match sample'
-    print ' '
-    exit(-1)
 
 """
 Gets the value of a given item
@@ -33,61 +16,42 @@ def getByLabel(desc,key,defaultVal=None) :
         return defaultVal
 
 
-#parse the options 
-try:
-     # retrive command line options
-     shortopts  = "s:e:j:d:o:c:l:p:t:h?"
-     opts, args = getopt.getopt( sys.argv[1:], shortopts )
-except getopt.GetoptError:
-     # print help information and exit:
-     print "ERROR: unknown options in argument %s" % sys.argv[1:]
-     usage()
-     sys.exit(1)
+#configure
+usage = 'usage: %prog [options]'
+parser = optparse.OptionParser(usage)
+parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='excecutable'                           , default='')
+parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue'                           , default='')
+parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'           , default='pool>30000')
+parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                     , default='')
+parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'   , default='aoddir')
+parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                      , default='')
+parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag', default='all')
+parser.add_option('-n', '--n'          ,    dest='fperjob'            , help='input files per job'                   , default=-1,  type=int)
+parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
+parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'      , default='')
+(opt, args) = parser.parse_args()
+scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
 
-subtoBatch=False
-requirementtoBatch='type==SLC5_64&&pool>30000'
-samplesDB=''
-theExecutable=''
-inputdir=''
-outdir=''
-lumi=1
-cfg_file=''
 split=1
 segment=0
-params=''
-onlytag='all'
-for o,a in opts:
-    if o in("-?", "-h"):
-        usage()
-        sys.exit(0)
-    elif o in('-s'):
-        subtoBatch=True
-        queue=a
-        if(queue=="True") : queue="2nd"
-    elif o in('-j'): samplesDB = a
-    elif o in('-e'): theExecutable = a
-    elif o in('-d'): inputdir = a
-    elif o in('-o'): outdir = a
-    elif o in('-l'): lumi=float(a)
-    elif o in('-c'): cfg_file = a
-    elif o in('-p'): params = a
-    elif o in('-t'): onlytag = a
                                         
 #open the file which describes the sample
-jsonFile = open(samplesDB,'r')
+jsonFile = open(opt.samplesDB,'r')
 procList=json.load(jsonFile,encoding='utf-8').items()
 
-FarmDirectory                      = outdir+"/FARM"
-JobName                            = theExecutable
+FarmDirectory                      = opt.outdir+"/FARM"
+JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
-LaunchOnCondor.Jobs_Queue          = queue
-LaunchOnCondor.Jobs_LSFRequirement = '"type==SLC5_64&&pool>30000"'
+LaunchOnCondor.Jobs_Queue          = opt.queue
+LaunchOnCondor.Jobs_LSFRequirement = opt.requirementtoBatch
 LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
 #run over sample
 for proc in procList :
+
     #run over processes
     for desc in proc[1] :
+
         #run over items in process
         isdata=getByLabel(desc,'isdata',False)
         mctruthmode=getByLabel(desc,'mctruthmode',0)
@@ -99,9 +63,8 @@ for proc in procList :
             xsec = getByLabel(d,'xsec',-1)
             br = getByLabel(d,'br',[])
             suffix = str(getByLabel(d,'suffix' ,""))
-            if(onlytag!='all') :
-                if(dtag.find(onlytag)<0) : continue
-            if(mctruthmode!=0) : dtag+='_filt'+str(mctruthmode)
+            if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
+            if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)
                                 
             if(xsec>0 and not isdata) :
                 for ibr in br :  xsec = xsec*ibr
@@ -109,42 +72,46 @@ for proc in procList :
 
 	    for segment in range(0,split) :
                 if(split==1): 
-	            	eventsFile=inputdir + '/' + origdtag + '.root'
+                    eventsFile=opt.indir + '/' + origdtag + '.root'
                 else:
-                        eventsFile=inputdir + '/' + origdtag + '_' + str(segment) + '.root'
+                    eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
 
                 if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
 
-            	sedcmd = 'sed \"s%@input%' + eventsFile +'%;s%@outdir%' + outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
+                #create the cfg file
+            	sedcmd = 'sed \"s%@input%' + eventsFile +'%;s%@outdir%' + opt.outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
                 sedcmd += 's%@cprime%'+str(getByLabel(d,'cprime',-1))+'%;'
                 sedcmd += 's%@brnew%' +str(getByLabel(d,'brnew' ,-1))+'%;'
                 sedcmd += 's%@suffix%' +suffix+'%;'
-            	if(params.find('@useMVA')<0) :          params = '@useMVA=False ' + params
-                if(params.find('@weightsFile')<0) :     params = '@weightsFile= ' + params
-                if(params.find('@evStart')<0) :         params = '@evStart=0 ' + params
-                if(params.find('@evEnd')<0) :           params = '@evEnd=-1 ' + params
-            	if(params.find('@saveSummaryTree')<0) : params = '@saveSummaryTree=False ' + params
-            	if(params.find('@runSystematics')<0) :  params = '@runSystematics=False ' + params
-            	if(len(params)>0) :
-                    extracfgs = params.split(' ')
+            	if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
+                if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
+                if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
+                if(opt.params.find('@evEnd')<0) :           opt.params = '@evEnd=-1 '     + opt.params
+            	if(opt.params.find('@saveSummaryTree')<0) : opt.params = '@saveSummaryTree=False ' + opt.params
+            	if(opt.params.find('@runSystematics')<0) :  opt.params = '@runSystematics=False '  + opt.params
+                if(opt.params.find('@jacknife')<0) :        opt.params = '@jacknife=-1 ' + opt.params
+                if(opt.params.find('@jacks')<0) :           opt.params = '@jacks=-1 '    + opt.params
+            	if(len(opt.params)>0) :
+                    extracfgs = opt.params.split(' ')
                     for icfg in extracfgs :
                         varopt=icfg.split('=')
                         if(len(varopt)<2) : continue
                         sedcmd += 's%' + varopt[0] + '%' + varopt[1] + '%;'
             	sedcmd += '\"'
-
-
 		if(split==1): 
-	            	cfgfile=outdir +'/'+ dtag + suffix + '_cfg.py'
+                    cfgfile=opt.outdir +'/'+ dtag + suffix + '_cfg.py'
 		else:
-                        cfgfile=outdir +'/'+ dtag + suffix + '_' + str(segment) + '_cfg.py'
-            	os.system('cat ' + cfg_file + ' | ' + sedcmd + ' > ' + cfgfile)
-            	if(not subtoBatch) :
-                	os.system(theExecutable + ' ' + cfgfile)
-            	else :
-			#print('submit2batch.sh -q' + queue + ' -R"' + requirementtoBatch + '" -J' + dtag + str(segment) + ' ${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh ' + theExecutable + ' ' + cfgfile)
-#			os.system('submit2batch.sh -q' + queue + ' -R"' + requirementtoBatch + '" -J' + dtag + str(segment) + ' ${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh ' + theExecutable + ' ' + cfgfile)
-                        LaunchOnCondor.SendCluster_Push(["BASH", str(theExecutable + ' ' + cfgfile)])
+                    cfgfile=opt.outdir +'/'+ dtag + suffix + '_' + str(segment) + '_cfg.py'
+                os.system('cat ' + opt.cfg_file + ' | ' + sedcmd + ' > ' + cfgfile)
+
+                #run the job
+                if len(opt.queue)==0 :
+                    os.system(opt.theExecutable + ' ' + cfgfile)
+                else :
+                    #old version
+                    #localParams='-exe=%s -cfg=%s'%(opt.theExecutable,cfgfile)
+                    #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],segment,scriptFile,localParams)
+                    #os.system(batchCommand)
+                    LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
 
 LaunchOnCondor.SendCluster_Submit()
-

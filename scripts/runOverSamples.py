@@ -2,60 +2,28 @@
 
 import os,sys
 import json
-import getopt
+import optparse
 import commands
+from UserCode.llvv_fwk.storeTools_cff import fillFromStore
 import LaunchOnCondor
 
-#print usage
-def usage() :
-    print ' '
-    print 'runOverSamples.py [options]'
-    print '  -s : submit or not to batch'
-    print '  -R : host requirement when submitting to LSG'
-    print '  -j : json file containing the samples'
-    print '  -d : sample input dir as described in the json'
-    print '  -n : files to process per job'
-    print '  -p : parameters to pass to the job'
-    print ' - t : process only this tag'
-    print ' '
-    exit(-1)
+usage = 'usage: %prog [options]'
+parser = optparse.OptionParser(usage)
+parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue'                           , default='')
+parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'           , default='pool>30000')
+parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                     , default='')
+parser.add_option('-d', '--dir'        ,    dest='dirtag'             , help='input directory tag in json file'      , default='aoddir')
+parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag', default='all')
+parser.add_option('-n', '--n'          ,    dest='fperjob'            , help='input files per job'                   , default=-1,  type=int)
+parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
+(opt, args) = parser.parse_args()
 
-#parse the options 
-try:
-     # retrive command line options
-     shortopts  = "s:j:d:n:p:t:R:h?"
-     opts, args = getopt.getopt( sys.argv[1:], shortopts )
-except getopt.GetoptError:
-     # print help information and exit:
-     print "ERROR: unknown options in argument %s" % sys.argv[1:]
-     usage()
-     sys.exit(1)
 
-subtoBatch=''
-requirementtoBatch='type==SLC5_64&&pool>30000'
-samplesDB=''
-dirtag=''
-fperjob=-1
-params=''
-onlytag='all'
-for o,a in opts:
-    if o in("-?", "-h"):
-        usage()
-        sys.exit(0)
-    elif o in('-s'): subtoBatch=a
-    elif o in('-R'): requirementtoBatch=requirementtoBatch + '&&' + a.replace("'","").replace('"','')
-    elif o in('-j'): samplesDB = a
-    elif o in('-d'): dirtag = a
-    elif o in('-t'): onlytag = a
-    elif o in('-n'): fperjob=int(a)
-    elif o in('-p'): params = a
+scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
 
-jsonFile = open(samplesDB,'r')
+jsonFile = open(opt.samplesDB,'r')
 procList=json.load(jsonFile,encoding='utf-8').items()
-scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapSubmitLocalRun.sh')
-jobParamsList = params.split(' ')
-
-from CMGTools.HtoZZ2l2nu.localPatTuples_cff import fillFromCastor
+jobParamsList = opt.params.split(' ')
 
 #run over sample
 for proc in procList :
@@ -69,64 +37,63 @@ for proc in procList :
 
             alldirs=[]
             try :
-                alldirs = d[dirtag]
+                alldirs = d[opt.dirtag]
             except:
                 continue
-            
+
             #tag veto
-            if(onlytag!='all') :
+            if(opt.onlytag!='all') :
                 itag=d['dtag']
-                if(itag.find(onlytag)<0) : continue
-                
+                if(itag.find(opt.onlytag)<0) : continue
+
             idir=0
             for dir in alldirs:
                 idir=idir+1
-                filenames=fillFromCastor(dir,0,-1,False)
+                filenames=fillFromStore(dir,0,-1,False)
                 nfiles=len(filenames)
-                print dir
-                print nfiles
+                
                 njobs=1
 		sleep=0;
-                if(fperjob>0) : 
-			njobs=nfiles//fperjob
-			if(nfiles%fperjob>0):njobs = njobs+1
-			sleep=2*fperjob/6
+                if(opt.fperjob>0) : 
+                    njobs=nfiles//opt.fperjob
+                    if(nfiles%opt.fperjob>0):njobs = njobs+1
+                    sleep=2*opt.fperjob/6
                 
                 #substitute some job parameters by json file parameters
                 newParams=''
                 for ipar in jobParamsList :
-                    opt=ipar.split('=')[0]
-                    arg=ipar.split('=')[1]
-                    if(opt.find('-castor')<0):
+                    jobopt=ipar.split('=')[0]
+                    jobarg=ipar.split('=')[1]
+                    if(jobopt.find('-castor')<0):
                         newParams += ipar + ' '
                     else :
-                        if(arg.find('/')>=0):
+                        if(jobarg.find('/')>=0):
                             newParams += ipar + ' '
                         else :
                             newParams += '-castor=' + d[arg][0] + ' '
 
                 #submit the jobs
                 for ijob in range(njobs) :
-                    localParams = newParams + ' -src=' + dir + ' -tag=' + d['dtag']
-		    if(idir>1) : localParams += '_' + str(idir)
-                    if(fperjob>0) : localParams += ' -f=' + str(ijob*fperjob) + ' -step=' + str(fperjob)
+                    localParams = '%s -src=%s -tag=%s'%(newParams,dir,d['dtag'])
+		    if(idir>1) :        localParams += '_%d'%(idir)
+                    if(opt.fperjob>0) : localParams += " -f=%d -step=%d"%(opt.fperjob*ijob,opt.fperjob)
                     print "**** Starting new job with the following parameters ****"
                     print localParams
-                    if(len(subtoBatch)>0) :
-                        print('submit2batch.sh -q' + subtoBatch + ' -R"' + requirementtoBatch + '" -J' + d['dtag']+str(ijob) + ' ' + scriptFile + ' ' + localParams)
-                        #os.system('submit2batch.sh -q' + subtoBatch + ' -R"' + requirementtoBatch + '" -J' + d['dtag']+str(ijob) + ' ' + scriptFile + ' ' + localParams)
-			##os.system('sleep ' + str(sleep) + 's')   ##THIS WAS NEEDED ONLY FOR FILE ON CASTOR
+                    if(len(opt.queue)>0) :
+                        #old style 
+                        #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],ijob,scriptFile,localParams)
+                        #print batchCommand
+                        #os.system(batchCommand)
 
                         FarmDirectory                      = "FARM"
                         JobName                            = d['dtag']+str(ijob)
                         LaunchOnCondor.Jobs_RunHere        = 1
-                        LaunchOnCondor.Jobs_Queue          = str('"'+subtoBatch+'"')
-                        LaunchOnCondor.Jobs_LSFRequirement = str('"'+requirementtoBatch+'"')
+                        LaunchOnCondor.Jobs_Queue          = opt.queue
+                        LaunchOnCondor.Jobs_LSFRequirement = opt.requirementtoBatch
                         LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
                         LaunchOnCondor.SendCluster_Push(["BASH", str('submitLocalRun.sh '+ ' ' + localParams)])
                         LaunchOnCondor.SendCluster_Submit()
+
                     else :
-#			print(scriptFile + ' '  + localParams)
                         os.system(scriptFile + ' '  + localParams)
-
-
+                        
