@@ -159,12 +159,19 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
 
 
 #the analyzer
-process.load("UserCode.llvv_fwk.dataAnalyzer_cfi")
-if isTauEmbed:
-    process.dataAnalyzer.cfg.triggerCats[2]=1113
-    process.dataAnalyzer.cfg.triggerCats[3]=1113
-    
-    
+from UserCode.llvv_fwk.dataAnalyzer_cfi import *
+try:
+    if runDijetsAnalysis :
+        process.dataAnalyzer = dijetAnalyzer.clone()
+        print 'Running dijet version of the dataAnalyzer'
+except:
+    process.dataAnalyzer = dataAnalyzer.clone()
+    print 'Running standard dataAnalyzer'
+    if isTauEmbed:
+        process.dataAnalyzer.cfg.triggerCats[2]=1113
+        process.dataAnalyzer.cfg.triggerCats[3]=1113
+        print 'Tweaking for tau embedded samples'
+        
 #counters for specific filters
 process.startCounter = cms.EDProducer("EventCountProducer")
 process.scrapCounter = process.startCounter.clone()

@@ -320,7 +320,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       for(size_t it=0; it<triggerPaths.size(); it++)
 	{
 	  if(trigName.find(triggerPaths[it]) == std::string::npos) continue;
-	  //cout << trigName << endl;
 	  ev.t_bits[it]=true;
 	  ev.t_prescale[it]=hltConfig_.prescaleValue(event, iSetup, trigName);
 	  break;
@@ -671,8 +670,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       break;
     }
   if(!toSave) return;
-
-
   
   //
   // jets
@@ -707,7 +704,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       const reco::GenJet *genJet       = jet->genJet();
 
       //pre-selection (note: raw jet energy must be used otherwise you'll have large inefficiencies for |eta|>3!!!!)
-      //float rawJetEn = jet->chargedHadronEnergy() + jet->neutralHadronEnergy() + jet->photonEnergy() + jet->electronEnergy() + jet->muonEnergy() + jet->HFHadronEnergy() +jet->HFEMEnergy();
       float rawJetEn( jet->correctedJet("Uncorrected").energy() );
       float nhf( (jet->neutralHadronEnergy() + jet->HFHadronEnergy())/rawJetEn );
       float nef( jet->neutralEmEnergy()/rawJetEn );
@@ -841,7 +837,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       
       ev.jn++;
     }
-  
+
   //
   // missing transverse energy
   //
@@ -861,7 +857,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.met_sig[ev.metn] = significance;
       ev.metn++;
     }    
-
+  
 
   //
   // charged PF candidates which haven't been clustered
@@ -913,8 +909,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.pf_en[ev.pfn]     = cand.energy();
       ev.pfn++;
     }
-
-
 
   //all done here
   summary_.fill();
