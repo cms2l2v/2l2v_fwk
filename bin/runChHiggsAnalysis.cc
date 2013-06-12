@@ -79,6 +79,26 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor=utils::cmssw::getMuonCorrector(jecDir,url);
 
+  // FIXME: add dy reweighting
+
+  //systematics
+  TString systVars[]={"",
+		      "_jerup","_jerdown",
+		      "_jesup","_jesdown",
+		      "_lesup","_lesdown",
+		      "_leffup","_leffdown",
+		      "_puup","_pudown",
+		      "_umetup", "_umetdown",
+  };
+  size_t nSystVars(1);
+  if(runSystematics && isMC)
+    {
+      cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
+      nSystVars=sizeof(systVars)/sizeof(TString);
+    }
+  
+  
+
   //
   // check input file
   //
@@ -124,70 +144,78 @@ int main(int argc, char* argv[])
   SmartSelectionMonitor controlHistos;
   TH1F* Hhepup        = (TH1F* )controlHistos.addHistogram(new TH1F ("heupnup"    , "hepupnup"    ,20,0,20) ) ;
   TH1F* Hcutflow      = (TH1F*) controlHistos.addHistogram(new TH1F ("cutflow"    , "cutflow"    ,5,0,5) ) ;
+  TH1F* Hoptim_systs = (TH1F*) controlHistos.addHistogram(new TH1F ("optim_systs" , ";syst;", nSystVars,0,nSystVars) );
+
+
 
   //vertex multiplicity
   controlHistos.addHistogram( new TH1F ("nvertices", "; Vertex multiplicity; Events", 50, 0.,50.) );
 
-  //event selection histogram
-  TString labels[]={"2 leptons", "M>12 #wedge |M-M_{Z}|>15", "#geq 2 jets", "E_{T}^{miss}", "op. sign", "#geq 1 b-tags"};
+  TString labels[]={"2 leptons", "M>12 #wedge |M-M_{Z}|>15", "#geq 2 jets", "E_{T}^{miss}", "op. sign", "#geq 2 b-tags"};
   int nsteps=sizeof(labels)/sizeof(TString);
-  TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow",";Cutflow;Events",nsteps,0,nsteps) );
-  for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
 
-  TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
-  for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
-    {
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll",";Dilepton invariant mass [GeV];Events",50,0,250) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll",";Dilepton transverse momentum [GeV];Events",50,0,250) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pte",";Electron transverse momentum [GeV];Events",50,0,500) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmu",";Muon transverse momentum [GeV];Events",50,0,500) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin",";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dilarccosine",";#theta(l,l') [rad];Events",50,0,3.2) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mtsum",";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met",";Missing transverse energy [GeV];Events",100,0,1000) );
 
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht",";H_{T} [GeV];Events",100,0,1000) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb",";H_{T} (bjets) [GeV];Events",100,0,1000) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htnol","; H_[T] (no leptons) [GeV];Events",100,0,1000) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htbnol","; H_[T] (bjets, no leptons) [GeV];Events",100,0,1000) );
-
-      TH1F *h=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"njets",";Jet multiplicity;Events",6,0,6) );
-      TH1F *hb=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"nbjets",";b-Jet multiplicity;Events",6,0,6) );
-      for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
-	{
-	  TString label( ibin==h->GetXaxis()->GetNbins() ? "#geq" : "=");
-	  label += (ibin-1);
-	  label += " jets";
-	  h->GetXaxis()->SetBinLabel(ibin,label);
-	  hb->GetXaxis()->SetBinLabel(ibin,label);
-	  if(ibin==1) continue;
-	  label="jet"; label+=(ibin-1);
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"pt",";Transverse momentum [GeV];Events",50,0,250) );
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"nobsmearpt",";Transverse momentum [GeV];Events",50,0,250) );
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"smearpt",";Transverse momentum [GeV];Events",50,0,250) );
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"eta",";Pseudo-rapidity;Events",50,0,2.5) );
-	  TH1F *flav1H=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"flav",";Flavor;Events",5,0,5) );
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"pt",";Transverse momentum [GeV];Events",50,0,250) );
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"eta",";Pseudo-rapidity;Events",50,0,2.5) );
-	  TH1F *flav2H=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"flav",";Flavor;Events",5,0,5) );
-	  for(int ibin=1; ibin<=5; ibin++)
-	    {
-	      TString label("unmatched");
-	      if(ibin==2) label="g";
-	      if(ibin==3) label="uds";
-	      if(ibin==4) label="c";
-	      if(ibin==5) label="b";
-	      flav1H->GetXaxis()->SetBinLabel(ibin,label);
-	      flav2H->GetXaxis()->SetBinLabel(ibin,label);
-	    }
-	}
-    }
-
+  //event selection histogram - per systematic variation
+  for(size_t ivar=0;ivar<nSystVars;++ivar){
+    Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, systVars[ivar]);
+    
+    TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+systVars[ivar],";Cutflow;Events",nsteps,0,nsteps) );
+    for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
+    
+    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
+    for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
+      {
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+systVars[ivar], "; e-id MVA; Electrons", 50, 0.95,1.0) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll"+systVars[ivar],";Dilepton invariant mass [GeV];Events",50,0,250) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll"+systVars[ivar],";Dilepton transverse momentum [GeV];Events",50,0,250) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pte"+systVars[ivar],";Electron transverse momentum [GeV];Events",50,0,500) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmu"+systVars[ivar],";Muon transverse momentum [GeV];Events",50,0,500) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+systVars[ivar],";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dilarccosine"+systVars[ivar],";#theta(l,l') [rad];Events",50,0,3.2) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mtsum"+systVars[ivar],";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met"+systVars[ivar],";Missing transverse energy [GeV];Events",100,0,1000) );
+	
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht"+systVars[ivar],";H_{T} [GeV];Events",100,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb"+systVars[ivar],";H_{T} (bjets) [GeV];Events",100,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htnol"+systVars[ivar],"; H_[T] (no leptons) [GeV];Events",100,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htbnol"+systVars[ivar],"; H_[T] (bjets, no leptons) [GeV];Events",100,0,1000) );
+	
+	TH1F *h=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"njets"+systVars[ivar],";Jet multiplicity;Events",8,0,8) );
+	TH1F *hb=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"nbjets"+systVars[ivar],";b-Jet multiplicity;Events",8,0,8) );
+	for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
+	  {
+	    TString label( ibin==h->GetXaxis()->GetNbins() ? "#geq" : "=");
+	    label += (ibin-1);
+	    label += " jets";
+	    h->GetXaxis()->SetBinLabel(ibin,label);
+	    hb->GetXaxis()->SetBinLabel(ibin,label);
+	    if(ibin==1) continue;
+	    label="jet"; label+=(ibin-1);
+	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"pt"+systVars[ivar],";Transverse momentum [GeV];Events",50,0,250) );
+	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"nobsmearpt"+systVars[ivar],";Transverse momentum [GeV];Events",50,0,250) );
+	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"smearpt"+systVars[ivar],";Transverse momentum [GeV];Events",50,0,250) );
+	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"eta"+systVars[ivar],";Pseudo-rapidity;Events",50,0,2.5) );
+	    TH1F *flav1H=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"flav"+systVars[ivar],";Flavor;Events",5,0,5) );
+	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"pt"+systVars[ivar],";Transverse momentum [GeV];Events",50,0,250) );
+	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"eta"+systVars[ivar],";Pseudo-rapidity;Events",50,0,2.5) );
+	    TH1F *flav2H=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"flav"+systVars[ivar],";Flavor;Events",5,0,5) );
+	    for(int ibin=1; ibin<=5; ibin++)
+	      {
+		TString label("unmatched");
+		if(ibin==2) label="g";
+		if(ibin==3) label="uds";
+		if(ibin==4) label="c";
+		if(ibin==5) label="b";
+		flav1H->GetXaxis()->SetBinLabel(ibin,label);
+		flav2H->GetXaxis()->SetBinLabel(ibin,label);
+	      }
+	  }
+      }
+  }
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
-  UEAnalysis ueAn(controlHistos);
+  UEAnalysis ueAn(controlHistos); // FIXME: implement runSystematics here or add a different class for managing histos of interest :)
   //  BTVAnalysis btvAn(controlHistos,runSystematics);
   LxyAnalysis lxyAn(controlHistos,runSystematics);
   
@@ -302,8 +330,8 @@ int main(int argc, char* argv[])
 	  else
 	    {
 	      Int_t idbits    = leptons[ilep].get("idbits");
-	      bool isTight    = ((idbits >> 10) & 0x1);
-	      //bool isLoose    = ((idbits >> 8) & 0x1);
+	      //	      bool isTight    = ((idbits >> 10) & 0x1);
+	      bool isLoose    = ((idbits >> 8) & 0x1);
 	      Float_t gIso    = leptons[ilep].getVal("gIso04");
 	      Float_t chIso   = leptons[ilep].getVal("chIso04");
 	      Float_t puchIso = leptons[ilep].getVal("puchIso04");
@@ -311,7 +339,8 @@ int main(int argc, char* argv[])
 	      Float_t relIso=(TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt();
 	      if(leptons[ilep].pt()<20)                      passKin=false;
 	      if(fabs(leptons[ilep].eta())>2.4)              passKin=false;
-	      if(!isTight)                                   passId=false;
+	      //if(!isTight)                                   passId=false;
+	      if(!isLoose)                                   passId=false;
 	      if(relIso>0.12)                                passIso=false;
 	    }
 
@@ -533,8 +562,7 @@ int main(int argc, char* argv[])
 
       float nbtags(0);
       for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
-      //      if(nbtags<2) continue;
-      if(nbtags<1) continue; 
+      if(nbtags<2) continue;
       controlHistos.fillHisto("evtflow", ch, 5, weight);
 
       if(spyEvents){

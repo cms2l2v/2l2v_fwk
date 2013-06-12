@@ -1,7 +1,7 @@
 {
     "proc":[
 	{
-        "tag":"H^{+}$#rightarrow#tau#nu,\n m_{H^{+}}=250 GeV/c^2",
+        "tag":"H^{+}$#rightarrow#tau#nu, m_{H^{+}}=250 GeV",
         "isdata":false,
 	"spimpose":true,
         "color":"001",
@@ -18,7 +18,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb,\n m_{H^{+}}=250 GeV/c^2",
+        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=250 GeV",
         "isdata":false,
 	"spimpose":true,
         "color":"002",

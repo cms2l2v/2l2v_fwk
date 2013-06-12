@@ -1,11 +1,12 @@
 <use name="UserCode/llvv_fwk"/>
 <use name="lhapdf"/>
 <environment>
-  <bin name="runTopAnalysis"       file="runTopAnalysis.cc"></bin> 
-  <bin name="runChHiggsAnalysis"   file="runChHiggsAnalysis.cc"></bin>
-  <bin name="runVBFZAnalysis"      file="runVBFZAnalysis.cc"></bin> 
-  <bin name="runPlotter"           file="runPlotter.cc"></bin> 
-  <bin name="computePDFvariations" file="computePDFvariations.cc"></bin> 
-  <bin name="fitDYforTop"          file="fitDYforTop.cc"></bin> 
+  <bin name="runTopAnalysis"           file="runTopAnalysis.cc"></bin> 
+  <bin name="runChHiggsAnalysis"       file="runChHiggsAnalysis.cc"></bin>
+  <bin name="prepareChHiggsDatacards"  file="prepareChHiggsDatacards.cc"></bin>
+  <bin name="runVBFZAnalysis"          file="runVBFZAnalysis.cc"></bin> 
+  <bin name="runPlotter"               file="runPlotter.cc"></bin> 
+  <bin name="computePDFvariations"     file="computePDFvariations.cc"></bin> 
+  <bin name="fitDYforTop"              file="fitDYforTop.cc"></bin> 
 </environment>
 <Flags CXXFLAGS="-g"/>
