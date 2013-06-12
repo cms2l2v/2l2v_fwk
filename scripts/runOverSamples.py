@@ -89,9 +89,9 @@ for proc in procList :
                         JobName                            = d['dtag']+str(ijob)
                         LaunchOnCondor.Jobs_RunHere        = 1
                         LaunchOnCondor.Jobs_Queue          = opt.queue
-                        LaunchOnCondor.Jobs_LSFRequirement = opt.requirementtoBatch
+                        LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
                         LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
-                        LaunchOnCondor.SendCluster_Push(["BASH", str('submitLocalRun.sh '+ ' ' + localParams)])
+                        LaunchOnCondor.SendCluster_Push(["BASH", str(scriptFile+ ' ' + localParams)])
                         LaunchOnCondor.SendCluster_Submit()
 
                     else :

@@ -43,7 +43,7 @@ FarmDirectory                      = opt.outdir+"/FARM"
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
-LaunchOnCondor.Jobs_LSFRequirement = opt.requirementtoBatch
+LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
 #run over sample
