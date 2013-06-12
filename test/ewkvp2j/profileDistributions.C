@@ -38,6 +38,7 @@ void showCMSHeader(TObject *data=0, TObject *mc=0)
   leg->Draw();
 }
 
+//
 void drawDistributionWithVariations(TString dist="mumu_jetpt")
 {
   gStyle->SetOptStat(0);
@@ -127,8 +128,63 @@ void drawDistributionWithVariations(TString dist="mumu_jetpt")
   c->Update();
 }
 
+//
+void measureJetIdEfficiency()
+{
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetPalette(1);
+  
+  
+  TString profs[]= {"recoilbalanceid", "recoilbalanceideta30to50", "recoilbalanceideta50toInf"};
+  TString cats[] = {"inclusive",       "30<p_{T}/GeV<50",          "p_{T}>50 GeV"};
+  const size_t nprofs=sizeof(profs)/sizeof(TString);
 
-void profileDistributions()
+  TCanvas *c=new TCanvas("c","c",600,600);       c->Divide(1,nprofs);
+  TCanvas *csf=new TCanvas("csf","csf",600,600); csf->Divide(1,nprofs);
+
+  TFile *llF=TFile::Open("~/work/ewkzp2j_539/plotter.root");
+  for(size_t i=0; i<nprofs; i++)
+    {
+      TH2 *dyMC   = (TH2 *) llF->Get("Z#rightarrow ll/ee_"+profs[i]); 
+      TH2 *dyData = (TH2 *) llF->Get("data/ee_"+profs[i]);      
+      
+      TH1 *allJetsMC=dyMC->ProjectionX("alljetsmc",1,1);
+      TH1 *allJetsData=dyMC->ProjectionX("alljetsmc",1,1);
+      for(int ybin=2; ybin<dyMC->GetYaxis()->GetNbins(); ybin++)
+	{
+	  TString label(dyMC->GetYaxis()->GetBinLabel(ybin));
+	  TString pf(""); pf+=ybin; pf+=i;
+
+	  TH1 *passJetsMC=dyMC->ProjectionX("passjetsmc",ybin,ybin);   	  passJetsMC->Divide(allJetsMC);
+	  TH1 *passJetsData=dyMC->ProjectionX("passjetsmc",ybin,ybin);	  passJetsData->Divide(allJetsData);
+	  TH1 *data2MC=(TH1 *)passJetsData->Clone("data2mc");             data2MC->Divide(passJetsMC);
+	  
+	  TGraphErrors *mcGr=new TGraphErrors(passJetsMC); mcGr->SetMarkerStyle(24); mcGr->SetName("mceff"+pf);
+	  TGraphErrors *dataGr=new TGraphErrors(passJetsData); dataGr->SetMarkerStyle(24); dataGr->SetName("dataeff"+pf);
+
+	  c->cd(i+1);
+	  mcGr->Draw(ybin==2 ? "ap" : "p");
+	  dataGr->Draw("p");
+	  
+	  csf->cd(i+1);
+	  data2MC->Draw(ybin==2 ? "ap" : "p");
+	  
+	  passJetsMC->Delete();
+	  passJetsData->Delete();
+	  data2MC->Delete();
+	}
+    }      
+  llF->Close();
+
+  //update the canvases
+  c->cd(1);   drawCMSheader(); c->cd();   c->Modified();  c->Update();
+  csf->cd(1); drawCMSheader(); csf->cd(); csf->Modified(); csf->Update();
+}
+
+
+//
+void profileResidualJEC()
 {
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);

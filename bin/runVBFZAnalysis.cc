@@ -235,6 +235,11 @@ int main(int argc, char* argv[])
     if(ireg==2) regStr+="50toInf";
     mon.addHistogram( new TH1F("recoilbalance"+regStr, "; p_{T}(jet)/p_{T}; Jets", 100,0,5) );
     mon.addHistogram( new TH2F("recoilbalancevseta"+regStr, "; #eta(jet); <p_{T}(jet)/p_{T}>", 100,0,5,100,0,5) );
+    TH2 *idH=(TH2 *)mon.addHistogram( new TH2F("recoilbalanceid"+regStr, "; #eta(jet); ID", 50,0,5,4,0,4) );
+    idH->GetYaxis()->SetBinLabel(1,"no id");
+    idH->GetYaxis()->SetBinLabel(2,"PF loose");
+    idH->GetYaxis()->SetBinLabel(3,"PU loose");
+    idH->GetYaxis()->SetBinLabel(4,"PF+PU loose");
   }
   
   //boson control
@@ -440,9 +445,9 @@ int main(int argc, char* argv[])
       if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
 
       if(isV0JetsMC){
-	mon.fillHisto("nup","all",ev.nup,1);
+	mon.fillHisto("nup","",ev.nup,1);
 	if(ev.nup>5) continue;
-	mon.fillHisto("nupfilt","all",ev.nup,1);
+	mon.fillHisto("nupfilt","",ev.nup,1);
       }
 
 
@@ -689,9 +694,9 @@ int main(int argc, char* argv[])
 	    minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
-	  Int_t idbits=jets[ijet].get("idbits");
-	  bool passPFloose( ((idbits>>0) & 0x1));
-	  if(!passPFloose) continue;
+	  //Int_t idbits=jets[ijet].get("idbits");
+	  //bool passPFloose( ((idbits>>0) & 0x1));
+	  //if(!passPFloose) continue;
 	  //bool passPFmedium( ((idbits>>1) & 0x1));
 	  //if(!passPFmedium) continue;
 	  //int puId = ((idbits>>3) & 0xf);
@@ -833,7 +838,12 @@ int main(int argc, char* argv[])
 	    
 		float recoilPt=selJets[0].pt();
 		float balance(recoilPt/zll.pt());
-	    
+		
+		Int_t idbits=jets[0].get("idbits");
+		bool passPFloose( ((idbits>>0) & 0x1));
+		int puId = ((idbits>>3) & 0xf);
+		bool passPUloose( (puId>>2) & 0x1 );
+		
 		std::vector<TString> zptRegs;
 		zptRegs.push_back("");
 		if(zll.pt()>30 && zll.pt()<50) zptRegs.push_back("30to50"); 
@@ -842,6 +852,11 @@ int main(int argc, char* argv[])
 		  {
 		    mon.fillHisto("recoilbalance"+zptRegs[ireg],tags,balance, weight);
 		    mon.fillHisto("recoilbalancevseta"+zptRegs[ireg],tags,fabs(selJets[0].eta()), balance, weight);
+
+		    mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[0].eta()),0, weight);
+		    if(passPFloose) mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[0].eta()),1, weight);
+		    if(passPUloose) mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[0].eta()),2, weight);
+		    if(passPFloose && passPUloose) mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[0].eta()),3, weight);
 		  }
 	      }
 	    }
@@ -985,9 +1000,9 @@ int main(int argc, char* argv[])
 		  if(ivar==4) pt=jets[ijet].getVal("jerdown");
 		  if(pt<minJetPtToApply || fabs(jets[ijet].eta())>4.7) continue;
 	      
-		  Int_t idbits=jets[ijet].get("idbits");
-		  bool passPFloose( ((idbits>>0) & 0x1));
-		  if(!passPFloose) continue;
+		  //Int_t idbits=jets[ijet].get("idbits");
+		  //bool passPFloose( ((idbits>>0) & 0x1));
+		  //if(!passPFloose) continue;
 		  //bool passPFmedium( ((idbits>>1) & 0x1));
 		  //if(!passPFmedium) continue;
 	      	  //int puId = ((idbits>>3) & 0xf);
