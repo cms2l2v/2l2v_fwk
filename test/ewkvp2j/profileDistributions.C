@@ -22,8 +22,8 @@ void showCMSHeader(TObject *data=0, TObject *mc=0)
   pt->SetBorderSize(0);
   pt->SetFillStyle(0);
   pt->SetTextAlign(12);
-  pt->SetTextSize(0.08);
-  pt->AddText("CMS preliminary, #sqrt{s}=8 TeV, #scale[0.5]{#int}L=19.7 fb^{-1}");
+  //  pt->SetTextSize(0.08);
+  pt->AddText("CMS preliminary, #sqrt{s}=8 TeV, #scale[0.5]{#int}L=0.9 fb^{-1}");
   pt->Draw();
   
   if(data==0 && mc==0) return;
@@ -32,7 +32,7 @@ void showCMSHeader(TObject *data=0, TObject *mc=0)
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
   leg->SetNColumns(2);
-  leg->SetTextSize(0.08);
+  //leg->SetTextSize(0.08);
   if(data) leg->AddEntry(data,"data","p");
   if(mc) leg->AddEntry(mc,"simulation","p");
   leg->Draw();
@@ -136,50 +136,109 @@ void measureJetIdEfficiency()
   gStyle->SetPalette(1);
   
   
-  TString profs[]= {"recoilbalanceid", "recoilbalanceideta30to50", "recoilbalanceideta50toInf"};
-  TString cats[] = {"inclusive",       "30<p_{T}/GeV<50",          "p_{T}>50 GeV"};
+  TString profs[]= {"recoilbalanceid", "recoilbalanceid30to50", "recoilbalanceid50toInf"};
+  TString cats[] = {"inclusive",       "30<p_{T}(Z)/GeV<50",    "p_{T}(Z)>50 GeV"};
   const size_t nprofs=sizeof(profs)/sizeof(TString);
 
-  TCanvas *c=new TCanvas("c","c",600,600);       c->Divide(1,nprofs);
-  TCanvas *csf=new TCanvas("csf","csf",600,600); csf->Divide(1,nprofs);
+  TCanvas *c=new TCanvas("c","c",600,600);       c->Divide(1,nprofs);   c->cd(1)->SetTopMargin(0.1);
+  TCanvas *csf=new TCanvas("csf","csf",600,600); csf->Divide(1,nprofs); csf->cd(1)->SetTopMargin(0.1);
 
   TFile *llF=TFile::Open("~/work/ewkzp2j_539/plotter.root");
+  TLegend *dataprojLeg = new TLegend(0.2,0.2,0.3,0.5,"Data","brNDC"); dataprojLeg->SetBorderSize(0); dataprojLeg->SetFillStyle(0); dataprojLeg->SetTextFont(42); dataprojLeg->SetTextSize(0.05);
+  TLegend *mcprojLeg   = new TLegend(0.3,0.2,0.5,0.5,"MC","brNDC");   mcprojLeg->SetBorderSize(0);   mcprojLeg->SetFillStyle(0);   mcprojLeg->SetTextFont(42);   mcprojLeg->SetTextSize(0.05); 
+  TLegend *data2mcLeg  = (TLegend *) dataprojLeg->Clone();
   for(size_t i=0; i<nprofs; i++)
     {
       TH2 *dyMC   = (TH2 *) llF->Get("Z#rightarrow ll/ee_"+profs[i]); 
       TH2 *dyData = (TH2 *) llF->Get("data/ee_"+profs[i]);      
-      
-      TH1 *allJetsMC=dyMC->ProjectionX("alljetsmc",1,1);
-      TH1 *allJetsData=dyMC->ProjectionX("alljetsmc",1,1);
-      for(int ybin=2; ybin<dyMC->GetYaxis()->GetNbins(); ybin++)
+  
+      TH1 *allJetsMC=dyMC->ProjectionX("alljetsmc",1,1);    
+      TH1 *allJetsData=dyData->ProjectionX("alljetsdata",1,1); 
+      for(int ybin=2; ybin<=3+0*dyMC->GetYaxis()->GetNbins(); ybin++)
 	{
 	  TString label(dyMC->GetYaxis()->GetBinLabel(ybin));
 	  TString pf(""); pf+=ybin; pf+=i;
 
-	  TH1 *passJetsMC=dyMC->ProjectionX("passjetsmc",ybin,ybin);   	  passJetsMC->Divide(allJetsMC);
-	  TH1 *passJetsData=dyMC->ProjectionX("passjetsmc",ybin,ybin);	  passJetsData->Divide(allJetsData);
-	  TH1 *data2MC=(TH1 *)passJetsData->Clone("data2mc");             data2MC->Divide(passJetsMC);
+	  TH1 *passJetsMC=dyMC->ProjectionX("passjetsmc",ybin,ybin); 
+	  TH1 *passJetsData=dyData->ProjectionX("passjetsdata",ybin,ybin);
 	  
-	  TGraphErrors *mcGr=new TGraphErrors(passJetsMC); mcGr->SetMarkerStyle(24); mcGr->SetName("mceff"+pf);
-	  TGraphErrors *dataGr=new TGraphErrors(passJetsData); dataGr->SetMarkerStyle(24); dataGr->SetName("dataeff"+pf);
+	  TGraphAsymmErrors *mcGr=new TGraphAsymmErrors; mcGr->Divide(passJetsMC,allJetsMC,"n");   mcGr->SetMarkerStyle(24+ybin-2);      mcGr->SetFillStyle(0);      mcGr->SetName("mceff"+pf);        mcGr->SetTitle(label);
+	  TGraphAsymmErrors *dataGr=new TGraphAsymmErrors; dataGr->Divide(passJetsData,allJetsData,"cp"); dataGr->SetMarkerStyle(20+ybin-2);    dataGr->SetFillStyle(0);    dataGr->SetName("dataeff"+pf);    dataGr->SetTitle("");
+	  TGraphAsymmErrors *data2mcGr=(TGraphAsymmErrors *) dataGr->Clone("data2mc"+pf);
+	  for(int ip=0; ip<mcGr->GetN(); ip++)
+	    {
+	      Double_t x,y1,ey1,y2,ey2;
+	      mcGr->GetPoint(ip,x,y1);   ey1=mcGr->GetErrorY(ip);
+	      dataGr->GetPoint(ip,x,y2); ey2=dataGr->GetErrorY(ip);
+	      Double_t sf=y2/y1;  
+	      Double_t sf_err=sqrt(pow(y2*ey1,2)+pow(y1*ey2,2))/pow(y1,2);
+	      data2mcGr->SetPoint(ip,x,sf);
+	      data2mcGr->SetPointError(ip,0,0,sf_err,sf_err);
+	    }
+
+	  if(i==0){
+	    dataprojLeg->AddEntry(dataGr,"","pf");
+	    mcprojLeg->AddEntry(mcGr,label,"pf");
+	    data2mcLeg->AddEntry(data2mcGr,label,"pf");
+	  }
 
 	  c->cd(i+1);
 	  mcGr->Draw(ybin==2 ? "ap" : "p");
+	  if(ybin==2) {
+	    mcGr->GetYaxis()->SetRangeUser(0,1.2); mcGr->GetYaxis()->SetTitle("Efficiency"); mcGr->GetXaxis()->SetTitle("Pseudo-rapidity"); 
+	    mcGr->GetYaxis()->SetTitleSize(0.07);
+	    mcGr->GetYaxis()->SetTitleOffset(0.9);
+	    mcGr->GetYaxis()->SetLabelSize(0.06);
+	    mcGr->GetXaxis()->SetTitleSize(0.07);
+	    mcGr->GetXaxis()->SetLabelSize(0.06);
+	    mcGr->GetXaxis()->SetTitleOffset(0.9);
+
+	    TPaveText *pt=new TPaveText(0.15,0.5,0.8,0.85,"brNDC");
+	    pt->SetBorderSize(0);
+	    pt->SetFillStyle(0);
+	    pt->SetTextAlign(13);
+	    pt->SetTextFont(42);
+	    pt->SetTextColor(kBlue);
+	    pt->SetTextSize(0.08);
+	    pt->AddText("[ "+cats[i]+" ]");
+	    pt->Draw();
+	  }
 	  dataGr->Draw("p");
-	  
+	  if(i==0)  showCMSHeader();
+  
 	  csf->cd(i+1);
-	  data2MC->Draw(ybin==2 ? "ap" : "p");
+	  data2mcGr->Draw(ybin==2 ? "ap" : "p");
+	  if(ybin==2) { 
+	    data2mcGr->GetYaxis()->SetRangeUser(0.74,1.26); data2mcGr->GetYaxis()->SetTitle("Data/MC scale factor"); data2mcGr->GetXaxis()->SetTitle("Pseudo-rapidity"); 
+	    data2mcGr->GetYaxis()->SetTitleSize(0.07);
+	    data2mcGr->GetYaxis()->SetTitleOffset(0.9);
+	    data2mcGr->GetYaxis()->SetLabelSize(0.06);
+	    data2mcGr->GetXaxis()->SetTitleSize(0.07);
+	    data2mcGr->GetXaxis()->SetLabelSize(0.06);
+	    data2mcGr->GetXaxis()->SetTitleOffset(0.9);
+
+	    TPaveText *pt=new TPaveText(0.15,0.5,0.8,0.85,"brNDC");
+	    pt->SetBorderSize(0);
+	    pt->SetFillStyle(0);
+	    pt->SetTextAlign(13);
+	    pt->SetTextFont(42);
+	    pt->SetTextColor(kBlue);
+	    pt->SetTextSize(0.08);
+	    pt->AddText("[ "+cats[i]+" ]");
+	    pt->Draw();
+	  }
+	  if(i==0) showCMSHeader();
 	  
-	  passJetsMC->Delete();
-	  passJetsData->Delete();
-	  data2MC->Delete();
+	  //passJetsMC->Delete();
+	  //passJetsData->Delete();
+	  //data2MC->Delete();
 	}
     }      
   llF->Close();
 
   //update the canvases
-  c->cd(1);   drawCMSheader(); c->cd();   c->Modified();  c->Update();
-  csf->cd(1); drawCMSheader(); csf->cd(); csf->Modified(); csf->Update();
+  c->cd(1); dataprojLeg->Draw();  mcprojLeg->Draw(); c->cd();   c->Modified();   c->Update();
+  csf->cd(1); data2mcLeg->Draw();                    csf->cd(); csf->Modified(); csf->Update();
 }
 
 
