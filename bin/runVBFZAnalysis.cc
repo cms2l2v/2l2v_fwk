@@ -8,7 +8,7 @@
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
-#include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
+#include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -47,9 +47,8 @@ float getAngle(LorentzVector &a, LorentzVector &b)
 }
 
 //
-std::vector<TString> getDijetCategories(double mjj,double etajj,std::vector<TString> &curTags)
+std::vector<TString> getDijetCategories(double mjj,double etajj,std::vector<TString> &curTags, TString &mjjCat)
 {
-  TString mjjCat,etajjCat;
   if(mjj<250)               mjjCat="mjjq016";
   if(mjj>=250 && mjj<350)   mjjCat="mjjq033";
   if(mjj>=350 && mjj<450)   mjjCat="mjjq049";
@@ -90,6 +89,9 @@ int main(int argc, char* argv[])
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
+
+  GammaWeightsHandler *gammaWgtHandler=0;
+  if(runPhotonSelection) gammaWgtHandler=new GammaWeightsHandler(runProcess);
 
   float minJetPtToApply(30);
 
@@ -186,7 +188,7 @@ int main(int argc, char* argv[])
   bool runSystematics                        = runProcess.getParameter<bool>("runSystematics");
   std::vector<TString> varNames(1,"");
   size_t nvarsToInclude(1);
-  if(runSystematics && isMC)
+  if(runSystematics && isMC && !runPhotonSelection)
     {
       varNames.push_back("_jerup"); varNames.push_back("_jerdown");
       varNames.push_back("_jesup"); varNames.push_back("_jesdown");
@@ -520,13 +522,26 @@ int main(int argc, char* argv[])
       data::PhysicsObjectCollection_t selPhotons;
       if(runPhotonSelection)
 	{
+	  //filter out number of photons generated in the hard process (no double counting)
+	  int ngenpho(0);
+	  for(size_t igen=0; igen<gen.size(); igen++)
+	    {
+	      if(gen[igen].get("id")!=22) continue;
+	      if(gen[igen].get("status")!=3) continue;
+	      ngenpho++;
+	    }
+	  if(mctruthmode==111 && ngenpho>0) continue;
+	  if(mctruthmode==22 && ngenpho==0) continue;
+
+	  //select the photons
 	  for(size_t ipho=0; ipho<photons.size(); ipho++)
 	    {
 	      double pt=photons[ipho].pt();
 	      double eta=photons[ipho].getVal("sceta");
 
+	      //if systematics are active loosen the selection to the medium working point
 	      Int_t idbits( photons[ipho].get("id") );
-	      bool  hasPhotonId( idbits > 0 ); // (idbits >> (runSystematics ? 2 : 1) ) & 0x1 );
+	      bool hasPhotonId( (idbits >> (runSystematics ? 2 : 1) ) & 0x1 );
 	      double gIso    = photons[ipho].getVal("gIso03");
 	      double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
 	      double chIso   = photons[ipho].getVal("chIso03");
@@ -796,7 +811,7 @@ int main(int argc, char* argv[])
       //set the variables to be used in the MVA evaluation (independently of its use)
       for(size_t ivar=0; ivar<tmvaVarNames.size(); ivar++) 
 	{
-	  std::string variable        = tmvaVarNames[ivar];
+	  std::string variable     = tmvaVarNames[ivar];
 	  if(variable=="mjj")        tmvaVars[ivar]=mjj;
 	  if(variable=="detajj")     tmvaVars[ivar]=detajj;
           if(variable=="spt")        tmvaVars[ivar]=spt;
@@ -818,7 +833,7 @@ int main(int argc, char* argv[])
 	  if(passZmass)                                      mon.fillHisto("eventflow",tags,1,weight);
 	  if(passZmass && passZpt)                           mon.fillHisto("eventflow",tags,2,weight);
 	  if(passZmass && passZpt && passZeta)               mon.fillHisto("eventflow",tags,3,weight);
-	  if(passZmass && passZpt && passZeta && njets>1)  mon.fillHisto("eventflow",tags,4,weight);
+	  if(passZmass && passZpt && passZeta && njets>1)    mon.fillHisto("eventflow",tags,4,weight);
 
 	  mon.fillHisto("zmass",    tags, zll.mass(), weight);  
 	  if(passZmass){
@@ -883,7 +898,7 @@ int main(int argc, char* argv[])
 		  }
 	      }
 	    //end balance control
-
+	    
 	    if(passZpt && passZeta){
 	  
 	      //analyze dilepton kinematics
@@ -918,18 +933,24 @@ int main(int argc, char* argv[])
 		    }
 		  mon.fillHisto("njets"+pf,tags, njets_ivar, weight);
 		}
-	      
-	      
+		
+	      //signal region
+	      float photonWeight(1.0);
 	      if(njets>=2)
 		{
+		  TString mjjCat("");
 		  std::vector<TString> selTags;
-		  selTags = getDijetCategories(mjj,detajj,tags);
+		  selTags = getDijetCategories(mjj,detajj,tags,mjjCat);
+
+		  //re-weight for photons if needed
+		  if(gammaWgtHandler!=0) photonWeight = gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		  float catWeight=weight*photonWeight;
 
 		  //save for further analysis
 		  if(mjj>200) {
 		    ev.cat=dilId;
 		    summaryTupleVars[0]=ev.cat;  
-		    summaryTupleVars[1]=weight*xsecWeight;    
+		    summaryTupleVars[1]=catWeight*xsecWeight;    
 		    summaryTupleVars[2]=cnorm;
 		    summaryTupleVars[3]=mjj;     
 		    summaryTupleVars[4]=detajj;               
@@ -946,41 +967,41 @@ int main(int argc, char* argv[])
 		    summaryTupleVars[17]=ncjv15;  
 		    summaryTupleVars[18]=htcjv15;
 		    summaryTuple->Fill(summaryTupleVars);
-		    for(size_t im=0; im<tmvaMethods.size(); im++) mon.fillHisto(tmvaMethods[im], selTags, tmvaDiscrVals[im], weight);
+		    for(size_t im=0; im<tmvaMethods.size(); im++) mon.fillHisto(tmvaMethods[im], selTags, tmvaDiscrVals[im], catWeight);
 		  } 
 	      
-		  mon.fillHisto("qt",                 selTags, zll.pt(), weight,true);      
-		  mon.fillHisto("rapidity"     ,      selTags, fabs(zy),    weight);
-		  mon.fillHisto("njetsvsavginstlumi", selTags, njets,ev.instLumi,weight);
-		  mon.fillHisto("vbfcandjetpt",       selTags, maxPt,weight);
-		  mon.fillHisto("vbfcandjetpt",       selTags, minPt,weight);
-		  mon.fillHisto("vbfcandjet1pt",      selTags, maxPt,weight);
-		  mon.fillHisto("vbfcandjet2pt",      selTags, minPt,weight);
-		  mon.fillHisto("vbfcandjet1eta",     selTags, maxAbsEta, weight);
-		  mon.fillHisto("vbfcandjet2eta",     selTags, minAbsEta, weight);
-		  mon.fillHisto("vbfcandjeteta",      selTags, maxAbsEta, weight);
-		  mon.fillHisto("vbfcandjeteta",      selTags, minAbsEta, weight);
-		  mon.fillHisto("vbfcandjetdeta",     selTags, detajj,weight);
-		  mon.fillHisto("vbfcandjetseta",     selTags, setajj,weight);
-		  mon.fillHisto("vbfcandjetetaprod",  selTags, etaprod,weight);
-		  mon.fillHisto("vbfmjj",             selTags, mjj,weight,true);
-		  mon.fillHisto("vbfhardpt",          selTags, hardpt,weight);
-		  mon.fillHisto("vbfspt",             selTags, spt,weight);
-		  mon.fillHisto("vbfdphijj",          selTags, fabs(dphijj),weight);
-		  mon.fillHisto("vbfystar",           selTags, ystar,weight);
-		  mon.fillHisto("vbfpt",              selTags, ptjj,weight);
-		  mon.fillHisto("met",                selTags, ptmiss,weight);
-		  mon.fillHisto("metL",               selTags, metL,weight);
+		  mon.fillHisto("qt",                 selTags, zll.pt(), catWeight,true);      
+		  mon.fillHisto("rapidity"     ,      selTags, fabs(zy),    catWeight);
+		  mon.fillHisto("njetsvsavginstlumi", selTags, njets,ev.instLumi,catWeight);
+		  mon.fillHisto("vbfcandjetpt",       selTags, maxPt,catWeight);
+		  mon.fillHisto("vbfcandjetpt",       selTags, minPt,catWeight);
+		  mon.fillHisto("vbfcandjet1pt",      selTags, maxPt,catWeight);
+		  mon.fillHisto("vbfcandjet2pt",      selTags, minPt,catWeight);
+		  mon.fillHisto("vbfcandjet1eta",     selTags, maxAbsEta, catWeight);
+		  mon.fillHisto("vbfcandjet2eta",     selTags, minAbsEta, catWeight);
+		  mon.fillHisto("vbfcandjeteta",      selTags, maxAbsEta, catWeight);
+		  mon.fillHisto("vbfcandjeteta",      selTags, minAbsEta, catWeight);
+		  mon.fillHisto("vbfcandjetdeta",     selTags, detajj,catWeight);
+		  mon.fillHisto("vbfcandjetseta",     selTags, setajj,catWeight);
+		  mon.fillHisto("vbfcandjetetaprod",  selTags, etaprod,catWeight);
+		  mon.fillHisto("vbfmjj",             selTags, mjj,catWeight,true);
+		  mon.fillHisto("vbfhardpt",          selTags, hardpt,catWeight);
+		  mon.fillHisto("vbfspt",             selTags, spt,catWeight);
+		  mon.fillHisto("vbfdphijj",          selTags, fabs(dphijj),catWeight);
+		  mon.fillHisto("vbfystar",           selTags, ystar,catWeight);
+		  mon.fillHisto("vbfpt",              selTags, ptjj,catWeight);
+		  mon.fillHisto("met",                selTags, ptmiss,catWeight);
+		  mon.fillHisto("metL",               selTags, metL,catWeight);
 		  if(ncjv15){
-		    mon.fillHisto("vbfmaxcjvjpt",        selTags, pt3,weight);
-		    mon.fillHisto("vbfystar3",           selTags, ystar3,weight);
+		    mon.fillHisto("vbfmaxcjvjpt",        selTags, pt3,catWeight);
+		    mon.fillHisto("vbfystar3",           selTags, ystar3,catWeight);
 		  }
-		  mon.fillHisto("vbfcjv",              selTags, ncjv,weight);
-		  mon.fillHisto("vbfcjv15",            selTags, ncjv15,weight);
-		  mon.fillHisto("vbfcjv20",            selTags, ncjv20,weight);
-		  mon.fillHisto("vbfhtcjv",            selTags, htcjv,weight);
-		  mon.fillHisto("vbfhtcjv15",          selTags, htcjv15,weight);
-		  mon.fillHisto("vbfhtcjv20",          selTags, htcjv20,weight);
+		  mon.fillHisto("vbfcjv",              selTags, ncjv,catWeight);
+		  mon.fillHisto("vbfcjv15",            selTags, ncjv15,catWeight);
+		  mon.fillHisto("vbfcjv20",            selTags, ncjv20,catWeight);
+		  mon.fillHisto("vbfhtcjv",            selTags, htcjv,catWeight);
+		  mon.fillHisto("vbfhtcjv15",          selTags, htcjv15,catWeight);
+		  mon.fillHisto("vbfhtcjv20",          selTags, htcjv20,catWeight);
 	      
 		  if(isMC && mPDFInfo)
 		    {
@@ -988,11 +1009,11 @@ int main(int argc, char* argv[])
 		      for(size_t ipw=0; ipw<wgts.size(); ipw++) 
 			{
 			  TString var("_"); var+=ipw;
-			  mon.fillHisto("vbfcandjetdeta"+var,     selTags, fabs(detajj),weight*wgts[ipw]);
-			  mon.fillHisto("vbfcandjet1pt"+var,      tags, maxPt,weight*wgts[ipw]);
-			  mon.fillHisto("vbfcandjet2pt"+var,      tags, minPt,weight*wgts[ipw]);
-			  mon.fillHisto("vbfcandjet1eta"+var,     tags, maxAbsEta,weight*wgts[ipw]);
-			  mon.fillHisto("vbfcandjet2eta"+var,     tags, minAbsEta,weight*wgts[ipw]);
+			  mon.fillHisto("vbfcandjetdeta"+var,     selTags, fabs(detajj),catWeight*wgts[ipw]);
+			  mon.fillHisto("vbfcandjet1pt"+var,      tags, maxPt,catWeight*wgts[ipw]);
+			  mon.fillHisto("vbfcandjet2pt"+var,      tags, minPt,catWeight*wgts[ipw]);
+			  mon.fillHisto("vbfcandjet1eta"+var,     tags, maxAbsEta,catWeight*wgts[ipw]);
+			  mon.fillHisto("vbfcandjet2eta"+var,     tags, minAbsEta,catWeight*wgts[ipw]);
 			}
 		    }
 	      	      
@@ -1020,7 +1041,7 @@ int main(int argc, char* argv[])
 		}
 
 	      for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-		float iweight = weight;                                               //nominal
+		float iweight = weight*photonWeight;                                   //nominal
 		if(ivar==5)                        iweight *= TotalWeight_plus;        //pu up
 		if(ivar==6)                        iweight *= TotalWeight_minus;       //pu down
 		if(ivar==7)                        iweight *= Q2Weight_plus;
@@ -1082,8 +1103,9 @@ int main(int argc, char* argv[])
 		    float mjj=vbfSyst.M();
 		    float detajj=fabs(localSelJets[0].eta()-localSelJets[1].eta());
 		    float spt=vbfSyst.pt()/(localSelJets[0].pt()+localSelJets[1].pt());
-
-		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags);
+		    
+		    TString mjjCat("");
+		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
 		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,iweight);
 		
 		    //set the variables to be used in the MVA evaluation (independently of its use)
