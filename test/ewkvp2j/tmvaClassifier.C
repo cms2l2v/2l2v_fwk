@@ -46,10 +46,12 @@
 // needs to be included when makecint runs (ACLIC)
 #include "TMVA/Factory.h"
 #include "TMVA/Tools.h"
+#include "TMVA/MethodCategory.h"
 #endif
 
-void TMVAClassification( TString myMethodList = "" )
-{
+//void TMVAClassification( TString myMethodList = "" )
+void tmvaClassifier( TString myMethodList = "" )
+{   
    // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
    // if you use your private .rootrc, or run from a different directory, please copy the
    // corresponding lines from .rootrc
@@ -97,6 +99,7 @@ void TMVAClassification( TString myMethodList = "" )
    // --- Linear Discriminant Analysis
    Use["LD"]              = 0; // Linear Discriminant identical to Fisher
    Use["Fisher"]          = 1;
+   Use["FisherCat"]          = 0;//added by loic
    Use["FisherG"]         = 0;
    Use["BoostedFisher"]   = 0; // uses generalised MVA method boosting
    Use["HMatrix"]         = 0;
@@ -210,7 +213,7 @@ void TMVAClassification( TString myMethodList = "" )
    
    // --- Register the training and test trees
 
-   TFile *inputS = TFile::Open( "MC8TeV_mmjj_VBFNLO_summary.root" );
+   TFile *inputS = TFile::Open( "MC8TeV_lljj_VBFNLO_summary.root" );
    TTree *signal     = (TTree*)inputS->Get("ewkzp2j");
    TFile *inputB = TFile::Open("MC8TeV_DY2JetsToLL_50toInf_summary.root");
    TTree *background = (TTree*)inputB->Get("ewkzp2j");
@@ -376,6 +379,19 @@ void TMVAClassification( TString myMethodList = "" )
    // Fisher discriminant (same as LD)
    if (Use["Fisher"])
       factory->BookMethod( TMVA::Types::kFisher, "Fisher", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+   
+   if (Use["FisherCat"]){
+      TMVA::MethodBase* fiCat = factory->BookMethod( TMVA::Types::kCategory, "FisherCat","" );
+      TMVA::MethodCategory* mcategory = dynamic_cast<TMVA::MethodCategory*>(fiCat);
+      mcategory->AddMethod( "mjj<250", "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat1", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+      mcategory->AddMethod( "mjj>=250&&mjj<350" , "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat0000", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+      mcategory->AddMethod( "mjj>=350&&mjj<450" , "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat0350", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+      mcategory->AddMethod( "mjj>=450&&mjj<550" , "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat0450", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+      mcategory->AddMethod( "mjj>=550&&mjj<750" , "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat0550", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+      mcategory->AddMethod( "mjj>=750&&mjj<1000", "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat0750", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+      mcategory->AddMethod( "mjj>=1000"         , "mjj:detajj:spt:", TMVA::Types::kFisher, "Fisher_Cat1000", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10" );
+   }
+
 
    // Fisher with Gauss-transformed input variables
    if (Use["FisherG"])
@@ -461,6 +477,9 @@ void TMVAClassification( TString myMethodList = "" )
                            "H:!V:RuleFitModule=RFTMVA:Model=ModRuleLinear:MinImp=0.001:RuleMinDist=0.001:NTrees=20:fEventsMin=0.01:fEventsMax=0.5:GDTau=-1.0:GDTauPrec=0.01:GDStep=0.01:GDNSteps=10000:GDErrScale=1.02" );
 
    // For an example of the category classifier usage, see: TMVAClassificationCategory
+
+
+
 
    // --------------------------------------------------------------------------------------------------
 
