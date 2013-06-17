@@ -3,12 +3,12 @@
   <GeneralInfo>
     <Info name="TMVA Release" value="4.1.2 [262402]"/>
     <Info name="ROOT Release" value="5.32/00 [335872]"/>
-    <Info name="Creator" value="psilva"/>
-    <Info name="Date" value="Mon May 27 10:53:06 2013"/>
-    <Info name="Host" value="Linux lxbuild170.cern.ch 2.6.18-308.1.1.el5 #1 SMP Wed Mar 7 19:25:07 CET 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
-    <Info name="Dir" value="/afs/cern.ch/work/p/psilva/vbfz/results/2012"/>
-    <Info name="Training events" value="26904"/>
-    <Info name="TrainingTime" value="9.91988182e-03"/>
+    <Info name="Creator" value="querten"/>
+    <Info name="Date" value="Mon Jun 17 14:31:56 2013"/>
+    <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+    <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+    <Info name="Training events" value="110446"/>
+    <Info name="TrainingTime" value="1.69570923e-01"/>
     <Info name="AnalysisType" value="Classification"/>
   </GeneralInfo>
   <Options>
@@ -21,9 +21,9 @@
     <Option name="Method" modified="Yes">Fisher</Option>
   </Options>
   <Variables NVar="3">
-    <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="2.00016174e+02" Max="4.28412061e+03"/>
-    <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="2.96533108e-04" Max="8.50806618e+00"/>
-    <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="3.90866771e-03" Max="1.00000000e+00"/>
+    <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="2.00000931e+02" Max="4.09839697e+03"/>
+    <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="7.65621662e-05" Max="8.26923943e+00"/>
+    <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="4.32343641e-03" Max="1.00000000e+00"/>
   </Variables>
   <Spectators NSpec="0"/>
   <Classes NClass="2">
@@ -33,20 +33,20 @@
   <Transformations NTransformations="0"/>
   <MVAPdfs>
     <PDF Name="Fisher_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
-      <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-4.1699194908142090e-01" XMax="2.7451910972595215e+00" HasEquidistantBins="1">
-        3.58330049e-02 2.45712027e-01 6.54500782e-01 1.11155438e+00 1.61175394e+00 1.82090163e+00 1.91158104e+00 1.63222992e+00 1.24976742e+00 1.03403807e+00 8.98750246e-01 6.91796362e-01 5.25063217e-01 4.62903917e-01 3.53942335e-01 2.84470171e-01 2.13535458e-01 2.36936599e-01 1.54301301e-01 1.35287866e-01 9.72610116e-02 7.67850056e-02 6.21592924e-02 5.48464358e-02 4.75335754e-02 4.89961468e-02 3.58330049e-02 2.63262894e-02 1.75508596e-02 1.53570017e-02 2.04760022e-02 8.04414414e-03 7.31285801e-03 2.19385745e-03 4.38771490e-03 1.46257156e-03 2.92514311e-03 2.19385745e-03 2.19385745e-03 5.11900056e-03 2.92514311e-03 1.46257156e-03 1.46257156e-03 0.00000000e+00 7.31285778e-04 7.31285778e-04 0.00000000e+00 0.00000000e+00 0.00000000e+00 7.31285778e-04 
+      <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-4.7771865129470825e-01" XMax="3.6105549335479736e+00" HasEquidistantBins="1">
+        2.77180392e-02 2.99526721e-01 8.79886568e-01 1.47851026e+00 1.61409235e+00 1.43317306e+00 1.19681764e+00 9.42198455e-01 7.79972732e-01 6.39878452e-01 5.36311805e-01 4.25439656e-01 3.33046198e-01 2.81262904e-01 2.35281035e-01 1.91232979e-01 1.65019020e-01 1.33003607e-01 1.15384392e-01 9.32529345e-02 7.21958205e-02 6.61795065e-02 4.96346280e-02 4.61967327e-02 3.45938317e-02 3.05113290e-02 2.17017196e-02 1.91232990e-02 1.86935607e-02 1.54705336e-02 1.03136888e-02 8.37987196e-03 6.23118691e-03 4.29737056e-03 4.94197616e-03 4.51223878e-03 3.00815934e-03 2.79329065e-03 1.93381670e-03 2.14868528e-03 2.36355374e-03 4.29737032e-04 1.93381670e-03 2.14868516e-04 6.44605549e-04 4.29737032e-04 2.14868516e-04 0.00000000e+00 0.00000000e+00 0.00000000e+00 
       </Histogram>
     </PDF>
     <PDF Name="Fisher_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
-      <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-4.1699194908142090e-01" XMax="2.7451910972595215e+00" HasEquidistantBins="1">
-        5.57095051e-01 1.42277610e+00 2.05679369e+00 2.71071315e+00 2.76491284e+00 2.39903784e+00 1.74742913e+00 8.65918934e-01 5.33594787e-01 2.86728233e-01 1.67250037e-01 9.59943533e-02 6.21355884e-02 4.92941812e-02 1.42363664e-02 2.38671675e-02 1.58107039e-02 6.20731106e-03 6.99768122e-03 1.64140370e-02 3.36759211e-03 0.00000000e+00 0.00000000e+00 3.03151459e-03 2.25491682e-03 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+      <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-4.7771865129470825e-01" XMax="3.6105549335479736e+00" HasEquidistantBins="1">
+        4.48228031e-01 1.54305673e+00 2.58474708e+00 2.83179116e+00 2.11664605e+00 1.13540721e+00 6.06079638e-01 3.59237283e-01 2.08945274e-01 1.32435903e-01 8.19095448e-02 5.19754551e-02 3.78700644e-02 2.67096031e-02 1.32732634e-02 1.26882317e-02 9.31102317e-03 6.98443921e-03 6.16045576e-03 6.16471097e-03 2.82832282e-03 2.44609639e-03 2.28906097e-03 1.26180728e-03 2.47523072e-04 2.88592099e-04 7.49863902e-05 2.34221021e-04 1.15843795e-04 0.00000000e+00 1.64138328e-04 2.63223134e-04 2.66398070e-04 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
       </Histogram>
     </PDF>
   </MVAPdfs>
   <Weights NCoeff="4">
-    <Coefficient Index="0" Value="-6.0934093441042142e-02"/>
-    <Coefficient Index="1" Value="7.5356409583201916e-04"/>
-    <Coefficient Index="2" Value="-5.0582341141543377e-02"/>
-    <Coefficient Index="3" Value="-3.2881738423122830e-01"/>
+    <Coefficient Index="0" Value="-2.4477661801922709e-01"/>
+    <Coefficient Index="1" Value="1.0652159218091635e-03"/>
+    <Coefficient Index="2" Value="-4.9355305215650451e-02"/>
+    <Coefficient Index="3" Value="-2.6732009915867799e-01"/>
   </Weights>
 </MethodSetup>

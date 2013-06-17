@@ -1,0 +1,491 @@
+<?xml version="1.0"?>
+<MethodSetup Method="Category::FisherCat">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.1.2 [262402]"/>
+    <Info name="ROOT Release" value="5.32/00 [335872]"/>
+    <Info name="Creator" value="querten"/>
+    <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+    <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+    <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+    <Info name="Training events" value="110446"/>
+    <Info name="TrainingTime" value="4.49271512e+00"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="No">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="No">None</Option>
+    <Option name="H" modified="No">False</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+  </Options>
+  <Variables NVar="3">
+    <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="2.00000931e+02" Max="4.09839697e+03"/>
+    <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="7.65621662e-05" Max="8.26923943e+00"/>
+    <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="4.32343641e-03" Max="1.00000000e+00"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs/>
+  <Weights NSubMethods="7">
+    <SubMethod Index="0" Method="Fisher::Fisher_Cat1" Cut="mjj&lt;250" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="24088"/>
+        <Info name="TrainingTime" value="5.10280132e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="2.00000549e+02" Max="2.49994186e+02"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="7.65621662e-05" Max="4.16268730e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="1.05865858e-02" Max="9.99999940e-01"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat1_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-4.7281041741371155e-01" XMax="4.4977805018424988e-01" HasEquidistantBins="1">
+            0.00000000e+00 0.00000000e+00 9.73860640e-03 2.92158201e-02 9.73860640e-03 3.89544256e-02 4.86930311e-02 9.73860621e-02 1.07124671e-01 1.55817702e-01 3.31112623e-01 3.01896811e-01 5.55100560e-01 6.33009434e-01 8.18042934e-01 1.06150806e+00 1.38288212e+00 1.49000680e+00 1.56791568e+00 1.93798268e+00 1.77242637e+00 1.85033524e+00 1.89902830e+00 2.30804968e+00 2.21066356e+00 2.73654842e+00 2.38595867e+00 2.51256037e+00 2.46386743e+00 2.45412874e+00 2.33726549e+00 2.15223193e+00 1.77242637e+00 1.79190361e+00 1.99641430e+00 1.92824411e+00 1.58739281e+00 1.54843843e+00 1.26601887e+00 9.64122057e-01 7.40134060e-01 7.49872684e-01 5.16146123e-01 4.96668935e-01 3.70067030e-01 2.82419592e-01 3.40851218e-01 8.76474604e-02 7.79088512e-02 1.94772128e-02 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat1_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-4.7281041741371155e-01" XMax="4.4977805018424988e-01" HasEquidistantBins="1">
+            1.04639400e-02 9.82105825e-03 9.30531602e-03 6.63968921e-02 1.59668162e-01 2.25050583e-01 3.11119735e-01 4.60219324e-01 6.19815409e-01 9.54193175e-01 1.08113658e+00 1.30087280e+00 1.44808316e+00 1.58256376e+00 1.80506110e+00 2.07927322e+00 2.12116051e+00 2.17284489e+00 2.33479047e+00 2.38285279e+00 2.14917541e+00 2.23734498e+00 2.23910260e+00 2.13648391e+00 2.12120271e+00 1.80340552e+00 1.72210658e+00 1.72219610e+00 1.61324406e+00 1.55232048e+00 1.54222476e+00 1.41924131e+00 1.33948040e+00 1.22094321e+00 1.12565458e+00 1.06515050e+00 1.04694331e+00 9.57133532e-01 7.51066804e-01 6.94383800e-01 6.30165696e-01 4.66556072e-01 4.38243002e-01 3.34291548e-01 2.73592949e-01 1.95968613e-01 1.28430754e-01 7.31448978e-02 5.20796664e-02 9.37385671e-03 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="-7.9028450043474530e-01"/>
+        <Coefficient Index="1" Value="4.7001672710311262e-03"/>
+        <Coefficient Index="2" Value="-1.7996207376359716e-01"/>
+        <Coefficient Index="3" Value="1.0593772293734732e-01"/>
+      </Weights>
+    </SubMethod>
+    <SubMethod Index="1" Method="Fisher::Fisher_Cat0000" Cut="mjj&gt;=250&amp;&amp;mjj&lt;350" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="28870"/>
+        <Info name="TrainingTime" value="4.49490547e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="2.50001373e+02" Max="3.49986725e+02"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="8.35031271e-04" Max="4.87399626e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="5.77360298e-03" Max="1.00000000e+00"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat0000_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-5.1316773891448975e-01" XMax="5.9520149230957031e-01" HasEquidistantBins="1">
+            4.43746988e-03 0.00000000e+00 8.87493975e-03 2.66248211e-02 3.10622901e-02 7.54369944e-02 1.06499285e-01 1.41999036e-01 2.44060859e-01 3.99372309e-01 4.74809289e-01 7.09995210e-01 7.45494962e-01 8.12057018e-01 1.08718014e+00 1.18924201e+00 1.46436512e+00 1.52205229e+00 1.73948824e+00 1.69955099e+00 1.93473697e+00 2.01904893e+00 2.17879772e+00 2.04567361e+00 2.07673597e+00 2.22760987e+00 2.03236127e+00 1.94361186e+00 1.82380021e+00 1.65517628e+00 1.71286345e+00 1.65517628e+00 1.47324002e+00 1.28686631e+00 1.05168045e+00 9.22993779e-01 9.00806427e-01 6.56745553e-01 6.25683308e-01 5.14746547e-01 4.74809289e-01 3.94934833e-01 3.37247729e-01 1.55311450e-01 1.95248678e-01 1.50873989e-01 7.09995180e-02 7.54369944e-02 3.54997590e-02 0.00000000e+00 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat0000_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-5.1316773891448975e-01" XMax="5.9520149230957031e-01" HasEquidistantBins="1">
+            1.68431178e-02 5.40129431e-02 1.21333599e-01 1.71211973e-01 2.77724445e-01 4.36341017e-01 6.28712595e-01 7.53572881e-01 9.04678881e-01 1.08946252e+00 1.26753461e+00 1.61548138e+00 1.65845644e+00 1.90300834e+00 1.84301496e+00 1.93569338e+00 1.91513932e+00 1.95638096e+00 1.85245109e+00 1.91540694e+00 1.88503814e+00 1.66828346e+00 1.56837988e+00 1.52507019e+00 1.52773261e+00 1.45914149e+00 1.38125610e+00 1.27066064e+00 1.17559636e+00 1.15692234e+00 1.12062716e+00 9.75730240e-01 8.77094746e-01 8.29065621e-01 7.07277715e-01 7.10669935e-01 5.14181793e-01 4.79180247e-01 4.49814498e-01 3.25583518e-01 2.75200218e-01 2.26956576e-01 1.85379788e-01 1.49485290e-01 1.27216801e-01 9.40259397e-02 7.16300383e-02 3.97332683e-02 1.79247260e-02 0.00000000e+00 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="-7.7070737278009593e-01"/>
+        <Coefficient Index="1" Value="3.8098184459259541e-03"/>
+        <Coefficient Index="2" Value="-1.7612235249817371e-01"/>
+        <Coefficient Index="3" Value="4.9524773522756027e-02"/>
+      </Weights>
+    </SubMethod>
+    <SubMethod Index="2" Method="Fisher::Fisher_Cat0350" Cut="mjj&gt;=350&amp;&amp;mjj&lt;450" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="16335"/>
+        <Info name="TrainingTime" value="3.79929543e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="3.50004852e+02" Max="4.49982086e+02"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="2.55584717e-04" Max="5.32833910e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="3.66671919e-03" Max="1.00000000e+00"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat0350_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-5.4535084962844849e-01" XMax="5.9474521875381470e-01" HasEquidistantBins="1">
+            0.00000000e+00 0.00000000e+00 5.14862081e-03 0.00000000e+00 1.54458629e-02 5.14862090e-02 7.72293136e-02 1.02972418e-01 1.59607247e-01 2.67728299e-01 3.24363112e-01 4.27335531e-01 6.64172113e-01 6.64172113e-01 8.18630755e-01 1.26141214e+00 1.32319558e+00 1.25626349e+00 1.66815317e+00 1.85865211e+00 2.00796223e+00 2.06974554e+00 2.27054191e+00 2.15212345e+00 1.94103014e+00 1.97192180e+00 1.92043567e+00 1.84835494e+00 1.93073285e+00 1.75053108e+00 1.70419359e+00 1.49824870e+00 1.23566902e+00 1.28715527e+00 1.14814246e+00 1.06576455e+00 8.64968300e-01 7.82590389e-01 6.48726225e-01 6.17834508e-01 4.27335531e-01 4.47930038e-01 2.93471396e-01 3.03768635e-01 2.00796217e-01 1.33864149e-01 1.33864149e-01 1.18418284e-01 9.78237987e-02 3.60403471e-02 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat0350_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-5.4535084962844849e-01" XMax="5.9474521875381470e-01" HasEquidistantBins="1">
+            1.59678869e-02 2.18146853e-02 1.17510155e-01 1.33026227e-01 1.86189309e-01 2.83374280e-01 5.17813325e-01 6.60708964e-01 7.70235777e-01 1.01085031e+00 1.13744152e+00 1.24551046e+00 1.49013710e+00 1.74720752e+00 1.78447402e+00 1.79784966e+00 2.11193800e+00 1.76223993e+00 1.63661206e+00 1.80528319e+00 2.00909781e+00 1.53474927e+00 1.71334696e+00 1.45010614e+00 1.50709426e+00 1.42335045e+00 1.24139678e+00 1.39192343e+00 1.17552066e+00 1.16063595e+00 9.87636805e-01 8.86713505e-01 9.07447159e-01 7.86576033e-01 7.89031684e-01 7.71949828e-01 5.98012865e-01 5.82236886e-01 5.07876992e-01 4.56198096e-01 3.84773612e-01 2.69464046e-01 2.71513432e-01 2.03541487e-01 1.34353772e-01 1.37913674e-01 1.19575068e-01 1.17733508e-01 4.69636731e-02 5.30350953e-02 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="-8.9607804851104644e-01"/>
+        <Coefficient Index="1" Value="3.4362561761594303e-03"/>
+        <Coefficient Index="2" Value="-1.5182556085912119e-01"/>
+        <Coefficient Index="3" Value="-1.3045875400493465e-01"/>
+      </Weights>
+    </SubMethod>
+    <SubMethod Index="3" Method="Fisher::Fisher_Cat0450" Cut="mjj&gt;=450&amp;&amp;mjj&lt;550" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="10529"/>
+        <Info name="TrainingTime" value="1.47988796e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="4.50002502e+02" Max="5.49993713e+02"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="2.97024846e-03" Max="5.65390205e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="2.77887913e-03" Max="1.00000000e+00"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat0450_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-5.1901412010192871e-01" XMax="6.1314368247985840e-01" HasEquidistantBins="1">
+            6.48890017e-03 6.48890017e-03 3.24444994e-02 2.59556007e-02 2.59556007e-02 7.13779032e-02 4.54223007e-02 1.42755806e-01 1.42755806e-01 2.85511613e-01 3.69867325e-01 5.90489924e-01 8.43557000e-01 9.79823947e-01 1.05120182e+00 1.34320235e+00 1.57031381e+00 1.60924721e+00 1.77146971e+00 2.27111506e+00 1.92071450e+00 2.07644796e+00 2.18027043e+00 2.06995916e+00 2.23867059e+00 1.96613681e+00 1.92071450e+00 1.88827002e+00 1.73902524e+00 1.53138041e+00 1.58978057e+00 1.40160239e+00 1.23289108e+00 1.09013522e+00 9.34401631e-01 8.30579221e-01 8.11112523e-01 7.39734650e-01 5.19111991e-01 4.73689705e-01 4.08800721e-01 2.98489422e-01 2.98489422e-01 2.72533804e-01 1.36266902e-01 1.68711409e-01 1.23289101e-01 5.84001020e-02 3.89334001e-02 1.94667000e-02 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat0450_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-5.1901412010192871e-01" XMax="6.1314368247985840e-01" HasEquidistantBins="1">
+            6.21979646e-02 1.13680117e-01 1.43897176e-01 2.34526053e-01 3.36964428e-01 4.89295751e-01 7.44773328e-01 1.04526877e+00 1.18111897e+00 1.09258485e+00 1.41750896e+00 1.57064617e+00 1.70614564e+00 1.77809596e+00 1.80230093e+00 1.84022450e+00 2.20489049e+00 1.83252668e+00 1.89551842e+00 1.64872754e+00 1.75404632e+00 1.27064323e+00 1.35791790e+00 1.43351090e+00 1.39124453e+00 1.03019929e+00 9.73227143e-01 1.00310075e+00 9.26906347e-01 9.01600122e-01 8.37879598e-01 9.35760140e-01 9.81858730e-01 7.78116405e-01 6.03448093e-01 6.05314076e-01 5.97804725e-01 6.80463135e-01 5.82992911e-01 5.36093295e-01 4.09469128e-01 3.64832729e-01 2.65942186e-01 2.87440300e-01 2.22792998e-01 1.20511308e-01 9.45068151e-02 4.06593122e-02 3.42798121e-02 0.00000000e+00 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="-5.8999537208256958e-01"/>
+        <Coefficient Index="1" Value="2.2555271267839178e-03"/>
+        <Coefficient Index="2" Value="-1.5137441918527131e-01"/>
+        <Coefficient Index="3" Value="-1.5767557169935953e-01"/>
+      </Weights>
+    </SubMethod>
+    <SubMethod Index="4" Method="Fisher::Fisher_Cat0550" Cut="mjj&gt;=550&amp;&amp;mjj&lt;750" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="12758"/>
+        <Info name="TrainingTime" value="2.00049877e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="5.50001282e+02" Max="7.49922424e+02"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="2.86698341e-04" Max="6.42880201e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="5.35789644e-03" Max="9.99999762e-01"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat0550_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-5.2970415353775024e-01" XMax="6.6158348321914673e-01" HasEquidistantBins="1">
+            8.66819359e-03 0.00000000e+00 2.16704831e-02 1.73363872e-02 2.60045789e-02 5.63432574e-02 6.50114492e-02 1.08352415e-01 2.25373030e-01 3.29391330e-01 5.20091593e-01 5.93771219e-01 7.32462347e-01 9.36164856e-01 1.11819696e+00 1.25688803e+00 1.59061348e+00 1.68596363e+00 1.85932744e+00 1.86799562e+00 2.15838003e+00 2.04135942e+00 2.14971185e+00 2.16271424e+00 1.99801850e+00 2.02402306e+00 1.98501623e+00 1.95034349e+00 1.73363864e+00 1.59494758e+00 1.46492469e+00 1.28289258e+00 1.04018319e+00 9.57835376e-01 7.80137420e-01 7.58466899e-01 5.93771219e-01 4.16073263e-01 4.63748336e-01 3.38059545e-01 2.64379889e-01 1.86366156e-01 1.47359282e-01 1.17020607e-01 1.21354707e-01 9.53501239e-02 5.63432574e-02 4.33409661e-02 1.73363872e-02 8.66819359e-03 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat0550_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-5.2970415353775024e-01" XMax="6.6158348321914673e-01" HasEquidistantBins="1">
+            1.42337484e-02 1.11303493e-01 1.36868149e-01 2.00856537e-01 4.18794602e-01 5.08481741e-01 6.05791748e-01 9.44872916e-01 1.03066206e+00 1.29162967e+00 1.45270085e+00 1.63378179e+00 1.51248908e+00 1.54667222e+00 1.60460317e+00 2.09860277e+00 1.71801496e+00 1.87641037e+00 1.75930214e+00 1.86138415e+00 1.81790066e+00 1.52213836e+00 1.74862421e+00 1.30640852e+00 1.03261840e+00 1.19732702e+00 1.12563157e+00 1.15630150e+00 8.63315284e-01 7.63673306e-01 1.09724009e+00 8.54570091e-01 5.69141448e-01 6.96146488e-01 6.40244246e-01 5.29799342e-01 6.35321379e-01 4.55175608e-01 4.23094869e-01 1.85121566e-01 2.14457035e-01 1.74522102e-01 2.20599785e-01 1.34080723e-01 1.18782453e-01 6.85518458e-02 3.46956737e-02 2.34287810e-02 1.25363143e-02 2.24869195e-02 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="-6.5146580633475104e-01"/>
+        <Coefficient Index="1" Value="1.8283854985253537e-03"/>
+        <Coefficient Index="2" Value="-1.2093869671558903e-01"/>
+        <Coefficient Index="3" Value="-2.1144628881071875e-01"/>
+      </Weights>
+    </SubMethod>
+    <SubMethod Index="5" Method="Fisher::Fisher_Cat0750" Cut="mjj&gt;=750&amp;&amp;mjj&lt;1000" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="8326"/>
+        <Info name="TrainingTime" value="1.79619789e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="7.50009033e+02" Max="9.99997192e+02"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="7.87919387e-04" Max="6.79413033e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="2.34315591e-03" Max="9.99999583e-01"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat0750_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-3.9312970638275146e-01" XMax="5.1513928174972534e-01" HasEquidistantBins="1">
+            0.00000000e+00 0.00000000e+00 2.29151268e-02 2.29151268e-02 6.11070022e-02 1.37490749e-01 2.13874504e-01 3.05535018e-01 4.43025768e-01 5.27047873e-01 7.25645661e-01 1.05409575e+00 1.20686328e+00 1.51239836e+00 1.61933553e+00 1.96306252e+00 2.19221377e+00 2.21512890e+00 2.61232448e+00 2.60468602e+00 2.49774885e+00 2.58940935e+00 2.36025810e+00 2.68870807e+00 2.85675240e+00 2.59704757e+00 2.80328369e+00 2.14638352e+00 2.01653099e+00 2.00889277e+00 1.61169720e+00 1.61169720e+00 1.36726916e+00 1.10756445e+00 1.02354228e+00 7.25645661e-01 7.33284056e-01 7.40922391e-01 5.49962997e-01 4.43025768e-01 3.66642028e-01 2.06236139e-01 1.29852384e-01 1.14575632e-01 1.06937252e-01 7.63837546e-02 5.34686260e-02 2.29151268e-02 3.81918773e-02 1.52767505e-02 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat0750_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-3.9312970638275146e-01" XMax="5.1513928174972534e-01" HasEquidistantBins="1">
+            1.24659494e-01 2.14863554e-01 5.34232318e-01 5.20999670e-01 9.88725305e-01 8.42375576e-01 1.52059698e+00 1.38997352e+00 1.31153047e+00 1.65799391e+00 1.89260769e+00 1.82482076e+00 2.12538958e+00 2.15578175e+00 2.46314669e+00 2.44251943e+00 2.70908237e+00 1.64452636e+00 1.98633051e+00 1.74723935e+00 2.03560352e+00 2.04935122e+00 2.05181456e+00 1.57989275e+00 1.53292048e+00 1.37393332e+00 1.38083148e+00 1.25740719e+00 1.08618236e+00 9.40075040e-01 9.65219259e-01 1.34836173e+00 8.00999761e-01 9.72818732e-01 9.36997116e-01 2.22777739e-01 7.06770599e-01 6.08758688e-01 9.22337890e-01 6.13156199e-01 3.14190507e-01 2.87041247e-01 1.41408131e-01 9.88230035e-02 2.88683027e-01 1.64306834e-01 1.10571630e-01 1.05910636e-01 5.52317724e-02 0.00000000e+00 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="-1.3589269223451927e-01"/>
+        <Coefficient Index="1" Value="6.9398085954337383e-04"/>
+        <Coefficient Index="2" Value="-8.2239541294212334e-02"/>
+        <Coefficient Index="3" Value="-2.9557946001752172e-01"/>
+      </Weights>
+    </SubMethod>
+    <SubMethod Index="6" Method="Fisher::Fisher_Cat1000" Cut="mjj&gt;=1000" Variables="mjj:detajj:spt:">
+      <GeneralInfo>
+        <Info name="TMVA Release" value="4.1.2 [262402]"/>
+        <Info name="ROOT Release" value="5.32/00 [335872]"/>
+        <Info name="Creator" value="querten"/>
+        <Info name="Date" value="Mon Jun 17 14:32:00 2013"/>
+        <Info name="Host" value="Linux lxbuild168.cern.ch 2.6.18-308.16.1.el5 #1 SMP Thu Oct 4 14:02:28 CEST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
+        <Info name="Dir" value="/afs/cern.ch/work/q/querten/public/HZZ2l2v_onCondor/CMSSW_5_3_9/src/UserCode/llvv_fwk/test/ewkvp2j"/>
+        <Info name="Training events" value="9537"/>
+        <Info name="TrainingTime" value="1.93941593e-02"/>
+        <Info name="AnalysisType" value="Classification"/>
+      </GeneralInfo>
+      <Options>
+        <Option name="V" modified="Yes">False</Option>
+        <Option name="VerbosityLevel" modified="No">Default</Option>
+        <Option name="VarTransform" modified="Yes">None</Option>
+        <Option name="H" modified="Yes">True</Option>
+        <Option name="CreateMVAPdfs" modified="Yes">True</Option>
+        <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+        <Option name="Method" modified="Yes">Fisher</Option>
+      </Options>
+      <Variables NVar="3">
+        <Variable VarIndex="0" Expression="mjj" Label="mjj" Title="mjj" Unit="units" Internal="mjj" Type="F" Min="1.00006207e+03" Max="4.62563672e+03"/>
+        <Variable VarIndex="1" Expression="detajj" Label="detajj" Title="detajj" Unit="units" Internal="detajj" Type="F" Min="2.24873424e-03" Max="8.45224476e+00"/>
+        <Variable VarIndex="2" Expression="spt" Label="spt" Title="spt" Unit="units" Internal="spt" Type="F" Min="2.76495959e-03" Max="9.99998212e-01"/>
+      </Variables>
+      <Classes NClass="2">
+        <Class Name="Signal" Index="0"/>
+        <Class Name="Background" Index="1"/>
+      </Classes>
+      <Transformations NTransformations="1">
+        <Transform Name="Rearrange">
+          <Selection>
+            <Input NInputs="3">
+              <Input Type="Variable" Label="mjj" Expression="mjj"/>
+              <Input Type="Variable" Label="detajj" Expression="detajj"/>
+              <Input Type="Variable" Label="spt" Expression="spt"/>
+            </Input>
+            <Output NOutputs="3">
+              <Output Type="Variable" Label="mjj" Expression="mjj"/>
+              <Output Type="Variable" Label="detajj" Expression="detajj"/>
+              <Output Type="Variable" Label="spt" Expression="spt"/>
+            </Output>
+          </Selection>
+        </Transform>
+      </Transformations>
+      <MVAPdfs>
+        <PDF Name="Fisher_Cat1000_PDFSig" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_S_original" NBins="50" XMin="-3.0584651231765747e-01" XMax="8.9959084987640381e-01" HasEquidistantBins="1">
+            4.62519191e-03 4.16267253e-02 8.32534507e-02 2.26634398e-01 4.90270346e-01 7.53906310e-01 1.09617043e+00 1.72982180e+00 2.20159125e+00 2.61785865e+00 2.72886324e+00 3.18675733e+00 3.20988321e+00 3.27463579e+00 3.22838402e+00 2.96474791e+00 2.74736404e+00 2.30797076e+00 1.96108139e+00 1.52631330e+00 1.20254993e+00 9.25038397e-01 7.81657457e-01 6.19775712e-01 3.70015353e-01 3.00637484e-01 2.59010732e-01 1.80382490e-01 9.71290320e-02 9.25038382e-02 4.16267253e-02 6.01274930e-02 5.55023029e-02 4.62519191e-02 2.31259596e-02 9.25038382e-03 1.38755757e-02 9.25038382e-03 4.62519191e-03 0.00000000e+00 4.62519191e-03 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+          </Histogram>
+        </PDF>
+        <PDF Name="Fisher_Cat1000_PDFBkg" MinNSmooth="10" MaxNSmooth="10" InterpolMethod="2" KDE_type="1" KDE_iter="1" KDE_border="1" KDE_finefactor="1.0000000000000000e+00">
+          <Histogram Name="Fisher_tr_B_original" NBins="50" XMin="-3.0584651231765747e-01" XMax="8.9959084987640381e-01" HasEquidistantBins="1">
+            2.35633403e-01 4.49777752e-01 8.53695095e-01 2.16911936e+00 1.66165733e+00 3.00962114e+00 2.65060353e+00 3.38755488e+00 2.79540229e+00 2.87234211e+00 3.51125383e+00 2.01928711e+00 1.76820779e+00 1.41185236e+00 1.81149399e+00 1.48820829e+00 2.02125573e+00 8.27126086e-01 1.30451012e+00 1.21361530e+00 7.50618339e-01 9.16530609e-01 9.03900087e-01 3.85476857e-01 3.10325027e-01 4.33278196e-02 2.46363595e-01 1.87249213e-01 3.60408314e-02 0.00000000e+00 7.73762912e-02 0.00000000e+00 0.00000000e+00 8.21203291e-02 0.00000000e+00 0.00000000e+00 7.71743432e-02 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+          </Histogram>
+        </PDF>
+      </MVAPdfs>
+      <Weights NCoeff="4">
+        <Coefficient Index="0" Value="2.3350693270150560e-02"/>
+        <Coefficient Index="1" Value="2.4296077203610312e-04"/>
+        <Coefficient Index="2" Value="-5.3810163059892877e-02"/>
+        <Coefficient Index="3" Value="-2.2307640955342037e-01"/>
+      </Weights>
+    </SubMethod>
+  </Weights>
+</MethodSetup>
