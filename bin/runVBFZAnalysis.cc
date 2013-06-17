@@ -8,6 +8,7 @@
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
+#include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -91,7 +92,6 @@ int main(int argc, char* argv[])
   bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
 
   float minJetPtToApply(30);
-
 
   std::vector<int> jacknifeCfg=runProcess.getParameter<std::vector<int> >("jacknife");
   int jacknife(jacknifeCfg[0]), jacks(jacknifeCfg[1]);
@@ -231,20 +231,23 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "trailereta", ";#eta^{l};Events", 50,-2.6,2.6) );
 
   //balance histograms
-  for(size_t ireg=0; ireg<3; ireg++){
-    TString regStr("");
-    if(ireg==1) regStr+="30to50";
-    if(ireg==2) regStr+="50toInf";
+  mon.addHistogram( new TH2F("ptllvsdphi",     ";p_{T}(ll) [GeV];#Delta #phi(ll,jet)",50,0,200,25,0,3.2) );
+  mon.addHistogram( new TH2F("ptllvsdphipu",   ";p_{T}(ll) [GeV];#Delta #phi(ll,jet)",50,0,200,25,0,3.2) );
+  mon.addHistogram( new TH2F("ptllvsdphitrue", ";p_{T}(ll) [GeV];#Delta #phi(ll,jet)",50,0,200,25,0,3.2) );
+  for(size_t ireg=0; ireg<2; ireg++){
+    TString regStr("lt15collinear");
+    if(ireg==1) regStr="gt50back2back";
+    mon.addHistogram( new TH1F("recoilbalancepumva"+regStr, "; PU discriminator; Jets", 100,-1,1) );
+    mon.addHistogram( new TH1F("recoilbalancedrmean"+regStr, "; <#Delta R>; Jets", 100,0,0.5) );
+    mon.addHistogram( new TH1F("recoilbalancebeta"+regStr, "; #beta; Jets", 100,0,1) );
+    mon.addHistogram( new TH1F("recoilbalanceptrms"+regStr, "; RMS p_{T} [GeV]; Jets", 100,0,0.1) );
     mon.addHistogram( new TH1F("recoilbalance"+regStr, "; p_{T}(jet)/p_{T}; Jets", 100,0,5) );
-    mon.addHistogram( new TH2F("recoilbalancevseta"+regStr, "; #eta(jet); <p_{T}(jet)/p_{T}>", 100,0,5,100,0,5) );
-    TH2 *idH=(TH2 *)mon.addHistogram( new TH2F("recoilbalanceid"+regStr, "; Pseudo-rapidity; ID", 50,0,5,6,0,6) );
+    mon.addHistogram( new TH2F("recoilbalancevseta"+regStr, "; #eta(jet); <p_{T}(jet)/p_{T}>", 50,0,5,100,0,5) );
+    TH2 *idH=(TH2 *)mon.addHistogram( new TH2F("recoilbalanceid"+regStr, "; Pseudo-rapidity; ID", 50,0,5,4,0,4) );
     idH->GetYaxis()->SetBinLabel(1,"no id");  
     idH->GetYaxis()->SetBinLabel(2,"PF loose");
     idH->GetYaxis()->SetBinLabel(3,"PU loose");
-    idH->GetYaxis()->SetBinLabel(4,"PU medium");
-    idH->GetYaxis()->SetBinLabel(5,"PU tight");
-    idH->GetYaxis()->SetBinLabel(6,"p_{T} RMS<0.025");
-    mon.addHistogram( (TH2F *)idH->Clone("recoilbalancefakeid"+regStr) );
+    idH->GetYaxis()->SetBinLabel(4,"PU loose (ret)");
   }
   
   //boson control
@@ -674,7 +677,7 @@ int main(int argc, char* argv[])
       //
       //JET/MET ANALYSIS
       //
-      data::PhysicsObjectCollection_t selJets;
+      data::PhysicsObjectCollection_t selJets, selJetsNoId;
       int njets(0);
       for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
@@ -699,15 +702,11 @@ int main(int argc, char* argv[])
 	    minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
-	  //Int_t idbits=jets[ijet].get("idbits");
-	  //bool passPFloose( ((idbits>>0) & 0x1));
-	  //if(!passPFloose) continue;
-	  //bool passPFmedium( ((idbits>>1) & 0x1));
-	  //if(!passPFmedium) continue;
-	  //int puId = ((idbits>>3) & 0xf);
-	  // bool passLoosePU( (puId>>2) & 0x1 );
-	  //if(!passLoosePU) continue;
-	  
+	  //jet id
+	  float pumva=jets[ijet].getVal("puMVA");
+	  Int_t idbits=jets[ijet].get("idbits");
+	  bool passPFloose( ((idbits>>0) & 0x1));
+	  	  
 	  //add scale/resolution uncertainties
 	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
 	  std::vector<float> smearPt=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
@@ -718,8 +717,11 @@ int main(int argc, char* argv[])
 	  jets[ijet].setVal("jesup",   isMC ? smearPt[0] : jets[ijet].pt());
 	  jets[ijet].setVal("jesdown", isMC ? smearPt[1] : jets[ijet].pt());
 
-	  selJets.push_back(jets[ijet]);
-	  if(jets[ijet].pt()>minJetPtToApply) njets++;
+	  selJetsNoId.push_back(jets[ijet]);
+	  if(passPFloose && pumva>-0.5){
+	    selJets.push_back(jets[ijet]);
+	    if(jets[ijet].pt()>minJetPtToApply) njets++;
+	  }
 	}
       std::sort(selJets.begin(), selJets.end(), data::PhysicsObject_t::sortByPt);
       
@@ -837,59 +839,47 @@ int main(int argc, char* argv[])
 	    mon.fillHisto("zy"       , tags, zy,        weight);
 	    
 	    //balance control
-	    std::vector<TString> zptRegs;
-	    zptRegs.push_back("");
-	    if(zll.pt()>30 && zll.pt()<50) zptRegs.push_back("30to50"); 
-	    if(zll.pt()>50)                zptRegs.push_back("50toInf");
-	    float dphiLead(selJets.size() ? deltaPhi(selJets[0].phi(),zll.phi()) : -1);
-	    float balanceLead(selJets.size() ? selJets[0].pt()/zll.pt() : -1 );
-	    for(size_t ijet=0; ijet<selJets.size(); ijet++)
+	    if(njets==1)
 	      {
-		if(selJets[ijet].pt()<30) continue;
+		//set as pu if no matched gen jet
+		bool isPUjet( selJetsNoId[0].getObject("genJet").pt()==0 ); 
 		
-		//phase space
-		float dphi=deltaPhi(selJets[ijet].phi(),zll.phi());
-		float recoilPt=selJets[ijet].pt();
-		float balance(recoilPt/zll.pt());
-
-		//ids
-		Int_t idbits=jets[ijet].get("idbits");
-		int puId((idbits>>3) & 0xf);
-		bool passPFloose ( ((idbits>>0) & 0x1) );
-		bool passPUtight ( ((puId>>0)   & 0x1) );
-		bool passPUmedium( ((puId>>1)   & 0x1) );
-		bool passPUloose ( ((puId>>2)   & 0x1) );
-		
-		for(size_t ireg=0; ireg<zptRegs.size(); ireg++)
+		//kinematics
+		float balance = selJetsNoId[0].pt()/zll.pt();
+		float dphi    = fabs( deltaPhi(selJetsNoId[0].phi(),zll.phi()) );
+		mon.fillHisto("ptllvsdphi",                                    tags,zll.pt(),dphi,weight);
+		mon.fillHisto(TString("ptllvsdphi")+(isPUjet ? "pu" : "true"), tags,zll.pt(),dphi,weight);
+	
+		TString regStr("");
+		if(dphi<1   && zll.pt()<15) regStr="lt15collinear";
+		if(dphi>2.7 && zll.pt()>50) regStr="gt50back2back";
+		if(regStr!="")
 		  {
-		    //only one jet back-to-back
-		    if(njets==1 && fabs(dphi)>2.7)
-		      {
-			
-			mon.fillHisto("recoilbalance"+zptRegs[ireg],tags,balance, weight);
-			mon.fillHisto("recoilbalancevseta"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()), balance, weight);
-			
-			//balancing
-			if(balance>0.8 && balance<1.2)
-			  {
-			    mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),0, weight);
-			    if(passPFloose)   mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),1, weight);
-			    if(passPUloose)   mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),2, weight);
-			    if(passPUmedium)  mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),3, weight);
-			    if(passPUtight)   mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),4, weight);
-			    if(passPFloose && passPUloose) mon.fillHisto("recoilbalanceid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),5, weight);
-			  }
-		      }
-		    //recoiling balanced jet + another spurious jet in the transverse region 45-90deg
-		    if((fabs(dphiLead)>2.7 && balanceLead>0.8 && balanceLead<1.2) && fabs(dphi)>0.78 && fabs(dphi)<2.4)
-		      {
-			mon.fillHisto("recoilbalancefakeid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),0, weight);
-			if(passPFloose)   mon.fillHisto("recoilbalancefakeid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),1, weight);
-			if(passPUloose)   mon.fillHisto("recoilbalancefakeid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),2, weight);
-			if(passPUmedium)  mon.fillHisto("recoilbalancefakeid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),3, weight);
-			if(passPUtight)   mon.fillHisto("recoilbalancefakeid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),4, weight);
-			if(passPFloose && passPUloose) mon.fillHisto("recoilbalancefakeid"+zptRegs[ireg],tags,fabs(selJets[ijet].eta()),5, weight);
-		      }
+		    float drmean( selJetsNoId[0].getVal("dRMean") );
+		    float beta( selJetsNoId[0].getVal("beta") );
+		    float ptrms( selJetsNoId[0].getVal("ptRMS") );
+		    float pumva( selJetsNoId[0].getVal("puMVA") );
+
+		    //ids
+		    Int_t idbits=selJetsNoId[0].get("idbits");
+		    int puId((idbits>>3) & 0xf);
+		    bool passPFloose ( ((idbits>>0) & 0x1) );
+		    bool passPUloose ( pumva>-0.5 );
+		    bool passPUlooseRet ( ((puId>>3)   & 0x1) );
+
+		    mon.fillHisto("recoilbalancepumva"+regStr, tags, pumva, weight);
+		    mon.fillHisto("recoilbalancedrmean"+regStr, tags, drmean, weight);
+		    mon.fillHisto("recoilbalancebeta"+regStr,   tags, beta,   weight);
+		    mon.fillHisto("recoilbalanceptrms"+regStr,  tags, ptrms,  weight);
+
+		    mon.fillHisto("recoilbalance"+regStr,      tags,balance, weight);
+		    mon.fillHisto("recoilbalancevseta"+regStr, tags,fabs(selJetsNoId[0].eta()), balance, weight);
+		    mon.fillHisto("recoilbalanceid"+regStr,    tags,fabs(selJetsNoId[0].eta()),0, weight);
+		    if(passPFloose){
+		      mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),1, weight);
+		      if(passPUloose)     mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),2, weight);
+		      if(passPUlooseRet)  mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),3, weight);
+		    }
 		  }
 	      }
 	    //end balance control

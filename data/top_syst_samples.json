@@ -54,6 +54,19 @@
 	   ]
 	},
 	{
+	 "tag":"t#bar{t}systtunep11mpihi",
+         "isdata":false,
+         "spimpose":true,
+         "color":"8",
+	 "lcolor":1,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJets_TuneP11mpiHi",
+                "xsec":245.8
+                }
+	   ]
+	},
+	{
            "tag":"Z#rightarrow#tau#tausystdata",
            "isdata":true,
            "color":1,

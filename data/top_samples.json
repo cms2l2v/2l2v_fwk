@@ -9,19 +9,16 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_WW",
-                "split":1,
                 "xsec":57.1097,
 		"br":[0.104976]
              },
 	    {
                 "dtag":"MC8TeV_ZZ",
-                "split":2,
                 "xsec":7.92,
 		"br":[0.0403896]
              },
             {
                 "dtag":"MC8TeV_WZ",
-                "split":2,
                 "xsec":1.057
              }
            ]
@@ -96,32 +93,26 @@
          "data":[
                 {
                 "dtag":"MC8TeV_SingleTbar_tW",
-                "split":1,
                 "xsec":11.1
                 },
                 {
                 "dtag":"MC8TeV_SingleT_tW",
-                "split":1,
                 "xsec":11.1
                 },
                 {
                 "dtag":"MC8TeV_SingleTbar_t",
-                "split":1,
                 "xsec":30.7
                 },
                 {
                 "dtag":"MC8TeV_SingleT_t",
-                "split":1,
                 "xsec":56.4
                 },
                 {
                 "dtag":"MC8TeV_SingleTbar_s",
-                "split":1,
                 "xsec":1.76
                 },
                 {
                 "dtag":"MC8TeV_SingleT_s",
-                "split":1,
                 "xsec":3.79
                 }
           ]
@@ -134,12 +125,12 @@
          "data":[
 	      {
                "dtag":"MC8TeV_DYJetsToLL_50toInf",
-               "split":4,
+               "split":5,
                 "xsec":3503.71
               },
 	      {
                 "dtag":"MC8TeV_DY1JetsToLL_50toInf",
-                "split":6,
+                "split":7,
                 "xsec":3503.71,
 		"br":[0.1901694915]
               },
@@ -163,7 +154,6 @@
               },
 	      {
                "dtag":"MC8TeV_DYJetsToLL_10to50",
-               "split":4,
                 "xsec":860.5
               }
            ]

@@ -10,20 +10,22 @@
 #include "TLegend.h"
 #include "TPaveText.h"
 #include "THStack.h"
+#include "TLine.h"
 
 #include <iostream>
 
 using namespace std;
 
 //
-void showCMSHeader(TObject *data=0, TObject *mc=0)
+void showCMSHeader(TObject *data=0, TObject *mc=0,bool isSim=false)
 {
   TPaveText *pt=new TPaveText(0.1,0.91,0.8,0.99,"brNDC");
   pt->SetBorderSize(0);
   pt->SetFillStyle(0);
   pt->SetTextAlign(12);
   //  pt->SetTextSize(0.08);
-  pt->AddText("CMS preliminary, #sqrt{s}=8 TeV, #scale[0.5]{#int}L=0.9 fb^{-1}");
+  if(!isSim) pt->AddText("CMS preliminary, #sqrt{s}=8 TeV, #scale[0.5]{#int}L=0.9 fb^{-1}");
+  else       pt->AddText("CMS simulation, #sqrt{s}=8 TeV");
   pt->Draw();
   
   if(data==0 && mc==0) return;
@@ -128,6 +130,72 @@ void drawDistributionWithVariations(TString dist="mumu_jetpt")
   c->Update();
 }
 
+//project pu jet kinematics
+void projectPUjetKinematics()
+{
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  gStyle->SetPalette(55);
+  
+  TFile *inF=TFile::Open("~/work/ewkzp2j_539/plotter.root");
+  TH2 *incj=(TH2 *) inF->Get("Z#rightarrow ll/mumu_ptllvsdphi");        incj->SetDirectory(0);
+  TH2 *pu=(TH2 *) inF->Get("Z#rightarrow ll/mumu_ptllvsdphipu");        pu->SetDirectory(0); 
+  TH2 *truej=(TH2 *) inF->Get("Z#rightarrow ll/mumu_ptllvsdphitrue");   truej->SetDirectory(0); 
+  inF->Close();
+
+  TH2 *puPur=(TH2 *)pu->Clone("pupur");        puPur->Divide(incj);   puPur->GetZaxis()->SetTitle("Purity");   puPur->SetDirectory(0);
+  TH2 *truePur=(TH2 *)truej->Clone("truepur"); truePur->Divide(incj); truePur->GetZaxis()->SetTitle("Purity"); truePur->SetDirectory(0);
+
+  //draw
+  TCanvas *c=new TCanvas("c","c",1000,1000);    
+  c->Divide(2,2);
+
+  TPad *p=(TPad *)c->cd(1);  p->SetLogz(); 
+  pu->Scale(1./pu->Integral()); pu->Draw("colz");
+  showCMSHeader(0,0,true); 
+  pu->GetZaxis()->SetRangeUser(1e-3,1);
+  TPaveText *pt=new TPaveText(0.6,0.3,0.9,0.4,"brNDC");
+  pt->SetBorderSize(0);
+  pt->SetFillStyle(0);
+  pt->SetTextFont(42);
+  pt->AddText("Pileup jets");
+  pt->Draw();
+
+  p=(TPad *)c->cd(2);  p->SetLogz(); 
+  truej->Scale(1./truej->Integral());  truej->Draw("colz");
+  truej->GetZaxis()->SetRangeUser(1e-3,1);
+  pt=new TPaveText(0.6,0.3,0.9,0.4,"brNDC");
+  pt->SetBorderSize(0);
+  pt->SetFillStyle(0);
+  pt->SetTextFont(42);
+  pt->AddText("True jets");
+  pt->Draw();
+
+
+  p=(TPad *)c->cd(3); puPur->Draw("colz");
+  TLine *l=new TLine(0,1,15,1); l->SetLineColor(kRed); l->SetLineWidth(2); l->Draw();
+  l=new TLine(15,1,15,0);       l->SetLineColor(kRed); l->SetLineWidth(2); l->Draw();
+  pt=new TPaveText(0.6,0.3,0.9,0.4,"brNDC");
+  pt->SetBorderSize(0);
+  pt->SetFillStyle(0);
+  pt->SetTextFont(42);
+  pt->AddText("Pileup jets purity");
+  pt->Draw();
+
+  p=(TPad *)c->cd(4); truePur->Draw("colz");
+  l=new TLine(50,3.2,50,2.7);   l->SetLineColor(kRed); l->SetLineWidth(2); l->Draw();
+  l=new TLine(50,2.7,200,2.7);  l->SetLineColor(kRed); l->SetLineWidth(2); l->Draw();
+   pt=new TPaveText(0.6,0.3,0.9,0.4,"brNDC");
+  pt->SetBorderSize(0);
+  pt->SetFillStyle(0);
+  pt->SetTextFont(42);
+  pt->AddText("True jets purity");
+  pt->Draw();
+
+  
+}
+
+
 //
 void measureJetIdEfficiency()
 {
@@ -136,8 +204,8 @@ void measureJetIdEfficiency()
   gStyle->SetPalette(1);
   
   
-  TString profs[]= {"recoilbalanceid", "recoilbalanceid30to50", "recoilbalanceid50toInf"};
-  TString cats[] = {"inclusive",       "30<p_{T}(Z)/GeV<50",    "p_{T}(Z)>50 GeV"};
+  TString profs[]= {"recoilbalanceidlt15collinear", "recoilbalanceidgt50back2back"};
+  TString cats[] = {"Pileup control",               "True jets control"};
   const size_t nprofs=sizeof(profs)/sizeof(TString);
 
   TCanvas *c=new TCanvas("c","c",600,600);       c->Divide(1,nprofs);   c->cd(1)->SetTopMargin(0.1);
@@ -154,7 +222,7 @@ void measureJetIdEfficiency()
   
       TH1 *allJetsMC=dyMC->ProjectionX("alljetsmc",1,1);    
       TH1 *allJetsData=dyData->ProjectionX("alljetsdata",1,1); 
-      for(int ybin=2; ybin<=3+0*dyMC->GetYaxis()->GetNbins(); ybin++)
+      for(int ybin=2; ybin<=5+0*dyMC->GetYaxis()->GetNbins(); ybin++)
 	{
 	  TString label(dyMC->GetYaxis()->GetBinLabel(ybin));
 	  TString pf(""); pf+=ybin; pf+=i;
