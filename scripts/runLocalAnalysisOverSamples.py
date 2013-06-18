@@ -3,6 +3,7 @@ import os,sys
 import json
 import optparse
 import commands
+import LaunchOnCondor
 
 """
 Gets the value of a given item
@@ -37,6 +38,13 @@ segment=0
 #open the file which describes the sample
 jsonFile = open(opt.samplesDB,'r')
 procList=json.load(jsonFile,encoding='utf-8').items()
+
+FarmDirectory                      = opt.outdir+"/FARM"
+JobName                            = opt.theExecutable
+LaunchOnCondor.Jobs_RunHere        = 1
+LaunchOnCondor.Jobs_Queue          = opt.queue
+LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
+LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
 #run over sample
 for proc in procList :
@@ -100,9 +108,10 @@ for proc in procList :
                 if len(opt.queue)==0 :
                     os.system(opt.theExecutable + ' ' + cfgfile)
                 else :
-                    localParams='-exe=%s -cfg=%s'%(opt.theExecutable,cfgfile)
-                    batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],segment,scriptFile,localParams)
-                    print batchCommand
-                    os.system(batchCommand)
-                    
-    
+                    #old version
+                    #localParams='-exe=%s -cfg=%s'%(opt.theExecutable,cfgfile)
+                    #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],segment,scriptFile,localParams)
+                    #os.system(batchCommand)
+                    LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
+
+LaunchOnCondor.SendCluster_Submit()

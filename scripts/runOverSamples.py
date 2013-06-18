@@ -5,6 +5,7 @@ import json
 import optparse
 import commands
 from UserCode.llvv_fwk.storeTools_cff import fillFromStore
+import LaunchOnCondor
 
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
@@ -79,9 +80,20 @@ for proc in procList :
                     print "**** Starting new job with the following parameters ****"
                     print localParams
                     if(len(opt.queue)>0) :
-                        batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],ijob,scriptFile,localParams)
-                        print batchCommand
-                        os.system(batchCommand)
+                        #old style 
+                        #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],ijob,scriptFile,localParams)
+                        #print batchCommand
+                        #os.system(batchCommand)
+
+                        FarmDirectory                      = "FARM"
+                        JobName                            = d['dtag']+str(ijob)
+                        LaunchOnCondor.Jobs_RunHere        = 1
+                        LaunchOnCondor.Jobs_Queue          = opt.queue
+                        LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
+                        LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
+                        LaunchOnCondor.SendCluster_Push(["BASH", str(scriptFile+ ' ' + localParams)])
+                        LaunchOnCondor.SendCluster_Submit()
+
                     else :
                         os.system(scriptFile + ' '  + localParams)
                         

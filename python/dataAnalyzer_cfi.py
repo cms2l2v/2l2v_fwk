@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from CMGTools.External.pujetidproducer_cfi import pileupJetIdProducerChs
 pileupJetIdProducerChs.algos[0].tmvaWeights=cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml")  
 
+                 
 dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                cfg=cms.PSet( metFilters=cms.vstring('HBHENoiseFilter',
                                                                     'hcalLaserEventFilter',
@@ -58,3 +59,9 @@ dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                              rho25Source      = cms.InputTag("kt6PFJetsCentral:rho")
                                              )
                                )
+
+## configure specifically for a dijet analysis
+dijetAnalyzer = dataAnalyzer.clone()
+dijetAnalyzer.cfg.triggerPaths=cms.vstring("BTagMu_DiJet20","BTagMu_DiJet40","BTagMu_DiJet70","BTagMu_DiJet110","BTagMu_Jet300")
+dijetAnalyzer.cfg.triggerCats=cms.vint32(1,1,1,1,1)
+

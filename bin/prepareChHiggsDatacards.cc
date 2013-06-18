@@ -4,7 +4,6 @@
 
 #include "UserCode/llvv_fwk/src/tdrstyle.C"
 #include "UserCode/llvv_fwk/src/JSONWrapper.cc"
-#include "UserCode/llvv_fwk/interface/setStyle.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 //#include "UserCode/llvv_fwk/interface/plotter.h"
 
@@ -773,7 +772,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 //
 int main(int argc, char* argv[])
 {
-  setStyle();
+  setTDRStyle();
 
   //get input arguments
   for(int i=1;i<argc;i++){

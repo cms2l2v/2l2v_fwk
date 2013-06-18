@@ -19,15 +19,10 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
     hkin->GetYaxis()->SetBinLabel(ybin,jetRanges_[ybin-1]);
   }
   
-  TH2F *hrunjp  = new TH2F("runjp",";Jet probability;Working point;Jets",50,0,2.5,taggers_[0].wps.size(),0,taggers_[0].wps.size());
-  TH2F *hrunkin = new TH2F("runkin",";Mass(lepton,jet);Working point;Jets",50,0,500,taggers_[0].wps.size(),0,taggers_[0].wps.size());
-  int ibin(1);
-  for(std::map<TString,float>::iterator it = taggers_[0].wps.begin(); it!= taggers_[0].wps.end(); it++, ibin++)
-    {
-      char buf[20]; sprintf(buf,"%3.3f",it->second);
-      hrunjp->GetYaxis()->SetBinLabel(ibin,buf);
-      hrunkin->GetYaxis()->SetBinLabel(ibin,buf);
-    }
+  TH2F *hrunjp  = new TH2F("runjp",";Jet probability;Working point;Jets",  50,0,2.5,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
+  TH2F *hrunkin = new TH2F("runkin",";Mass(lepton,jet);Working point;Jets",50,0,500,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
+  hrunjp->GetYaxis()->SetBinLabel(1,"inc");
+  hrunkin->GetYaxis()->SetBinLabel(1,"inc");
 
   //instantiate histograms per tagger
   for(size_t i=0; i<taggers_.size(); i++)
@@ -50,6 +45,14 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 	}
 
       //jp or kinematics fit
+      ibin=2;
+      for(std::map<TString,float>::iterator it = tagger.wps.begin(); it!= tagger.wps.end(); it++, ibin++)
+	{
+	  char buf[20]; sprintf(buf,"%3.5f",it->second);
+	  hrunjp->GetYaxis()->SetBinLabel(ibin,buf);
+	  hrunkin->GetYaxis()->SetBinLabel(ibin,buf);
+	}
+      
       for(size_t j=0; j<nSystVars; j++)
 	{  
 	  if(tagger.name=="jp")
@@ -69,15 +72,7 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 	    mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpc"+systVars_[j]+tagger.name) );
 	    mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpudsg"+systVars_[j]+tagger.name) );
 	  }
-	  
-	  if(i==0){
-	    mon_->addHistogram( (TH2F *)hkin->Clone("kin"+systVars_[j]) );
-	    mon_->addHistogram( (TH2F *)hkin->Clone("kinb"+systVars_[j]) );
-	    mon_->addHistogram( (TH2F *)hkin->Clone("kinothers"+systVars_[j]) );
-	    mon_->addHistogram( (TH2F *)hrunkin->Clone("runkin"+systVars_[j]) );
-	    mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinb"+systVars_[j]) );
-	    mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinothers"+systVars_[j]) );
-	  }
+
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkin"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinb"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinothers"+systVars_[j]+tagger.name) );
@@ -120,7 +115,7 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       float iweight(weight);
       if(var=="puup")   iweight=weightUp;
       if(var=="pudown") iweight=weightDown;
-
+      
       int njets30(0);
       std::map<TString,std::map<TString,int> > btagCounts;
       for(size_t ijet=0; ijet<jets.size(); ijet++)
@@ -200,7 +195,7 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		  btagCounts[tagger.name]=countTemplate;
 		}
 		if(btagCounts[tagger.name].find(it->first)==btagCounts[tagger.name].end()) btagCounts[tagger.name][it->first]=0;
-		btagCounts[tagger.name][it->first] += (disc>it->second);
+		btagCounts[tagger.name][it->first] += hasWPtag[it->first];
 	      }
 	    
 	    //fill histograms according to jet kinematics categories
@@ -235,30 +230,28 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		    }
 		  }
 	      }
-
+	    
 	    //fill histogram according to WPs
+	    std::vector<int> wpJetCategs;
+	    wpJetCategs.push_back(0);
 	    int iwpbin(1);
 	    for(std::map<TString, bool>::iterator it=hasWPtag.begin(); it!=hasWPtag.end(); it++,iwpbin++)
 	      {
-		if(tagger.name=="jp") mon_->fillHisto("runjp"+var, ch, jpDisc, iwpbin, iweight);
-		if(ib==0) {
-		  mon_->fillHisto("runkin"+var, ch, mljPerFlavor[0].second, iwpbin, iweight);
-		  mon_->fillHisto("runkin"+var, ch, mljPerFlavor[1].second, iwpbin, iweight);
-		}
-		if(isMC) {
-		  if(tagger.name=="jp") mon_->fillHisto("runjp"+jetFlav+var, ch, jpDisc, iwpbin, iweight);
-		  if(ib==0){
-		    mon_->fillHisto("runkin"+mljPerFlavor[0].first+var, ch, mljPerFlavor[0].second, iwpbin, iweight);
-		    mon_->fillHisto("runkin"+mljPerFlavor[1].first+var, ch, mljPerFlavor[1].second, iwpbin, iweight);
-		  }
-		}
 		if(!it->second) continue;
-		if(tagger.name!="jp") mon_->fillHisto("runjp"+var+tagger.name,ch, jpDisc, iwpbin, iweight);
+		wpJetCategs.push_back(iwpbin);
+	      }
+
+	    for(size_t ijcat=0; ijcat<wpJetCategs.size(); ijcat++)
+	      {
+		iwpbin=wpJetCategs[ijcat];
+		if(tagger.name=="jp") mon_->fillHisto("runjp"+var,             ch, jpDisc, iwpbin, iweight);
+		else                  mon_->fillHisto("runjp"+var+tagger.name, ch, jpDisc, iwpbin, iweight);
 		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[0].second, iwpbin, iweight);
 		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[1].second, iwpbin, iweight);
-
-		if(isMC){
-		  if(tagger.name!="jp") mon_->fillHisto( "runjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
+		
+		if(isMC) {
+		  if(tagger.name=="jp") mon_->fillHisto("runjp"+jetFlav+var,             ch, jpDisc, iwpbin, iweight);
+		  else                  mon_->fillHisto("runjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
 		  mon_->fillHisto("runkin"+mljPerFlavor[0].first+var+tagger.name,   ch, mljPerFlavor[0].second, iwpbin, iweight);
 		  mon_->fillHisto("runkin"+mljPerFlavor[1].first+var+tagger.name,   ch, mljPerFlavor[1].second, iwpbin, iweight);
 		}
@@ -330,15 +323,17 @@ void BTVAnalysis::fillCategories(bool runSystematics)
     itagger.minVal=btaggerMin[ib];
     itagger.maxVal=btaggerMax[ib];
 
+    float deltaMinL((btaggerL[ib]-btaggerMin[ib])*0.25);
     float deltaLM((btaggerM[ib]-btaggerL[ib])*0.25);
     float deltaMT((btaggerT[ib]-btaggerM[ib])*0.25);
     float deltaTmax((0.90*btaggerMax[ib]-btaggerT[ib])*0.25);
     for(int istep=0; istep<=3; istep++)
       {
 	TString pf(""); if(istep) pf+=istep;
-	itagger.wps["L"+pf]=btaggerL[ib]+deltaLM*0.25;
-	itagger.wps["M"+pf]=btaggerM[ib]+deltaMT*0.25;
-	itagger.wps["T"+pf]=btaggerT[ib]+deltaTmax*0.25;
+	itagger.wps["F"+pf] = btaggerMin[ib] + deltaMinL*istep;
+	itagger.wps["L"+pf] = btaggerL[ib]   + deltaLM*istep;
+	itagger.wps["M"+pf] = btaggerM[ib]   + deltaMT*istep;
+	itagger.wps["T"+pf] = btaggerT[ib]   + deltaTmax*istep;
       }
     taggers_.push_back(itagger);
   }
