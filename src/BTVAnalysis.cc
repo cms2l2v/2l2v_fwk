@@ -12,15 +12,15 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
   fillCategories(runSystematics); 
   const size_t nSystVars=systVars_.size();
   const size_t nJetRanges=jetRanges_.size();
-  TH2F *hjp  = new TH2F("jp",";Jet probability;Range;Jets",50,0,2.5,nJetRanges,0,nJetRanges);
-  TH2F *hkin  = new TH2F("kin",";Mass(lepton,jet);Range;Jets",50,0,500,nJetRanges,0,nJetRanges);
+  TH2F *hjp  = new TH2F("jptempl",";Jet probability;Range;Jets",50,0,2.5,nJetRanges,0,nJetRanges);
+  TH2F *hkin  = new TH2F("kintempl",";Mass(lepton,jet);Range;Jets",50,0,500,nJetRanges,0,nJetRanges);
   for(int ybin=1; ybin<=hjp->GetYaxis()->GetNbins(); ybin++){
     hjp->GetYaxis()->SetBinLabel(ybin,jetRanges_[ybin-1]);
     hkin->GetYaxis()->SetBinLabel(ybin,jetRanges_[ybin-1]);
   }
   
-  TH2F *hrunjp  = new TH2F("runjp",";Jet probability;Working point;Jets",  50,0,2.5,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
-  TH2F *hrunkin = new TH2F("runkin",";Mass(lepton,jet);Working point;Jets",50,0,500,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
+  TH2F *hrunjp  = new TH2F("runjptempl",";Jet probability;Working point;Jets",  50,0,2.5,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
+  TH2F *hrunkin = new TH2F("runkintempl",";Mass(lepton,jet);Working point;Jets",50,0,500,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
   hrunjp->GetYaxis()->SetBinLabel(1,"inc");
   hrunkin->GetYaxis()->SetBinLabel(1,"inc");
 
@@ -65,14 +65,20 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 	      mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpb"+systVars_[j]) );
 	      mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpc"+systVars_[j]) );
 	      mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpudsg"+systVars_[j]) );
-	    }
-	  else{
-	    mon_->addHistogram( (TH2F *)hrunjp->Clone("runjp"+systVars_[j]+tagger.name) );
-	    mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpb"+systVars_[j]+tagger.name) );
-	    mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpc"+systVars_[j]+tagger.name) );
-	    mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpudsg"+systVars_[j]+tagger.name) );
-	  }
 
+
+	      mon_->addHistogram( (TH2 *)hkin->Clone( "kin"      +systVars_[j]) );
+	      mon_->addHistogram( (TH2 *)hkin->Clone( "kinb"     +systVars_[j]) );
+	      mon_->addHistogram( (TH2 *)hkin->Clone( "kinothers"+systVars_[j]) );
+	      mon_->addHistogram( (TH2F *)hrunkin->Clone("runkin"+systVars_[j]) );
+	      mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinb"+systVars_[j]) );
+	      mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinothers"+systVars_[j]) );
+	    }
+	  
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjp"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpb"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpc"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpudsg"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkin"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinb"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinothers"+systVars_[j]+tagger.name) );
@@ -80,13 +86,10 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 	  for(std::map<TString,float>::iterator it = tagger.wps.begin(); it!= tagger.wps.end(); it++)
 	    {
 	      if(!it->first.IsAlpha()) continue;
-	      if(tagger.name!="jp")
-		{
-		  mon_->addHistogram( (TH2 *)hjp->Clone( "jp"     +systVars_[j]+tagger.name+it->first) );
-		  mon_->addHistogram( (TH2 *)hjp->Clone( "jpb"    +systVars_[j]+tagger.name+it->first) );
-		  mon_->addHistogram( (TH2 *)hjp->Clone( "jpc"    +systVars_[j]+tagger.name+it->first) );
-		  mon_->addHistogram( (TH2 *)hjp->Clone( "jpudsg" +systVars_[j]+tagger.name+it->first) );
-		}
+	      mon_->addHistogram( (TH2 *)hjp->Clone( "jp"     +systVars_[j]+tagger.name+it->first) );
+	      mon_->addHistogram( (TH2 *)hjp->Clone( "jpb"    +systVars_[j]+tagger.name+it->first) );
+	      mon_->addHistogram( (TH2 *)hjp->Clone( "jpc"    +systVars_[j]+tagger.name+it->first) );
+	      mon_->addHistogram( (TH2 *)hjp->Clone( "jpudsg" +systVars_[j]+tagger.name+it->first) );
 	      mon_->addHistogram( (TH2 *)hkin->Clone( "kin"      +systVars_[j]+tagger.name+it->first) );
 	      mon_->addHistogram( (TH2 *)hkin->Clone( "kinb"     +systVars_[j]+tagger.name+it->first) );
 	      mon_->addHistogram( (TH2 *)hkin->Clone( "kinothers"+systVars_[j]+tagger.name+it->first) );
@@ -98,7 +101,7 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 //
 void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, 
 			  data::PhysicsObjectCollection_t &jets,
-			  bool isMC, int nVtx, float weight, float weightUp, float weightDown)
+			  bool isMC, int nVtx, float weight, float weightUp, float weightDown, bool isTop)
 {
   //check the category
   int lid1(leptons[0].get("id")), lid2(leptons[1].get("id"));
@@ -153,7 +156,7 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 	      {
 		const data::PhysicsObject_t &genLepton=leptons[ilep].getObject("gen");
 		int genLeptonId=genLepton.info.find("id")->second;
-		if(genLeptonId*genPartonId<0) flav="b";
+		if(genLeptonId*genPartonId<0 && isTop) flav="b";
 	      }
 	    mljPerFlavor.push_back( std::pair<TString,float>(flav,mlj) );  
 	  }
@@ -231,7 +234,25 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		  }
 	      }
 	    
-	    //fill histogram according to WPs
+	    //running discriminator histograms
+	    //inclusive histograms only need to be filled once
+	    if(ib==0)
+	      {
+		TH2 *h=(TH2 *)mon_->getHisto("runjp"+var,"");
+		for(int iwpbin=1; iwpbin<=h->GetYaxis()->GetNbins(); iwpbin++)
+		  {
+		    mon_->fillHisto("runjp"+var,  ch, jpDisc, iwpbin, iweight);
+		    mon_->fillHisto("runkin"+var, ch, mljPerFlavor[0].second, iwpbin, iweight);
+		    mon_->fillHisto("runkin"+var, ch, mljPerFlavor[1].second, iwpbin, iweight);
+		    if(isMC) {
+		      mon_->fillHisto("runjp"+jetFlav+var,                  ch, jpDisc, iwpbin, iweight);
+		      mon_->fillHisto("runkin"+mljPerFlavor[0].first+var,   ch, mljPerFlavor[0].second, iwpbin, iweight);
+		      mon_->fillHisto("runkin"+mljPerFlavor[1].first+var,   ch, mljPerFlavor[1].second, iwpbin, iweight);
+		    }
+		  }
+	      }
+	    
+	    //post-tag histograms
 	    std::vector<int> wpJetCategs;
 	    wpJetCategs.push_back(0);
 	    int iwpbin(1);
@@ -240,18 +261,15 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		if(!it->second) continue;
 		wpJetCategs.push_back(iwpbin);
 	      }
-
 	    for(size_t ijcat=0; ijcat<wpJetCategs.size(); ijcat++)
 	      {
 		iwpbin=wpJetCategs[ijcat];
-		if(tagger.name=="jp") mon_->fillHisto("runjp"+var,             ch, jpDisc, iwpbin, iweight);
-		else                  mon_->fillHisto("runjp"+var+tagger.name, ch, jpDisc, iwpbin, iweight);
+
+		mon_->fillHisto("runjp"+var+tagger.name, ch, jpDisc, iwpbin, iweight);
 		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[0].second, iwpbin, iweight);
-		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[1].second, iwpbin, iweight);
-		
+		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[1].second, iwpbin, iweight);		
 		if(isMC) {
-		  if(tagger.name=="jp") mon_->fillHisto("runjp"+jetFlav+var,             ch, jpDisc, iwpbin, iweight);
-		  else                  mon_->fillHisto("runjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
+		  mon_->fillHisto("runjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
 		  mon_->fillHisto("runkin"+mljPerFlavor[0].first+var+tagger.name,   ch, mljPerFlavor[0].second, iwpbin, iweight);
 		  mon_->fillHisto("runkin"+mljPerFlavor[1].first+var+tagger.name,   ch, mljPerFlavor[1].second, iwpbin, iweight);
 		}

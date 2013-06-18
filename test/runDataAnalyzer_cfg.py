@@ -120,8 +120,13 @@ usePF2PAT(process,
           typeIMetCorrections=False)
 useGsfElectrons(process,postfix=postfix,dR="03")
 
+process.makeStdMuons=process.makePatMuons
 if(not isMC):
     removeMCMatching(process, ['All'],postfix)
+    process.patMuons.addGenMatch = cms.bool(False)
+    removeMCMatching(process, names=['Muons'], postfix="")
+    process.patMuons.embedGenMatch = cms.bool(False)
+    process.makeStdMuons=cms.Sequence(process.patMuons)
 
 #add electron MVA id
 process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
@@ -190,6 +195,7 @@ process.p = cms.Path( process.startCounter
                       *process.kt6PFJetsCentral
                       *process.qgSequence
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
+                      *process.makeStdMuons
                       *process.dataAnalyzer
                       )
 

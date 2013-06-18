@@ -31,7 +31,7 @@ public:
 
   void analyze(data::PhysicsObjectCollection_t &leptons, 
 	       data::PhysicsObjectCollection_t &jets,
-	       bool isMC, int nVtx, float weight, float weightUp, float weightDown);
+	       bool isMC, int nVtx, float weight, float weightUp, float weightDown, bool isTop);
 
 private:
 

@@ -68,6 +68,7 @@ int main(int argc, char* argv[])
   int mcTruthMode     = runProcess.getParameter<int>("mctruthmode");
   double xsec         = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
+  bool hasTop          = (url.Contains("t#bar{t}") || url.Contains("TT") || url.Contains("SingleT"));
   TString out          = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
@@ -191,9 +192,9 @@ int main(int argc, char* argv[])
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
-  UEAnalysis ueAn(controlHistos);
+  //UEAnalysis ueAn(controlHistos);
   BTVAnalysis btvAn(controlHistos,runSystematics);
-  LxyAnalysis lxyAn(controlHistos,runSystematics);
+  //LxyAnalysis lxyAn(controlHistos,runSystematics);
   
   ///
   // process events file
@@ -437,6 +438,7 @@ int main(int argc, char* argv[])
       if(isOS && isZcand          && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("zeq1jetslowmet");
 
       //control distributions
+      if(isOS && passDilSelection && passMetSelection) controlHistos.fillHisto("njets",        ch, selJets.size(), dyWeight*weight);
       for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	{
 	  float iweight(weight);
@@ -452,7 +454,7 @@ int main(int argc, char* argv[])
 	  controlHistos.fillHisto(ctrlCategs[icat]+"mtsum",        ch, mtsum,          iweight);
 	  controlHistos.fillHisto(ctrlCategs[icat]+"dilarccosine", ch, thetall,        iweight);
 	  controlHistos.fillHisto(ctrlCategs[icat]+"met",          ch, met[0].pt(),    iweight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"njets",        ch, selJets.size(), iweight);
+	  if(ctrlCategs[icat]!="") controlHistos.fillHisto(ctrlCategs[icat]+"njets",        ch, selJets.size(), iweight);
 	  
 	  for(size_t ijet=0; ijet<looseJets.size(); ijet++)
 	    {
@@ -489,8 +491,8 @@ int main(int argc, char* argv[])
 	}
 
       
-      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weight*dyWeight,weightUp*dyWeight,weightDown*dyWeight);
-      if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
+      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weight*dyWeight,weightUp*dyWeight,weightDown*dyWeight,hasTop);
+      //if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 
       //select the event
       if(!passDilSelection) continue;
@@ -520,8 +522,8 @@ int main(int argc, char* argv[])
       if(!isOS || nbtags<2) continue;
       
       //PF candidates
-      data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-      ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
+      //data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+      //ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
     }
   if(nDuplicates) cout << "[Warning] found " << nDuplicates << " duplicate events in this ntuple" << endl;
 

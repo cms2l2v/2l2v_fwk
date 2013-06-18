@@ -8,6 +8,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess)
   //cfg
   bool isMC = runProcess.getParameter<bool>("isMC");
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");  
+  if(gammaPtWeightsFiles.size()==0) return;
   TString wgtName("qt");
   TString wgtType( isMC ? "mcfitwgts" : "datafitwgts");
   

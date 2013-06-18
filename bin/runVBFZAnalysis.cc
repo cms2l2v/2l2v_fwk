@@ -89,10 +89,11 @@ int main(int argc, char* argv[])
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
+  bool runLoosePhotonSelection(false);
 
   GammaWeightsHandler *gammaWgtHandler=0;
   if(runPhotonSelection) gammaWgtHandler=new GammaWeightsHandler(runProcess);
-
+  
   float minJetPtToApply(30);
 
   std::vector<int> jacknifeCfg=runProcess.getParameter<std::vector<int> >("jacknife");
@@ -202,6 +203,7 @@ int main(int argc, char* argv[])
       nvarsToInclude=varNames.size();
       cout << nvarsToInclude << " systematics will be computed for this analysis" << endl;
     }
+  if(runSystematics && runPhotonSelection) runLoosePhotonSelection=true;
 
 
   //##############################################
@@ -541,7 +543,7 @@ int main(int argc, char* argv[])
 
 	      //if systematics are active loosen the selection to the medium working point
 	      Int_t idbits( photons[ipho].get("id") );
-	      bool hasPhotonId( (idbits >> (runSystematics ? 2 : 1) ) & 0x1 );
+	      bool hasPhotonId( (idbits >> (runLoosePhotonSelection ? 1 : 2) ) & 0x1 );
 	      double gIso    = photons[ipho].getVal("gIso03");
 	      double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
 	      double chIso   = photons[ipho].getVal("chIso03");
@@ -556,15 +558,16 @@ int main(int argc, char* argv[])
 	      if( photons[ipho].getVal("r9")<0.9 ) passId=false;
 	      if(!passId) continue;
 	      bool passIso(true);
-	      if(runSystematics){
-		passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 0.7); 
-		passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 0.4+0.04*pt); 
-		passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.5+0.005*pt); 
-	      }
-	      else{
+	      if(runLoosePhotonSelection){
 		passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 1.5); 
 		passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 1.0+0.04*pt); 
 		passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.7+0.005*pt); 
+	      }
+	      else{
+		passIso &= chIso<0.15;
+		//passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 0.7); 
+		//passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 0.4+0.04*pt); 
+		//passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.5+0.005*pt); 
 	      }
 	      if(!passIso) continue; 
 	      selPhotons.push_back(photons[ipho]);
@@ -945,6 +948,9 @@ int main(int argc, char* argv[])
 		  //re-weight for photons if needed
 		  if(gammaWgtHandler!=0) photonWeight = gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
 		  float catWeight=weight*photonWeight;
+
+		  //veto events with very large weights in simulation
+		  if(isMC && catWeight>5) catWeight=0;
 
 		  //save for further analysis
 		  if(mjj>200) {

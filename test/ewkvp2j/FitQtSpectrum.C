@@ -35,7 +35,7 @@ void formatQtHisto(TH1 *h,TString name, TString title,Int_t color, Int_t marker)
   h->SetMarkerStyle(marker);
   h->SetName(name);   
   h->SetTitle(title);
-  h->Rebin();
+  h->Rebin(4);
   h->GetXaxis()->SetTitle("Transverse momentum [GeV]");
   h->GetXaxis()->SetRangeUser(50,h->GetXaxis()->GetXmax());
   h->GetYaxis()->SetRangeUser(1e-1,1e5);
