@@ -164,6 +164,7 @@ namespace tmva
     if (method=="KNN")           return new TH1D( method,  method + ";" + method + ";Events", 50,  0, 1 );
     if (method=="HMatrix")       return new TH1D( method,  method + ";" + method + ";Events", 50, -0.95, 1.55 );
     if (method=="Fisher")        return new TH1D( method,  method + ";Fisher discriminant;Events", 25, 0, 4 );
+    if (method=="FisherCat")     return new TH1D( method,  method + ";Fisher discriminant;Events", 25, 0, 4 );
     if (method=="FisherG")       return new TH1D( method,  method + ";Fisher discriminant;Events", 25, 0, 4 );
     if (method=="BoostedFisher") return new TH1D( method,  method + ";Fisher discriminant;Events", 25, 0, 4 );
     if (method=="LD")            return new TH1D( method,  method + ";" + method + ";Events", 50, -2, 2 );

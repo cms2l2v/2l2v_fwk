@@ -330,7 +330,7 @@ int main(int argc, char* argv[])
 	  else
 	    {
 	      Int_t idbits    = leptons[ilep].get("idbits");
-	      //	      bool isTight    = ((idbits >> 10) & 0x1);
+	      //bool isTight    = ((idbits >> 10) & 0x1);
 	      bool isLoose    = ((idbits >> 8) & 0x1);
 	      Float_t gIso    = leptons[ilep].getVal("gIso04");
 	      Float_t chIso   = leptons[ilep].getVal("chIso04");
