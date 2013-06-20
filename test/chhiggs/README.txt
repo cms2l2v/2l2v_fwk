@@ -24,6 +24,7 @@ runPlotter --iLumi 19683 --inDir  /afs/cern.ch/work/v/vischia/private/code/tau_d
 
 Datacards
 ---------
+MUST SWITCH!
 prepareChHiggsDatacards  --in /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/top_539/plotter-with-ch-higgs.root --out /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/top_539/datacards --syst /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/top_539/plotter-with-ch-higgs.root --json data/plot-ch-higgs_samples.json --noPowers --histo evtflow --bin 5  
 Options
 --out       --> output director
@@ -40,6 +41,7 @@ Options
 ###
 CHANGELOG
 ###
+2013-06-21: implemented leff and pu systematics
 2013-06-11: added datacards production code. 
 	    started implementing systs
 	    switched to loose lepton ID 
@@ -52,6 +54,7 @@ CHANGELOG
 ### 
 TODO list
 ###
+- Reimplement LandSShapesProducer (github.com/vischia/TopTaus) w/ different outputs (add a switch for the input interface)
 - DY reweighting
 - add smart datacards building for different signal masses
 - finish adding taus to ntuplizer (singleLepton and singleJet triggers, trigger matching)
