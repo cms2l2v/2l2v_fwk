@@ -443,7 +443,7 @@ int main(int argc, char* argv[])
 	
 	//select the event
 	if(selLeptons.size()<2) continue;
-	controlHistos.fillHisto("evtflow", ch, 0, weight);
+	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 0, weight);
 	controlHistos.fillHisto("nvertices",  ch, ev.nvtx, weight);
 	
 	LorentzVector ll=selLeptons[0]+selLeptons[1];
@@ -552,19 +552,19 @@ int main(int argc, char* argv[])
 	
 	//select the event
 	if(!passDilSelection) continue;
-	controlHistos.fillHisto("evtflow", ch, 1, weight);
+	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 1, weight);
 	
 	if(!passJetSelection) continue;
-	controlHistos.fillHisto("evtflow", ch, 2, weight);
+	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 2, weight);
 	
 	//      if(!isOS) continue;
 	//      controlHistos.fillHisto("evtflow", ch, 3, weight);
 	
 	if(!passMetSelection) continue;
-	controlHistos.fillHisto("evtflow", ch, 3, weight);
+	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 3, weight);
 	
 	if(!isOS) continue;
-	controlHistos.fillHisto("evtflow", ch, 4, weight);
+	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 4, weight);
 	
 	
 	//run the lxy analysis
@@ -573,7 +573,7 @@ int main(int argc, char* argv[])
 	float nbtags(0);
 	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
 	if(nbtags<2) continue;
-	controlHistos.fillHisto("evtflow", ch, 5, weight);
+	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 5, weight);
 	
 	if(spyEvents){
 	  spyEvents->getEvent().cat=dilId;
