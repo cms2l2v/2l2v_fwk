@@ -74,7 +74,7 @@ private:
   PFIsolationEstimator eIsolator03_, eIsolator04_, gIsolator03_, gIsolator04_;
 
   //pileup jet id
-  PileupJetIdAlgo *puJetIdAlgo_;
+  PileupJetIdAlgo *puJetIdAlgo_,*cutBasedPuJetIdAlgo_;
 };
 
 using namespace std;
@@ -109,6 +109,7 @@ DataAnalyzer::DataAnalyzer(const edm::ParameterSet &iConfig) : obsPU_h(0), trueP
 
   //pileup jet id
   puJetIdAlgo_ = new PileupJetIdAlgo( analysisCfg_.getParameter< std::vector<edm::ParameterSet> >( "pujetidAlgo")[0] );
+  cutBasedPuJetIdAlgo_ = new PileupJetIdAlgo( analysisCfg_.getParameter< std::vector<edm::ParameterSet> >( "pujetidAlgo")[1] );
 }
 
 //
@@ -169,6 +170,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   //
   // GENERATOR LEVEL
   //
+  int nHardProcGenLeptons(0);
   if(!isData){
 
     //pileup
@@ -224,7 +226,10 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       {
 	const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
 	if(abs(p.pdgId())==2212 && p.status()==4) isSherpa=true; //this is only used by sherpa
-	if(p.status()!=3 && !(p.status()==1 && abs(p.pdgId()==22) && p.pt()>20) ) continue;
+	bool isHardProc(p.status()==3);
+	bool isStableOfInterest( p.status()==1 && ((abs(p.pdgId())==22 && p.pt()>20) || p.charge()!=0) );
+	if(!isHardProc && !isStableOfInterest) continue;
+	nHardProcGenLeptons += (isHardProc && (abs(p.pdgId())==11 || abs(p.pdgId())==13));
 	ev.mc_id[ev.mcn]=p.pdgId();
 	ev.mc_status[ev.mcn]=p.status();
 	ev.mc_px[ev.mcn]=p.px();
@@ -444,6 +449,15 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	| ( isSoft                                             << 9)
 	| ( isTight                                            << 10);
       
+      //add trigger match
+      int TrigSum(0);
+      for(size_t it=0; it<triggerPaths.size(); it++)
+	{
+	  string tempTrigName = triggerPaths[it] + "*";
+	  if ( muon->triggerObjectMatchesByPath(tempTrigName).size() > 0 ) TrigSum |= (1<<it); 
+	}
+      ev.ln_Tbits[ev.ln] = TrigSum ;
+
       //increment
       ev.ln++;
       ev.mn++;
@@ -560,7 +574,19 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 							    ev.ln_trkIso03[ev.ln], ev.ln_ecalIso03[ev.ln], ev.ln_hcalIso03[ev.ln]);
 	  ev.ln_idbits[ev.ln] |= (hasId << (7+iid));
 	}
-      
+
+      // add heep selector , they have quite a few 
+      bool boolHeep( ele -> userInt("HEEPId") < 1 ) ;
+      ev.ln_idbits[ev.ln] |= ( boolHeep <<  9 ) ;
+
+      //add trigger match
+      int TrigSum(0);
+      for(size_t it=0; it<triggerPaths.size(); it++)
+	{
+	  string tempTrigName = triggerPaths[it] + "*";
+	  if ( ele->triggerObjectMatchesByPath(tempTrigName).size() > 0 ) TrigSum |= (1<<it); 
+	}
+      ev.ln_Tbits[ev.ln] = TrigSum ;
       //require a very loose baseline id
       if(!hasVetoId) continue;
 
@@ -584,7 +610,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       {
 	const reco::Photon *pho = dynamic_cast<const reco::Photon *>( photonH->ptrAt(ipho).get() );
 	if(pho==0) continue;
-	if(pho->pt()<30 || !(pho->isEB() || pho->isEE())) continue;
+	if(pho->pt()<20 || !(pho->isEB() || pho->isEE())) continue;
 	bool matchesElectron(ConversionTools::hasMatchedPromptElectron(pho->superCluster(), gsfEleH, convH, beamSpotH->position()));
 	bool matchesMuon(false);
 	for(int ilep=0; ilep<ev.ln; ilep++)
@@ -602,22 +628,22 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	ev.gn_py[ev.gn]                         = pho->py();
 	ev.gn_pz[ev.gn]                         = pho->pz();
 	ev.gn_en[ev.gn]                         = pho->energy();
-	ev.gn_ecalIso03[ev.ln]                  = pho->ecalRecHitSumEtConeDR03();
-	ev.gn_hcalIso03[ev.ln]                  = pho->hcalTowerSumEtConeDR03();
-	ev.gn_trkIso03[ev.ln]                   = pho->trkSumPtHollowConeDR03();
-	ev.gn_ecalIso04[ev.ln]                  = pho->ecalRecHitSumEtConeDR04();
-	ev.gn_hcalIso04[ev.ln]                  = pho->hcalTowerSumEtConeDR04();
-	ev.gn_trkIso04[ev.ln]                   = pho->trkSumPtHollowConeDR04();
+	ev.gn_ecalIso03[ev.gn]                  = pho->ecalRecHitSumEtConeDR03();
+	ev.gn_hcalIso03[ev.gn]                  = pho->hcalTowerSumEtConeDR03();
+	ev.gn_trkIso03[ev.gn]                   = pho->trkSumPtHollowConeDR03();
+	ev.gn_ecalIso04[ev.gn]                  = pho->ecalRecHitSumEtConeDR04();
+	ev.gn_hcalIso04[ev.gn]                  = pho->hcalTowerSumEtConeDR04();
+	ev.gn_trkIso04[ev.gn]                   = pho->trkSumPtHollowConeDR04();
 	gIsolator03_.fGetIsolation(pho, &(*pfH), primVtx, vtxH);
-	ev.gn_gIso03[ev.ln]                     = gIsolator03_.getIsolationPhoton();
-	ev.gn_chIso03[ev.ln]                    = gIsolator03_.getIsolationCharged();
-	ev.gn_puchIso03[ev.ln]                  = 0;
-	ev.gn_nhIso03[ev.ln]                    = gIsolator03_.getIsolationNeutral();
-	eIsolator04_.fGetIsolation(pho, &(*pfH), primVtx, vtxH);
-	ev.gn_gIso04[ev.ln]                     = gIsolator04_.getIsolationPhoton();
-	ev.gn_chIso04[ev.ln]                    = gIsolator04_.getIsolationCharged();
-	ev.gn_puchIso04[ev.ln]                  = 0;
-	ev.gn_nhIso04[ev.ln]                    = gIsolator04_.getIsolationNeutral();
+	ev.gn_gIso03[ev.gn]                     = gIsolator03_.getIsolationPhoton();
+	ev.gn_chIso03[ev.gn]                    = gIsolator03_.getIsolationCharged();
+	ev.gn_puchIso03[ev.gn]                  = 0;
+	ev.gn_nhIso03[ev.gn]                    = gIsolator03_.getIsolationNeutral();
+	gIsolator04_.fGetIsolation(pho, &(*pfH), primVtx, vtxH);
+	ev.gn_gIso04[ev.gn]                     = gIsolator04_.getIsolationPhoton();
+	ev.gn_chIso04[ev.gn]                    = gIsolator04_.getIsolationCharged();
+	ev.gn_puchIso04[ev.gn]                  = 0;
+	ev.gn_nhIso04[ev.gn]                    = gIsolator04_.getIsolationNeutral();
 	ev.egn_isConv[ev.egn]                   = !( ConversionTools::matchedConversion(*(pho->superCluster()),convH,beamSpotH->position()).isNull() );
 	ev.egn_eopin[ev.egn]                    = 0;
 	ev.egn_eopout[ev.egn]                   = 0;
@@ -650,7 +676,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	ev.gn_idbits[ev.gn]    = (isLoose << 0) | (isMedium << 1 ) | (isTight << 2);
 	ev.gn++;
 	ev.egn++;
-	if(isTight && pho->isEB() && ev.egn_r9[ev.egn]>0.9 && pho->pt()>36) nPhotons++;
+	if(isLoose && pho->isEB() && ev.egn_r9[ev.egn]>0.9 && pho->pt()>20) nPhotons++;
       }
 
 
@@ -669,6 +695,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       toSave=true;
       break;
     }
+  if(!isData && nHardProcGenLeptons>0) toSave=true;
   if(!toSave) return;
   
   //
@@ -739,7 +766,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.jn_genjen[ev.jn]      = genJet    ? genJet->energy()   : 0;
       ev.jn_neutHadFrac[ev.jn] = jet->neutralHadronEnergyFraction();
       ev.jn_neutEmFrac[ev.jn]  = jet->neutralEmEnergyFraction();
-      ev.jn_chHadFrac[ev.jn]   = jet->chargedHadronEnergyFraction();;
+      ev.jn_chHadFrac[ev.jn]   = jet->chargedHadronEnergyFraction();
+      ev.jn_muFrac[ev.jn]      = jet->muonEnergyFraction();
       ev.jn_area[ev.jn]        = jet->jetArea();
 
       ev.jn_tchp[ev.jn]        = (*tchpTags)[ijet].second;
@@ -800,14 +828,19 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	    }
 	}
 
-      PileupJetIdentifier puIdentifier = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet), 0, primVtx.get(), *vtxH.product(), true);
+      PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet), 0, primVtx.get(), *vtxH.product(), true);
+      PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet), 0, primVtx.get(), *vtxH.product(), true);
       ev.jn_beta[ev.jn]        = puIdentifier.beta();
+      ev.jn_betaStar[ev.jn]    = puIdentifier.betaStar();
       ev.jn_dRMean[ev.jn]      = puIdentifier.dRMean();
+      ev.jn_dR2Mean[ev.jn]     = puIdentifier.dR2Mean();
       ev.jn_ptRMS[ev.jn]       = puIdentifier.ptRMS();
+      ev.jn_ptD[ev.jn]         = puIdentifier.ptD();
       ev.jn_etaW[ev.jn]        = puIdentifier.etaW();
       ev.jn_phiW[ev.jn]        = puIdentifier.phiW();
       ev.jn_puMVA[ev.jn]       = puIdentifier.mva();
-      
+      ev.jn_qgMVA[ev.jn]       = qgTaggerH.isValid() ? (*qgTaggerH)[jetRef] : 0;
+	
       //save pf constituents (only for jets with pT>20 in the central region)
       ev.jn_pfstart[ev.jn]=-1;
       ev.jn_pfend[ev.jn]=-1;
@@ -833,8 +866,9 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	(passLooseId << 0)
 	| (passMediumId << 1)
 	| (passTightId << 2)
-	| ( ( uint(puIdentifier.idFlag()) & 0xf ) << 3 );
-      
+	| ( ( uint(puIdentifier.idFlag()) & 0xf ) << 3 )
+	| ( ( uint(cutBasedPuIdentifier.idFlag()) & 0xf ) << 7 );
+
       ev.jn++;
     }
 
@@ -871,7 +905,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       reco::TrackBaseRef trackBaseRef( cand.trackRef() );
       if(trackBaseRef.isNull()) continue;
 
-      //minimum pT of 500 GeV
+      //minimum pT of 300 MeV
       if(cand.pt()<0.3) continue;
       
       //check for overlaps

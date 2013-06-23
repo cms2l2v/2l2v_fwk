@@ -147,7 +147,7 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 	  else if(abs(flavId)==4) jetFlav="c";
 	  
 	  //compute mass(lepton,jet) and discriminate at generator level
-	  std::vector<std::pair<TString,float> > mljPerFlavor;
+	  std::pair<TString,float> mljPerFlavor("",99999999999.);
 	  for(size_t ilep=0; ilep<2; ilep++){
 	    LorentzVector lj=leptons[ilep]+varJetKin;
 	    float mlj=lj.mass();
@@ -158,7 +158,7 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		int genLeptonId=genLepton.info.find("id")->second;
 		if(genLeptonId*genPartonId<0 && isTop) flav="b";
 	      }
-	    mljPerFlavor.push_back( std::pair<TString,float>(flav,mlj) );  
+	    if(mlj<mljPerFlavor.second)  mljPerFlavor=std::pair<TString,float>(flav,mlj);  
 	  }
 	  
 	  //kinematics
@@ -206,14 +206,12 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 	      {
 		if(tagger.name=="jp") mon_->fillHisto("jp"+var, ch, jpDisc, jetCategs[ijcat], iweight);
 		if(ib==0) {
-		  mon_->fillHisto("kin"+var, ch, mljPerFlavor[0].second, jetCategs[ijcat], iweight);
-		  mon_->fillHisto("kin"+var, ch, mljPerFlavor[1].second, jetCategs[ijcat], iweight);
+		  mon_->fillHisto("kin"+var, ch, mljPerFlavor.second, jetCategs[ijcat], iweight);
 		}
 		if(isMC) {
 		  if(tagger.name=="jp") mon_->fillHisto("jp"+jetFlav+var, ch, jpDisc, jetCategs[ijcat], iweight);
 		  if(ib==0){
-		    mon_->fillHisto("kin"+mljPerFlavor[0].first+var, ch, mljPerFlavor[0].second, jetCategs[ijcat], iweight);
-		    mon_->fillHisto("kin"+mljPerFlavor[1].first+var, ch, mljPerFlavor[1].second, jetCategs[ijcat], iweight);
+		    mon_->fillHisto("kin"+mljPerFlavor.first+var, ch, mljPerFlavor.second, jetCategs[ijcat], iweight);
 		  }
 		}
 		
@@ -223,13 +221,11 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		    if(!it->first.IsAlpha()) continue;
 		    
 		    if(tagger.name!="jp") mon_->fillHisto("jp"+var+tagger.name+it->first,ch, jpDisc, jetCategs[ijcat], iweight);
-		    mon_->fillHisto("kin"+var+tagger.name+it->first, ch, mljPerFlavor[0].second, jetCategs[ijcat], iweight);
-		    mon_->fillHisto("kin"+var+tagger.name+it->first, ch, mljPerFlavor[1].second, jetCategs[ijcat], iweight);
+		    mon_->fillHisto("kin"+var+tagger.name+it->first, ch, mljPerFlavor.second, jetCategs[ijcat], iweight);
 		    
 		    if(isMC){
 		      if(tagger.name!="jp") mon_->fillHisto( "jp"+jetFlav+var+tagger.name+it->first, ch, jpDisc, jetCategs[ijcat], iweight);
-		      mon_->fillHisto("kin"+mljPerFlavor[0].first+var+tagger.name+it->first,   ch, mljPerFlavor[0].second, jetCategs[ijcat], iweight);
-		      mon_->fillHisto("kin"+mljPerFlavor[1].first+var+tagger.name+it->first,   ch, mljPerFlavor[1].second, jetCategs[ijcat], iweight);
+		      mon_->fillHisto("kin"+mljPerFlavor.first+var+tagger.name+it->first,   ch, mljPerFlavor.second, jetCategs[ijcat], iweight);
 		    }
 		  }
 	      }
@@ -242,12 +238,10 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		for(int iwpbin=1; iwpbin<=h->GetYaxis()->GetNbins(); iwpbin++)
 		  {
 		    mon_->fillHisto("runjp"+var,  ch, jpDisc, iwpbin, iweight);
-		    mon_->fillHisto("runkin"+var, ch, mljPerFlavor[0].second, iwpbin, iweight);
-		    mon_->fillHisto("runkin"+var, ch, mljPerFlavor[1].second, iwpbin, iweight);
+		    mon_->fillHisto("runkin"+var, ch, mljPerFlavor.second, iwpbin, iweight);
 		    if(isMC) {
 		      mon_->fillHisto("runjp"+jetFlav+var,                  ch, jpDisc, iwpbin, iweight);
-		      mon_->fillHisto("runkin"+mljPerFlavor[0].first+var,   ch, mljPerFlavor[0].second, iwpbin, iweight);
-		      mon_->fillHisto("runkin"+mljPerFlavor[1].first+var,   ch, mljPerFlavor[1].second, iwpbin, iweight);
+		      mon_->fillHisto("runkin"+mljPerFlavor.first+var,   ch, mljPerFlavor.second, iwpbin, iweight);
 		    }
 		  }
 	      }
@@ -266,12 +260,10 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 		iwpbin=wpJetCategs[ijcat];
 
 		mon_->fillHisto("runjp"+var+tagger.name, ch, jpDisc, iwpbin, iweight);
-		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[0].second, iwpbin, iweight);
-		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor[1].second, iwpbin, iweight);		
+		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor.second, iwpbin, iweight);
 		if(isMC) {
 		  mon_->fillHisto("runjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
-		  mon_->fillHisto("runkin"+mljPerFlavor[0].first+var+tagger.name,   ch, mljPerFlavor[0].second, iwpbin, iweight);
-		  mon_->fillHisto("runkin"+mljPerFlavor[1].first+var+tagger.name,   ch, mljPerFlavor[1].second, iwpbin, iweight);
+		  mon_->fillHisto("runkin"+mljPerFlavor.first+var+tagger.name,   ch, mljPerFlavor.second, iwpbin, iweight);
 		}
 	      }
 	  }

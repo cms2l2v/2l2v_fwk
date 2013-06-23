@@ -543,13 +543,13 @@ int main(int argc, char* argv[])
 
 	      //if systematics are active loosen the selection to the medium working point
 	      Int_t idbits( photons[ipho].get("id") );
-	      bool hasPhotonId( (idbits >> (runLoosePhotonSelection ? 1 : 2) ) & 0x1 );
-	      double gIso    = photons[ipho].getVal("gIso03");
-	      double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
+	      bool hasPhotonId( (idbits >> 2 ) & 0x1 );
+	      //double gIso    = photons[ipho].getVal("gIso03");
+	      // double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
 	      double chIso   = photons[ipho].getVal("chIso03");
-	      double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
-	      double nhIso   = photons[ipho].getVal("nhIso03");
-	      double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+	      // 	      double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
+	      // 	      double nhIso   = photons[ipho].getVal("nhIso03");
+	      // 	      double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
 	      
 	      //select the photon
 	      if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
@@ -559,15 +559,13 @@ int main(int argc, char* argv[])
 	      if(!passId) continue;
 	      bool passIso(true);
 	      if(runLoosePhotonSelection){
-		passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 1.5); 
-		passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 1.0+0.04*pt); 
-		passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.7+0.005*pt); 
+		passIso &= ((chIso/pt)<0.20);
+		// passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 1.5); 
+		// passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 1.0+0.04*pt); 
+		// passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.7+0.005*pt); 
 	      }
 	      else{
-		passIso &= chIso<0.15;
-		//passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 0.7); 
-		//passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 0.4+0.04*pt); 
-		//passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.5+0.005*pt); 
+		passIso &= ((chIso/pt)<0.10);
 	      }
 	      if(!passIso) continue; 
 	      selPhotons.push_back(photons[ipho]);
@@ -946,7 +944,10 @@ int main(int argc, char* argv[])
 		  selTags = getDijetCategories(mjj,detajj,tags,mjjCat);
 
 		  //re-weight for photons if needed
-		  if(gammaWgtHandler!=0) photonWeight = gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		  if(gammaWgtHandler!=0) {
+		    mjjCat.ReplaceAll("mjjq100","mjjq092");
+		    photonWeight = gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		  }
 		  float catWeight=weight*photonWeight;
 
 		  //veto events with very large weights in simulation
@@ -1112,8 +1113,12 @@ int main(int argc, char* argv[])
 		    
 		    TString mjjCat("");
 		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
+		    if(gammaWgtHandler!=0) {
+		      mjjCat.ReplaceAll("mjjq100","mjjq092");
+		      iweight *= gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		    }
 		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,iweight);
-		
+		    
 		    //set the variables to be used in the MVA evaluation (independently of its use)
 		    for(size_t mvar=0; mvar<tmvaVarNames.size(); mvar++) 
 		      {

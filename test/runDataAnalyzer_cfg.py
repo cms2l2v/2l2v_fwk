@@ -11,7 +11,10 @@ process.load("Configuration.Geometry.GeometryIdeal_cff")
 
 ## MessageLogger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True)) #False))
+process.MessageLogger.cerr.FwkReport.reportEvery = 5000
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
+                                        SkipEvent = cms.untracked.vstring('ProductNotFound')
+                                        ) 
 
 #the source and output
 try:
@@ -118,21 +121,40 @@ usePF2PAT(process,
           jetCorrections=('AK5PFchs', jecLevels),
           pvCollection=cms.InputTag('goodOfflinePrimaryVertices'),
           typeIMetCorrections=False)
+
+#setup trigger matching
+from UserCode.llvv_fwk.triggerMatching_cfg import *
+addTriggerMatchingTo(process)
+
+#custom electrons
 useGsfElectrons(process,postfix=postfix,dR="03")
-
-process.makeStdMuons=process.makePatMuons
-if(not isMC):
-    removeMCMatching(process, ['All'],postfix)
-    process.patMuons.addGenMatch = cms.bool(False)
-    removeMCMatching(process, names=['Muons'], postfix="")
-    process.patMuons.embedGenMatch = cms.bool(False)
-    process.makeStdMuons=cms.Sequence(process.patMuons)
-
-#add electron MVA id
 process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
 process.eidMVASequence = cms.Sequence(  process.mvaTrigV0 + process.mvaNonTrigV0 )
 process.patElectronsPFlow.electronIDSources.mvaTrigV0    = cms.InputTag("mvaTrigV0")
 process.patElectronsPFlow.electronIDSources.mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0")
+from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *
+process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
+                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
+                                                       barrelCuts = cms.PSet(heepBarrelCuts),
+                                                       endcapCuts = cms.PSet(heepEndcapCuts),
+                                                       applyRhoCorrToEleIsol = cms.bool(True),
+                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
+                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
+                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
+                                                       )
+
+#custom muons
+process.patMuonsPFlow.pfMuonSource = cms.InputTag("pfSelectedMuonsPFlow")
+process.muonMatchPFlow.src = cms.InputTag("pfSelectedMuonsPFlow")
+
+#custom jets for CHS
+process.pfPileUpPFlow.checkClosestZVertex = cms.bool(False)
+process.pfPileUpIsoPFlow.checkClosestZVertex = cms.bool(False)
+getattr(process,"pfNoPileUp"+postfix).enable = True
+getattr(process,"pfNoMuon"+postfix).enable = False     # to use muon-cleaned electron collection set to True (check iso)
+getattr(process,"pfNoElectron"+postfix).enable = False # to use electron-cleaned tau collection set to True (check iso)
+getattr(process,"pfNoTau"+postfix).enable = False      # to use tau-cleaned jet collection set to True (check what is a tau)
+getattr(process,"pfNoJet"+postfix).enable = True       # this i guess it's for photons...      
 
 #add q/g discriminator
 process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
@@ -195,7 +217,8 @@ process.p = cms.Path( process.startCounter
                       *process.kt6PFJetsCentral
                       *process.qgSequence
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
-                      *process.makeStdMuons
+                      *process.selectedPatElectronsWithTrigger*process.selectedPatElectronsPFlowHeep
+                      *process.selectedPatMuonsTriggerMatch 
                       *process.dataAnalyzer
                       )
 
