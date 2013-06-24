@@ -682,6 +682,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
   //now check if at least one trigger condition is fullfilled
   bool toSave(false);
+  bool saveOnlyLeptons(false);
   for(int itrig=0; itrig<ev.tn; itrig++)
     {
       if(!ev.t_bits[itrig]) continue;
@@ -695,7 +696,11 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       toSave=true;
       break;
     }
-  if(!isData && nHardProcGenLeptons>0) toSave=true;
+  if(!isData && nHardProcGenLeptons>0) 
+    {
+      if(!toSave) saveOnlyLeptons=true; //if it doesn't trigger save only leptons
+      toSave=true;
+    }
   if(!toSave) return;
   
   //
@@ -945,6 +950,9 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
     }
 
   //all done here
+  if(saveOnlyLeptons){
+    ev.metn=0; ev.gn=0; ev.jn=0; ev.pfn=0;  ev.egn=0;
+  }
   summary_.fill();
 }
 
