@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
   bool isMC = runProcess.getParameter<bool>("isMC");
   if(!isMC) {
-    cout << "Sample is MC...nothing to be done here" << endl;
+    cout << "Sample is data...nothing to be done here" << endl;
     return -1;
   }
   TString url=runProcess.getParameter<std::string>("input");

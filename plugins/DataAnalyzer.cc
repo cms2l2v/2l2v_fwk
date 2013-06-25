@@ -60,6 +60,9 @@ public:
  
 private:
 
+  //  keep all GEN
+  bool keepFullGenInfo_;
+
   //monitoring
   DataEventSummaryHandler summary_;
   TH1D *obsPU_h, *truePU_h, *cutflow_h, *trigger_h,*filter_h;
@@ -87,6 +90,9 @@ DataAnalyzer::DataAnalyzer(const edm::ParameterSet &iConfig) : obsPU_h(0), trueP
   analysisCfg_ = iConfig.getParameter<edm::ParameterSet>("cfg");
   std::vector<string> trigs=analysisCfg_.getParameter<std::vector<string> >("triggerPaths");
   std::vector<string> filts=analysisCfg_.getParameter<std::vector<string> >("metFilters");
+  keepFullGenInfo_ = false; 
+  keepFullGenInfo_ = analysisCfg_.getParameter<bool>("keepFullGenInfo");
+
 
   //init monitoring tools
   edm::Service<TFileService> fs;
@@ -229,7 +235,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	bool isHardProc(p.status()==3);
 	bool isStableOfInterest( p.status()==1 && ((abs(p.pdgId())==22 && p.pt()>20) || p.charge()!=0) );
 	if(!isHardProc && !isStableOfInterest) continue;
-	nHardProcGenLeptons += (isHardProc && (abs(p.pdgId())==11 || abs(p.pdgId())==13));
+	nHardProcGenLeptons += (isHardProc && (abs(p.pdgId())==24 || abs(p.pdgId())==23));
 	ev.mc_id[ev.mcn]=p.pdgId();
 	ev.mc_status[ev.mcn]=p.status();
 	ev.mc_px[ev.mcn]=p.px();
@@ -253,7 +259,30 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	
 	ev.mcn++;
       }
-
+    
+    // keep also FSR photons
+    int NGenPart = ev.mcn ;
+    for(int j = 0; j < NGenPart; j++ )
+      {
+	if ( fabs(ev.mc_status[j]) != 1 && fabs(ev.mc_status[j]) != 3 ) continue; 
+	if(fabs(ev.mc_id[j]) != 11 && fabs(ev.mc_id[j]) != 13 ) continue;
+	for(size_t i = 0; i < genParticlesH->size(); ++ i)
+	  {
+	    const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
+	    if (!(abs(p.pdgId()) == 22 && p.pt() <= 20 &&  p.pt() > 1e-6 ) ) continue ;
+	    LorentzVector p4(ev.mc_px[j],ev.mc_py[j], ev.mc_pz[j], ev.mc_en[j]);
+	    if( deltaR( p4.eta(), p4.phi(), p.eta(), p.phi()) > 0.15) continue;
+	    ev.mc_id[ev.mcn]=p.pdgId();
+	    ev.mc_status[ev.mcn]=p.status();
+	    ev.mc_px[ev.mcn]=p.px();
+	    ev.mc_py[ev.mcn]=p.py();
+	    ev.mc_pz[ev.mcn]=p.pz();
+	    ev.mc_en[ev.mcn]=p.energy();
+	    ev.mc_lxy[ev.mcn]=0;
+	    ev.mcn++;
+	  }
+      }
+    
     //heavy flavors
     for (size_t i=0; i<genParticlesH->size(); i++)
       {
@@ -461,7 +490,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       //increment
       ev.ln++;
       ev.mn++;
-      if(muon->pt()>20) nMuons++;
+      if(muon->pt()>18) nMuons++;
     }
   
   for(size_t iele=0; iele< eH->size(); ++iele)
@@ -593,7 +622,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       //increment counters
       ev.ln++;
       ev.egn++;
-      if(ele->pt()>20) nElecs++;
+      if(ele->pt()>18) nElecs++;
     }
 
   //
@@ -696,11 +725,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       toSave=true;
       break;
     }
-  if(!isData && nHardProcGenLeptons>0) 
-    {
-      if(!toSave) saveOnlyLeptons=true; //if it doesn't trigger save only leptons
-      toSave=true;
-    }
+  
+  if(!isData && nHardProcGenLeptons>0 && keepFullGenInfo_) toSave=true; 
   if(!toSave) return;
   
   //

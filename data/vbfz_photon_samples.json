@@ -43,39 +43,48 @@
          "data":[
 	        {	
 		 "dtag":"MC8TeV_GJets_50to80",
-		 "xsec":3322.309
+		 "xsec":3322.309,
+	 	 "split":3
 	        },
 	        {	
 		  "dtag":"MC8TeV_GJets_80to120",
-		  "xsec":558.2865
+		  "xsec":558.2865,
+	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_120to170",
-		  "xsec":108.0068
+		  "xsec":108.0068,
+	 	  "split":3
 	        },		
 	        {
 		  "dtag":"MC8TeV_GJets_170to300",
-		  "xsec":30.12207
+		  "xsec":30.12207,
+	 	  "split":2
 		},
 	        {
 	  	  "dtag":"MC8TeV_GJets_300to470",
-		  "xsec":2.138632
+		  "xsec":2.138632,
+	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_470to800",
-		  "xsec":0.2119244
+		  "xsec":0.2119244,
+	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_800to1400",
-		  "xsec":0.007077847
+		  "xsec":0.007077847,
+	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_1400to1800",
-		  "xsec":0.00004510327
+		  "xsec":0.00004510327,
+	 	  "split":3
 		},
 	        {
 		  "dtag":"MC8TeV_GJets_1800toInf",
-		  "xsec":0.000001867141
+		  "xsec":0.000001867141,
+	 	  "split":3
 	        }
 	    ]
     	},
@@ -88,9 +97,9 @@
         "mctruthmode":22,
 	"data":[
                { "dtag":"Data8TeV_Photon2012A", "split":2 },
-               { "dtag":"Data8TeV_DoubleElectron2012B", "split":4 },
-               { "dtag":"Data8TeV_DoubleElectron2012C", "split":4 },
-               { "dtag":"Data8TeV_DoubleElectron2012D", "split":4 }
+               { "dtag":"Data8TeV_DoubleElectron2012B", "split":6 },
+               { "dtag":"Data8TeV_DoubleElectron2012C", "split":6 },
+               { "dtag":"Data8TeV_DoubleElectron2012D", "split":6 }
 	   ]
 	}
     ]	

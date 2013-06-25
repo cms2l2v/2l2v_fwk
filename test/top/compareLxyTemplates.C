@@ -10,12 +10,15 @@
   */
 
   TString dist("ptbvslxy");
-  TString files[]={"~/work/top_539/plotter_raw.root","~/work/top_539/plotter_syst.root"};
-  TString proc[]={"t#bar{t}","t#bar{t}systmcatnlo"};
-  TString title[]={"Madgraph+Pythia","MC@NLO+Herwig"};
+  TString files[]={"~/work/top_539/plotter_lxy_syst.root","~/work/top_539/plotter_lxy_syst.root"};
+    TString proc[]={"t#bar{t}systtunep11","t#bar{t}systtunep11mpihi"};  TString title[]={"TuneP11","TuneP11 mpi hi"};
+  //TString proc[]={"t#bar{t}systtunep11","t#bar{t}systtunep11nocr"};   TString title[]={"TuneP11","TuneP11 no CR"};
+  //TString proc[]={"t#bar{t}systtunep11","t#bar{t}systtunep11tev"};    TString title[]={"TuneP11","TuneP11 TeV"};
+
   int colors[]={1,kRed};
   TString xtitle="p_{T}(b) [GeV]";
   bool doReweight(true);
+  //  bool doReweight(false);
 
   //get distributions from file
   const size_t nprocs=sizeof(proc)/sizeof(TString);
@@ -23,9 +26,9 @@
   for(size_t i=0; i<nprocs; i++)
     {
       TFile *fIn=TFile::Open(files[i]);
-      TH2F *h=(TH2F *)fIn->Get(proc[i]+"/emu_"+dist);  
-      h->Add((TH2F *)fIn->Get(proc[i]+"/mumu_"+dist));
-      h->Add((TH2F *)fIn->Get(proc[i]+"/ee_"+dist));
+      TH2 *h=(TH2 *)fIn->Get(proc[i]+"/emu_"+dist);  
+      h->Add((TH2 *)fIn->Get(proc[i]+"/mumu_"+dist));
+      h->Add((TH2 *)fIn->Get(proc[i]+"/ee_"+dist));
       h->SetDirectory(0);
 
       TString pf(""); pf+=i;
@@ -34,24 +37,29 @@
       kinH[i]->SetDirectory(0);
       kinH[i]->SetFillStyle(0);
       kinH[i]->SetLineColor(colors[i]);
-      kinH[i]->Rebin(2);
       kinH[i]->GetYaxis()->SetTitle("Events (a.u.)");
       kinH[i]->GetXaxis()->SetTitle(xtitle);
+      kinH[i]->Rebin();
       if(i) kinH[i]->Scale(kinH[0]->Integral()/kinH[i]->Integral());
 
-      lxyH[i]=h->ProjectionY("kin"+pf);
+      int minBin(kinH[i]->GetXaxis()->FindBin(40)), maxBin(kinH[i]->GetXaxis()->FindBin(130));
+
+      lxyH[i]=h->ProjectionY("kin"+pf,minBin,maxBin);
+      lxyH[i]->Rebin();
       if(i>0 && doReweight)
 	{
 	  lxyH[i]->Reset("ICE");
 	  TH1 *kinRatio=(TH1 *)kinH[0]->Clone("kinratio");
 	  kinRatio->Divide(kinH[i]);
 	  TGraph *gr=new TGraph(kinRatio);
-	  for(int xbin=1; xbin<=h->GetXaxis()->GetNbins(); xbin++)
+	  for(int xbin=minBin; xbin<=maxBin; xbin++)
 	    {
-	      //float wgt=kinRatio->GetBinContent(xbin);
-	      float wgt=gr->Eval( kinH[i]->GetXaxis()->GetBinCenter(xbin) );
+	      float wgt=kinRatio->GetBinContent(xbin);
+	      //float wgt=gr->Eval( kinH[i]->GetXaxis()->GetBinCenter(xbin) );
 	      TH1D *tmp = (TH1D *)h->ProjectionY("tmp",xbin,xbin);
+	      tmp->Rebin();
 	      lxyH[i]->Add(tmp,wgt);
+	      delete tmp;
 	    }
 	  kinRatio->Delete();
 	}

@@ -6,7 +6,7 @@
 
 step=$1
 outdir="/afs/cern.ch/user/p/psilva/work/ewkzp2j_539"
-indir="/store/cmst3/user/psilva/Summer13_ntuples"
+indir="/store/cmst3/user/psilva/539_ntuples"
 cfg="$CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ"
 
 
@@ -20,8 +20,8 @@ mkdir -p ${outdir}/g/qt_pure
 
 if [ "$step" == "0" ]; then
     echo "Submitting PDF variations"
-    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
-    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_syst_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
+#    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
+#    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_syst_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
     runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/raw_loose  -c ${cfg} -s 2nw;
 fi
 
