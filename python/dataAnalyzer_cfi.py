@@ -25,7 +25,8 @@ dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                                                         'HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_v',
                                                                         'HLT_Photon250_NoHE_v1_v',
                                                                         'HLT_Photon300_NoHE_v1_v',
-                                                                        'HLT_Ele27_WP80_v'
+                                                                        'HLT_Ele27_WP80_v',
+									'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v'
                                                                         ),
                                              triggerCats  = cms.vint32(1111,
                                                                        1111,
@@ -40,7 +41,8 @@ dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                                                        22,
                                                                        22,
                                                                        22,
-                                                                       11
+                                                                       11,
+								       11
                                                                        ),
                                              genSource       = cms.InputTag("genParticles"),
                                              keepFullGenInfo = cms.bool(False),
@@ -57,7 +59,8 @@ dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                              pujetidAlgo     = pileupJetIdProducerChs.algos,
                                              metSource       = cms.VInputTag("pfMETPFlow","pfMet","pfType1CorrectedMet","pfType1p2CorrectedMet"),
                                              rhoSource       = cms.InputTag("kt6PFJets:rho"),
-                                             rho25Source      = cms.InputTag("kt6PFJetsCentral:rho")
+                                             rho25Source      = cms.InputTag("kt6PFJetsCentral:rho"),
+					     keepFullGenInfo_    = cms.bool(False)
                                              )
                                )
 
