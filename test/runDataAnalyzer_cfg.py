@@ -198,7 +198,12 @@ except:
         process.dataAnalyzer.cfg.triggerCats[2]=1113
         process.dataAnalyzer.cfg.triggerCats[3]=1113
         print 'Tweaking for tau embedded samples'
-        
+
+try:
+    if doUnfold:
+        process.dataAnalyzer.cfg.keepFullGenInfo = cms.bool(True)
+        print 'Warning running unfolding: ntuples will save lots of information on gen level and won`t use trigger' 
+                
 #counters for specific filters
 process.startCounter = cms.EDProducer("EventCountProducer")
 process.scrapCounter = process.startCounter.clone()

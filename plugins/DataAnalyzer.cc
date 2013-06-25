@@ -233,7 +233,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
 	if(abs(p.pdgId())==2212 && p.status()==4) isSherpa=true; //this is only used by sherpa
 	bool isHardProc(p.status()==3);
-	bool isStableOfInterest( p.status()==1 && ((abs(p.pdgId())==22 && p.pt()>20) || p.charge()!=0) );
+	bool isStableOfInterest( keepFullGenInfo_ && p.status()==1 && ((abs(p.pdgId())==22 && p.pt()>20) || (p.charge()!=0 && p.pt()>0.5 && fabs(p.eta())<3.0 )) );
 	if(!isHardProc && !isStableOfInterest) continue;
 	nHardProcGenLeptons += (isHardProc && (abs(p.pdgId())==24 || abs(p.pdgId())==23));
 	ev.mc_id[ev.mcn]=p.pdgId();
@@ -243,7 +243,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	ev.mc_pz[ev.mcn]=p.pz();
 	ev.mc_en[ev.mcn]=p.energy();
 	ev.mc_lxy[ev.mcn]=0;
-
+	
 	//check if photon is prompt or radiated from quark/line
 	if(fabs(p.pdgId())==22)
 	  {
@@ -260,26 +260,29 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	ev.mcn++;
       }
     
-    // keep also FSR photons
-    int NGenPart = ev.mcn ;
-    for(int j = 0; j < NGenPart; j++ )
+    // FSR photons (if full gen info is set to true)
+    if(keepFullGenInfo_)
       {
-	if ( fabs(ev.mc_status[j]) != 1 && fabs(ev.mc_status[j]) != 3 ) continue; 
-	if(fabs(ev.mc_id[j]) != 11 && fabs(ev.mc_id[j]) != 13 ) continue;
-	for(size_t i = 0; i < genParticlesH->size(); ++ i)
+	int NGenPart = ev.mcn ;
+	for(int j = 0; j < NGenPart; j++ )
 	  {
-	    const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
-	    if (!(abs(p.pdgId()) == 22 && p.pt() <= 20 &&  p.pt() > 1e-6 ) ) continue ;
-	    LorentzVector p4(ev.mc_px[j],ev.mc_py[j], ev.mc_pz[j], ev.mc_en[j]);
-	    if( deltaR( p4.eta(), p4.phi(), p.eta(), p.phi()) > 0.15) continue;
-	    ev.mc_id[ev.mcn]=p.pdgId();
-	    ev.mc_status[ev.mcn]=p.status();
-	    ev.mc_px[ev.mcn]=p.px();
-	    ev.mc_py[ev.mcn]=p.py();
-	    ev.mc_pz[ev.mcn]=p.pz();
-	    ev.mc_en[ev.mcn]=p.energy();
-	    ev.mc_lxy[ev.mcn]=0;
-	    ev.mcn++;
+	    if ( fabs(ev.mc_status[j]) != 1 && fabs(ev.mc_status[j]) != 3 ) continue; 
+	    if(fabs(ev.mc_id[j]) != 11 && fabs(ev.mc_id[j]) != 13 ) continue;
+	    for(size_t i = 0; i < genParticlesH->size(); ++ i)
+	      {
+		const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
+		if (!(abs(p.pdgId()) == 22 && p.pt() <= 20 &&  p.pt() > 1e-6 ) ) continue ;
+		LorentzVector p4(ev.mc_px[j],ev.mc_py[j], ev.mc_pz[j], ev.mc_en[j]);
+		if( deltaR( p4.eta(), p4.phi(), p.eta(), p.phi()) > 0.15) continue;
+		ev.mc_id[ev.mcn]=p.pdgId();
+		ev.mc_status[ev.mcn]=p.status();
+		ev.mc_px[ev.mcn]=p.px();
+		ev.mc_py[ev.mcn]=p.py();
+		ev.mc_pz[ev.mcn]=p.pz();
+		ev.mc_en[ev.mcn]=p.energy();
+		ev.mc_lxy[ev.mcn]=0;
+		ev.mcn++;
+	      }
 	  }
       }
     
