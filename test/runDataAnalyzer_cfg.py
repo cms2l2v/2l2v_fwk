@@ -202,7 +202,9 @@ except:
 try:
     if doUnfold:
         process.dataAnalyzer.cfg.keepFullGenInfo = cms.bool(True)
-        print 'Warning running unfolding: ntuples will save lots of information on gen level and won`t use trigger' 
+        print 'Warning running unfolding: ntuples will save lots of information on gen level and won`t use trigger'
+except:
+    print 'Basic generator level information will be stored (only status=3 + photons status 1)'
                 
 #counters for specific filters
 process.startCounter = cms.EDProducer("EventCountProducer")
