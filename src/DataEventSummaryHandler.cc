@@ -74,6 +74,7 @@ bool DataEventSummaryHandler::init(TTree *t, bool needsToRecreate)
   t_->Branch("ln_py",         evSummary_.ln_py,        "ln_py[ln]/F");
   t_->Branch("ln_pz",         evSummary_.ln_pz,        "ln_pz[ln]/F");
   t_->Branch("ln_en",         evSummary_.ln_en,        "ln_en[ln]/F");
+  t_->Branch("ln_ispF",       evSummary_.ln_isPF,      "ln_isPF[ln]/I");
   t_->Branch("ln_genpx",      evSummary_.ln_genpx,     "ln_genpx[ln]/F");
   t_->Branch("ln_genpy",      evSummary_.ln_genpy,     "ln_genpy[ln]/F");
   t_->Branch("ln_genpz",      evSummary_.ln_genpz,     "ln_genpz[ln]/F");
