@@ -247,11 +247,18 @@ int main(int argc, char* argv[])
     mon.addHistogram( new TH1F("recoilbalanceptrms"+regStr, "; RMS p_{T} [GeV]; Jets", 100,0,0.1) );
     mon.addHistogram( new TH1F("recoilbalance"+regStr, "; p_{T}(jet)/p_{T}; Jets", 100,0,5) );
     mon.addHistogram( new TH2F("recoilbalancevseta"+regStr, "; #eta(jet); <p_{T}(jet)/p_{T}>", 50,0,5,100,0,5) );
-    TH2 *idH=(TH2 *)mon.addHistogram( new TH2F("recoilbalanceid"+regStr, "; Pseudo-rapidity; ID", 50,0,5,4,0,4) );
+    TH2 *idH=(TH2 *)mon.addHistogram( new TH2F("recoilbalanceid"+regStr, "; Pseudo-rapidity; ID", 50,0,5,6,0,6) );
     idH->GetYaxis()->SetBinLabel(1,"no id");  
     idH->GetYaxis()->SetBinLabel(2,"PF loose");
-    idH->GetYaxis()->SetBinLabel(3,"PU loose");
-    idH->GetYaxis()->SetBinLabel(4,"PU loose (ret)");
+    idH->GetYaxis()->SetBinLabel(3,"PF+PU");
+    idH->GetYaxis()->SetBinLabel(4,"PF+sPU");
+    idH->GetYaxis()->SetBinLabel(5,"PU");
+    idH->GetYaxis()->SetBinLabel(6,"sPU");
+    if(ireg==0)
+      {
+	mon.addHistogram( (TH2 *)idH->Clone("truejetsid") );
+	mon.addHistogram( (TH2 *)idH->Clone("pujetsid") );
+      }
   }
   
   //boson control
@@ -719,12 +726,26 @@ int main(int argc, char* argv[])
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  float pumva=jets[ijet].getVal("puMVA");
+	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+	  // float pumva=jets[ijet].getVal("puMVA");
 	  Int_t idbits=jets[ijet].get("idbits");
 	  bool passPFloose( ((idbits>>0) & 0x1));
-	  	  
+	  int puId( ( idbits >>3 ) & 0xf );
+	  bool passLoosePuId( ( puId >> 2) & 0x1);
+	  int simplePuId( ( idbits >>7 ) & 0xf );
+	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
+	  TString jetType( genJet.pt()>0 ? "truejetsid" : "pujetsid" );
+	  if(jets[ijet].pt()>30)
+	    {
+	      mon.fillHisto(jetType,chTags,fabs(jets[ijet].eta()),0);
+	      if(passPFloose)                        mon.fillHisto(jetType,chTags,fabs(jets[ijet].eta()),1);
+	      if(passPFloose && passLoosePuId)       mon.fillHisto(jetType,chTags,fabs(jets[ijet].eta()),2);
+	      if(passPFloose && passLooseSimplePuId) mon.fillHisto(jetType,chTags,fabs(jets[ijet].eta()),3);
+	      if(passLoosePuId)                      mon.fillHisto(jetType,chTags,fabs(jets[ijet].eta()),4);
+	      if(passLooseSimplePuId)                mon.fillHisto(jetType,chTags,fabs(jets[ijet].eta()),5);
+	    }
+	  	
 	  //add scale/resolution uncertainties
-	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
 	  std::vector<float> smearPt=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
 	  jets[ijet].setVal("jer",     isMC ? smearPt[0] : jets[ijet].pt());
 	  jets[ijet].setVal("jerup",   isMC ? smearPt[1] : jets[ijet].pt());
@@ -734,7 +755,7 @@ int main(int argc, char* argv[])
 	  jets[ijet].setVal("jesdown", isMC ? smearPt[1] : jets[ijet].pt());
 
 	  selJetsNoId.push_back(jets[ijet]);
-	  if(passPFloose && pumva>-0.5){
+	  if(passPFloose && passLooseSimplePuId){
 	    selJets.push_back(jets[ijet]);
 	    if(jets[ijet].pt()>minJetPtToApply) njets++;
 	  }
@@ -878,10 +899,11 @@ int main(int argc, char* argv[])
 
 		    //ids
 		    Int_t idbits=selJetsNoId[0].get("idbits");
-		    int puId((idbits>>3) & 0xf);
 		    bool passPFloose ( ((idbits>>0) & 0x1) );
-		    bool passPUloose ( pumva>-0.5 );
-		    bool passPUlooseRet ( ((puId>>3)   & 0x1) );
+		    int puId((idbits>>3) & 0xf);
+		    bool passLoosePuId( ( puId >> 2) & 0x1);
+		    int simplePuId( ( idbits >>7 ) & 0xf );
+		    bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
 
 		    mon.fillHisto("recoilbalancepumva"+regStr, tags, pumva, weight);
 		    mon.fillHisto("recoilbalancedrmean"+regStr, tags, drmean, weight);
@@ -893,9 +915,11 @@ int main(int argc, char* argv[])
 		    mon.fillHisto("recoilbalanceid"+regStr,    tags,fabs(selJetsNoId[0].eta()),0, weight);
 		    if(passPFloose){
 		      mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),1, weight);
-		      if(passPUloose)     mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),2, weight);
-		      if(passPUlooseRet)  mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),3, weight);
+		      if(passLoosePuId)     mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),2, weight);
+		      if(passLooseSimplePuId)  mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),3, weight);
 		    }
+		    if(passLoosePuId)     mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),4, weight);
+		    if(passLooseSimplePuId)  mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),5, weight);
 		  }
 	      }
 	    //end balance control
@@ -1067,14 +1091,13 @@ int main(int argc, char* argv[])
 		  if(ivar==4) pt=jets[ijet].getVal("jerdown");
 		  if(pt<minJetPtToApply || fabs(jets[ijet].eta())>4.7) continue;
 	      
-		  //Int_t idbits=jets[ijet].get("idbits");
-		  //bool passPFloose( ((idbits>>0) & 0x1));
-		  //if(!passPFloose) continue;
-		  //bool passPFmedium( ((idbits>>1) & 0x1));
-		  //if(!passPFmedium) continue;
-	      	  //int puId = ((idbits>>3) & 0xf);
-		  //bool passLoosePU( (puId>>2) & 0x1 );
-		  //if(!passLoosePU) continue;
+		  Int_t idbits=jets[ijet].get("idbits");
+		  bool passPFloose ( ((idbits>>0) & 0x1) );
+		  //int puId((idbits>>3) & 0xf);
+		  //bool passLoosePuId( ( puId >> 2) & 0x1);
+		  int simplePuId( ( idbits >>7 ) & 0xf );
+		  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
+		  if(!passPFloose || !passLooseSimplePuId) continue;
 
 		  data::PhysicsObject_t iSelJet(jets[ijet]);
 		  iSelJet *= pt/rawpt;

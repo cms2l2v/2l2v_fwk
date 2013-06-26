@@ -122,7 +122,7 @@ int main(int argc,char *argv[])
     }
   const size_t nsystVars=systVars.size();
   
-  TString procs[]={"VV", "Single top", "W#rightarrow l#nu","Z#rightarrow ll","t#bar{t}","t#bar{t}V"};
+  TString procs[]={"VV", "Single top", "W,multijets","Z#rightarrow ll","t#bar{t}","other t#bar{t}"};
 
   TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu"};
   size_t runNsystVars[]      ={1,                              nsystVars,               1,                                nsystVars,                 1,                       nsystVars};
@@ -138,22 +138,32 @@ int main(int argc,char *argv[])
 
   for(size_t ich=0; ich<nchs; ich++)
     {
-      //DY->tautau is taken from dedicated file
-      if(ch[ich].BeginsWith("emu") && dyReplacementUrl.IsNull()) continue;
 
-      //open data-driven file
-      TFile *dyReplacementFile=TFile::Open( (ch[ich].BeginsWith("emu")) ? dyReplacementUrl : stdUrl);
- 
-      //get the DY template (data-driven)
+      //
+      // DY MODEL
+      //
+      TFile *dyReplacementFile=TFile::Open(stdUrl);
       TString dataDir("data");
-      if(ch[ich].BeginsWith("emu") ) dataDir="Z#rightarrow#tau#tausystdata";
+      if(ch[ich].BeginsWith("emu")) dataDir="Z#rightarrow ll";      
+      
+      //DY->tautau from mu->tau replacement
+      //if(ch[ich].BeginsWith("emu") && dyReplacementUrl.IsNull()) continue;
+      //TFile *dyReplacementFile=TFile::Open( (ch[ich].BeginsWith("emu")) ? dyReplacementUrl : stdUrl);
+      //get the DY template (data-driven)
+      //TString dataDir("data");
+      //if(ch[ich].BeginsWith("emu") ) dataDir="Z#rightarrow#tau#tausystdata";
+            
       TH1F *dyReplacementHisto=(TH1F *) dyReplacementFile->Get(dataDir+"/"+templateHisto[ich]);
       dyReplacementHisto->SetDirectory(0); 
       dyReplacementHisto->SetName(templateName[ich]+"model");
       dyReplacementHisto->SetTitle(templateTitle[ich]);
       if(rebin[ich]) dyReplacementHisto->Rebin();
-      
       dyReplacementFile->Close();
+
+
+      //
+      // DATA AND OTHER PROCESSES
+      //
      
       //open standard file
       TFile *stdFile=TFile::Open(stdUrl);
@@ -162,8 +172,7 @@ int main(int argc,char *argv[])
       TH1F *dataHisto=(TH1F *) stdFile->Get("data/"+signalRegionHisto[ich])->Clone("data");
       dataHisto->SetDirectory(0);
       dataHisto->SetTitle("data");
-      if(rebin[ich]) 
-	dataHisto->Rebin();
+      if(rebin[ich])   dataHisto->Rebin();
            
       //get histograms for MC
       std::vector<TH1F *> dyReplacementMCHisto, dyMCHisto, otherProcsHisto, mcSumHisto;
@@ -176,6 +185,7 @@ int main(int argc,char *argv[])
 	  for(size_t iproc=0; iproc<nprocs; iproc++)
 	    {
 	      TH1F *histo = (TH1F *) stdFile->Get(procs[iproc]+"/"+signalRegionHisto[ich]+ivarName);
+	      cout << procs[iproc] << " " << histo << endl;
 	      if(histo==0) continue;
 	      if(ivarOrigName.Contains("signal") && procs[iproc]=="t#bar{t}")
 		{
@@ -199,7 +209,7 @@ int main(int argc,char *argv[])
 		  stdFile->cd();
 		}
 	      if(rebin[ich]) histo->Rebin();
-
+	      
 	      //force the normalization of the shape
 	      if(ivar>0 && !procs[iproc].Contains("Z#rightarrow"))
 		{
@@ -213,6 +223,7 @@ int main(int argc,char *argv[])
 	      //now save histogram in the appropriate category
 	      if(procs[iproc].Contains("Z#rightarrow"))   
 		{
+		  cout << "DY" << endl;
 		  histo = (TH1F *)histo->Clone(templateName[ich]+ivarOrigName+"mc");
 		  histo->SetTitle(templateTitle[ich]+" (MC)");
 		  histo->SetDirectory(0);		  
@@ -264,6 +275,7 @@ int main(int argc,char *argv[])
       //
       // Now fit
       //
+      cout << dataHisto << " " << dyMCHisto.size() << " " << otherProcsHisto.size() << endl;
       float totalData=dataHisto->Integral(1,dataHisto->GetXaxis()->GetNbins());
       float dyExpected=dyMCHisto[0]->Integral(1,dyMCHisto[0]->GetXaxis()->GetNbins());
       float totalOthers=otherProcsHisto[0]->Integral(1,otherProcsHisto[0]->GetXaxis()->GetNbins());

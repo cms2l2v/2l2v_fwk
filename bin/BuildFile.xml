@@ -1,5 +1,8 @@
 <use name="UserCode/llvv_fwk"/>
 <use name="lhapdf"/>
+<use name="roottmva"/>
+<use name="roofit"/>
+<use name="roostats"/>
 <environment>
   <bin name="runTopAnalysis"           file="runTopAnalysis.cc"></bin> 
   <bin name="runChHiggsAnalysis"       file="runChHiggsAnalysis.cc"></bin>
@@ -8,5 +11,7 @@
   <bin name="runPlotter"               file="runPlotter.cc"></bin> 
   <bin name="computePDFvariations"     file="computePDFvariations.cc"></bin> 
   <bin name="fitDYforTop"              file="fitDYforTop.cc"></bin> 
+  <bin name="fitTTbarCrossSection"     file="fitTTbarCrossSection.cc"></bin> 
+  <bin name="runPLRanalysis"           file="runPLRanalysis.cc"></bin> 
 </environment>
 <Flags CXXFLAGS="-g"/>

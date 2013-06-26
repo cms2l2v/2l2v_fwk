@@ -213,4 +213,65 @@ namespace utils
       return Aeff;
     }
   }
+
+
+  //
+  std::string toLatexRounded(double value, double error, double systError,bool doPowers)
+  {
+    using namespace std;
+
+    if(value==0.0 && error==0.0)return string("");
+    
+    if(!doPowers){
+      char tmpchar[255];
+      if(systError<0)
+	sprintf(tmpchar,"$%.0f\\pm%.0f$",value,error);
+      else
+	sprintf(tmpchar,"$%.0f\\pm%.0f\\pm%.0f$",value,error,systError);
+      return string(tmpchar);
+    }
+    
+    double power = floor(log10(value));
+    if(power<=-3)     {power=power+3;}
+    else if(power>=2) {power=power-2;}
+    else              {power=0;}
+    
+    value = value / pow(10,power);
+    error = error / pow(10,power);
+    if(systError>=0)systError = systError / pow(10,power);
+    int ValueFloating;
+    if(systError<0){
+      ValueFloating = 1 + std::max(-1*log10(error),0.0);
+    }else{
+      ValueFloating = 1 + std::max(-1*log10(systError), std::max(-1*log10(error),0.0));
+    }
+    int ErrorFloating = ValueFloating;
+    
+    char tmpchar[255];
+    if(power!=0){
+      if(systError<0){
+        sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
+      }else{
+        sprintf(tmpchar,"$(%.*f\\pm%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,power);
+      }
+      
+    }else{
+      if(systError<0){
+        sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
+      }else{
+        sprintf(tmpchar,"$%.*f\\pm%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError);
+      }
+    }
+    return string(tmpchar);
+  }
+
+  //
+  void TLatexToTex(TString &expr)
+  {
+    expr = "$"+expr;
+    expr += "$";
+    expr.ReplaceAll("mu","\\mu"); 
+    expr.ReplaceAll("_"," "); 
+    expr.ReplaceAll("#","\\");
+  }
 }

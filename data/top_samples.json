@@ -24,7 +24,7 @@
            ]
         },
 	{
-	"tag":"W+jets,multijets",
+	"tag":"W,multijets",
         "isdata":false,
 	"color":"809",
 	"lcolor":1,
@@ -85,6 +85,27 @@
              }
           ]
         },
+	{
+         "tag":"other t#bar{t}",
+         "isdata":false,
+         "color":"822",
+         "lcolor":1,
+	 "mctruthmode":2,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJets_172v5",
+                "xsec":245.8
+                },
+                {
+                "dtag":"MC8TeV_TTWJets",
+                "xsec":0.232
+                },
+                {
+                "dtag":"MC8TeV_TTZJets",
+                "xsec":0.208
+		}
+   	   ]
+	},
 	{
          "tag":"Single top",
          "isdata":false,
@@ -163,6 +184,7 @@
          "isdata":false,
          "color":"614",
          "lcolor":1,
+	 "mctruthmode":1,
          "data":[
 		{
  	        "dtag":"MC8TeV_TTJetsFullLeptMGDecays",

@@ -45,7 +45,6 @@ std::vector<std::string> channels;
 float lumiUnc(0.044);
 float selEffUnc(0.02);
 float iEcm(8);
-bool doPowers = true;
 
 //wrapper for a projected shape for a given set of cuts
 struct Shape_t
@@ -74,6 +73,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes);
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes);
 void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst="");
 TString convertNameForDataCard(TString title);
+void TLatexToTex(TString &expr);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
 
@@ -147,7 +147,6 @@ float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, s
   return var*rate;
 }
 
-
 //
 void printHelp()
 {
@@ -157,7 +156,6 @@ void printHelp()
   printf("--syst      --> input file with syst shapes\n");
   printf("--json      --> json file with the sample descriptor\n");
   printf("--histo     --> name of histogram to be used\n");
-  printf("--noPowers --> Do not use powers of 10 for numbers in tables\n");
   printf("--bins      --> list of bins to be used (they must be comma separated without space)\n");
   printf("--ch        --> list of channels to be used (they must be comma separated without space)\n");
 }
@@ -175,9 +173,6 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
     {
       TString procCtr(""); procCtr+=i;
       TString proc=(Process[i])["tag"].toString();
-      cout << "--------------------" << endl;
-      cout << "Tag: " << proc << endl;  
-
       TDirectory *pdir = (TDirectory *)inF->Get(proc);         
       if(pdir==0) continue;
       
@@ -201,7 +196,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  TString histoName = ch;  if(!ch.IsNull()) histoName += "_"; histoName += histo+varName ;
 	  TH1F* hshape = (TH1F*) pdir->Get( histoName );
 	  if(hshape==0) continue;
-	  cout << "Hshape nbins: " << hshape->GetXaxis()->GetNbins() << endl;
+
 	  //project out required bins (set the others to 0)
 	  if(binsToProject.size()) {
 	    for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
@@ -254,7 +249,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 			hmcsig->SetBinError(ibin,0);
 		      }
 		      hmcsig->SetDirectory(0); 
-		      //Double_t sf=hshape->Integral()/hmcsig->Integral();
+		      Double_t sf=hshape->Integral()/hmcsig->Integral();
 		      hmcsig->Scale(hshape->Integral()/hmcsig->Integral()); 
 		      hmcsig->SetName(hmcsig->GetName()+TString("mcsignalup"));
 		      hmcsig->SetTitle(proc);
@@ -409,7 +404,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 	  float sSyst=getIntegratedSystematics(shape.signal,shape.signalVars,sigRateSysts,*bIt);
 	  totalSyst += pow(sSyst,2); 
 	  CSyields += " & ";
-	  CSyields += utils::toLatexRounded( shape.signal->GetBinContent(*bIt), shape.signal->GetBinError(*bIt), sSyst, doPowers);
+	  CSyields += utils::toLatexRounded( shape.signal->GetBinContent(*bIt), shape.signal->GetBinError(*bIt), sSyst, true);
 	  
 	  //background
 	  for(std::vector<TH1F *>::const_iterator bckgIt=bckgTempl.begin(); bckgIt!=bckgTempl.end(); bckgIt++)
@@ -439,7 +434,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 		    }
 		  
 		  if(ich==0) { CByields[proc]=proc; utils::TLatexToTex(CByields[proc]); }
-		  CByields[proc] += " & "; CByields[proc] += utils::toLatexRounded( (*bckgItt)->GetBinContent(*bIt), (*bckgItt)->GetBinError(*bIt), bSyst, doPowers); 
+		  CByields[proc] += " & "; CByields[proc] += utils::toLatexRounded( (*bckgItt)->GetBinContent(*bIt), (*bckgItt)->GetBinError(*bIt), bSyst, true); 
 		  procFound=true;
 		  break;
 		}
@@ -450,7 +445,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 	  //signal + background
 	  totalSyst=sqrt(totalSyst);
 	  if(ich==0) { CSpByields = shape.totalSplusB->GetTitle(); utils::TLatexToTex(CSpByields); }
-	  CSpByields += " & "; CSpByields += utils::toLatexRounded( shape.totalSplusB->GetBinContent(*bIt), shape.totalSplusB->GetBinError(*bIt),totalSyst, doPowers);
+	  CSpByields += " & "; CSpByields += utils::toLatexRounded( shape.totalSplusB->GetBinContent(*bIt), shape.totalSplusB->GetBinError(*bIt),totalSyst, true);
 	}
       for(std::map<TString,TString>::iterator cbyIt=CByields.begin(); cbyIt!=CByields.end(); cbyIt++)
 	{ 
@@ -722,7 +717,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--syst")   !=string::npos && i+1<argc)  { systFileUrl = argv[i+1];  i++;  printf("syst = %s\n", systFileUrl.Data());  }
     else if(arg.find("--json")   !=string::npos && i+1<argc)  { jsonFileUrl  = argv[i+1];  i++;  printf("json = %s\n", jsonFileUrl.Data()); }
     else if(arg.find("--histo")  !=string::npos && i+1<argc)  { histo     = argv[i+1];  i++;  printf("histo = %s\n", histo.Data()); }
-    else if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
     else if(arg.find("--bins")   !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins to use are : ");while (pch!=NULL){int b; sscanf(pch,"%d",&b); printf(" %d ",b); binsToProject.push_back(b);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--ch")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("ch to use are : ");  while (pch!=NULL){printf(" %s ",pch); channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
   }
@@ -746,21 +740,21 @@ int main(int argc, char* argv[])
   //convert shapes to datacards
   convertShapesToDataCards(shapes);
 
-  //  //combine the datacards and run profile likelihood analysis
-  //  TString combCardCmd("combineCards.py "),plrAnalysisCmd("runPLRanalysis --in "); 
-  //  int icard(1);
-  //  for(std::map<TString, Shape_t>::const_iterator it=shapes.begin(); it!=shapes.end(); it++)
-  //    {
-  //      TString ch(it->first); if(ch.IsNull() || ch=="inclusive") continue;
-  //      combCardCmd += "Name"; combCardCmd += icard; combCardCmd +="="+outUrl+"DataCard_"+ch+".dat ";
-  //      plrAnalysisCmd += outUrl+"DataCard_"+ch+".dat,";
-  //      icard++;
-  //    }
-  //  combCardCmd += " > "+outUrl+"DataCard_combined.dat";
-  //  plrAnalysisCmd += outUrl+"DataCard_combined.dat";
-  //  gSystem->Exec("mv DataCard* " + outUrl);
-  //  gSystem->Exec(combCardCmd.Data());
-  //  gSystem->Exec(plrAnalysisCmd.Data());
-  //  gSystem->Exec("mv PLR* " + outUrl);
+  //combine the datacards and run profile likelihood analysis
+  TString combCardCmd("combineCards.py "),plrAnalysisCmd("runPLRanalysis --in "); 
+  int icard(1);
+  for(std::map<TString, Shape_t>::const_iterator it=shapes.begin(); it!=shapes.end(); it++)
+    {
+      TString ch(it->first); if(ch.IsNull() || ch=="inclusive") continue;
+      combCardCmd += "Name"; combCardCmd += icard; combCardCmd +="="+outUrl+"DataCard_"+ch+".dat ";
+      plrAnalysisCmd += outUrl+"DataCard_"+ch+".dat,";
+      icard++;
+    }
+  combCardCmd += " > "+outUrl+"DataCard_combined.dat";
+  plrAnalysisCmd += outUrl+"DataCard_combined.dat";
+  gSystem->Exec("mv DataCard* " + outUrl);
+  gSystem->Exec(combCardCmd.Data());
+  gSystem->Exec(plrAnalysisCmd.Data());
+  gSystem->Exec("mv PLR* " + outUrl);
 }
 
