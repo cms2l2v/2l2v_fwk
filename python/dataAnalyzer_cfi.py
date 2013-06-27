@@ -59,8 +59,7 @@ dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                              pujetidAlgo     = pileupJetIdProducerChs.algos,
                                              metSource       = cms.VInputTag("pfMETPFlow","pfMet","pfType1CorrectedMet","pfType1p2CorrectedMet"),
                                              rhoSource       = cms.InputTag("kt6PFJets:rho"),
-                                             rho25Source      = cms.InputTag("kt6PFJetsCentral:rho"),
-					     keepFullGenInfo_    = cms.bool(False)
+                                             rho25Source     = cms.InputTag("kt6PFJetsCentral:rho")
                                              )
                                )
 
