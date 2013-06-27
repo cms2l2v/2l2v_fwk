@@ -1,5 +1,4 @@
 #include "UserCode/llvv_fwk/interface/DataEventSummary.h"
-#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
 
 #ifdef __CINT__
 
@@ -9,7 +8,6 @@
 #pragma link off all typedef;
 
 #pragma link C++ class DataEventSummary;
-#pragma link C++ class DataEventSummaryHandler;
 
 
 #endif

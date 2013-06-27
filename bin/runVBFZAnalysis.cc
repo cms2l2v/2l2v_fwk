@@ -403,7 +403,7 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=utils::cmssw::getMuonCorrector(jecDir,url);
+  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
     
   //pdf info
   PDFInfo *mPDFInfo=0;

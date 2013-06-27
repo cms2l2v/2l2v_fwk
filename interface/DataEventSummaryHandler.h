@@ -2,6 +2,7 @@
 #define dataeventsummaryhandler_h
 
 #include "UserCode/llvv_fwk/interface/DataEventSummary.h"
+#include "UserCode/llvv_fwk/interface/MacroUtils.h"
 
 #include "TTree.h"
 
@@ -77,15 +78,23 @@ class DataEventSummaryHandler{
   DataEventSummary evSummary_;
 };
 
-namespace physics
+
+namespace utils
 {
-  namespace utils
+  namespace cmssw
   {
     //based on http://arxiv.org/pdf/1001.5027v3.pdf
     enum JetPullTypes {toJ1_ALL,toJ1_CH,toJ1_NEUT,toJ2_ALL,toJ2_CH,toJ2_NEUT};
     std::vector<float> pullDeltaTheta(data::PhysicsObject_t &jet1, data::PhysicsObject_t &jet2, data::PhysicsObjectCollection_t &pf);
     void setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf);
     void setJetDirections(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf);
+
+    //set new jet energy corrections
+    void updateJEC(data::PhysicsObjectCollection_t &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC);
+
+    //apply MET variations
+    enum METvariations { JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN };
+    std::vector<LorentzVector> getMETvariations(data::PhysicsObject_t &rawMETP4, data::PhysicsObjectCollection_t &jets, data::PhysicsObjectCollection_t &leptons, bool isMC);
   }
 }
 

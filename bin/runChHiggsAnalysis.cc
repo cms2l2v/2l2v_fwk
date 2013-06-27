@@ -9,6 +9,7 @@
 #include "UserCode/llvv_fwk/interface/UEAnalysis.h"
 #include "UserCode/llvv_fwk/interface/BTVAnalysis.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
+#include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -77,7 +78,7 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=utils::cmssw::getMuonCorrector(jecDir,url);
+  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
 
   // FIXME: add dy reweighting
 

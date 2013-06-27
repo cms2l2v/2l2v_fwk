@@ -88,9 +88,9 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   LorentzVector rec_ttbar=htlep+met[0];
 
   //color flow
-  std::vector<float> pullSummary=physics::utils::pullDeltaTheta(jets[0].pt()>jets[1].pt()?jets[0]:jets[1],
-								jets[0].pt()>jets[1].pt()?jets[1]:jets[0],
-								pf);
+  std::vector<float> pullSummary=utils::cmssw::pullDeltaTheta(jets[0].pt()>jets[1].pt()?jets[0]:jets[1],
+							      jets[0].pt()>jets[1].pt()?jets[1]:jets[0],
+							      pf);
   
   //study UE with charged PF
   std::vector<int> chCount(4,0);
@@ -132,10 +132,10 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 
   if(pullSummary.size()==6)
     {
-      mon_->fillHisto("allj1pull", ch, fabs(pullSummary[physics::utils::toJ1_ALL]), weight);
-      mon_->fillHisto("allj2pull",  ch, fabs(pullSummary[physics::utils::toJ2_ALL]), weight);
-      mon_->fillHisto("chj1pull", ch, fabs(pullSummary[physics::utils::toJ1_CH]), weight);
-      mon_->fillHisto("chj2pull",  ch, fabs(pullSummary[physics::utils::toJ2_CH]), weight);
+      mon_->fillHisto("allj1pull", ch, fabs(pullSummary[utils::cmssw::toJ1_ALL]), weight);
+      mon_->fillHisto("allj2pull",  ch, fabs(pullSummary[utils::cmssw::toJ2_ALL]), weight);
+      mon_->fillHisto("chj1pull", ch, fabs(pullSummary[utils::cmssw::toJ1_CH]), weight);
+      mon_->fillHisto("chj2pull",  ch, fabs(pullSummary[utils::cmssw::toJ2_CH]), weight);
     }
   for(size_t ijet=0; ijet<2; ijet++)
     {

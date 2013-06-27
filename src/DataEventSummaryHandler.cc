@@ -1,4 +1,5 @@
 #include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
+
 #include "TVector2.h"
 
 using namespace std;
@@ -630,7 +631,7 @@ data::PhysicsObjectCollection_t DataEventSummaryHandler::getPhysicsObject(int co
 }
 
 //
-void physics::utils::setJetDirections(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf)
+void utils::cmssw::setJetDirections(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf)
 {
   int istart=jet.get("pfstart");
   int iend=jet.get("pfend");
@@ -657,10 +658,10 @@ void physics::utils::setJetDirections(data::PhysicsObject_t &jet, data::PhysicsO
 
 
 //
-void physics::utils::setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf)
+void utils::cmssw::setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObjectCollection_t &pf)
 {
   //first define the directions
-  if(jet.objs.find("J_all")==jet.objs.end()) physics::utils::setJetDirections(jet,pf);
+  if(jet.objs.find("J_all")==jet.objs.end()) utils::cmssw::setJetDirections(jet,pf);
   if(jet.objs.find("J_all")==jet.objs.end()) return;
 
   //compute the pulls
@@ -700,7 +701,7 @@ void physics::utils::setJetPulls(data::PhysicsObject_t &jet, data::PhysicsObject
 }
 
 //
-std::vector<float> physics::utils::pullDeltaTheta(data::PhysicsObject_t &jet1, data::PhysicsObject_t &jet2, data::PhysicsObjectCollection_t &pf)
+std::vector<float> utils::cmssw::pullDeltaTheta(data::PhysicsObject_t &jet1, data::PhysicsObject_t &jet2, data::PhysicsObjectCollection_t &pf)
 {
   std::vector<float> pullSummary(6,0);
 
@@ -721,11 +722,96 @@ std::vector<float> physics::utils::pullDeltaTheta(data::PhysicsObject_t &jet1, d
       float dyjj=J2.y()-J1.y();
 
       TVector2 jj(dyjj,dphijj);
-      pullSummary[physics::utils::toJ1_ALL+i]=deltaPhi(t1.py(),jj.Phi());
+      pullSummary[utils::cmssw::toJ1_ALL+i]=deltaPhi(t1.py(),jj.Phi());
 
       jj=TVector2(-dyjj,dphijj);
-      pullSummary[physics::utils::toJ2_ALL+i]=deltaPhi(t2.py(),jj.Phi());
+      pullSummary[utils::cmssw::toJ2_ALL+i]=deltaPhi(t2.py(),jj.Phi());
     }
 
   return pullSummary;
+}
+
+
+//
+void utils::cmssw::updateJEC(data::PhysicsObjectCollection_t &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
+{
+  for(size_t ijet=0; ijet<jets.size(); ijet++)
+    {
+      //correct JES
+      float toRawSF=jets[ijet].getVal("torawsf");
+      LorentzVector rawJet(jets[ijet]*toRawSF);
+      jesCor->setJetEta(rawJet.eta());
+      jesCor->setJetPt(rawJet.pt());
+      jesCor->setJetA(jets[ijet].getVal("area"));
+      jesCor->setRho(rho);
+      jesCor->setNPV(nvtx);
+      float newJECSF=jesCor->getCorrection();
+      rawJet *= newJECSF;
+      jets[ijet].SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
+
+      //smear JER
+      float newJERSF(1.0);
+      if(isMC)
+	{
+	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+	  std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
+	  newJERSF=smearJER[0]/jets[ijet].pt();
+	  rawJet *= newJERSF;
+	  jets[ijet].SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
+	  
+	  //set the JER up/down alternatives 
+	  jets[ijet].setVal("jerup",   smearJER[1] );
+	  jets[ijet].setVal("jerdown", smearJER[2] );
+	}
+      
+      //set the JES up/down pT alternatives
+      std::vector<float> ptUnc=utils::cmssw::smearJES(jets[ijet].pt(),jets[ijet].eta(), totalJESUnc);
+      jets[ijet].setVal("jesup",    ptUnc[0] );
+      jets[ijet].setVal("jesdown",  ptUnc[1] );
+      
+      //to get the raw jet again
+      jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));	  
+    }
+}
+
+//
+std::vector<LorentzVector> utils::cmssw::getMETvariations(data::PhysicsObject_t &rawMETP4, data::PhysicsObjectCollection_t &jets, data::PhysicsObjectCollection_t &leptons,bool isMC)
+{
+  std::vector<LorentzVector> newMetsP4(6,rawMETP4);
+  if(!isMC) return newMetsP4;
+
+  LorentzVector nullP4(0,0,0,0);
+  
+  //leptonic flux
+  LorentzVector leptonFlux(nullP4);
+  for(size_t ilep=0; ilep<leptons.size(); ilep++) leptonFlux += leptons[ilep];
+
+  //recompute the clustered and unclustered fluxes with energy variations
+  for(size_t ivar=0; ivar<6; ivar++)
+    {
+      LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
+      for(size_t ijet=0; ijet<jets.size(); ijet++)
+	{
+	  float jetsf(1.0);
+	  if(ivar==JERUP)   jetsf=jets[ijet].getVal("jerup")/jets[ijet].pt();
+	  if(ivar==JERDOWN) jetsf=jets[ijet].getVal("jerdown")/jets[ijet].pt();
+	  if(ivar==JESUP)   jetsf=jets[ijet].getVal("jesup")/jets[ijet].pt();
+	  if(ivar==JESDOWN) jetsf=jets[ijet].getVal("jesdown")/jets[ijet].pt();
+	  LorentzVector newJet( jets[ijet] ); newJet *= jetsf;
+	  jetDiff       += (newJet-jets[ijet]);
+	  clusteredFlux += jets[ijet];
+	}
+      LorentzVector iMet=rawMETP4-jetDiff;
+      if(ivar==UMETUP || ivar==UMETDOWN)
+	{
+	  LorentzVector unclusteredFlux=-(iMet+clusteredFlux+leptonFlux);
+	  unclusteredFlux *= (ivar==UMETUP ? 1.1 : 0.9); 
+	  iMet = -clusteredFlux -leptonFlux - unclusteredFlux;
+	}
+      
+      newMetsP4[ivar]=iMet;
+    }
+  
+  //all done here
+  return newMetsP4;
 }
