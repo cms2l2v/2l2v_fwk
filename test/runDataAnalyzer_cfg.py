@@ -210,7 +210,7 @@ except:
 process.startCounter = cms.EDProducer("EventCountProducer")
 process.scrapCounter = process.startCounter.clone()
 process.vtxCounter   = process.startCounter.clone()
-
+process.metCounter   = process.startCounter.clone() 
 process.p = cms.Path( process.startCounter
                       *process.noscraping
                       *process.scrapCounter
@@ -218,6 +218,7 @@ process.p = cms.Path( process.startCounter
                       *process.goodVertexFilter
                       *process.vtxCounter
                       *process.metFilteringTaggers
+		      *process.metCounter
                       *process.eidMVASequence
                       *getattr(process,"patPF2PATSequence"+postfix)
                       *process.btvSequence

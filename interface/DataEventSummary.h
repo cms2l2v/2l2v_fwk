@@ -46,6 +46,7 @@ class DataEventSummary //: public TObject
   Int_t ln;
   Int_t ln_id[MAXDATAOBJECTS],          ln_idbits[MAXDATAOBJECTS],    ln_pid[MAXDATAOBJECTS], ln_genid[MAXDATAOBJECTS], ln_Tbits[MAXDATAOBJECTS];
   Float_t ln_px[MAXDATAOBJECTS],        ln_py[MAXDATAOBJECTS],        ln_pz[MAXDATAOBJECTS],        ln_en[MAXDATAOBJECTS];
+  Int_t ln_isPF[MAXDATAOBJECTS];
   Float_t ln_genpx[MAXDATAOBJECTS],     ln_genpy[MAXDATAOBJECTS],     ln_genpz[MAXDATAOBJECTS],     ln_genen[MAXDATAOBJECTS];
   Float_t ln_ecalIso03[MAXDATAOBJECTS], ln_hcalIso03[MAXDATAOBJECTS], ln_trkIso03[MAXDATAOBJECTS];
   Float_t ln_gIso03[MAXDATAOBJECTS],    ln_chIso03[MAXDATAOBJECTS],   ln_puchIso03[MAXDATAOBJECTS], ln_nhIso03[MAXDATAOBJECTS]; 
