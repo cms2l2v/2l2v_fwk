@@ -24,21 +24,10 @@ cvs co -r V01-09-05      RecoLocalTracker/SubCollectionProducers
 cvs co -r V03-03-12-02   RecoMET/METProducers                             
 cvs co -r V00-00-13-01   RecoMET/METFilters
 cvs co -r V00-00-08      RecoMET/METAnalyzers
-
 cvs co -r v1-2-3      -d QuarkGluonTagger/EightTeV       UserCode/tomc/QuarkGluonTagger/EightTeV                       
 cvs co -r V00-03-04   -d CMGTools/External               UserCode/CMG/CMGTools/External
 cvs co -r V00-09-03   -d SHarper/HEEPAnalyzer            UserCode/SHarper/HEEPAnalyzer
-
-
-
-#useless?
-#cvs co -r V00-03-23      CommonTools/RecoAlgos
-#cvs co -r V02-05-11                   DataFormats/CaloRecHit                           
-#cvs co -r V00-00-70                   FWCore/GuiBrowsers                               
-#cvs co -r V00-02-14                   DataFormats/StdDictionaries                      
-#cvs co -r V00-02-13-01                DataFormats/StdDictionaries
-#git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
-
+git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
 
 echo "Thought you could do this with just one tag, eh?"
 echo "PAT tags correspond to https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATReleaseNotes52X#V08_09_62"
