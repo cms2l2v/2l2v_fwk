@@ -130,6 +130,14 @@ int main(int argc, char* argv[])
   utils::cmssw::PuShifter_t PuShifters;
   if(isMC) PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
   
+  //systematic variations for final selection
+  std::vector<TString> systVars(1,"");
+  if(isMC && runSystematics){
+    systVars.push_back("jerdown");     systVars.push_back("jerup"); 
+    systVars.push_back("jesdown");     systVars.push_back("jesup"); 
+    systVars.push_back("umetdown");    systVars.push_back("umetup"); 
+    systVars.push_back("pudown");      systVars.push_back("puup"); 
+  }
 
   //
   // control histograms
@@ -137,6 +145,8 @@ int main(int argc, char* argv[])
   SmartSelectionMonitor controlHistos;
   TH1F* Hhepup        = (TH1F* )controlHistos.addHistogram(new TH1F ("heupnup"    , "hepupnup"    ,20,0,20) ) ;
   TH1F* Hcutflow      = (TH1F*) controlHistos.addHistogram(new TH1F ("cutflow"    , "cutflow"    ,5,0,5) ) ;
+  TH1F* Hoptim_systs  = (TH1F*) controlHistos.addHistogram(new TH1F ("optim_systs"    , ";syst;", systVars.size(),0,systVars.size()) );
+  
 
   //vertex multiplicity
   controlHistos.addHistogram( new TH1F ("nvertices", "; Vertex multiplicity; Events", 50, 0.,50.) );
@@ -147,16 +157,9 @@ int main(int argc, char* argv[])
   TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow",";Cutflow;Events",nsteps,0,nsteps) );
   for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
 
-  //systematic variations for final selection
-  std::vector<TString> systVars(1,"");
-  if(isMC && runSystematics){
-    systVars.push_back("jerdown");     systVars.push_back("jerup"); 
-    systVars.push_back("jesdown");     systVars.push_back("jesup"); 
-    systVars.push_back("umetdown");    systVars.push_back("umetup"); 
-    systVars.push_back("pudown");      systVars.push_back("puup"); 
-  }
   for(size_t ivar=0;ivar<systVars.size(); ivar++) 
     {
+      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1,systVars[ivar]);
       TH1D *finalCutflowH=new TH1D("finalevtflow"+systVars[ivar],";Category;Events",4,0,4);
       finalCutflowH->GetXaxis()->SetBinLabel(1,"=1 jets");
       finalCutflowH->GetXaxis()->SetBinLabel(2,"=2 jets");
@@ -209,7 +212,7 @@ int main(int argc, char* argv[])
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
-  //UEAnalysis ueAn(controlHistos);
+  UEAnalysis ueAn(controlHistos);
   //BTVAnalysis btvAn(controlHistos,runSystematics);
   //LxyAnalysis lxyAn(controlHistos,runSystematics);
   
@@ -419,7 +422,7 @@ int main(int argc, char* argv[])
 	  if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	  selJets.push_back(jets[ijet]);
 	}
-      sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByPt);
+      sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByCSV);
       sort(selJets.begin(),  selJets.end(),  data::PhysicsObject_t::sortByCSV);
       
 
@@ -501,15 +504,10 @@ int main(int argc, char* argv[])
 	  if(isOS) {
 	    controlHistos.fillHisto("evtflow", ch, 4, iweight);
 	    
-	    //UE event analysis (no need to require MET, after 2-btags the events will be pure in ttbar)
-	    //float nbtags(0);
-	    //for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
-	    //if(nbtags>2){
-	    //PF candidates
-	    //data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-	    //ueAn.analyze(selLeptons,selJets,met,pf,gen,iweight);
-	    //}
-	    
+	    //UE event analysis with PF candidates
+	    data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+	    ueAn.analyze(selLeptons,looseJets,met[0],pf,gen,ev.nvtx,iweight);
+	    	    
 	    //save selected event
 	    if(spyEvents){
 	      evSummaryWeight=xsecWeight*iweight;

@@ -181,6 +181,7 @@
         },
 	{
          "tag":"t#bar{t}",
+	 "issignal":true,
          "isdata":false,
          "color":"614",
          "lcolor":1,

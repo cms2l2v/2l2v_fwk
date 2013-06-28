@@ -216,9 +216,9 @@ int main(int argc, char* argv[])
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
-  UEAnalysis ueAn(controlHistos); // FIXME: implement runSystematics here or add a different class for managing histos of interest :)
+  //UEAnalysis ueAn(controlHistos); // FIXME: implement runSystematics here or add a different class for managing histos of interest :)
   //  BTVAnalysis btvAn(controlHistos,runSystematics);
-  LxyAnalysis lxyAn(controlHistos,runSystematics);
+  //  LxyAnalysis lxyAn(controlHistos,runSystematics);
   
   ///
   // process events file
@@ -539,7 +539,7 @@ int main(int argc, char* argv[])
 
       
       //      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weight,weightUp,weightDown);
-      if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
+      //if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 
       //select the event
       if(!passDilSelection) continue;
@@ -559,7 +559,7 @@ int main(int argc, char* argv[])
 
      
       //run the lxy analysis
-      lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
+      //lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 
       float nbtags(0);
       for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
@@ -573,8 +573,8 @@ int main(int argc, char* argv[])
       }
       
       //PF candidates
-      data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-      ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
+      //data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+      //ueAn.analyze(selLeptons,selJets,met,pf,gen,ev.nvtx,weight);
     }
   if(nDuplicates) cout << "[Warning] found " << nDuplicates << " duplicate events in this ntuple" << endl;
 
