@@ -10,6 +10,7 @@
   <bin name="runVBFZAnalysis"          file="runVBFZAnalysis.cc"></bin> 
   <bin name="runPlotter"               file="runPlotter.cc"></bin> 
   <bin name="computePDFvariations"     file="computePDFvariations.cc"></bin> 
+  <bin name="computePDFvariationsFWLite"     file="computePDFvariationsFWLite.cc"></bin>
   <bin name="fitDYforTop"              file="fitDYforTop.cc"></bin> 
   <bin name="fitTTbarCrossSection"     file="fitTTbarCrossSection.cc"></bin> 
   <bin name="runPLRanalysis"           file="runPLRanalysis.cc"></bin> 

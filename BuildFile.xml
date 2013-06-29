@@ -1,6 +1,9 @@
+<use name="DataFormats/Common"/>
+<use name="FWCore/Utilities"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/ParameterSet"/>
 <use name="FWCore/FWLite"/>
+<use name="DataFormats/FWLite"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="FWCore/Services"/>
 <use name="DataFormats/VertexReco"/>
@@ -15,6 +18,7 @@
 <use name="PhysicsTools/Utilities"/>
 <use name="roottmva"/>
 <use name="roofit"/>
+<use name="rootrflx"/>
 <use name="fastjet"/>
 <export>
   <lib name="1"/>
