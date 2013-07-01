@@ -1,27 +1,28 @@
 {
     "proc":[
 	{
-        "tag":"Perugia11",
-        "isdata":false,
-        "color":"592",
-	"fill":0,
-        "marker":1,
-	"spimpose":true,
-        "data":[
-	    {
-               "dtag":"PythiaP11Settings",
-               "xsec":245.8,
-	       "aoddir":["none"] 
-             }
-	  ]
+         "tag":"Z2^{*}",
+         "isdata":false,
+         "color":"1",
+         "lcolor":1,
+	 "fill":0,
+	 "lwidth":2,
+         "data":[
+		{
+ 	        "dtag":"PythiaZ2Settings",
+                "xsec":245.8,
+ 	        "aoddir":["none"]
+                }
+   	   ]
 	},
 	{
-        "tag":"Perugia11noCR",
+        "tag":"P11-noCR",
         "isdata":false,
-        "color":"822",
+        "color":"2",
 	"fill":0,
-        "marker":1,
-	"spimpose":true,
+        "lwidth":2,
+	"marker":20,
+        "spimpose":true,
         "data":[
 	    {
                "dtag":"PythiaP11noCRSettings",
@@ -31,19 +32,20 @@
 	  ]
 	},
 	{
-         "tag":"Z2^{*}",
-	 "issignal":true,
-         "isdata":false,
-         "color":"614",
-         "lcolor":1,
-	 "mctruthmode":1,
-         "data":[
-		{
- 	        "dtag":"PythiaZ2Settings",
-                "xsec":245.8,
- 	        "aoddir":["none"]
-                }
-   	   ]
+        "tag":"P11",
+        "isdata":false,
+        "color":"32",
+	"fill":0,
+        "marker":24,
+	"lwidth":2,
+        "spimpose":true,
+        "data":[
+	    {
+               "dtag":"PythiaP11Settings",
+               "xsec":245.8,
+	       "aoddir":["none"] 
+             }
+	  ]
 	}
      ]	
 }

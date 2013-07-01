@@ -8,8 +8,9 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic8TeVCollision_cfi')
 
+myMaxEvents=5000
+
 #CONFIGURE FROM COMMAND LINE
-myMaxEvents=500
 myPYTHIAueSettings="PythiaP11Settings"
 outputFile="histos.root"
 if len(sys.argv)>3 :
