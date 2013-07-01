@@ -163,7 +163,8 @@ int main(int argc, char* argv[])
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+systVars[ivar],";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
     
-    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
+    //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
+    TString ctrlCats[]={""};
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+systVars[ivar], "; e-id MVA; Electrons", 50, 0.95,1.0) );
@@ -174,7 +175,7 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+systVars[ivar],";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dilarccosine"+systVars[ivar],";#theta(l,l') [rad];Events",50,0,3.2) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mtsum"+systVars[ivar],";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
-	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met"+systVars[ivar],";Missing transverse energy [GeV];Events",100,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met"+systVars[ivar],";Missing transverse energy [GeV];Events",50,0,500) );
 	
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht"+systVars[ivar],";H_{T} [GeV];Events",100,0,1000) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb"+systVars[ivar],";H_{T} (bjets) [GeV];Events",100,0,1000) );
@@ -299,8 +300,8 @@ int main(int argc, char* argv[])
 	Hhepup->Fill(ev.nup,weight);
 	
 	// PU shift
-	if(systVars[ivar]=="puup")   weight *= weightUp;
-	if(systVars[ivar]=="pudown") weight *= weightDown;
+	if(systVars[ivar]=="puup")   weight = weightUp;
+	if(systVars[ivar]=="pudown") weight = weightDown;
 	
 	//trigger bits
 	bool eeTrigger   = ev.t_bits[0];
@@ -368,13 +369,14 @@ int main(int argc, char* argv[])
 	    int id(abs(selLeptons[ilep].get("id")));
 	    std::pair<float,float> ieff= lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "tight" );
 	    llScaleFactor *= isMC ? ieff.first : 1.0;
-	    llScaleFactor_plus  *= (1.0+ieff.second/ieff.first );
-	    llScaleFactor_minus *= (1.0-ieff.second/ieff.first );
+	    llScaleFactor_plus  *= (1.0+ieff.second );
+	    llScaleFactor_minus *= (1.0-ieff.second );
 	  }
 
+	weight *= llScaleFactor;	
 	if(systVars[ivar]=="leffup")   weight *= llScaleFactor_plus;
 	if(systVars[ivar]=="leffdown") weight *= llScaleFactor_minus;
-	else                           weight *= llScaleFactor;	
+	
 	//set the channel
 	std::vector<TString> ch;
 	bool isOS(dilId<0);
