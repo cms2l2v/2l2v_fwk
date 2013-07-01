@@ -45,7 +45,6 @@ std::vector<std::string> channels;
 float lumiUnc(0.044);
 float selEffUnc(0.02);
 float iEcm(8);
-bool doPowers = true;
 
 //wrapper for a projected shape for a given set of cuts
 struct Shape_t
@@ -74,10 +73,11 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes);
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes);
 void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst="");
 TString convertNameForDataCard(TString title);
+void TLatexToTex(TString &expr);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
 
-//
+//uncertainties are expressed relatively
 std::map<TString,float> getDYUncertainties(TString ch)
 {
   //assign the bin to use
@@ -88,14 +88,14 @@ std::map<TString,float> getDYUncertainties(TString ch)
 
   //build the uncertainty map (for an inclusive channel I'm averaging the unc - it doesn't really matter as it will be combined in the end)
   std::map<TString,float> dysfUncs; 
-  float stat[]        = {0.064,      0.038,     0.079};     dysfUncs["stat"]         = (dybin==-1 ? (stat[0]+stat[1]+stat[2])/3             : stat[dybin]);
-  float jes[]         = {0.021,      0.019,     0.041};     dysfUncs["jes"]          = (dybin==-1 ? (jes[0]+jes[1]+jes[2])/3                : jes[dybin]);
-  float jer[]         = {0.014,      0.014,     0.013 };    dysfUncs["jer"]          = (dybin==-1 ? (jer[0]+jer[1]+jer[2])/3                : jer[dybin]);
-  float pu[]          = {0.02,       0.01,      0.008 };    dysfUncs["pu"]           = (dybin==-1 ? (pu[0]+pu[1]+pu[2])/3                   : pu[dybin]);
-  float mcsignal[]    = {0.087,      0.010,     0.053 };    dysfUncs["mcsignal"]     = (dybin==-1 ? (mcsignal[0]+mcsignal[1]+mcsignal[2])/3 : mcsignal[dybin]);
-  float q2[]          = {0.014,      0.014,     0.001 };    dysfUncs["q2"]           = (dybin==-1 ? (q2[0]+q2[1]+q2[2])/3                   : q2[dybin]);
-  float meps[]        = {0.011,      0.011,     0.001 };    dysfUncs["meps"]         = (dybin==-1 ? (meps[0]+meps[1]+meps[2])/3             : meps[dybin]);
-  float dy_template[] = {0.08,       0.06,      0.01 };  
+  float stat[]        = {0.025,      0.021,     0.043 };    dysfUncs["stat"]         = (dybin==-1 ? (stat[0]+stat[1]+stat[2])/3             : stat[dybin]);
+  float jes[]         = {0.0056,     0.0089,    0.0046};    dysfUncs["jes"]          = (dybin==-1 ? (jes[0]+jes[1]+jes[2])/3                : jes[dybin]);
+  float jer[]         = {0.0012,     0.0014,    0.0078};    dysfUncs["jer"]          = (dybin==-1 ? (jer[0]+jer[1]+jer[2])/3                : jer[dybin]);
+  float pu[]          = {0.0018,     0.0055,    0.0097};    dysfUncs["pu"]           = (dybin==-1 ? (pu[0]+pu[1]+pu[2])/3                   : pu[dybin]);
+  float mcsignal[]    = {0.1094,     0.1194,    0.0623};    dysfUncs["mcsignal"]     = (dybin==-1 ? (mcsignal[0]+mcsignal[1]+mcsignal[2])/3 : mcsignal[dybin]);
+  float q2[]          = {0.1056,     0.1056,    0.1056 };   dysfUncs["q2"]           = (dybin==-1 ? (q2[0]+q2[1]+q2[2])/3                   : q2[dybin]);
+  float meps[]        = {0.1425,     0.1425,    0.1425 };   dysfUncs["meps"]         = (dybin==-1 ? (meps[0]+meps[1]+meps[2])/3             : meps[dybin]);
+  float dy_template[] = {0.12,       0.12,      0.01 };  
   if(dybin==-1)
     {
       dysfUncs["dy_ee_template"]   = dy_template[0];
@@ -113,12 +113,10 @@ std::map<TString,float> getDYUncertainties(TString ch)
 TString convertNameForDataCard(TString title)
 {
   if(title=="VV")                return "vv";
-  if(title=="QCD")               return "qcd";
-  if(title=="W#rightarrow l#nu") return "w"; 
+  if(title=="W,multijets")       return "w"; 
   if(title=="other t#bar{t}")    return "ttbar";
   if(title=="Z#rightarrow ll")   return "dy"; 
   if(title=="Single top")        return "st";
-  if(title=="t#bar{t}V")         return "ttv";
   if(title=="t#bar{t}")          return "signal";
   return title;
 }
@@ -147,7 +145,6 @@ float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, s
   return var*rate;
 }
 
-
 //
 void printHelp()
 {
@@ -157,7 +154,6 @@ void printHelp()
   printf("--syst      --> input file with syst shapes\n");
   printf("--json      --> json file with the sample descriptor\n");
   printf("--histo     --> name of histogram to be used\n");
-  printf("--noPowers --> Do not use powers of 10 for numbers in tables\n");
   printf("--bins      --> list of bins to be used (they must be comma separated without space)\n");
   printf("--ch        --> list of channels to be used (they must be comma separated without space)\n");
 }
@@ -175,9 +171,6 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
     {
       TString procCtr(""); procCtr+=i;
       TString proc=(Process[i])["tag"].toString();
-      cout << "--------------------" << endl;
-      cout << "Tag: " << proc << endl;  
-
       TDirectory *pdir = (TDirectory *)inF->Get(proc);         
       if(pdir==0) continue;
       
@@ -201,7 +194,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  TString histoName = ch;  if(!ch.IsNull()) histoName += "_"; histoName += histo+varName ;
 	  TH1F* hshape = (TH1F*) pdir->Get( histoName );
 	  if(hshape==0) continue;
-	  cout << "Hshape nbins: " << hshape->GetXaxis()->GetNbins() << endl;
+
 	  //project out required bins (set the others to 0)
 	  if(binsToProject.size()) {
 	    for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
@@ -240,13 +233,10 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	      //get alternative shapes for signal from systematics file
 	      if(systF)
 		{
-		  TString signalVars[]={"powheg","q2up","q2down","mepsup","mepsdown"};
+		  TString signalVars[]={"tunep11","mcatnlo","q2up","q2down","mepsup","mepsdown"};
 		  for(size_t isigvar=0; isigvar<sizeof(signalVars)/sizeof(TString); isigvar++)
 		    {
 		      TH1F *hmcsig=(TH1F *)systF->Get("t#bar{t}syst"+signalVars[isigvar]+"/"+histoName);
-		      // TH1F *normHisto=hshape; 
-		      //if(signalVars[isigvar].Contains("meps") || signalVars[isigvar].Contains("q2"))
-		      //normHisto=(TH1F *)systF->Get("t#bar{t}systspincorrel/"+histoName);
 		      if(hmcsig==0) { cout << "Skipping null variation: " << signalVars[isigvar] << endl;  continue; }
 		      for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
 			if(find(binsToProject.begin(),binsToProject.end(),ibin) != binsToProject.end()) continue;
@@ -254,17 +244,11 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 			hmcsig->SetBinError(ibin,0);
 		      }
 		      hmcsig->SetDirectory(0); 
-		      //Double_t sf=hshape->Integral()/hmcsig->Integral();
-		      hmcsig->Scale(hshape->Integral()/hmcsig->Integral()); 
+		      Double_t sf=hshape->Integral()/hmcsig->Integral();
+		      hmcsig->Scale(sf);
 		      hmcsig->SetName(hmcsig->GetName()+TString("mcsignalup"));
 		      hmcsig->SetTitle(proc);
 
-		      //check this rates from theortical point of view. in prep the variation is very high...
-		      // if(signalVars[isigvar]=="q2up")           shape.rateUncs["q2_rate"]=std::pair<float,float>(sf,sf);
-		      // else if(signalVars[isigvar]=="q2down")    shape.rateUncs["q2_rate"].second=sf;
-		      // if(signalVars[isigvar]=="mepsup")         shape.rateUncs["meps_rate"]=std::pair<float,float>(sf,sf);
-		      // else if(signalVars[isigvar]=="mepsdown")  shape.rateUncs["meps_rate"].second=sf;
-		      
 		      //if variation corresponds already to a signed variation save it directly
 		      //otherwise create an artificial symmetric variation to build the +/- envelope of the nominal shape
 		      if(signalVars[isigvar].EndsWith("up") || signalVars[isigvar].EndsWith("down"))  
@@ -409,7 +393,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 	  float sSyst=getIntegratedSystematics(shape.signal,shape.signalVars,sigRateSysts,*bIt);
 	  totalSyst += pow(sSyst,2); 
 	  CSyields += " & ";
-	  CSyields += utils::toLatexRounded( shape.signal->GetBinContent(*bIt), shape.signal->GetBinError(*bIt), sSyst, doPowers);
+	  CSyields += utils::toLatexRounded( shape.signal->GetBinContent(*bIt), shape.signal->GetBinError(*bIt), sSyst, true);
 	  
 	  //background
 	  for(std::vector<TH1F *>::const_iterator bckgIt=bckgTempl.begin(); bckgIt!=bckgTempl.end(); bckgIt++)
@@ -439,7 +423,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 		    }
 		  
 		  if(ich==0) { CByields[proc]=proc; utils::TLatexToTex(CByields[proc]); }
-		  CByields[proc] += " & "; CByields[proc] += utils::toLatexRounded( (*bckgItt)->GetBinContent(*bIt), (*bckgItt)->GetBinError(*bIt), bSyst, doPowers); 
+		  CByields[proc] += " & "; CByields[proc] += utils::toLatexRounded( (*bckgItt)->GetBinContent(*bIt), (*bckgItt)->GetBinError(*bIt), bSyst, true); 
 		  procFound=true;
 		  break;
 		}
@@ -450,7 +434,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 	  //signal + background
 	  totalSyst=sqrt(totalSyst);
 	  if(ich==0) { CSpByields = shape.totalSplusB->GetTitle(); utils::TLatexToTex(CSpByields); }
-	  CSpByields += " & "; CSpByields += utils::toLatexRounded( shape.totalSplusB->GetBinContent(*bIt), shape.totalSplusB->GetBinError(*bIt),totalSyst, doPowers);
+	  CSpByields += " & "; CSpByields += utils::toLatexRounded( shape.totalSplusB->GetBinContent(*bIt), shape.totalSplusB->GetBinError(*bIt),totalSyst, true);
 	}
       for(std::map<TString,TString>::iterator cbyIt=CByields.begin(); cbyIt!=CByields.end(); cbyIt++)
 	{ 
@@ -632,8 +616,8 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile,"%6s ","-");
       for(size_t j=0; j<shape.bckg.size(); j++) {
 	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
-	if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
-	else                                            fprintf(pFile,"%6s ","2.0");
+	if(name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
+	else                             fprintf(pFile,"%6s ","2.0");
       }
       fprintf(pFile,"\n");
 
@@ -722,7 +706,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--syst")   !=string::npos && i+1<argc)  { systFileUrl = argv[i+1];  i++;  printf("syst = %s\n", systFileUrl.Data());  }
     else if(arg.find("--json")   !=string::npos && i+1<argc)  { jsonFileUrl  = argv[i+1];  i++;  printf("json = %s\n", jsonFileUrl.Data()); }
     else if(arg.find("--histo")  !=string::npos && i+1<argc)  { histo     = argv[i+1];  i++;  printf("histo = %s\n", histo.Data()); }
-    else if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
     else if(arg.find("--bins")   !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins to use are : ");while (pch!=NULL){int b; sscanf(pch,"%d",&b); printf(" %d ",b); binsToProject.push_back(b);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--ch")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("ch to use are : ");  while (pch!=NULL){printf(" %s ",pch); channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
   }
@@ -746,21 +729,21 @@ int main(int argc, char* argv[])
   //convert shapes to datacards
   convertShapesToDataCards(shapes);
 
-  //  //combine the datacards and run profile likelihood analysis
-  //  TString combCardCmd("combineCards.py "),plrAnalysisCmd("runPLRanalysis --in "); 
-  //  int icard(1);
-  //  for(std::map<TString, Shape_t>::const_iterator it=shapes.begin(); it!=shapes.end(); it++)
-  //    {
-  //      TString ch(it->first); if(ch.IsNull() || ch=="inclusive") continue;
-  //      combCardCmd += "Name"; combCardCmd += icard; combCardCmd +="="+outUrl+"DataCard_"+ch+".dat ";
-  //      plrAnalysisCmd += outUrl+"DataCard_"+ch+".dat,";
-  //      icard++;
-  //    }
-  //  combCardCmd += " > "+outUrl+"DataCard_combined.dat";
-  //  plrAnalysisCmd += outUrl+"DataCard_combined.dat";
-  //  gSystem->Exec("mv DataCard* " + outUrl);
-  //  gSystem->Exec(combCardCmd.Data());
-  //  gSystem->Exec(plrAnalysisCmd.Data());
-  //  gSystem->Exec("mv PLR* " + outUrl);
+  //combine the datacards and run profile likelihood analysis
+  TString combCardCmd("combineCards.py "),plrAnalysisCmd("runPLRanalysis --in "); 
+  int icard(1);
+  for(std::map<TString, Shape_t>::const_iterator it=shapes.begin(); it!=shapes.end(); it++)
+    {
+      TString ch(it->first); if(ch.IsNull() || ch=="inclusive") continue;
+      combCardCmd += "Name"; combCardCmd += icard; combCardCmd +="="+outUrl+"DataCard_"+ch+".dat ";
+      plrAnalysisCmd += outUrl+"DataCard_"+ch+".dat,";
+      icard++;
+    }
+  combCardCmd += " > "+outUrl+"DataCard_combined.dat";
+  plrAnalysisCmd += outUrl+"DataCard_combined.dat";
+  gSystem->Exec("mv DataCard* " + outUrl);
+  gSystem->Exec(combCardCmd.Data());
+  gSystem->Exec(plrAnalysisCmd.Data());
+  gSystem->Exec("mv PLR* " + outUrl);
 }
 

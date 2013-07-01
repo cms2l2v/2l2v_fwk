@@ -44,7 +44,7 @@ class DataEventSummary //: public TObject
 
   //leptons
   Int_t ln;
-  Int_t ln_id[MAXDATAOBJECTS],          ln_idbits[MAXDATAOBJECTS],    ln_pid[MAXDATAOBJECTS], ln_genid[MAXDATAOBJECTS];
+  Int_t ln_id[MAXDATAOBJECTS],          ln_idbits[MAXDATAOBJECTS],    ln_pid[MAXDATAOBJECTS], ln_genid[MAXDATAOBJECTS], ln_Tbits[MAXDATAOBJECTS];
   Float_t ln_px[MAXDATAOBJECTS],        ln_py[MAXDATAOBJECTS],        ln_pz[MAXDATAOBJECTS],        ln_en[MAXDATAOBJECTS];
   Float_t ln_genpx[MAXDATAOBJECTS],     ln_genpy[MAXDATAOBJECTS],     ln_genpz[MAXDATAOBJECTS],     ln_genen[MAXDATAOBJECTS];
   Float_t ln_ecalIso03[MAXDATAOBJECTS], ln_hcalIso03[MAXDATAOBJECTS], ln_trkIso03[MAXDATAOBJECTS];
@@ -76,12 +76,12 @@ class DataEventSummary //: public TObject
   //jets
   Int_t jn, jn_idbits[MAXDATAOBJECTS], jn_pfstart[MAXDATAOBJECTS], jn_pfend[MAXDATAOBJECTS];
   Float_t jn_px[MAXDATAOBJECTS],    jn_py[MAXDATAOBJECTS],      jn_pz[MAXDATAOBJECTS],          jn_en[MAXDATAOBJECTS], jn_torawsf[MAXDATAOBJECTS];
-  Float_t jn_neutHadFrac[MAXDATAOBJECTS], jn_neutEmFrac[MAXDATAOBJECTS], jn_chHadFrac[MAXDATAOBJECTS], jn_area[MAXDATAOBJECTS];
+  Float_t jn_neutHadFrac[MAXDATAOBJECTS], jn_neutEmFrac[MAXDATAOBJECTS], jn_chHadFrac[MAXDATAOBJECTS], jn_muFrac[MAXDATAOBJECTS], jn_area[MAXDATAOBJECTS];
   Float_t jn_tchp[MAXDATAOBJECTS], jn_jp[MAXDATAOBJECTS], jn_origcsv[MAXDATAOBJECTS], jn_csv[MAXDATAOBJECTS], jn_jpcsv[MAXDATAOBJECTS], jn_slcsv[MAXDATAOBJECTS], jn_supercsv[MAXDATAOBJECTS], jn_ssvhe[MAXDATAOBJECTS], jn_ivf[MAXDATAOBJECTS];
   Float_t jn_svxPx[MAXDATAOBJECTS], jn_svxPy[MAXDATAOBJECTS], jn_svxPz[MAXDATAOBJECTS], jn_svxM[MAXDATAOBJECTS], jn_svxNtrk[MAXDATAOBJECTS], jn_svxLxy[MAXDATAOBJECTS], jn_svxLxyErr[MAXDATAOBJECTS];
   Float_t jn_ivfPx[MAXDATAOBJECTS], jn_ivfPy[MAXDATAOBJECTS], jn_ivfPz[MAXDATAOBJECTS], jn_ivfM[MAXDATAOBJECTS], jn_ivfNtrk[MAXDATAOBJECTS], jn_ivfLxy[MAXDATAOBJECTS], jn_ivfLxyErr[MAXDATAOBJECTS];
   Float_t jn_puMVA[MAXDATAOBJECTS], jn_qgMVA[MAXDATAOBJECTS];
-  Float_t jn_beta[MAXDATAOBJECTS],  jn_dRMean[MAXDATAOBJECTS], jn_ptRMS[MAXDATAOBJECTS], jn_etaW[MAXDATAOBJECTS], jn_phiW[MAXDATAOBJECTS];
+  Float_t jn_beta[MAXDATAOBJECTS],jn_betaStar[MAXDATAOBJECTS], jn_dRMean[MAXDATAOBJECTS], jn_dR2Mean[MAXDATAOBJECTS], jn_ptRMS[MAXDATAOBJECTS],jn_ptD[MAXDATAOBJECTS], jn_etaW[MAXDATAOBJECTS], jn_phiW[MAXDATAOBJECTS];
   Int_t   jn_genflav[MAXDATAOBJECTS], jn_genid[MAXDATAOBJECTS];
   Float_t jn_genpx[MAXDATAOBJECTS], jn_genpy[MAXDATAOBJECTS], jn_genpz[MAXDATAOBJECTS], jn_genen[MAXDATAOBJECTS];
   Float_t jn_genjpx[MAXDATAOBJECTS], jn_genjpy[MAXDATAOBJECTS], jn_genjpz[MAXDATAOBJECTS], jn_genjen[MAXDATAOBJECTS];

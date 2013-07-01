@@ -1,8 +1,13 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 
+#include "DataFormats/FWLite/interface/Handle.h"
+#include "DataFormats/FWLite/interface/Event.h"
+#include "DataFormats/FWLite/interface/ChainEvent.h"
+
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
-#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
+//#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
+#include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -86,7 +91,7 @@ int main(int argc, char* argv[])
     }
 
   //open the INPUT file and get events tree
-  TFile *file = TFile::Open(url);
+/*  TFile *file = TFile::Open(url);
   if(file==0) return -1;
   if(file->IsZombie()) return -1;
   TString dirname = runProcess.getParameter<std::string>("dirName");
@@ -95,6 +100,12 @@ int main(int argc, char* argv[])
     file->Close();
     return -1;
   }
+*/
+  std::vector<std::string> urls;
+  urls.push_back(url.Data());
+  fwlite::ChainEvent ev(urls);
+
+
   gROOT->cd();
 
   //create the OUTPUTFILE AND TREE
@@ -112,26 +123,36 @@ int main(int argc, char* argv[])
 
   //loop over events
   std::vector<stPDFval> pdfvals;
-  int evStart(0),evEnd(evSummaryHandler.getEntries());
+//  int evStart(0),evEnd(evSummaryHandler.getEntries());
+  int evStart(0),evEnd(ev.size());
   //loop on all the events
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
   int treeStep = (evEnd-evStart)/50;if(treeStep==0)treeStep=1;
   for( int iev=evStart; iev<evEnd; iev++){
-      if((iev-evStart)%treeStep==0){printf(".");fflush(stdout);}
-      evSummaryHandler.getEntry(iev);
-      DataEventSummary &ev = evSummaryHandler.getEvent();
+      if((iev-evStart)%treeStep==0){printf(".");fflush(stdout);}    
+//      evSummaryHandler.getEntry(iev);
+      ev.to(iev);
+//      DataEventSummary &ev = evSummaryHandler.getEvent();
+
+      //get the collection of generated Particles
+      fwlite::Handle< llvvGenEvent > genEventHandle;
+      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
+      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
+
+      qscale->Fill(genEventHandle->qscale);
+
       stPDFval valForPDF;
-      valForPDF.qscale = ev.qscale;
-      valForPDF.x1     = ev.x1;
-      valForPDF.x2     = ev.x2;      
-      valForPDF.id1     = ev.id1;
-      valForPDF.id2     = ev.id2;
+      valForPDF.qscale = genEventHandle->qscale;
+      valForPDF.x1     = genEventHandle->x1;
+      valForPDF.x2     = genEventHandle->x2;      
+      valForPDF.id1    = genEventHandle->id1;
+      valForPDF.id2    = genEventHandle->id2;
       pdfvals.push_back(valForPDF);
-      qscale->Fill(ev.qscale);
    }printf("\n\n\n");
   //all done with the events file
-  file->Close();
+//  file->Close();
+
 
 
   //shift Q^2 scale

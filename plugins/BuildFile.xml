@@ -2,6 +2,8 @@
 </export>
 <flags EDM_PLUGIN="1"/>
 <library   name="UserCodellvv_fwk_plugins" file="*.cc">
+<use name="FWCore/FWLite"/>
+<use name="DataFormats/FWLite"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/ParameterSet"/>
 <use name="FWCore/Utilities"/>

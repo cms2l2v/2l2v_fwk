@@ -9,6 +9,7 @@
 #include "UserCode/llvv_fwk/interface/UEAnalysis.h"
 #include "UserCode/llvv_fwk/interface/BTVAnalysis.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
+#include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -77,7 +78,7 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=utils::cmssw::getMuonCorrector(jecDir,url);
+  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
 
   // FIXME: add dy reweighting
 
@@ -215,9 +216,9 @@ int main(int argc, char* argv[])
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
-  UEAnalysis ueAn(controlHistos); // FIXME: implement runSystematics here or add a different class for managing histos of interest :)
+  //UEAnalysis ueAn(controlHistos); // FIXME: implement runSystematics here or add a different class for managing histos of interest :)
   //  BTVAnalysis btvAn(controlHistos,runSystematics);
-  LxyAnalysis lxyAn(controlHistos,runSystematics);
+  //  LxyAnalysis lxyAn(controlHistos,runSystematics);
   
   ///
   // process events file
@@ -546,9 +547,8 @@ int main(int argc, char* argv[])
 	      }
 	  }
 
-	
 	//      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weight,weightUp,weightDown);
-	if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
+	//	if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 	
 	//select the event
 	if(!passDilSelection) continue;
@@ -556,9 +556,6 @@ int main(int argc, char* argv[])
 	
 	if(!passJetSelection) continue;
 	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 2, weight);
-	
-	//      if(!isOS) continue;
-	//      controlHistos.fillHisto("evtflow", ch, 3, weight);
 	
 	if(!passMetSelection) continue;
 	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 3, weight);
@@ -568,7 +565,7 @@ int main(int argc, char* argv[])
 	
 	
 	//run the lxy analysis
-	lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
+	//	lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 	
 	float nbtags(0);
 	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
@@ -582,8 +579,8 @@ int main(int argc, char* argv[])
 	}
 	
 	//PF candidates
-	data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-	ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
+	//data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+	//ueAn.analyze(selLeptons,selJets,met,pf,gen,weight);
       }
     }
   

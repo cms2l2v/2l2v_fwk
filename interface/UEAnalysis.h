@@ -16,9 +16,10 @@ public:
 
   void analyze(data::PhysicsObjectCollection_t &leptons, 
 	       data::PhysicsObjectCollection_t &jets,
-	       data::PhysicsObjectCollection_t &met, 
+	       LorentzVector &met, 
 	       data::PhysicsObjectCollection_t &pf,
 	       data::PhysicsObjectCollection_t &mctruth,
+	       int nvtx,
 	       float weight);
 
 private:

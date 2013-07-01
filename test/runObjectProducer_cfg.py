@@ -1,5 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
+
+isMC=True
+isTauEmbed=False
+gtag="FT_53_V21_AN4::All"
+#gtag="START53_V23::All"
+
+
 process = cms.Process("DataAna")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -16,26 +23,37 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
                                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                                         ) 
 
+
 #the source and output
 try:
     print 'Processing %d inputs'%len(inputList)
 except:
-    if isMC : inputList = cms.untracked.vstring('/store/relval/CMSSW_5_3_6-START53_V14/RelValTTbar/GEN-SIM-RECO/v2/00000/16D5D599-F129-E211-AB60-00261894390B.root')
+    if isMC : inputList = cms.untracked.vstring('/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2496.root',
+'/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2495.root',
+'/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2494.root',
+'/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2493.root',
+'/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2492.root',
+'/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2491.root',
+'/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2490.root',
+)
     else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
 process.source = cms.Source("PoolSource",
                             fileNames = inputList
                             )
     
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
 
 try:
     print 'EDM output set to %s'%outFile
 except:
     outFile='Events.root'
 process.out = cms.OutputModule("PoolOutputModule",
-                               outputCommands = cms.untracked.vstring('keep *'),
-                               fileName = cms.untracked.string(outFile)
-                               )
+                               outputCommands = cms.untracked.vstring('drop *'),
+                               fileName = cms.untracked.string(outFile),
+                               SelectEvents = cms.untracked.PSet(
+                                  SelectEvents = cms.vstring('p')
+                               ),
+                           )
 
 if(isMC) : process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
@@ -132,16 +150,16 @@ process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
 process.eidMVASequence = cms.Sequence(  process.mvaTrigV0 + process.mvaNonTrigV0 )
 process.patElectronsPFlow.electronIDSources.mvaTrigV0    = cms.InputTag("mvaTrigV0")
 process.patElectronsPFlow.electronIDSources.mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0")
-from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *
-process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
-                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
-                                                       barrelCuts = cms.PSet(heepBarrelCuts),
-                                                       endcapCuts = cms.PSet(heepEndcapCuts),
-                                                       applyRhoCorrToEleIsol = cms.bool(True),
-                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
-                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
-                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
-                                                       )
+#from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *
+#process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
+#                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
+#                                                       barrelCuts = cms.PSet(heepBarrelCuts),
+#                                                       endcapCuts = cms.PSet(heepEndcapCuts),
+#                                                       applyRhoCorrToEleIsol = cms.bool(True),
+#                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
+#                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
+#                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
+#                                                       )
 
 #custom muons
 process.patMuonsPFlow.pfMuonSource = cms.InputTag("pfSelectedMuonsPFlow")
@@ -186,26 +204,32 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
 
 
 #the analyzer
-from UserCode.llvv_fwk.dataAnalyzer_cfi import *
+process.load("UserCode.llvv_fwk.llvvObjectProducers_cff")
+process.load("UserCode.llvv_fwk.dataAnalyzer_cfi")
+
+
 try:
     if runDijetsAnalysis :
-        process.dataAnalyzer = dijetAnalyzer.clone()
-        print 'Running dijet version of the dataAnalyzer'
+        process.llvvEventlProducerUsed = process.dijetAnalyzer.clone()
+        print 'Running dijet version of the llvvObjectProducers'
 except:
-    process.dataAnalyzer = dataAnalyzer.clone()
-    print 'Running standard dataAnalyzer'
+    process.llvvObjectProducersUsed = process.llvvObjectProducers.clone()
+    print 'Running standard llvvObjectProducers'
     if isTauEmbed:
-        process.dataAnalyzer.cfg.triggerCats[2]=1113
-        process.dataAnalyzer.cfg.triggerCats[3]=1113
+        process.llvvObjectProducersUsed.triggerCats[2]=1113
+        process.llvvObjectProducersUsed.triggerCats[3]=1113
         print 'Tweaking for tau embedded samples'
 
 try:
     if doUnfold:
-        process.dataAnalyzer.cfg.keepFullGenInfo = cms.bool(True)
+        process.llvvObjectProducersUsed.cfg.keepFullGenInfo = cms.bool(True)
         print 'Warning running unfolding: ntuples will save lots of information on gen level and won`t use trigger'
 except:
     print 'Basic generator level information will be stored (only status=3 + photons status 1)'
-                
+               
+process.dataAnalyzer.cfg.electronSource   = cms.InputTag("selectedPatElectronsWithTrigger")
+
+ 
 #counters for specific filters
 process.startCounter = cms.EDProducer("EventCountProducer")
 process.scrapCounter = process.startCounter.clone()
@@ -225,13 +249,29 @@ process.p = cms.Path( process.startCounter
                       *process.kt6PFJetsCentral
                       *process.qgSequence
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
-                      *process.selectedPatElectronsWithTrigger*process.selectedPatElectronsPFlowHeep
-                      *process.selectedPatMuonsTriggerMatch 
-                      *process.dataAnalyzer
+                      *process.selectedPatElectronsWithTrigger#*process.selectedPatElectronsPFlowHeep
+                      *process.selectedPatMuonsTriggerMatch )
+ 
+process.p += (
+                       process.dataAnalyzer
+                       *process.llvvObjectProducersUsed
                       )
 
-	
 
+
+process.out.outputCommands = cms.untracked.vstring('drop *', 
+                                                   'keep *_llvv*_*_*', 
+                                                   'keep edmMergeableCounter_*_*_*', 
+                                                   'keep bool_*Filter_*_*',
+                                                   'keep double_kt6PFJets_rho_*',
+                                                   'keep double_kt6PFJetsCentral_rho_*',
+#                                                   'keep GenEventInfoProduct_*_*_*',
+#                                                   'keep LHEEventProduct_*_*_*',
+#                                                   'keep PileupSummaryInfos_*_*_*'
+                                                  )
+
+process.endPath = cms.EndPath(process.out)	
+process.schedule = cms.Schedule(process.p, process.endPath)
 
 
 

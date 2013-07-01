@@ -56,6 +56,17 @@ void printHelp();
 void showDYFitResults(RooRealVar &x, RooDataHist &data, RooAbsPdf &model,RooAbsPdf &dyModel, RooRealVar &ndysf,RooNLLVar &nll,
 		      TString tag, TString caption, TString xvar);
 
+void fixTemplate(TH1 *h);
+
+
+//
+void fixTemplate(TH1 *h){
+  if(h==0) return;
+  for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)	
+    if(h->GetBinContent(ibin)<=0)
+      h->SetBinContent(ibin,0.01); 
+}
+
 //
 void printHelp()
 {
@@ -102,58 +113,69 @@ int main(int argc,char *argv[])
   systVars.push_back("");
   if(doSyst)
     {
-      /*
-	systVars.push_back("puup");
-	systVars.push_back("pudown");
-	systVars.push_back("jesup");
-	systVars.push_back("jesdown");
-	systVars.push_back("jerup");
-	systVars.push_back("jerdown");
-	systVars.push_back("signaltunep11");
-	systVars.push_back("signaltunep11tev");
-	systVars.push_back("signalmcatnlo");
-      */
-      systVars.push_back("signalscaleup");
-      systVars.push_back("signalscaledown");
-      systVars.push_back("signalmatchingup");
-      systVars.push_back("signalmatchingdown");
+      //instrumental variations
+      systVars.push_back("jesup");
+      systVars.push_back("jesdown");
+      systVars.push_back("puup");
+      systVars.push_back("pudown");
+      systVars.push_back("jerup");
+      systVars.push_back("jerdown");
+      systVars.push_back("umetup");
+      systVars.push_back("umetdown");
+
+      //theoretical variations
+      systVars.push_back("systmcatnlo");
+      systVars.push_back("systq2up");
+      systVars.push_back("systq2down");
+      systVars.push_back("systmepsup");
+      systVars.push_back("systmepsdown");
+      systVars.push_back("systtunep11");
+      systVars.push_back("systtunep11tev");
+      systVars.push_back("systtunep11mpihi");
       systVars.push_back("mcstatsup");
       systVars.push_back("mcstatsdown");
     }
   const size_t nsystVars=systVars.size();
   
-  TString procs[]={"VV", "Single top", "W#rightarrow l#nu","Z#rightarrow ll","t#bar{t}","t#bar{t}V"};
+  TString procs[]={"VV", "Single top", "Z#rightarrow ll","t#bar{t}","other t#bar{t}"}; // "W,multijets"
 
   TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu"};
   size_t runNsystVars[]      ={1,                              nsystVars,               1,                                nsystVars,                 1,                       nsystVars};
   TString signalRegionHisto[]={"ee_eq1jetsdilarccosine",       "ee_dilarccosine",       "mumu_eq1jetsdilarccosine",       "mumu_dilarccosine",       "emu_eq1jetsmtsum",      "emu_mtsum"};
   TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum"};
   TString templateTitle[]    ={"Z#rightarrow ee (=1 jets)",    "Z#rightarrow ee",       "Z#rightarrow #mu#mu (=1 jets)",  "Z#rightarrow #mu#mu",     "Z#rightarrow #tau#tau (=1 jets)", "Z#rightarrow #tau#tau"};
-  TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu", "dytoemu"};
-  bool rebin[]               ={false,                           false,                   false,                            false,                    false,                   false};
-  const size_t nchs=sizeof(ch)/sizeof(TString);
+  TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu"};
+  size_t nchs=sizeof(ch)/sizeof(TString);
 
   TH1F *dysfH = new TH1F("dysf",";Category;SF_{DY}",nchs,0,nchs);
   dysfH->SetDirectory(0);
 
   for(size_t ich=0; ich<nchs; ich++)
     {
-      //DY->tautau is taken from dedicated file
-      if(ch[ich].BeginsWith("emu") && dyReplacementUrl.IsNull()) continue;
 
-      //open data-driven file
-      TFile *dyReplacementFile=TFile::Open( (ch[ich].BeginsWith("emu")) ? dyReplacementUrl : stdUrl);
- 
-      //get the DY template (data-driven)
+      //
+      // DY MODEL
+      //
+      TFile *dyReplacementFile=TFile::Open(stdUrl);
       TString dataDir("data");
-      if(ch[ich].BeginsWith("emu") ) dataDir="Z#rightarrow#tau#tausystdata";
+      if(ch[ich].Contains("emu")) dataDir="Z#rightarrow ll";      
+      
+      //DY->tautau from mu->tau replacement
+      //if(ch[ich].BeginsWith("emu") && dyReplacementUrl.IsNull()) continue;
+      //TFile *dyReplacementFile=TFile::Open( (ch[ich].BeginsWith("emu")) ? dyReplacementUrl : stdUrl);
+      //get the DY template (data-driven)
+      //TString dataDir("data");
+      //if(ch[ich].BeginsWith("emu") ) dataDir="Z#rightarrow#tau#tausystdata";
+            
       TH1F *dyReplacementHisto=(TH1F *) dyReplacementFile->Get(dataDir+"/"+templateHisto[ich]);
       dyReplacementHisto->SetDirectory(0); 
       dyReplacementHisto->SetName(templateName[ich]+"model");
       dyReplacementHisto->SetTitle(templateTitle[ich]);
-      if(rebin[ich]) dyReplacementHisto->Rebin();
-      
       dyReplacementFile->Close();
+
+      //
+      // DATA AND OTHER PROCESSES
+      //
      
       //open standard file
       TFile *stdFile=TFile::Open(stdUrl);
@@ -162,140 +184,119 @@ int main(int argc,char *argv[])
       TH1F *dataHisto=(TH1F *) stdFile->Get("data/"+signalRegionHisto[ich])->Clone("data");
       dataHisto->SetDirectory(0);
       dataHisto->SetTitle("data");
-      if(rebin[ich]) 
-	dataHisto->Rebin();
            
       //get histograms for MC
-      std::vector<TH1F *> dyReplacementMCHisto, dyMCHisto, otherProcsHisto, mcSumHisto;
+      TH1F *dyMCHisto=0;
+      std::vector<TH1F *> otherProcsHisto;
       const size_t nprocs=sizeof(procs)/sizeof(TString);
-      for(size_t ivar=0; ivar<runNsystVars[ich]; ivar++)
+      for(size_t iproc=0; iproc<nprocs; iproc++)
 	{
-	  TString ivarName=systVars[ivar];
-	  TString ivarOrigName=ivarName;
-	  if(ivarName.Contains("signal") || ivarName.Contains("mcstats")) ivarName="";
-	  for(size_t iproc=0; iproc<nprocs; iproc++)
+	  
+	  for(size_t ivar=0; ivar<runNsystVars[ich]; ivar++)
 	    {
-	      TH1F *histo = (TH1F *) stdFile->Get(procs[iproc]+"/"+signalRegionHisto[ich]+ivarName);
+
+	      //baseline shape
+	      TH1F *histo = (TH1F *) stdFile->Get(procs[iproc]+"/"+signalRegionHisto[ich]);
 	      if(histo==0) continue;
-	      if(ivarOrigName.Contains("signal") && procs[iproc]=="t#bar{t}")
+	      histo->SetDirectory(0);
+
+	      //variations (only worth considering for ttbar)
+	      if(procs[iproc]=="t#bar{t}" && ivar>0)
 		{
-		  cout << "[WARNING] signal will be replaced from alternative simulation for " << ivarOrigName << endl;
-		  TFile *systReplacementFile=TFile::Open( dyReplacementUrl );
-		  systReplacementFile->cd();
+		  cout << "[WARNING] signal will be replaced from alternative simulation for " << systVars[ivar] << endl;
+
 		  TH1F *repHisto=0;
-		  if(ivarOrigName.Contains("powheg"))       repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systpowheg/"+signalRegionHisto[ich]);
-		  if(ivarOrigName.Contains("spincorrel"))   repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systspincorrel/"+signalRegionHisto[ich]);
-		  if(ivarOrigName.Contains("spinmcatnlo"))  repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systmcatnlo/"+signalRegionHisto[ich]);
-		  if(ivarOrigName.Contains("matchingup"))   repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systmepsup/"+signalRegionHisto[ich]);
-		  if(ivarOrigName.Contains("matchingdown")) repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systmepsdown/"+signalRegionHisto[ich]);
-		  if(ivarOrigName.Contains("scaleup"))      repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systq2up/"+signalRegionHisto[ich]);
-		  if(ivarOrigName.Contains("scaledown"))    repHisto = (TH1F *) systReplacementFile->Get("t#bar{t}systq2down/"+signalRegionHisto[ich]);
-		  if(repHisto==0)
-		      cout << "[WARNING] using default: couldn't find replacement for " << ivarOrigName << endl;
+		  if(systVars[ivar].Contains("syst"))
+		    {
+		      TFile *systReplacementFile=TFile::Open( dyReplacementUrl );
+		      systReplacementFile->cd();
+		      repHisto=(TH1F *) systReplacementFile->Get("t#bar{t}"+systVars[ivar]+"/"+signalRegionHisto[ich]);
+		      if(repHisto) repHisto->SetDirectory(0);
+		      systReplacementFile->Close();
+		      stdFile->cd();
+		    }
 		  else
-		    histo=repHisto;
-		  histo->SetDirectory(0);
-		  systReplacementFile->Close();
-		  stdFile->cd();
-		}
-	      if(rebin[ich]) histo->Rebin();
-
-	      //force the normalization of the shape
-	      if(ivar>0 && !procs[iproc].Contains("Z#rightarrow"))
-		{
-		  TH1F *nominal=(TH1F *) stdFile->Get(procs[iproc]+"/"+signalRegionHisto[ich]);
-		  if(nominal==0) continue;
-		  float sf=nominal->Integral()/histo->Integral();
-		  if(isnan(sf) || isinf(sf)) continue;
-		  histo->Scale(sf);
-		}
-
-	      //now save histogram in the appropriate category
-	      if(procs[iproc].Contains("Z#rightarrow"))   
-		{
-		  histo = (TH1F *)histo->Clone(templateName[ich]+ivarOrigName+"mc");
-		  histo->SetTitle(templateTitle[ich]+" (MC)");
-		  histo->SetDirectory(0);		  
-		  dyMCHisto.push_back( histo );
+		    {
+		      repHisto=(TH1F *) stdFile->Get("t#bar{t}/"+signalRegionHisto[ich]+systVars[ivar]);
+		      if(repHisto) repHisto->SetDirectory(0);
+		    }
 		  
-		  TH1F *repHistoMC = (TH1F *) stdFile->Get(procs[iproc]+"/"+templateHisto[ich]+ivarName);
-		  repHistoMC       = (TH1F *) repHistoMC->Clone(templateName[ich]+ivarOrigName+"repmc");
-		  if(rebin[ich]) 
-		    repHistoMC->Rebin();
-		  repHistoMC->SetDirectory(0);
-		  dyReplacementMCHisto.push_back( repHistoMC );
+		  if(repHisto==0) cout << "[WARNING] using default: couldn't find replacement for " << systVars[ivar] << " using default" << endl;
+		  else
+		    {
+		      repHisto->Scale(histo->Integral()/repHisto->Integral());
+		      histo=repHisto;
+		    }
 		}
-	      else if(otherProcsHisto.size()==ivar)
-		{
-		  histo = (TH1F *) histo->Clone("otherprocs"+ivarOrigName);
-		  histo->SetDirectory(0);
-		  histo->SetTitle("Other processes");
- 		  otherProcsHisto.push_back( histo );
-		}
-	      else otherProcsHisto[ivar]->Add(histo);
 	      
-	      //total mc
-	      if(histo==0) continue;
-	      if(mcSumHisto.size()<=ivar)
+	      //now save histogram in the appropriate category
+	      if(procs[iproc].Contains("Z#rightarrow"))
 		{
-		  histo = (TH1F *)histo->Clone("mcsum"+templateName[ich]+ivarOrigName);
-		  histo->SetDirectory(0);
-		  histo->SetTitle("Total MC");
-		  mcSumHisto.push_back( histo );
+		  if(ivar==0)   
+		    {
+		      dyMCHisto = (TH1F *)histo->Clone(templateName[ich]+"mc");
+		      dyMCHisto->SetTitle(templateTitle[ich]+" (MC)");
+		      dyMCHisto->SetDirectory(0);		  
+		    }
 		}
-	      else mcSumHisto[ivar]->Add(histo);
-	    }
-
-	  //for MC statistics : modify bin contents according to variation
-	  if(ivarOrigName.Contains("mcstat"))
-	    {
-	      int sign(ivarOrigName.EndsWith("up")?+1:-1);
-	      for(int ibin=1; ibin<=mcSumHisto[ivar]->GetXaxis()->GetNbins(); ibin++)
+	      else 
 		{
-		  float val=max(mcSumHisto[ivar]->GetBinContent(ibin)+sign*mcSumHisto[ivar]->GetBinError(ivar),0.);
-		  mcSumHisto[ivar]->SetBinContent(ibin,val);
+		  if(otherProcsHisto.size()==ivar)
+		    {
+		      histo = (TH1F *) histo->Clone("otherprocs"+systVars[ivar]);
+		      histo->SetDirectory(0);
+		      histo->SetTitle("Other processes");
+		      otherProcsHisto.push_back( histo );
+		    }
+		  else otherProcsHisto[ivar]->Add(histo);
 		}
 	    }
 	}
-
       //close the file
       stdFile->Close();
       
       //
       // Now fit
       //
-      float totalData=dataHisto->Integral(1,dataHisto->GetXaxis()->GetNbins());
-      float dyExpected=dyMCHisto[0]->Integral(1,dyMCHisto[0]->GetXaxis()->GetNbins());
-      float totalOthers=otherProcsHisto[0]->Integral(1,otherProcsHisto[0]->GetXaxis()->GetNbins());
-      float uncOthers=float(sqrt(totalOthers)); //max(float(0.04*totalOthers),float(sqrt(totalOthers)));  //allow 30% unc. on backgrounds
+      Double_t totalData   ( dataHisto->Integral(1,dataHisto->GetXaxis()->GetNbins()) );
+      Double_t dyExpected  ( dyMCHisto->Integral(1,dyMCHisto->GetXaxis()->GetNbins()) );
+      Double_t uncOthers(0);
+      Double_t totalOthers ( otherProcsHisto[0]->IntegralAndError(1,otherProcsHisto[0]->GetXaxis()->GetNbins(),uncOthers) );
+      uncOthers = sqrt( pow(uncOthers,2)+pow(0.044*totalOthers,2)+pow(0.1*totalOthers,2) ); //MC stats + Lumi + 10% on th. xsec
 
       //define variable
-      RooRealVar x("x","x", dataHisto->GetXaxis()->GetXmin(), dataHisto->GetXaxis()->GetXmax());
-      if(signalRegionHisto[ich]=="emu_eq1jetsmtsum") x.setRange(0,350.);
-
+      RooRealVar x("x",dataHisto->GetXaxis()->GetTitle(), dataHisto->GetXaxis()->GetXmin(), dataHisto->GetXaxis()->GetXmax());
+      if(ch[ich].Contains("emu")) x.setRange(0,400.);
+      
       //data
       RooDataHist* sumData = new RooDataHist("sumData", "sumData", RooArgList(x), dataHisto);
       
       //data (or MC) driven template for DY
-      //protect against bins with 0 entries...
-      for(int ibin=1; ibin<=dyReplacementHisto->GetXaxis()->GetNbins(); ibin++)	
-	if(dyReplacementHisto->GetBinContent(ibin)<=0)
-	  dyReplacementHisto->SetBinContent(ibin,0.01); 
+      fixTemplate(dyReplacementHisto);
       RooDataHist* dataTemplate = new RooDataHist("dataTemplate", "dataTemplate", RooArgList(x), dyReplacementHisto, smoothOrder );
       RooHistPdf modelDataTemplate("modelDataTemplate", "modelDataTemplate", RooArgSet(x), *dataTemplate);
       RooRealVar ndysf("SF_{DY}","dyyieldssfactor",0.91,0.5,3.0);
       RooFormulaVar ndy("N_{DY}","@0*@1",RooArgSet(RooConst(dyExpected),ndysf));
 
       //MC based template for other processes
-      RooDataHist *otherMCTemplate = new RooDataHist("otherMCTemplate", "otherMCTemplate", RooArgList(x), otherProcsHisto[0], smoothOrder);
-      RooHistPdf modelOtherMCTemplate("modelOtherMCTemplate", "modelOtherMCTemplate", RooArgSet(x), *otherMCTemplate);
+      fixTemplate(otherProcsHisto[0]);
+      RooDataHist *otherTemplate = new RooDataHist("otherTemplate", "otherTemplate", RooArgList(x), otherProcsHisto[0], smoothOrder);
+      RooHistPdf modelOtherTemplate("modelOtherTemplate", "modelOtherTemplate", RooArgSet(x), *otherTemplate);
       RooRealVar nother("N_{other}","otheryields",totalOthers,0,totalData);
       RooGaussian other_constraint("otherconstraintpdf","otherconstraintpdf", nother, RooConst(totalOthers), RooConst(uncOthers));
       
       //the model of the data (DY+other)xconstraints
-      RooAddPdf shapeModelData("shapeModelData","signal+background", RooArgSet(modelDataTemplate,modelOtherMCTemplate),RooArgSet(ndy,nother));
+      RooAddPdf shapeModelData("shapeModelData","signal+background", RooArgSet(modelDataTemplate,modelOtherTemplate),RooArgSet(ndy,nother));
       RooProdPdf constrShapeModelData("constrShapeModelData","shape*constrain",RooArgSet(shapeModelData,other_constraint));
       
+      //fit data
+      constrShapeModelData.fitTo(*sumData,Extended(kTRUE),Constrain(nother),Save(kTRUE));
+      RooNLLVar *nll = (RooNLLVar*) constrShapeModelData.createNLL(*sumData,CloneData(kFALSE),Extended(kTRUE),Constrain(nother));
+      showDYFitResults(x,*sumData,constrShapeModelData,modelDataTemplate,ndysf,*nll,
+       		       signalRegionHisto[ich],"CMS preliminary",dyReplacementHisto->GetXaxis()->GetTitle());
+      
+
+      //report the result
       report << endl
 	     << "FIT REPORT FOR " << signalRegionHisto[ich] << endl
 	     << "---------------------------------------------------" << endl
@@ -304,66 +305,70 @@ int main(int argc,char *argv[])
 	     << "[DY expected] " <<  dyExpected << endl 
 	     << "[Others expected]:" << totalOthers << " +/- " << uncOthers << endl
 	     << "---------------------------------------------------" << endl;
-
-      //fit data
-      constrShapeModelData.fitTo(*sumData,Extended(kTRUE),Constrain(nother),Save(kTRUE));
-      RooNLLVar *nll = (RooNLLVar*) constrShapeModelData.createNLL(*sumData,CloneData(kFALSE),Extended(kTRUE),Constrain(nother));
       if(fabs(ndysf.getError()/ndysf.getVal())>0.5) 
 	report << "Fit did not converge properly most probably..." << endl;
       report << "[SF-DY] "      << ndysf.getVal() << " +/- " << ndysf.getError()  << endl
 	     << "[DY fit]"      << ndy.getVal() << " +/- "  << ndy.getVal()*ndysf.getError()/ndysf.getVal() << endl
 	     << "[Others fit] " << nother.getVal() << " +/- " << nother.getError() << endl
 	     << "---------------------------------------------------" << endl;
-
-      showDYFitResults(x,*sumData,constrShapeModelData,modelDataTemplate,ndysf,*nll,
-       		       signalRegionHisto[ich],"CMS preliminary",dyReplacementHisto->GetXaxis()->GetTitle());
-            
+      
       //save to histogram
       dysfH->GetXaxis()->SetBinLabel(ich+1,ch[ich]);
       dysfH->SetBinContent(ich+1,ndysf.getVal());
       dysfH->SetBinError(ich+1,ndysf.getError());
-
-      //do the closure tests on MC for different variations 
+	
+      //
+      // MC closure tests + systematic variations
+      //
       report << "[#Delta SF-DY in closure test]" << endl; 
-      float nominalMCSF(0);
+
+
+      TH1 *nominalMCHisto=(TH1 *) otherProcsHisto[0]->Clone("total"+ch[ich]+"mc");
+      nominalMCHisto->Add(dyMCHisto);
+      nominalMCHisto->Scale( totalData/nominalMCHisto->Integral(1,nominalMCHisto->GetXaxis()->GetNbins()) );
+      RooDataHist* sumMC   = new RooDataHist("sumMC",   "sumMC",   RooArgList(x), nominalMCHisto);
+
+      Double_t nominalMCSF(1.0);
       for(size_t ivar=0; ivar<runNsystVars[ich]; ivar++)
 	{
-	  RooDataHist* sumMC   = new RooDataHist("sumMC",   "sumMC",   RooArgList(x), mcSumHisto[0]);
+	  //for MC statistics : modify bin contents according to variation
+	  if(systVars[ivar].Contains("mcstat"))
+	    {
+	      int sign(systVars[ivar].EndsWith("up")?+1:-1);
+	      for(int ibin=1; ibin<=otherProcsHisto[ivar]->GetXaxis()->GetNbins(); ibin++)
+		{
+		  float val=max(otherProcsHisto[ivar]->GetBinContent(ibin)+sign*otherProcsHisto[ivar]->GetBinError(ivar),0.);
+		  otherProcsHisto[ivar]->SetBinContent(ibin,val);
+		}	 
+	    }
+	  otherProcsHisto[ivar]->Scale( totalOthers / otherProcsHisto[ivar]->Integral(1,otherProcsHisto[ivar]->GetXaxis()->GetNbins()) );
+	  fixTemplate(otherProcsHisto[ivar]);
 
-	  //float totalMC=mcSumHisto[0]->Integral();
-	  float ndyExp=dyMCHisto[ivar]->Integral(); 
-	  float totalOthers=otherProcsHisto[ivar]->Integral();
-	  float uncOthers=max(float(sqrt(totalOthers)),float(0.04*totalOthers)); 
-	  	  
-	  RooDataHist* mcTemplate = new RooDataHist("mcTemplate", "mcTemplate", RooArgList(x), dyReplacementMCHisto[ivar],smoothOrder );
-	  RooHistPdf modelMCTemplate("modelMCTemplate", "modelMCTemplate", RooArgSet(x), *mcTemplate);
-	  RooRealVar ndysf("SF_{DY}","dyyieldssfactor",1.0,0.5,3.0);
-	  RooFormulaVar ndy("N_{DY}","@0*@1",RooArgSet(RooConst(ndyExp),ndysf));
-
+	  //replace the "others" component in the model
 	  RooDataHist *otherMCTemplate = new RooDataHist("otherMCTemplate", "otherMCTemplate", RooArgList(x), otherProcsHisto[ivar],smoothOrder);
 	  RooHistPdf modelOtherMCTemplate("modelOtherMCTemplate", "modelOtherMCTemplate", RooArgSet(x), *otherMCTemplate);
-	  RooRealVar nother("N_{other}","otheryields",totalOthers,0,totalData);
-	  RooGaussian other_constraint("otherconstraintpdf","otherconstraintpdf", nother, RooConst(totalOthers), RooConst(uncOthers));
-       	  
-	  RooAddPdf shapeModelMC("shapeModelMC","signal+background",RooArgSet(modelMCTemplate,modelOtherMCTemplate),RooArgSet(ndy,nother));
+	  RooAddPdf shapeModelMC("shapeModelMC","signal+background",RooArgSet(modelDataTemplate,modelOtherMCTemplate),RooArgSet(ndy,nother));
 	  RooProdPdf constrShapeModelMC("constrShapeModelMC","shape*constrain",RooArgSet(shapeModelMC,other_constraint)); 
 
+	  //fit
+	  ndysf.setVal(1.0);
+	  nother.setVal(totalOthers);
 	  constrShapeModelMC.fitTo(*sumMC,Extended(kTRUE),SumW2Error(kTRUE), Constrain(nother),Save(kTRUE));
 
+	  if(ivar==0) nominalMCSF=ndysf.getVal();
+	  Double_t relDifference(nominalMCSF);
+	  if(ivar>0) relDifference=(ndysf.getVal()/nominalMCSF-1)*100;
+		  
 	  //report the result
 	  char resBuf[1000];
-	  if(ivar==0) sprintf(resBuf," Nominal: %3.4f",      ndy.getVal()/dyMCHisto[0]->Integral()-nominalMCSF);
-	  else        sprintf(resBuf," %s variation %3.4f %s",systVars[ivar].Data(),(ndy.getVal()/dyMCHisto[0]->Integral()-nominalMCSF)*100,"%");
+	  if(ivar==0) sprintf(resBuf," Nominal: %3.4f",      relDifference);
+	  else        sprintf(resBuf," %s variation %3.4f %s",systVars[ivar].Data(),relDifference,"%");
 	  report << resBuf << endl;
 
 	  //save plot for nominal fit
-	  if(ivar==0) {
-	    nominalMCSF=ndysf.getVal();
-	    RooNLLVar *nll = (RooNLLVar*) constrShapeModelMC.createNLL(*sumMC,CloneData(kFALSE),Extended(kTRUE),Constrain(nother));
-	    showDYFitResults(x,*sumMC,constrShapeModelMC,modelMCTemplate,ndysf,*nll,
-			     "mc"+signalRegionHisto[ich],"CMS simulation",dyReplacementMCHisto[ivar]->GetXaxis()->GetTitle());
-   
-	  }    
+	  RooNLLVar *nll = (RooNLLVar*) constrShapeModelMC.createNLL(*sumMC,CloneData(kFALSE),Extended(kTRUE),Constrain(nother));
+	  showDYFitResults(x,*sumMC,constrShapeModelMC,modelDataTemplate,ndysf,*nll,
+			   "mc"+signalRegionHisto[ich]+systVars[ivar],"CMS simulation",dyReplacementHisto->GetXaxis()->GetTitle());
 	}  
     }
   
@@ -399,8 +404,6 @@ void showDYFitResults(RooRealVar &x,
   model.plotOn(frame,Name("total"),MoveToBack());
   model.plotOn(frame,Components(dyModel),FillStyle(1001),FillColor(kGray),LineColor(kGray+1),DrawOption("lf"),Name("dytemplate"),MoveToBack());
 
-
-
   frame->Draw();
   Double_t ymax=frame->GetMaximum();
   frame->GetYaxis()->SetRangeUser(0.01,max(float(ymax*1.4),float(1.0)));
@@ -428,7 +431,7 @@ void showDYFitResults(RooRealVar &x,
   pave->Draw("same");
 	  
   //display likelihood as inset
-  TPad *npad = new TPad("llpad","ll", 0.6, 0.65, 0.88, 0.93);
+  TPad *npad = new TPad("llpad","ll", 0.7, 0.68, 0.95, 0.93);
   npad->Draw();
   npad->cd();
   frame = ndysf.frame();

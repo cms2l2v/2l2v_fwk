@@ -28,6 +28,7 @@
 #include "THStack.h"
 
 #include "UserCode/llvv_fwk/src/tdrstyle.C"
+#include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/src/JSONWrapper.cc"
 
 int cutIndex=-1;
@@ -836,35 +837,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    delete T;
 }
 
-std::string toLatexRounded(double value, double error){
-   if(value==0.0 && error==0.0)return string("");
-
-   if(!doPowers){
-     char tmpchar[255];
-     sprintf(tmpchar,"$%.0f\\pm%.0f$",value,error);
-     return string(tmpchar);
-   }
-   double power = floor(log10(value));
-   if(power<=-3)     {power=power+3;
-   }else if(power>=2){power=power-2;
-   }else             {power=0;}       
-
-   value = value / pow(10,power);
-   error = error / pow(10,power);
-   
-   int ValueFloating = 1+std::max(-1*log10(error),0.0);
-   int ErrorFloating = ValueFloating;
-
-   char tmpchar[255];
-   if(power!=0){
-      sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
-   }else{
-      sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
-   }
-   return string(tmpchar);
-}
-
-
 
 void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties){
    if(HistoProperties.isIndexPlot && cutIndex<0)return;
@@ -962,13 +934,13 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 	if(!stack){stack = (TH1*)hist->Clone("Stack");checkSumw2(stack);}else{stack->Add(hist,1.0);}
 
          char numberastext[2048]; numberastext[0] = '\0';
-         for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, toLatexRounded(hist->GetBinContent(b), hist->GetBinError(b)).c_str());}
+         for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, utils::toLatexRounded(hist->GetBinContent(b), hist->GetBinError(b),-1,doPowers).c_str());}
          fprintf(pFile, "%s %s \\\\\n",CleanTag.c_str(), numberastext);         
        }else{
           //Add to Canvas   
           if(stack){
             char numberastext[2048]; numberastext[0] = '\0';
-            for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, toLatexRounded(stack->GetBinContent(b), stack->GetBinError(b)).c_str());}
+            for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, utils::toLatexRounded(stack->GetBinContent(b), stack->GetBinError(b),-1,doPowers).c_str());}
             fprintf(pFile, "%s %s \\\\\n\\hline\n","Total expected", numberastext);
              ObjectToDelete.push_back(stack);
              stack=NULL;
@@ -977,7 +949,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
           if(Process[i]["isdata"].toBool()){fprintf(pFile,"\\hline\n");}
 
           char numberastext[2048]; numberastext[0] = '\0';
-          for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, toLatexRounded(hist->GetBinContent(b), hist->GetBinError(b)).c_str());}
+          for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, utils::toLatexRounded(hist->GetBinContent(b), hist->GetBinError(b),-1,doPowers).c_str());}
           fprintf(pFile, "%s %s \\\\\n",CleanTag.c_str(), numberastext);
        }
 

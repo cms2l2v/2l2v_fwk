@@ -12,8 +12,6 @@
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
-#include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
-
 #include "TVector3.h"
 #include "TMath.h"
 #include "TGraph.h"
@@ -22,7 +20,6 @@ namespace utils
 {
   namespace cmssw
   {
-    
     //retrieve last state before decay
     const reco::Candidate *getGeneratorFinalStateFor(const reco::Candidate *p, bool isSherpa);
 
@@ -78,10 +75,14 @@ namespace utils
 
     //cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
     FactorizedJetCorrector *getJetCorrector(TString baseDir, bool isMC);
-
-    //cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/MuScleFitCorrections2012 
-    MuScleFitCorrector *getMuonCorrector(TString baseDir,TString url);
   }
+
+
+  //round up and show in TeX
+  std::string toLatexRounded(double value, double error, double systError=-1,bool doPowers=true);
+
+  //clean up ROOT version of TeX
+  void TLatexToTex(TString &expr);
 }
 
 // CODE FOR DUPLICATE EVENTS CHECKING
