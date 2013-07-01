@@ -10,8 +10,8 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   mon_->addHistogram( new TH2F("thrustptresponse",";Generated p_{T}(t#bar{t}) [GeV]; #Delta p_{T}(t#bar{t})/p_{T} (t#bar{t}); Events",60,0,300,50,-50,50) );
   
   
-  mon_->addHistogram( new TH1F("ptttbar",";t#bar{t} transverse momentum [GeV];Events",25,0,250));
-  mon_->addHistogram( new TH1F("mtttbar",";t#bar{t} transverse mass [GeV];Events",25,0,1000));
+  mon_->addHistogram( new TH1F("ptttbar",";t#bar{t} transverse momentum [GeV];Events",25,0,500));
+  mon_->addHistogram( new TH1F("mtttbar",";t#bar{t} transverse mass [GeV];Events",25,0,2000));
 
   //color flow
   mon_->addHistogram( new TH1F("allj1pull",";#Delta#theta_{t} [rad];Events",50,0,3.2) );
@@ -30,24 +30,24 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   TString distStr("d^{2}N/d(#Delta#eta d#Delta#phi)");
   for(size_t dir=0; dir<2; dir++)
     {
-      TString dirPF(dir==0 ? "" : "bb");
+      TString dirPF(dir==0 ? "" : "leadb");
       for(size_t ireg=0; ireg<ueReg_.size(); ireg++)
 	{
-	  mon_->addHistogram( new TH1F("nch"+dirPF+ueReg_[ireg],";Charged particles;"+distStr,100,0,100));
-	  mon_->addHistogram( new TH1F("ptflux"+dirPF+ueReg_[ireg],";Charged p_{T} flux [GeV];"+distStr,50,0,100));
-	  mon_->addHistogram( new TH1F("avgptflux"+dirPF+ueReg_[ireg],";Average p_{T} flux [GeV];"+distStr,25,0,5));
+	  mon_->addHistogram( new TH1F("nch"+dirPF+ueReg_[ireg],";Charged particles;"+distStr,200,0,200));
+	  mon_->addHistogram( new TH1F("ptflux"+dirPF+ueReg_[ireg],";Charged p_{T} flux [GeV];"+distStr,50,0,500));
+	  mon_->addHistogram( new TH1F("avgptflux"+dirPF+ueReg_[ireg],";Average p_{T} flux [GeV];"+distStr,25,0,25));
 	  
-	  mon_->addHistogram( new TH2F("nchprofpt"+dirPF+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged particles;"+distStr,25,0,250, 100,0,100));
-	  mon_->addHistogram( new TH2F("ptfluxprofpt"+dirPF+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged p_{T} flux [GeV];"+distStr,25,0,250,50,0,100));
-	  mon_->addHistogram( new TH2F("avgptfluxprofpt"+dirPF+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Average p_{T} flux [GeV];"+distStr,25,0,250,20,0,5));
+	  mon_->addHistogram( new TH2F("nchprofpt"+dirPF+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged particles;"+distStr,20,0,250, 200,0,200));
+	  mon_->addHistogram( new TH2F("ptfluxprofpt"+dirPF+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Charged p_{T} flux [GeV];"+distStr,20,0,250,50,0,500));
+	  mon_->addHistogram( new TH2F("avgptfluxprofpt"+dirPF+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Average p_{T} flux [GeV];"+distStr,20,0,250,25,0,25));
 	  
-	  mon_->addHistogram( new TH2F("nchprofmt"+dirPF+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged particles;"+distStr,25,0,1000,100,0,100));
-	  mon_->addHistogram( new TH2F("ptfluxprofmt"+dirPF+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged p_{T} flux [GeV];"+distStr,25,0,1000,50,0,100));
-	  mon_->addHistogram( new TH2F("avgptfluxprofmt"+dirPF+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Average p_{T} flux [GeV];"+distStr,25,0,1000,25,0,5));
+	  mon_->addHistogram( new TH2F("nchprofmt"+dirPF+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged particles;"+distStr,20,0,1000,200,0,200));
+	  mon_->addHistogram( new TH2F("ptfluxprofmt"+dirPF+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Charged p_{T} flux [GeV];"+distStr,20,0,1000,50,0,500));
+	  mon_->addHistogram( new TH2F("avgptfluxprofmt"+dirPF+ueReg_[ireg],";t#bar{t} transverse mass [GeV];Average p_{T} flux [GeV];"+distStr,20,0,1000,25,0,25));
 	  
 	  if(ireg==0) {
-	    mon_->addHistogram( new TH2F("ptfluxprofphi"+dirPF,";#Delta#phi[^{0}];Charged p_{T} flux [GeV];"+distStr,25,0,180,50,0,100));
-	    if(dir==0) mon_->addHistogram( new TH2F("ptfluxprofvtx",";Vertices;Charged p_{T} flux [GeV];"+distStr,50,0,50,50,0,100));
+	    mon_->addHistogram( new TH2F("ptfluxprofphi"+dirPF,";#Delta#phi[^{0}];Charged p_{T} flux [GeV];"+distStr,20,0,180,100,0,100));
+	    if(dir==0) mon_->addHistogram( new TH2F("ptfluxprofvtx",";Vertices;Charged p_{T} flux [GeV];"+distStr,50,0,50,100,0,100));
 	  }
 	}
     }
@@ -104,8 +104,11 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       mon_->fillHisto("thrustptresponse",   ch, gen_ttbar.pt(),        rec_ttbar.pt()-gen_ttbar.pt(),                   weight);
     }
 
-  //alternative direction defined by the bb system
-  LorentzVector rec_bb=jets[0]+jets[1];
+  //alternative direction defined by
+  //the bb system
+  //LorentzVector rec_bb=jets[0]+jets[1];
+  //the leading b
+  LorentzVector rec_leadb=jets[0].pt()>jets[1].pt() ? jets[0] : jets[1];
  
   //
   //study UE with charged PF
@@ -147,19 +150,20 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       mon_->fillHisto("ptfluxprofphi",    ch, dphi, pf[ipfn].pt(),  weight/acceptance);
 
       //do the counting respectively to the bbbar estimate
-      dphi=deltaPhi(pf[ipfn].phi(),rec_bb.phi())*180/TMath::Pi();
+      //dphi=deltaPhi(pf[ipfn].phi(),rec_bb.phi())*180/TMath::Pi();
+      dphi=deltaPhi(pf[ipfn].phi(),rec_leadb.phi())*180/TMath::Pi();
       regIdx=3;
       if(dphi>120) regIdx=1;
       if(dphi<60)  regIdx=2;
       chCountBB[0]++;                  chCountBB[regIdx]++;
       chFluxBB[0] += pf[ipfn].pt();    chFluxBB[regIdx] += pf[ipfn].pt();
-      mon_->fillHisto("ptfluxprofphibb",    ch, dphi, pf[ipfn].pt(),  weight/acceptance);      
+      mon_->fillHisto("ptfluxprofphileadb",    ch, dphi, pf[ipfn].pt(),  weight/acceptance);      
     }
 
   //fill profiles
   for(size_t dir=0; dir<2; dir++)
     {
-      TString dirPF(dir==0 ? "" : "bb");
+      TString dirPF(dir==0 ? "" : "leadb");
       for(size_t ireg=0; ireg<4; ireg++)
 	{
 	  float cts( dir==0 ? chCount[ireg] : chCountBB[ireg] );
@@ -168,14 +172,14 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 	  
 	  mon_->fillHisto("nch"+dirPF+ueReg_[ireg],             ch, cts,                      weight/acceptance);
 	  mon_->fillHisto("ptflux"+dirPF+ueReg_[ireg],          ch, flux ,                    weight/acceptance);
-	  mon_->fillHisto("avgptflux"+dirPF+ueReg_[ireg],       ch, normFlux,                 weight/acceptance);
+	  if(cts>0) mon_->fillHisto("avgptflux"+dirPF+ueReg_[ireg],       ch, normFlux,                 weight/acceptance);
 	  
 	  mon_->fillHisto("nchprofpt"+dirPF+ueReg_[ireg],       ch, rec_ttbar.pt(), cts,      weight/acceptance);
 	  mon_->fillHisto("ptfluxprofpt"+dirPF+ueReg_[ireg],    ch, rec_ttbar.pt(), flux,     weight/acceptance);
-	  mon_->fillHisto("avgptfluxprofpt"+dirPF+ueReg_[ireg], ch, rec_ttbar.pt(), normFlux, weight/acceptance);
+	  if(cts>0) mon_->fillHisto("avgptfluxprofpt"+dirPF+ueReg_[ireg], ch, rec_ttbar.pt(), normFlux, weight/acceptance);
 	  mon_->fillHisto("nchprofmt"+dirPF+ueReg_[ireg],       ch, rec_ttbar.Mt(), cts,      weight/acceptance);
 	  mon_->fillHisto("ptfluxprofmt"+dirPF+ueReg_[ireg],    ch, rec_ttbar.Mt(), flux,     weight/acceptance);
-	  mon_->fillHisto("avgptfluxprofmt"+dirPF+ueReg_[ireg], ch, rec_ttbar.Mt(), normFlux, weight/acceptance);
+	  if(cts>0) mon_->fillHisto("avgptfluxprofmt"+dirPF+ueReg_[ireg], ch, rec_ttbar.Mt(), normFlux, weight/acceptance);
 	}
     }
 

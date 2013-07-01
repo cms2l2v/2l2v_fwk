@@ -65,13 +65,16 @@ then
 	exit -1
     fi
     LOCALOUT="/tmp/${TAG}.root"
-    if [ -n "$FFILE" ]
+    if [ "${INPUTDIR}" != "none" ]
 	then
-	LOCALOUT="/tmp/${TAG}_${FFILE}.root"
-    fi
-    if [ -n "$STEP" ]
-	then
-	LOCALOUT="/tmp/${TAG}_${FFILE}_${STEP}.root"
+	if [ -n "$FFILE" ]
+	    then
+	    LOCALOUT="/tmp/${TAG}_${FFILE}.root"
+	fi
+	if [ -n "$STEP" ]
+	    then
+	    LOCALOUT="/tmp/${TAG}_${FFILE}_${STEP}.root"
+	fi
     fi
 fi
 

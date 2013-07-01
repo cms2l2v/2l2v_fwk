@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
   LeptonEfficiencySF lepEff;
 
   UEAnalysis ueAn(controlHistos);
-  //BTVAnalysis btvAn(controlHistos,runSystematics);
+  BTVAnalysis btvAn(controlHistos,runSystematics);
   //LxyAnalysis lxyAn(controlHistos,runSystematics);
   
   ///
@@ -485,7 +485,7 @@ int main(int argc, char* argv[])
 	}
 
       
-      //if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weightNom*llScaleFactor*dyWeight,weightUp*llScaleFactor*dyWeight,weightDown*llScaleFactor*dyWeight,hasTop);
+      if(passDilSelection &&                     passMetSelection && isOS) btvAn.analyze(selLeptons,looseJets,isMC,ev.nvtx,weightNom*llScaleFactor*dyWeight,weightUp*llScaleFactor*dyWeight,weightDown*llScaleFactor*dyWeight,hasTop);
       //if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weightNom*llScaleFactor*dyWeight);
 
       //select the event

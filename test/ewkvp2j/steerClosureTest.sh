@@ -20,8 +20,8 @@ mkdir -p ${outdir}/g/qt_pure
 
 if [ "$step" == "0" ]; then
     echo "Submitting PDF variations"
-#    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
-#    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_syst_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
+    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
+    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_syst_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
     runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/raw_loose  -c ${cfg} -s 2nw;
 fi
 
@@ -34,9 +34,9 @@ fi
 
 if [ "$step" == "2" ]; then
     echo "Computing weights"
-    #runPlotter --json data/vbfz_syst_samples.json   --inDir ${outdir}/dy/          --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure.root             --noPlot;
-    #runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_tight.root --noPlot;
-    #runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_loose.root --noPlot;
+    runPlotter --json data/vbfz_syst_samples.json   --inDir ${outdir}/dy/          --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure.root             --noPlot;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_tight.root --noPlot;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_loose.root --noPlot;
 
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_dy_closure.root\",\"${outdir}/plotter_dy_closure_g_raw_loose.root\",ALL)";
     mv gammawgts.root ${outdir}/loose_gamma_mcweights.root;

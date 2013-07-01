@@ -24,7 +24,7 @@ void showCMSHeader(TObject *data=0, TObject *mc=0,bool isSim=false)
   pt->SetFillStyle(0);
   pt->SetTextAlign(12);
   //  pt->SetTextSize(0.08);
-  if(!isSim) pt->AddText("CMS preliminary, #sqrt{s}=8 TeV, #scale[0.5]{#int}L=0.9 fb^{-1}");
+  if(!isSim) pt->AddText("CMS preliminary, #sqrt{s}=8 TeV, #scale[0.5]{#int}L=19.7 fb^{-1}");
   else       pt->AddText("CMS simulation, #sqrt{s}=8 TeV");
   pt->Draw();
   
@@ -204,8 +204,10 @@ void measureJetIdEfficiency()
   gStyle->SetPalette(1);
   
   
-  TString profs[]= {"recoilbalanceidlt15collinear", "recoilbalanceidgt50back2back"};
-  TString cats[] = {"Pileup control",               "True jets control"};
+  //  TString profs[]= {"recoilbalanceidlt15collinear", "recoilbalanceidgt50back2back"};
+  //TString cats[] = {"Pileup control",               "True jets control"};
+  TString profs[]= {"recoilbalanceidgt50back2back"};
+  TString cats[] = {"True jets control"};
   const size_t nprofs=sizeof(profs)/sizeof(TString);
 
   TCanvas *c=new TCanvas("c","c",600,600);       c->Divide(1,nprofs);   c->cd(1)->SetTopMargin(0.1);
@@ -222,7 +224,7 @@ void measureJetIdEfficiency()
   
       TH1 *allJetsMC=dyMC->ProjectionX("alljetsmc",1,1);    
       TH1 *allJetsData=dyData->ProjectionX("alljetsdata",1,1); 
-      for(int ybin=2; ybin<=5+0*dyMC->GetYaxis()->GetNbins(); ybin++)
+      for(int ybin=2; ybin<=4+0*dyMC->GetYaxis()->GetNbins(); ybin+=2)
 	{
 	  TString label(dyMC->GetYaxis()->GetBinLabel(ybin));
 	  TString pf(""); pf+=ybin; pf+=i;

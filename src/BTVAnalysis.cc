@@ -20,7 +20,7 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
   }
   
   TH2F *hrunjp  = new TH2F("runjptempl",";Jet probability;Working point;Jets",  50,0,2.5,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
-  TH2F *hrunkin = new TH2F("runkintempl",";Mass(lepton,jet);Working point;Jets",50,0,500,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
+  TH2F *hrunkin = new TH2F("runkintempl",";Mass(lepton,jet);Working point;Jets",25,0,500,taggers_[0].wps.size()+1,0,taggers_[0].wps.size()+1);
   hrunjp->GetYaxis()->SetBinLabel(1,"inc");
   hrunkin->GetYaxis()->SetBinLabel(1,"inc");
 
@@ -65,8 +65,7 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 	      mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpb"+systVars_[j]) );
 	      mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpc"+systVars_[j]) );
 	      mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpudsg"+systVars_[j]) );
-
-
+	      
 	      mon_->addHistogram( (TH2 *)hkin->Clone( "kin"      +systVars_[j]) );
 	      mon_->addHistogram( (TH2 *)hkin->Clone( "kinb"     +systVars_[j]) );
 	      mon_->addHistogram( (TH2 *)hkin->Clone( "kinothers"+systVars_[j]) );
@@ -79,9 +78,17 @@ BTVAnalysis::BTVAnalysis(SmartSelectionMonitor &mon,bool runSystematics)
 	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpb"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpc"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunjp->Clone("runjpudsg"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("excrunjp"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("excrunjpb"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("excrunjpc"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunjp->Clone("excrunjpudsg"+systVars_[j]+tagger.name) );
+	  
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkin"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinb"+systVars_[j]+tagger.name) );
 	  mon_->addHistogram( (TH2F *)hrunkin->Clone("runkinothers"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunkin->Clone("excrunkin"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunkin->Clone("excrunkinb"+systVars_[j]+tagger.name) );
+	  mon_->addHistogram( (TH2F *)hrunkin->Clone("excrunkinothers"+systVars_[j]+tagger.name) );
 	  
 	  for(std::map<TString,float>::iterator it = tagger.wps.begin(); it!= tagger.wps.end(); it++)
 	    {
@@ -258,12 +265,20 @@ void BTVAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 	    for(size_t ijcat=0; ijcat<wpJetCategs.size(); ijcat++)
 	      {
 		iwpbin=wpJetCategs[ijcat];
-
+		bool isHighest(ijcat==wpJetCategs.size()-1); 
 		mon_->fillHisto("runjp"+var+tagger.name, ch, jpDisc, iwpbin, iweight);
 		mon_->fillHisto("runkin"+var+tagger.name, ch, mljPerFlavor.second, iwpbin, iweight);
+		if(isHighest){
+		  mon_->fillHisto("excrunjp"+var+tagger.name, ch, jpDisc, iwpbin, iweight);
+		  mon_->fillHisto("excrunkin"+var+tagger.name, ch, mljPerFlavor.second, iwpbin, iweight);
+		}
 		if(isMC) {
 		  mon_->fillHisto("runjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
 		  mon_->fillHisto("runkin"+mljPerFlavor.first+var+tagger.name,   ch, mljPerFlavor.second, iwpbin, iweight);
+		  if(isHighest){
+		    mon_->fillHisto("excrunjp"+jetFlav+var+tagger.name, ch, jpDisc, iwpbin, iweight);
+		    mon_->fillHisto("excrunkin"+mljPerFlavor.first+var+tagger.name,   ch, mljPerFlavor.second, iwpbin, iweight);
+		  }
 		}
 	      }
 	  }

@@ -51,14 +51,16 @@ for proc in procList :
                 idir=idir+1
                 filenames=fillFromStore(dir,0,-1,False)
                 nfiles=len(filenames)
-                
+
                 njobs=1
 		sleep=0;
                 if(opt.fperjob>0) : 
                     njobs=nfiles//opt.fperjob
                     if(nfiles%opt.fperjob>0):njobs = njobs+1
                     sleep=2*opt.fperjob/6
-                
+
+                if dir=="none" : njobs=1
+
                 #substitute some job parameters by json file parameters
                 newParams=''
                 for ipar in jobParamsList :
@@ -71,7 +73,7 @@ for proc in procList :
                             newParams += ipar + ' '
                         else :
                             newParams += '-castor=' + d[arg][0] + ' '
-
+                            
                 #submit the jobs
                 for ijob in range(njobs) :
                     localParams = '%s -src=%s -tag=%s'%(newParams,dir,d['dtag'])

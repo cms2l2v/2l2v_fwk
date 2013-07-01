@@ -219,6 +219,7 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(4, "#eta^{ll}<1.44");
   h->GetXaxis()->SetBinLabel(5,"#geq 2 jets"); 
 
+  mon.addHistogram( new TH1F("pthat",";#hat{p}_{T} [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("nup",";NUP;Events",10,0,10) );
   mon.addHistogram( new TH1F("nupfilt",";NUP;Events",10,0,10) );
 
@@ -262,7 +263,7 @@ int main(int argc, char* argv[])
   }
   
   //boson control
-  mon.addHistogram( new TH1F( "qt",      ";p_{T}^{#gamma} [GeV];Events",1500,0,1500));
+  mon.addHistogram( new TH1F( "qt",      ";p_{T}^{#gamma} [GeV];Events",500,0,1500));
   mon.addHistogram( new TH1F( "zpt",     ";p_{T}^{ll};Events", 50,0,500) );
   mon.addHistogram( new TH1F( "zptNM1",  ";p_{T}^{ll};Events", 50,0,500) );
   mon.addHistogram( new TH1F( "zeta",    ";#eta^{ll};Events", 50,-10,10) );
@@ -468,7 +469,7 @@ int main(int argc, char* argv[])
 	if(ev.nup>5) continue;
 	mon.fillHisto("nupfilt","",ev.nup,1);
       }
-
+      mon.fillHisto("pthat","",ev.pthat,1);
 
       data::PhysicsObjectCollection_t photons=evSummary.getPhysicsObject(DataEventSummaryHandler::PHOTONS);
       data::PhysicsObjectCollection_t leptons=evSummary.getPhysicsObject(DataEventSummaryHandler::LEPTONS);
@@ -539,8 +540,8 @@ int main(int argc, char* argv[])
 	      if(gen[igen].get("status")!=3) continue;
 	      ngenpho++;
 	    }
-	  if(mctruthmode==111 && ngenpho>0) continue;
-	  if(mctruthmode==22 && ngenpho==0) continue;
+	  //if(mctruthmode==111 && ngenpho>0) continue;
+	  //if(mctruthmode==22 && ngenpho==0) continue;
 
 	  //select the photons
 	  for(size_t ipho=0; ipho<photons.size(); ipho++)
@@ -551,12 +552,6 @@ int main(int argc, char* argv[])
 	      //if systematics are active loosen the selection to the medium working point
 	      Int_t idbits( photons[ipho].get("id") );
 	      bool hasPhotonId( (idbits >> 2 ) & 0x1 );
-	      //double gIso    = photons[ipho].getVal("gIso03");
-	      // double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
-	      double chIso   = photons[ipho].getVal("chIso03");
-	      // 	      double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
-	      // 	      double nhIso   = photons[ipho].getVal("nhIso03");
-	      // 	      double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
 	      
 	      //select the photon
 	      if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
@@ -566,13 +561,19 @@ int main(int argc, char* argv[])
 	      if(!passId) continue;
 	      bool passIso(true);
 	      if(runLoosePhotonSelection){
-		passIso &= ((chIso/pt)<0.20);
-		// passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 1.5); 
-		// passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 1.0+0.04*pt); 
-		// passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.7+0.005*pt); 
+		double gIso    = photons[ipho].getVal("gIso03");
+		double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
+		double chIso   = photons[ipho].getVal("chIso03");
+		double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
+		double nhIso   = photons[ipho].getVal("nhIso03");
+		double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+		passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 1.5); 
+		passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 1.0+0.04*pt); 
+		passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.7+0.005*pt); 
 	      }
 	      else{
-		passIso &= ((chIso/pt)<0.10);
+		float chIso = photons[ipho].getVal("chIso04");
+		passIso &= (chIso<0.1);
 	      }
 	      if(!passIso) continue; 
 	      selPhotons.push_back(photons[ipho]);
@@ -683,6 +684,7 @@ int main(int argc, char* argv[])
       LorentzVector leadingLep(runPhotonSelection ? selPhotons[0] : selLeptons[0].pt()>selLeptons[1].pt() ? selLeptons[0]: selLeptons[1]);
       LorentzVector trailerLep(runPhotonSelection ? selPhotons[0] : selLeptons[0].pt()>selLeptons[1].pt() ? selLeptons[1]: selLeptons[0]);
       LorentzVector zll(runPhotonSelection ? selPhotons[0] : leadingLep+trailerLep);
+      if(!runPhotonSelection && zll.mass()<50) continue;
       float zy(zll.Rapidity());
       bool passZmass(runPhotonSelection || (fabs(zll.mass()-91)<15));
       bool passZpt(zll.pt()>50);
@@ -1019,13 +1021,13 @@ int main(int argc, char* argv[])
 		  mon.fillHisto("vbfhardpt",          selTags, hardpt,catWeight);
 		  mon.fillHisto("vbfspt",             selTags, spt,catWeight);
 		  mon.fillHisto("vbfdphijj",          selTags, fabs(dphijj),catWeight);
-		  mon.fillHisto("vbfystar",           selTags, ystar,catWeight);
+		  mon.fillHisto("vbfystar",           selTags, fabs(ystar),catWeight);
 		  mon.fillHisto("vbfpt",              selTags, ptjj,catWeight);
 		  mon.fillHisto("met",                selTags, ptmiss,catWeight);
 		  mon.fillHisto("metL",               selTags, metL,catWeight);
 		  if(ncjv15){
 		    mon.fillHisto("vbfmaxcjvjpt",        selTags, pt3,catWeight);
-		    mon.fillHisto("vbfystar3",           selTags, ystar3,catWeight);
+		    mon.fillHisto("vbfystar3",           selTags, fabs(ystar3),catWeight);
 		  }
 		  mon.fillHisto("vbfcjv",              selTags, ncjv,catWeight);
 		  mon.fillHisto("vbfcjv15",            selTags, ncjv15,catWeight);
