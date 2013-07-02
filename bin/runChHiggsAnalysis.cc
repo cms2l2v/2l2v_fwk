@@ -457,10 +457,6 @@ int main(int argc, char* argv[])
 	sort(selJets.begin(),  selJets.end(),  data::PhysicsObject_t::sortByCSV);
 	sort(selbJets.begin(),  selbJets.end(),  data::PhysicsObject_t::sortByCSV);
 	
-	
-	//MC truth
-	data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
-	
 	//select the event
 	if(selLeptons.size()<2) continue;
 	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 0, weight);
