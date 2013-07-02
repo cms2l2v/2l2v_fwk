@@ -12,18 +12,25 @@ process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic8TeVCollision_cfi')
 myPYTHIAueSettings="PythiaP11Settings"
 myMaxEvents=5000
 outputFile="histos.root"
+initSeedn=0
 if len(sys.argv)>3 :
 	outputFile=sys.argv[3]
-	myPYTHIAueSettings=os.path.basename( outputFile ).split('_')[0]
+	outFileBase=os.path.basename( outputFile )
+	myPYTHIAueSettings=outFileBase.split('_')[0]
+	initSeed=int((outFileBase.split('_')[1]).split('.')[0])
 if len(sys.argv)>5 :
 	myMaxEvents=int(sys.argv[5])
+
+process.load("Configuration.StandardSequences.SimulationRandomNumberGeneratorSeeds_cff")
+process.RandomNumberGeneratorService.generator.initialSeed = 123456789+initSeed
 
 print '*********************************************'
 print 'Starting new generation with %d events'%myMaxEvents
 print 'UE settings are %s'%myPYTHIAueSettings
 print 'Output will be stored at %s'%outputFile
+print 'Random seed is %s'%str(process.RandomNumberGeneratorService.generator.initialSeed)
 print '*********************************************'
-		
+
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(myMaxEvents) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 500
 process.source = cms.Source("EmptySource")
