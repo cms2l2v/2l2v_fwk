@@ -84,12 +84,12 @@ int main(int argc, char* argv[])
 
   //systematics
   TString systVars[]={"",
-//		      "_jerup","_jerdown",
-//		      "_jesup","_jesdown",
+		      "_jerup","_jerdown",
+		      "_jesup","_jesdown",
 //		      "_lesup","_lesdown",
 		      "_leffup","_leffdown",
 		      "_puup","_pudown",
-		      //		      "_umetup", "_umetdown",
+		      "_umetup", "_umetdown",
   };
   size_t nSystVars(1);
   if(runSystematics && isMC)
@@ -291,6 +291,24 @@ int main(int argc, char* argv[])
 	  weightUp   = weight*PuShifters[utils::cmssw::PUUP]->Eval(ev.ngenITpu);
 	  weightDown = weight*PuShifters[utils::cmssw::PUDOWN]->Eval(ev.ngenITpu);
 	}
+
+	//MC truth (filtering for other ttbar)
+	data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
+	bool hasTop(false);
+	int ngenLeptonsStatus3(0);
+	if(isMC)
+	  {
+	    for(size_t igen=0; igen<gen.size(); igen++){
+	      if(gen[igen].get("status")!=3) continue;
+	      int absid=abs(gen[igen].get("id"));
+	      if(absid==6) hasTop=true;
+	      if(absid!=11 && absid!=13 && absid!=15) continue;
+	      ngenLeptonsStatus3++;
+	    }
+	    if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
+	    if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
+	  }
+
 	Hcutflow->Fill(1,1);
 	Hcutflow->Fill(2,weight);
 	Hcutflow->Fill(3,weightUp);
@@ -387,24 +405,35 @@ int main(int argc, char* argv[])
 	else                                       continue;
 	if(isSameFlavor) ch.push_back("ll");
 	
-	
+
+	//the met
+	data::PhysicsObjectCollection_t recoMet=evSummary.getPhysicsObject(DataEventSummaryHandler::MET);
 	//select the jets
 	data::PhysicsObjectCollection_t jets=evSummary.getPhysicsObject(DataEventSummaryHandler::JETS);
+	
+	utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,ev.rho,ev.nvtx,isMC);
+	
+	std::vector<LorentzVector> metVars=utils::cmssw::getMETvariations(recoMet[0],jets,selLeptons,isMC);
+	
+
+
+	
+	int metIdx(0);
+	if(systVars[ivar] == "jerup")    metIdx=utils::cmssw::JERUP;   
+	if(systVars[ivar] == "jerdown")  metIdx=utils::cmssw::JERDOWN; 
+	if(systVars[ivar] == "jesup")    metIdx=utils::cmssw::JESUP;   
+	if(systVars[ivar] == "jesdown")  metIdx=utils::cmssw::JESDOWN; 
+	if(systVars[ivar] == "umetup")   metIdx=utils::cmssw::UMETUP;
+	if(systVars[ivar] == "umetdown") metIdx=utils::cmssw::UMETDOWN;
+	LorentzVector met=metVars[metIdx];
+
 	data::PhysicsObjectCollection_t looseJets,selJets,selbJets;
 	for(size_t ijet=0; ijet<jets.size(); ijet++)
 	  {
-	    //correct jet
-	    float toRawSF=jets[ijet].getVal("torawsf");
-	    LorentzVector rawJet(jets[ijet]*toRawSF);
-	    jesCor->setJetEta(rawJet.eta());
-	    jesCor->setJetPt(rawJet.pt());
-	    jesCor->setJetA(jets[ijet].getVal("area"));
-	    jesCor->setRho(ev.rho);
-	    jesCor->setNPV(ev.nvtx);
-	    float newJECSF=jesCor->getCorrection();
-	    jets[ijet].SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
-	    jets[ijet] *= newJECSF;
-	    jets[ijet].setVal("torawsf",1./newJECSF);
+	    if(systVars[ivar] == "jerup")   { jets[ijet].setVal("pt", jets[ijet].getVal("jerup")   ); metIdx=utils::cmssw::JERUP;   }
+	    if(systVars[ivar] == "jerdown") { jets[ijet].setVal("pt", jets[ijet].getVal("jerdown") ); metIdx=utils::cmssw::JERDOWN; }
+	    if(systVars[ivar] == "jesup")   { jets[ijet].setVal("pt", jets[ijet].getVal("jesup")   ); metIdx=utils::cmssw::JESUP;   }
+	    if(systVars[ivar] == "jesdown") { jets[ijet].setVal("pt", jets[ijet].getVal("jesdown") ); metIdx=utils::cmssw::JESDOWN; }
 	    
 	    //cross-clean with selected leptons 
 	    double minDRlj(9999.);
@@ -416,17 +445,7 @@ int main(int argc, char* argv[])
 	    Int_t idbits=jets[ijet].get("idbits");
 	    bool passPFloose( ((idbits>>0) & 0x1));
 	    if(!passPFloose) continue;
-	    
-	    //add scale/resolution uncertainties
-	    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-	    std::vector<float> smearPt=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
-	    jets[ijet].setVal("jer",     isMC ? smearPt[0] : jets[ijet].pt());
-	    jets[ijet].setVal("jerup",   isMC ? smearPt[1] : jets[ijet].pt());
-	    jets[ijet].setVal("jerdown", isMC ? smearPt[2] : jets[ijet].pt());
-	    smearPt=utils::cmssw::smearJES(jets[ijet].pt(),jets[ijet].eta(), totalJESUnc);
-	    jets[ijet].setVal("jesup",   isMC ? smearPt[0] : jets[ijet].pt());
-	    jets[ijet].setVal("jesdown", isMC ? smearPt[1] : jets[ijet].pt());
-	    
+
 	    //top candidate jets
 	    looseJets.push_back(jets[ijet]);
 	    if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
@@ -438,8 +457,6 @@ int main(int argc, char* argv[])
 	sort(selJets.begin(),  selJets.end(),  data::PhysicsObject_t::sortByCSV);
 	sort(selbJets.begin(),  selbJets.end(),  data::PhysicsObject_t::sortByCSV);
 	
-	//the met
-	data::PhysicsObjectCollection_t met=evSummary.getPhysicsObject(DataEventSummaryHandler::MET);
 	
 	//MC truth
 	data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
@@ -452,12 +469,12 @@ int main(int argc, char* argv[])
 	LorentzVector ll=selLeptons[0]+selLeptons[1];
 	float mll=ll.mass();
 	float thetall=utils::cmssw::getArcCos<LorentzVector>(selLeptons[0],selLeptons[1]);
-	float mtsum=utils::cmssw::getMT<LorentzVector>(selLeptons[0],met[0])+utils::cmssw::getMT<LorentzVector>(selLeptons[1],met[0]);
+	float mtsum=utils::cmssw::getMT<LorentzVector>(selLeptons[0],met)+utils::cmssw::getMT<LorentzVector>(selLeptons[1],met);
 	bool isZcand( isSameFlavor && fabs(mll-91)<15);
 	//bool isOS( selLeptons[0].get("id")*selLeptons[1].get("id") < 0 ); 
 	bool passDilSelection(mll>12 && !isZcand);
 	bool passJetSelection(selJets.size()>=2);
-	bool passMetSelection(met[0].pt()>40);//!isSameFlavor || met[0].pt()>40); (charged Higgs case expects high MET 
+	bool passMetSelection(met.pt()>40);//!isSameFlavor || met[0].pt()>40); (charged Higgs case expects high MET 
 	
 	//control distributions
 	std::vector<TString> ctrlCategs;
@@ -497,17 +514,17 @@ int main(int argc, char* argv[])
 		    htbnol+=selbJets[ijet].pt();
 		  }
 	      }
-	    ht+=met[0].pt();
-	    htb+=met[0].pt();
-	    htnol+=met[0].pt();
-	    htbnol+=met[0].pt();
+	    ht+=met.pt();
+	    htb+=met.pt();
+	    htnol+=met.pt();
+	    htbnol+=met.pt();
 	    
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptmin",        ch, ptmin,           weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"mll",          ch, mll,             weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptll",         ch, ll.pt(),         weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"mtsum",        ch, mtsum,           weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"dilarccosine", ch, thetall,         weight);
-	    controlHistos.fillHisto(ctrlCategs[icat]+"met",          ch, met[0].pt(),     weight);
+	    controlHistos.fillHisto(ctrlCategs[icat]+"met",          ch, met.pt(),     weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njets",        ch, selJets.size(),  weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"nbjets",       ch, selbJets.size(), weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ht",           ch, ht,              weight);
