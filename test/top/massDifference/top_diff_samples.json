@@ -11,6 +11,8 @@
 		{
  	        "dtag":"PythiaZ2Settings",
                 "xsec":245.8,
+		"npersplit":500,
+		"split":2,
  	        "aoddir":["none"]
                 }
    	   ]
@@ -27,6 +29,8 @@
 	    {
                "dtag":"PythiaP11noCRSettings",
                "xsec":245.8,
+	       "npersplit":500,
+	       "split":2,
 	       "aoddir":["none"]
              }
 	  ]
@@ -43,6 +47,8 @@
 	    {
                "dtag":"PythiaP11Settings",
                "xsec":245.8,
+	       "npersplit":500,
+	       "split":2,
 	       "aoddir":["none"] 
              }
 	  ]

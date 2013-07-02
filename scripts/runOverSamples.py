@@ -59,7 +59,10 @@ for proc in procList :
                     if(nfiles%opt.fperjob>0):njobs = njobs+1
                     sleep=2*opt.fperjob/6
 
-                if dir=="none" : njobs=1
+                #special case for event generation
+                if dir=="none" :
+                    opt.fperjob=d['npersplit']
+                    njobs=d['split']
 
                 #substitute some job parameters by json file parameters
                 newParams=''
@@ -78,9 +81,13 @@ for proc in procList :
                 for ijob in range(njobs) :
                     localParams = '%s -src=%s -tag=%s'%(newParams,dir,d['dtag'])
 		    if(idir>1) :        localParams += '_%d'%(idir)
-                    if(opt.fperjob>0) : localParams += " -f=%d -step=%d"%(opt.fperjob*ijob,opt.fperjob)
+                    if(opt.fperjob>0) :
+                        if dir=="none" : localParams += " -f=%d -step=%d"%(ijob,opt.fperjob)
+                        else :           localParams += " -f=%d -step=%d"%(opt.fperjob*ijob,opt.fperjob)
+
                     print "**** Starting new job with the following parameters ****"
                     print localParams
+
                     if(len(opt.queue)>0) :
                         #old style 
                         #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],ijob,scriptFile,localParams)

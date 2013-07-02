@@ -8,14 +8,15 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('IOMC.EventVertexGenerators.VtxSmearedRealistic8TeVCollision_cfi')
 
-myMaxEvents=5000
-
 #CONFIGURE FROM COMMAND LINE
 myPYTHIAueSettings="PythiaP11Settings"
+myMaxEvents=5000
 outputFile="histos.root"
 if len(sys.argv)>3 :
 	outputFile=sys.argv[3]
-	myPYTHIAueSettings=os.path.basename( outputFile ).split('.')[0]
+	myPYTHIAueSettings=os.path.basename( outputFile ).split('_')[0]
+if len(sys.argv)>5 :
+	myMaxEvents=int(sys.argv[5])
 
 print '*********************************************'
 print 'Starting new generation with %d events'%myMaxEvents
