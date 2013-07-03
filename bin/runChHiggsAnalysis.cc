@@ -177,10 +177,10 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mtsum"+systVars[ivar],";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met"+systVars[ivar],";Missing transverse energy [GeV];Events",50,0,500) );
 	
-	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht"+systVars[ivar],";H_{T} [GeV];Events",100,0,1000) );
-	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb"+systVars[ivar],";H_{T} (bjets) [GeV];Events",100,0,1000) );
-	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htnol"+systVars[ivar],"; H_[T] (no leptons) [GeV];Events",100,0,1000) );
-	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htbnol"+systVars[ivar],"; H_[T] (bjets, no leptons) [GeV];Events",100,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht"+systVars[ivar],";H_{T} [GeV];Events",50,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb"+systVars[ivar],";H_{T} (bjets) [GeV];Events",50,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htnol"+systVars[ivar],"; H_[T] (no leptons) [GeV];Events",50,0,1000) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htbnol"+systVars[ivar],"; H_[T] (bjets, no leptons) [GeV];Events",50,0,1000) );
 	
 	TH1F *h=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"njets"+systVars[ivar],";Jet multiplicity;Events",8,0,8) );
 	TH1F *hb=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"nbjets"+systVars[ivar],";b-Jet multiplicity;Events",8,0,8) );
@@ -450,7 +450,8 @@ int main(int argc, char* argv[])
 	    looseJets.push_back(jets[ijet]);
 	    if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	    selJets.push_back(jets[ijet]);
-	    if(jets[ijet].getVal("supercsv") <= 0.531) continue;
+	    //	    if(jets[ijet].getVal("supercsv") <= 0.531) continue;
+	    if(jets[ijet].getVal("csv") <= 0.679) continue;
 	    selbJets.push_back(jets[ijet]);
 	  }
 	sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByPt);
@@ -583,7 +584,8 @@ int main(int argc, char* argv[])
 	//	lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 	
 	float nbtags(0);
-	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
+	//	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
+	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("csv")>0.679);
 	if(nbtags<2) continue;
 	controlHistos.fillHisto("evtflow"+systVars[ivar], ch, 5, weight);
 	
