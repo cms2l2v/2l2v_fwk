@@ -196,12 +196,13 @@
    	   ]
 	},
 	{
-        "tag":"H^{+}$#rightarrow#tau#nu, m_{H^{+}}=250 GeV",
+        "tag":"H^{+}(250 GeV)#rightarrow#tau#nu ",
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
         "color":"001",
 	"lwidth":2,
+	"lstyle":7,
         "fill":0,
         "marker":1,
         "data":[
@@ -214,12 +215,13 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=250 GeV",
+        "tag":"H^{+}(250 GeV)#rightarrow tb",
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
         "color":"002",
 	"lwidth":2,
+	"lstyle":7,
         "fill":0,
         "marker":1,
         "data":[
