@@ -343,6 +343,7 @@ def FileToList(path):
    return input_lines
 
 
+
 def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatement):
         SendCluster_Create(FarmDirectory, JobName)
         Temp_Cfg   = Farm_Directories[1]+Jobs_Index+Jobs_Name+'_TEMP_cfg.py'
@@ -351,9 +352,10 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
 		print 'Empty InputFile List for Job named "%s", Job will not be submitted' % JobName
 		return
 
-	InputFilesString = ""
+        InputFilesString = ''
         for i in range(len(InputFiles)):
-		InputFilesString += "     " + InputFiles[i] + '\n'
+		InputFilesString += "process.source.fileNames.extend([" + InputFiles[i].replace(',',' ') + '])\n'
+
 
 	cfg_file=open(Temp_Cfg,'w')
         cfg_file.write('import FWCore.ParameterSet.Config as cms\n')
@@ -364,11 +366,13 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
         cfg_file.write('\n')
         cfg_file.write('process.MessageLogger.cerr.FwkReport.reportEvery = 50000\n')
         cfg_file.write('process.source = cms.Source("PoolSource",\n')
+        cfg_file.write('   skipBadFiles = cms.untracked.bool(True),\n')
+        cfg_file.write('   duplicateCheckMode = cms.untracked.string("noDuplicateCheck"),\n')
         cfg_file.write('   fileNames = cms.untracked.vstring(\n')
-        cfg_file.write('%s' % InputFilesString)
         cfg_file.write('   )\n')
         cfg_file.write(')\n')
         cfg_file.write('\n')
+        cfg_file.write('%s\n' % InputFilesString)
         cfg_file.write('process.OUT = cms.OutputModule("PoolOutputModule",\n')
         cfg_file.write('    outputCommands = cms.untracked.vstring(%s),\n' % KeepStatement)
         cfg_file.write('    fileName = cms.untracked.string(%s)\n' % OutputFile)
