@@ -94,8 +94,7 @@ class MuScleFitCorrector
     double phi = lorentzVector.Phi();
     double m  = lorentzVector.M(); 
     double corrPt = getCorrectPt(lorentzVector, chg);
-    lorentzVector.SetPtEtaPhiM(corrPt,eta,phi,m);
-    
+    lorentzVector.SetPtEtaPhiM(corrPt,eta,phi,m);    
   };
   
   // Method to apply smearing to a TLorentzVector
@@ -106,6 +105,8 @@ class MuScleFitCorrector
     double smearedPt = getSmearedPt(lorentzVector, chg, fake);
     lorentzVector.SetPtEtaPhiM(smearedPt,eta,phi,m);  
   };
+
+
   
   std::vector<double> getResolMCParVec(){ return resolMCParVec_; }
   

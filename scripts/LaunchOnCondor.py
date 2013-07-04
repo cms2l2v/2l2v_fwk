@@ -82,6 +82,7 @@ def CreateTheShellFile(argv):
 	global CopyRights	
 	global Jobs_RunHere
 	global Jobs_FinalCmds
+        global absoluteShellPath
         Path_Shell = Farm_Directories[1]+Jobs_Index+Jobs_Name+'.sh'
 
         function_argument=''
@@ -154,7 +155,7 @@ def CreateTheShellFile(argv):
 		shell_file.write(Jobs_FinalCmds[i]+'\n')
         if Jobs_RunHere==0:
            outDir = Farm_Directories[3]
-           if(not os.path.isabs(absoluteShellPath)): outDir = os.getcwd()+'/'+outDir;
+           if(not os.path.isabs(Path_Shell)): outDir = os.getcwd()+'/'+outDir;
  	   shell_file.write('mv '+ Jobs_Name+'* '+outDir+'\n')
 	shell_file.close()
 	os.system("chmod 777 "+Path_Shell)
@@ -187,6 +188,7 @@ def AddJobToCmdFile():
 	global Path_Shell
         global Path_Cmd
 	global Path_Log
+        global absoluteShellPath
         Path_Log   = Farm_Directories[2]+Jobs_Index+Jobs_Name
         cmd_file=open(Path_Cmd,'a')
 	if useLSF:

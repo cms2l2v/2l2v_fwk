@@ -143,7 +143,8 @@ int main(int argc, char* argv[])
   int jacknife(jacknifeCfg[0]), jacks(jacknifeCfg[1]);
   if(jacknife>0 && jacks>0) cout << "Jacknife will be applied to every " << jacknife << " out of " << jacks << " events" << endl;
   
-  TString url=runProcess.getParameter<std::string>("input");
+  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
+  TString url = TString(urls[0]);
   TString baseDir    = runProcess.getParameter<std::string>("dirName");
   TString outFileUrl(gSystem->BaseName(url));
   outFileUrl.ReplaceAll(".root","");
@@ -262,6 +263,7 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(4, "#eta^{ll}<1.44");
   h->GetXaxis()->SetBinLabel(5,"#geq 2 jets"); 
 
+  mon.addHistogram( new TH1F("pthat",";#hat{p}_{T} [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("nup",";NUP;Events",10,0,10) );
   mon.addHistogram( new TH1F("nupfilt",";NUP;Events",10,0,10) );
 
@@ -305,7 +307,7 @@ int main(int argc, char* argv[])
   }
   
   //boson control
-  mon.addHistogram( new TH1F( "qt",      ";p_{T}^{#gamma} [GeV];Events",1500,0,1500));
+  mon.addHistogram( new TH1F( "qt",      ";p_{T}^{#gamma} [GeV];Events",500,0,1500));
   mon.addHistogram( new TH1F( "zpt",     ";p_{T}^{ll};Events", 50,0,500) );
   mon.addHistogram( new TH1F( "zptNM1",  ";p_{T}^{ll};Events", 50,0,500) );
   mon.addHistogram( new TH1F( "zeta",    ";#eta^{ll};Events", 50,-10,10) );
@@ -428,8 +430,6 @@ int main(int argc, char* argv[])
 //  if( !evSummary.attach( (TTree *) file->Get(baseDir+"/data") ) ) { file->Close();  return -1; }
 //  const Int_t totalEntries= evSummary.getEntries();
 
-  std::vector<std::string> urls;
-  urls.push_back(url.Data());
   fwlite::ChainEvent ev(urls);
   const Int_t totalEntries= ev.size();
  
@@ -653,8 +653,8 @@ int main(int argc, char* argv[])
 	      if(gen[igen].status!=3) continue;
 	      ngenpho++;
 	    }
-	  if(mctruthmode==111 && ngenpho>0) continue;
-	  if(mctruthmode==22 && ngenpho==0) continue;
+	  //if(mctruthmode==111 && ngenpho>0) continue;
+	  //if(mctruthmode==22 && ngenpho==0) continue;
 
 	  //select the photons
 	  for(size_t ipho=0; ipho<photons.size(); ipho++)

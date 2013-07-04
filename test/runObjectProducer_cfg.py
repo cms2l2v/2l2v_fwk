@@ -57,13 +57,6 @@ process.out = cms.OutputModule("PoolOutputModule",
 
 if(isMC) : process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
-try:
-    print 'TFileService output set to %s'%(tfsOutputFile)
-except:
-    tfsOutputFile="DataAnalysis.root"
-process.TFileService = cms.Service("TFileService", fileName = cms.string(tfsOutputFile))
-
-
 
 ##-------------------- Import the JEC services -----------------------
 process.load('JetMETCorrections.Configuration.DefaultJEC_cff')
@@ -227,7 +220,6 @@ try:
 except:
     print 'Basic generator level information will be stored (only status=3 + photons status 1)'
                
-process.dataAnalyzer.cfg.electronSource   = cms.InputTag("selectedPatElectronsWithTrigger")
 
  
 #counters for specific filters
@@ -253,22 +245,23 @@ process.p = cms.Path( process.startCounter
                       *process.selectedPatMuonsTriggerMatch )
  
 process.p += (
-                       process.dataAnalyzer
-                       *process.llvvObjectProducersUsed
+                       process.llvvObjectProducersUsed
                       )
 
 
-
+process.out.fileName = cms.untracked.string("Events.root")
 process.out.outputCommands = cms.untracked.vstring('drop *', 
                                                    'keep *_llvv*_*_*', 
                                                    'keep edmMergeableCounter_*_*_*', 
                                                    'keep bool_*Filter_*_*',
                                                    'keep double_kt6PFJets_rho_*',
                                                    'keep double_kt6PFJetsCentral_rho_*',
+                                                   'keep *_lumiProducer_*_*',
 #                                                   'keep GenEventInfoProduct_*_*_*',
 #                                                   'keep LHEEventProduct_*_*_*',
 #                                                   'keep PileupSummaryInfos_*_*_*'
                                                   )
+
 
 process.endPath = cms.EndPath(process.out)	
 process.schedule = cms.Schedule(process.p, process.endPath)
