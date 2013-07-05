@@ -196,7 +196,7 @@
    	   ]
 	},
 	{
-        "tag":"H^{+}(250 GeV)#rightarrow#tau#nu ",
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}",	
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
@@ -215,7 +215,7 @@
            ]
         },
 	{
-        "tag":"H^{+}(250 GeV)#rightarrow tb",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
