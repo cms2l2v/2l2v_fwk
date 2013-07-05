@@ -9,6 +9,9 @@
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > LorentzVectorF;
 
+
+
+
 class llvvGenEvent 
 {
    public:
@@ -190,6 +193,40 @@ typedef  std::vector<llvvPFParticle> llvvPFParticleCollection;
 typedef  edm::Ref<llvvPFParticleCollection> llvvPFParticleRef;
 typedef  edm::RefProd<llvvPFParticleCollection> llvvPFParticleRefProd;
 typedef  edm::RefVector<llvvPFParticleCollection> llvvPFParticleRefVector;
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// // //  NOT USED TO SAVE THE OBJECTS IN THE EDM FORMAT BUT CONVENIENT WHEN ANALYZING THE OBJECTS // // //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Just an ugly way to save additional info to the object
+struct llvvJetInfo{};
+class llvvJetExt : public llvvJet{
+   public:
+   llvvJetExt(llvvJet jet_){
+      idbits=jet_.idbits; pfstart=jet_.pfstart; pfend=jet_.pfend;
+      torawsf=jet_.torawsf;
+      neutHadFrac=jet_.neutHadFrac; neutEmFrac=jet_.neutEmFrac; chHadFrac=jet_.chHadFrac; muFrac=jet_.muFrac; area=jet_.area;
+      tchp=jet_.tchp; jp=jet_.jp; origcsv=jet_.origcsv; csv=jet_.csv; jpcsv=jet_.jpcsv; slcsv=jet_.slcsv; supercsv=jet_.supercsv; ssvhe=jet_.ssvhe; ivf=jet_.ivf;
+      svxPx=jet_.svxPx; svxPy=jet_.svxPy; svxPz=jet_.svxPz; svxM=jet_.svxM; svxNtrk=jet_.svxNtrk; svxLxy=jet_.svxLxy; svxLxyErr=jet_.svxLxyErr;
+      ivfPx=jet_.ivfPx; ivfPy=jet_.ivfPy; ivfPz=jet_.ivfPz; ivfM=jet_.ivfM; ivfNtrk=jet_.ivfNtrk; ivfLxy=jet_.ivfLxy; ivfLxyErr=jet_.ivfLxyErr;
+      puMVA=jet_.puMVA; qgMVA=jet_.qgMVA;
+      beta=jet_.beta; betaStar=jet_.betaStar; dRMean=jet_.dRMean; dR2Mean=jet_.dR2Mean; ptRMS=jet_.ptRMS; ptD=jet_.ptD; etaW=jet_.etaW; phiW=jet_.phiW;
+      genflav=jet_.genflav; genid=jet_.genid;
+      gen=jet_.gen; genj=jet_.genj;
+   }
+   ~llvvJetExt(){}
+   public: 
+   double jer; double jerup; double jerdown; double jesup; double jesdown;
+};
+typedef  std::vector<llvvJetExt> llvvJetExtCollection;
+
+//ALL Sorting functions
+static bool sort_llvvObjectByPt(const LorentzVectorF &a, const LorentzVectorF &b)  { return a.pt()>b.pt(); }
+static bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.supercsv>b.supercsv; }
+
 
 #endif
 

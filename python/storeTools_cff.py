@@ -161,3 +161,12 @@ def configureSourceFromCommandLine() :
         print '[storeTools_cff] Could not configure from command line, will return default values'
 
     return outputFile, fillFromStore(storeDir,ffile,step)
+
+
+
+def addPrefixSuffixToFileList(Prefix, fileList, Suffix):
+   outList = []
+   for s in fileList:
+      outList.append(Prefix+s+Suffix)
+   return outList
+

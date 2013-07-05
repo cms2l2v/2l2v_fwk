@@ -19,6 +19,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
+#include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
 class GammaWeightsHandler
 {
@@ -26,9 +27,10 @@ class GammaWeightsHandler
 
   GammaWeightsHandler(const edm::ParameterSet &runProcess);
 
-  float getWeightFor(data::PhysicsObject_t &gamma, TString evCategoryLabel="");
-  LorentzVector getMassiveP4(data::PhysicsObject_t &gamma,TString evCategoryLabel="");
-
+  float getWeightFor(LorentzVector &gamma, TString evCategoryLabel="");
+  float getWeightFor(LorentzVectorF &gamma, TString evCategoryLabel="");
+  LorentzVector getMassiveP4(LorentzVector &gamma,TString evCategoryLabel="");
+  LorentzVector getMassiveP4(LorentzVectorF &gamma,TString evCategoryLabel="");
   ~GammaWeightsHandler();
 
  private:

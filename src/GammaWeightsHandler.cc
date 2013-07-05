@@ -53,7 +53,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess)
 }
 
 //
-LorentzVector GammaWeightsHandler::getMassiveP4(data::PhysicsObject_t &gamma,TString evCategoryLabel)
+LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVector &gamma,TString evCategoryLabel)
 {
   //generate a mass from the line shape (0 if not available)
   float mass(0);
@@ -66,9 +66,23 @@ LorentzVector GammaWeightsHandler::getMassiveP4(data::PhysicsObject_t &gamma,TSt
   return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
 }
 
+LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVectorF &gamma,TString evCategoryLabel)
+{
+  //generate a mass from the line shape (0 if not available)
+  float mass(0);
+  if(zmassH_.find(evCategoryLabel)!=zmassH_.end())
+    {
+      if(zmassH_[evCategoryLabel]->Integral())
+        while(fabs(mass-91)>15)
+          mass = zmassH_[evCategoryLabel]->GetRandom();
+    }
+  return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
+}
+
+
 
 //
-float GammaWeightsHandler::getWeightFor(data::PhysicsObject_t &gamma, TString evCategoryLabel)
+float GammaWeightsHandler::getWeightFor(LorentzVector &gamma, TString evCategoryLabel)
 {
   //get the weight (1.0 if not available)
   float weight(1.0);
@@ -81,6 +95,22 @@ float GammaWeightsHandler::getWeightFor(data::PhysicsObject_t &gamma, TString ev
     
   return weight;
 }
+
+
+float GammaWeightsHandler::getWeightFor(LorentzVectorF &gamma, TString evCategoryLabel)
+{
+  //get the weight (1.0 if not available)
+  float weight(1.0);
+  if(wgtsH_.find(evCategoryLabel) != wgtsH_.end())
+    {
+      TGraph *h = wgtsH_[evCategoryLabel];
+      weight=h->Eval(gamma.pt());
+      if(weight<0) weight=0;
+    }
+
+  return weight;
+}
+
 
 //
 GammaWeightsHandler::~GammaWeightsHandler()
