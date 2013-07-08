@@ -13,7 +13,7 @@ import LaunchOnCondor
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
 parser.add_option('-i', '--inDir'      ,    dest='inDir'              , help='input directory containing the crab output'           , default='/store/cmst3/user/querten/2013_Jul_EDMtuples')
-parser.add_option('-o', '--outDir'     ,    dest='outDir'             , help='output directory where the merged file will be moved' , default='/store/cmst3/user/querten/2013_Jul_EDMtuples_merged')
+parser.add_option('-o', '--outDir'     ,    dest='outDir'             , help='output directory where the merged file will be moved' , default='/store/user/querten/2013_Jul_EDMtuples_merged')
 parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue'                                          , default='2nd')
 parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'                          , default='pool>30000')
 parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                                    , default='')
