@@ -333,7 +333,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, TString shapeName, int cutBin, 
 	   hshape->SetDirectory(0);
 	   hshape->SetTitle(proc);
 	   printf("%s %s overflow = %f -->", histoName.Data(), varName.Data(), hshape->GetBinContent(hshape->GetNbinsX()+1));
-	   fixExtremities(hshape,true,true);
+	   utils::root::fixExtremities(hshape,true,true);
 	   printf("%f\n", hshape->GetBinContent(hshape->GetNbinsX()+1));
 	   hshape->SetFillColor(color); hshape->SetLineColor(lcolor); hshape->SetMarkerColor(mcolor);
 	   hshape->SetFillStyle(fill);  hshape->SetLineWidth(lwidth); hshape->SetMarkerStyle(marker); hshape->SetLineStyle(lstyle);
@@ -706,7 +706,7 @@ void getYieldsFromShape(std::vector<TString> ch, const map<TString, Shape_t> &al
        val = h->IntegralAndError(1,h->GetXaxis()->GetNbins(),valerr);
        syst = h->GetBinError(0)<=0 ? -1 : h->GetBinError(0); 
        if(val<1E-6){val=0.0; valerr=0.0; syst=-1;}
-       Cval += "&" + toLatexRounded(val,valerr, syst);
+       Cval += "&" + utils::toLatexRounded(val,valerr, syst);
     }
 
     //total bckg
@@ -1887,7 +1887,7 @@ std::cout<<"DYTEST2b\n";
 
            TH1* gjets1Dshape  = NULL;
             gjets1Dshape = gjets2Dshape->ProjectionY("tmpName",indexcut_,indexcut_);
-            fixExtremities(gjets1Dshape, true, true);
+	    utils::root::fixExtremities(gjets1Dshape, true, true);
             //apply the cuts
             if(!(mainHisto==histo && histoVBF!="" && AnalysisBins[b].Contains("vbf"))){
                for(int x=0;x<=gjets1Dshape->GetXaxis()->GetNbins()+1;x++){

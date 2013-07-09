@@ -21,6 +21,8 @@ import sys
 
 from ROOT import *
 from ROOT import ROOT
+ROOT.gSystem.Load("${CMSSW_BASE}/src/RooUnfold-1.1.1/libRooUnfold");
+
 from ROOT import RooUnfoldResponse
 from ROOT import RooUnfold
 from ROOT import RooUnfoldBayes
@@ -41,16 +43,13 @@ def getHist(file, hist):
     h.Sumw2()
     return h
 
-def GetKeyNames( file, dir = "" ):
-        file.cd(dir)
-        return [key.GetName() for key in gDirectory.GetListOfKeys()]
-
-
-
 def main():
     usage = 'usage: %prog [options]'
     parser = optparse.OptionParser(usage)
     parser.add_option('-i', '--inputfile'  ,    dest='inputfile'       , help='Name of the input tree file.'          , default=None)
+    parser.add_option('-g', '--gen',            dest='genHisto',         help='Name of the histogram at generator level',   default='t#bar{t}172.5/emu_ngench')
+    parser.add_option('-r', '--rec',            dest='recHisto',         help='Name of the histogram at reco level',        default='t#bar{t}172.5/emu_nch')
+    parser.add_option('-c', '--cor',            dest='corHisto',         help='Name of the correlation histogram',          default='t#bar{t}172.5/emu_nchvsngench')
     parser.add_option('-m', '--method'     ,    dest='method'          , help='Unfolding method. Default = bayes'     , default='bayes')
     parser.add_option('-b', '--batch'      ,    dest='batch'           , help='Use this flag to run root in batch mode.'            , action='store_true'        , default=False)
  
@@ -66,63 +65,71 @@ def main():
 
     inputfile = opt.inputfile
     method = opt.method
-
-
+    genHisto = opt.genHisto
+    recHisto = opt.recHisto
+    corHisto = opt.corHisto
     rebin = 1
+    reg_param = 2
 
-    #f = openTFile('/afs/cern.ch/user/j/jueugste/cmssw/Top_HLTweights/CMGTools/CMSSW_5_3_3_patch3/src/UserCode/TopMass//test.root')
+    print 'Retrieving histograms from file'
     f = openTFile(inputfile)
+    h_gen = getHist(f,genHisto).Rebin(rebin)
+    h_gen.SetDirectory(0)
+    h_reco = getHist(f,recHisto).Rebin(rebin)
+    h_reco.SetDirectory(0)
+    h_corr = getHist(f,corHisto).Rebin2D(rebin,rebin)
+    h_corr.SetDirectory(0)
+    f.Close();
+    
+    print 'Defining response'
+    response= RooUnfoldResponse (h_reco, h_gen,h_corr);
+  
+    ## three different methods exist to perform the unfolding
+    ## see the documentation for more information about those
+    print 'Unfolding with %s'%method
+    if method == 'svd':
+        unfold = RooUnfoldSvd(response, h_reco, reg_param);   
+    if method == 'bayes':
+        unfold = RooUnfoldBayes(response, h_reco, reg_param);
+    if method == 'bin':
+        unfold = RooUnfoldBinByBin(response, h_reco)
+    h_unfold= unfold.Hreco();
+    unfold.PrintTable (cout, h_reco);
 
-    ## get the variables (for each variable one needs a gen, reco, and correlation histogram)
-    keys = GetKeyNames(f)
+    print 'Saving plots'
+    gStyle.SetOptTitle(0)
+    gStyle.SetOptStat(0)
+    gStyle.SetPadTopMargin(0.05)
+    gStyle.SetPadBottomMargin(0.13)
+    gStyle.SetPadLeftMargin(0.16)
+    gStyle.SetPadRightMargin(0.05)
+    
+    c_corr = TCanvas('c_corr','c_corr',600,600)
+    h_corr.Draw('colz')
+    c_corr.Print('RooUnfoldUE_%s.png'%(h_corr.GetName()))
 
-    varis = list(set([key.split('_')[-1] for key in keys]))
-    for var in varis:
+    c = TCanvas('c','c',600,600)
+    h_unfold.SetMarkerColor(4)
+    h_unfold.SetLineColor(4)
+    h_unfold.SetMarkerStyle(24)
+    h_unfold.SetMaximum(1.25*max(h_unfold.GetMaximum(), h_gen.GetMaximum(), h_reco.GetMaximum()))
+    h_unfold.SetMinimum(0.)
+    h_unfold.Draw('e1');
+    h_reco.SetMarkerStyle(20)
+    h_reco.Draw("e1 same");
+    h_gen.SetLineColor(4);
+    h_gen.Draw("hist same");
 
-        h_gen = getHist(f,'h_gen_'+var).Rebin(rebin)
-        h_reco = getHist(f,'h_reco_'+var).Rebin(rebin)
-        h_corr = getHist(f,'h_corr_'+var).Rebin2D(rebin,rebin)
-        print 'defining response'
-        response= RooUnfoldResponse (h_gen, h_reco,h_corr);
-
-        c_corr = TCanvas('c_corr','c_corr',600,600)
-        h_corr.Draw('colz')
-        c_corr.Print('correlation.png')
-
-
-        ## loop over different reg paramaeters to optimize, especially for svd
-        # for i in xrange(10):
-
-
-        ## this is the regularisation parameter
-        reg_param = 2
-        
-        ## three different methods exist to perform the unfolding
-        ## see the documentation for more information about those
-        
-        if method == 'svd':
-            unfold = RooUnfoldSvd(response, h_reco, reg_param);   
-        if method == 'bayes':
-            unfold = RooUnfoldBayes(response, h_reco, reg_param);
-        if method == 'bin':
-            unfold = RooUnfoldBinByBin(response, h_reco)
-             
-        h_unfold= unfold.Hreco();
-        unfold.PrintTable (cout, h_reco);
-        c = TCanvas('c','c',600,600)
-        c.SetLogy(1)
-        h_unfold.SetMarkerStyle(4)
-        h_unfold.SetMarkerColor(2)
-        h_unfold.SetLineColor(2)
-        h_unfold.SetMaximum(1.25*max(h_unfold.GetMaximum(), h_gen.GetMaximum(), h_reco.GetMaximum()))
-        h_unfold.SetMinimum(1.)
-        h_unfold.Draw('e1');
-        h_reco.SetMarkerStyle(20)
-        h_reco.Draw("e1 same");
-        h_gen.SetLineColor(8);
-        h_gen.Draw("hist same");
-        
-        c.Print('test_RooUnfoldUE_'+var+'.png')
+    leg=TLegend(0.6,0.6,0.9,0.9,'','brNDC')
+    leg.AddEntry(h_unfold,'unfolded','p')
+    leg.AddEntry(h_reco,'reconstructed','p')
+    leg.AddEntry(h_gen,'generated','f')
+    leg.SetTextFont(42)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    leg.Draw()
+    
+    c.Print('RooUnfoldUE_%s_%s.png'%(method,h_reco.GetName()))
         
 
 if __name__ == '__main__':

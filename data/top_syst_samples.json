@@ -206,7 +206,8 @@
 	"data":[
        		{
  	        "dtag":"MC8TeV_TTJets_172v5",
-                "xsec":245.8
+                "xsec":245.8,
+		"split":5
                 }
      	   ]
 	},
