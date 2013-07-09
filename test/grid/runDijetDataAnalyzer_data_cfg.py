@@ -1,0 +1,1 @@
+../../test/top/runDijetDataAnalyzer_data_cfg.py
