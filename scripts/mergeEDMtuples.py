@@ -7,7 +7,15 @@ import commands
 from UserCode.llvv_fwk.storeTools_cff import fillFromStore, addPrefixSuffixToFileList
 import LaunchOnCondor
 
-
+"""
+Gets the value of a given item
+(if not available a default value is returned)
+"""
+def getByLabel(desc,key,defaultVal=None) :
+    try :
+        return desc[key]
+    except KeyError:
+        return defaultVal
 
 
 usage = 'usage: %prog [options]'
@@ -53,9 +61,25 @@ for proc in procList :
             nfiles=len(filenames)
             filenames=addPrefixSuffixToFileList("   '", filenames, "',")
 
-            LaunchOnCondor.Jobs_RunHere        = 0
-            LaunchOnCondor.Jobs_Queue          = opt.queue
-#            LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
-            LaunchOnCondor.ListToFile(filenames, "/tmp/InputFile_"+d['dtag']+".txt")                
-            LaunchOnCondor.Jobs_FinalCmds = ['ls', 'cmsStageOut out.root ' + opt.outDir+"/"+d['dtag']+".root"]
-            LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag'], filenames, "'out.root'", "'keep *'")
+            split=getByLabel(d,'split',1)
+            NFilesToMerge = nfiles//split
+            NFilesToMergeRemains = nfiles%split 
+            startFile = 0
+            endFile = 0 
+            for segment in range(0,split) :
+                startFile = endFile 
+                endFile   = endFile + NFilesToMerge
+                if(NFilesToMergeRemains>0):
+                    endFile+=1
+                    NFilesToMergeRemains-=1
+
+                mergedFileName = opt.outDir+"/"+d['dtag']
+                if(split==1): mergedFileName+='_' + str(segment)
+                mergedFileName+= '.root'
+
+                LaunchOnCondor.Jobs_RunHere        = 0
+                LaunchOnCondor.Jobs_Queue          = opt.queue
+                LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
+                LaunchOnCondor.ListToFile(filenames[startFile:endFile], "/tmp/InputFile_"+d['dtag']+".txt")                
+                LaunchOnCondor.Jobs_FinalCmds = ['ls', 'cmsStageOut out.root ' + mergedFileName]
+                LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag'], filenames, "'out.root'", "'keep *'")

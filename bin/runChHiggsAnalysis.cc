@@ -61,7 +61,8 @@ int main(int argc, char* argv[])
   // configure
   //
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
-  TString url        = runProcess.getParameter<std::string>("input");
+  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
+  TString url = TString(urls[0]);
   TString baseDir    = runProcess.getParameter<std::string>("dirName");
   bool runSystematics = runProcess.getParameter<bool>("runSystematics");
   TString jecDir      = runProcess.getParameter<std::string>("jecDir");
