@@ -196,7 +196,7 @@
    	   ]
 	},
 	{
-        "tag":"H^{+}(250 GeV)#rightarrow#tau#nu ",
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}",	
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
@@ -209,13 +209,13 @@
 	    {
                 "dtag":"MC78TeV_TBH_M-250_8TeV-pythia6",
                 "split":7,
-                "xsec":11.7,
+                "xsec":12.3,
 	        "br":[0.04129783]
              }
            ]
         },
 	{
-        "tag":"H^{+}(250 GeV)#rightarrow tb",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
@@ -228,7 +228,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6",
                 "split":10,
-                "xsec":11.7,
+                "xsec":12.3,
 	        "br":[0.95870217]
              }
            ]
