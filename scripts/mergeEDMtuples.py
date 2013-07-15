@@ -81,5 +81,14 @@ for proc in procList :
                 LaunchOnCondor.Jobs_Queue          = opt.queue
                 LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
                 LaunchOnCondor.ListToFile(filenames[startFile:endFile], "/tmp/InputFile_"+d['dtag']+".txt")                
-                LaunchOnCondor.Jobs_FinalCmds = ['ls', 'cmsStageOut out.root ' + mergedFileName]
-                LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag'], filenames, "'out.root'", "'keep *'")
+                if(mergedFileName.find('castor')>=0) :
+                   LaunchOnCondor.Jobs_FinalCmds = ['ls', 'rfcp out.root ' + mergedFileName]
+                elif(mergedFileName.find('/store/')==0):
+                   LaunchOnCondor.Jobs_FinalCmds = ['ls', 'cmsStageOut out.root ' + mergedFileName]
+                else:
+                   LaunchOnCondor.Jobs_FinalCmds = ['ls', 'mv out.root ' + mergedFileName]
+                LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag']+'_'+str(segment), filenames, "'out.root'", "'keep *'")
+
+
+
+
