@@ -4,7 +4,7 @@ import os,sys
 import json
 import optparse
 import commands
-from UserCode.llvv_fwk.storeTools_cff import fillFromStore, addPrefixSuffixToFileList
+from UserCode.llvv_fwk.storeTools_cff import fillFromStore, addPrefixSuffixToFileList, removeDuplicates
 import LaunchOnCondor
 
 """
@@ -27,6 +27,7 @@ parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='re
 parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                                    , default='')
 parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag'               , default='all')
 parser.add_option('-n', '--n'          ,    dest='fperjob'            , help='input files per job'                                  , default=-1,  type=int)
+parser.add_option('-D', '--duplicates' ,    dest='duplicates'         , help='clean the input directory for duplicates'             , default=False)
 (opt, args) = parser.parse_args()
 
 
@@ -56,6 +57,10 @@ for proc in procList :
             inputdir = opt.inDir+"/"+d['dtag'];
             print str(d['dtag'])+" --> "+inputdir
 
+            if(opt.duplicates):
+               dirToClean = inputdir
+               if(dirToClean.find('/storage/data/cms/store/')): dirToClean = dirToClean.replace('/storage/data/cms/store/', '/storage_rw/data/cms/store/') #Hack for Louvain T2
+               removeDuplicates(dirToClean);
 
             filenames=fillFromStore(inputdir,0,-1,False)
             nfiles=len(filenames)
@@ -73,22 +78,21 @@ for proc in procList :
                     endFile+=1
                     NFilesToMergeRemains-=1
 
-                mergedFileName = opt.outDir+"/"+d['dtag']
-                if(split==1): mergedFileName+='_' + str(segment)
+                mergedFileName = d['dtag']
+                if(split>1): mergedFileName+='_' + str(segment)
                 mergedFileName+= '.root'
+                mergedFilePath = opt.outDir + "/" + mergedFileName
 
                 LaunchOnCondor.Jobs_RunHere        = 0
                 LaunchOnCondor.Jobs_Queue          = opt.queue
                 LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
-                LaunchOnCondor.ListToFile(filenames[startFile:endFile], "/tmp/InputFile_"+d['dtag']+".txt")                
-                if(mergedFileName.find('castor')>=0) :
-                   LaunchOnCondor.Jobs_FinalCmds = ['ls', 'rfcp out.root ' + mergedFileName]
-                elif(mergedFileName.find('/store/')==0):
-                   LaunchOnCondor.Jobs_FinalCmds = ['ls', 'cmsStageOut out.root ' + mergedFileName]
+                #LaunchOnCondor.ListToFile(filenames[startFile:endFile], "/tmp/InputFile_"+d['dtag']+".txt")                
+                if(mergedFilePath.find('castor')>=0) :
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'rfcp '+mergedFileName+' ' + mergedFilePath]
+                elif(mergedFilePath.find('/store/')==0):
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'cmsStageOut '+mergedFileName+' ' + mergedFilePath]
                 else:
-                   LaunchOnCondor.Jobs_FinalCmds = ['ls', 'mv out.root ' + mergedFileName]
-                LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag']+'_'+str(segment), filenames, "'out.root'", "'keep *'")
-
-
-
-
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + os.getcwd()+"/FARM_Merge/outputs/"+mergedFileName, 'ls -lth '+opt.outDir]                
+#                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + mergedFilePath, 'ls -lth '+opt.outDir]                
+#                   mergedFileName = 'file:'+mergedFilePath
+                LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag']+'_'+str(segment), filenames[startFile:endFile], "'"+mergedFileName+"'", "'keep *'")

@@ -94,6 +94,7 @@ def CreateTheShellFile(argv):
 	shell_file=open(Path_Shell,'w')
 	shell_file.write('#! /bin/sh\n')
 	shell_file.write(CopyRights + '\n')
+        shell_file.write('pwd\n')
 	shell_file.write('export SCRAM_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
         shell_file.write('export BUILD_ARCH='+os.getenv("BUILD_ARCH","slc5_amd64_gcc462")+'\n')
         shell_file.write('export VO_CMS_SW_DIR='+os.getenv("VO_CMS_SW_DIR","/nfs/soft/cms")+'\n')

@@ -75,66 +75,81 @@ def fillFromStore(dir,ffile=0,step=-1,generatePfn=True):
 
     return localdataset
 
+"""
+check that a file exist and is not corrupted
+"""
+def checkInputFile(url):
+    if(url.startswith('/store')==True):
+       url= 'root://eoscms//eos/cms'+url
+    command_out = commands.getstatusoutput("root -l -b -q " + url)
+    if(command_out[1].find("Error")>=0 or command_out[1].find("probably not closed")>=0 or command_out[1].find("Corrupted")>=0):return False
+    return True
+
 
 """
 check store for duplicates
 """
 def checkStoreForDuplicates(outdir):
-    rfdir_cmd = "rfdir " + outdir
+    ls_cms = "ls " + outdir
     isEOS=False
-    if(outdir.find('/store/cmst3')==0) :
+    isCastor=False
+    if(outdir.find('/store/')==0) :
         isEOS=True
         splitOnString=','
-        rfdir_cmd='cmsLs ' + outdir + ' | grep root | awk \'{print $5}\''	
+        ls_cms='cmsLs ' + outdir + ' | grep root | awk \'{print $5}\''	
+    elif(outdir.find('/store/')==0) :
+        isCastor = True
+        ls_cms = "rfdir " + outdir + + ' | grep root'
     nOutFile = 0
-    outCastorDir_out = commands.getstatusoutput(rfdir_cmd)
+    lsCmd_out = commands.getstatusoutput(ls_cms)
     jobNumbers = []
     duplicatedJobs = []
     origFiles=[]
     duplicatedFiles=[]
-    if outCastorDir_out[0] == 0:
-        castorLines = outCastorDir_out[1].split("\n")
-        if len(castorLines) != 0:
-            for castorFileLine in castorLines:
-                fileName=castorFileLine
-                if "root" in castorFileLine:
+    if lsCmd_out[0] == 0:
+        lsCmd_outLines = lsCmd_out[1].split("\n")
+        if len(lsCmd_outLines) != 0:
+            for fileLine in lsCmd_outLines:
+                if not "root" in fileLine: continue
+                fileName=fileLine
+                if(isCastor) : fileName = fileLine.split()[8]
 
-		    if(checkInputFile(fileName)==True):
+	        if(checkInputFile(fileName)==True):
+		    jobNumber=-1
+		    try:
+			fileBaseName=os.path.basename(fileName)
+			jobNumber=int(fileBaseName.split("_")[1])
+		    except:
+			continue
 
-	                    if(not isEOS) : fileName = castorFileLine.split()[8]
-
-        	            jobNumber=-1
-                	    try:
-                        	fileBaseName=os.path.basename(fileName)
-	                        jobNumber=int(fileBaseName.split("_")[1])
-        	            except:
-                	        continue
-
-	                    if jobNumber in jobNumbers:
-        	                if not jobNumber in duplicatedJobs:  duplicatedJobs.append(jobNumber)
-                	        duplicatedFiles.append(fileName)
-	                    else :
-        	                jobNumbers.append(jobNumber)
-                	        origFiles.append(fileName)
-                        	nOutFile += 1
-		    else:
-			    print("   #corrupted file found : " + fileName)
-			    duplicatedFiles.append(fileName)
+		    if jobNumber in jobNumbers:
+			if not jobNumber in duplicatedJobs:  duplicatedJobs.append(jobNumber)
+			duplicatedFiles.append(fileName)
+		    else :
+			jobNumbers.append(jobNumber)
+			origFiles.append(fileName)
+			nOutFile += 1
+   	        else:
+		    print("   #corrupted file found : " + fileName)
+		    duplicatedFiles.append(fileName)
     return duplicatedFiles
 
 
 """
 clean up for duplicats in the storage area
 """
-def removeDuplicates(dirtag):
-    duplicatedFiles=checkStoreForDuplicates(dirtag)
-    print 'Removing ' + str(len(duplicatedFiles)) + ' duplicated files in ' + dirtag
+def removeDuplicates(dir):
+    duplicatedFiles=checkStoreForDuplicates(dir)
+    print 'Removing ' + str(len(duplicatedFiles)) + ' duplicated files in ' + dir
     isEOS=False
-    if(dirtag.find('/store/cmst3')==0) : isEOS=True
+    isCastor=False
+    if(dir.find('/store/')==0) : isEOS=True
+    if(dir.find('castor')>=0) : isCastor=True
     for f in duplicatedFiles :
         print f
         if(isEOS) : commands.getstatusoutput('cmsRm ' + f)
-        else : commands.getstatusoutput('rfrm ' +outdir + '/' + f)
+        elif(isCastor) : commands.getstatusoutput('rfrm ' +dir + '/' + f)
+        else : commands.getstatusoutput('rm ' +dir + '/' + f)
 
             
 """
