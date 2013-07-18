@@ -224,8 +224,8 @@ class llvvJetExt : public llvvJet{
 typedef  std::vector<llvvJetExt> llvvJetExtCollection;
 
 //ALL Sorting functions
-static bool sort_llvvObjectByPt(const LorentzVectorF &a, const LorentzVectorF &b)  { return a.pt()>b.pt(); }
-static bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.supercsv>b.supercsv; }
+inline bool sort_llvvObjectByPt(const LorentzVectorF &a, const LorentzVectorF &b)  { return a.pt()>b.pt(); }
+inline bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.supercsv>b.supercsv; }
 
 
 #endif
