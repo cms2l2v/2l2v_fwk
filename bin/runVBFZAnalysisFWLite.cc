@@ -6,6 +6,17 @@
 #include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
+#include "CondFormats/JetMETObjects/interface/JetResolution.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
+
+
+
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 //#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
@@ -15,15 +26,6 @@
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
-
-#include "CondFormats/JetMETObjects/interface/JetResolution.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
-
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
-#include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -39,41 +41,6 @@
 #include <Math/VectorUtil.h>
 
 using namespace std;
-
-// loop on all the lumi blocks for an EDM file in order to count the number of events that are in a sample
-// this is useful to determine how to normalize the events (compute weight)
-unsigned long getMergeableCounterValue(const vector<std::string>& urls, std::string counter)
-{
-   unsigned long Total = 0;
-   for(unsigned int f=0;f<urls.size();f++){
-      TFile *file = TFile::Open(urls[f].c_str());      
-      fwlite::LuminosityBlock ls( file );
-      for(ls.toBegin(); !ls.atEnd(); ++ls){
-         fwlite::Handle<edm::MergeableCounter> nEventsTotalCounter;
-         nEventsTotalCounter.getByLabel(ls,counter.c_str());
-         if(!nEventsTotalCounter.isValid()){printf("Invalid nEventsTotalCounterH\n");continue;}
-         Total+= nEventsTotalCounter->value;
-      }
-   }
-   return Total;
-}
-
-void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
-{
-   mcpileup.clear();
-   mcpileup.resize(Npu);
-   for(Long64_t ientry=0;ientry<ev.size();ientry++){
-      ev.to(ientry);
-
-
-      fwlite::Handle< llvvGenEvent > genEventHandle;
-      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
-      unsigned int ngenITpu = (int)genEventHandle->ngenITpu;
-      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
-      mcpileup[ngenITpu]++;
-   }
-}
 
 
 
@@ -192,7 +159,7 @@ int main(int argc, char* argv[])
   }
   
   //summary ntuple
-  TString summaryTupleVarNames("ch:weight:cnorm:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:fisher:llr:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15");
+  TString summaryTupleVarNames("ch:weight:nInitEvent:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:fisher:llr:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15");
   TNtuple *summaryTuple = new TNtuple("ewkzp2j","ewkzp2j",summaryTupleVarNames);
   Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
   summaryTuple->SetDirectory(0);
@@ -255,7 +222,6 @@ int main(int argc, char* argv[])
   //##############################################
   SmartSelectionMonitor mon;
 
-  TH1F* Hcutflow  = (TH1F*) mon.addHistogram(  new TH1F ("cutflow"    , "cutflow"    ,6,0,6) ) ;
   TH1 *h=mon.addHistogram( new TH1F ("eventflow", ";;Events", 5,0,5) );
   h->GetXaxis()->SetBinLabel(1,"#geq 2 leptons");
   h->GetXaxis()->SetBinLabel(2,"|M-M_{Z}|<15");
@@ -434,12 +400,11 @@ int main(int argc, char* argv[])
   const Int_t totalEntries= ev.size();
  
   //MC normalization (to 1/pb)
-  float cnorm=1.0;
+  float nInitEvent=1.0;
   if(isMC){
-     cnorm = (float)getMergeableCounterValue(urls, "startCounter");
+     nInitEvent = (float)utils::getMergeableCounterValue(urls, "startCounter");
   }
-  Hcutflow->SetBinContent(1,cnorm);
-  double xsecWeight = xsec;
+  double xsecWeight = xsec/nInitEvent;
   if(!isMC) xsecWeight=1.0;
 
   //jet energy scale and uncertainties 
@@ -471,19 +436,23 @@ int main(int argc, char* argv[])
     }
 
   //pileup weighting: based on vtx for now...
-  std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
-  std::vector<float> dataPileupDistribution; for(unsigned int i=0;i<dataPileupDistributionDouble.size();i++){dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);}
-  std::vector<float> mcPileupDistribution;
+  edm::LumiReWeighting* LumiWeights = NULL;
+  utils::cmssw::PuShifter_t PuShifters;
+  double PUNorm[] = {1,1,1};
   if(isMC){
-      getMCPileupDistribution(ev,dataPileupDistribution.size(), mcPileupDistribution);
+     std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
+     std::vector<float> dataPileupDistribution; for(unsigned int i=0;i<dataPileupDistributionDouble.size();i++){dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);}
+     std::vector<float> mcPileupDistribution;
+     utils::getMCPileupDistribution(ev,dataPileupDistribution.size(), mcPileupDistribution);
+     while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
+     while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
+
+     LumiWeights= new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution);
+     PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
+     utils::getPileupNormalization(ev, PUNorm, LumiWeights, PuShifters);
   }
-  while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
-  while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
 
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-  edm::LumiReWeighting *LumiWeights= isMC ? new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution): 0;
-  utils::cmssw::PuShifter_t PuShifters;
-  if(isMC) { PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05); }
 
   //##############################################
   //########           EVENT LOOP         ########
@@ -622,16 +591,11 @@ int main(int argc, char* argv[])
       double TotalWeight_minus = 1.0;
       float puWeight(1.0);
       if(isMC){
-        puWeight          = LumiWeights->weight(genEv.ngenITpu);
-	weight            = puWeight;
-        TotalWeight_plus  = PuShifters[utils::cmssw::PUUP]->Eval(genEv.ngenITpu);
-        TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu);
+        puWeight          = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
+	weight            = xsecWeight*puWeight;
+        TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
+        TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
       }
-      Hcutflow->Fill(1,1);
-      Hcutflow->Fill(2,weight);
-      Hcutflow->Fill(3,weight*TotalWeight_minus);
-      Hcutflow->Fill(4,weight*TotalWeight_plus);
-      Hcutflow->Fill(5,weight);
 
       //
       //
@@ -1107,7 +1071,7 @@ int main(int argc, char* argv[])
 		  if(mjj>200) {
 		    summaryTupleVars[0]=dilId;  
 		    summaryTupleVars[1]=catWeight*xsecWeight;    
-		    summaryTupleVars[2]=cnorm;
+		    summaryTupleVars[2]=nInitEvent;
 		    summaryTupleVars[3]=mjj;     
 		    summaryTupleVars[4]=detajj;               
 		    summaryTupleVars[5]=spt;

@@ -255,4 +255,63 @@ namespace utils
     expr.ReplaceAll("_"," "); 
     expr.ReplaceAll("#","\\");
   }
+
+
+
+
+
+
+
+	// loop on all the lumi blocks for an EDM file in order to count the number of events that are in a sample
+	// this is useful to determine how to normalize the events (compute weight)
+	unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter)
+	{
+	   unsigned long Total = 0;
+	   for(unsigned int f=0;f<urls.size();f++){
+	      TFile *file = TFile::Open(urls[f].c_str());      
+	      fwlite::LuminosityBlock ls( file );
+	      for(ls.toBegin(); !ls.atEnd(); ++ls){
+		 fwlite::Handle<edm::MergeableCounter> nEventsTotalCounter;
+		 nEventsTotalCounter.getByLabel(ls,counter.c_str());
+		 if(!nEventsTotalCounter.isValid()){printf("Invalid nEventsTotalCounterH\n");continue;}
+		 Total+= nEventsTotalCounter->value;
+	      }
+	   }
+	   return Total;
+	}
+
+	void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
+	{
+	   mcpileup.clear();
+	   mcpileup.resize(Npu);
+	   for(Long64_t ientry=0;ientry<ev.size();ientry++){
+	      ev.to(ientry);
+
+	      fwlite::Handle< llvvGenEvent > genEventHandle;
+	      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
+	      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
+	      unsigned int ngenITpu = (int)genEventHandle->ngenITpu;
+	      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+	      mcpileup[ngenITpu]++;
+	   }
+	}
+
+	void getPileupNormalization(fwlite::ChainEvent& ev, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
+	   PUNorm[0]=0; PUNorm[1]=0; PUNorm[2]=0;
+	   double NEvents=0;
+	   for(Long64_t ientry=0;ientry<ev.size();ientry++){
+	      ev.to(ientry);
+
+	      fwlite::Handle< llvvGenEvent > genEventHandle;
+	      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
+	      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
+	      
+	      NEvents++;
+	      double puWeight = LumiWeights->weight(genEventHandle->ngenITpu);
+	      PUNorm[0]+=puWeight;
+	      PUNorm[1]+=puWeight*PuShifters[utils::cmssw::PUDOWN]->Eval(genEventHandle->ngenITpu);
+	      PUNorm[2]+=puWeight*PuShifters[utils::cmssw::PUUP  ]->Eval(genEventHandle->ngenITpu);
+	   }
+	}
+
 }

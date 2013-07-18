@@ -1,6 +1,20 @@
 #ifndef macroutils_h
 #define macroutils_h
 
+
+#include "DataFormats/FWLite/interface/Handle.h"
+#include "DataFormats/FWLite/interface/Event.h"
+#include "DataFormats/FWLite/interface/ChainEvent.h"
+#include "DataFormats/Common/interface/MergeableCounter.h"
+
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
+
+
+
+
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 
@@ -12,9 +26,13 @@
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
+#include "UserCode/llvv_fwk/interface/llvvObjects.h"
+
+#include <vector>
 #include "TVector3.h"
 #include "TMath.h"
 #include "TGraph.h"
+#include <Math/VectorUtil.h>
 
 namespace utils
 {
@@ -83,6 +101,18 @@ namespace utils
 
   //clean up ROOT version of TeX
   void TLatexToTex(TString &expr);
+
+
+
+// FWLITE CODE
+
+  // loop on all the lumi blocks for an EDM file in order to count the number of events that are in a sample
+  // this is useful to determine how to normalize the events (compute weight)
+  unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
+  void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);
+  void getPileupNormalization(fwlite::ChainEvent& ev, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters);
+
+
 }
 
 // CODE FOR DUPLICATE EVENTS CHECKING
