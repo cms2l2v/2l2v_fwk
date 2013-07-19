@@ -506,7 +506,6 @@ int main(int argc, char* argv[])
       muonInfoCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
       if(!muonInfoCollHandle.isValid()){printf("llvvMuonInfoCollection Object NotFound\n");continue;}
 
-
       fwlite::Handle< llvvPhotonCollection > photonCollHandle;
       photonCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
       if(!photonCollHandle.isValid()){printf("llvvPhotonCollection Object NotFound\n");continue;}
@@ -515,7 +514,6 @@ int main(int argc, char* argv[])
       fwlite::Handle< llvvJetCollection > jetCollHandle;
       jetCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
       if(!jetCollHandle.isValid()){printf("llvvJetCollection Object NotFound\n");continue;}
-//      llvvJetCollection jets = *jetCollHandle;
       llvvJetExtCollection jets;
       for(unsigned int i=0;i<jetCollHandle->size();i++){jets.push_back(llvvJetExt((*jetCollHandle)[i]));}
 
@@ -549,17 +547,6 @@ int main(int argc, char* argv[])
       if(!nvtxHandle.isValid()){printf("nvtx Object NotFound\n");continue;}
       int nvtx = *nvtxHandle;
 
-
-///        produces<llvvMuonInfoCollection>();
-//        produces<llvvElectronInfoCollection>();
-//        produces<llvvPFParticleCollection>();
-
-//      data::PhysicsObjectCollection_t photons=evSummary.getPhysicsObject(DataEventSummaryHandler::PHOTONS);
-//      data::PhysicsObjectCollection_t leptons=evSummary.getPhysicsObject(DataEventSummaryHandler::LEPTONS);
-//      data::PhysicsObjectCollection_t jets=evSummary.getPhysicsObject(DataEventSummaryHandler::JETS);
-//      data::PhysicsObjectCollection_t met=evSummary.getPhysicsObject(DataEventSummaryHandler::MET);
-//      data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
-      
       //require compatibilitiy of the event with the PD
       bool eeTrigger          = triggerBits[0];
       bool muTrigger          = triggerBits[6];
@@ -666,14 +653,6 @@ int main(int argc, char* argv[])
 	{
 	  bool passKin(true),passId(true),passIso(true);
 	  int lid=leptons[ilep].id;
-
-
-          //get electron/muon info
-//          llvvElectronInfo* elecInfo = NULL;
-//          llvvMuonInfo*     muonInfo = NULL;
- 
-//          if(lid==11)elecInfo = &electronInfoCollHandle->get(lepton.electronInfoRef.key());
-
 
 	  //apply muon corrections
 	  if(lid==13 && muCor){
@@ -1287,7 +1266,6 @@ int main(int argc, char* argv[])
   summaryTuple->SetDirectory(ofile);
   summaryTuple->Write();
   ofile->Close();
-
   if(outTxtFile)fclose(outTxtFile);
 }  
 
