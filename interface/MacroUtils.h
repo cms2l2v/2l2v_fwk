@@ -110,9 +110,7 @@ namespace utils
   // this is useful to determine how to normalize the events (compute weight)
   unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
   void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);
-  void getPileupNormalization(fwlite::ChainEvent& ev, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters);
-
-
+  void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters);
 }
 
 // CODE FOR DUPLICATE EVENTS CHECKING

@@ -296,22 +296,17 @@ namespace utils
 	   }
 	}
 
-	void getPileupNormalization(fwlite::ChainEvent& ev, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
+	void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
 	   PUNorm[0]=0; PUNorm[1]=0; PUNorm[2]=0;
 	   double NEvents=0;
-	   for(Long64_t ientry=0;ientry<ev.size();ientry++){
-	      ev.to(ientry);
-
-	      fwlite::Handle< llvvGenEvent > genEventHandle;
-	      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
-	      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
-	      
-	      NEvents++;
-	      double puWeight = LumiWeights->weight(genEventHandle->ngenITpu);
-	      PUNorm[0]+=puWeight;
-	      PUNorm[1]+=puWeight*PuShifters[utils::cmssw::PUDOWN]->Eval(genEventHandle->ngenITpu);
-	      PUNorm[2]+=puWeight*PuShifters[utils::cmssw::PUUP  ]->Eval(genEventHandle->ngenITpu);
+	   for(unsigned int i=0;i<mcpileup.size();i++){
+	      NEvents+=mcpileup[i];
+	      double puWeight = LumiWeights->weight((int)i);
+	      PUNorm[0]+=mcpileup[i]*puWeight;
+	      PUNorm[1]+=mcpileup[i]*puWeight*PuShifters[utils::cmssw::PUDOWN]->Eval(i);
+	      PUNorm[2]+=mcpileup[i]*puWeight*PuShifters[utils::cmssw::PUUP  ]->Eval(i);
 	   }
+           PUNorm[0]/=NEvents;
+           PUNorm[1]/=NEvents;
+           PUNorm[2]/=NEvents;
 	}
-
-}

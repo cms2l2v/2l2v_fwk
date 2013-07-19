@@ -449,7 +449,7 @@ int main(int argc, char* argv[])
 
      LumiWeights= new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution);
      PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
-     utils::getPileupNormalization(ev, PUNorm, LumiWeights, PuShifters);
+     utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
   }
 
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
