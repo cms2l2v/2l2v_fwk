@@ -11,7 +11,7 @@ namespace utils
     {
       gSystem->ExpandPathName(baseDir);
       TString pf(isMC ? "MC" : "Data");
-
+      
       //order matters: L1 -> L2 -> L3 (-> Residuals)
       std::vector<std::string> jetCorFiles;
       std::cout << baseDir+"/"+pf+"_L1FastJet_AK5PFchs.txt" << std::endl;
@@ -19,11 +19,11 @@ namespace utils
       jetCorFiles.push_back((baseDir+"/"+pf+"_L2Relative_AK5PFchs.txt").Data());
       jetCorFiles.push_back((baseDir+"/"+pf+"_L3Absolute_AK5PFchs.txt").Data());
       if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK5PFchs.txt").Data());
-
+      
       //init the parameters for correction
       std::vector<JetCorrectorParameters> corSteps;
       for(size_t i=0; i<jetCorFiles.size(); i++) corSteps.push_back(JetCorrectorParameters(jetCorFiles[i]));
-
+      
       //return the corrector
       return new FactorizedJetCorrector(corSteps);
     }
@@ -280,33 +280,34 @@ namespace utils
 	   return Total;
 	}
 
-	void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
-	{
-	   mcpileup.clear();
-	   mcpileup.resize(Npu);
-	   for(Long64_t ientry=0;ientry<ev.size();ientry++){
-	      ev.to(ientry);
-
-	      fwlite::Handle< llvvGenEvent > genEventHandle;
-	      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
-	      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
-	      unsigned int ngenITpu = (int)genEventHandle->ngenITpu;
-	      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
-	      mcpileup[ngenITpu]++;
-	   }
-	}
-
-	void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
-	   PUNorm[0]=0; PUNorm[1]=0; PUNorm[2]=0;
-	   double NEvents=0;
-	   for(unsigned int i=0;i<mcpileup.size();i++){
-	      NEvents+=mcpileup[i];
-	      double puWeight = LumiWeights->weight((int)i);
-	      PUNorm[0]+=mcpileup[i]*puWeight;
-	      PUNorm[1]+=mcpileup[i]*puWeight*PuShifters[utils::cmssw::PUDOWN]->Eval(i);
-	      PUNorm[2]+=mcpileup[i]*puWeight*PuShifters[utils::cmssw::PUUP  ]->Eval(i);
-	   }
-           PUNorm[0]/=NEvents;
-           PUNorm[1]/=NEvents;
-           PUNorm[2]/=NEvents;
-	}
+  void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
+  {
+    mcpileup.clear();
+    mcpileup.resize(Npu);
+    for(Long64_t ientry=0;ientry<ev.size();ientry++){
+      ev.to(ientry);
+      
+      fwlite::Handle< llvvGenEvent > genEventHandle;
+      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
+      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
+      unsigned int ngenITpu = (int)genEventHandle->ngenITpu;
+      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+      mcpileup[ngenITpu]++;
+    }
+  }
+  
+  void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
+    PUNorm[0]=0; PUNorm[1]=0; PUNorm[2]=0;
+    double NEvents=0;
+    for(unsigned int i=0;i<mcpileup.size();i++){
+      NEvents+=mcpileup[i];
+      double puWeight = LumiWeights->weight((int)i);
+      PUNorm[0]+=mcpileup[i]*puWeight;
+      PUNorm[1]+=mcpileup[i]*puWeight*PuShifters[utils::cmssw::PUDOWN]->Eval(i);
+      PUNorm[2]+=mcpileup[i]*puWeight*PuShifters[utils::cmssw::PUUP  ]->Eval(i);
+    }
+    PUNorm[0]/=NEvents;
+    PUNorm[1]/=NEvents;
+    PUNorm[2]/=NEvents;
+  }
+}
