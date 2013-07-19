@@ -488,7 +488,7 @@ int main(int argc, char* argv[])
 	controlHistos.fillHisto("evtflow"+var, ch, 0, weight);
 	if(var==""){
 	  controlHistos.fillHisto("nvertices",  ch, ev.nvtx, weight);
-	  controlHistos.fillHisto("nverticesUnweighted",  ch, ev.nvtx, weightNom*llScaleFactor);
+	  controlHistos.fillHisto("nverticesUnweighted",  ch, ev.nvtx, (isMC ? xsec/cnorm : 1.0)*llScaleFactor);
 	}
 	
 	LorentzVector ll=selLeptons[0]+selLeptons[1];
