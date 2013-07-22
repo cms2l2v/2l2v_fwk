@@ -364,6 +364,12 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
   const std::vector<TH1F *> &bckgTempl=allShapes.begin()->second.bckg;
   for(std::vector<int>::iterator bIt = binsToProject.begin(); bIt != binsToProject.end(); bIt++)
     {
+
+      cout << "pointer " << dataTempl << endl;
+      cout << "histo" << dataTempl->GetTitle();
+      cout << ", with " << dataTempl->GetNbinsX();
+      cout << " bins, choosing bin " << (*bIt) << endl;
+ 	
       TString cat=dataTempl->GetXaxis()->GetBinLabel(*bIt);
         
       //table header
@@ -738,7 +744,7 @@ int main(int argc, char* argv[])
   std::map<TString, Shape_t> shapes;
   for(std::vector<string>::iterator cIt = channels.begin(); cIt != channels.end(); cIt++) shapes[*cIt]=getShapeFromFile(inF, *cIt, jsonF,systF);
   inF->Close();
-  if(!systF) systF->Close();
+  //  if(!systF) systF->Close();
 
   //print the tables/datacards
   getYieldsFromShapes(shapes);
