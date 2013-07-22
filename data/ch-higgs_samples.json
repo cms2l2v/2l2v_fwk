@@ -1,7 +1,7 @@
 {
     "proc":[
 	{
-        "tag":"H^{+}$#rightarrow#tau#nu, m_{H^{+}}=180 GeV",
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"001",
@@ -11,7 +11,7 @@
         "marker":1,
         "data":[
 	    {
-                "dtag":"MC78TeV_TBH_M-250_8TeV-pythia6",
+                "dtag":"MC8TeV_TBH_M-180_8TeV-pythia6",
                 "split":7,
                 "xsec":12.3,
 	        "br":[0.831852]
@@ -19,7 +19,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=180 GeV",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[180 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
@@ -37,7 +37,79 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=220 GeV",
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[190 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"001",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_TBH_M-190_8TeV-pythia6",
+                "split":7,
+                "xsec":12.3,
+	        "br":[0.407966]
+             }
+           ]
+        },
+	{
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[200 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"001",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_TBH_M-200_8TeV-pythia6",
+                "split":8,
+                "xsec":12.3,
+	        "br":[0.228564]
+             }
+           ]
+        },
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[200 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-200_8TeV-pythia6",
+                "split":10,
+                "xsec":12.3,
+	        "br":[0.771436]
+             }
+           ]
+        },
+	{
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[220 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"001",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_TBH_M-220_8TeV-pythia6",
+                "split":7,
+                "xsec":12.3,
+	        "br":[0.106446]
+             }
+           ]
+        },
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[220 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
@@ -55,7 +127,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=240 GeV",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[240 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
@@ -73,7 +145,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow#tau#nu, m_{H^{+}}=250 GeV",
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"001",
@@ -83,7 +155,7 @@
         "marker":1,
         "data":[
 	    {
-                "dtag":"MC78TeV_TBH_M-250_8TeV-pythia6",
+                "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6",
                 "split":7,
                 "xsec":12.3,
 	        "br":[0.04129783]
@@ -91,7 +163,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=250 GeV",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
@@ -109,7 +181,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=260 GeV",
+        "tag":"#splitline{H^{+}$#rightarrow tb}{[260 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
@@ -127,7 +199,7 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=280 GeV",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[280 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
@@ -145,7 +217,25 @@
            ]
         },
 	{
-        "tag":"H^{+}$#rightarrow tb, m_{H^{+}}=300 GeV",
+        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"001",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_TBH_M-300_8TeV-pythia6",
+                "split":7,
+                "xsec":12.3,
+	        "br":[0.02514242]
+             }
+           ]
+        },
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[300 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",

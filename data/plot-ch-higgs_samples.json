@@ -207,7 +207,7 @@
         "marker":1,
         "data":[
 	    {
-                "dtag":"MC78TeV_TBH_M-250_8TeV-pythia6",
+                "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6",
                 "split":7,
                 "xsec":12.3,
 	        "br":[0.04129783]
