@@ -6,7 +6,7 @@ scramv1 project CMSSW CMSSW_5_3_11
 
 cd CMSSW_5_3_11/src/
 
-curl -O https://raw.github.com/pfs/usercode/master/TAGS.txt | sh
+curl https://raw.github.com/pfs/2l2v_fwk/master/TAGS.txt | sh
 
 
 ## Ntuples
