@@ -541,15 +541,15 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile, "-------------------------------\n");
       
       //observations
-      fprintf(pFile, "bin 1\n");
+      fprintf(pFile, "bin a\n");
       fprintf(pFile, "observation %f\n",shape.data->Integral());
       fprintf(pFile, "-------------------------------\n");
       saveShapeForMeasurement(shape.data,oDir);
       
       //process rows
       fprintf(pFile,"%30s ", "bin");
-      fprintf(pFile,"%6i ",1);
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6i ", 1);
+      fprintf(pFile,"%6s ","a");
+      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", "a");
       fprintf(pFile,"\n");
      
       fprintf(pFile,"%30s ", "process");
