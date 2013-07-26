@@ -112,14 +112,18 @@ std::map<TString,float> getDYUncertainties(TString ch)
 //
 TString convertNameForDataCard(TString title)
 {
-  if(title=="VV")                return "vv";
-  if(title=="QCD")               return "qcd";
-  if(title=="W#rightarrow l#nu") return "w"; 
-  if(title=="other t#bar{t}")    return "ttbar";
-  if(title=="Z#rightarrow ll")   return "dy"; 
-  if(title=="Single top")        return "st";
-  if(title=="t#bar{t}V")         return "ttv";
-  if(title=="t#bar{t}")          return "signal";
+  if(title=="VV")                                             return "vv";
+  if(title=="QCD")                                            return "qcd";
+  if(title=="W#rightarrow l#nu")                              return "w"; 
+  if(title=="W,multijets")                                    return "wjets";
+  if(title=="other t#bar{t}")                                 return "otherttbar";
+  if(title=="Z#rightarrow ll")                                return "dy"; 
+  if(title=="Single top")                                     return "st";
+  if(title=="t#bar{t}V")                                      return "ttv";
+  if(title=="t#bar{t}")                                       return "ttbar";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "htaunusignal";
+
   return title;
 }
 
