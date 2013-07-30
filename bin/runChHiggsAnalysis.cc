@@ -164,11 +164,27 @@ int main(int argc, char* argv[])
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
    
     TH1D *finalCutflowH = new TH1D("finalevtflow"+var,";Category;Events",4,0,4); 
-    finalCutflowH->GetXaxis()->SetBinLabel(1,"=1 jets");
-    finalCutflowH->GetXaxis()->SetBinLabel(2,"=2 jets");
-    finalCutflowH->GetXaxis()->SetBinLabel(3,"=3 jets");
-    finalCutflowH->GetXaxis()->SetBinLabel(4,"=4 jets");
+    finalCutflowH->GetXaxis()->SetBinLabel(1,"=1 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(2,"=2 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(3,"=3 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(4,"#geq 4 btags");
     controlHistos.addHistogram( finalCutflowH );
+
+    TH1D *finalCutflowH_1 = new TH1D("finalevtflow1"+var,";Category;Events",1,0,1); 
+    finalCutflowH->GetXaxis()->SetBinLabel(1,"=1 jets");
+    controlHistos.addHistogram( finalCutflowH_1 );
+    TH1D *finalCutflowH_2 = new TH1D("finalevtflow2"+var,";Category;Events",1,0,1); 
+    finalCutflowH->GetXaxis()->SetBinLabel(1,"=2 jets");
+    controlHistos.addHistogram( finalCutflowH_2 );
+    TH1D *finalCutflowH_3 = new TH1D("finalevtflow3"+var,";Category;Events",1,0,1); 
+    finalCutflowH->GetXaxis()->SetBinLabel(1,"=3 jets");
+    controlHistos.addHistogram( finalCutflowH_3 );
+    TH1D *finalCutflowH_4 = new TH1D("finalevtflow4"+var,";Category;Events",1,0,1); 
+    finalCutflowH->GetXaxis()->SetBinLabel(1,"#geq 4 jets");
+    controlHistos.addHistogram( finalCutflowH_4 );
+
+
+
     
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
     TString ctrlCats[]={""};
@@ -617,8 +633,21 @@ int main(int argc, char* argv[])
 	float nbtags(0);
 	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
 	//	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("csv")>0.679);
+	if(nbtags>0){
+	  if(nbtags>4) 
+	    controlHistos.fillHisto("finalevtflow"+var, ch, 4-1, weight);
+	  else 
+	    controlHistos.fillHisto("finalevtflow"+var, ch, nbtags-1, weight);
+	}
+
+	if(nbtags==1) controlHistos.fillHisto("finalevtflow1"+var, ch, 0, weight);
+	if(nbtags==2) controlHistos.fillHisto("finalevtflow2"+var, ch, 0, weight);
+	if(nbtags==3) controlHistos.fillHisto("finalevtflow3"+var, ch, 0, weight);
+	if(nbtags>=4) controlHistos.fillHisto("finalevtflow4"+var, ch, 0, weight);
+	
 	if(nbtags<2) continue;
 	controlHistos.fillHisto("evtflow"+var, ch, 5, weight);
+	
 	
 	if(spyEvents){
 	  spyEvents->getEvent().cat=ev.cat;
