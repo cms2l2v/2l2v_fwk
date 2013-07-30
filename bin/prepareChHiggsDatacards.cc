@@ -75,6 +75,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes);
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes);
 void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst="");
 TString convertNameForDataCard(TString title);
+TString convertNameForFileName(TString histoName);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
 
@@ -126,6 +127,16 @@ TString convertNameForDataCard(TString title)
   if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "htaunusignal";
 
   return title;
+}
+
+// 
+TString convertNameForFileName(TString histoName)
+{
+  if(histoName=="finalevtflow1") return "_1btag";
+  if(histoName=="finalevtflow2") return "_2btags";
+  if(histoName=="finalevtflow3") return "_3btags";
+  if(histoName=="finalevtflow4") return "_geq4btags";
+  return ""; 
 }
 
 //
@@ -364,7 +375,8 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 //
 void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 {
-  FILE* pFile = fopen(outUrl+"CrossSectionYields.tex","w");
+  FILE* pFile = fopen(outUrl+"CrossSectionYields"+convertNameForFileName(histo)+".tex","w");
+
   TH1F *dataTempl=allShapes.begin()->second.data;
   const std::vector<TH1F *> &bckgTempl=allShapes.begin()->second.bckg;
   for(std::vector<int>::iterator bIt = binsToProject.begin(); bIt != binsToProject.end(); bIt++)
@@ -523,13 +535,13 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 //
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 {
-  TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes.root","RECREATE");
+  TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes"+convertNameForFileName(histo)+".root","RECREATE");
   for(std::map<TString, Shape_t>::const_iterator it=allShapes.begin(); it!=allShapes.end(); it++)
     {
       TString ch(it->first); if(ch.IsNull()) ch="inclusive";
       TDirectory *oDir=fOut->mkdir(ch);
 
-      TString shapesFile("DataCard_"+ch+".dat");
+      TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+".dat");
       const Shape_t &shape=it->second;
       
       FILE* pFile = fopen(outUrl+shapesFile,"w");
@@ -538,7 +550,8 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile, "jmax *\n");
       fprintf(pFile, "kmax *\n");
       fprintf(pFile, "-------------------------------\n");
-      fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n","CrossSectionShapes.root", ch.Data(), ch.Data());
+      TString shapesFileName("CrossSectionShapes"+convertNameForFileName(histo)+".root");
+      fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n",shapesFileName.Data(), ch.Data(), ch.Data());
       fprintf(pFile, "-------------------------------\n");
       
       //observations
