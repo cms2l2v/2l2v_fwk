@@ -700,18 +700,19 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	}
 
       //MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
-      fprintf(pFile,"%35s %10s ", ("ttbar_"+ch+"_stat").Data(), "shape");
+      fprintf(pFile,"%35s %10s ", ("htbsignal_"+ch+"_stat").Data(), "shape");
       fprintf(pFile,"%6s ","1");
       for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	else                                                           fprintf(pFile,"%6s ","1");
+	//	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	//	else                                                           fprintf(pFile,"%6s ","1");
+	fprintf(pFile,"%6s","-");
       }
       fprintf(pFile,"\n");
 
       for(size_t j=0; j<shape.bckg.size(); j++)
 	{
 	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	  if(proc=="ttbar") continue;
+	  //	  if(proc=="ttbar") continue;
 	  //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
 	  
 	  fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
