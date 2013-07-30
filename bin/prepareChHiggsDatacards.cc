@@ -5,6 +5,7 @@
 #include "UserCode/llvv_fwk/src/tdrstyle.C"
 #include "UserCode/llvv_fwk/src/JSONWrapper.cc"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/RootUtils.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -217,7 +218,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  else for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) binsToProject.push_back(ibin); 
 
 	  //format shape
-	  // fixExtremities(hshape,true,true);
+	  utils::root::fixExtremities(hshape,true,true);
 	  hshape->SetDirectory(0);  
 	  hshape->SetTitle(proc);
 	  hshape->SetFillColor(color); 
