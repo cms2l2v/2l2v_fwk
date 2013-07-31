@@ -5,6 +5,7 @@
 #include "UserCode/llvv_fwk/src/tdrstyle.C"
 #include "UserCode/llvv_fwk/src/JSONWrapper.cc"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/RootUtils.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -74,6 +75,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes);
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes);
 void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst="");
 TString convertNameForDataCard(TString title);
+TString convertNameForFileName(TString histoName);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
 
@@ -125,6 +127,16 @@ TString convertNameForDataCard(TString title)
   if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "htaunusignal";
 
   return title;
+}
+
+// 
+TString convertNameForFileName(TString histoName)
+{
+  if(histoName=="finalevtflow1") return "_1btag";
+  if(histoName=="finalevtflow2") return "_2btags";
+  if(histoName=="finalevtflow3") return "_3btags";
+  if(histoName=="finalevtflow4") return "_geq4btags";
+  return ""; 
 }
 
 //
@@ -217,7 +229,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  else for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) binsToProject.push_back(ibin); 
 
 	  //format shape
-	  // fixExtremities(hshape,true,true);
+	  utils::root::fixExtremities(hshape,true,true);
 	  hshape->SetDirectory(0);  
 	  hshape->SetTitle(proc);
 	  hshape->SetFillColor(color); 
@@ -363,7 +375,8 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 //
 void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 {
-  FILE* pFile = fopen(outUrl+"CrossSectionYields.tex","w");
+  FILE* pFile = fopen(outUrl+"CrossSectionYields"+convertNameForFileName(histo)+".tex","w");
+
   TH1F *dataTempl=allShapes.begin()->second.data;
   const std::vector<TH1F *> &bckgTempl=allShapes.begin()->second.bckg;
   for(std::vector<int>::iterator bIt = binsToProject.begin(); bIt != binsToProject.end(); bIt++)
@@ -522,13 +535,13 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 //
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 {
-  TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes.root","RECREATE");
+  TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes"+convertNameForFileName(histo)+".root","RECREATE");
   for(std::map<TString, Shape_t>::const_iterator it=allShapes.begin(); it!=allShapes.end(); it++)
     {
       TString ch(it->first); if(ch.IsNull()) ch="inclusive";
       TDirectory *oDir=fOut->mkdir(ch);
 
-      TString shapesFile("DataCard_"+ch+".dat");
+      TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+".dat");
       const Shape_t &shape=it->second;
       
       FILE* pFile = fopen(outUrl+shapesFile,"w");
@@ -537,7 +550,8 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile, "jmax *\n");
       fprintf(pFile, "kmax *\n");
       fprintf(pFile, "-------------------------------\n");
-      fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n","CrossSectionShapes.root", ch.Data(), ch.Data());
+      TString shapesFileName("CrossSectionShapes"+convertNameForFileName(histo)+".root");
+      fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n",shapesFileName.Data(), ch.Data(), ch.Data());
       fprintf(pFile, "-------------------------------\n");
       
       //observations
@@ -686,18 +700,19 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	}
 
       //MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
-      fprintf(pFile,"%35s %10s ", ("ttbar_"+ch+"_stat").Data(), "shape");
+      fprintf(pFile,"%35s %10s ", ("htbsignal_"+ch+"_stat").Data(), "shape");
       fprintf(pFile,"%6s ","1");
       for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	else                                                           fprintf(pFile,"%6s ","1");
+	//	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	//	else                                                           fprintf(pFile,"%6s ","1");
+	fprintf(pFile,"%6s","-");
       }
       fprintf(pFile,"\n");
 
       for(size_t j=0; j<shape.bckg.size(); j++)
 	{
 	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	  if(proc=="ttbar") continue;
+	  //	  if(proc=="ttbar") continue;
 	  //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
 	  
 	  fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
