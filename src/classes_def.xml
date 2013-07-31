@@ -70,5 +70,13 @@
    <class name="llvvPFParticleRefVector"/>
    <class name="edm::Wrapper<llvvPFParticle>"/>
    <class name="edm::Wrapper<llvvPFParticleCollection>"/>
+   
+   <class name="llvvTau" />
+   <class name="llvvTauCollection"/>
+   <class name="llvvTauRef"/>
+   <class name="llvvTauRefProd"/>
+   <class name="llvvTauRefVector"/>
+   <class name="edm::Wrapper<llvvTau>"/>
+   <class name="edm::Wrapper<llvvTauCollection>"/>
 
 </lcgdict>

@@ -259,8 +259,8 @@ typedef  std::vector<llvvJetExt> llvvJetExtCollection;
 inline bool sort_llvvObjectByPt(const LorentzVectorF &a, const LorentzVectorF &b)  { return a.pt()>b.pt(); }
 inline bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.supercsv>b.supercsv; }
 
-//namespace llvvId{
-     enum llvvTAUID {
+//ONLY ADD STUFF AT THE END... CAN HOST UP TO 64 VARIABLES
+enum llvvTAUID {
 	 decayModeFinding
 	,byVLooseCombinedIsolationDeltaBetaCorr
 	,byLooseCombinedIsolationDeltaBetaCorr
@@ -273,10 +273,8 @@ inline bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.sup
 	,againstElectronLoose                    
 	,againstElectronMedium
 	,againstElectronTight
-	,againstElectronMVA
-	,againstElectronLooseMVA2
-	,againstElectronMediumMVA2
-	,againstElectronTightMVA2
+	,againstElectronMVA3category
+        ,againstElectronMVA3raw
 	,againstElectronLooseMVA3
 	,againstElectronMediumMVA3
 	,againstElectronTightMVA3
@@ -297,12 +295,7 @@ inline bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.sup
 	,byLooseIsolationMVA2
 	,byMediumIsolationMVA2
 	,byTightIsolationMVA2
-     };
-//}
+};
 
 
 #endif
-
-
-
-

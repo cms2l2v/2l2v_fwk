@@ -774,10 +774,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		   tauInfo.idbits += tau->tauID("againstElectronLoose"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronLoose;                    
 		   tauInfo.idbits += tau->tauID("againstElectronMedium"                      )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMedium;
 		   tauInfo.idbits += tau->tauID("againstElectronTight"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronTight;
-		   tauInfo.idbits += tau->tauID("againstElectronMVA"                         )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMVA;
-		   tauInfo.idbits += tau->tauID("againstElectronLooseMVA2"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronLooseMVA2;
-		   tauInfo.idbits += tau->tauID("againstElectronMediumMVA2"                  )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMediumMVA2;
-		   tauInfo.idbits += tau->tauID("againstElectronTightMVA2"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronTightMVA2;
+		   tauInfo.idbits += tau->tauID("againstElectronMVA3category"                )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMVA3category;
+                   tauInfo.idbits += tau->tauID("againstElectronMVA3raw"                     )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMVA3raw;
 		   tauInfo.idbits += tau->tauID("againstElectronLooseMVA3"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronLooseMVA3;
 		   tauInfo.idbits += tau->tauID("againstElectronMediumMVA3"                  )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMediumMVA3;
 		   tauInfo.idbits += tau->tauID("againstElectronTightMVA3"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronTightMVA3;
@@ -798,7 +796,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		   tauInfo.idbits += tau->tauID("byLooseIsolationMVA2"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byLooseIsolationMVA2;
 		   tauInfo.idbits += tau->tauID("byMediumIsolationMVA2"                      )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byMediumIsolationMVA2;
 		   tauInfo.idbits += tau->tauID("byTightIsolationMVA2"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byTightIsolationMVA2;
-   
+
                    //save charged hadron information
        	           for(unsigned int iCharged=0; iCharged < tau->signalPFChargedHadrCands().size() && iCharged<3; iCharged++){
 		      const reco::PFCandidateRef& cand = tau->signalPFChargedHadrCands().at(iCharged);
