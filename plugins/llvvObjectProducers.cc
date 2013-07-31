@@ -39,6 +39,21 @@
 
 #include "CMGTools/External/interface/PileupJetIdAlgo.h"
 
+
+//Tau stuff... somecleaning needed
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/TauReco/interface/PFTau.h"
+#include "DataFormats/TauReco/interface/BaseTau.h"
+#include "DataFormats/TauReco/interface/PFTauFwd.h"
+#include "DataFormats/TauReco/interface/PFTauTagInfo.h"
+#include "DataFormats/TauReco/interface/PFTauDiscriminator.h"
+#include "RecoTauTag/TauTagTools/interface/PFTauElementsOperators.h"
+#include "RecoTauTag/RecoTau/interface/TauDiscriminationProducerBase.h"
+
+#include "DataFormats/PatCandidates/interface/Tau.h"
+
+
+
 #include "TH1D.h"
 
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
@@ -76,6 +91,12 @@ class llvvObjectProducers : public edm::EDFilter
 
                 //  keep all GEN
                 bool keepFullGenInfo_;
+
+                double   tauPtCut;
+                uint64_t tauIdMask;
+                double   jetPtCut;
+                double   pfCandPtCut;
+                double   pfCandDzMax;
 };
 
 
@@ -110,6 +131,7 @@ llvvObjectProducers::llvvObjectProducers(const edm::ParameterSet &iConfig)
         produces<llvvLeptonCollection>();
         produces<llvvMuonInfoCollection>();
         produces<llvvElectronInfoCollection>();
+        produces<llvvTauCollection>();
         produces<llvvPhotonCollection>();
         produces<llvvJetCollection>();
         produces<llvvPFParticleCollection>();
@@ -121,6 +143,15 @@ llvvObjectProducers::llvvObjectProducers(const edm::ParameterSet &iConfig)
         produces<std::vector<bool> >("triggerBits");
         produces<std::vector<int> >("triggerPrescales");
         produces< int >("nvtx");
+
+        tauPtCut    = 15;
+        tauIdMask   =  ((uint64_t) 1 << llvvTAUID::decayModeFinding) + ((uint64_t) 1 << llvvTAUID::againstMuonLoose) + ((uint64_t) 1 << llvvTAUID::againstElectronLoose);
+
+        jetPtCut    = 10;
+        pfCandPtCut = 0.5;
+        pfCandDzMax = 0.3;
+
+
 }
 
 //Save trigger names once per run (instead of once per event)
@@ -157,6 +188,9 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
   std::auto_ptr<llvvElectronInfoCollection> elInfoCollOut(new llvvElectronInfoCollection());
   llvvElectronInfoCollection& elInfoColl = *elInfoCollOut;
 
+  std::auto_ptr<llvvTauCollection> tauCollOut(new llvvTauCollection());
+  llvvTauCollection& tauColl = *tauCollOut;
+
   std::auto_ptr<llvvPhotonCollection> phoCollOut(new llvvPhotonCollection());
   llvvPhotonCollection& phoColl = *phoCollOut;
 
@@ -177,6 +211,15 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
 
+  //
+  // Global objects
+  //
+  ESHandle<MagneticField> B;
+  iSetup.get<IdealMagneticFieldRecord > ().get(B);
+  const MagneticField* magField = B.product();
+
+  ESHandle<GlobalTrackingGeometry> geomHandle;
+  iSetup.get<GlobalTrackingGeometryRecord > ().get(geomHandle);
 
 
   //
@@ -413,6 +456,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 	edm::Handle<View<Candidate> > muH, eH;
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("muonSource"),     muH);
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("electronSource"), eH);
+
 	edm::Handle<reco::ConversionCollection> convH;
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("conversionSource"), convH);
 	EcalClusterLazyTools egLazyTool( iEvent, iSetup, analysisCfg_.getParameter<edm::InputTag>("ebrechitsSource"), analysisCfg_.getParameter<edm::InputTag>("eerechitsSource") );
@@ -658,6 +702,124 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
                if(ele->pt()>18) nElecs++;
 	}
 
+
+  //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
+  //Taus
+        if(analysisCfg_.getParameter<edm::InputTag>("tauSource").label()!=""){
+		Handle<pat::TauCollection> tauH;
+		iEvent.getByLabel(analysisCfg_.getParameter<edm::InputTag>("tauSource"), tauH);
+		for(size_t itau=0; itau<tauH->size(); itau++)
+		{
+		   const pat::Tau* tau = &((*tauH)[itau]);
+		   const reco::Candidate *genLep   = tau->genLepton();
+
+		   llvvTau tauInfo;
+
+		   tauInfo.SetPxPyPzE(tau->px(), tau->py(), tau->pz(),  tau->energy());
+		   tauInfo.id                         = 15*tau->charge();
+		   tauInfo.isPF                       = tau->isPFTau();
+		   tauInfo.genid                      = genLep ? genLep->pdgId() :0;
+		   if(genLep)tauInfo.gen.SetPxPyPzE(genLep->px(), genLep->py(), genLep->pz(), genLep->energy());
+		   if(tau->leadPFChargedHadrCand().isNonnull()){
+		   tauInfo.trkchi2                    = tau->leadPFChargedHadrCand()->trackRef()->normalizedChi2();
+		   tauInfo.trkValidPixelHits          = tau->leadPFChargedHadrCand()->trackRef()->hitPattern().numberOfValidPixelHits();
+		   tauInfo.trkValidTrackerHits        = tau->leadPFChargedHadrCand()->trackRef()->hitPattern().numberOfValidTrackerHits();
+		   tauInfo.trkLostInnerHits           = tau->leadPFChargedHadrCand()->trackRef()->trackerExpectedHitsInner().numberOfLostHits();
+		   tauInfo.trkPtErr                   = fabs(tau->leadPFChargedHadrCand()->trackRef()->ptError()/tau->leadPFChargedHadrCand()->trackRef()->pt());
+		   tauInfo.d0                         = fabs(tau->leadPFChargedHadrCand()->trackRef()->dxy(primVtx->position()));
+		   tauInfo.dZ                         = fabs(tau->leadPFChargedHadrCand()->trackRef()->dz(primVtx->position()));
+		   std::pair<bool,Measurement1D> ip3dRes = utils::cmssw::getImpactParameter<reco::TrackRef>(tau->leadPFChargedHadrCand()->trackRef(), primVtx, iSetup, true);
+		   tauInfo.ip3d                       = ip3dRes.second.value();
+		   tauInfo.ip3dsig                    = ip3dRes.second.significance();
+		   }
+		   tauInfo.vz      = tau->vz();
+		   tauInfo.z_expo = 0;
+		   if (tau->leadPFChargedHadrCand().isNonnull()) {
+		     reco::TransientTrack track(tau->leadPFChargedHadrCand()->trackRef(), magField, geomHandle);
+		     TransverseImpactPointExtrapolator extrapolator(magField);
+		     TrajectoryStateOnSurface closestOnTransversePlaneState = extrapolator.extrapolate(track.impactPointState(), GlobalPoint(beamSpotH->position().x(), beamSpotH->position().y(), 0.0));
+		     tauInfo.z_expo = closestOnTransversePlaneState.globalPosition().z();
+		   }
+
+		   tauInfo.jet.SetPxPyPzE(tau->pfJetRef().get()->px(), tau->pfJetRef().get()->py(), tau->pfJetRef().get()->pz(), tau->pfJetRef().get()->energy() );
+		   tauInfo.numChargedParticlesSigCone   = tau->signalPFChargedHadrCands().size();
+		   tauInfo.numNeutralHadronsSigCone     = tau->signalPFNeutrHadrCands().size();
+		   tauInfo.numPhotonsSigCone            = tau->signalPFGammaCands().size();
+		   tauInfo.numParticlesSigCone          = tau->signalPFCands().size();
+		   tauInfo.numPiZeroSigCone             = tau->signalPiZeroCandidates().size();
+
+		   tauInfo.numChargedParticlesIsoCone   = tau->isolationPFChargedHadrCands().size();
+		   tauInfo.numNeutralHadronsIsoCone     = tau->isolationPFNeutrHadrCands().size();
+		   tauInfo.numPhotonsIsoCone            = tau->isolationPFGammaCands().size();
+		   tauInfo.numParticlesIsoCone          = tau->isolationPFCands().size();
+		   tauInfo.ptSumChargedParticlesIsoCone = tau->isolationPFChargedHadrCandsPtSum();
+		   tauInfo.ptSumPhotonsIsoCone          = tau->isolationPFGammaCandsEtSum();
+	 
+		   tauInfo.mva_e_pi                     = (tau->leadPFChargedHadrCand().isNonnull() ? tau->leadPFChargedHadrCand()->mva_e_pi() : 0.);
+		   tauInfo.mva_pi_mu                    = (tau->leadPFChargedHadrCand().isNonnull() ? tau->leadPFChargedHadrCand()->mva_pi_mu() : 0.);
+		   tauInfo.mva_e_mu                     = (tau->leadPFChargedHadrCand().isNonnull() ? tau->leadPFChargedHadrCand()->mva_e_mu() : 0.);
+		   tauInfo.hcalEnergy                   = (tau->leadPFChargedHadrCand().isNonnull() ? tau->leadPFChargedHadrCand()->hcalEnergy() : 0.);
+		   tauInfo.ecalEnergy                   = (tau->leadPFChargedHadrCand().isNonnull() ? tau->leadPFChargedHadrCand()->ecalEnergy() : 0.);
+		   tauInfo.emfraction                   = tau->emFraction();
+
+		   tauInfo.idbits += tau->tauID("decayModeFinding"                           )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::decayModeFinding;
+		   tauInfo.idbits += tau->tauID("byVLooseCombinedIsolationDeltaBetaCorr"     )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byVLooseCombinedIsolationDeltaBetaCorr;
+		   tauInfo.idbits += tau->tauID("byLooseCombinedIsolationDeltaBetaCorr"      )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr;
+		   tauInfo.idbits += tau->tauID("byMediumCombinedIsolationDeltaBetaCorr"     )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr;
+		   tauInfo.idbits += tau->tauID("byTightCombinedIsolationDeltaBetaCorr"      )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byTightCombinedIsolationDeltaBetaCorr;
+		   tauInfo.idbits += tau->tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits" )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits;
+		   tauInfo.idbits += tau->tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits;
+		   tauInfo.idbits += tau->tauID("byTightCombinedIsolationDeltaBetaCorr3Hits" )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byTightCombinedIsolationDeltaBetaCorr3Hits;
+		   tauInfo.idbits += tau->tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits"   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byCombinedIsolationDeltaBetaCorrRaw3Hits;
+		   tauInfo.idbits += tau->tauID("againstElectronLoose"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronLoose;                    
+		   tauInfo.idbits += tau->tauID("againstElectronMedium"                      )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMedium;
+		   tauInfo.idbits += tau->tauID("againstElectronTight"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronTight;
+		   tauInfo.idbits += tau->tauID("againstElectronMVA"                         )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMVA;
+		   tauInfo.idbits += tau->tauID("againstElectronLooseMVA2"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronLooseMVA2;
+		   tauInfo.idbits += tau->tauID("againstElectronMediumMVA2"                  )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMediumMVA2;
+		   tauInfo.idbits += tau->tauID("againstElectronTightMVA2"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronTightMVA2;
+		   tauInfo.idbits += tau->tauID("againstElectronLooseMVA3"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronLooseMVA3;
+		   tauInfo.idbits += tau->tauID("againstElectronMediumMVA3"                  )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronMediumMVA3;
+		   tauInfo.idbits += tau->tauID("againstElectronTightMVA3"                   )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronTightMVA3;
+		   tauInfo.idbits += tau->tauID("againstElectronVTightMVA3"                  )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstElectronVTightMVA3;
+		   tauInfo.idbits += tau->tauID("againstMuonLoose"                           )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonLoose;
+		   tauInfo.idbits += tau->tauID("againstMuonMedium"                          )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonMedium;
+		   tauInfo.idbits += tau->tauID("againstMuonTight"                           )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonTight;
+		   tauInfo.idbits += tau->tauID("againstMuonLoose2"                          )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonLoose2;
+		   tauInfo.idbits += tau->tauID("againstMuonMedium2"                         )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonMedium2;
+		   tauInfo.idbits += tau->tauID("againstMuonTight2"                          )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonTight2;
+		   tauInfo.idbits += tau->tauID("againstMuonLoose3"                          )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonLoose3;
+		   tauInfo.idbits += tau->tauID("againstMuonTight3"                          )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::againstMuonTight3;
+		   tauInfo.idbits += tau->tauID("byIsolationMVAraw"                          )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byIsolationMVAraw;
+		   tauInfo.idbits += tau->tauID("byLooseIsolationMVA"                        )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byLooseIsolationMVA;
+		   tauInfo.idbits += tau->tauID("byMediumIsolationMVA"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byMediumIsolationMVA;
+		   tauInfo.idbits += tau->tauID("byTightIsolationMVA"                        )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byTightIsolationMVA;
+		   tauInfo.idbits += tau->tauID("byIsolationMVA2raw"                         )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byIsolationMVA2raw;
+		   tauInfo.idbits += tau->tauID("byLooseIsolationMVA2"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byLooseIsolationMVA2;
+		   tauInfo.idbits += tau->tauID("byMediumIsolationMVA2"                      )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byMediumIsolationMVA2;
+		   tauInfo.idbits += tau->tauID("byTightIsolationMVA2"                       )<=0.5 ? 0 : (uint64_t) 1 << llvvTAUID::byTightIsolationMVA2;
+   
+                   //save charged hadron information
+       	           for(unsigned int iCharged=0; iCharged < tau->signalPFChargedHadrCands().size() && iCharged<3; iCharged++){
+		      const reco::PFCandidateRef& cand = tau->signalPFChargedHadrCands().at(iCharged);
+	   	      math::XYZTLorentzVector candP4 = cand->p4();
+                      tauInfo.tracks.push_back(LorentzVectorF(candP4.px(), candP4.py(), candP4.pz(), candP4.energy()));
+	           }
+
+                   //save neutral hadron information
+ 	           for(unsigned int iPi0=0; iPi0 < tau->signalPiZeroCandidates().size() && iPi0<2; iPi0++){
+		      const reco::RecoTauPiZero& cand = tau->signalPiZeroCandidates().at(iPi0);
+		      math::XYZTLorentzVector candP4 = cand.p4();
+                      tauInfo.pi0s.push_back(LorentzVectorF(candP4.px(), candP4.py(), candP4.pz(), candP4.energy()));
+ 	           }
+
+                   if(tauInfo.pt()>tauPtCut && (tauInfo.idbits&tauIdMask)>0 ){
+                      tauColl.push_back(tauInfo);
+                   }
+		}
+        }
+
+
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
   //Photons
 	//
@@ -762,170 +924,175 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 	// https://twiki.cern.ch/twiki/bin/view/CMS/PileupJetID
 	// https://twiki.cern.ch/twiki/bin/view/CMS/GluonTag
 	// 
-	Handle<pat::JetCollection> jetH;
-	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("jetSource"), jetH);
-	edm::Handle<edm::ValueMap<float> >  qgTaggerH;
-	iEvent.getByLabel("QGTagger","qgLikelihood", qgTaggerH);
-	edm::Handle<reco::JetTagCollection> tchpTags,   jpTags,    ssvheTags,    ivfTags,    origcsvTags,    csvTags,    jpcsvTags,    slcsvTags, supercsvTags;
-	iEvent.getByLabel("trackCountingHighPurBJetTags",                  tchpTags);          
-	iEvent.getByLabel("jetProbabilityBJetTags",                        jpTags);            
-	iEvent.getByLabel("simpleSecondaryVertexHighEffBJetTags",          ssvheTags);  
-	iEvent.getByLabel("simpleInclusiveSecondaryVertexHighEffBJetTags", ivfTags); 
-	iEvent.getByLabel("combinedSecondaryVertexBJetTags",               origcsvTags);       
-	iEvent.getByLabel("combinedSecondaryVertexRetrainedBJetTags",      csvTags);           
-	iEvent.getByLabel("combinedCSVJPBJetTags",                         jpcsvTags);         
-	iEvent.getByLabel("combinedCSVSLBJetTags",                         slcsvTags);         
-	iEvent.getByLabel("combinedCSVJPSLBJetTags",                 supercsvTags);      
-	edm::Handle<std::vector<reco::SecondaryVertexTagInfo> > svTagInfo, ivfTagInfo;
-	iEvent.getByLabel("secondaryVertexTagInfos",                        svTagInfo);
-	iEvent.getByLabel("inclusiveSecondaryVertexFinderTagInfosFiltered", ivfTagInfo);
+        if(analysisCfg_.getParameter<edm::InputTag>("jetSource").label()!=""){
 
-	for(unsigned int ijet=0; ijet<jetH->size(); ++ijet)
-	{
-		edm::RefToBase<pat::Jet> jetRef(edm::Ref<pat::JetCollection>(jetH,ijet));
-		const pat::Jet *patjet              = &((*jetH)[ijet]);
-		const reco::Candidate *genParton = patjet->genParton();
-		const reco::GenJet *genJet       = patjet->genJet();
+		Handle<pat::JetCollection> jetH;
+		iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("jetSource"), jetH);
+		edm::Handle<edm::ValueMap<float> >  qgTaggerH;
+		iEvent.getByLabel("QGTagger","qgLikelihood", qgTaggerH);
+		edm::Handle<reco::JetTagCollection> tchpTags,   jpTags,    ssvheTags,    ivfTags,    origcsvTags,    csvTags,    jpcsvTags,    slcsvTags, supercsvTags;
+		iEvent.getByLabel("trackCountingHighPurBJetTags",                  tchpTags);          
+		iEvent.getByLabel("jetProbabilityBJetTags",                        jpTags);            
+		iEvent.getByLabel("simpleSecondaryVertexHighEffBJetTags",          ssvheTags);  
+		iEvent.getByLabel("simpleInclusiveSecondaryVertexHighEffBJetTags", ivfTags); 
+		iEvent.getByLabel("combinedSecondaryVertexBJetTags",               origcsvTags);       
+		iEvent.getByLabel("combinedSecondaryVertexRetrainedBJetTags",      csvTags);           
+		iEvent.getByLabel("combinedCSVJPBJetTags",                         jpcsvTags);         
+		iEvent.getByLabel("combinedCSVSLBJetTags",                         slcsvTags);         
+		iEvent.getByLabel("combinedCSVJPSLBJetTags",                 supercsvTags);      
+		edm::Handle<std::vector<reco::SecondaryVertexTagInfo> > svTagInfo, ivfTagInfo;
+		iEvent.getByLabel("secondaryVertexTagInfos",                        svTagInfo);
+		iEvent.getByLabel("inclusiveSecondaryVertexFinderTagInfosFiltered", ivfTagInfo);
 
-		//pre-selection (note: raw jet energy must be used otherwise you'll have large inefficiencies for |eta|>3!!!!)
-		float rawJetEn( patjet->correctedJet("Uncorrected").energy() );
-		float nhf( (patjet->neutralHadronEnergy() + patjet->HFHadronEnergy())/rawJetEn );
-		float nef( patjet->neutralEmEnergy()/rawJetEn );
-		float cef( patjet->chargedEmEnergy()/rawJetEn );
-		float chf( patjet->chargedHadronEnergy()/rawJetEn );
-		float nch    = patjet->chargedMultiplicity();
-		float nconst = patjet->numberOfDaughters();
-		bool passLooseId(nhf<0.99  && nef<0.99 && nconst>1);
-		bool passMediumId(nhf<0.95 && nef<0.95 && nconst>1);
-		bool passTightId(nhf<0.90  && nef<0.90 && nconst>1);
-		if(fabs(patjet->eta())<2.4) {
-			passLooseId  &= (chf>0 && nch>0 && cef<0.99);
-			passMediumId &= (chf>0 && nch>0 && cef<0.99);
-			passTightId  &= (chf>0 && nch>0 && cef<0.99);
-		}
-		if(patjet->pt()<10 || fabs(patjet->eta())>4.7 /*|| !passLooseId*/) continue;
-
-		//save information
-                llvvJet jet;
-                jet.SetPxPyPzE(patjet->px(), patjet->py(), patjet->pz(), patjet->energy());
-		jet.torawsf     = patjet->correctedJet("Uncorrected").pt()/patjet->pt();
-		jet.genflav     = patjet->partonFlavour();
-		jet.genid       = genParton ? genParton->pdgId() : 0;
-                if(genParton)jet.gen.SetPxPyPzE(genParton->px(), genParton->py(), genParton->pz(), genParton->energy());
-//		jet.genpx       = genParton ? genParton->px()    : 0;
-//		jet.genpy       = genParton ? genParton->py()    : 0;
-//		jet.genpz       = genParton ? genParton->pz()    : 0;
-//		jet.genen       = genParton ? genParton->energy(): 0;
-                if(genJet)jet.genj.SetPxPyPzE(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
-//		jet.genjpx      = genJet    ? genJet->px()       : 0;
-//		jet.genjpy      = genJet    ? genJet->py()       : 0;
-//		jet.genjpz      = genJet    ? genJet->pz()       : 0;
-//		jet.genjen      = genJet    ? genJet->energy()   : 0;
-		jet.neutHadFrac = patjet->neutralHadronEnergyFraction();
-		jet.neutEmFrac  = patjet->neutralEmEnergyFraction();
-		jet.chHadFrac   = patjet->chargedHadronEnergyFraction();
-		jet.muFrac      = patjet->muonEnergyFraction();
-		jet.area        = patjet->jetArea();
-
-		jet.tchp        = (*tchpTags)[ijet].second;
-		jet.jp          = (*jpTags)[ijet].second;
-		jet.ssvhe       = (*ssvheTags)[ijet].second;
-		jet.ivf         = (*ivfTags)[ijet].second;
-		jet.origcsv     = (*origcsvTags)[ijet].second;
-		jet.csv         = (*csvTags)[ijet].second;
-		jet.jpcsv       = (*jpcsvTags)[ijet].second;
-		jet.slcsv       = (*slcsvTags)[ijet].second;
-		jet.supercsv    = (*supercsvTags)[ijet].second;
-
-		//secondary vertex from associated tracks
-		if(svTagInfo.isValid() && svTagInfo->size()>ijet);
+		for(unsigned int ijet=0; ijet<jetH->size(); ++ijet)
 		{
-			const reco::SecondaryVertexTagInfo &sv= (*svTagInfo)[ijet];
-			int nsvtx=sv.nVertices();
-			jet.svxNtrk=0;
-			jet.svxLxy=0;
-			jet.svxLxyErr=0;
-			jet.svxM=0;
-			jet.svxPx=0;
-			jet.svxPy=0;
-			jet.svxPz=0;
-			if(nsvtx)
-			{  
-				for (reco::Vertex::trackRef_iterator titt = sv.secondaryVertex(0).tracks_begin(); titt != sv.secondaryVertex(0).tracks_end(); titt++) jet.svxNtrk++;
-				jet.svxLxy    = sv.flightDistance(0).value();
-				jet.svxLxyErr = sv.flightDistance(0).error();
-				jet.svxM      = sv.secondaryVertex(0).p4().mass();
-				jet.svxPx     = sv.secondaryVertex(0).p4().px();
-				jet.svxPy     = sv.secondaryVertex(0).p4().py();
-				jet.svxPz     = sv.secondaryVertex(0).p4().pz();
+			edm::RefToBase<pat::Jet> jetRef(edm::Ref<pat::JetCollection>(jetH,ijet));
+			const pat::Jet *patjet              = &((*jetH)[ijet]);
+			const reco::Candidate *genParton = patjet->genParton();
+			const reco::GenJet *genJet       = patjet->genJet();
+
+			//pre-selection (note: raw jet energy must be used otherwise you'll have large inefficiencies for |eta|>3!!!!)
+			float rawJetEn( patjet->correctedJet("Uncorrected").energy() );
+			float nhf( (patjet->neutralHadronEnergy() + patjet->HFHadronEnergy())/rawJetEn );
+			float nef( patjet->neutralEmEnergy()/rawJetEn );
+			float cef( patjet->chargedEmEnergy()/rawJetEn );
+			float chf( patjet->chargedHadronEnergy()/rawJetEn );
+			float nch    = patjet->chargedMultiplicity();
+			float nconst = patjet->numberOfDaughters();
+			bool passLooseId(nhf<0.99  && nef<0.99 && nconst>1);
+			bool passMediumId(nhf<0.95 && nef<0.95 && nconst>1);
+			bool passTightId(nhf<0.90  && nef<0.90 && nconst>1);
+			if(fabs(patjet->eta())<2.4) {
+				passLooseId  &= (chf>0 && nch>0 && cef<0.99);
+				passMediumId &= (chf>0 && nch>0 && cef<0.99);
+				passTightId  &= (chf>0 && nch>0 && cef<0.99);
 			}
-		}
+			if(patjet->pt()<10 || fabs(patjet->eta())>4.7 /*|| !passLooseId*/) continue;
 
-		//secondary vertex from inclusive tracks
-		if(ivfTagInfo.isValid() && ivfTagInfo->size()>ijet)
-		{
-			const reco::SecondaryVertexTagInfo &sv= (*ivfTagInfo)[ijet];
-			int nsvtx=sv.nVertices();
-			jet.ivfNtrk=0;
-			jet.ivfLxy=0;
-			jet.ivfLxyErr=0;
-			jet.ivfM=0;
-			jet.ivfPx=0;
-			jet.ivfPy=0;
-			jet.ivfPz=0;
-			if(nsvtx)
+			//save information
+			llvvJet jet;
+			jet.SetPxPyPzE(patjet->px(), patjet->py(), patjet->pz(), patjet->energy());
+			jet.torawsf     = patjet->correctedJet("Uncorrected").pt()/patjet->pt();
+			jet.genflav     = patjet->partonFlavour();
+			jet.genid       = genParton ? genParton->pdgId() : 0;
+			if(genParton)jet.gen.SetPxPyPzE(genParton->px(), genParton->py(), genParton->pz(), genParton->energy());
+	//		jet.genpx       = genParton ? genParton->px()    : 0;
+	//		jet.genpy       = genParton ? genParton->py()    : 0;
+	//		jet.genpz       = genParton ? genParton->pz()    : 0;
+	//		jet.genen       = genParton ? genParton->energy(): 0;
+			if(genJet)jet.genj.SetPxPyPzE(genJet->px(), genJet->py(), genJet->pz(), genJet->energy());
+	//		jet.genjpx      = genJet    ? genJet->px()       : 0;
+	//		jet.genjpy      = genJet    ? genJet->py()       : 0;
+	//		jet.genjpz      = genJet    ? genJet->pz()       : 0;
+	//		jet.genjen      = genJet    ? genJet->energy()   : 0;
+			jet.neutHadFrac = patjet->neutralHadronEnergyFraction();
+			jet.neutEmFrac  = patjet->neutralEmEnergyFraction();
+			jet.chHadFrac   = patjet->chargedHadronEnergyFraction();
+			jet.muFrac      = patjet->muonEnergyFraction();
+			jet.area        = patjet->jetArea();
+
+			jet.tchp        = (*tchpTags)[ijet].second;
+			jet.jp          = (*jpTags)[ijet].second;
+			jet.ssvhe       = (*ssvheTags)[ijet].second;
+			jet.ivf         = (*ivfTags)[ijet].second;
+			jet.origcsv     = (*origcsvTags)[ijet].second;
+			jet.csv         = (*csvTags)[ijet].second;
+			jet.jpcsv       = (*jpcsvTags)[ijet].second;
+			jet.slcsv       = (*slcsvTags)[ijet].second;
+			jet.supercsv    = (*supercsvTags)[ijet].second;
+
+			//secondary vertex from associated tracks
+			if(svTagInfo.isValid() && svTagInfo->size()>ijet);
 			{
-				for (reco::Vertex::trackRef_iterator titt = sv.secondaryVertex(0).tracks_begin(); titt != sv.secondaryVertex(0).tracks_end(); titt++) jet.ivfNtrk++;
-				jet.ivfLxy    = sv.flightDistance(0).value();
-				jet.ivfLxyErr = sv.flightDistance(0).error();
-				jet.ivfM      = sv.secondaryVertex(0).p4().mass();
-				jet.ivfPx     = sv.secondaryVertex(0).p4().px();
-				jet.ivfPy     = sv.secondaryVertex(0).p4().py();
-				jet.ivfPz     = sv.secondaryVertex(0).p4().pz();
+				const reco::SecondaryVertexTagInfo &sv= (*svTagInfo)[ijet];
+				int nsvtx=sv.nVertices();
+				jet.svxNtrk=0;
+				jet.svxLxy=0;
+				jet.svxLxyErr=0;
+				jet.svxM=0;
+				jet.svxPx=0;
+				jet.svxPy=0;
+				jet.svxPz=0;
+				if(nsvtx)
+				{  
+					for (reco::Vertex::trackRef_iterator titt = sv.secondaryVertex(0).tracks_begin(); titt != sv.secondaryVertex(0).tracks_end(); titt++) jet.svxNtrk++;
+					jet.svxLxy    = sv.flightDistance(0).value();
+					jet.svxLxyErr = sv.flightDistance(0).error();
+					jet.svxM      = sv.secondaryVertex(0).p4().mass();
+					jet.svxPx     = sv.secondaryVertex(0).p4().px();
+					jet.svxPy     = sv.secondaryVertex(0).p4().py();
+					jet.svxPz     = sv.secondaryVertex(0).p4().pz();
+				}
 			}
-		}
 
-		PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet), 0, primVtx.get(), *vtxH.product(), true);
-		PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet), 0, primVtx.get(), *vtxH.product(), true);
-		jet.beta        = puIdentifier.beta();
-		jet.betaStar    = puIdentifier.betaStar();
-		jet.dRMean      = puIdentifier.dRMean();
-		jet.dR2Mean     = puIdentifier.dR2Mean();
-		jet.ptRMS       = puIdentifier.ptRMS();
-		jet.ptD         = puIdentifier.ptD();
-		jet.etaW        = puIdentifier.etaW();
-		jet.phiW        = puIdentifier.phiW();
-		jet.puMVA       = puIdentifier.mva();
-		jet.qgMVA       = qgTaggerH.isValid() ? (*qgTaggerH)[jetRef] : 0;
-
-		//save pf constituents (only for jets with pT>20 in the central region)
-		jet.pfstart=-1;
-		jet.pfend=-1;
-		if(keepPfCandidates>0 && patjet->pt()>20 && fabs(patjet->eta())<3)
-		{
-			const std::vector<reco::PFCandidatePtr> pfConst = patjet->getPFConstituents();
-			jet.pfstart=pfColl.size();
-			for(unsigned int ipf=0; ipf<pfConst.size(); ipf++)
+			//secondary vertex from inclusive tracks
+			if(ivfTagInfo.isValid() && ivfTagInfo->size()>ijet)
 			{
-                                llvvPFParticle pfPart;
-                                pfPart.SetPxPyPzE(pfConst[ipf]->px(), pfConst[ipf]->py(), pfConst[ipf]->pz(), pfConst[ipf]->energy());
-                                pfPart.id     = pfConst[ipf]->pdgId();
-                                pfPart.charge = pfConst[ipf]->charge();
-                                pfColl.push_back(pfPart);
+				const reco::SecondaryVertexTagInfo &sv= (*ivfTagInfo)[ijet];
+				int nsvtx=sv.nVertices();
+				jet.ivfNtrk=0;
+				jet.ivfLxy=0;
+				jet.ivfLxyErr=0;
+				jet.ivfM=0;
+				jet.ivfPx=0;
+				jet.ivfPy=0;
+				jet.ivfPz=0;
+				if(nsvtx)
+				{
+					for (reco::Vertex::trackRef_iterator titt = sv.secondaryVertex(0).tracks_begin(); titt != sv.secondaryVertex(0).tracks_end(); titt++) jet.ivfNtrk++;
+					jet.ivfLxy    = sv.flightDistance(0).value();
+					jet.ivfLxyErr = sv.flightDistance(0).error();
+					jet.ivfM      = sv.secondaryVertex(0).p4().mass();
+					jet.ivfPx     = sv.secondaryVertex(0).p4().px();
+					jet.ivfPy     = sv.secondaryVertex(0).p4().py();
+					jet.ivfPz     = sv.secondaryVertex(0).p4().pz();
+				}
 			}
-			jet.pfend=pfColl.size()-1;
+
+			PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet), 0, primVtx.get(), *vtxH.product(), true);
+			PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet), 0, primVtx.get(), *vtxH.product(), true);
+			jet.beta        = puIdentifier.beta();
+			jet.betaStar    = puIdentifier.betaStar();
+			jet.dRMean      = puIdentifier.dRMean();
+			jet.dR2Mean     = puIdentifier.dR2Mean();
+			jet.ptRMS       = puIdentifier.ptRMS();
+			jet.ptD         = puIdentifier.ptD();
+			jet.etaW        = puIdentifier.etaW();
+			jet.phiW        = puIdentifier.phiW();
+			jet.puMVA       = puIdentifier.mva();
+			jet.qgMVA       = qgTaggerH.isValid() ? (*qgTaggerH)[jetRef] : 0;
+
+			//save pf constituents (only for jets with pT>20 in the central region)
+			jet.pfstart=-1;
+			jet.pfend=-1;
+			if(keepPfCandidates>0 && patjet->pt()>20 && fabs(patjet->eta())<3)
+			{
+				const std::vector<reco::PFCandidatePtr> pfConst = patjet->getPFConstituents();
+				jet.pfstart=pfColl.size();
+				for(unsigned int ipf=0; ipf<pfConst.size(); ipf++)
+				{
+					llvvPFParticle pfPart;
+					pfPart.SetPxPyPzE(pfConst[ipf]->px(), pfConst[ipf]->py(), pfConst[ipf]->pz(), pfConst[ipf]->energy());
+					pfPart.id     = pfConst[ipf]->pdgId();
+					pfPart.charge = pfConst[ipf]->charge();
+					pfColl.push_back(pfPart);
+				}
+				jet.pfend=pfColl.size()-1;
+			}
+
+			//a summary of the id bits
+			jet.idbits =
+				(passLooseId << 0)
+				| (passMediumId << 1)
+				| (passTightId << 2)
+				| ( ( uint(puIdentifier.idFlag()) & 0xf ) << 3 )
+				| ( ( uint(cutBasedPuIdentifier.idFlag()) & 0xf ) << 7 );
+
+                        if(jet.pt()>jetPtCut){
+   		          jetColl.push_back(jet);
+                        }
 		}
-
-		//a summary of the id bits
-		jet.idbits =
-			(passLooseId << 0)
-			| (passMediumId << 1)
-			| (passTightId << 2)
-			| ( ( uint(puIdentifier.idFlag()) & 0xf ) << 3 )
-			| ( ( uint(cutBasedPuIdentifier.idFlag()) & 0xf ) << 7 );
-
-               jetColl.push_back(jet);
-	}
+        }
 
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
   //PF Candidates 
@@ -957,9 +1124,9 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
                    //require it to be associated to the primary vertex
                    int bestVtx(-1);
+                   float bestDz(9999.);
                    if(trackBaseRef.isAvailable())
                    {
-                           float bestDz(9999.);
                            for(size_t jVtx=0; jVtx<vtxH->size(); jVtx++)
                            {
                                    const reco::VertexRef vtxref(vtxH,jVtx);
@@ -975,7 +1142,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
                    pfPart.SetPxPyPzE(cand.px(), cand.py(), cand.pz(), cand.energy());
                    pfPart.id     = cand.pdgId();
                    pfPart.charge = cand.charge();
-                   pfColl.push_back(pfPart);
+                   if(pfPart.pt()>pfCandPtCut && bestDz<pfCandDzMax)pfColl.push_back(pfPart);
            }
        }
 
@@ -1033,6 +1200,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
        //adding the lepton collection (including all references) to the EVENT
        iEvent.put(genEvOut);
        iEvent.put(lepCollOut);         
+       iEvent.put(tauCollOut);
        iEvent.put(phoCollOut);
        iEvent.put(jetCollOut);
        iEvent.put(pfCollOut);
