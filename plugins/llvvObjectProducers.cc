@@ -720,7 +720,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		   tauInfo.isPF                       = tau->isPFTau();
 		   tauInfo.genid                      = genLep ? genLep->pdgId() :0;
 		   if(genLep)tauInfo.gen.SetPxPyPzE(genLep->px(), genLep->py(), genLep->pz(), genLep->energy());
-		   if(tau->leadPFChargedHadrCand().isNonnull()){
+		   if(tau->leadPFChargedHadrCand().isNonnull() &&  tau->leadPFChargedHadrCand()->trackRef().isNonnull()){
 		   tauInfo.trkchi2                    = tau->leadPFChargedHadrCand()->trackRef()->normalizedChi2();
 		   tauInfo.trkValidPixelHits          = tau->leadPFChargedHadrCand()->trackRef()->hitPattern().numberOfValidPixelHits();
 		   tauInfo.trkValidTrackerHits        = tau->leadPFChargedHadrCand()->trackRef()->hitPattern().numberOfValidTrackerHits();
@@ -734,7 +734,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		   }
 		   tauInfo.vz      = tau->vz();
 		   tauInfo.z_expo = 0;
-		   if (tau->leadPFChargedHadrCand().isNonnull()) {
+		   if (tau->leadPFChargedHadrCand().isNonnull() && tau->leadPFChargedHadrCand()->trackRef().isNonnull()) {
 		     reco::TransientTrack track(tau->leadPFChargedHadrCand()->trackRef(), magField, geomHandle);
 		     TransverseImpactPointExtrapolator extrapolator(magField);
 		     TrajectoryStateOnSurface closestOnTransversePlaneState = extrapolator.extrapolate(track.impactPointState(), GlobalPoint(beamSpotH->position().x(), beamSpotH->position().y(), 0.0));
