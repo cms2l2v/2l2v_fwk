@@ -75,6 +75,14 @@ namespace {
   edm::Wrapper<llvvPFParticle> j6;
   edm::Wrapper<llvvPFParticleCollection> j7;
 
+  llvvTau t1;
+  llvvTauCollection t2;
+  llvvTauRef t3;
+  llvvTauRefProd t4;
+  llvvTauRefVector t5;
+  edm::Wrapper<llvvTau> t6;
+  edm::Wrapper<llvvTauCollection> t7;
+
 
  }
 }

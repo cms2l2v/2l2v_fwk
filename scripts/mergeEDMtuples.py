@@ -4,21 +4,30 @@ import os,sys
 import json
 import optparse
 import commands
-from UserCode.llvv_fwk.storeTools_cff import fillFromStore, addPrefixSuffixToFileList
+from UserCode.llvv_fwk.storeTools_cff import fillFromStore, addPrefixSuffixToFileList, removeDuplicates
 import LaunchOnCondor
 
-
+"""
+Gets the value of a given item
+(if not available a default value is returned)
+"""
+def getByLabel(desc,key,defaultVal=None) :
+    try :
+        return desc[key]
+    except KeyError:
+        return defaultVal
 
 
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
 parser.add_option('-i', '--inDir'      ,    dest='inDir'              , help='input directory containing the crab output'           , default='/store/cmst3/user/querten/2013_Jul_EDMtuples')
-parser.add_option('-o', '--outDir'     ,    dest='outDir'             , help='output directory where the merged file will be moved' , default='/store/cmst3/user/querten/2013_Jul_EDMtuples_merged')
+parser.add_option('-o', '--outDir'     ,    dest='outDir'             , help='output directory where the merged file will be moved' , default='/store/user/querten/2013_Jul_EDMtuples_merged')
 parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue'                                          , default='2nd')
 parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'                          , default='pool>30000')
 parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                                    , default='')
 parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag'               , default='all')
 parser.add_option('-n', '--n'          ,    dest='fperjob'            , help='input files per job'                                  , default=-1,  type=int)
+parser.add_option('-D', '--duplicates' ,    dest='duplicates'         , help='clean the input directory for duplicates'             , default=False)
 (opt, args) = parser.parse_args()
 
 
@@ -48,14 +57,42 @@ for proc in procList :
             inputdir = opt.inDir+"/"+d['dtag'];
             print str(d['dtag'])+" --> "+inputdir
 
+            if(opt.duplicates):
+               dirToClean = inputdir
+               if(dirToClean.find('/storage/data/cms/store/')): dirToClean = dirToClean.replace('/storage/data/cms/store/', '/storage_rw/data/cms/store/') #Hack for Louvain T2
+               removeDuplicates(dirToClean);
 
             filenames=fillFromStore(inputdir,0,-1,False)
             nfiles=len(filenames)
             filenames=addPrefixSuffixToFileList("   '", filenames, "',")
 
-            LaunchOnCondor.Jobs_RunHere        = 0
-            LaunchOnCondor.Jobs_Queue          = opt.queue
-#            LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
-            LaunchOnCondor.ListToFile(filenames, "/tmp/InputFile_"+d['dtag']+".txt")                
-            LaunchOnCondor.Jobs_FinalCmds = ['ls', 'cmsStageOut out.root ' + opt.outDir+"/"+d['dtag']+".root"]
-            LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag'], filenames, "'out.root'", "'keep *'")
+            split=getByLabel(d,'split',1)
+            NFilesToMerge = nfiles//split
+            NFilesToMergeRemains = nfiles%split 
+            startFile = 0
+            endFile = 0 
+            for segment in range(0,split) :
+                startFile = endFile 
+                endFile   = endFile + NFilesToMerge
+                if(NFilesToMergeRemains>0):
+                    endFile+=1
+                    NFilesToMergeRemains-=1
+
+                mergedFileName = d['dtag']
+                if(split>1): mergedFileName+='_' + str(segment)
+                mergedFileName+= '.root'
+                mergedFilePath = opt.outDir + "/" + mergedFileName
+
+                LaunchOnCondor.Jobs_RunHere        = 0
+                LaunchOnCondor.Jobs_Queue          = opt.queue
+                LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
+                #LaunchOnCondor.ListToFile(filenames[startFile:endFile], "/tmp/InputFile_"+d['dtag']+".txt")                
+                if(mergedFilePath.find('castor')>=0) :
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'rfcp '+mergedFileName+' ' + mergedFilePath]
+                elif(mergedFilePath.find('/store/')==0):
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'cmsStageOut '+mergedFileName+' ' + mergedFilePath]
+                else:
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + os.getcwd()+"/FARM_Merge/outputs/"+mergedFileName, 'ls -lth '+opt.outDir]                
+#                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + mergedFilePath, 'ls -lth '+opt.outDir]                
+#                   mergedFileName = 'file:'+mergedFilePath
+                LaunchOnCondor.SendCMSMergeJob("FARM_Merge", "Merge_"+d['dtag']+'_'+str(segment), filenames[startFile:endFile], "'"+mergedFileName+"'", "'keep *'")

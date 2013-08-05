@@ -94,8 +94,18 @@ public:
         }
 
         if(neverFilled){printf("SmartSelectionMonitor: histo = '%s' is empty for all the category, you may want to cleanup your project to remove this histogram\n",it->first.Data());}
-     }
-  
+     } 
+  }
+
+  //scale all histo by w
+  inline void Scale(double w){
+     for(Monitor_t::iterator it =allMonitors_.begin(); it!= allMonitors_.end(); it++){
+        std::map<TString, TH1*>* map = it->second;
+        for(std::map<TString, TH1*>::iterator h =map->begin(); h!= map->end(); h++){
+	  if(!(h->second)){continue;}
+          h->second->Scale(w);
+        }
+     } 
   }
 
 

@@ -107,7 +107,8 @@ int main(int argc, char* argv[])
   int jacknife(jacknifeCfg[0]), jacks(jacknifeCfg[1]);
   if(jacknife>0 && jacks>0) cout << "Jacknife will be applied to every " << jacknife << " out of " << jacks << " events" << endl;
   
-  TString url=runProcess.getParameter<std::string>("input");
+  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
+  TString url = TString(urls[0]);
   TString baseDir    = runProcess.getParameter<std::string>("dirName");
   TString outFileUrl(gSystem->BaseName(url));
   outFileUrl.ReplaceAll(".root","");

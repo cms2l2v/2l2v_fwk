@@ -1,6 +1,6 @@
 {
     "proc":[
-	{
+ 	{
         "tag":"VV",
         "isdata":false,
         "color":"592",
@@ -181,7 +181,7 @@
         },
 	{
          "tag":"t#bar{t}",
-	 "issignal":true,
+	 "issignal":false,
          "isdata":false,
          "color":"614",
          "lcolor":1,
@@ -207,9 +207,9 @@
         "marker":1,
         "data":[
 	    {
-                "dtag":"MC78TeV_TBH_M-250_8TeV-pythia6",
+                "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6",
                 "split":7,
-                "xsec":12.3,
+                "xsec":11.9413,
 	        "br":[0.04129783]
              }
            ]
@@ -228,17 +228,11 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6",
                 "split":10,
-                "xsec":12.3,
+                "xsec":11.9413,
 	        "br":[0.95870217]
              }
            ]
         },
-        {
-	   "tag":"data",
-	   "isdata":true,
-	   "color":1,
-           "fill":0,
-           "marker":20,
         {
 	   "tag":"data",
 	   "isdata":true,

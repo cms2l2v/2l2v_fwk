@@ -27,6 +27,11 @@ cvs co -r V00-00-08      RecoMET/METAnalyzers
 cvs co -r v1-2-3      -d QuarkGluonTagger/EightTeV       UserCode/tomc/QuarkGluonTagger/EightTeV                       
 cvs co -r V00-03-04   -d CMGTools/External               UserCode/CMG/CMGTools/External
 cvs co -r V00-09-03   -d SHarper/HEEPAnalyzer            UserCode/SHarper/HEEPAnalyzer
+
+# new stuff added for tauID
+cvs co -r V01-04-26 RecoTauTag/RecoTau 
+cvs co -r V01-04-14 RecoTauTag/Configuration
+
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
 
 wget "http://hepunx.rl.ac.uk/~adye/software/unfold/RooUnfold-1.1.1.tar.gz"

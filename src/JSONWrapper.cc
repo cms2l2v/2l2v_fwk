@@ -106,13 +106,18 @@ class Object
                 void Load      (const std::string& in);
                 void Print     (int Level=0);
                 bool   isTag(std::string searchkey) {for(unsigned int i=0;i<key.size();i++){if(key[i] == searchkey)return true;}return false; }
-                Object operator[] (std::string searchkey) {for(unsigned int i=0;i<key.size();i++){if(key[i] == searchkey)return obj[i];}return Object(); }
+                Object getObject  (std::string searchkey) {for(unsigned int i=0;i<key.size();i++){if(key[i] == searchkey)return obj[i];}return Object(); }
+                Object operator[] (std::string searchkey) {return getObject(searchkey); }
                 Object operator[] (int i                ) {return obj[i]; }
-                string toString(){return val;}
                 const char* c_str(){return val.c_str();}
+                string toString(){return val;}
                 double toDouble(){double tmp; sscanf(val.c_str(),"%lf",&tmp);return tmp;}
                 double toInt   (){int tmp; sscanf(val.c_str(),"%i",&tmp);return tmp;}
                 bool   toBool  (){if( (val[0]=='t' || val[0]=='T') && (val[1]=='r' || val[1]=='R') && (val[2]=='u' || val[2]=='U') && (val[3]=='e' || val[3]=='E') )return true; return false; }
+                string getString(std::string searchkey, std::string defaultValue=""   ){if(!isTag(searchkey)){return defaultValue;}else{ return getObject(searchkey).toString();  } }
+                double getDouble(std::string searchkey, double      defaultValue=0.0  ){if(!isTag(searchkey)){return defaultValue;}else{ return getObject(searchkey).toDouble();  } }
+                int    getInt   (std::string searchkey, int         defaultValue=0    ){if(!isTag(searchkey)){return defaultValue;}else{ return getObject(searchkey).toInt   ();  } }
+                bool   getBool  (std::string searchkey, bool        defaultValue=false){if(!isTag(searchkey)){return defaultValue;}else{ return getObject(searchkey).toBool  ();  } }
                 std::vector<Object>& daughters(){return obj;}
                 void add(std::string newkey, std::string newval){key.push_back(newkey); obj.push_back(Object(newval));}
                 void add(std::string newkey, double newval){char buffer[255];sprintf(buffer,"%f",newval); add(newkey,buffer);}

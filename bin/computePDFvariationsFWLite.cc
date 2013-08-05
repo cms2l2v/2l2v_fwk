@@ -75,7 +75,8 @@ int main(int argc, char* argv[])
     cout << "Sample is data...nothing to be done here" << endl;
     return -1;
   }
-  TString url=runProcess.getParameter<std::string>("input");
+  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
+  TString url = TString(urls[0]);
   TString outFileUrl(gSystem->BaseName(url));
   outFileUrl.ReplaceAll(".root","");
 
@@ -101,8 +102,6 @@ int main(int argc, char* argv[])
     return -1;
   }
 */
-  std::vector<std::string> urls;
-  urls.push_back(url.Data());
   fwlite::ChainEvent ev(urls);
 
 

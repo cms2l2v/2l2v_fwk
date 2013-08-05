@@ -1,10 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-
-isMC=True
-isTauEmbed=False
-gtag="FT_53_V21_AN4::All"
-#gtag="START53_V23::All"
+#Only for debug
+#isMC=True
+#isTauEmbed=False
+#gtag="FT_53_V21_AN4::All"
+##gtag="START53_V23::All"
 
 
 process = cms.Process("DataAna")
@@ -41,7 +41,7 @@ process.source = cms.Source("PoolSource",
                             fileNames = inputList
                             )
     
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
 try:
     print 'EDM output set to %s'%outFile
@@ -132,6 +132,9 @@ usePF2PAT(process,
           jetCorrections=('AK5PFchs', jecLevels),
           pvCollection=cms.InputTag('goodOfflinePrimaryVertices'),
           typeIMetCorrections=False)
+
+#from PhysicsTools.PatAlgos.tools.tauTools import *
+#switchToPFTauHPS(process)
 
 #setup trigger matching
 from UserCode.llvv_fwk.triggerMatching_cfg import *

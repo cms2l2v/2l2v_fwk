@@ -107,12 +107,44 @@ class llvvLepton : public LorentzVectorF
 
    //Specific Lepton Information
    llvvMuonInfoRef     muonInfoRef;
-   llvvElectronInfoRef     electronInfoRef;
+   llvvElectronInfoRef electronInfoRef;
 };
 typedef  std::vector<llvvLepton> llvvLeptonCollection;
 typedef  edm::Ref<llvvLeptonCollection> llvvLeptonRef;
 typedef  edm::RefProd<llvvLeptonCollection> llvvLeptonRefProd;
 typedef  edm::RefVector<llvvLeptonCollection> llvvLeptonRefVector;
+
+class llvvTau  : public LorentzVectorF {
+   public:
+   // constructor
+   llvvTau(){};
+   ~llvvTau(){};
+
+   //member variables
+   public:
+   int id,  genid, Tbits;
+   bool isPF;
+   uint64_t idbits;
+   LorentzVectorF gen;
+   float d0,        dZ,        ip3d,      ip3dsig;
+   float trkchi2, trkValidPixelHits, trkValidTrackerHits, trkLostInnerHits, trkPtErr;
+   std::vector<LorentzVectorF> tracks;
+   std::vector<LorentzVectorF> pi0s;
+
+   float vz, z_expo;
+   float emfraction, hcalEnergy, ecalEnergy;
+   LorentzVectorF jet;
+   int   numChargedParticlesSigCone, numNeutralHadronsSigCone, numPhotonsSigCone, numPiZeroSigCone, numParticlesSigCone;
+   int   numChargedParticlesIsoCone, numNeutralHadronsIsoCone, numPhotonsIsoCone,                   numParticlesIsoCone;
+   float ptSumChargedParticlesIsoCone, ptSumPhotonsIsoCone;
+   float mva_e_pi, mva_pi_mu, mva_e_mu;
+};
+typedef  std::vector<llvvTau> llvvTauCollection;
+typedef  edm::Ref<llvvTauCollection> llvvTauRef;
+typedef  edm::RefProd<llvvTauCollection> llvvTauRefProd;
+typedef  edm::RefVector<llvvTauCollection> llvvTauRefVector;
+
+
 
 class llvvPhoton : public LorentzVectorF
 {
@@ -224,12 +256,46 @@ class llvvJetExt : public llvvJet{
 typedef  std::vector<llvvJetExt> llvvJetExtCollection;
 
 //ALL Sorting functions
-static bool sort_llvvObjectByPt(const LorentzVectorF &a, const LorentzVectorF &b)  { return a.pt()>b.pt(); }
-static bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.supercsv>b.supercsv; }
+inline bool sort_llvvObjectByPt(const LorentzVectorF &a, const LorentzVectorF &b)  { return a.pt()>b.pt(); }
+inline bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.supercsv>b.supercsv; }
+
+//ONLY ADD STUFF AT THE END... CAN HOST UP TO 64 VARIABLES
+enum llvvTAUID {
+	 decayModeFinding
+	,byVLooseCombinedIsolationDeltaBetaCorr
+	,byLooseCombinedIsolationDeltaBetaCorr
+	,byMediumCombinedIsolationDeltaBetaCorr
+	,byTightCombinedIsolationDeltaBetaCorr
+	,byLooseCombinedIsolationDeltaBetaCorr3Hits
+	,byMediumCombinedIsolationDeltaBetaCorr3Hits
+	,byTightCombinedIsolationDeltaBetaCorr3Hits
+	,byCombinedIsolationDeltaBetaCorrRaw3Hits
+	,againstElectronLoose                    
+	,againstElectronMedium
+	,againstElectronTight
+	,againstElectronMVA3category
+        ,againstElectronMVA3raw
+	,againstElectronLooseMVA3
+	,againstElectronMediumMVA3
+	,againstElectronTightMVA3
+	,againstElectronVTightMVA3
+	,againstMuonLoose
+	,againstMuonMedium
+	,againstMuonTight
+	,againstMuonLoose2
+	,againstMuonMedium2
+	,againstMuonTight2
+	,againstMuonLoose3
+	,againstMuonTight3
+	,byIsolationMVAraw
+	,byLooseIsolationMVA
+	,byMediumIsolationMVA
+	,byTightIsolationMVA
+	,byIsolationMVA2raw
+	,byLooseIsolationMVA2
+	,byMediumIsolationMVA2
+	,byTightIsolationMVA2
+};
 
 
 #endif
-
-
-
-
