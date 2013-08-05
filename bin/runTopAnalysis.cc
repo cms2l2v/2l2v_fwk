@@ -86,7 +86,8 @@ int main(int argc, char* argv[])
     {
       TFile *dyF=TFile::Open(weightsFile[0].c_str());
       TH1* dysfH=(TH1 *)dyF->Get("dysf");
-      for(int ibin=1; ibin<=dysfH->GetXaxis()->GetNbins(); ibin++) { dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin); 
+      for(int ibin=1; ibin<=dysfH->GetXaxis()->GetNbins(); ibin++) { 
+	dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin); 
 	cout << dysfH->GetXaxis()->GetBinLabel(ibin) << " " << dysfH->GetBinContent(ibin) << endl;
       }
       dyF->Close();
@@ -157,6 +158,11 @@ int main(int argc, char* argv[])
   TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow",";Cutflow;Events",nsteps,0,nsteps) );
   for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
 
+  TString uelabels[]={"#geq 2 leptons", "dilepton", "#geq 2 jets", "#geq 2-btags"};
+  int nuesteps=sizeof(uelabels)/sizeof(TString);
+  TH1F *uecutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("ueevtflow",";Cutflow;Events",nuesteps,0,nuesteps) );
+  for(int ibin=0; ibin<nuesteps; ibin++) uecutflowH->GetXaxis()->SetBinLabel(ibin+1,uelabels[ibin]);
+  
   for(size_t ivar=0;ivar<systVars.size(); ivar++) 
     {
       Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1,systVars[ivar]);
@@ -169,7 +175,7 @@ int main(int argc, char* argv[])
     }
 
 
-  TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet"};
+  TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","osbtag","osbveto"};
   for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
     {
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
@@ -186,8 +192,10 @@ int main(int argc, char* argv[])
 	  
 	  if(ibin==1) continue;
 	  label="jet"; label+=(ibin-1);
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"pt",";Transverse momentum [GeV];Events",50,0,250) );
-	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"eta",";Pseudo-rapidity;Events",50,0,2.5) );
+	  Float_t jetPtaxis[]={30,35,40,45,50,55,60,65,70,80,90,100,125,150,200,250,500};
+	  const size_t nJetPtBins=sizeof(jetPtaxis)/sizeof(Float_t)-1;
+	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"pt",";Transverse momentum [GeV];Events",nJetPtBins,jetPtaxis) );
+	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"eta",";Pseudo-rapidity;Events",25,0,2.5) );
 	  TH1F *flavH=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"flav",";Flavor;Events",5,0,5) );
 	  for(int ibin=1; ibin<=5; ibin++)
 	    {
@@ -213,6 +221,7 @@ int main(int argc, char* argv[])
   LeptonEfficiencySF lepEff;
 
   UEAnalysis ueAn(controlHistos);
+  TNtuple *ueNtuple = ueAn.getSummaryTuple();
   BTVAnalysis btvAn(controlHistos,runSystematics);
   //LxyAnalysis lxyAn(controlHistos,runSystematics);
   
@@ -255,13 +264,16 @@ int main(int argc, char* argv[])
       spyEvents = new DataEventSummaryHandler;
       spyFile = TFile::Open(summaryName,"RECREATE");
       spyFile->rmdir(proctag);
-      spyDir = spyFile->mkdir(proctag);
+      spyDir = spyFile->mkdir("dataAnalyzer");
       TTree *outT = evSummary.getTree()->CloneTree(0);
       outT->SetTitle("Event summary");
       outT->SetDirectory(spyDir);
       outT->SetAutoSave(1000000);
       outT->Branch("weight",&evSummaryWeight,"weight/F"); 
       spyEvents->init(outT,false);
+
+      //add also other summary tuples
+      ueNtuple->SetDirectory(spyDir);
     }
 
 
@@ -404,6 +416,7 @@ int main(int argc, char* argv[])
 
       //select the jets
       data::PhysicsObjectCollection_t looseJets,selJets;
+      int nbtags(0);
       for(size_t ijet=0; ijet<jets.size(); ijet++)
 	{
 	  //cross-clean with selected leptons 
@@ -421,6 +434,7 @@ int main(int argc, char* argv[])
 	  looseJets.push_back(jets[ijet]);
 	  if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	  selJets.push_back(jets[ijet]);
+	  nbtags += (jets[ijet].getVal("csv")>0.405);
 	}
       sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByCSV);
       sort(selJets.begin(),  selJets.end(),  data::PhysicsObject_t::sortByCSV);
@@ -429,6 +443,7 @@ int main(int argc, char* argv[])
       //select the event
       if(selLeptons.size()<2) continue;
       controlHistos.fillHisto("evtflow", ch, 0, weight);
+      controlHistos.fillHisto("ueevtflow", ch, 0, weight);
       controlHistos.fillHisto("nvertices",  ch, ev.nvtx, weight);
 
       LorentzVector ll=selLeptons[0]+selLeptons[1];
@@ -444,11 +459,13 @@ int main(int argc, char* argv[])
       //
       // define control category and define DY weight: to be only applied to events passing the MET cut (it's an efficiency correction)
       std::vector<TString> ctrlCategs;
-      float dyWeight(1.0);
+      float dyWeight(1.0),ibtagdyWeight(1.0);
       if(isOS && passDilSelection && passJetSelection  && passMetSelection)   { ctrlCategs.push_back("");        if(dySFmap.find(chName)!=dySFmap.end()) dyWeight=dySFmap[chName]; }
       if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   { ctrlCategs.push_back("eq1jets"); if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) dyWeight=dySFmap[chName+"eq1jets"];}
       if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  { ctrlCategs.push_back("lowmet"); }
       if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  { ctrlCategs.push_back("eq1jetslowmet"); }
+      if(isOS && passDilSelection && passJetSelection  && nbtags>=2)          { ctrlCategs.push_back("osbtag");  if(dySFmap.find(chName+"osbtag")!=dySFmap.end())  ibtagdyWeight=dySFmap[chName+"osbtag"]; }
+      if(isOS && passDilSelection && passJetSelection  && nbtags==0)          { ctrlCategs.push_back("osbveto"); }
 
       //control distributions
       if(isOS && passDilSelection && passMetSelection) controlHistos.fillHisto("njets",        ch, selJets.size(), weight*dyWeight);
@@ -476,7 +493,7 @@ int main(int argc, char* argv[])
 	      else if(abs(flavId)>6)                flavId=1;
 	      else if(abs(flavId)==0)               flavId=0;
 	      else                                  flavId=2;
-	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"pt",        ch, selJets[ijet].pt(), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"pt",        ch, selJets[ijet].pt(), iweight, true);
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"eta",       ch, fabs(selJets[ijet].eta()), iweight);
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"flav",      ch, abs(flavId), iweight);
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"nobsmearpt",ch, abs(flavId)==5 ? selJets[ijet].pt() : selJets[ijet].getVal("jer"), iweight);
@@ -491,11 +508,29 @@ int main(int argc, char* argv[])
       //select the event
       if(!passDilSelection) continue;
       controlHistos.fillHisto("evtflow", ch, 1, weight);
+      if(isOS) controlHistos.fillHisto("ueevtflow", ch, 1, weight);
       
       if(passJetSelection) {
 
 	controlHistos.fillHisto("evtflow", ch, 2, weight);
-	
+
+	//UE event analysis with PF candidates
+	if(isOS){
+	  controlHistos.fillHisto("ueevtflow", ch, 2, weight);
+	  if(looseJets[0].pt()>30 && looseJets[1].pt()>30 && fabs(looseJets[0].eta())<2.5 && fabs(looseJets[1].eta())<2.5)
+	    {
+	      if(looseJets[0].getVal("csv")>0.405 && looseJets[1].getVal("csv")>0.405)
+		{
+		  float iweight( weight*ibtagdyWeight );
+		  controlHistos.fillHisto("ueevtflow", ch, 3, iweight);
+		  data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+		  ueAn.analyze(selLeptons,looseJets,met[0],pf,gen,ev.nvtx,iweight);
+		  if(saveSummaryTree) ueAn.fillSummaryTuple(xsecWeight);
+		}
+	    }
+	}
+
+	//other analysis
 	if(passMetSelection) {
 	  
 	  float iweight( weight*dyWeight );
@@ -503,11 +538,7 @@ int main(int argc, char* argv[])
 	  
 	  if(isOS) {
 	    controlHistos.fillHisto("evtflow", ch, 4, iweight);
-	    
-	    //UE event analysis with PF candidates
-	    data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-	    ueAn.analyze(selLeptons,looseJets,met[0],pf,gen,ev.nvtx,iweight);
-	    	    
+    	    
 	    //save selected event
 	    if(spyEvents){
 	      evSummaryWeight=xsecWeight*iweight;
@@ -527,7 +558,7 @@ int main(int argc, char* argv[])
 	      TString var=systVars[ivar];
 
 	      //re-select the jets
-	      int njets(0);
+	      int njets(0),nlocalbtags(0);
 	      for(size_t ijet=0; ijet<jets.size(); ijet++)
 		{
 		  float pt(jets[ijet].pt());
@@ -535,7 +566,10 @@ int main(int argc, char* argv[])
 		  if(var=="jerdown")   pt=jets[ijet].getVal("jerdown");
 		  if(var=="jesup")     pt=jets[ijet].getVal("jesup");
 		  if(var=="jesdown")   pt=jets[ijet].getVal("jesdown");
-		  if(fabs(jets[ijet].eta())<2.5 && pt>30) njets++;
+		  if(fabs(jets[ijet].eta())<2.5 && pt>30) {
+		    njets++;
+		    nlocalbtags += (jets[ijet].getVal("csv")>0.405);
+		  }
 		}
 	      if(njets<1) continue;
 	      bool passLocalJetSelection(njets>1);
@@ -549,13 +583,15 @@ int main(int argc, char* argv[])
 	      bool passLocalMetSelection( !isSameFlavor || iMet.pt()>40 );
 
 	      //event category and dy scale factor
-	      TString localCtrlCateg("");
-	      float idyWeight(1.0);
+	      TString localCtrlCateg(""), btagCtrlCateg("");
+	      float idyWeight(1.0),ibtagdyWeight(1.0);
 	      if(!passLocalMetSelection && !passLocalJetSelection) localCtrlCateg="eq1jetslowmet";
 	      if(!passLocalMetSelection && passLocalJetSelection)  localCtrlCateg="lowmet";
-	      if(passLocalMetSelection  && !passLocalJetSelection) { localCtrlCateg="eq1jets"; if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) idyWeight=dySFmap[chName+"eq1jets"]; }
-	      if(passLocalMetSelection  && passLocalJetSelection)  { localCtrlCateg="";        if(dySFmap.find(chName)!=dySFmap.end())           idyWeight=dySFmap[chName];           }
-	      
+	      if(passLocalMetSelection  && !passLocalJetSelection) { localCtrlCateg="eq1jets"; if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) idyWeight=dySFmap[chName+"eq1jets"];    }
+	      if(passLocalMetSelection  && passLocalJetSelection)  { localCtrlCateg="";        if(dySFmap.find(chName)!=dySFmap.end())           idyWeight=dySFmap[chName];              }
+	      if(passLocalJetSelection  && nlocalbtags>=2)         { btagCtrlCateg="osbtag";   if(dySFmap.find(chName+"osbtag")!=dySFmap.end())  ibtagdyWeight=dySFmap[chName+"osbtag"]; }
+	      if(passLocalJetSelection  && nlocalbtags==0)         { btagCtrlCateg="osbveto"; }
+
 	      //re-assign event weight
 	      float iweight(weightNom);
 	      if(var=="puup")   iweight=weightUp;
@@ -567,6 +603,12 @@ int main(int argc, char* argv[])
 	      float mtsum=utils::cmssw::getMT<LorentzVector>(selLeptons[0],iMet)+utils::cmssw::getMT<LorentzVector>(selLeptons[1],iMet);
 	      controlHistos.fillHisto(localCtrlCateg+"mtsum"+systVars[ivar],        ch, mtsum,          iweight);
 	      controlHistos.fillHisto(localCtrlCateg+"dilarccosine"+systVars[ivar], ch, thetall,        iweight);
+	      if(btagCtrlCateg!="")
+		{
+		  float ibtagweight(iweight*ibtagdyWeight/idyWeight);
+		  controlHistos.fillHisto(btagCtrlCateg+"mtsum"+systVars[ivar],        ch, mtsum,          ibtagweight);
+		  controlHistos.fillHisto(btagCtrlCateg+"dilarccosine"+systVars[ivar], ch, thetall,        ibtagweight);
+		}
 
 	      //final selection
 	      if(!passLocalMetSelection) continue;
@@ -582,7 +624,9 @@ int main(int argc, char* argv[])
   // 
   inF->Close();
   if(spyFile){
-    spyDir->cd(); spyEvents->getTree()->Write();
+    spyDir->cd(); 
+    spyEvents->getTree()->Write();
+    ueNtuple->Write();
     spyFile->Close();
   }
     

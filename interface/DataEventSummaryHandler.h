@@ -36,7 +36,7 @@ namespace data
     inline const PhysicsObject_t &getObject(TString key)           { return objs.find(key)->second; }
 
     static bool sortByPt(const data::PhysicsObject_t &a, const data::PhysicsObject_t &b)  { return a.pt()>b.pt(); }
-    static bool sortByCSV(const data::PhysicsObject_t &a, const data::PhysicsObject_t &b) { return a.vals.find("supercsv")->second>b.vals.find("supercsv")->second; }
+    static bool sortByCSV(const data::PhysicsObject_t &a, const data::PhysicsObject_t &b) { return a.vals.find("csv")->second>b.vals.find("csv")->second; }
 
     std::map<TString,Int_t > info;
     std::map<TString,Double_t> vals;
@@ -59,7 +59,7 @@ class DataEventSummaryHandler{
   
   //initialize
   bool init(TTree *t,bool needsToRecreate=true);
-  bool attach(TTree *t);
+  bool attach(TTree *t,bool readPFbranch=true);
 
   //r/w mode
   void fill() { if(t_) t_->Fill(); }

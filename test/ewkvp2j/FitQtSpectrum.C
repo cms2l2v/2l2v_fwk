@@ -101,12 +101,13 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
 {
   std::vector<int> colors, markers;
   std::vector<TString> categs,titles,mcg;
-  categs.push_back("mjjq016"); titles.push_back("M_{jj}<250");     colors.push_back(30); markers.push_back(20);
-  categs.push_back("mjjq033"); titles.push_back("250<M_{jj}<350"); colors.push_back(32); markers.push_back(24);
-  categs.push_back("mjjq049"); titles.push_back("350<M_{jj}<450"); colors.push_back(34); markers.push_back(21);
-  categs.push_back("mjjq066"); titles.push_back("450<M_{jj}<550"); colors.push_back(38); markers.push_back(25);
-  categs.push_back("mjjq083"); titles.push_back("550<M_{jj}<750"); colors.push_back(49); markers.push_back(22);
-  categs.push_back("mjjq092"); titles.push_back("M_{jj}>750");     colors.push_back(46); markers.push_back(26);
+  categs.push_back("mjjq016"); titles.push_back("M_{jj}<250");      colors.push_back(30); markers.push_back(20);
+  categs.push_back("mjjq033"); titles.push_back("250<M_{jj}<350");  colors.push_back(32); markers.push_back(24);
+  categs.push_back("mjjq049"); titles.push_back("350<M_{jj}<450");  colors.push_back(30); markers.push_back(24);
+  categs.push_back("mjjq066"); titles.push_back("450<M_{jj}<550");  colors.push_back(32); markers.push_back(20);
+  categs.push_back("mjjq083"); titles.push_back("550<M_{jj}<750");  colors.push_back(49); markers.push_back(20);
+  categs.push_back("mjjq092"); titles.push_back("750<M_{jj}<1000"); colors.push_back(46); markers.push_back(24);
+  categs.push_back("mjjq100"); titles.push_back("M_{jj}>1000");     colors.push_back(38); markers.push_back(24);
   /*
   categs.push_back("eq0jets");  titles.push_back("=0 jets");
   categs.push_back("eq1jets");  titles.push_back("=1 jets");
@@ -141,8 +142,10 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
   gStyle->SetOptTitle(0);
   TCanvas *c= new TCanvas("c","c",500,1000);          c->Divide(1,3);
   TCanvas *mcc= new TCanvas("mcc","mcc",500,1000);    mcc->Divide(1,3);
-  TCanvas *wc=new TCanvas("wc","wc",500,1000);        wc->Divide(1,ncategs);
-  TCanvas *mcwc=new TCanvas("mcwc","mcwc",1000,1000);  mcwc->Divide(2,ncategs/2);
+  int ncdivs(ncategs/2);
+  if(ncategs%2==1) ncdivs++;
+  TCanvas *wc=new TCanvas("wc","wc",500,1000);        wc->Divide(2,ncdivs);
+  TCanvas *mcwc=new TCanvas("mcwc","mcwc",1000,1000);  mcwc->Divide(2,ncdivs);
 
 
   //get histograms from files
@@ -172,12 +175,12 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
       TH1F *mmqt = (TH1F *)fIn->Get(llDir+"/mumu"+categs[icat]+"_"+llVar);
       TH1F *eeqt = (TH1F *)fIn->Get(llDir+"/ee"+categs[icat]+"_"+llVar);  
       TH1F *gqt  = (TH1F *)gIn->Get("data (#gamma)/mumu"+categs[icat]+"_qt");
-      if(categs[icat]=="mjjq092")
-	{
-	  if(mmqt) mmqt->Add( (TH1F *)fIn->Get(llDir+"/mumumjjq100_"+llVar) );
-	  if(eeqt) eeqt->Add( (TH1F *)fIn->Get(llDir+"/eemjjq100_"+llVar) );
-	  if(gqt) gqt->Add(  (TH1F *)gIn->Get("data (#gamma)/mumumjjq100_qt") );
-	}
+      //if(categs[icat]=="mjjq092")
+      //	{
+      //	  if(mmqt) mmqt->Add( (TH1F *)fIn->Get(llDir+"/mumumjjq100_"+llVar) );
+      //	  if(eeqt) eeqt->Add( (TH1F *)fIn->Get(llDir+"/eemjjq100_"+llVar) );
+      //	  if(gqt) gqt->Add(  (TH1F *)gIn->Get("data (#gamma)/mumumjjq100_qt") );
+      //	}
       formatQtHisto(mmqt,"mm"+categs[icat],   titles[icat], colors[icat],markers[icat]);
       formatQtHisto(eeqt,"ee"+categs[icat],   titles[icat], colors[icat],markers[icat]);
       formatQtHisto(gqt, "gamma"+categs[icat],titles[icat], colors[icat],markers[icat]);
@@ -185,18 +188,18 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
      
       //qt distributions in MC
       TH1F *mcmmqt=(TH1F *)fIn->Get(mcdy+"/mumu"+categs[icat]+"_"+llVar);
-      if(mcmmqt)
-	{
-	  if(categs[icat]=="mjjq092") mcmmqt->Add( (TH1F *)fIn->Get(mcdy+"/mumumjjq100_"+llVar) );
-	  mcmmqt->SetDirectory(0);
-	}
+      //if(mcmmqt)
+      //	{
+      //	  if(categs[icat]=="mjjq092") mcmmqt->Add( (TH1F *)fIn->Get(mcdy+"/mumumjjq100_"+llVar) );
+      //	  mcmmqt->SetDirectory(0);
+      //	}
 
       TH1F *mceeqt=(TH1F *)fIn->Get(mcdy+"/ee"+categs[icat]+"_"+llVar);
-      if(mceeqt!=0)
-	{
-	  if(categs[icat]=="mjjq092") mceeqt->Add( (TH1F *)fIn->Get(mcdy+"/eemjjq100_"+llVar) );
-	  mceeqt->SetDirectory(0);
-	}
+      //      if(mceeqt!=0)
+      //	{
+      //	  if(categs[icat]=="mjjq092") mceeqt->Add( (TH1F *)fIn->Get(mcdy+"/eemjjq100_"+llVar) );
+      //	  mceeqt->SetDirectory(0);
+      //	}
       
       TH1F *mcgqt=0;
       for(size_t imcg=0; imcg<mcg.size(); imcg++)
@@ -211,8 +214,8 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
 		}
 	      else
 		mcgqt->Add(ih);
-	      if(categs[icat]=="mjjq092")
-		mcgqt->Add(  (TH1F *)gIn->Get(mcg[imcg]+"/mumumjjq100_qt") );
+	      //if(categs[icat]=="mjjq092")
+	      //	mcgqt->Add(  (TH1F *)gIn->Get(mcg[imcg]+"/mumumjjq100_qt") );
 	    }
 	}
       formatQtHisto(mcmmqt,"mcmm"+categs[icat],   titles[icat], colors[icat],markers[icat]);
@@ -257,10 +260,11 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
 	      printCategoryToPlot(titles[icat]);
 	      if(icat==0) {
 		printCMSheader(false);
-		TLegend *leg = new TLegend(0.7,0.5,0.95,0.84,"","brNDC");
+		TLegend *leg = new TLegend(0.2,0.84,0.5,0.94,"","brNDC");
 		leg->SetFillStyle(0);
 		leg->SetBorderSize(0);
 		leg->SetTextFont(42);
+		leg->SetNColumns(2);
 		if(eewgtGr) leg->AddEntry(eewgtGr,"ee","f");
 		if(mmwgtGr) leg->AddEntry(mmwgtGr,"#mu#mu","f");
 		leg->Draw();
@@ -302,10 +306,11 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode)
 	      printCategoryToPlot(titles[icat]);
 	      if(icat==0) {
 		printCMSheader(true);
-		TLegend *leg = new TLegend(0.7,0.5,0.95,0.84,"","brNDC");
+		TLegend *leg = new TLegend(0.2,0.84,0.5,0.94,"","brNDC");
 		leg->SetFillStyle(0);
 		leg->SetBorderSize(0);
 		leg->SetTextFont(42);
+		leg->SetNColumns(2);
 		if(mceewgtGr) leg->AddEntry(mceewgtGr,"ee","f");
 		if(mcmmwgtGr) leg->AddEntry(mcmmwgtGr,"#mu#mu","f");
 		leg->Draw();

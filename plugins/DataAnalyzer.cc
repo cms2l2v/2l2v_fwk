@@ -245,7 +245,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	    else
 	      {
 		leptonIsOkToAccept &= passLepAccCut;
-
+		
 		//madgraph and pythia-based
 		if(  p.numberOfMothers()  == 1 &&  p.mother()->pdgId() != p.pdgId() && p.mother()->pdgId() != 23 && abs (p.mother()->pdgId() ) != 24 ) leptonIsOkToAccept=false;
 		
@@ -914,6 +914,17 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	      ev.pf_py[ev.pfn]     = pfConst[ipf]->py();
 	      ev.pf_pz[ev.pfn]     = pfConst[ipf]->pz();
 	      ev.pf_en[ev.pfn]     = pfConst[ipf]->energy();
+	      ev.pf_d0[ev.pfn]     = 0;
+	      ev.pf_d0err[ev.pfn]  = 0;
+	      ev.pf_dZ[ev.pfn]     = 0;
+	      ev.pf_dZerr[ev.pfn]  = 0;
+	      reco::TrackRef track = pfConst[ipf]->trackRef(); 
+	      if(!track.isNull()){
+		ev.pf_d0[ev.pfn]    = track->dxy( primVtx->position() );
+		ev.pf_d0err[ev.pfn] = track->dxyError();
+		ev.pf_dZ[ev.pfn]    = track->dz( primVtx->position() );
+		ev.pf_dZerr[ev.pfn] = track->dzError();
+	      } 
 	      ev.pfn++;
 	    }
 	  ev.jn_pfend[ev.jn]=ev.pfn-1;
@@ -962,9 +973,11 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       if(cand.charge()==0) continue;
       reco::TrackBaseRef trackBaseRef( cand.trackRef() );
       if(trackBaseRef.isNull()) continue;
+      float idz( fabs(trackBaseRef->dz( primVtx->position() )) );
+      if(idz>10) continue;
 
-      //minimum pT of 300 MeV
-      if(cand.pt()<0.3) continue;
+      //minimum pT of 500 MeV
+      if(cand.pt()<0.5) continue;
       
       //check for overlaps
       bool matches(false);
@@ -999,9 +1012,14 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.pf_py[ev.pfn]     = cand.py();
       ev.pf_pz[ev.pfn]     = cand.pz();
       ev.pf_en[ev.pfn]     = cand.energy();
+      ev.pf_d0[ev.pfn]     = trackBaseRef->dxy( primVtx->position() );
+      ev.pf_d0err[ev.pfn]  = trackBaseRef->dxyError();
+      ev.pf_dZ[ev.pfn]     = trackBaseRef->dz( primVtx->position() );
+      ev.pf_dZerr[ev.pfn]  = trackBaseRef->dzError();
+      if(fabs(ev.pf_dZ[ev.pfn])>3) continue;
       ev.pfn++;
     }
-
+  
   //all done here
   if(saveOnlyLeptons){
     ev.metn=0; ev.gn=0; ev.jn=0; ev.pfn=0;  ev.egn=0;

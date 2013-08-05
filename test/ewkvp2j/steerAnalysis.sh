@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# closure test
+# full analysis
 #
 
 step=$1
@@ -21,21 +21,21 @@ mkdir -p ${outdir}/g/data/qt_pure
 
 if [ "$step" == "1" ]; then
     echo "Submitting first pass"
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_samples.json        -d ${indir} -o ${outdir}/ll/              -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 8nh  
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_tight -c ${cfg} -p "@runSystematics=False @useMVA=True" -s 8nh
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_loose -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 8nh
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_samples.json        -d ${indir} -o ${outdir}/ll/              -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_tight -c ${cfg} -p "@runSystematics=False @useMVA=True" -s 1nd
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_loose -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
 fi
 
 if [ "$step" == "2" ]; then
     echo "Computing weights"
-#    runPlotter --iLumi 19736 --inDir ${outdir}/ll/               --json data/vbfz_samples.json        --outFile ${outdir}/plotter_qt.root           
+    runPlotter --iLumi 19736 --inDir ${outdir}/ll/               --json data/vbfz_samples.json        --outFile ${outdir}/plotter.root           
     runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_raw.root
     runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_raw.root
 
-    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_qt.root\",\"${outdir}/plotter_g_tight_raw.root\",ALL)" 
+    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_tight_raw.root\",ALL)" 
     mv gammawgts.root ~/work/ewkzp2j_539/tight_gamma_weights.root
 
-    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_qt.root\",\"${outdir}/plotter_g_loose_raw.root\",ALL)" 
+    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_loose_raw.root\",ALL)" 
     mv gammawgts.root ~/work/ewkzp2j_539/loose_gamma_weights.root
 fi
 

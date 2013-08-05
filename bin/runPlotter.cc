@@ -39,6 +39,7 @@ bool showChi2 = false;
 bool showUnc=false;
 double baseRelUnc=0.044;
 bool noLog=false;
+bool logX=false;
 bool isSim=false;
 bool do2D  = true;
 bool do1D  = true;
@@ -536,6 +537,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    t1->Draw();
    t1->cd();
    if(!noLog) t1->SetLogy(true);
+   if(logX)   t1->SetLogx(true);
    float maximumFound(false);//noLog);
 
    TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
@@ -759,6 +761,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        t2->SetPad(0,0.0,1.0,0.2);
        t2->SetTopMargin(0);
        t2->SetBottomMargin(0.5);
+       if(logX)   t2->SetLogx(true);
 
        //mc stats
        TH1D *denRelUncH=0;
@@ -1001,6 +1004,7 @@ int main(int argc, char* argv[]){
         printf("--chi2    --> show the data/MC chi^2\n"); 
         printf("--showUnc --> show stat uncertainty (if number is given use it as relative bin by bin uncertainty (e.g. lumi)\n"); 
 	printf("--noLog   --> use linear scale\n");
+	printf("--logX    --> use log scale on X\n");
         printf("--no1D   --> Skip processing of 1D objects\n");
         printf("--no2D   --> Skip processing of 2D objects\n");
         printf("--noTex  --> Do not create latex table (when possible)\n");
@@ -1040,6 +1044,7 @@ int main(int argc, char* argv[]){
      }
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
+     if(arg.find("--logX")!=string::npos){ logX = true;    }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
      if(arg.find("--no1D"  )!=string::npos){ do1D = false;    }
      if(arg.find("--noTex" )!=string::npos){ doTex= false;    }
