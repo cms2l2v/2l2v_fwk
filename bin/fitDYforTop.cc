@@ -142,7 +142,7 @@ int main(int argc,char *argv[])
   TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu",      "ee", "mumu"};
   size_t runNsystVars[]      ={1,                              nsystVars,               1,                                nsystVars,                 1,                       nsystVars, 1,1};
   TString signalRegionHisto[]={"ee_eq1jetsdilarccosine",       "ee_dilarccosine",       "mumu_eq1jetsdilarccosine",       "mumu_dilarccosine",       "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
-  TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbvetodilarccosine", "mumu_osbvetodilarccosine"};
+  TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
   TString templateTitle[]    ={"Z#rightarrow ee (=1 jets)",    "Z#rightarrow ee",       "Z#rightarrow #mu#mu (=1 jets)",  "Z#rightarrow #mu#mu",     "Z#rightarrow #tau#tau (=1 jets)", "Z#rightarrow #tau#tau", "Z#rightarrow ee", "Z#rightarrow #mu#mu"};
   TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu" ,"dytoee", "dytomumu"};
   size_t nchs=sizeof(ch)/sizeof(TString);

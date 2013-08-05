@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <unordered_map>
 
+#include "TSystem.h"
 #include "TROOT.h"
 #include "TFile.h"
 #include "TDirectory.h"
@@ -55,6 +56,8 @@ string outDir  = "Img/";
 string plotExt = ".png";
 string outFile = "plotter.root";
 string cutflowhisto = "all_cutflow";
+bool forceMerge=false;
+bool useMerged=false;
 
 struct stSampleInfo{ double PURescale_up; double PURescale_down; double initialNumberOfEvents;};
 std::unordered_map<string, stSampleInfo> sampleInfoMap;
@@ -71,6 +74,7 @@ struct NameAndType{
  };
 
 void checkSumw2(TH1 *h) { if(h==0) return;  if(h->GetDefaultSumw2()) h->Sumw2();  }
+void MergeSplittedSamples(JSONWrapper::Object& Root, std::string RootDir);
 
 
 TObject* GetObjectFromPath(TDirectory* File, std::string Path, bool GetACopy=false)
@@ -130,7 +134,8 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  //for(size_t id=0; id<Samples.size()&&id<2; id++){
 	  for(size_t id=0; id<Samples.size(); id++){
 	      int split = 1;
-	      if(Samples[id].isTag("split"))split = Samples[id]["split"].toInt();
+	      if(!useMerged && Samples[id].isTag("split"))split = Samples[id]["split"].toInt();
+
 	      string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
               string FileName = RootDir + (Samples[id])["dtag"].toString() +  (Samples[id].isTag("suffix")?(Samples[id])["suffix"].toString():string("")) + segmentExt + filtExt + ".root";
               printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
@@ -179,6 +184,31 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 }
 
+void MergeSplittedSamples(JSONWrapper::Object& Root, std::string RootDir)
+{
+  std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+  for(unsigned int i=0;i<Process.size();i++){
+    string filtExt("");
+    if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
+    std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
+    for(unsigned int j=0;j<Samples.size();j++){
+      int split = 1;
+      if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+      if(split==1) continue;
+
+      TString toHadd("");
+      for(int s=0;s<split;s++){
+	string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + segmentExt + filtExt + ".root";
+	toHadd += " " + FileName;
+      }
+      TString outName(RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + ".root");
+      //cout << "hadd -f -k "+ outName + toHadd << endl;
+      gSystem->Exec("hadd -f -k "+ outName + toHadd);
+    }
+  }
+}
+
 void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties){
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
@@ -188,7 +218,7 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
 	 int split = 1;
-	 if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
@@ -261,7 +291,8 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          if(HistoProperties.name.find("optim_cut")!=string::npos){Weight=1.0;}
 
          int split = 1;
-         if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+         
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
@@ -361,7 +392,8 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
          if(HistoProperties.name.find("pudown")!=string::npos){Weight *= sampleInfo.PURescale_down;}
 
          int split = 1;
-         if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
@@ -470,7 +502,8 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          if(HistoProperties.name.find("pudown")!=string::npos){Weight *= sampleInfo.PURescale_down;}         
 
          int split = 1;
-         if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
@@ -571,7 +604,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          if(HistoProperties.name.find("optim_cut")!=string::npos){Weight=1.0;}
 
          int split = 1; 
-         if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
@@ -871,7 +905,8 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
 
          int split = 1;
-         if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
+
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
@@ -1014,6 +1049,8 @@ int main(int argc, char* argv[]){
 	printf("--plotExt --> extension to save\n");
 	printf("--cutflow --> name of the histogram with the original number of events (cutflow by default)\n");
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
+        printf("--forceMerge --> merge splitted samples");
+	printf("--useMerged --> use merged splitted samples");
 
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;
@@ -1043,6 +1080,8 @@ int main(int argc, char* argv[]){
        printf("Uncertainty band will be included for MC with base relative uncertainty of: %3.2f",baseRelUnc);
      }
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
+     if(arg.find("--forceMerge")!=string::npos){ forceMerge = true;  useMerged=true;  }
+     if(arg.find("--useMerged")!=string::npos){ useMerged = true;    }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
      if(arg.find("--logX")!=string::npos){ logX = true;    }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
@@ -1062,6 +1101,7 @@ int main(int argc, char* argv[]){
    cutIndexStr = buf;
 
    JSONWrapper::Object Root(jsonFile, true);
+   if(forceMerge) MergeSplittedSamples(Root,inDir);
    GetInitialNumberOfEvents(Root,inDir,NameAndType(cutflowhisto,true, false));  //Used to get the rescale factor based on the total number of events geenrated
    std::list<NameAndType> histlist;
    GetListOfObject(Root,inDir,histlist);

@@ -333,23 +333,23 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfpt"             , ";Dijet p_{T} [GeV];Dijets",       50,0,500) );
   mon.addHistogram( new TH1F("met"               , ";E_{T}^{miss} [GeV]; Events",        50,0,500) );
   mon.addHistogram( new TH1F("metL"              , ";Axial E_{T}^{miss} [GeV]; Events",  50,-50,200) );
-
+  mon.addHistogram( new TH2F("vbfystarvsmjj",";Dijet invariant mass [GeV];y^{*}_{ll}=#eta_{ll}-(#eta_{j1}+#eta_{j2})/2;Events", 30,0,3000,25,0,5));
 
   //profiles for soft hadronic activity
   for(size_t i=0; i<2; i++)
     {
       TString softHadType(i==0 ? "soft" : "softin" );
       mon.addHistogram( new TH2F(softHadType+"jetsvsnvtx",";Number of vertices;Soft jet multiplicity;Events", 10,0,50,10,0,10));
-      mon.addHistogram( new TH2F(softHadType+"htvsnvtx",  ";Number of vertices;Soft H_{T} [GeV];Events",      10,0,50,50,0,500));
+      mon.addHistogram( new TH2F(softHadType+"htvsnvtx",  ";Number of vertices;Soft H_{T} [GeV];Events",      10,0,50,25,0,250));
       
-      mon.addHistogram( new TH2F(softHadType+"jetsvsmjj", ";Dijet invariant mass [GeV];Soft jet multiplicity;Events", 31,mjjaxis,10,0,10));
-      mon.addHistogram( new TH2F(softHadType+"htvsmjj",   ";Dijet invariant mass [GeV];Soft H_{T} [GeV];Events",      31,mjjaxis,50,0,500));
+      mon.addHistogram( new TH2F(softHadType+"jetsvsmjj", ";Dijet invariant mass [GeV];Soft jet multiplicity;Events", 30,0,3000,10,0,10));
+      mon.addHistogram( new TH2F(softHadType+"htvsmjj",   ";Dijet invariant mass [GeV];Soft H_{T} [GeV];Events",      30,0,3000,25,0,250));
       
-      mon.addHistogram( new TH2F(softHadType+"jetsvsdetajj",";Dijet pseudo-rapidity distance (#Delta#eta);Soft jet multiplicity;Events", 50,0,10,10,0,10));
-      mon.addHistogram( new TH2F(softHadType+"htvsdetajj",  ";Dijet pseudo-rapidity distance (#Delta#eta);Soft H_{T} [GeV];Events",      50,0,10,50,0,500));
+      mon.addHistogram( new TH2F(softHadType+"jetsvsdetajj",";Dijet pseudo-rapidity distance (#Delta#eta);Soft jet multiplicity;Events", 25,0,10,10,0,10));
+      mon.addHistogram( new TH2F(softHadType+"htvsdetajj",  ";Dijet pseudo-rapidity distance (#Delta#eta);Soft H_{T} [GeV];Events",      25,0,10,25,0,250));
       
-      mon.addHistogram( new TH2F(softHadType+"jetsvsdphijj",";Dijet azimuthal opening (#Delta#phi_{jj});Soft jet multiplicity;Events", 20,0,3.5,10,0,10));
-      mon.addHistogram( new TH2F(softHadType+"htvsdphijj",  ";Dijet azimuthal opening (#Delta#phi_{jj});Soft H_{T} [GeV];Events",      20,0,3.5,50,0,500));
+      mon.addHistogram( new TH2F(softHadType+"jetsvsdphijj",";Dijet azimuthal opening (#Delta#phi_{jj});Soft jet multiplicity;Events", 10,0,3.5,10,0,10));
+      mon.addHistogram( new TH2F(softHadType+"htvsdphijj",  ";Dijet azimuthal opening (#Delta#phi_{jj});Soft H_{T} [GeV];Events",      10,0,3.5,25,0,250));
     }
 
   
@@ -822,11 +822,12 @@ int main(int argc, char* argv[])
 	  //LorentzVector z_cm       = ROOT::Math::VectorUtil::boost( zll,  vbfBoost );
 	  
 	  for(size_t iotherjet=2; iotherjet<selJets.size(); iotherjet++){
+	    float ipt=selJets[iotherjet].pt();
+	    nj15++;
+	    htj15+=ipt; 
 	    bool isInRapGap(selJets[iotherjet].eta()>minEta && selJets[iotherjet].eta()<maxEta);
-	   
 	    if(isInRapGap)
 	      {
-		float ipt=selJets[iotherjet].pt();
 		if(ipt>pt3)
 		  {
 		    pt3=ipt;
@@ -846,14 +847,9 @@ int main(int argc, char* argv[])
 		      }
 		  }
 	      }
-	    else
-	      {
-		nj15++;
-		htj15++;
-	      }
 	  }
 	}
-
+      
       //set the variables to be used in the MVA evaluation (independently of its use)
       for(size_t ivar=0; ivar<tmvaVarNames.size(); ivar++) 
 	{
@@ -1030,6 +1026,7 @@ int main(int argc, char* argv[])
 		  mon.fillHisto("vbfspt",             selTags, spt,catWeight);
 		  mon.fillHisto("vbfdphijj",          selTags, fabs(dphijj),catWeight);
 		  mon.fillHisto("vbfystar",           selTags, fabs(ystar),catWeight);
+		  mon.fillHisto("vbfystarvsmjj",      selTags, mjj, fabs(ystar),catWeight);
 		  mon.fillHisto("vbfpt",              selTags, ptjj,catWeight);
 		  mon.fillHisto("met",                selTags, ptmiss,catWeight);
 		  mon.fillHisto("metL",               selTags, metL,catWeight);

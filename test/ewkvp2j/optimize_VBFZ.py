@@ -12,15 +12,16 @@ shapeBased='1'
 #shapeName='dijet_deta_shapes'
 shapeName='LikelihoodD_shapes'
 #shapeName='Fisher_shapes'
-inUrl='/afs/cern.ch/user/p/psilva/work/test/ll_19.6fbinv_ewkz.root'
+inUrl='/afs/cern.ch/user/p/psilva/www/FSQ-12-035/ll_19.6fbinv_ewkz.root'
 CWD=os.getcwd()
 phase=-1
 jsonUrl='/afs/cern.ch/user/p/psilva/work/CMSSW_5_3_11/src/UserCode/llvv_fwk/data/vbfz_samples.json'
 CMSSW_BASE=os.environ.get('CMSSW_BASE')
 sqrts='8'
-dyTemplates='/afs/cern.ch/user/p/psilva/work/test/gamma_19.6fbinv_ewkz.root'
+dyTemplates='/afs/cern.ch/user/p/psilva/www/FSQ-12-035/gamma_19.6fbinv_ewkz.root'
 smXsec=0.336
 blind=False
+swDir='/src/UserCode/llvv_fwk/'
 
 MASS = [0]
 SUBMASS = [0]
@@ -146,7 +147,7 @@ if( phase == 1 ):
       SCRIPT.writelines('cd ' + CMSSW_BASE + '/src;\n')
       SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+";\n")
       SCRIPT.writelines("eval `scram r -sh`;\n")
-      SCRIPT.writelines('cd ' + CMSSW_BASE + '/src/CMGTools/HtoZZ2l2nu/' + CWD + ';\n')
+      SCRIPT.writelines('cd ' + CMSSW_BASE + swDir + CWD + ';\n')
       for m in MASS:
          shapeBasedOpt=''
          if(shapeBased=='1') : shapeBasedOpt='--shape'
@@ -161,11 +162,11 @@ if( phase == 1 ):
          SCRIPT.writelines("combine -M MaxLikelihoodFit -m " +  str(m) + " --saveNormalizations card_combined.dat > COMB.log;\n")
          SCRIPT.writelines("tail -n 100 COMB.log > summary.log;\n")
          SCRIPT.writelines("grep -ir sig COMBSIG.log >> summary.log;\n")
-         SCRIPT.writelines("cat summary.log >> " +CMSSW_BASE + '/src/CMGTools/HtoZZ2l2nu/'+OUT+'/script_'+str(i)+'.log;\n')
+         SCRIPT.writelines("cat summary.log >> " +CMSSW_BASE + swDir+OUT+'/script_'+str(i)+'.log;\n')
          SCRIPT.writelines("extractFitNormalization.py mlfit.root hzz2l2v__%sTeV.root > fit.txt;\n"%sqrts)
-         SCRIPT.writelines('cd ' + CMSSW_BASE + '/src/CMGTools/HtoZZ2l2nu/;\n')
+         SCRIPT.writelines('cd ' + CMSSW_BASE + swDir+';\n')
          SCRIPT.close()
-      FULLOUT=CMSSW_BASE + '/src/CMGTools/HtoZZ2l2nu/'+OUT
+      FULLOUT=CMSSW_BASE + swDir +OUT
       commandToRun.append("bsub -G u_zh -q 8nh -J optim"+str(i)+" 'sh " + FULLOUT+"script_"+str(i)+".sh &> "+FULLOUT+"script_"+str(i)+".log'")
    FILE.close()
 
