@@ -1,0 +1,85 @@
+{
+    "proc":[
+	{
+        "tag":"ZZ",
+        "isdata":false,
+        "color":"592",
+        "lcolor":1,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_ZZ4l",
+                "dset":"/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
+                "xsec":0.130,
+		"br":[1.0],
+		"split":1
+             }
+           ]
+        },
+	{
+	"tag":"WZ",
+        "isdata":false,
+	"color":"809",
+	"lcolor":1,
+	"data":[
+	     {	
+		"dtag":"MC8TeV_QCDPt30to80",
+                "dset":"/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",              
+		"xsec":1.057,
+		"br":[1.0],
+		"split":1
+             }		
+          ]
+        },
+	{
+         "tag":"Top",
+         "isdata":false,
+         "color":"824",
+         "lcolor":1,
+         "data":[
+                {
+                "dtag":"MC8TeV_TTZJets",
+                "dset":"/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
+                "xsec":0.208
+                },
+                {
+                "dtag":"MC8TeV_TTTo2L2Nu2B_powheg",
+                "dset":"/TTTo2L2Nu2B_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
+                "xsec":23.64
+                }
+          ]
+        },
+	{
+	 "tag":"Z#rightarrow ll",
+         "isdata":false,
+         "color":"831",
+	 "lcolor":1,
+         "data":[
+	        {
+                "dtag":"MC8TeV_DYJetsToLL_50toInf",
+                "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
+                "split":5,
+                "xsec":3503.71,
+	        "split":11
+               }
+           ]
+        },
+        {
+	   "tag":"data",
+	   "isdata":true,
+	   "color":1,
+           "fill":0,
+           "marker":20,
+           "data":[
+                { "dtag":"Data8TeV_DoubleElectron2012A", "split":2 },
+                { "dtag":"Data8TeV_DoubleMu2012A",       "split":2 },
+                { "dtag":"Data8TeV_DoubleElectron2012B", "split":7 },
+                { "dtag":"Data8TeV_DoubleMu2012B",       "split":7 },
+                { "dtag":"Data8TeV_DoubleElectron2012C", "split":7 },
+                { "dtag":"Data8TeV_DoubleMu2012C",       "split":7 },
+                { "dtag":"Data8TeV_DoubleElectron2012D", "split":7 },
+                { "dtag":"Data8TeV_DoubleMu2012D",       "split":7 }
+	     ]
+          }
+     ]	
+}
