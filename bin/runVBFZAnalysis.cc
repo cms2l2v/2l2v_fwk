@@ -1103,7 +1103,7 @@ int main(int argc, char* argv[])
 		}
 
 	      for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-		float iweight = weight*photonWeight;                                   //nominal
+		float iweight = weight;                                                //nominal
 		if(ivar==5)                        iweight *= TotalWeight_plus;        //pu up
 		if(ivar==6)                        iweight *= TotalWeight_minus;       //pu down
 		if(ivar==7)                        iweight *= Q2Weight_plus;
@@ -1136,7 +1136,7 @@ int main(int argc, char* argv[])
 		}
 		if(localSelJets.size()<2)  continue;
 		std::sort(localSelJets.begin(), localSelJets.end(),  data::PhysicsObject_t::sortByPt);
-
+		
 		//recoil residuals uncertainty
 		if( (ivar==11 || ivar==12) && recoilResidualsGr)
 		  {
@@ -1158,7 +1158,7 @@ int main(int argc, char* argv[])
 		    bool passLocalJet1Pt(localSelJets[0].pt()>minJetPt1);
 		    bool passLocalJet2Pt(localSelJets[1].pt()>minJetPt2);
 		    if(!passLocalJet1Pt || !passLocalJet2Pt) continue; 
-		
+		    
 		    LorentzVector vbfSyst=localSelJets[0]+localSelJets[1];
 		    float mjj=vbfSyst.M();
 		    float detajj=fabs(localSelJets[0].eta()-localSelJets[1].eta());
@@ -1166,16 +1166,16 @@ int main(int argc, char* argv[])
 		    
 		    TString mjjCat("");
 		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
+		    float finalWeight(iweight);
 		    if(gammaWgtHandler!=0) {
-		      //mjjCat.ReplaceAll("mjjq100","mjjq092");
-		      iweight *= gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		      finalWeight *= gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
 		    }
-		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,iweight);
+		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,finalWeight);
 		    
 		    //set the variables to be used in the MVA evaluation (independently of its use)
 		    for(size_t mvar=0; mvar<tmvaVarNames.size(); mvar++) 
 		      {
-			std::string variable        = tmvaVarNames[mvar];
+			std::string variable     = tmvaVarNames[mvar];
 			if(variable=="mjj")        tmvaVars[mvar]=mjj;
 			if(variable=="detajj")     tmvaVars[mvar]=detajj;
 			if(variable=="spt")        tmvaVars[mvar]=spt;
@@ -1184,7 +1184,7 @@ int main(int argc, char* argv[])
 		      for(size_t im=0; im<tmvaMethods.size(); im++)
 			{
 			  float iTmvaDiscrVal=tmvaReader->EvaluateMVA( tmvaMethods[im] );
-			  mon.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],localSelTags,index,iTmvaDiscrVal,iweight);
+			  mon.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],localSelTags,index,iTmvaDiscrVal,finalWeight);
 			}
 		  }
 	      }

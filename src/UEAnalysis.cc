@@ -210,7 +210,7 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       if(gen[igen].pt()<minPFpt || fabs(gen[igen].eta())>maxPFeta) continue;
  
       //count this particle
-      float  dphi=deltaPhi(pDphi,gen_ttbar.phi())*180/TMath::Pi();
+      float  dphi=fabs(deltaPhi(pDphi,gen_ttbar.phi())*180/TMath::Pi());
       size_t regIdx=3;
       if(dphi>120) regIdx=1;
       if(dphi<60)  regIdx=2;
@@ -276,7 +276,7 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 
       rawChCount++;
       rawChFlux += pf[ipfn].pt(); 
-      if(fabs(dz)>1 || fabs(sdz)>3 || fabs(d0)>0.2 || fabs(sd0)>5) continue;
+      if(fabs(dz)>1 || fabs(sdz)>3 || fabs(d0)>1 || fabs(sd0)>10) continue;
       
       if(fabs(pf[ipfn].get("id"))==13 && pf[ipfn].pt()>3) softMuonsIdx.push_back( ipfn );
 
@@ -285,10 +285,15 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       size_t regIdx=3;
       if(dphi>120) regIdx=1;
       if(dphi<60)  regIdx=2;
-      int iphibin=nchprofphiH->GetXaxis()->FindBin(dphi);
-      chCount[0]++;                  chCount[regIdx]++;                chCountPhi[iphibin]++;
-      chFlux[0] += pf[ipfn].pt();    chFlux[regIdx] += pf[ipfn].pt();  chFluxPhi[iphibin]+= pf[ipfn].pt();
+      chCount[0]++;                  chCount[regIdx]++;                
+      chFlux[0] += pf[ipfn].pt();    chFlux[regIdx] += pf[ipfn].pt();  
+      int iphibin=nchprofphiH->GetXaxis()->FindBin(dphi)-1;
+      if(iphibin>=0 && iphibin<nphibins) { chCountPhi[iphibin]++; chFluxPhi[iphibin]+= pf[ipfn].pt(); }
     }
+  
+  int totalaway(0); 
+  for(int ibin=nchprofphiH->GetXaxis()->FindBin(120); ibin<nphibins; ibin++) totalaway += chCountPhi[ibin];
+  cout << totalaway << " " << chCount [1] <<endl; 
 
   //n vertex profiles
   mon_->fillHisto("rawnchprofnvtx",   ch, nvtx, rawChCount,  weight/acceptance);	
@@ -336,8 +341,8 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   mon_->fillHisto("nsoftjetsout",      ch,nExtraJets-nExtraJetsInBB,        weight);
   mon_->fillHisto("nsoftjets",         ch,nExtraJetsInBB,    weight);
   mon_->fillHisto("nsoftjetsll",       ch,nExtraJetsInLL,    weight);
-  mon_->fillHisto("nsoftjetsincvsdetabb", ch,nExtraJets,        weight);
-  mon_->fillHisto("nsoftjetsoutvsdetabb", ch,nExtraJets-nExtraJetsInBB,        weight);
+  mon_->fillHisto("nsoftjetsincvsdetabb", ch,detaBB, nExtraJets,        weight);
+  mon_->fillHisto("nsoftjetsoutvsdetabb", ch,detaBB, nExtraJets-nExtraJetsInBB,        weight);
   mon_->fillHisto("nsoftjetsvsdetabb", ch,detaBB, nExtraJetsInBB, weight);
   mon_->fillHisto("nsoftjetsvsdetall", ch,detaLL, nExtraJetsInLL, weight);
 

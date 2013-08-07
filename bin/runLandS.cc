@@ -86,6 +86,7 @@ struct DataCardInputs
 
 void printHelp();
 Shape_t getShapeFromFile(TFile* inF, TString ch, TString shapeName, int cutBin,JSONWrapper::Object &Root,double minCut=0, double maxCut=9999, bool onlyData=false);
+void checkShape(TH1 *h);
 void showShape(std::vector<TString>& selCh ,map<TString, Shape_t>& allShapes, TString mainHisto, TString SaveName);
 void getYieldsFromShape(std::vector<TString> ch, const map<TString, Shape_t> &allShapes, TString shName);
 void getEffFromShape(std::vector<TString> ch, const map<TString, Shape_t> &allShapes, TString shName);
@@ -327,12 +328,14 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, TString shapeName, int cutBin, 
          if(hshape2D){
 	   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
 	   hshape   = hshape2D->ProjectionY(histoName,cutBin,cutBin);
+
 	   if(hshape->Integral()<=0 && varName=="" && !isData){hshape->Reset(); hshape->SetBinContent(1, 1E-10);}
 	   
 	   if(isnan((float)hshape->Integral())){hshape->Reset();}
 	   hshape->SetDirectory(0);
 	   hshape->SetTitle(proc);
 	   printf("%s %s overflow = %f -->", histoName.Data(), varName.Data(), hshape->GetBinContent(hshape->GetNbinsX()+1));
+	   checkShape(hshape);
 	   utils::root::fixExtremities(hshape,true,true);
 	   printf("%f\n", hshape->GetBinContent(hshape->GetNbinsX()+1));
 	   hshape->SetFillColor(color); hshape->SetLineColor(lcolor); hshape->SetMarkerColor(mcolor);
@@ -668,6 +671,19 @@ void showShape(std::vector<TString>& selCh ,map<TString, Shape_t>& allShapes, TS
 //  if(allbkg)delete allbkg;
 //  if(stack) delete stack;
 //  if(ratio) delete ratio;
+}
+
+//
+void checkShape(TH1 *h)
+{
+  if(h==0) return;
+  for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
+    {
+      Float_t y=h->GetBinContent(ibin);
+      if(y>0) continue;
+      h->SetBinContent(ibin,1.0e-5);
+      h->SetBinError(ibin,1.0e-5);
+    }
 }
 
 //
@@ -1887,6 +1903,7 @@ std::cout<<"DYTEST2b\n";
 
            TH1* gjets1Dshape  = NULL;
             gjets1Dshape = gjets2Dshape->ProjectionY("tmpName",indexcut_,indexcut_);
+	    checkShape(gjets1Dshape);
 	    utils::root::fixExtremities(gjets1Dshape, true, true);
             //apply the cuts
             if(!(mainHisto==histo && histoVBF!="" && AnalysisBins[b].Contains("vbf"))){
