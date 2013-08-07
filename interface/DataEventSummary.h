@@ -32,6 +32,7 @@ class DataEventSummary //: public TObject
   //PF candidates
   Int_t   pfn, pf_id[MAXDATAOBJECTS], pf_charge[MAXDATAOBJECTS];
   Float_t pf_px[MAXDATAOBJECTS], pf_py[MAXDATAOBJECTS], pf_pz[MAXDATAOBJECTS],pf_en[MAXDATAOBJECTS];
+  Float_t pf_d0[MAXDATAOBJECTS], pf_d0err[MAXDATAOBJECTS],pf_dZ[MAXDATAOBJECTS],pf_dZerr[MAXDATAOBJECTS];
 
   //gen information
   Int_t ngenITpu, ngenOOTpu, ngenOOTpum1, ngenTruepu;

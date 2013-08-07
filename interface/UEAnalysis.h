@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "TString.h"
+#include "TNtuple.h"
 
 class UEAnalysis
 {
@@ -22,11 +23,17 @@ public:
 	       int nvtx,
 	       float weight);
 
+  void fillSummaryTuple(float evWeight) { summaryTupleVars_[2]=evWeight; summaryTuple_->Fill(summaryTupleVars_); }
+  TNtuple *getSummaryTuple()            { return summaryTuple_; }
+
+  ~UEAnalysis() { delete summaryTupleVars_; }
+  
 private:
 
   SmartSelectionMonitor *mon_;
   std::vector<TString> ueReg_;
-
+  TNtuple *summaryTuple_;
+  Float_t *summaryTupleVars_;
 };
 
 #endif

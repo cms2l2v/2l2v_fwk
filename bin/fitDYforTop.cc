@@ -139,12 +139,12 @@ int main(int argc,char *argv[])
   
   TString procs[]={"VV", "Single top", "Z#rightarrow ll","t#bar{t}","other t#bar{t}"}; // "W,multijets"
 
-  TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu"};
-  size_t runNsystVars[]      ={1,                              nsystVars,               1,                                nsystVars,                 1,                       nsystVars};
-  TString signalRegionHisto[]={"ee_eq1jetsdilarccosine",       "ee_dilarccosine",       "mumu_eq1jetsdilarccosine",       "mumu_dilarccosine",       "emu_eq1jetsmtsum",      "emu_mtsum"};
-  TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum"};
-  TString templateTitle[]    ={"Z#rightarrow ee (=1 jets)",    "Z#rightarrow ee",       "Z#rightarrow #mu#mu (=1 jets)",  "Z#rightarrow #mu#mu",     "Z#rightarrow #tau#tau (=1 jets)", "Z#rightarrow #tau#tau"};
-  TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu"};
+  TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu",      "ee", "mumu"};
+  size_t runNsystVars[]      ={1,                              nsystVars,               1,                                nsystVars,                 1,                       nsystVars, 1,1};
+  TString signalRegionHisto[]={"ee_eq1jetsdilarccosine",       "ee_dilarccosine",       "mumu_eq1jetsdilarccosine",       "mumu_dilarccosine",       "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
+  TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
+  TString templateTitle[]    ={"Z#rightarrow ee (=1 jets)",    "Z#rightarrow ee",       "Z#rightarrow #mu#mu (=1 jets)",  "Z#rightarrow #mu#mu",     "Z#rightarrow #tau#tau (=1 jets)", "Z#rightarrow #tau#tau", "Z#rightarrow ee", "Z#rightarrow #mu#mu"};
+  TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu" ,"dytoee", "dytomumu"};
   size_t nchs=sizeof(ch)/sizeof(TString);
 
   TH1F *dysfH = new TH1F("dysf",";Category;SF_{DY}",nchs,0,nchs);
@@ -314,6 +314,7 @@ int main(int argc,char *argv[])
       
       //save to histogram
       dysfH->GetXaxis()->SetBinLabel(ich+1,ch[ich]);
+      if(signalRegionHisto[ich].Contains("osbtag"))  dysfH->GetXaxis()->SetBinLabel(ich+1,ch[ich]+"osbtag");
       dysfH->SetBinContent(ich+1,ndysf.getVal());
       dysfH->SetBinError(ich+1,ndysf.getError());
 	

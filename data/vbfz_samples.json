@@ -74,7 +74,8 @@
 	     {	
 		"dtag":"MC8TeV_QCDPt350toInf",
 		"xsec":810,
-		"br":[0.11]
+		"br":[0.11],
+		"split":2
 	     },
      	     {	
 		"dtag":"MC8TeV_QCDMuPt20toInf",

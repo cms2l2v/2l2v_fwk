@@ -32,13 +32,18 @@ bool DataEventSummaryHandler::init(TTree *t, bool needsToRecreate)
   t_->Branch("rho25",    &evSummary_.rho25,      "rho25/F");
 
   //pf candidates
-  t_->Branch("pfn",       &evSummary_.pfn,       "pfn/I");
-  t_->Branch("pf_id",     &evSummary_.pf_id,     "pf_id[pfn]/I");
-  t_->Branch("pf_charge", &evSummary_.pf_charge, "pf_charge[pfn]/I");
-  t_->Branch("pf_px",     &evSummary_.pf_px,     "pf_px[pfn]/F");
-  t_->Branch("pf_py",     &evSummary_.pf_py,     "pf_py[pfn]/F");
-  t_->Branch("pf_pz",     &evSummary_.pf_pz,     "pf_pz[pfn]/F");
-  t_->Branch("pf_en",     &evSummary_.pf_en,     "pf_en[pfn]/F");
+  t_->Branch("pfn",       &evSummary_.pfn,      "pfn/I");
+  t_->Branch("pf_id",     evSummary_.pf_id,     "pf_id[pfn]/I");
+  t_->Branch("pf_charge", evSummary_.pf_charge, "pf_charge[pfn]/I");
+  t_->Branch("pf_px",     evSummary_.pf_px,     "pf_px[pfn]/F");
+  t_->Branch("pf_py",     evSummary_.pf_py,     "pf_py[pfn]/F");
+  t_->Branch("pf_pz",     evSummary_.pf_pz,     "pf_pz[pfn]/F");
+  t_->Branch("pf_en",     evSummary_.pf_en,     "pf_en[pfn]/F");
+  t_->Branch("pf_d0",     evSummary_.pf_d0,     "pf_d0[pfn]/F");
+  t_->Branch("pf_d0err",  evSummary_.pf_d0err,  "pf_d0err[pfn]/F");
+  t_->Branch("pf_dZ",     evSummary_.pf_dZ,     "pf_dZ[pfn]/F");
+  t_->Branch("pf_dZerr",  evSummary_.pf_dZerr,  "pf_dZerr[pfn]/F");
+
 
   //generator level info
   t_->Branch("ngenITpu",    &evSummary_.ngenITpu,    "ngenITpu/I");
@@ -231,7 +236,7 @@ bool DataEventSummaryHandler::init(TTree *t, bool needsToRecreate)
 }
 
 //
-bool DataEventSummaryHandler::attach(TTree *t)
+bool DataEventSummaryHandler::attach(TTree *t,bool readPFbranch)
 {
   if(t==0) return false;
   t_ = t;
@@ -244,7 +249,7 @@ bool DataEventSummaryHandler::attach(TTree *t)
 
   //trigger bit
   t_->SetBranchAddress("tn",         &evSummary_.tn);
-  t_->SetBranchAddress("t_bits",    evSummary_.t_bits);
+  t_->SetBranchAddress("t_bits",     evSummary_.t_bits);
   t_->SetBranchAddress("t_prescale", evSummary_.t_prescale);
   
   //pileup related observables
@@ -254,13 +259,24 @@ bool DataEventSummaryHandler::attach(TTree *t)
   t_->SetBranchAddress("rho25",    &evSummary_.rho25 );
 
   //pf candidates
-  t_->SetBranchAddress("pfn",       &evSummary_.pfn);
-  t_->SetBranchAddress("pf_id",     &evSummary_.pf_id);
-  t_->SetBranchAddress("pf_charge", &evSummary_.pf_charge);
-  t_->SetBranchAddress("pf_px",     &evSummary_.pf_px);
-  t_->SetBranchAddress("pf_py",     &evSummary_.pf_py);
-  t_->SetBranchAddress("pf_pz",     &evSummary_.pf_pz);
-  t_->SetBranchAddress("pf_en",     &evSummary_.pf_en);
+  if(readPFbranch)
+    {
+      t_->SetBranchAddress("pfn",       &evSummary_.pfn);
+      t_->SetBranchAddress("pf_id",     evSummary_.pf_id);
+      t_->SetBranchAddress("pf_charge", evSummary_.pf_charge);
+      t_->SetBranchAddress("pf_px",     evSummary_.pf_px);
+      t_->SetBranchAddress("pf_py",     evSummary_.pf_py);
+      t_->SetBranchAddress("pf_pz",     evSummary_.pf_pz);
+      t_->SetBranchAddress("pf_en",     evSummary_.pf_en);
+      t_->SetBranchAddress("pf_d0",     evSummary_.pf_d0);
+      t_->SetBranchAddress("pf_d0err",  evSummary_.pf_d0err);
+      t_->SetBranchAddress("pf_dZ",     evSummary_.pf_dZ);
+      t_->SetBranchAddress("pf_dZerr",  evSummary_.pf_dZerr);
+    }
+  else {
+    cout << "Skipping pf branch" << endl;
+    evSummary_.pfn=0;
+  }
 
   //generator level info
   t_->SetBranchAddress("ngenITpu",    &evSummary_.ngenITpu);
@@ -611,6 +627,10 @@ data::PhysicsObjectCollection_t DataEventSummaryHandler::getPhysicsObject(int co
 	  data::PhysicsObject_t pf(evSummary_.pf_px[ipf],evSummary_.pf_py[ipf],evSummary_.pf_pz[ipf],evSummary_.pf_en[ipf]);
 	  pf.set("id",evSummary_.pf_id[ipf]);
 	  pf.set("charge",evSummary_.pf_charge[ipf]);
+	  pf.setVal("d0",evSummary_.pf_d0[ipf]);
+	  pf.setVal("sd0",evSummary_.pf_d0err[ipf]>0 ? evSummary_.pf_d0[ipf]/evSummary_.pf_d0err[ipf] : -1);
+	  pf.setVal("dz",evSummary_.pf_dZ[ipf]);
+	  pf.setVal("sdz",evSummary_.pf_dZerr[ipf]>0 ? evSummary_.pf_dZ[ipf]/evSummary_.pf_dZerr[ipf] : -1);
 	  coll.push_back(pf);
 	}
       break;

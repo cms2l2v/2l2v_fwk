@@ -20,9 +20,9 @@ mkdir -p ${outdir}/g/qt_pure
 
 if [ "$step" == "0" ]; then
     echo "Submitting PDF variations"
-    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
-    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_syst_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 2nw; 
-    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/raw_loose  -c ${cfg} -s 2nw;
+    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 1nd;
+    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_syst_samples.json -o ${outdir}/dy -d ${indir} -c ${cfg} -s 1nd;
+    runLocalAnalysisOverSamples.py -e computePDFvariations -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/raw_loose  -c ${cfg} -s 1nd;
 fi
 
 if [ "$step" == "1" ]; then
@@ -51,10 +51,9 @@ fi
 
 if [ "$step" == "3" ]; then
     echo "Submitting second pass, weighting in q_T"
-    
     runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/qt_tight -c ${cfg} -p "@useMVA=True @weightsFile='${outdir}/tight_gamma_mcweights.root'"                      -s 8nh -t MC;
     runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/qt_loose -c ${cfg} -p "@runSystematics=True @useMVA=True @weightsFile='${outdir}/loose_gamma_mcweights.root'" -s 8nh -t MC;
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/qt_pure  -c ${cfg} -p "@useMVA=True @weightsFile='${outdir}/pure_gamma_mcweights_ewkz.root'"                  -s 8nh -t MC;
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/qt_pure  -c ${cfg} -p "@useMVA=True @weightsFile='${outdir}/pure_gamma_mcweights.root'"                       -s 8nh -t MC;
 fi
 
 if [ "$step" == "4" ]; then
