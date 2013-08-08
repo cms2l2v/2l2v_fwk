@@ -23,11 +23,11 @@
 	"lcolor":1,
 	"data":[
 	     {	
-		"dtag":"MC8TeV_QCDPt30to80",
+		"dtag":"MC8TeV_WZ",
                 "dset":"/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",              
 		"xsec":1.057,
 		"br":[1.0],
-		"split":1
+		"split":2
              }		
           ]
         },
@@ -38,14 +38,16 @@
          "lcolor":1,
          "data":[
                 {
+                "dtag":"MC8TeV_TTJetsFullLeptMGDecays",
+                "dset":"/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM",
+                "xsec":245.8,
+                "split":11,
+                "br":[0.10608049]
+                },
+                {
                 "dtag":"MC8TeV_TTZJets",
                 "dset":"/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
                 "xsec":0.208
-                },
-                {
-                "dtag":"MC8TeV_TTTo2L2Nu2B_powheg",
-                "dset":"/TTTo2L2Nu2B_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
-                "xsec":23.64
                 }
           ]
         },
@@ -58,7 +60,7 @@
 	        {
                 "dtag":"MC8TeV_DYJetsToLL_50toInf",
                 "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
-                "split":5,
+                "split":11,
                 "xsec":3503.71,
 	        "split":11
                }
