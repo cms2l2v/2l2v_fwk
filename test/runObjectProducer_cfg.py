@@ -1,10 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 #Only for debug
-isMC=False
-isTauEmbed=False
+#isMC=False
+#isTauEmbed=False
 #gtag="FT_53_V21_AN4::All"
-gtag="START53_V23::All"
+#gtag="START53_V23::All"
 
 
 process = cms.Process("DataAna")

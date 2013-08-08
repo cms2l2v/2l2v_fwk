@@ -67,6 +67,132 @@
            ]
         },
         {
+        "tag":"XH(110)#rightarrow #tau#tau",
+        "isinvisible":true,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH110toTauTau",
+                "split":1,
+                "xsec":0.0338
+                }
+           ]
+        },
+        {
+        "tag":"XH(115)#rightarrow #tau#tau",
+        "isinvisible":true,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH115toTauTau",
+                "split":1,
+                "xsec":0.0279
+                }
+           ]
+        },
+        {
+        "tag":"XH(120)#rightarrow #tau#tau",
+        "isinvisible":true,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH120toTauTau",
+                "split":1,
+                "xsec":0.0226
+                }
+           ]
+        },
+        {
+        "tag":"XH(125)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH125toTauTau",
+                "split":1,
+                "xsec":0.0177
+                }
+           ]
+        },
+        {
+        "tag":"XH(130)#rightarrow #tau#tau",
+        "isinvisible":true,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH130toTauTau",
+                "split":1,
+                "xsec":0.0134
+                }
+           ]
+        },
+        {
+        "tag":"XH(135)#rightarrow #tau#tau",
+        "isinvisible":true,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH135toTauTau",
+                "split":1,
+                "xsec":0.00971
+                }
+           ]
+        },
+        {
+        "tag":"XH(140)#rightarrow #tau#tau",
+        "isinvisible":true,
+        "isdata":false,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_XH140toTauTau",
+                "split":1,
+                "xsec":0.00671
+                }
+           ]
+        },
+        {
 	   "tag":"data",
 	   "isdata":true,
 	   "color":1,
