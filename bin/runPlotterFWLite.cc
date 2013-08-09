@@ -209,7 +209,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
            delete File;
          }
          if(!tmphist)continue;
-         tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool())tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
@@ -274,7 +274,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
             delete File;
          }
          if(!tmphist)continue;
-         tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool())tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
@@ -373,7 +373,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
             delete File;
          }
          if(!tmphist)continue;
-         tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool())tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
@@ -469,7 +469,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
             delete File;
          }
          if(!tmphist)continue;
-         tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool())tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
@@ -754,7 +754,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
             delete File;
          }
          if(!tmphist)continue;
-         tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool())tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }
