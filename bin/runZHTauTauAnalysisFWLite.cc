@@ -176,8 +176,8 @@ int main(int argc, char* argv[])
   TH1 *h=mon.addHistogram( new TH1F ("eventflow", ";;Events", 13,0,13) );
   h->GetXaxis()->SetBinLabel(1,"#geq 2 leptons");
   h->GetXaxis()->SetBinLabel(2,"|M-M_{Z}|<15");
-  h->GetXaxis()->SetBinLabel(3,"p_{T}^{ll}>50");
-  h->GetXaxis()->SetBinLabel(4, "#eta^{ll}<1.44");
+  h->GetXaxis()->SetBinLabel(3,"Btag Veto");
+  h->GetXaxis()->SetBinLabel(4, "lepton Veto");
   h->GetXaxis()->SetBinLabel(5,"HiggsCandidate"); 
   h->GetXaxis()->SetBinLabel(6,"ee_em");
   h->GetXaxis()->SetBinLabel(7,"ee_et");
@@ -587,7 +587,7 @@ int main(int argc, char* argv[])
 	  //isolation
           float relIso = utils::cmssw::relIso(leptons[ilep], rho);
 //	  if( (lid==11 && relIso>0.15) || (lid!=11 && relIso>0.20) ) passIso=false;
-          if( (lid==11 && relIso>0.30) || (lid!=11 && relIso>0.30) ) passIso=false;
+          if( (lid==11 && relIso>0.40) || (lid!=11 && relIso>0.40) ) passIso=false;
 	  
 	  if(!passId || !passIso || !passKin) continue;
 	  selLeptons.push_back(leptons[ilep]);
@@ -637,8 +637,8 @@ int main(int argc, char* argv[])
       //prepare the tag's vectors for histo filling
       std::vector<TString> chTags;
       chTags.push_back("all");
-      if( abs(dilId)==121 && (eeTrigger || mumuTrigger)) chTags.push_back("ee");
-      if( abs(dilId)==169 && (eeTrigger || mumuTrigger)) chTags.push_back("mumu"); 
+      if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
+      if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
       if(chTags.size()==0) continue;
 
 
@@ -654,7 +654,7 @@ int main(int argc, char* argv[])
       //JET/MET ANALYSIS
       //
       llvvJetExtCollection selJets, selJetsNoId;
-      int njets(0);
+      int njets(0), nbjets(0);
       for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
 	  //correct jet
@@ -704,6 +704,9 @@ int main(int argc, char* argv[])
 	  jets[ijet].jesup   = isMC ? smearPt[0] : jets[ijet].pt();
 	  jets[ijet].jesdown = isMC ? smearPt[1] : jets[ijet].pt();
 
+          //bjets
+          if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.244)nbjets++;
+
 	  selJetsNoId.push_back(jets[ijet]);
 	  if(passPFloose && passLooseSimplePuId){
 	    selJets.push_back(jets[ijet]);
@@ -711,6 +714,8 @@ int main(int argc, char* argv[])
 	  }
 	}
       std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
+
+
 
 
       //
@@ -815,7 +820,18 @@ int main(int argc, char* argv[])
       else                             chTags.push_back(chTags[chTags.size()-1] + string("_none"));
       printf("event is %+4i %s\n", higgsCandId, chTags[chTags.size()-1].Data());
 
-
+      bool passBJetVeto = (nbjets==0);
+      bool passLepVeto  = true;
+      for(int l1=0;l1<(int)selLeptons.size();l1++){
+         if(l1==dilLep1 || l1==dilLep2 || l1==higgsCandMu || l1==higgsCandEl)continue; //lepton already used in the dilepton pair or higgs candidate
+         passLepVeto = false; break;
+      }
+      for(int t1=0;passLepVeto && t1<(int)selTaus   .size();t1++){
+         if(t1==higgsCandT1 || t1==higgsCandT2)continue; //lepton already used in the dilepton pair or higgs candidate
+         if(selTaus[t1].pt()>20 && ((selTaus[t1].idbits&(1<<llvvTAUID::byMediumIsolationMVA))!=0) && ((selTaus[t1].idbits&(1<<againstElectronLooseMVA3))!=0) && ((selTaus[t1].idbits&(1<<llvvTAUID::againstMuonLoose2))!=0) ){
+            passLepVeto = false; break; 
+         }
+      } 
              
       //
       // NOW FOR THE CONTROL PLOTS
@@ -827,10 +843,10 @@ int main(int argc, char* argv[])
 
 	  mon.fillHisto("eventflow",tags,0,weight);
 	  if(passZmass)                                      mon.fillHisto("eventflow",tags,1,weight);
-	  if(passZmass && passZpt)                           mon.fillHisto("eventflow",tags,2,weight);
-	  if(passZmass && passZpt && passZeta)               mon.fillHisto("eventflow",tags,3,weight);
-	  if(passZmass && passZpt && passZeta && passHiggs)  mon.fillHisto("eventflow",tags,4,weight);
-          if(passZmass && passZpt && passZeta && passHiggs)  mon.fillHisto("eventflow",tags,6+HiggsShortId,weight);
+	  if(passZmass && passBJetVeto)                           mon.fillHisto("eventflow",tags,2,weight);
+	  if(passZmass && passBJetVeto && passLepVeto)               mon.fillHisto("eventflow",tags,3,weight);
+	  if(passZmass && passBJetVeto && passLepVeto && passHiggs)  mon.fillHisto("eventflow",tags,4,weight);
+          if(passZmass && passBJetVeto && passLepVeto && passHiggs)  mon.fillHisto("eventflow",tags,5+HiggsShortId,weight);
 
 	  mon.fillHisto("zmass",    tags, zll.mass(), weight);  
 	  if(passZmass){
@@ -851,7 +867,8 @@ int main(int argc, char* argv[])
 	    mon.fillHisto("zeta"     , tags, zll.eta(), weight);
 	    mon.fillHisto("zy"       , tags, zy,        weight);
 	    
-	    if(passZpt && passZeta){
+//	    if(passZpt && passZeta){
+          if(passBJetVeto && passLepVeto){
 	  
 	      //analyze dilepton kinematics
 	      mon.fillHisto("leadeta"   ,  tags, leadingLep.eta(), weight);

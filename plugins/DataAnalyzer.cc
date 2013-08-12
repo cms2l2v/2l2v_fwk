@@ -436,7 +436,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       if(muon->pt()<3 || fabs(muon->eta())>2.5) continue;
       
       //store information
-      ev.ln_id[ev.ln]                         = 13*muon->charge();
+      ev.ln_id[ev.ln]                         = -13*muon->charge();
       ev.ln_pid[ev.ln]                        = ev.mn;
       ev.ln_px[ev.ln]                         = muon->px();
       ev.ln_py[ev.ln]                         = muon->py();
@@ -541,7 +541,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       if(overlapFound) continue;
 
       //store information
-      ev.ln_id[ev.ln]                         = 11*ele->charge();
+      ev.ln_id[ev.ln]                         = -11*ele->charge();
       ev.ln_pid[ev.ln]                        = ev.egn;
       ev.ln_px[ev.ln]                         = ele->px();
       ev.ln_py[ev.ln]                         = ele->py();
