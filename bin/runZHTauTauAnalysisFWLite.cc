@@ -44,40 +44,6 @@ using namespace std;
 
 
 
-typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >::BetaVector BetaVector;
-
-
-//
-float getAngle(LorentzVector &a, LorentzVector &b)
-{
-  TVector3 mom1(a.px(),a.py(),a.pz());
-  TVector3 mom2(b.px(),b.py(),b.pz());
-  double cosine = mom1.Dot(mom2)/(mom1.Mag()*mom2.Mag());
-  return acos(cosine);
-}
-
-//
-std::vector<TString> getDijetCategories(double mjj,double etajj,std::vector<TString> &curTags, TString &mjjCat)
-{
-  if(mjj<250)               mjjCat="mjjq016";
-  if(mjj>=250 && mjj<350)   mjjCat="mjjq033";
-  if(mjj>=350 && mjj<450)   mjjCat="mjjq049";
-  if(mjj>=450 && mjj<550)   mjjCat="mjjq066";
-  if(mjj>=550 && mjj<750)   mjjCat="mjjq083";
-  if(mjj>=750 && mjj<1000)  mjjCat="mjjq092";
-  if(mjj>=1000)             mjjCat="mjjq100";
-  
-  //include new tags
-  std::vector<TString> selTags;
-  for(size_t i=0; i<curTags.size(); i++)
-    {
-      TString itag=curTags[i];
-      selTags.push_back(itag);
-      selTags.push_back(itag+mjjCat);
-    }
-  return selTags;
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -99,6 +65,8 @@ int main(int argc, char* argv[])
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   bool runLoosePhotonSelection(false);
+
+  bool Cut_tautau_MVA_iso = false;//currently hardcoded
 
   float minJetPtToApply(30);
 
@@ -230,8 +198,8 @@ int main(int argc, char* argv[])
 
   //tau control
   mon.addHistogram( new TH1F( "ntaus",      ";ntaus;Events", 6,0,6) );
-  mon.addHistogram( new TH1F( "tauleadpt",  ";p_{T}^{l};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "tauleadeta", ";#eta^{l};Events", 50,-2.6,2.6) );
+  mon.addHistogram( new TH1F( "tauleadpt",  ";p_{T}^{#tau};Events", 50,0,500) );
+  mon.addHistogram( new TH1F( "tauleadeta", ";#eta^{#tau};Events", 50,-2.6,2.6) );
 
   //balance histograms
   mon.addHistogram( new TH2F("ptllvsdphi",     ";p_{T}(ll) [GeV];#Delta #phi(ll,jet)",50,0,200,25,0,3.2) );
@@ -271,8 +239,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zyNM1",   ";y^{ll};Events", 50,-6,6) );
   mon.addHistogram( new TH1F( "zmass",   ";M^{ll};Events", 100,40,250) );
 
-
-
+  //higgs control
+  mon.addHistogram( new TH1F( "higgspt",      ";p_{T}^{#higgs} [GeV];Events",500,0,1500));
+  mon.addHistogram( new TH1F( "higgsmass",    ";M^{#higgs} [GeV];Events",500,0,1500));
 
 
   //jet control
@@ -607,20 +576,9 @@ int main(int argc, char* argv[])
 	  }
 
 	  //isolation
-	  Float_t gIso    = lid==11 ? leptons[ilep].gIso03    : leptons[ilep].gIso04;
-	  Float_t chIso   = lid==11 ? leptons[ilep].chIso03   : leptons[ilep].chIso04;
-	  Float_t puchIso = lid==11 ? leptons[ilep].puchIso03 : leptons[ilep].puchIso04;  
-	  Float_t nhIso   = lid==11 ? leptons[ilep].nhIso03   : leptons[ilep].nhIso04;
-	  float relIso= lid==11 ?
-	    (TMath::Max(nhIso+gIso-rho*utils::cmssw::getEffectiveArea(11,leptons[ilep].electronInfoRef->sceta),double(0.))+chIso)/leptons[ilep].pt() :
-	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
-	    ;
-	  if(lid==11){
-	    if(relIso>0.15)                                passIso=false;
-	  }
-	  else{
-	    if(relIso>0.20)                                passIso=false;
-	  }
+          float relIso = utils::cmssw::relIso(leptons[ilep], rho);
+//	  if( (lid==11 && relIso>0.15) || (lid!=11 && relIso>0.20) ) passIso=false;
+          if( (lid==11 && relIso>0.30) || (lid!=11 && relIso>0.30) ) passIso=false;
 	  
 	  if(!passId || !passIso || !passKin) continue;
 	  selLeptons.push_back(leptons[ilep]);
@@ -638,15 +596,20 @@ int main(int argc, char* argv[])
       double BestMass=0;
       //identify the best lepton pair
       for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
-      for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
-         if(fabs(selLeptons[l1].id)!=fabs(selLeptons[l2].id))continue; //only consider same flavor lepton pairs
-         if(fabs(BestMass-91)>((selLeptons[l1]+selLeptons[l2]).mass() - 91)){
-            dilLep1 = l1; 
-            dilLep2 = l2;
-            zll=selLeptons[l1]+selLeptons[l2];
-            BestMass=zll.mass();
+         float relIso1 = utils::cmssw::relIso(selLeptons[l1], rho);
+         if( (abs(selLeptons[l1].id)==11 && relIso1>0.15) || (abs(selLeptons[l1].id)!=11 && relIso1>0.20) ) continue;
+         for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
+            float relIso2 = utils::cmssw::relIso(selLeptons[l2], rho);
+            if( (abs(selLeptons[l2].id)==11 && relIso2>0.15) || (abs(selLeptons[l2].id)!=11 && relIso2>0.20) ) continue;
+            if(fabs(selLeptons[l1].id)!=fabs(selLeptons[l2].id))continue; //only consider same flavor lepton pairs
+            if(fabs(BestMass-91)>((selLeptons[l1]+selLeptons[l2]).mass() - 91)){
+               dilLep1 = l1; 
+               dilLep2 = l2;
+               zll=selLeptons[l1]+selLeptons[l2];
+               BestMass=zll.mass();
+            }
          }
-      }}
+      }
       if(selLeptons[dilLep1].pt()>selLeptons[dilLep2].pt()){ leadingLep=selLeptons[dilLep1]; trailerLep=selLeptons[dilLep2]; 
       }else{                                                 leadingLep=selLeptons[dilLep2]; trailerLep=selLeptons[dilLep1]; 
       } 
@@ -656,16 +619,13 @@ int main(int argc, char* argv[])
       bool passZeta(fabs(zll.eta())<1.4442);
 
       //apply data/mc correction factors
+      int dilId = selLeptons[dilLep1].id * selLeptons[dilLep2].id;
+      weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep1].pt(), selLeptons[dilLep1].eta(), abs(selLeptons[dilLep1].id),  abs(selLeptons[dilLep1].id) ==11 ? "loose" : "loose" ).first : 1.0;
+      weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep2].pt(), selLeptons[dilLep2].eta(), abs(selLeptons[dilLep2].id),  abs(selLeptons[dilLep2].id) ==11 ? "loose" : "loose" ).first : 1.0;
+
+      //check the channel
       //prepare the tag's vectors for histo filling
       std::vector<TString> chTags;
-      int dilId(1);
-      for(size_t ilep=0; ilep<2; ilep++){
-         dilId *= selLeptons[ilep].id;
-         int id(abs(selLeptons[ilep].id));
-         weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
-      }
-     
-      //check the channel
       if( abs(dilId)==121 && (eeTrigger || mumuTrigger)) chTags.push_back("ee");
       if( abs(dilId)==169 && (eeTrigger || mumuTrigger)) chTags.push_back("mumu"); 
       if(chTags.size()==0) continue;
@@ -761,276 +721,75 @@ int main(int argc, char* argv[])
          }
       }
 
+      //
+      // HIGGS ANALYSIS
+      //
 
-/*
-	// mutau and emu final states
-	bool muTau=false;
-	bool muE = false;
-	bool signal = false;
-	short category = -1;       
-	int Hindex[2] = {-1,-1};
-	std::vector<myobject> Hcand;
-	Hcand.clear();
-	for(uint i = 0; i < goodMuon.size() && !signal; i++)
-	{
+      LorentzVector higgsCand;
+      int higgsCandId=0,  higgsCandMu=-1, higgsCandEl=-1, higgsCandT1=-1, higgsCandT2=-1;
 
-		double relIso = RelIsoMu(goodMuon[i]);
-		bool iso1_muE = (relIso < 0.3);
-		bool iso1_muTau = (relIso < 0.25);
-		bool isTightMuon = isGoodMu(goodMuon[i]);
-		if(!checkCategories && !iso1_muE) continue;
-		m_logger << DEBUG << " Checking for muE with very isolated muon" << SLogger::endmsg;   
-		for(uint j=0; j< goodElectron.size() && !signal; j++)
-		{
+      //Check if the event is compatible with a Mu-El candidate
+      for(int l1=0   ;!higgsCandId && l1<(int)selLeptons.size();l1++){
+      for(int l2=l1+1;!higgsCandId && l2<(int)selLeptons.size();l2++){
+         if(l1==dilLep1 || l1==dilLep2 || l2==dilLep1 || l2==dilLep2)continue; //lepton already used in the dilepton pair
+         if(selLeptons[l1].id*selLeptons[l2].id!=-143)continue;//Only consider opposite sign, opposite flavor pairs
+ 
+         int muId, elId;
+         if(abs(selLeptons[l1].id)==13){muId=l1; elId=l2;}else{muId=l2; elId=l1;}
 
-			if(UseSumPtCut && goodMuon[i].pt+goodElectron[j].pt < Cut_leplep_sumPt) continue;
-			bool iso2 = (RelIsoEl(goodElectron[j]) < 0.3);
-			if(goodMuon[i].charge*goodElectron[j].charge >=0) continue;
-			if(deltaR(goodElectron[j].eta,goodElectron[j].phi,goodMuon[i].eta,goodMuon[i].phi)< maxDeltaR) continue;
-			if (iso1_muE && iso2){ signal = true; muE=true; muTau = false;}
-			else if (!iso1_muE && iso2  && category < 1){ category = 2; muE=true; muTau = false;}
-			else if ( iso1_muE && !iso2 && category < 1){ category = 1; muE=true; muTau = false;} 
-			else if (!iso1_muE && !iso2 && category < 0){ category = 0; muE=true; muTau = false;}
-			else continue;
-			Hindex[0]=i;
-			Hindex[1]=j;
-		}
+         if(utils::cmssw::relIso(selLeptons[muId], rho)<0.3 && utils::cmssw::relIso(selLeptons[elId], rho)<0.3 && deltaR(selLeptons[muId], selLeptons[elId])>0.1 && (selLeptons[muId].pt()+selLeptons[elId].pt())>30 ){        
+           higgsCand=selLeptons[muId]+selLeptons[elId]; higgsCandId=selLeptons[muId].id*selLeptons[elId].id;  higgsCandMu=muId; higgsCandEl=elId;
+           break;//we found a candidate, stop the loop
+         }
+      }}
 
-		m_logger << DEBUG << " Checking for muTau " << SLogger::endmsg;
-		if(!checkCategories && !iso1_muTau) continue;
-		if(!isTightMuon) continue;
-		for(uint j=0; j< goodTau.size() && !signal; j++)
-		{
-			//if(Tmass(m,goodMuon[i]) > 30) continue;
-                        Hist("h_LT_muTau")->Fill(goodMuon[i].pt+goodTau[j].pt);
-			if(UseSumPtCut && goodMuon[i].pt+goodTau[j].pt < Cut_mutau_sumPt) continue;			
-			bool iso2 = Cut_tautau_MVA_iso ? goodTau[j].byLooseIsolationMVA > 0.5 : goodTau[j].byLooseCombinedIsolationDeltaBetaCorr3Hits > 0.5;
-			if(goodMuon[i].charge*goodTau[j].charge >=0) continue;
-			if(goodTau[j].discriminationByMuonTight2 <=0.5) continue;
-			if(deltaR(goodTau[j].eta,goodTau[j].phi,goodMuon[i].eta,goodMuon[i].phi)< maxDeltaR) continue;                                    
-			if (iso1_muTau && iso2){ signal = true; muE=false; muTau=true;}
-			else if (!iso1_muTau && iso2  && category < 1){ category = 2; muE=false; muTau=true;}
-			else if ( iso1_muTau && !iso2 && category < 1){ category = 1; muE=false; muTau=true;} 
-			else if (!iso1_muTau && !iso2 && category < 0){ category = 0; muE=false; muTau=true;}
-			else continue;
-			Hindex[0]=i;
-			Hindex[1]=j;
-		}             
-	}
+      //Check if the event is compatible with a Lep-Tau candidate
+      for(int l1=0;!higgsCandId && l1<(int)selLeptons.size();l1++){
+      for(int t1=0;!higgsCandId && t1<(int)selTaus   .size();t1++){
+         if(l1==dilLep1 || l1==dilLep2)continue; //lepton already used in the dilepton pair
+         if(selLeptons[l1].id*selTaus[t1].id>0)continue;//Only consider opposite sign pairs
 
-	if(muTau) m_logger << INFO << " muTau candidate!" << SLogger::endmsg;   
-	else if(muE) m_logger << INFO << " muE candidate!" << SLogger::endmsg;                 
-	else m_logger << DEBUG << " Checking no-muon channels" << SLogger::endmsg;
-	bool eTau = false;
-	if(!signal)
-	{
-		for(uint i = 0; i < goodElectron.size() && !signal ; i++)
-		{
-			if(examineThisEvent) std::cout << "ele1 no. " << i << "out of " << goodElectron.size() << std::endl;
-			//if(Tmass(m,goodElectron[i]) > 30) continue;
-			bool iso1 = (RelIsoEl(goodElectron[i]) < 0.15);
-			if (!iso1 && !checkCategories) continue;
-			if( goodElectron[i].numLostHitEleInner > 0) continue;
-			m_logger << DEBUG << " Checking for eTau " << SLogger::endmsg;	
-			if(examineThisEvent) std::cout << "ele1 no. " << i << " passes preselection with iso1 " << iso1 << std::endl;
-			if(!TightEleId(goodElectron[i])) continue;
-			for(uint j=0; j< goodTau.size() && !signal; j++)
-			{
-				if(examineThisEvent) std::cout << "tau2 no. " << j << "out of " << goodTau.size() << std::endl;
-		
-				Hist("h_LT_eTau")->Fill(goodElectron[i].pt+goodTau[j].pt);
-				if(UseSumPtCut && goodElectron[i].pt+goodTau[j].pt < Cut_etau_sumPt) continue;
-				if(examineThisEvent) std::cout << "sum pt" << std::endl;
-		
-				bool iso2 = Cut_tautau_MVA_iso ? goodTau[j].byLooseIsolationMVA > 0.5 : goodTau[j].byLooseCombinedIsolationDeltaBetaCorr3Hits > 0.5;
-				if(goodElectron[i].charge*goodTau[j].charge >=0) continue;
-				if(examineThisEvent) std::cout << "charge" << std::endl;
-		
-				if(goodTau[j].discriminationByElectronMVA3Tight <=0.5) continue;
-				if(examineThisEvent) std::cout << "antie" << std::endl;
-		
-				if(deltaR(goodTau[j].eta,goodTau[j].phi,goodElectron[i].eta,goodElectron[i].phi)< maxDeltaR) continue;
-				if(examineThisEvent) std::cout << "overlap" << std::endl;
-		
-				if (iso1 && iso2){ signal = true; muTau=muE=false; eTau=true;}
-				else if (!iso1 && iso2  && category < 1){ category = 2; muTau=muE=false; eTau=true;}
-				else if (iso1 && !iso2  && category < 1){ category = 1; muTau=muE=false; eTau=true;} 
-				else if (!iso1 && !iso2 && category < 0){ category = 0; muTau=muE=false; eTau=true;}
-				else continue;
-				if(examineThisEvent) std::cout << "signal!" << signal <<std::endl;
-		
-				Hindex[0]=i;
-				Hindex[1]=j;
-			}
-		}
-	}
+         float lepIso = utils::cmssw::relIso(selLeptons[l1], rho)<0.3;
+         bool pasLepIso = (abs(selLeptons[l1].id)==13 && lepIso<0.25) || (abs(selLeptons[l1].id)==11 && lepIso<0.15);
 
-	if(eTau) m_logger << INFO << " eTau candidate!" << SLogger::endmsg;
-	else m_logger << DEBUG << " Checking fully hadronic decay" << SLogger::endmsg;
+         bool passTauIso = true;
+         if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
+         if(abs(selLeptons[l1].id)==11){passTauIso&=(selTaus[t1].idbits&(1<<againstElectronTightMVA3))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::againstMuonTight2))!=0;}
 
-	bool tauTau =false;
-	if(!signal)
-	{
-		for(uint i = 0; i < goodTau.size() && !signal ; i++)
-		{
-			if(examineThisEvent) std::cout << "tau1 no. " << i << "out of " << goodTau.size() << std::endl;
-			if(goodTau[i].pt < Cut_tautau_Pt_1 && !UseSumPtCut) continue;
-			//if(goodTau[i].discriminationByElectronMedium <=0.5) continue;
-			//if(goodTau[i].discriminationByMuonMedium <=0.5) continue;
-			bool iso1 = Cut_tautau_MVA_iso ? goodTau[i].byLooseIsolationMVA > 0.5 : goodTau[i].byLooseCombinedIsolationDeltaBetaCorr3Hits > 0.5; 
-			if(!checkCategories && !iso1) continue;
-			if(examineThisEvent) std::cout << "tau1 no. " << i << " passed pre-selection and iso is " << iso1 << std::endl;
-			
-			for(uint j=i+1; j< goodTau.size() && !signal; j++)
-			{
-				if(examineThisEvent) std::cout << "tau2 no. " << j << std::endl;
-				if(goodTau[j].pt < Cut_tautau_Pt_2 && !UseSumPtCut) continue;
-				Hist("h_LT_tauTau")->Fill(goodTau[i].pt+goodTau[j].pt);
-				if(UseSumPtCut && goodTau[i].pt+goodTau[j].pt < Cut_tautau_sumPt) continue;
-				if(examineThisEvent) std::cout << "sum pt cut" <<  std::endl;
-				if(goodTau[i].charge*goodTau[j].charge >=0) continue;
-				if(examineThisEvent) std::cout << "charge " <<  std::endl;
-				//if(goodTau[j].discriminationByElectronMedium <=0.5) continue;
-				//if(goodTau[j].discriminationByMuonMedium <=0.5) continue; 
-				if(examineThisEvent) std::cout << "lepton rejection " <<  std::endl;
-				bool iso2 = Cut_tautau_MVA_iso ? goodTau[j].byLooseIsolationMVA > 0.5 : goodTau[j].byLooseCombinedIsolationDeltaBetaCorr3Hits > 0.5; 
-				if(examineThisEvent) std::cout << "iso is " << iso2 << std::endl;
-				if(deltaR(goodTau[j].eta,goodTau[j].phi,goodTau[i].eta,goodTau[i].phi)< maxDeltaR) continue;
-				if(examineThisEvent) std::cout << "non-overlapping" << std::endl;
-				if (iso1 && iso2){ signal = true; muTau=muE=eTau = false; tauTau=true;}
-				else if (!iso1 && iso2  && category < 1){ category = 1; muTau=muE=eTau = false; tauTau=true;}
-				else if (iso1 && !iso2  && category < 1){ category = 2; muTau=muE=eTau = false; tauTau=true;} 
-				else if (!iso1 && !iso2 && category < 0){ category = 0; muTau=muE=eTau = false; tauTau=true;}
-				else continue;
-				if(examineThisEvent && signal) std::cout << "signal!" << std::endl;
-				Hindex[0]=i;
-				Hindex[1]=j;
+         if(pasLepIso && passTauIso && deltaR(selLeptons[l1], selTaus[t1])>0.3 && (selLeptons[l1].pt()+selTaus[t1].pt())>45 ){
+           higgsCand=selLeptons[l1]+selTaus[t1]; higgsCandId=selLeptons[l1].id*selTaus[t1].id;  if(abs(selLeptons[l1].id)==11){higgsCandEl=l1;}else{higgsCandEl=l1;} higgsCandT1=t1;
+           break;//we found a candidate, stop the loop
+         }
+      }}
 
-			}
+      //Check if the event is compatible with a Tau-Tau candidate
+      for(int t1=0;!higgsCandId && t1<(int)selTaus   .size();t1++){
+      for(int t2=0;!higgsCandId && t2<(int)selTaus   .size();t2++){
+         if(selTaus[t1].id*selTaus[t2].id>0)continue;//Only consider opposite sign pairs
 
-		}
-	}
+         bool passTauIso = true;
+         if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
+         if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t2].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t2].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
 
-	if(Hindex[0] < 0 || Hindex[1] < 0 ||(!muTau && !muE && !eTau && !tauTau)){ 
-		m_logger << DEBUG << " No Higgs candidate. Going to next event" << SLogger::endmsg; 
-		return;
-	}
-	
-	
-	Hist("h_Nvertex_AfterZH")->Fill(nGoodVx);
-	Hist("h_Nvertex_AfterZH_W")->Fill(nGoodVx,Z_weight);
+         if(passTauIso && deltaR(selTaus[t1], selTaus[t2])>0.3 && (selTaus[t1].pt()+selTaus[t2].pt())>60 ){
+           higgsCand=selTaus[t1]+selTaus[t2]; higgsCandId=selTaus[t1].id*selTaus[t2].id;  higgsCandT1=t1; higgsCandT2=t2;
+           break;//we found a candidate, stop the loop
+         }
+      }}
 
+      //apply data/mc correction factors
+      if(higgsCandMu!=-1)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[higgsCandMu].pt(), selLeptons[higgsCandMu].eta(), abs(selLeptons[higgsCandMu].id),  abs(selLeptons[higgsCandMu].id) ==11 ? "loose" : "loose" ).first : 1.0;
+      if(higgsCandEl!=-1)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[higgsCandEl].pt(), selLeptons[higgsCandEl].eta(), abs(selLeptons[higgsCandEl].id),  abs(selLeptons[higgsCandEl].id) ==11 ? "loose" : "loose" ).first : 1.0;
 
-	//else m_logger << INFO << "Higgs candidate. Size is " << Hcand.size() << SLogger::endmsg;
-	// cross-check
-	h_cut_flow->Fill(4,1);
-	h_cut_flow_weight->Fill(4,Z_weight);
-	
-	
-	
-	if(muTau+muE+eTau+tauTau > 1){
-		m_logger << ERROR << "Non-exclusive event type!! Aborting." << SLogger::endmsg;
-		m_logger << ERROR << muTau << muE << eTau << tauTau << " " << eNumber << SLogger::endmsg;			 
-		return;
-	}
-
-	h_cut_flow->Fill(5,1);
-	h_cut_flow_weight->Fill(5,Z_weight);
-
-	
-	
-
-	short event_type = 0;
-
-	if(Zmumu)
-	{
-		if(muTau) event_type = 1;
-		if(muE) event_type = 2;
-		if(eTau) event_type = 3;
-		if(tauTau) event_type = 4;
-	}else if(Zee){
-		if(muTau) event_type = 5;
-		if(muE) event_type = 6;
-		if(eTau) event_type = 7;
-		if(tauTau) event_type = 8;
-	}
-	// efficiency correction;
-	int I = Hindex[0]; int J = Hindex[1];		
-	switch(event_type)
-	{
-		case 2:
-		case 6:
-			Hcand.push_back(goodMuon[I]);
-			Hcand.push_back(goodElectron[J]);
-			goodMuon.erase(goodMuon.begin()+I);
-			goodElectron.erase(goodElectron.begin()+J);
-			break;
-		case 1:
-		case 5:
-			Hcand.push_back(goodMuon[I]);
-			Hcand.push_back(goodTau[J]);
-			goodMuon.erase(goodMuon.begin()+I);
-			goodTau.erase(goodTau.begin()+J);
-			break;
-		case 3:
-		case 7:
-			Hcand.push_back(goodElectron[I]);
-			Hcand.push_back(goodTau[J]);
-			goodElectron.erase(goodElectron.begin()+I);
-			goodTau.erase(goodTau.begin()+J);
-			break;
-		case 4:
-		case 8:
-			Hcand.push_back(goodTau[I]);
-			Hcand.push_back(goodTau[J]);
-			goodTau.erase(goodTau.begin()+I);
-			goodTau.erase(goodTau.begin()+J-1);
-			break;
-	}
-
-
-	double corrHlep1,corrHlep2;
-	corrHlep1=corrHlep2=1.0;
-	if(isSimulation && !IgnoreSF){
-
-		if(muTau)
-		{
-			if(is2012_53){
-				corrHlep1=Cor_ID_Iso_Mu_Tight_2012_53X(Hcand[0]);
-			}else if(is2012_52){
-				corrHlep1=Cor_ID_Iso_Mu_Tight_2012(Hcand[0]);
-			}else{
-				corrHlep1=Cor_ID_Iso_Mu_Tight_2011(Hcand[0]);
-			}
-		}else if(eTau){
-			if(is2012_53){
-				corrHlep1=Cor_ID_Iso_Ele_Tight_2012_53X(Hcand[0]);
-			}else if(is2012_52){
-				corrHlep1=Cor_ID_Iso_Ele_Tight_2012(Hcand[0]);
-			}else{
-				corrHlep1=Cor_ID_Iso_Ele_Tight_2011(Hcand[0]);
-			}
-		}else if(muE){
-			if(is2012_53){
-				corrHlep1=Cor_ID_Iso_Mu_Loose_2012_53X(Hcand[0]);
-				corrHlep2=Cor_ID_Iso_Ele_Loose_2012_53X(Hcand[1]);
-			}else if(is2012_52){
-				corrHlep1=Cor_ID_Iso_Mu_Loose_2012(Hcand[0]);
-				corrHlep2=Cor_ID_Iso_Ele_Loose_2012(Hcand[1]);
-			}else{
-				corrHlep1=Cor_ID_Iso_Mu_Loose_2011(Hcand[0]);
-				corrHlep2=Cor_ID_Iso_Ele_Loose_2011(Hcand[1]);
-			}
-		}
-
-	}
-
-
-*/
-
-
-
-
+      //check the channel
+      //prepare the tag's vectors for histo filling
+      bool passHiggs = higgsCandId>0;
+           if( abs(higgsCandId)==143 ) chTags.push_back(chTags[chTags.size()-1] + string("_elmu"));
+      else if( abs(higgsCandId)==165 ) chTags.push_back(chTags[chTags.size()-1] + string("_elha"));
+      else if( abs(higgsCandId)==195 ) chTags.push_back(chTags[chTags.size()-1] + string("_muha"));
+      else if( abs(higgsCandId)==225 ) chTags.push_back(chTags[chTags.size()-1] + string("_haha"));
+      else                             chTags.push_back(chTags[chTags.size()-1] + string("_none"));
+      printf("event is %+4i %s\n", higgsCandId, chTags[chTags.size()-1].Data());
 
 
              
@@ -1079,6 +838,14 @@ int main(int argc, char* argv[])
               mon.fillHisto("ntaus"        ,  tags, selTaus.size(), weight);
               mon.fillHisto("tauleadpt"    ,  tags, selTaus.size()>0?selTaus[0].pt():-1,  weight);
               mon.fillHisto("tauleadeta"   ,  tags, selTaus.size()>0?selTaus[0].eta():-10, weight);
+
+              if(passHiggs){
+                 mon.fillHisto("higgspt"      , tags, higgsCand.pt(),    weight);
+                 mon.fillHisto("higgsmass"    , tags, higgsCand.mass(),  weight);
+              }
+
+
+
 
  
 	      //STATISTICAL ANALYSIS

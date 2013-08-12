@@ -90,6 +90,8 @@ namespace utils
     utils::cmssw::PuShifter_t getPUshifters(std::vector< float > &Lumi_distr, float puUnc);
 
     Float_t getEffectiveArea(int id, float eta,int cone=3,TString isoSum="");
+    double relIso(llvvLepton lep, double rho);
+
 
     //cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
     FactorizedJetCorrector *getJetCorrector(TString baseDir, bool isMC);

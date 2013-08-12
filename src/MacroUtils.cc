@@ -193,6 +193,22 @@ namespace utils
       }
       return Aeff;
     }
+
+
+   double relIso(llvvLepton lep, double rho){
+      if(abs(lep.id)==11){
+          return (TMath::Max(lep.nhIso03+lep.gIso03-rho*utils::cmssw::getEffectiveArea(11,lep.electronInfoRef->sceta),double(0.))+lep.chIso03)/lep.pt();
+      }else if(abs(lep.id)==13){
+          return (TMath::Max(lep.nhIso04+lep.gIso04-0.5*lep.puchIso04,double(0.))+lep.chIso04)/lep.pt();
+      }else{
+          return -1;
+      }
+   }
+
+
+
+
+
   }
 
 

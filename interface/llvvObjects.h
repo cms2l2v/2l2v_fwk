@@ -108,6 +108,9 @@ class llvvLepton : public LorentzVectorF
    //Specific Lepton Information
    llvvMuonInfoRef     muonInfoRef;
    llvvElectronInfoRef electronInfoRef;
+
+   //functions
+
 };
 typedef  std::vector<llvvLepton> llvvLeptonCollection;
 typedef  edm::Ref<llvvLeptonCollection> llvvLeptonRef;
