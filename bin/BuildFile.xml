@@ -18,5 +18,6 @@
   <bin name="fitTTbarCrossSection"     file="fitTTbarCrossSection.cc"></bin> 
   <bin name="runPLRanalysis"           file="runPLRanalysis.cc"></bin> 
   <bin name="runLandS"                 file="runLandS.cc"></bin> 
+  <bin name="runZHTauTauAnalysisFWLite" file="runZHTauTauAnalysisFWLite.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

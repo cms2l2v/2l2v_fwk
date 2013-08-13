@@ -1,10 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 #Only for debug
-#isMC=True
+#isMC=False
 #isTauEmbed=False
 #gtag="FT_53_V21_AN4::All"
-##gtag="START53_V23::All"
+#gtag="START53_V23::All"
 
 
 process = cms.Process("DataAna")
@@ -36,12 +36,14 @@ except:
 '/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2491.root',
 '/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM/Events_2490.root',
 )
-    else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
+#    else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
+    else    : inputList = cms.untracked.vstring('/store/data/Run2012D/SingleMu/AOD/22Jan2013-v1/20000/46F1F062-0685-E211-9E77-001EC9D7F1FF.root')
 process.source = cms.Source("PoolSource",
+                            skipEvents=cms.untracked.uint32(3000),
                             fileNames = inputList
                             )
     
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(30000) )
 
 try:
     print 'EDM output set to %s'%outFile
@@ -133,9 +135,6 @@ usePF2PAT(process,
           pvCollection=cms.InputTag('goodOfflinePrimaryVertices'),
           typeIMetCorrections=False)
 
-#from PhysicsTools.PatAlgos.tools.tauTools import *
-#switchToPFTauHPS(process)
-
 #setup trigger matching
 from UserCode.llvv_fwk.triggerMatching_cfg import *
 addTriggerMatchingTo(process)
@@ -146,16 +145,16 @@ process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
 process.eidMVASequence = cms.Sequence(  process.mvaTrigV0 + process.mvaNonTrigV0 )
 process.patElectronsPFlow.electronIDSources.mvaTrigV0    = cms.InputTag("mvaTrigV0")
 process.patElectronsPFlow.electronIDSources.mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0")
-#from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *
-#process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
-#                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
-#                                                       barrelCuts = cms.PSet(heepBarrelCuts),
-#                                                       endcapCuts = cms.PSet(heepEndcapCuts),
-#                                                       applyRhoCorrToEleIsol = cms.bool(True),
-#                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
-#                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
-#                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
-#                                                       )
+from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *
+process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
+                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
+                                                       barrelCuts = cms.PSet(heepBarrelCuts),
+                                                       endcapCuts = cms.PSet(heepEndcapCuts),
+                                                       applyRhoCorrToEleIsol = cms.bool(True),
+                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
+                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
+                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
+                                                       )
 
 #custom muons
 process.patMuonsPFlow.pfMuonSource = cms.InputTag("pfSelectedMuonsPFlow")
@@ -202,8 +201,6 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
 #the analyzer
 process.load("UserCode.llvv_fwk.llvvObjectProducers_cff")
 process.load("UserCode.llvv_fwk.dataAnalyzer_cfi")
-
-
 try:
     if runDijetsAnalysis :
         process.llvvEventlProducerUsed = process.dijetAnalyzer.clone()
@@ -222,9 +219,7 @@ try:
         print 'Warning running unfolding: ntuples will save lots of information on gen level and won`t use trigger'
 except:
     print 'Basic generator level information will be stored (only status=3 + photons status 1)'
-               
-
- 
+                
 #counters for specific filters
 process.startCounter = cms.EDProducer("EventCountProducer")
 process.scrapCounter = process.startCounter.clone()
@@ -244,12 +239,11 @@ process.p = cms.Path( process.startCounter
                       *process.kt6PFJetsCentral
                       *process.qgSequence
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
-                      *process.selectedPatElectronsWithTrigger#*process.selectedPatElectronsPFlowHeep
-                      *process.selectedPatMuonsTriggerMatch )
- 
-process.p += (
-                       process.llvvObjectProducersUsed
+                      *process.selectedPatElectronsWithTrigger*process.selectedPatElectronsPFlowHeep
+                      *process.selectedPatMuonsTriggerMatch 
+                      *process.llvvObjectProducersUsed
                       )
+
 
 
 process.out.fileName = cms.untracked.string("Events.root")
