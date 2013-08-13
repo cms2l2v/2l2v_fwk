@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   bool runLoosePhotonSelection(false);
 
-  bool Cut_tautau_MVA_iso = false;//currently hardcoded
+  bool Cut_tautau_MVA_iso = true;//currently hardcoded
 
   float minJetPtToApply(30);
 
@@ -724,7 +724,7 @@ int main(int argc, char* argv[])
       llvvTauCollection selTaus;
       for(size_t itau=0; itau<taus.size(); itau++){
          llvvTau& tau = taus[itau];
-         if(tau.pt()>20.0 && fabs(tau.eta()) < 2.3 && 
+         if(tau.pt()>15.0 && fabs(tau.eta()) < 2.3 && 
            (tau.idbits&(1<<llvvTAUID::againstElectronLoose))!=0 && 
            (tau.idbits&(1<<llvvTAUID::againstMuonLoose2))!=0 && 
            (tau.idbits&(1<<llvvTAUID::decayModeFinding))!=0){
@@ -759,7 +759,7 @@ int main(int argc, char* argv[])
 
          printf("Check if it's a EMU event: Id1 %i Id2 %i Iso1 %f Iso2 %f DR %f SumPt %f\n", selLeptons[l1].id, selLeptons[l2].id, utils::cmssw::relIso(selLeptons[muId], rho), utils::cmssw::relIso(selLeptons[elId], rho), deltaR(selLeptons[muId], selLeptons[elId]), (selLeptons[muId].pt()+selLeptons[elId].pt()) );
 
-         if(utils::cmssw::relIso(selLeptons[muId], rho)<0.3 && utils::cmssw::relIso(selLeptons[elId], rho)<0.3 && deltaR(selLeptons[muId], selLeptons[elId])>0.1 && (selLeptons[muId].pt()+selLeptons[elId].pt())>30 ){        
+         if(utils::cmssw::relIso(selLeptons[muId], rho)<0.25 && utils::cmssw::relIso(selLeptons[elId], rho)<0.25 && deltaR(selLeptons[muId], selLeptons[elId])>0.1 && (selLeptons[muId].pt()+selLeptons[elId].pt())>25 ){        
            printf("Is a candidate\n");
            higgsCand=selLeptons[muId]+selLeptons[elId]; higgsCandId=selLeptons[muId].id*selLeptons[elId].id;  higgsCandMu=muId; higgsCandEl=elId;
            break;//we found a candidate, stop the loop
@@ -771,6 +771,7 @@ int main(int argc, char* argv[])
       for(int t1=0;!higgsCandId && t1<(int)selTaus   .size();t1++){
          if(l1==dilLep1 || l1==dilLep2)continue; //lepton already used in the dilepton pair
          if(selLeptons[l1].id*selTaus[t1].id>0)continue;//Only consider opposite sign pairs
+         if(selTaus[t1].pt()<15 || fabs(selTaus[t1].eta())>2.3)continue;
 
          float lepIso = utils::cmssw::relIso(selLeptons[l1], rho);
          bool pasLepIso = (abs(selLeptons[l1].id)==13 && lepIso<0.25) || (abs(selLeptons[l1].id)==11 && lepIso<0.15);
@@ -792,6 +793,8 @@ int main(int argc, char* argv[])
       for(int t1=0   ;!higgsCandId && t1<(int)selTaus   .size();t1++){
       for(int t2=t1+1;!higgsCandId && t2<(int)selTaus   .size();t2++){
          if(selTaus[t1].id*selTaus[t2].id>0)continue;//Only consider opposite sign pairs
+         if(selTaus[t1].pt()<15 || fabs(selTaus[t1].eta())>2.3)continue;
+         if(selTaus[t2].pt()<15 || fabs(selTaus[t2].eta())>2.3)continue;
 
          bool passTauIso = true;
          if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
@@ -799,7 +802,7 @@ int main(int argc, char* argv[])
 
          printf("Check if it's a TauTau event: Id1 %i Id2 %i Iso %i DR %f SumPt %f\n", selTaus[t1].id, selTaus[t2].id, (int)passTauIso, deltaR(selTaus[t1], selTaus[t2]), (selTaus[t1].pt()+selTaus[t2].pt()));
 
-         if(passTauIso && deltaR(selTaus[t1], selTaus[t2])>0.3 && (selTaus[t1].pt()+selTaus[t2].pt())>60 ){
+         if(passTauIso && deltaR(selTaus[t1], selTaus[t2])>0.3 && (selTaus[t1].pt()+selTaus[t2].pt())>75 ){
            higgsCand=selTaus[t1]+selTaus[t2]; higgsCandId=selTaus[t1].id*selTaus[t2].id;  higgsCandT1=t1; higgsCandT2=t2;
            printf("Is a candidate\n");
            break;//we found a candidate, stop the loop
