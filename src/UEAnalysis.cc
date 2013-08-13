@@ -133,6 +133,19 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   //ttbar system reconstructed
   LorentzVector htlep=leptons[0]+leptons[1]+jets[0]+jets[1];
   LorentzVector rec_ttbar=htlep+met;
+  {
+    float val=rec_ttbar.pt();
+    if(isnan(val))
+      {
+	cout << "l1:" << leptons[0] << endl;
+	cout << "l2:" << leptons[1] << endl;
+	cout << "j1:" << jets[0] << endl;
+	cout << "j2:" << jets[1] << endl;
+	cout << "met:" << met << endl;
+	cout << "---->ttbar:" << rec_ttbar << endl;
+      }
+  }
+
   float detaBB=fabs(jets[0].eta()-jets[1].eta());
   float detaLL=fabs(leptons[0].eta()-leptons[1].eta());
 
@@ -297,7 +310,6 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   
   int totalaway(0); 
   for(int ibin=nchprofphiH->GetXaxis()->FindBin(120); ibin<nphibins; ibin++) totalaway += chCountPhi[ibin];
-  cout << totalaway << " " << chCount [1] <<endl; 
 
   //n vertex profiles
   mon_->fillHisto("rawnchprofnvtx",   ch, nvtx, rawChCount,  weight/acceptance);	

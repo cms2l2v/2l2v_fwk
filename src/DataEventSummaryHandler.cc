@@ -812,6 +812,7 @@ std::vector<LorentzVector> utils::cmssw::getMETvariations(data::PhysicsObject_t 
       LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
       for(size_t ijet=0; ijet<jets.size(); ijet++)
 	{
+	  if(jets[ijet].pt()==0) continue;
 	  float jetsf(1.0);
 	  if(ivar==JERUP)   jetsf=jets[ijet].getVal("jerup")/jets[ijet].pt();
 	  if(ivar==JERDOWN) jetsf=jets[ijet].getVal("jerdown")/jets[ijet].pt();
