@@ -319,7 +319,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfhtcjv20"          , ";H_{T}(p_{T}>20) [GeV];Events",25,0,250) );
   mon.addHistogram( new TH1F("vbfhtcjv"            , ";H_{T}(p_{T}>30) [GeV];Events",25,0,250) );
   mon.addHistogram( new TH1F("vbfmaxcjvjpt"        , ";Third jet p_{T} [GeV];Events",25,0,100) );
-  mon.addHistogram( new TH1F("vbfystar3"           , ";y_{j3}-(y_{j1}+y_{j2})/2;Events",50,0,5) );
+  mon.addHistogram( new TH1F("vbfystar3"           , ";y_{j3}-(y_{j1}+y_{j2})/2;Events",25,0,5) );
 
   Double_t mjjaxis[32];
   mjjaxis[0]=0.01;
