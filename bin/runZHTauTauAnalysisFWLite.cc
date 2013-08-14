@@ -176,9 +176,9 @@ int main(int argc, char* argv[])
   TH1 *h=mon.addHistogram( new TH1F ("eventflow", ";;Events", 13,0,13) );
   h->GetXaxis()->SetBinLabel(1,"#geq 2 leptons");
   h->GetXaxis()->SetBinLabel(2,"|M-M_{Z}|<15");
-  h->GetXaxis()->SetBinLabel(3,"Btag Veto");
-  h->GetXaxis()->SetBinLabel(4, "lepton Veto");
-  h->GetXaxis()->SetBinLabel(5,"HiggsCandidate"); 
+  h->GetXaxis()->SetBinLabel(3,"HiggsCandidate"); 
+  h->GetXaxis()->SetBinLabel(4,"lepton Veto");
+  h->GetXaxis()->SetBinLabel(5,"Btag Veto");
   h->GetXaxis()->SetBinLabel(6,"ee_em");
   h->GetXaxis()->SetBinLabel(7,"ee_et");
   h->GetXaxis()->SetBinLabel(8,"ee_mt");
@@ -606,12 +606,15 @@ int main(int argc, char* argv[])
       //identify the best lepton pair
       for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
          float relIso1 = utils::cmssw::relIso(selLeptons[l1], rho);
-         if( (abs(selLeptons[l1].id)==11 && relIso1>0.15) || (abs(selLeptons[l1].id)!=11 && relIso1>0.20) ) continue;
+         if( relIso1>0.30 ) continue;
          for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
-            if(selLeptons[l1].pt()<20 || selLeptons[l2].pt()<20)continue;
-            float relIso2 = utils::cmssw::relIso(selLeptons[l2], rho);
-            if( (abs(selLeptons[l2].id)==11 && relIso2>0.15) || (abs(selLeptons[l2].id)!=11 && relIso2>0.20) ) continue;
             if(fabs(selLeptons[l1].id)!=fabs(selLeptons[l2].id))continue; //only consider same flavor lepton pairs
+            if(selLeptons[l1].id*selLeptons[l2].id>=0)continue; //only consider opposite charge lepton pairs
+            if(selLeptons[l1].pt()<20 || selLeptons[l2].pt()<10)continue;
+            float relIso2 = utils::cmssw::relIso(selLeptons[l2], rho);
+            if( relIso2>0.30 ) continue;
+
+            if(deltaR(selLeptons[l1], selLeptons[l2])<0.1)continue;
             if(fabs(BestMass-91.2)>((selLeptons[l1]+selLeptons[l2]).mass() - 91.2)){
                dilLep1 = l1; 
                dilLep2 = l2;
@@ -753,13 +756,18 @@ int main(int argc, char* argv[])
       for(int l2=l1+1;!higgsCandId && l2<(int)selLeptons.size();l2++){
          if(l1==dilLep1 || l1==dilLep2 || l2==dilLep1 || l2==dilLep2)continue; //lepton already used in the dilepton pair
          if(selLeptons[l1].id*selLeptons[l2].id!=-143)continue;//Only consider opposite sign, opposite flavor pairs
+
+         //check all deltaRs
+         if(deltaR(selLeptons[l1], selLeptons[dilLep1])<0.1)continue;
+         if(deltaR(selLeptons[l1], selLeptons[dilLep2])<0.1)continue;
+         if(deltaR(selLeptons[l2], selLeptons[dilLep1])<0.1)continue;
+         if(deltaR(selLeptons[l2], selLeptons[dilLep2])<0.1)continue;
+         if(deltaR(selLeptons[l1], selLeptons[l2     ])<0.1)continue;
  
          int muId, elId;
          if(abs(selLeptons[l1].id)==13){muId=l1; elId=l2;}else{muId=l2; elId=l1;}
 
-         printf("Check if it's a EMU event: Id1 %i Id2 %i Iso1 %f Iso2 %f DR %f SumPt %f\n", selLeptons[l1].id, selLeptons[l2].id, utils::cmssw::relIso(selLeptons[muId], rho), utils::cmssw::relIso(selLeptons[elId], rho), deltaR(selLeptons[muId], selLeptons[elId]), (selLeptons[muId].pt()+selLeptons[elId].pt()) );
-
-         if(utils::cmssw::relIso(selLeptons[muId], rho)<0.25 && utils::cmssw::relIso(selLeptons[elId], rho)<0.25 && deltaR(selLeptons[muId], selLeptons[elId])>0.1 && (selLeptons[muId].pt()+selLeptons[elId].pt())>25 ){        
+         if(utils::cmssw::relIso(selLeptons[muId], rho)<0.25 && utils::cmssw::relIso(selLeptons[elId], rho)<0.25 && (selLeptons[muId].pt()+selLeptons[elId].pt())>25 ){        
            printf("Is a candidate\n");
            higgsCand=selLeptons[muId]+selLeptons[elId]; higgsCandId=selLeptons[muId].id*selLeptons[elId].id;  higgsCandMu=muId; higgsCandEl=elId;
            break;//we found a candidate, stop the loop
@@ -773,6 +781,14 @@ int main(int argc, char* argv[])
          if(selLeptons[l1].id*selTaus[t1].id>0)continue;//Only consider opposite sign pairs
          if(selTaus[t1].pt()<15 || fabs(selTaus[t1].eta())>2.3)continue;
 
+         //check all deltaRs
+         if(deltaR(selLeptons[l1], selLeptons[dilLep1])<0.1)continue;
+         if(deltaR(selLeptons[l1], selLeptons[dilLep2])<0.1)continue;
+         if(deltaR(selTaus[t1]   , selLeptons[dilLep1])<0.1)continue;
+         if(deltaR(selTaus[t1]   , selLeptons[dilLep2])<0.1)continue;
+         if(deltaR(selLeptons[l1], selTaus[t1        ])<0.1)continue;
+
+
          float lepIso = utils::cmssw::relIso(selLeptons[l1], rho);
          bool pasLepIso = (abs(selLeptons[l1].id)==13 && lepIso<0.25) || (abs(selLeptons[l1].id)==11 && lepIso<0.15);
 
@@ -780,9 +796,8 @@ int main(int argc, char* argv[])
          if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
          if(abs(selLeptons[l1].id)==11){passTauIso&=(selTaus[t1].idbits&(1<<againstElectronTightMVA3))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::againstMuonTight2))!=0;}
 
-         printf("Check if it's a LTau event: Id1 %i Id2 %i Iso1 %i Iso2 %i DR %f SumPt %f\n", selLeptons[l1].id, selTaus[t1].id, (int)pasLepIso, (int)passTauIso, deltaR(selLeptons[l1], selTaus[t1]), (selLeptons[l1].pt()+selTaus[t1].pt()));
 
-         if(pasLepIso && passTauIso && deltaR(selLeptons[l1], selTaus[t1])>0.3 && (selLeptons[l1].pt()+selTaus[t1].pt())>45 ){
+         if(pasLepIso && passTauIso && (selLeptons[l1].pt()+selTaus[t1].pt())>45 ){
            higgsCand=selLeptons[l1]+selTaus[t1]; higgsCandId=selLeptons[l1].id*selTaus[t1].id;  if(abs(selLeptons[l1].id)==11){higgsCandEl=l1;}else{higgsCandEl=l1;} higgsCandT1=t1;
            printf("Is a candidate\n");
            break;//we found a candidate, stop the loop
@@ -796,13 +811,20 @@ int main(int argc, char* argv[])
          if(selTaus[t1].pt()<15 || fabs(selTaus[t1].eta())>2.3)continue;
          if(selTaus[t2].pt()<15 || fabs(selTaus[t2].eta())>2.3)continue;
 
+         //check all deltaRs
+         if(deltaR(selTaus[t1]   , selLeptons[dilLep1])<0.1)continue;
+         if(deltaR(selTaus[t1]   , selLeptons[dilLep2])<0.1)continue;
+         if(deltaR(selTaus[t2]   , selLeptons[dilLep1])<0.1)continue;
+         if(deltaR(selTaus[t2]   , selLeptons[dilLep2])<0.1)continue;
+         if(deltaR(selTaus[t2]   , selTaus[t1        ])<0.1)continue;
+
+
+
          bool passTauIso = true;
          if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t1].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
          if(Cut_tautau_MVA_iso){passTauIso&=(selTaus[t2].idbits&(1<<llvvTAUID::byLooseIsolationMVA))!=0;}else{passTauIso&=(selTaus[t2].idbits&(1<<llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))!=0;}
 
-         printf("Check if it's a TauTau event: Id1 %i Id2 %i Iso %i DR %f SumPt %f\n", selTaus[t1].id, selTaus[t2].id, (int)passTauIso, deltaR(selTaus[t1], selTaus[t2]), (selTaus[t1].pt()+selTaus[t2].pt()));
-
-         if(passTauIso && deltaR(selTaus[t1], selTaus[t2])>0.3 && (selTaus[t1].pt()+selTaus[t2].pt())>75 ){
+         if(passTauIso && (selTaus[t1].pt()+selTaus[t2].pt())>75 ){
            higgsCand=selTaus[t1]+selTaus[t2]; higgsCandId=selTaus[t1].id*selTaus[t2].id;  higgsCandT1=t1; higgsCandT2=t2;
            printf("Is a candidate\n");
            break;//we found a candidate, stop the loop
@@ -844,12 +866,12 @@ int main(int argc, char* argv[])
 	{
 	  std::vector<TString> tags(1,chTags[ich]);
 
-	  mon.fillHisto("eventflow",tags,0,weight);
-	  if(passZmass)                                      mon.fillHisto("eventflow",tags,1,weight);
-	  if(passZmass && passBJetVeto)                           mon.fillHisto("eventflow",tags,2,weight);
-	  if(passZmass && passBJetVeto && passLepVeto)               mon.fillHisto("eventflow",tags,3,weight);
-	  if(passZmass && passBJetVeto && passLepVeto && passHiggs)  mon.fillHisto("eventflow",tags,4,weight);
-          if(passZmass && passBJetVeto && passLepVeto && passHiggs)  mon.fillHisto("eventflow",tags,5+HiggsShortId,weight);
+            	                                                     mon.fillHisto("eventflow",tags,0,weight);
+	  if(passZmass)                                              mon.fillHisto("eventflow",tags,1,weight);
+	  if(passZmass && passHiggs)                                 mon.fillHisto("eventflow",tags,2,weight);
+	  if(passZmass && passHiggs && passLepVeto)                  mon.fillHisto("eventflow",tags,3,weight);
+	  if(passZmass && passHiggs && passLepVeto && passBJetVeto)  mon.fillHisto("eventflow",tags,4,weight);
+          if(passZmass && passHiggs && passLepVeto && passBJetVeto)  mon.fillHisto("eventflow",tags,5+HiggsShortId,weight);
 
 	  mon.fillHisto("zmass",    tags, zll.mass(), weight);  
 	  if(passZmass){

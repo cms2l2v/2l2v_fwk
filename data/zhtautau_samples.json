@@ -189,9 +189,18 @@
                 "split":11,
                 "xsec":3503.71,
 	        "split":11
-               },
+               }
+           ]
+        },
+	{
+	 "tag":"Z#rightarrow ll + Jets",
+         "isdata":false,
+         "color":"835",
+	 "lcolor":1,
+         "data":[
 	       {
                 "dtag":"MC8TeV_DY1JetsToLL_50toInf",
+                "dset":"/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
                 "split":7,
                 "xsec":3503.71,
 		"br":[0.1901694915],
@@ -199,6 +208,7 @@
                },
 	       {
                 "dtag":"MC8TeV_DY2JetsToLL_50toInf",
+                "dset":"/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
                 "split":6,
                 "xsec":3503.71,
 		"br":[0.0613559322],
@@ -206,6 +216,7 @@
                },
 	       {
                 "dtag":"MC8TeV_DY3JetsToLL_50toInf",
+                "dset":"/DY3JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
                 "split":6,
                 "xsec":3503.71,
 		"br":[0.0173220339],
@@ -213,6 +224,7 @@
                },
 	       {
                 "dtag":"MC8TeV_DY4JetsToLL_50toInf",
+                "dset":"/DY4JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
                 "split":6,
                 "xsec":3503.71,
 		"br":[0.0078101695],
@@ -220,6 +232,7 @@
                }
            ]
         },
+
         {
 	   "tag":"data",
 	   "isdata":true,
