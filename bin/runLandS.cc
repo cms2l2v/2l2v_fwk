@@ -86,6 +86,7 @@ struct DataCardInputs
 
 void printHelp();
 Shape_t getShapeFromFile(TFile* inF, TString ch, TString shapeName, int cutBin,JSONWrapper::Object &Root,double minCut=0, double maxCut=9999, bool onlyData=false);
+void checkShape(TH1 *h);
 void showShape(std::vector<TString>& selCh ,map<TString, Shape_t>& allShapes, TString mainHisto, TString SaveName);
 void getYieldsFromShape(std::vector<TString> ch, const map<TString, Shape_t> &allShapes, TString shName);
 void getEffFromShape(std::vector<TString> ch, const map<TString, Shape_t> &allShapes, TString shName);
@@ -145,6 +146,7 @@ double shapeMinVBF = 0;
 double shapeMaxVBF = 9999;
 bool doInterf = false;
 double minSignalYield = 0;
+bool addGammaNormRange=false;
 
 bool dirtyFix1 = false;
 bool dirtyFix2 = false;
@@ -159,6 +161,7 @@ void printHelp()
   printf("Options\n");
   printf("--in        --> input file with from plotter\n");
   printf("--json      --> json file with the sample descriptor\n");
+  printf("--addGammaNorm -> add lnU for gamma normalization in the range 1/2 to 2\n");
   printf("--histoVBF  --> name of histogram to be used for VBF\n");
   printf("--histo     --> name of histogram to be used\n");
   printf("--shapeMin  --> left cut to apply on the shape histogram\n");
@@ -223,6 +226,7 @@ int main(int argc, char* argv[])
     else if(arg.find("--subNRB12") !=string::npos) { subNRB2012=true; skipWW=false; printf("subNRB2012 = True\n");}
     else if(arg.find("--subNRB")   !=string::npos) { subNRB2011=true; skipWW=true; printf("subNRB2011 = True\n");}
     else if(arg.find("--subDY")    !=string::npos) { subDY=true; DYFile=argv[i+1];  i++; printf("Z+Jets will be replaced by %s\n",DYFile.Data());}
+    else if(arg.find("--addGammaNorm") !=string::npos) { addGammaNormRange=true; printf("G+Jets normalization will be left free in the [0.5,2] range\n"); }
     else if(arg.find("--subWZ")    !=string::npos) { subWZ=true; printf("WZ will be estimated from 3rd lepton SB\n");}
     else if(arg.find("--DDRescale")!=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&DDRescale); i++;}
     else if(arg.find("--MCRescale")!=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&MCRescale); i++;}
@@ -327,12 +331,14 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, TString shapeName, int cutBin, 
          if(hshape2D){
 	   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
 	   hshape   = hshape2D->ProjectionY(histoName,cutBin,cutBin);
+
 	   if(hshape->Integral()<=0 && varName=="" && !isData){hshape->Reset(); hshape->SetBinContent(1, 1E-10);}
 	   
 	   if(isnan((float)hshape->Integral())){hshape->Reset();}
 	   hshape->SetDirectory(0);
 	   hshape->SetTitle(proc);
 	   printf("%s %s overflow = %f -->", histoName.Data(), varName.Data(), hshape->GetBinContent(hshape->GetNbinsX()+1));
+	   checkShape(hshape);
 	   utils::root::fixExtremities(hshape,true,true);
 	   printf("%f\n", hshape->GetBinContent(hshape->GetNbinsX()+1));
 	   hshape->SetFillColor(color); hshape->SetLineColor(lcolor); hshape->SetMarkerColor(mcolor);
@@ -668,6 +674,19 @@ void showShape(std::vector<TString>& selCh ,map<TString, Shape_t>& allShapes, TS
 //  if(allbkg)delete allbkg;
 //  if(stack) delete stack;
 //  if(ratio) delete ratio;
+}
+
+//
+void checkShape(TH1 *h)
+{
+  if(h==0) return;
+  for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
+    {
+      Float_t y=h->GetBinContent(ibin);
+      if(y>0) continue;
+      h->SetBinContent(ibin,1.0e-5);
+      h->SetBinError(ibin,1.0e-5);
+    }
 }
 
 //
@@ -1052,7 +1071,6 @@ std::vector<TString>  buildDataCard(Int_t mass, TString histo, TString url, TStr
 
          }
 
-
          fprintf(pFile,"%35s %10s ", "pdf_gg", "lnN");
          for(size_t j=1; j<=dci.procs.size(); j++){ if(dci.rates.find(RateKey_t(dci.procs[j-1],dci.ch[i-1]))==dci.rates.end()) continue;
             if(dci.procs[j-1].Contains("ggh")){setTGraph(dci.procs[j-1], systpostfix ); fprintf(pFile,"%6f ",1+0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S")));
@@ -1116,6 +1134,13 @@ std::vector<TString>  buildDataCard(Int_t mass, TString histo, TString url, TStr
             }else{fprintf(pFile,"%6s ","-");}
          }fprintf(pFile,"\n");
 
+	 if(addGammaNormRange){
+	   fprintf(pFile,"%35s %10s ", "norm_gjets", "lnU");
+	   for(size_t j=1; j<=dci.procs.size(); j++){ if(dci.rates.find(RateKey_t(dci.procs[j-1],dci.ch[i-1]))==dci.rates.end()) continue;
+	     if(dci.procs[j-1].Contains("zlldata")){ fprintf(pFile,"%6f ",0.5);
+	     }else{fprintf(pFile,"%6s ","-");}
+	   }fprintf(pFile,"\n");
+	 }
 
          ///////////////////////////////////////////////
 
@@ -1887,6 +1912,7 @@ std::cout<<"DYTEST2b\n";
 
            TH1* gjets1Dshape  = NULL;
             gjets1Dshape = gjets2Dshape->ProjectionY("tmpName",indexcut_,indexcut_);
+	    checkShape(gjets1Dshape);
 	    utils::root::fixExtremities(gjets1Dshape, true, true);
             //apply the cuts
             if(!(mainHisto==histo && histoVBF!="" && AnalysisBins[b].Contains("vbf"))){

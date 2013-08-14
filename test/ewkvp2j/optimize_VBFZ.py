@@ -205,7 +205,7 @@ elif(phase == 2):
             if(float(median)<=0.0):continue
             index = int(f[f.rfind("_")+1:f.rfind(".log")])
             sigVal=sig.split(' ')[1];
-            ixsecReport="%7.3f @ index=%d %7.3fpb [%7.3f/%7.3f] pt1=%f pt2=%f sig=%f"%(float(100.0*unc),index,float(median*smXsec),100.0*uncM/median,100.0*uncP/median,cuts.GetBinContent(index,1),cuts.GetBinContent(index,2),float(sigVal))
+            ixsecReport="%f @ index=%d %fpb [%f/%f] pt1=%f pt2=%f sig=%f"%(float(100.0*unc),index,float(median*smXsec),100.0*uncM/median,100.0*uncP/median,cuts.GetBinContent(index,1),cuts.GetBinContent(index,2),float(sigVal))
             BestXsec.append(ixsecReport)
          except:
             print 'Failed with %s'%exp
@@ -240,7 +240,7 @@ elif(phase == 3 ):
    for c in cut_lines:
       if(len(c.split())<2): continue
       try :
-         print '%d)\t #%s \t %s \t %s \t %s'%(ictr,c.split()[2],c.split()[0],c.split()[6],c.split()[7])
+         print '%d)\t #%s \t %s \t %s \t %s'%(ictr,c.split()[2],c.split()[0],c.split()[5],c.split()[6])
       except:
          continue
       ictr+=1
@@ -249,8 +249,8 @@ elif(phase == 3 ):
    #save cut chosen
    opt = int(raw_input(">"))
    c=cut_lines[opt]
-   pt1Cut=float(c.split()[6].split('=')[1])
-   pt2Cut=float(c.split()[7].split('=')[1])
+   pt1Cut=float(c.split()[5].split('=')[1])
+   pt2Cut=float(c.split()[6].split('=')[1])
    optCuts="index="+str(opt).rjust(5) + " --> jet1>" + str(pt1Cut).rjust(5) + " jet2>" + str(pt2Cut).rjust(5)+"\n"
    print optCuts
    while True:
