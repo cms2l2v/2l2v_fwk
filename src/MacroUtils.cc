@@ -205,10 +205,11 @@ namespace utils
       }
    }
 
-
-
-
-
+    double ttbarReweight(double genTPt, double genTbarPt){
+      return ( (genTPt>400 || genTbarPt>400) ? 1.0 : sqrt( exp( 0.148-0.00129*genTPt + 0.148-0.00129*genTbarPt ) )         );
+      // dilepton values at 8 TeV (https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting#MC_SFs_Reweighting)
+    }
+    
   }
 
 

@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
   int mcTruthMode    = runProcess.getParameter<int>("mctruthmode");
   double xsec        = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
+  bool isTTbarMC(isMC && (url.Contains("TTJets") ));
   TString out        = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   // weights file
@@ -329,6 +330,7 @@ int main(int argc, char* argv[])
 
       //MC truth (filtering for other ttbar)
       data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
+      double tPt(99999.), tbarPt(99999.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop 
       bool hasTop(false);
       int ngenLeptonsStatus3(0);
       if(isMC)
@@ -336,14 +338,27 @@ int main(int argc, char* argv[])
 	  for(size_t igen=0; igen<gen.size(); igen++){
 	    if(gen[igen].get("status")!=3) continue;
 	    int absid=abs(gen[igen].get("id"));
-	    if(absid==6) hasTop=true;
+	    if(absid==6){
+	      hasTop=true;
+	      if(isTTbarMC){
+		if(gen[igen].get("id") > 0) tPt=gen[igen].get("pt");
+		else                        tbarPt=gen[igen].get("pt");
+	      }
+	    }
 	    if(absid!=11 && absid!=13 && absid!=15) continue;
 	    ngenLeptonsStatus3++;
 	  }
 	  if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
 	  if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
 	}
-      
+
+      // Top pt reweighting (FIXME: implement uncertainty according to twiki - see MacroUtils.hh for url)
+      if(isTTbarMC){
+	weightNom  *= utils::cmssw::ttbarReweight(tPt,tbarPt);
+	weightUp   *= utils::cmssw::ttbarReweight(tPt,tbarPt);
+	weightDown *= utils::cmssw::ttbarReweight(tPt,tbarPt);
+      }
+	
       Hcutflow->Fill(1,1);
       Hcutflow->Fill(2,weightNom);
       Hcutflow->Fill(3,weightUp);
