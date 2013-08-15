@@ -341,8 +341,8 @@ int main(int argc, char* argv[])
 	    if(absid==6){
 	      hasTop=true;
 	      if(isTTbarMC){
-		if(gen[igen].get("id") > 0) tPt=gen[igen].get("pt");
-		else                        tbarPt=gen[igen].get("pt");
+		if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+		else                        tbarPt=gen[igen].pt();
 	      }
 	    }
 	    if(absid!=11 && absid!=13 && absid!=15) continue;
