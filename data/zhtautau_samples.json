@@ -14,7 +14,8 @@
                 {
                 "dtag":"MC8TeV_XH110toTauTau",
                 "split":1,
-                "xsec":0.0338
+                "xsec":1.8706,
+                "br":[0.0795]
                 }
            ]
         },
@@ -32,7 +33,8 @@
                 {
                 "dtag":"MC8TeV_XH115toTauTau",
                 "split":1,
-                "xsec":0.0279
+                "xsec":1.6275,
+                "br":[0.0758]
                 }
            ]
         },
@@ -50,7 +52,8 @@
                 {
                 "dtag":"MC8TeV_XH120toTauTau",
                 "split":1,
-                "xsec":0.0226
+                "xsec":1.4221,
+                "br":[0.0704]
                 }
            ]
         },
@@ -68,7 +71,8 @@
                 {
                 "dtag":"MC8TeV_XH125toTauTau",
                 "split":1,
-                "xsec":0.0177
+                "xsec":1.2492,
+                "br":[0.0632]
                 }
            ]
         },
@@ -86,7 +90,8 @@
                 {
                 "dtag":"MC8TeV_XH130toTauTau",
                 "split":1,
-                "xsec":0.0134
+                "xsec":1.0989,
+                "br":[0.0545]
                 }
            ]
         },
@@ -104,7 +109,8 @@
                 {
                 "dtag":"MC8TeV_XH135toTauTau",
                 "split":1,
-                "xsec":0.00971
+                "xsec":0.9699,
+                "br":[0.0449]
                 }
            ]
         },
@@ -122,7 +128,8 @@
                 {
                 "dtag":"MC8TeV_XH140toTauTau",
                 "split":1,
-                "xsec":0.00671
+                "xsec":0.8581,
+                "br":[0.0352]
                 }
            ]
         },
