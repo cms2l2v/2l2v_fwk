@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
   int mcTruthMode    = runProcess.getParameter<int>("mctruthmode");
   double xsec        = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
+  bool isTTbarMC(isMC && (url.Contains("TTJets") ));
   TString out        = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   // weights file
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
   utils::cmssw::PuShifter_t PuShifters;
   if(isMC) PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
 
-  //systematics variations for the final selection
+  //systematics variations for all selections steps
   std::vector<TString> systVars(1,"");
   if(runSystematics && isMC)
     {
@@ -185,9 +186,10 @@ int main(int argc, char* argv[])
 
 
 
+
     
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
-    TString ctrlCats[]={""};
+    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets"};
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
@@ -221,6 +223,8 @@ int main(int argc, char* argv[])
 	    hb->GetXaxis()->SetBinLabel(ibin,label);
 	    if(ibin==1) continue;
 	    label="jet"; label+=(ibin-1);
+	 
+	    if(ibin>=3) continue; // unnecessary histos at the moment
 	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"pt"+var,";Transverse momentum [GeV];Events",50,0,250) );
 	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"nobsmearpt"+var,";Transverse momentum [GeV];Events",50,0,250) );
 	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"smearpt"+var,";Transverse momentum [GeV];Events",50,0,250) );
@@ -312,44 +316,57 @@ int main(int argc, char* argv[])
       evSummary.getEntry(inum);
       DataEventSummary &ev = evSummary.getEvent();
       if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
-      for(size_t ivar=0; ivar<systVars.size(); ++ivar){
-	TString var=systVars[ivar];
 
-	//pileup weight
-	float weightNom(1.0),weightUp(1.0), weightDown(1.0);
-	if(LumiWeights) {
-	  weightNom     = LumiWeights->weight(ev.ngenITpu);
-	  weightUp   = weightNom*PuShifters[utils::cmssw::PUUP]->Eval(ev.ngenITpu);
-	  weightDown = weightNom*PuShifters[utils::cmssw::PUDOWN]->Eval(ev.ngenITpu);
+      //pileup weight
+      float weightNom(1.0),weightUp(1.0), weightDown(1.0);
+      if(LumiWeights) {
+	weightNom     = LumiWeights->weight(ev.ngenITpu);
+	weightUp   = weightNom*PuShifters[utils::cmssw::PUUP]->Eval(ev.ngenITpu);
+	weightDown = weightNom*PuShifters[utils::cmssw::PUDOWN]->Eval(ev.ngenITpu);
+      }
+      
+      if(isV0JetsMC && ev.nup>5)                          continue;
+      Hhepup->Fill(ev.nup,1);
+
+      //MC truth (filtering for other ttbar)
+      data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
+      double tPt(99999.), tbarPt(99999.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop 
+      bool hasTop(false);
+      int ngenLeptonsStatus3(0);
+      if(isMC)
+	{
+	  for(size_t igen=0; igen<gen.size(); igen++){
+	    if(gen[igen].get("status")!=3) continue;
+	    int absid=abs(gen[igen].get("id"));
+	    if(absid==6){
+	      hasTop=true;
+	      if(isTTbarMC){
+		if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+		else                        tbarPt=gen[igen].pt();
+	      }
+	    }
+	    if(absid!=11 && absid!=13 && absid!=15) continue;
+	    ngenLeptonsStatus3++;
+	  }
+	  if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
+	  if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
 	}
 
-	if(isV0JetsMC && ev.nup>5)                          continue;
-	Hhepup->Fill(ev.nup,1);
-
-	//MC truth (filtering for other ttbar)
-	data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
-	bool hasTop(false);
-	int ngenLeptonsStatus3(0);
-	if(isMC)
-	  {
-	    for(size_t igen=0; igen<gen.size(); igen++){
-	      if(gen[igen].get("status")!=3) continue;
-	      int absid=abs(gen[igen].get("id"));
-	      if(absid==6) hasTop=true;
-	      if(absid!=11 && absid!=13 && absid!=15) continue;
-	      ngenLeptonsStatus3++;
-	    }
-	    if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
-	    if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
-	  }
-
-	Hcutflow->Fill(1,1);
-	Hcutflow->Fill(2,weightNom);
-	Hcutflow->Fill(3,weightUp);
-	Hcutflow->Fill(4,weightDown);
+      // Top pt reweighting (FIXME: implement uncertainty according to twiki - see MacroUtils.hh for url)
+      if(isTTbarMC){
+	weightNom  *= utils::cmssw::ttbarReweight(tPt,tbarPt);
+	weightUp   *= utils::cmssw::ttbarReweight(tPt,tbarPt);
+	weightDown *= utils::cmssw::ttbarReweight(tPt,tbarPt);
+      }
 	
+      Hcutflow->Fill(1,1);
+      Hcutflow->Fill(2,weightNom);
+      Hcutflow->Fill(3,weightUp);
+      Hcutflow->Fill(4,weightDown);
+      
+      for(size_t ivar=0; ivar<systVars.size(); ++ivar){
+	TString var=systVars[ivar];
 	
-
 	//trigger bits
 	bool eeTrigger   = ev.t_bits[0];
 	bool emuTrigger  = ev.t_bits[4] || ev.t_bits[5];
@@ -491,8 +508,7 @@ int main(int argc, char* argv[])
 	    looseJets.push_back(jets[ijet]);
 	    if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	    selJets.push_back(jets[ijet]);
-	    if(jets[ijet].getVal("supercsv") <= 0.531) continue;
-	    //	    if(jets[ijet].getVal("csv") <= 0.679) continue;
+	    if(jets[ijet].getVal("csv") <= 0.405) continue; // CSVV1L
 	    selbJets.push_back(jets[ijet]);
 	  }
 	sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByPt);
@@ -519,6 +535,9 @@ int main(int argc, char* argv[])
 	
 	//control distributions
 	std::vector<TString> ctrlCategs;
+	ctrlCategs.push_back("eq2leptons");
+	if(        passDilSelection && selJets.size()==1                    )   ctrlCategs.push_back("eq1jets");   
+	if(        passDilSelection && passJetSelection                     )   ctrlCategs.push_back("eq2jets");   
 	if(isOS && passDilSelection && passJetSelection  && passMetSelection)   ctrlCategs.push_back(""); // FIXME: add DY reweighting
 //	if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("eq1jets");
 //	if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("lowmet");
@@ -548,7 +567,7 @@ int main(int argc, char* argv[])
 	      }
 	    controlHistos.fillHisto(ctrlCategs[icat]+"sumpt"+var, ch, sumpt, weight);
 
-	    for(size_t ijet=0; ijet<selJets.size(); ++ijet)
+	    for(size_t ijet=0; ijet<selJets.size(); ++ijet) // FIXME: am I sure that for HT I want to use only jets with pt>30, eta<2.5?
 	      {
 		ht+=selJets[ijet].pt();
 		htnol+=selJets[ijet].pt();
@@ -580,6 +599,7 @@ int main(int argc, char* argv[])
 	      {
 		if(looseJets[ijet].pt()<30 || fabs(looseJets[ijet].eta())>2.5) continue;
 		TString label("jet"); label+=(ijet+1);
+		if(ijet+1 >=3) continue; // unnecessary histos at the moment 
 		const data::PhysicsObject_t &genJet=looseJets[ijet].getObject("genJet");
 		int flavId=genJet.info.find("id")->second;
 		if(abs(flavId)==5 || abs(flavId)==4 ) flavId=abs(flavId)-1;
@@ -596,6 +616,7 @@ int main(int argc, char* argv[])
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++)
 	      {
 		TString label("jet"); label+=(ijet+1);
+		if(ijet+1 >=3) continue; // unnecessary histos at the moment 
 		const data::PhysicsObject_t &genJet=selJets[ijet].getObject("genJet");
 		int flavId=genJet.info.find("id")->second;
 		if(abs(flavId)==5 || abs(flavId)==4 ) flavId=abs(flavId)-1;
@@ -630,9 +651,9 @@ int main(int argc, char* argv[])
 	//run the lxy analysis
 	//	lxyAn.analyze(selLeptons,selJets,met[0],gen,weight);
 	
-	float nbtags(0);
-	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("supercsv")>0.531);
-	//	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("csv")>0.679);
+	//      float nbtags(0);
+	//	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("csv")>0.405); // CSVV1L
+	float nbtags(selbJets.size());
 	if(nbtags>0){
 	  if(nbtags>4) 
 	    controlHistos.fillHisto("finalevtflow"+var, ch, 4-1, weight);
