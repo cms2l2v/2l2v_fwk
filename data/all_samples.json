@@ -419,7 +419,7 @@
                 { "dtag":"Data8TeV_DoubleMu2012C",       "split":7 },
                 { "dtag":"Data8TeV_MuEG2012C",           "split":7 },
                 { "dtag":"Data8TeV_DoubleElectron2012D", "split":7 },
-                { "dtag":"Data8TeV_DoubleMu2012D",       "split":7 }
+                { "dtag":"Data8TeV_DoubleMu2012D",       "split":7 },
                 { "dtag":"Data8TeV_MuEG2012D",           "split":7 }
 	     ]
           }
