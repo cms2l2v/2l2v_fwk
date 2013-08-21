@@ -285,15 +285,14 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
     if(keepFullGenInfo_)
       {
 	int NGenPart = ev.mcn ;
-	for(int j = 0; j < NGenPart; j++ )
-	  {
-	    if ( fabs(ev.mc_status[j]) != 1 && fabs(ev.mc_status[j]) != 3 ) continue; 
-	    if(fabs(ev.mc_id[j]) != 11 && fabs(ev.mc_id[j]) != 13 ) continue;
-	    for(size_t i = 0; i < genParticlesH->size(); ++ i)
-	      {
-		const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
-		if (!(abs(p.pdgId()) == 22 && p.pt() <= 20 &&  p.pt() > 1e-6 ) ) continue ;
-		LorentzVector p4(ev.mc_px[j],ev.mc_py[j], ev.mc_pz[j], ev.mc_en[j]);
+        for(size_t i = 0; i < genParticlesH->size(); ++ i)
+	    {
+	    const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
+	    if (!(abs(p.pdgId()) == 22 && p.pt() <= 20 &&  p.pt() > 1e-6 ) ) continue ;  // cut to cover the missing phase space
+	    for(int j = 0; j < NGenPart; j++ ){
+	        if ( fabs(ev.mc_status[j]) != 1 && fabs(ev.mc_status[j]) != 3 ) continue; 
+	        if(fabs(ev.mc_id[j]) != 11 && fabs(ev.mc_id[j]) != 13 ) continue;
+	    	LorentzVector p4(ev.mc_px[j],ev.mc_py[j], ev.mc_pz[j], ev.mc_en[j]);
 		if( deltaR( p4.eta(), p4.phi(), p.eta(), p.phi()) > 0.15) continue;
 		ev.mc_id[ev.mcn]=p.pdgId();
 		ev.mc_status[ev.mcn]=p.status();
