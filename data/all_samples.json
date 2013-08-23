@@ -411,15 +411,19 @@
            "data":[
                 { "dtag":"Data8TeV_DoubleElectron2012A", "split":2 },
                 { "dtag":"Data8TeV_DoubleMu2012A",       "split":2 },
+                { "dtag":"Data8TeV_SingleMu2012A",       "split":2 },
                 { "dtag":"Data8TeV_MuEG2012A",           "split":2 },
                 { "dtag":"Data8TeV_DoubleElectron2012B", "split":7 },
                 { "dtag":"Data8TeV_DoubleMu2012B",       "split":7 },
+                { "dtag":"Data8TeV_SingleMu2012B",       "split":7 },
                 { "dtag":"Data8TeV_MuEG2012B",           "split":7 },
                 { "dtag":"Data8TeV_DoubleElectron2012C", "split":7 },
                 { "dtag":"Data8TeV_DoubleMu2012C",       "split":7 },
+                { "dtag":"Data8TeV_SingleMu2012C",       "split":7 },
                 { "dtag":"Data8TeV_MuEG2012C",           "split":7 },
                 { "dtag":"Data8TeV_DoubleElectron2012D", "split":7 },
                 { "dtag":"Data8TeV_DoubleMu2012D",       "split":7 },
+                { "dtag":"Data8TeV_SingleMu2012D",       "split":7 },
                 { "dtag":"Data8TeV_MuEG2012D",           "split":7 }
 	     ]
           }

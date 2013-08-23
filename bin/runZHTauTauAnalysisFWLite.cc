@@ -560,11 +560,6 @@ int main(int argc, char* argv[])
 	  jets[ijet].torawsf = 1./newJECSF;
 	  if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
 
-	  //cross-clean with selected leptons and photons
-	  double minDRlj(9999.),minDRlg(9999.);
-          for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
-	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 
           //bjets
           mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
@@ -574,6 +569,13 @@ int main(int argc, char* argv[])
              selBJets.push_back(jets[ijet]);  
              nbjets++;
           }
+
+
+	  //cross-clean with selected leptons and photons
+	  double minDRlj(9999.),minDRlg(9999.);
+          for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
+            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 
 	  
 	  //jet id
@@ -753,8 +755,7 @@ int main(int argc, char* argv[])
 
          if(t1==higgsCandT1 || t1==higgsCandT2)continue; //lepton already used in the dilepton pair or higgs candidate
          if(selTaus[t1].pt()<20)continue;
-         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits)  )continue;
-
+         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)  )continue;
          passLepVeto = false; break;          
       } 
 

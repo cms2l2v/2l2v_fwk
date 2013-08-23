@@ -373,6 +373,7 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
         cfg_file.write('   )\n')
         cfg_file.write(')\n')
         cfg_file.write('\n')
+#        cfg_file.write('process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )\n')
         cfg_file.write('%s\n' % InputFilesString)
         cfg_file.write('process.OUT = cms.OutputModule("PoolOutputModule",\n')
         cfg_file.write('    outputCommands = cms.untracked.vstring(%s),\n' % KeepStatement)
