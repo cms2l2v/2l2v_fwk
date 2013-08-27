@@ -153,6 +153,7 @@ def CreateTheShellFile(argv):
 		shell_file.write(argv[1] + " %s\n" % function_argument)
 
         for i in range(len(Jobs_FinalCmds)):
+                shell_file.write('echo ' + Jobs_FinalCmds[i]+'\n')
 		shell_file.write(Jobs_FinalCmds[i]+'\n')
         if Jobs_RunHere==0:
            outDir = Farm_Directories[3]

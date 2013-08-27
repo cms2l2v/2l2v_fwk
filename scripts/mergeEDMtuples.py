@@ -94,7 +94,7 @@ for proc in procList :
                 elif(mergedFilePath.find('/store/')==0):
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'cmsStageOut '+mergedFileName+' ' + mergedFilePath]
                 elif(mergedFilePath.find('srm://')==0):
-                   LaunchOnCondor.Jobs_FinalCmds = ['source /nfs/soft/cms/cmsset_default.sh', 'pwd', 'ls -lth', 'source /nfs/soft/grid/ui/setup/grid-env.sh', 'export X509_USER_PROXY=/nfs/home/fynu/quertenmont/x509_user_proxy/proxy', 'lcg-cp -D srmv2 -b file:/$PWD/'+mergedFileName+' '+mergedFilePath, 'rm -rf ' + mergedFileName]
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'source /nfs/soft/grid/ui/setup/grid-env.sh', 'export X509_USER_PROXY=/nfs/home/fynu/quertenmont/x509_user_proxy/proxy','ls /$PWD/'+mergedFileName, 'for i in 1 2 3 4 5; do lcg-cp -v -D srmv2 -b file:/$PWD/'+mergedFileName+' '+mergedFilePath + ' && break || sleep 5m; done', 'rm -rf ' + mergedFileName]
                 else:
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + os.getcwd()+"/FARM_Merge/outputs/"+mergedFileName, 'ls -lth '+opt.outDir]                
 #                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + mergedFilePath, 'ls -lth '+opt.outDir]                
