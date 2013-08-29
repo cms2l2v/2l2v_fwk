@@ -16,6 +16,7 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 
+#include "TauAnalysis/CandidateTools/interface/NSVfitStandaloneAlgorithm.h" //for svfit
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
@@ -26,6 +27,8 @@
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
+
+
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -207,6 +210,7 @@ int main(int argc, char* argv[])
   //higgs control
   mon.addHistogram( new TH1F( "higgspt",      ";p_{T}^{#higgs} [GeV];Events",500,0,1500));
   mon.addHistogram( new TH1F( "higgsmass",    ";M^{#higgs} [GeV];Events",100,0,500));
+  mon.addHistogram( new TH1F( "higgsmasssvfit",    ";M^{#higgs} [GeV];Events",100,0,500));
   mon.addHistogram( new TH1F( "higgsmet",    ";MET [GeV];Events",100,0,500));
   mon.addHistogram( new TH1F( "higgsnjets",   ";NJets;Events",10,0,10));
 
@@ -633,10 +637,10 @@ int main(int argc, char* argv[])
 
 //         printf("TauId: "); for(unsigned int i=0;i<64;i++){printf("%i ", (int) ((tau.idbits>>i)&1));}printf("\n");
 
-//         if(((tau.idbits>>llvvTAUID::againstElectronLoose)&1)==0)continue;
-//         if(((tau.idbits>>llvvTAUID::againstMuonLoose2)&1)==0)continue; 
-//         if(((tau.idbits>>llvvTAUID::decayModeFinding)&1)==0)continue;
-//         if(((tau.idbits>>llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits)&1)==0)continue;
+         if(!tau.passId(llvvTAUID::againstElectronLoose))continue;
+         if(!tau.passId(llvvTAUID::againstMuonLoose2))continue; 
+         if(!tau.passId(llvvTAUID::decayModeFinding))continue;
+         if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))continue;
 
          selTaus.push_back(tau);         
       }
@@ -781,6 +785,40 @@ int main(int argc, char* argv[])
       }
 
 
+
+      //SVFIT MASS
+      double diTauMass = -1;
+      if(passHiggs && passLepVeto && passBJetVeto){
+            //taken from https://twiki.cern.ch/twiki/bin/view/CMS/HiggsToTauTauWorkingSummer2013
+            TMatrixD covMET(2, 2); // PFMET significance matrix
+            covMET[0][0] = 1.0;
+            covMET[0][1] = 0.0;
+            covMET[1][0] = 0.0;
+            covMET[1][1] = 1.0;
+            std::vector<NSVfitStandalone::MeasuredTauLepton> measuredTauLeptons;
+            if(higgsCandMu!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kLepDecay, NSVfitStandalone::LorentzVector(selLeptons[higgsCandMu].px(), selLeptons[higgsCandMu].py(), selLeptons[higgsCandMu].pz(), selLeptons[higgsCandMu].E()) ));
+            if(higgsCandEl!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kLepDecay, NSVfitStandalone::LorentzVector(selLeptons[higgsCandEl].px(), selLeptons[higgsCandEl].py(), selLeptons[higgsCandEl].pz(), selLeptons[higgsCandEl].E()) ));
+            if(higgsCandT1!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kHadDecay, NSVfitStandalone::LorentzVector(selTaus   [higgsCandT1].px(), selTaus   [higgsCandT1].py(), selTaus   [higgsCandT1].pz(), selTaus   [higgsCandT1].E()) ));
+            if(higgsCandT2!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kHadDecay, NSVfitStandalone::LorentzVector(selTaus   [higgsCandT2].px(), selTaus   [higgsCandT2].py(), selTaus   [higgsCandT2].pz(), selTaus   [higgsCandT2].E()) ));
+            NSVfitStandaloneAlgorithm algo(measuredTauLeptons, NSVfitStandalone::Vector(met.px(), met.py(), 0) , covMET, 0);
+            algo.addLogM(false);
+            algo.integrateMarkovChain();
+            //algo.integrateVEGAS(); ////Use this instead for VEGAS integration
+            if(algo.isValidSolution()){
+               diTauMass     = algo.getMass(); 
+               double diTauMassErr = algo.massUncert();
+            }
+      }
+
+
+
+
+
+
+
+
+
+
              
       //
       // NOW FOR THE CONTROL PLOTS
@@ -835,6 +873,7 @@ int main(int argc, char* argv[])
               if(passHiggs){
                  mon.fillHisto("higgspt"      , chTags, higgsCand.pt(),    weight);
                  mon.fillHisto("higgsmass"    , chTags, higgsCand.mass(),  weight);
+                 mon.fillHisto("higgsmasssvfit", chTags, diTauMass,  weight);
                  mon.fillHisto("higgsnjets"   , chTags, NCleanedJet      , weight); 
                  mon.fillHisto("higgsmet"     , chTags, met.pt()         , weight);
               }

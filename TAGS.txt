@@ -31,6 +31,7 @@ cvs co -r V00-09-03   -d SHarper/HEEPAnalyzer            UserCode/SHarper/HEEPAn
 # new stuff added for tauID
 cvs co -r V01-04-26 RecoTauTag/RecoTau 
 cvs co -r V01-04-14 RecoTauTag/Configuration
+cvs co -r V00-02-03s TauAnalysis/CandidateTools
 
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
 
