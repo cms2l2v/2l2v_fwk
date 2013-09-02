@@ -14,6 +14,10 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   mon_->addHistogram( new TH2F("phivspt",";Generated t#bar{t} transverse momentum [GeV]; #Delta #phi(t#bar{t}) [rad];Events",nptttBins,ptttaxis,50,0.,3.4) );
   mon_->addHistogram( new TH2F("ptresponse",";Generated p_{T}(t#bar{t}) [GeV]; #Delta p_{T}(t#bar{t}) [GeV]; Events",nptttBins,ptttaxis,50,0.,50.) );
 
+  mon_->addHistogram( new TH1F("metresponse",";E_{T}^{miss} response;Events",50,0,2));
+  mon_->addHistogram( new TH2F("metvsnvtx",";Vertices;E_{T}^{miss} [GeV];Events",20,0,100,50,0,500));
+
+
   TString pfmatch[]={"","matched"};
   for(size_t i=0; i<2; i++){
     mon_->addHistogram( new TH1F(pfmatch[i]+"pfdz",";|#Delta z| [cm];Charged candidate",50,0,25) );
@@ -43,9 +47,12 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
       mon_->addHistogram( new TH2F("avgptfluxprofpt"+ueReg_[ireg],";t#bar{t} transverse momentum [GeV];Average p_{T} flux [GeV];"+distStr,nptttBins,ptttaxis,25,0.,25.));
       
       if(ireg==0) {
+	mon_->addHistogram( new TH1F("nchlt15",";Particles;Events",200,0,200));
+	mon_->addHistogram( new TH1F("nchgt15",";Particles;Events",200,0,200));
 	//nvertex profiles
 	mon_->addHistogram( new TH2F("rawnchprofnvtx",";Vertices;p_{T} flux [GeV];"+distStr,50,0,50,200,0,200));
 	mon_->addHistogram( new TH2F("nchprofnvtx",";Vertices;p_{T} flux [GeV];"+distStr,50,0,50,200,0,200));
+	mon_->addHistogram( new TH2F("matchednchprofnvtx",";Vertices;Charged candidate;Events",50,0,50,200,0,200) );
       }
 
       //phi profiles
@@ -53,15 +60,18 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
       if(ireg==1) phiPF="0to25";
       if(ireg==2) phiPF="25to70";
       if(ireg==3) phiPF="gt70";
-      mon_->addHistogram( new TH2F("nchprofphi"+phiPF,       ";#Delta#phi[^{0}];Particles;"+distStr,       20,0,180,200,0.,200.));
-      mon_->addHistogram( new TH2F("avgptfluxprofphi"+phiPF, ";#Delta#phi[^{0}];Average p_{T} flux [GeV];"+distStr,20,0,180,25,0.,25.));
-      mon_->addHistogram( new TH2F("ptfluxprofphi"+phiPF,";#Delta#phi[^{0}];p_{T} flux [GeV];"+distStr,20,0,180,100,0,100));
+      mon_->addHistogram( new TH2F("nchprofphi"+phiPF,       ";#Delta#phi[^{0}];Particles;"+distStr,       40,-180,180,200,0.,200.));
+      mon_->addHistogram( new TH2F("avgptfluxprofphi"+phiPF, ";#Delta#phi[^{0}];Average p_{T} flux [GeV];"+distStr,40,-180,180,25,0.,25.));
+      mon_->addHistogram( new TH2F("ptfluxprofphi"+phiPF,";#Delta#phi[^{0}];p_{T} flux [GeV];"+distStr,40,-180,180,100,0,100));
     }
 
   //soft hadronic activity
-  mon_->addHistogram( new TH1F("softleadpt",";Leading soft jet p_{T} [GeV];Events",10,0,250) );
-  mon_->addHistogram( new TH1F("softht",";Soft jet H_{T} [GeV];Events",10,0,100) );
+  mon_->addHistogram( new TH1F("softleadpt",";Leading extra jet p_{T} [GeV];Events",10,0,250) );
+  mon_->addHistogram( new TH1F("softht",";Extra jet H_{T} [GeV];Events",10,0,100) );
   TH1 *hsoft_inc=  mon_->addHistogram( new TH1F("nsoftjetsinc",";Extra jet multiplicity;Events",6,0,6));
+  TH1 *hsoft_inc10to20=  mon_->addHistogram( new TH1F("nsoftjetsinc10to20",";Extra jet multiplicity;Events",6,0,6));
+  TH1 *hsoft_inc20to30=  mon_->addHistogram( new TH1F("nsoftjetsinc20to30",";Extra jet multiplicity;Events",6,0,6));
+  TH1 *hsoft_incgt30=  mon_->addHistogram( new TH1F("nsoftjetsincgt30",";Extra jet multiplicity;Events",6,0,6));
   TH1 *hsoft_out=  mon_->addHistogram( new TH1F("nsoftjetsout",";Extra jet multiplicity;Events",6,0,6));
   TH1 *hsoft_bb =  mon_->addHistogram( new TH1F("nsoftjets",   ";Extra jet multiplicity;Events",6,0,6));
   TH1 *hsoft_ll =  mon_->addHistogram( new TH1F("nsoftjetsll", ";Extra jet multiplicity;Events",6,0,6));
@@ -72,6 +82,9 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   for(int ibin=1; ibin<=hsoft_inc->GetXaxis()->GetNbins(); ibin++){
     TString label("="); if(ibin==hsoft_inc->GetXaxis()->GetNbins()) label="#geq"; label += (ibin-1);
     hsoft_inc->GetXaxis()->SetBinLabel(ibin,label);
+    hsoft_inc10to20->GetXaxis()->SetBinLabel(ibin,label);
+    hsoft_inc20to30->GetXaxis()->SetBinLabel(ibin,label);
+    hsoft_incgt30->GetXaxis()->SetBinLabel(ibin,label);
     hsoft_out->GetXaxis()->SetBinLabel(ibin,label);
     hsoft_bb->GetXaxis()->SetBinLabel(ibin,label);
     hsoft_ll->GetXaxis()->SetBinLabel(ibin,label);
@@ -79,6 +92,8 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
     hsoft_out_prof->GetYaxis()->SetBinLabel(ibin,label);
     hsoft_bb_prof->GetYaxis()->SetBinLabel(ibin,label);
     hsoft_ll_prof->GetYaxis()->SetBinLabel(ibin,label);
+    TString pf(""); pf+= ibin;
+    mon_->addHistogram( new TH1F("softpt"+pf,";Extra jet #"+pf+" p_{T} [GeV];Events",10,0,250) );
   }
   for(size_t i=0; i<=2; i++)
     {
@@ -152,9 +167,17 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   //add category depending on the number of extra jets
   float softHt(0);
   int nExtraJets(0), nExtraJetsInBB(0), nExtraJetsInLL(0);
+  int nExtraJets10to20(0),nExtraJets20to30(0),nExtraJetsgt30(0);
   data::PhysicsObject_t *softj1=0, *softj2=0;
   for(size_t ijet=2; ijet<jets.size(); ijet++){
-    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>2.5 ) continue;
+
+    if(fabs(jets[ijet].eta())>2.5 ) continue;
+
+    if(jets[ijet].pt()>15 && jets[ijet].pt()<20) nExtraJets10to20++;
+    if(jets[ijet].pt()>=20 && jets[ijet].pt()<30) nExtraJets20to30++;  
+    if(jets[ijet].pt()>=30) nExtraJetsgt30++;
+
+    if(jets[ijet].pt()<20) continue;
     nExtraJets++;
     softHt+=jets[ijet].pt();
     if(softj1==0)      softj1=&(jets[ijet]);
@@ -176,6 +199,7 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   LorentzVector top,antitop;
   LorentzVector chLepton,antiChLepton;
   LorentzVector bquark,antibquark;
+  LorentzVector genMet(0,0,0,0);
   for(size_t igen=0; igen<gen.size(); igen++)
     {
       if(gen[igen].get("status")!=3) continue;
@@ -185,13 +209,17 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       if(gen[igen].get("id")==-5) antibquark=gen[igen];
       if(gen[igen].get("id")==11||gen[igen].get("id")==13)   chLepton=gen[igen];
       if(gen[igen].get("id")==-11||gen[igen].get("id")==-13) antiChLepton=gen[igen];
+      if(fabs(gen[igen].get("id"))==12||fabs(gen[igen].get("id"))==14||fabs(gen[igen].get("id"))==16) genMet+=gen[igen];
     }
   LorentzVector gen_ttbar=top+antitop;
-
+  
   float const_rec_ttbar_pt( rec_ttbar.pt()>500 ? 500. : rec_ttbar.pt() );
   Int_t ptbin(mon_->getHisto("ptttbar","emu")->GetXaxis()->FindBin(const_rec_ttbar_pt) );
   float ptbinWidth(mon_->getHisto("ptttbar","emu")->GetXaxis()->GetBinWidth(ptbin));
   mon_->fillHisto("ptttbar",  ch, const_rec_ttbar_pt, weight/ptbinWidth);
+  if(genMet.pt()>0) mon_->fillHisto("metresponse", ch, met.pt()/genMet.pt(), weight);
+  mon_->fillHisto("metvsnvtx",   ch, nvtx, met.pt(), weight);
+
   if(gen_ttbar.pt()>0)
     {
       mon_->fillHisto("phiresponse",  ch, fabs(gen_ttbar.phi()), fabs(deltaPhi(rec_ttbar.phi(),gen_ttbar.phi())), weight);
@@ -239,8 +267,8 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   //RECONSTRUCTED LEVEL ANALYSIS: study UE with charged PF
   //
   std::vector<int> softMuonsIdx;
-  int rawChCount(0);
-  float rawChFlux(0);
+  int rawChCount(0),matchedChCount(0);
+  float rawChFlux(0),matchedChFlux(0);
   std::vector<int>   chCount(4,0);
   std::vector<float> chFlux(4,0);
   const TH1 *nchprofphiH=mon_->getHisto("nchprofphi",ch[0]);
@@ -280,6 +308,8 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
 	  if(dR>0.1) continue;
 	  matchCats.push_back("matched");
 	  pf[ipfn].set("gmatch",igen);
+	  matchedChCount++;
+	  matchedChFlux+=pf[ipfn].pt();
 	  break;
 	}
       for(size_t imatch=0; imatch<matchCats.size(); imatch++)
@@ -298,22 +328,24 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       if(fabs(pf[ipfn].get("id"))==13 && pf[ipfn].pt()>3) softMuonsIdx.push_back( ipfn );
 
       //do the counting respectively to the ttbar estimate
-      float dphi=fabs(deltaPhi(pf[ipfn].phi(),rec_ttbar.phi())*180/TMath::Pi());
+      float sigdphi=deltaPhi(pf[ipfn].phi(),rec_ttbar.phi())*180/TMath::Pi();
+      float dphi=fabs(sigdphi);
       size_t regIdx=3;
       if(dphi>120) regIdx=1;
       if(dphi<60)  regIdx=2;
       chCount[0]++;                  chCount[regIdx]++;                
       chFlux[0] += pf[ipfn].pt();    chFlux[regIdx] += pf[ipfn].pt();  
-      int iphibin=nchprofphiH->GetXaxis()->FindBin(dphi)-1;
+      int iphibin=nchprofphiH->GetXaxis()->FindBin(sigdphi)-1;
       if(iphibin>=0 && iphibin<nphibins) { chCountPhi[iphibin]++; chFluxPhi[iphibin]+= pf[ipfn].pt(); }
     }
-  
+
   int totalaway(0); 
   for(int ibin=nchprofphiH->GetXaxis()->FindBin(120); ibin<nphibins; ibin++) totalaway += chCountPhi[ibin];
 
   //n vertex profiles
-  mon_->fillHisto("rawnchprofnvtx",   ch, nvtx, rawChCount,  weight/acceptance);	
-  mon_->fillHisto("nchprofnvtx",      ch, nvtx, chCount[0],  weight/acceptance);	
+  mon_->fillHisto("rawnchprofnvtx",    ch, nvtx, rawChCount,  weight/acceptance);	
+  mon_->fillHisto("nchprofnvtx",       ch, nvtx, chCount[0],  weight/acceptance);	
+  mon_->fillHisto("matchednchprofnvtx",ch, nvtx, matchedChCount,  weight/acceptance);	
   
   //phi profiles
   float phiProfAcceptance=acceptance*2*TMath::Pi()*nchprofphiH->GetXaxis()->GetBinWidth(1);
@@ -340,6 +372,11 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
       float flux( chFlux[ireg] ), genflux( genChFlux[ireg] );
       float normFlux(cts>0?flux/cts:0), genNormFlux( gencts>0 ? genflux/gencts : 0);
       
+      if(ireg==0){
+	TString pf("lt15");
+	if(nvtx>15) pf="gt15";
+	mon_->fillHisto("nch"+pf,              ch, cts,                      weight/acceptance);
+      }
       mon_->fillHisto("nch"+ueReg_[ireg],              ch, cts,                      weight/acceptance);
       mon_->fillHisto("ngench"+ueReg_[ireg],           ch, gencts,                   weight/acceptance);
       mon_->fillHisto("nchvsngench"+ueReg_[ireg],      ch, cts,    gencts,           weight/acceptance);
@@ -360,6 +397,9 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   // SOFT HADRONIC ACTIVITY
   //
   mon_->fillHisto("nsoftjetsinc",      ch,nExtraJets,        weight);
+  mon_->fillHisto("nsoftjetsinc10to20",      ch,nExtraJets10to20,        weight);
+  mon_->fillHisto("nsoftjetsinc20to30",      ch,nExtraJets20to30,        weight);
+  mon_->fillHisto("nsoftjetsincgt30",      ch,nExtraJetsgt30,        weight);
   mon_->fillHisto("nsoftjetsout",      ch,nExtraJets-nExtraJetsInBB,        weight);
   mon_->fillHisto("nsoftjets",         ch,nExtraJetsInBB,    weight);
   mon_->fillHisto("nsoftjetsll",       ch,nExtraJetsInLL,    weight);
@@ -367,6 +407,12 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   mon_->fillHisto("nsoftjetsoutvsdetabb", ch,detaBB, nExtraJets-nExtraJetsInBB,        weight);
   mon_->fillHisto("nsoftjetsvsdetabb", ch,detaBB, nExtraJetsInBB, weight);
   mon_->fillHisto("nsoftjetsvsdetall", ch,detaLL, nExtraJetsInLL, weight);
+
+  for(size_t ijet=2; ijet<jets.size(); ijet++){
+    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>2.5 ) continue;
+    TString pf(""); pf+= nExtraJets;
+    mon_->fillHisto("softpt"+pf,ch,jets[ijet].pt(),weight);
+  }
 
   if(softj1)
     {

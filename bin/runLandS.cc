@@ -1011,7 +1011,7 @@ std::vector<TString>  buildDataCard(Int_t mass, TString histo, TString url, TStr
          if(systpostfix.Contains('8')){
             fprintf(pFile,"%35s %10s ", "lumi_8TeV", "lnN");
             for(size_t j=1; j<=dci.procs.size(); j++){ if(dci.rates.find(RateKey_t(dci.procs[j-1],dci.ch[i-1]))==dci.rates.end()) continue; 
-               if(!dci.procs[j-1].Contains("data")){fprintf(pFile,"%6f ",1.05);}else{fprintf(pFile,"%6s ","-");}
+               if(!dci.procs[j-1].Contains("data")){fprintf(pFile,"%6f ",1.044);}else{fprintf(pFile,"%6s ","-");}
             }fprintf(pFile,"\n");
          }else{
             fprintf(pFile,"%35s %10s ", "lumi_7TeV", "lnN");
@@ -1137,8 +1137,11 @@ std::vector<TString>  buildDataCard(Int_t mass, TString histo, TString url, TStr
 	 if(addGammaNormRange){
 	   fprintf(pFile,"%35s %10s ", "norm_gjets", "lnU");
 	   for(size_t j=1; j<=dci.procs.size(); j++){ if(dci.rates.find(RateKey_t(dci.procs[j-1],dci.ch[i-1]))==dci.rates.end()) continue;
-	     if(dci.procs[j-1].Contains("zlldata")){ fprintf(pFile,"%6f ",0.5);
-	     }else{fprintf(pFile,"%6s ","-");}
+	     if(dci.procs[j-1].Contains("zlldata")){ 
+	       fprintf(pFile,"%6f ",0.5);
+	     }else{
+	       fprintf(pFile,"%6s ","-");
+	     }
 	   }fprintf(pFile,"\n");
 	 }
 
@@ -1178,10 +1181,13 @@ std::vector<TString>  buildDataCard(Int_t mass, TString histo, TString url, TStr
                 }if(isSyst)fprintf(pFile,"%s\n",sFile);
 
              }else{
-                if(shape){sprintf(sFile,"%35s %10s ", it->first.Data(), "shapeN2");}else{sprintf(sFile,"%35s %10s ", it->first.Data(), "lnN");}
+	       if(shape){sprintf(sFile,"%35s %10s ", it->first.Data(), "shapeN2");}else{sprintf(sFile,"%35s %10s ", it->first.Data(), "lnN");}
+	       //if(shape){sprintf(sFile,"%35s %10s ", it->first.Data(), "shapeL2");}else{sprintf(sFile,"%35s %10s ", it->first.Data(), "lnN");}
                 for(size_t j=1; j<=dci.procs.size(); j++){ if(dci.rates.find(RateKey_t(dci.procs[j-1],dci.ch[i-1]))==dci.rates.end()) continue;
                    if(it->second.find(RateKey_t(dci.procs[j-1],dci.ch[i-1])) != it->second.end()){
-                      sprintf(sFile,"%s%6.3f ",sFile,it->second[RateKey_t(dci.procs[j-1],dci.ch[i-1])]); isSyst=true;
+		     float val=it->second[RateKey_t(dci.procs[j-1],dci.ch[i-1])];
+		     if(it->first.Contains("CMS_hzz2l2v_pdf")) val=0.5;
+		     sprintf(sFile,"%s%6.3f ",sFile,val); isSyst=true;
                    }else{
                       sprintf(sFile,"%s%6s ",sFile,"-");
                    }

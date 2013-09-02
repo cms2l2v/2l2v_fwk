@@ -9,6 +9,7 @@
   <bin name="runChHiggsAnalysis"       file="runChHiggsAnalysis.cc"></bin>
   <bin name="prepareChHiggsDatacards"  file="prepareChHiggsDatacards.cc"></bin>
   <bin name="runVBFZAnalysis"          file="runVBFZAnalysis.cc"></bin> 
+  <bin name="runEWKVjjAnalysis"        file="runEWKVjjAnalysis.cc"></bin> 
   <bin name="runVBFZAnalysisFWLite"          file="runVBFZAnalysisFWLite.cc"></bin>
   <bin name="runPlotter"               file="runPlotter.cc"></bin> 
   <bin name="runPlotterFWLite"               file="runPlotterFWLite.cc"></bin>

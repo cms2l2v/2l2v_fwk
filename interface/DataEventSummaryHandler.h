@@ -12,6 +12,11 @@ namespace data
   {
   public:
 
+    PhysicsObject_t()
+      {
+	SetPxPyPzE(0,0,0,0);
+      }
+
     PhysicsObject_t(Float_t px, Float_t py, Float_t pz, Float_t en)
       {
 	SetPxPyPzE(px,py,pz,en);

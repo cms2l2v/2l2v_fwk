@@ -1,5 +1,21 @@
 {
     "proc":[
+        {
+        "tag":"EWK #gamma+2j",
+        "isdata":false,
+        "color":"590",
+        "lcolor":1,
+        "marker":1,
+	"mctruthmode":22,
+        "data":[
+                {
+                "dtag":"MC8TeV_ajj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM"],
+                "xsec":2.72
+                }
+         ]
+        },
+        },
 	{
 	 "tag":"Multijets",
          "isdata":false,

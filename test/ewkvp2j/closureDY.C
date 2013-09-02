@@ -69,7 +69,7 @@ void runFinalClosure()
       runVBFZClosure(llInF,gInF[i],outfile,purePhoton);
       
       gSystem->Exec("mkdir -p "+outDir);
-      gSystem->Exec("mv *.{png,pdf} " + outDir);
+      gSystem->Exec("mv "+dilCh+"*closure*.* " + outDir);
     }
 
   //close all opened files
@@ -82,11 +82,11 @@ void runFinalClosure()
 void runVBFZClosure(TFile *llfile,TFile *gfile, TString outfile, bool purePhoton)
 {
   TString distr[]={"qt",                                                                                                     //boson qT
-		   "vbfcandjet1eta", "vbfcandjet2eta", "vbfcandjet1pt",     "vbfcandjet2pt",                                 //tag jets
-		   "vbfcandjetdeta", "vbfcandjetseta", "vbfcandjetetaprod", "vbfdphijj",     "vbfmjj", "vbfspt", "Fisher", "BDTD", "LikelihoodD",   //dijet 
-		   "vbfystar", 	     "vbfhardpt",                                                                            //dijet+Z
-		   "met",            "metL",                                                                                 //met
-		   "vbfcjv15",  "vbfhtcjv15",  "vbfmaxcjvjpt", "vbfystar3" //, "vbfcjv20", "vbfhtcjv20", "vbfcjv", "vbfhtcjv",            //central jet activity
+  		   "vbfcandjet1eta", "vbfcandjet2eta", "vbfcandjet1pt",     "vbfcandjet2pt",                                 //tag jets
+  		   "vbfcandjetdeta", "vbfcandjetseta", "vbfcandjetetaprod", "vbfdphijj",     "vbfmjj", "vbfspt", "Fisher", "BDTD", "LikelihoodD",   //dijet 
+  		   "vbfystar", 	     "vbfhardpt",                                                                            //dijet+Z
+  		   "met",            "metL",                                                                                 //met
+  		   "vbfcjv15",  "vbfhtcjv15",  "vbfmaxcjvjpt", "vbfystar3" //, "vbfcjv20", "vbfhtcjv20", "vbfcjv", "vbfhtcjv",            //central jet activity
   };
   for(size_t ich=0; ich<sizeof(distr)/sizeof(TString); ich++) closureDY(llfile,gfile,distr[ich],purePhoton);
   
@@ -223,6 +223,7 @@ void closureDY(TFile *llfile,TFile *gfile, TString distr,bool purePhoton)
 	  */
 	  
 	  c->SaveAs(dilCh+cat[icat]+"_"+pf+distr+"_pdf_closure.png");
+	  c->SaveAs(dilCh+cat[icat]+"_"+pf+distr+"_pdf_closure.C");
 	  c->SaveAs(dilCh+cat[icat]+"_"+pf+distr+"_pdf_closure.pdf");
 	}
     }
@@ -233,6 +234,8 @@ void closureDY(TFile *llfile,TFile *gfile, TString distr,bool purePhoton)
 std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, bool purePhoton)
 {
   std::vector<TH1F *> toReturn;
+
+  bool rebin(distr.Contains("jetdeta") || distr.Contains("spt"));
 
   //
   //GET HISTOS FROM FILES
@@ -255,6 +258,7 @@ std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, 
     }
   if(hdy==0) return toReturn;
   hdy->SetDirectory(0);
+  if(rebin)hdy->Rebin();
 
 
   std::vector<TString> mcg;
@@ -287,6 +291,7 @@ std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, 
 	}
     }
   hg->SetDirectory(0);
+  if(rebin)hg->Rebin();
   
   //compute the ratio
   TH1F *hratio=(TH1F *)hdy->Clone(distr+"_ratio");
@@ -301,6 +306,9 @@ std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, 
 //
 void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, bool purePhoton)
 {
+
+  bool rebin(distr.Contains("jetdeta") || distr.Contains("spt"));
+
   //
   //GET HISTOS FROM FILES
   //
@@ -319,6 +327,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
     }
   if(hdy==0) return;
   hdy->SetDirectory(0);
+  if(rebin) hdy->Rebin();
   
   std::vector<TString> mcg;
   mcg.push_back("#gamma+jets");
@@ -358,7 +367,10 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   if(hg==0 || hpureg==0) return;
   hg->SetDirectory(0);
   hpureg->SetDirectory(0);
-
+  if(rebin) {
+    hg->Rebin();
+    hpureg->Rebin();
+  }
   //if(distr=="qt") { hg->Rebin(4); hdy->Rebin(4); hpureg->Rebin(4); }
   //  else if(!distr.Contains("cjv")) { hg->Rebin(2); hdy->Rebin(2); hpureg->Rebin(2); }
 
@@ -395,7 +407,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   hfakes->SetDirectory(0);
   if(smoothFakesHisto) hfakes->Smooth();
 
-  hg->SetTitle("QCD #gamma+2j");
+  hg->SetTitle("QCD #gamma jj");
   hg->GetYaxis()->SetLabelSize(0.06);
   hg->GetYaxis()->SetTitleSize(0.05);      
   hg->GetYaxis()->SetTitleOffset(1.2);
@@ -409,6 +421,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
       hg->GetXaxis()->SetRangeUser(50,1e3);
     }
   hg->GetYaxis()->SetRangeUser(ymin,ymax);
+  hg->GetYaxis()->SetTitle("Events (a.u.)");
   hg->SetLineColor(1);
   hg->SetMarkerColor(1);
   hg->SetMarkerStyle(1);
@@ -416,6 +429,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   hg->SetFillColor(800);
   hg->Draw("hist");
 
+  /*
   if(!purePhoton){
     hfakes->Add(hpureg,-1);
     hfakes->SetTitle("Fakes");
@@ -426,23 +440,26 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
     hfakes->SetFillColor(kGray);
     hfakes->Draw("histsame");   
   }
+  */
 
-  hdy->SetTitle("QCD Z+2j");
+  hdy->SetTitle("QCD Z jj");
   hdy->Draw("e1same");
 
-  TLegend *leg=new TLegend(0.5,0.95,0.95,0.99);
-  if(!purePhoton) leg->AddEntry(hfakes,hfakes->GetTitle(),"F");
-  leg->AddEntry(hg,hg->GetTitle(),"F");
+  TLegend *leg=new TLegend(0.5,0.89,0.9,0.93);
   leg->AddEntry(hdy,hdy->GetTitle(),"P");
+  //if(!purePhoton) leg->AddEntry(hfakes,hfakes->GetTitle(),"F");
+  leg->AddEntry(hg,hg->GetTitle(),"F");
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
-  leg->SetTextAlign(11);
+  leg->SetTextAlign(12);
   leg->SetTextSize(0.05);
+  //leg->SetNColumns(3);
+  leg->SetNColumns(2);
   leg->Draw("same");
-  leg->SetNColumns(3);
+
   
-  TPaveText *pave = new TPaveText(0.12,0.85,0.9,0.9,"brNDC");
+  TPaveText *pave = new TPaveText(0.15,0.87,0.6,0.91,"brNDC");
   pave->SetBorderSize(0);
   pave->SetFillStyle(0);
   pave->SetTextAlign(12);
@@ -454,11 +471,13 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   if(cat.Contains("mjjq066")) mjjCat="450<M_{jj}<550";
   if(cat.Contains("mjjq083")) mjjCat="550<M_{jj}<750";
   if(cat.Contains("mjjq092")) mjjCat="750<M_{jj}<1000";
-  if(cat.Contains("mjjgt092")) mjjCat="M_{jj}750";
+  if(cat.Contains("mjjgt092")) mjjCat="M_{jj}>750";
   if(cat.Contains("highmjj")) mjjCat="M_{jj}>1250";
   char buf[1000];
   //  pave->SetTextSize(0.06);
   pave->SetTextSize(0.05);
+  pave->AddText("["+mjjCat+"]");
+  /*
   if(!purePhoton){
     sprintf(buf,"[%s] #chi^{2}/ndof : %3.2f , K-S prob : %3.2f, f_{#gamma}=%3.2f",mjjCat.Data(), hdy->Chi2Test(hg,"WWCHI2/NDF"),hdy->KolmogorovTest(hg,""),hpureg->Integral()/hg->Integral() );
   }
@@ -466,6 +485,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
     sprintf(buf,"[%s] #chi^{2}/ndof : %3.2f , K-S prob : %3.2f",mjjCat.Data(), hdy->Chi2Test(hg,"WWCHI2/NDF"),hdy->KolmogorovTest(hg,"") );
   }
   pave->AddText(buf);
+  */
   pave->Draw();
 
   pave = new TPaveText(0.1,0.95,0.6,0.99,"NDC");
@@ -483,6 +503,15 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   t2->SetBottomMargin(0.25);
   t2->Draw();
   t2->cd();
+
+  leg = new TLegend(0.15,0.82,0.9,0.92,"","brNDC");
+  leg->SetBorderSize(0);
+  leg->SetFillStyle(3001);
+  leg->SetFillColor(0);
+  leg->SetTextFont(42);
+  leg->SetTextSize(0.09);
+  leg->SetTextAlign(12);
+
 
   //mc stats
   TH1F *denRelUncH=(TH1F *) hg->Clone("mcrelunc");
@@ -502,6 +531,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   denRelUncH->Reset("ICE");       
   denRelUncH->Draw();
   denRelUnc->Draw("3");
+  leg->AddEntry(denRelUnc,"stat unc.","f");
   denRelUncH->GetYaxis()->SetRangeUser(0.2,1.74);
   denRelUncH->GetXaxis()->SetTitle(hdy->GetXaxis()->GetTitle());
   denRelUncH->GetXaxis()->SetLabelSize(0.1);
@@ -534,6 +564,9 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
       uncGrUp->SetPoint(ip,x,1+TMath::Abs(y-1));
       uncGrDown->SetPoint(ip,x,1-TMath::Abs(y-1));
     }
+  uncGrUp->SetLineWidth(2);
+  uncGrDown->SetLineWidth(2);
+  leg->AddEntry(uncGrUp,"QCD Z jj/QCD #gamma jj","l");
   uncGrUp->Draw("l");
   uncGrDown->Draw("l");
   toSave.Add(uncGrUp);
@@ -589,9 +622,15 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
 	  totalSystUp->SetPoint(ip,x,totalDiff);
 	}
 
+      loose2tightSystUp->SetLineWidth(2);
+      loose2tightSystDown->SetLineWidth(2);
+      leg->AddEntry(loose2tightSystUp,"loose-tight","l");
       loose2tightSystUp->Draw("l");
       loose2tightSystDown->Draw("l");
 
+      pureg2tightSystUp->SetLineWidth(2);
+      pureg2tightSystDown->SetLineWidth(2);
+      leg->AddEntry(pureg2tightSystUp,"pure-tight","l");
       pureg2tightSystUp->Draw("l");
       pureg2tightSystDown->Draw("l");
       
@@ -607,7 +646,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
       loose2tightSystUp->Fit(ltfunc,"MQE0N+");
       pureg2tightSystUp->Fit(ptfunc,"MQE0N+");
       totalSystUp->Fit(ffunc,"MQE0N+");
-
+      
       toSave.Add(totalSystUp);
       toSave.Add(ffunc);
       toSave.Add(ltfunc);
@@ -616,17 +655,20 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
       toSave.Add(pureg2tightSystUp);
     }
 
-  TLine *l = new TLine(xmin,0.5,xmax,0.5);
-  l->SetLineColor(kRed);
-  l->Draw();
-  l = new TLine(xmin,1.5,xmax,1.5);
-  l->SetLineColor(kRed);
-  l->Draw();
+  //  TLine *l = new TLine(xmin,0.5,xmax,0.5);
+  //l->SetLineColor(kRed);
+  //l->Draw();
+  //l = new TLine(xmin,1.5,xmax,1.5);
+  //l->SetLineColor(kRed);
+  //l->Draw();
   
+  leg->Draw();
+  leg->SetNColumns(4);
 
   c->Modified();
   c->Update();
 
   c->SaveAs(ch+cat+"_"+distr+"_closure.png");
+  c->SaveAs(ch+cat+"_"+distr+"_closure.C");
   c->SaveAs(ch+cat+"_"+distr+"_closure.pdf");
 }

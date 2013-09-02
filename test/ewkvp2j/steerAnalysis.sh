@@ -28,9 +28,10 @@ fi
 
 if [ "$step" == "2" ]; then
     echo "Computing weights"
-    runPlotter --iLumi 19736 --inDir ${outdir}/ll/               --json data/vbfz_samples.json        --outFile ${outdir}/plotter.root           
-    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_raw.root
-    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_raw.root
+    runPlotter --iLumi 19736 --inDir ${outdir}/ll/               --json data/vbfz_samples.json        --outFile ${outdir}/plotter.root             --forceMerged --noPlot
+    exit -1
+    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_raw.root --forceMerged --noPlot
+    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_raw.root --forceMerged --noPlot
 
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_tight_raw.root\",ALL)" 
     mv gammawgts.root ~/work/ewkzp2j_539/tight_gamma_weights.root
@@ -47,8 +48,8 @@ fi
 
 if [ "$step" == "4" ]; then
     echo "Running final plotter"
-    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/qt_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_qt.root
-    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/qt_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_qt.root
+    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/qt_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_qt.root --forceMerged --noPlot
+    runPlotter --iLumi 19736 --inDir ${outdir}/g/data/qt_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_qt.root --forceMerged --noPlot
 fi
 
 if [ "$step" == "5" ]; then

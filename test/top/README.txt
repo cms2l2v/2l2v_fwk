@@ -35,7 +35,8 @@ runPlotter --iLumi 19683 --inDir ~/work/top_539/syst/ --json data/top_syst_sampl
 
 ### UE studies
 
-runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/data/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True" -s 8nh
+runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/data/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/top_dysf.root'" -s 8nh
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/syst/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True"  -s 8nh
 
-runPlotter --iLumi 19683 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst_ue.root --noPlot
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst_ue.root --noPlot
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/data/ --json data/top_samples.json --outFile ~/work/top_5311/plotter_ue.root --noPlot

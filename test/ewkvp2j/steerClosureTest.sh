@@ -34,9 +34,9 @@ fi
 
 if [ "$step" == "2" ]; then
     echo "Computing weights"
-    runPlotter --json data/vbfz_syst_samples.json   --inDir ${outdir}/dy/          --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure.root             --noPlot;
-    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_tight.root --noPlot;
-    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_loose.root --noPlot;
+    runPlotter --json data/vbfz_syst_samples.json   --inDir ${outdir}/dy/          --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure.root             --noPlot --forceMerged;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_tight.root --noPlot --forceMerged;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/raw_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_raw_loose.root --noPlot --forceMerged;
 
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_dy_closure.root\",\"${outdir}/plotter_dy_closure_g_raw_loose.root\",ALL)";
     mv gammawgts.root ${outdir}/loose_gamma_mcweights.root;
@@ -58,9 +58,9 @@ fi
 
 if [ "$step" == "4" ]; then
     echo "Running final plotter"
-    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_tight.root --noPlot;
-    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_loose.root --noPlot;
-    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_pure/  --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_pure.root --noPlot;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_tight.root --noPlot --forceMerged;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_loose.root --noPlot --forceMerged;
+    runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_pure/  --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_pure.root  --noPlot --forceMerged;
 
 fi
 
