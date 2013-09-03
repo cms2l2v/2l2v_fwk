@@ -16,6 +16,7 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 
+#include "TauAnalysis/CandidateTools/interface/NSVfitStandaloneAlgorithm.h" //for svfit
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
@@ -26,6 +27,8 @@
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
+
+
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -126,14 +129,14 @@ int main(int argc, char* argv[])
   size_t nvarsToInclude(1);
   if(runSystematics && isMC)
     {
-      varNames.push_back("_jerup"); varNames.push_back("_jerdown");
-      varNames.push_back("_jesup"); varNames.push_back("_jesdown");
-      varNames.push_back("_puup"); varNames.push_back("_pudown");
+//      varNames.push_back("_jerup"); varNames.push_back("_jerdown");
+//      varNames.push_back("_jesup"); varNames.push_back("_jesdown");
+//      varNames.push_back("_puup"); varNames.push_back("_pudown");
       if(isSignal)
 	{
-	  varNames.push_back("_q2up"); varNames.push_back("_q2down");
-	  varNames.push_back("_pdfup"); varNames.push_back("_pdfdown");
-	  varNames.push_back("_balanceup"); varNames.push_back("_balancedown");
+//	  varNames.push_back("_q2up"); varNames.push_back("_q2down");
+//	  varNames.push_back("_pdfup"); varNames.push_back("_pdfdown");
+//	  varNames.push_back("_balanceup"); varNames.push_back("_balancedown");
 	}
       nvarsToInclude=varNames.size();
       cout << nvarsToInclude << " systematics will be computed for this analysis" << endl;
@@ -207,6 +210,7 @@ int main(int argc, char* argv[])
   //higgs control
   mon.addHistogram( new TH1F( "higgspt",      ";p_{T}^{#higgs} [GeV];Events",500,0,1500));
   mon.addHistogram( new TH1F( "higgsmass",    ";M^{#higgs} [GeV];Events",100,0,500));
+  mon.addHistogram( new TH1F( "higgsmasssvfit",    ";M^{#higgs} [GeV];Events",100,0,500));
   mon.addHistogram( new TH1F( "higgsmet",    ";MET [GeV];Events",100,0,500));
   mon.addHistogram( new TH1F( "higgsnjets",   ";NJets;Events",10,0,10));
 
@@ -214,29 +218,29 @@ int main(int argc, char* argv[])
 
 
   //statistical analysis
-  std::vector<double> optim_Cuts2_jet_pt1; 
-  std::vector<double> optim_Cuts2_jet_pt2; 
-  for(double jet_pt1=minJetPtToApply;jet_pt1<=130;jet_pt1+=5)
+  std::vector<double> optim_Cuts_jet_pt1; 
+  std::vector<double> optim_Cuts_jet_pt2; 
+  for(double jet_pt1=1;jet_pt1<=1;jet_pt1+=1)
     {
-      for(double jet_pt2=minJetPtToApply;jet_pt2<=jet_pt1;jet_pt2+=5)
+      for(double jet_pt2=1;jet_pt2<=jet_pt1;jet_pt2+=1)
 	{
-	  optim_Cuts2_jet_pt1.push_back(jet_pt1);
-	  optim_Cuts2_jet_pt2.push_back(jet_pt2);
+	  optim_Cuts_jet_pt1.push_back(jet_pt1);
+	  optim_Cuts_jet_pt2.push_back(jet_pt2);
 	} 
     }
-  TH2F* Hoptim_cuts2  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut2",      ";cut index;variable",       optim_Cuts2_jet_pt1.size(),0,optim_Cuts2_jet_pt1.size(), 2, 0, 2)) ;
-  Hoptim_cuts2->GetYaxis()->SetBinLabel(1, "jpt1>");
-  Hoptim_cuts2->GetYaxis()->SetBinLabel(2, "jpt2>");
-  for(unsigned int index=0;index<optim_Cuts2_jet_pt1.size();index++){
-    Hoptim_cuts2->Fill(index,0.0,optim_Cuts2_jet_pt1[index]); 
-    Hoptim_cuts2->Fill(index,1.0,optim_Cuts2_jet_pt2[index]); 
+  TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts_jet_pt1.size(),0,optim_Cuts_jet_pt1.size(), 2, 0, 2)) ;
+  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "jpt1>");
+  Hoptim_cuts->GetYaxis()->SetBinLabel(2, "jpt2>");
+  for(unsigned int index=0;index<optim_Cuts_jet_pt1.size();index++){
+    Hoptim_cuts->Fill(index,0.0,optim_Cuts_jet_pt1[index]); 
+    Hoptim_cuts->Fill(index,1.0,optim_Cuts_jet_pt2[index]); 
   }
 
   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
   {
     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-    mon.addHistogram( new TH2F (TString("dijet_deta_shapes")+varNames[ivar],";cut index;|#Delta #eta|;Events",optim_Cuts2_jet_pt1.size(),0,optim_Cuts2_jet_pt1.size(),25,0,10) );
+    mon.addHistogram( new TH2F (TString("svfit_shapes")+varNames[ivar],";cut index;|#Delta #eta|;Events",optim_Cuts_jet_pt1.size(),0,optim_Cuts_jet_pt1.size(),25,0,250) );
   }
   
   //##############################################
@@ -560,11 +564,6 @@ int main(int argc, char* argv[])
 	  jets[ijet].torawsf = 1./newJECSF;
 	  if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
 
-	  //cross-clean with selected leptons and photons
-	  double minDRlj(9999.),minDRlg(9999.);
-          for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
-	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 
           //bjets
           mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
@@ -574,6 +573,13 @@ int main(int argc, char* argv[])
              selBJets.push_back(jets[ijet]);  
              nbjets++;
           }
+
+
+	  //cross-clean with selected leptons and photons
+	  double minDRlj(9999.),minDRlg(9999.);
+          for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
+            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 
 	  
 	  //jet id
@@ -631,10 +637,10 @@ int main(int argc, char* argv[])
 
 //         printf("TauId: "); for(unsigned int i=0;i<64;i++){printf("%i ", (int) ((tau.idbits>>i)&1));}printf("\n");
 
-//         if(((tau.idbits>>llvvTAUID::againstElectronLoose)&1)==0)continue;
-//         if(((tau.idbits>>llvvTAUID::againstMuonLoose2)&1)==0)continue; 
-//         if(((tau.idbits>>llvvTAUID::decayModeFinding)&1)==0)continue;
-//         if(((tau.idbits>>llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits)&1)==0)continue;
+         if(!tau.passId(llvvTAUID::againstElectronLoose))continue;
+         if(!tau.passId(llvvTAUID::againstMuonLoose2))continue; 
+         if(!tau.passId(llvvTAUID::decayModeFinding))continue;
+         if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))continue;
 
          selTaus.push_back(tau);         
       }
@@ -753,8 +759,7 @@ int main(int argc, char* argv[])
 
          if(t1==higgsCandT1 || t1==higgsCandT2)continue; //lepton already used in the dilepton pair or higgs candidate
          if(selTaus[t1].pt()<20)continue;
-         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits)  )continue;
-
+         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)  )continue;
          passLepVeto = false; break;          
       } 
 
@@ -778,6 +783,40 @@ int main(int argc, char* argv[])
          if(higgsCandT2!=-1 && deltaR(selJets[j1]   , selTaus   [higgsCandT2])<0.4)continue;
          NCleanedJet++;
       }
+
+
+
+      //SVFIT MASS
+      double diTauMass = -1;
+      if(passHiggs && passLepVeto && passBJetVeto){
+            //taken from https://twiki.cern.ch/twiki/bin/view/CMS/HiggsToTauTauWorkingSummer2013
+            TMatrixD covMET(2, 2); // PFMET significance matrix
+            covMET[0][0] = met.sigx2;
+            covMET[0][1] = met.sigxy;
+            covMET[1][0] = met.sigxy;
+            covMET[1][1] = met.sigy2;
+            std::vector<NSVfitStandalone::MeasuredTauLepton> measuredTauLeptons;
+            if(higgsCandMu!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kLepDecay, NSVfitStandalone::LorentzVector(selLeptons[higgsCandMu].px(), selLeptons[higgsCandMu].py(), selLeptons[higgsCandMu].pz(), selLeptons[higgsCandMu].E()) ));
+            if(higgsCandEl!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kLepDecay, NSVfitStandalone::LorentzVector(selLeptons[higgsCandEl].px(), selLeptons[higgsCandEl].py(), selLeptons[higgsCandEl].pz(), selLeptons[higgsCandEl].E()) ));
+            if(higgsCandT1!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kHadDecay, NSVfitStandalone::LorentzVector(selTaus   [higgsCandT1].px(), selTaus   [higgsCandT1].py(), selTaus   [higgsCandT1].pz(), selTaus   [higgsCandT1].E()) ));
+            if(higgsCandT2!=-1)measuredTauLeptons.push_back(NSVfitStandalone::MeasuredTauLepton(NSVfitStandalone::kHadDecay, NSVfitStandalone::LorentzVector(selTaus   [higgsCandT2].px(), selTaus   [higgsCandT2].py(), selTaus   [higgsCandT2].pz(), selTaus   [higgsCandT2].E()) ));
+            NSVfitStandaloneAlgorithm algo(measuredTauLeptons, NSVfitStandalone::Vector(met.px(), met.py(), 0) , covMET, 0);
+            algo.addLogM(false);
+            algo.integrateMarkovChain();
+            //algo.integrateVEGAS(); ////Use this instead for VEGAS integration
+            if(algo.isValidSolution()){
+               diTauMass     = algo.getMass(); 
+               double diTauMassErr = algo.massUncert();
+            }
+      }
+
+
+
+
+
+
+
+
 
 
              
@@ -834,6 +873,7 @@ int main(int argc, char* argv[])
               if(passHiggs){
                  mon.fillHisto("higgspt"      , chTags, higgsCand.pt(),    weight);
                  mon.fillHisto("higgsmass"    , chTags, higgsCand.mass(),  weight);
+                 mon.fillHisto("higgsmasssvfit", chTags, diTauMass,  weight);
                  mon.fillHisto("higgsnjets"   , chTags, NCleanedJet      , weight); 
                  mon.fillHisto("higgsmet"     , chTags, met.pt()         , weight);
               }
@@ -902,28 +942,29 @@ int main(int argc, char* argv[])
 			localSelJets[ijet] *= (ivar==11 ? 1+sfEnvelope : 1-sfEnvelope);
 		      }
 		  }
-
-		//re-assign the event category;
-		std::vector<TString> locTags(1,chTags[ich]);
-		for(unsigned int index=0; index<optim_Cuts2_jet_pt1.size();index++)
-		  {
-		    float minJetPt1=optim_Cuts2_jet_pt1[index];
-		    float minJetPt2=optim_Cuts2_jet_pt2[index];
-
-		    bool passLocalJet1Pt(localSelJets[0].pt()>minJetPt1);
-		    bool passLocalJet2Pt(localSelJets[1].pt()>minJetPt2);
-		    if(!passLocalJet1Pt || !passLocalJet2Pt) continue; 
-		
-		    LorentzVectorF vbfSyst=localSelJets[0]+localSelJets[1];
-		    float mjj=vbfSyst.M();
-		    float detajj=fabs(localSelJets[0].eta()-localSelJets[1].eta());
-		    float spt=vbfSyst.pt()/(localSelJets[0].pt()+localSelJets[1].pt());
-		    
-		    TString mjjCat("");
-		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
-		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,iweight);		    
-		  }
 */
+		//re-assign the event category;
+		std::vector<TString> locTags = chTags;
+		for(unsigned int index=0; index<optim_Cuts_jet_pt1.size();index++)
+		  {
+		    float minJetPt1=optim_Cuts_jet_pt1[index];
+		    float minJetPt2=optim_Cuts_jet_pt2[index];
+
+//		    bool passLocalJet1Pt(localSelJets[0].pt()>minJetPt1);
+//		    bool passLocalJet2Pt(localSelJets[1].pt()>minJetPt2);
+//		    if(!passLocalJet1Pt || !passLocalJet2Pt) continue; 
+		
+//		    LorentzVectorF vbfSyst=localSelJets[0]+localSelJets[1];
+//		    float mjj=vbfSyst.M();
+//		    float detajj=fabs(localSelJets[0].eta()-localSelJets[1].eta());
+//		    float spt=vbfSyst.pt()/(localSelJets[0].pt()+localSelJets[1].pt());
+		    
+//		    TString mjjCat("");
+//		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
+                    std::vector<TString> localSelTags=locTags;
+		    mon.fillHisto(TString("svfit_shapes")+varNames[ivar],localSelTags,index,diTauMass,iweight);		    
+		  }
+
 	      }
 	    }//end passZpt && passZeta
 
