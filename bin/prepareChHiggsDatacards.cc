@@ -52,7 +52,8 @@ bool doPowers = true;
 struct Shape_t
 {
   TH1F* data, *totalBckg, *totalSplusB, *signal;
-  std::vector<TH1F *> bckg;
+  std::vector<TH1F*> bckg;
+  //  std::vector<TH1F*> signalMassPoints; 
   
   //the first key corresponds to the proc name
   //the second key is the name of the variation: e.g. jesup, jesdown, etc.
@@ -76,6 +77,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes);
 void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst="");
 TString convertNameForDataCard(TString title);
 TString convertNameForFileName(TString histoName);
+TString convertMassPointNameForFileName(TString title);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
 
@@ -123,12 +125,21 @@ TString convertNameForDataCard(TString title)
   if(title=="Single top")                                     return "st";
   if(title=="t#bar{t}V")                                      return "ttv";
   if(title=="t#bar{t}")                                       return "ttbar";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}") return "htaunusignal";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[200 GeV]}") return "htaunusignal";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[220 GeV]}") return "htaunusignal";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[240 GeV]}")     return "htbsignal";
   if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     return "htbsignal";
   if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "htaunusignal";
-
+  if(title=="#splitline{H^{+}$#rightarrow tb}{[260 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "htbsignal";
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") return "htaunusignal";
   return title;
 }
-
 // 
 TString convertNameForFileName(TString histoName)
 {
@@ -138,6 +149,23 @@ TString convertNameForFileName(TString histoName)
   if(histoName=="finalevtflow4") return "_geq4btags";
   return ""; 
 }
+
+// 
+TString convertMassPointNameForFileName(TString title)
+{
+  if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     return "_m180_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     return "_m200_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     return "_m220_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[240 GeV]}")     return "_m240_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     return "_m250_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[260 GeV]}")     return "_m260_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "_m280_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m300_";
+
+
+  return ""; 
+}
+
 
 //
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts, int bin)
@@ -252,7 +280,8 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	      if(Process[i]["data"].daughters()[0].isTag("xsecunc") )  thxsecunc = Process[i]["data"].daughters()[0]["xsecunc"].toDouble();
 	      shape.crossSections[proc]=std::pair<float,float>(thxsec,thxsecunc);
 	      shape.signal=hshape;
-	      
+	      //	      shape.signalMassPoints.push_back(hshape);
+
 	      //get alternative shapes for signal from systematics file
 	      if(systF)
 		{
@@ -535,202 +564,207 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 //
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 {
-  TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes"+convertNameForFileName(histo)+".root","RECREATE");
-  for(std::map<TString, Shape_t>::const_iterator it=allShapes.begin(); it!=allShapes.end(); it++)
-    {
-      TString ch(it->first); if(ch.IsNull()) ch="inclusive";
-      TDirectory *oDir=fOut->mkdir(ch);
+  
+  //  for(size_t currentPoint=0; currentPoint<allShapes.signalMassPoints.size(); ++currentPoint){
 
-      TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+".dat");
-      const Shape_t &shape=it->second;
-      
-      FILE* pFile = fopen(outUrl+shapesFile,"w");
-
-      fprintf(pFile, "imax 1\n");
-      fprintf(pFile, "jmax *\n");
-      fprintf(pFile, "kmax *\n");
-      fprintf(pFile, "-------------------------------\n");
-      TString shapesFileName("CrossSectionShapes"+convertNameForFileName(histo)+".root");
-      fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n",shapesFileName.Data(), ch.Data(), ch.Data());
-      fprintf(pFile, "-------------------------------\n");
-      
-      //observations
-      fprintf(pFile, "bin a\n");
-      fprintf(pFile, "observation %f\n",shape.data->Integral());
-      fprintf(pFile, "-------------------------------\n");
-      saveShapeForMeasurement(shape.data,oDir);
-      
-      //process rows
-      fprintf(pFile,"%30s ", "bin");
-      fprintf(pFile,"%6s ","a");
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", "a");
-      fprintf(pFile,"\n");
-     
-      fprintf(pFile,"%30s ", "process");
-      fprintf(pFile,"%6s ", convertNameForDataCard(shape.signal->GetTitle()).Data());
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", convertNameForDataCard(shape.bckg[j]->GetTitle()).Data());
-      fprintf(pFile,"\n");
-
-      fprintf(pFile,"%30s ", "process");
-      fprintf(pFile,"%6s ","0");
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6d ", int(j+1));
-      fprintf(pFile,"\n");
-
-      fprintf(pFile,"%30s ", "rate");
-      fprintf(pFile,"%6.3f ",shape.signal->Integral());
-      saveShapeForMeasurement(shape.signal,oDir);
-      for(size_t j=0; j<shape.bckg.size(); j++) { fprintf(pFile,"%6.3f ", shape.bckg[j]->Integral()); saveShapeForMeasurement(shape.bckg[j],oDir); }
-      fprintf(pFile,"\n");
-      fprintf(pFile, "-------------------------------\n");
-      
-      //systematics
-      
-      //lumi
-      fprintf(pFile,"%30s_%dTeV %10s","lumi",int(iEcm),"lnN");
-      fprintf(pFile,"%6.3f ",1+lumiUnc);
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	else                                                                                   fprintf(pFile,"%6.3f ",1+lumiUnc);
-      }
-      fprintf(pFile,"\n");
-
-      //sel eff
-      fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
-      fprintf(pFile,"%6.3f ",1+selEffUnc);
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	else                                                                                   fprintf(pFile,"%6.3f ",1+selEffUnc);
-      }
-      fprintf(pFile,"\n");
-
-      //diepton BR
-      fprintf(pFile,"%35s %10s","br","lnN");
-      fprintf(pFile,"%6.3f ",1.017);
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-        else                                                           fprintf(pFile,"%6.3f ",1.017);
-      }
-      fprintf(pFile,"\n");
-
-      //rate systematics
-      for(std::map<TString,std::pair<float,float> >::const_iterator rIt = shape.rateUncs.begin(); rIt!=shape.rateUncs.end(); rIt++)
-	{
-	  fprintf(pFile,"%35s %10s",rIt->first.Data(),"lnN");
-	  fprintf(pFile,"%6.3f ",1+0.5*(fabs(rIt->second.first-1)+fabs(rIt->second.second-1)));
-	  for(size_t j=0; j<shape.bckg.size(); j++) {
-	    fprintf(pFile,"%6s ","-");
-	  }
+    TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes"+convertNameForFileName(histo)+".root","RECREATE");
+    for(std::map<TString, Shape_t>::const_iterator it=allShapes.begin(); it!=allShapes.end(); it++)
+      {
+	TString ch(it->first); if(ch.IsNull()) ch="inclusive";
+	TDirectory *oDir=fOut->mkdir(ch);
+	
+	TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+".dat");
+	const Shape_t &shape=it->second;
+	
+	FILE* pFile = fopen(outUrl+shapesFile,"w");
+	
+	fprintf(pFile, "imax 1\n");
+	fprintf(pFile, "jmax *\n");
+	fprintf(pFile, "kmax *\n");
+	fprintf(pFile, "-------------------------------\n");
+	TString shapesFileName("CrossSectionShapes"+convertNameForFileName(histo)+".root");
+	fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n",shapesFileName.Data(), ch.Data(), ch.Data());
+	fprintf(pFile, "-------------------------------\n");
+	
+	//observations
+	fprintf(pFile, "bin a\n");
+	fprintf(pFile, "observation %f\n",shape.data->Integral());
+	fprintf(pFile, "-------------------------------\n");
+	saveShapeForMeasurement(shape.data,oDir);
+	
+	//process rows
+	fprintf(pFile,"%30s ", "bin");
+	fprintf(pFile,"%6s ","a");
+	for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", "a");
+	fprintf(pFile,"\n");
+	
+	fprintf(pFile,"%30s ", "process");
+	fprintf(pFile,"%6s ", convertNameForDataCard(shape.signal->GetTitle()).Data());
+	for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", convertNameForDataCard(shape.bckg[j]->GetTitle()).Data());
+	fprintf(pFile,"\n");
+	
+	fprintf(pFile,"%30s ", "process");
+	fprintf(pFile,"%6s ","0");
+	for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6d ", int(j+1));
+	fprintf(pFile,"\n");
+	
+	fprintf(pFile,"%30s ", "rate");
+	fprintf(pFile,"%6.3f ",shape.signal->Integral());
+	saveShapeForMeasurement(shape.signal,oDir);
+	for(size_t j=0; j<shape.bckg.size(); j++) { fprintf(pFile,"%6.3f ", shape.bckg[j]->Integral()); saveShapeForMeasurement(shape.bckg[j],oDir); }
+	fprintf(pFile,"\n");
+	fprintf(pFile, "-------------------------------\n");
+	
+	//systematics
+	
+	//lumi
+	fprintf(pFile,"%30s_%dTeV %10s","lumi",int(iEcm),"lnN");
+	fprintf(pFile,"%6.3f ",1+lumiUnc);
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+	  else                                                                                   fprintf(pFile,"%6.3f ",1+lumiUnc);
 	}
-
-      //th.xsec
-      // fprintf(pFile,"%35s %10s ", "theoryUncXS_ttbar", "lnN");
-      //       std::pair<float,float> ttbarXsec=shape.crossSections.find(shape.signal->GetTitle())->second;
-      //       fprintf(pFile,"%6.3f ",1.0+ttbarXsec.second/ttbarXsec.first);
-      //       for(size_t j=0; j<shape.bckg.size(); j++) {
-      // 	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-      // 	else                                                           fprintf(pFile,"%6.3f ",1.0+ttbarXsec.second/ttbarXsec.first);
-      //       }
-      //       fprintf(pFile,"\n");
-
-      for(size_t j=0; j<shape.bckg.size(); j++)
-	{
-	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	  if(proc=="ttbar") continue;
-	  std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
-	  if(procXsec.second<=0) continue;
-	  if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
-	  
-	  TString uncName("theoryUncXS_"+proc);
-	  fprintf(pFile,"%35s %10s ", uncName.Data(), "lnN");
-	  fprintf(pFile,"%6s ","-");
-	  for(size_t k=0; k<shape.bckg.size(); k++) {
-	    if(k!=j) fprintf(pFile,"%6s ","-");
-	    else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	    else                                                                                        fprintf(pFile,"%6.3f ",1.0+procXsec.second/procXsec.first);
-	  }
-	  fprintf(pFile,"\n");
+	fprintf(pFile,"\n");
+	
+	//sel eff
+	fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
+	fprintf(pFile,"%6.3f ",1+selEffUnc);
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+	  else                                                                                   fprintf(pFile,"%6.3f ",1+selEffUnc);
 	}
-
-      //fakes
-      fprintf(pFile,"%35s %10s ", "fakes", "lnN");
-      fprintf(pFile,"%6s ","-");
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
-	if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
-	else                                            fprintf(pFile,"%6s ","2.0");
-      }
-      fprintf(pFile,"\n");
-
-      //systematics described by shapes
-      for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)
-	{
-	  if(it->EndsWith("down")) continue;
-	  TString systName(*it);
-	  if(systName.EndsWith("up")) systName.Remove(systName.Length()-2,2);
-	  
-	  bool systIsValid(false);
-	  TString systLine("");
-	  char systBuf[500];
-	  sprintf(systBuf,"%35s %10s ", systName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
-	  if(shape.signalVars.find(*it)==shape.signalVars.end())     { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	  else if(shape.signalVars.find(*it)->second->Integral()==0) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	  else 
-	    { 
-	      systIsValid=true;
-	      sprintf(systBuf,"%6s ","1"); 
-	      systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
-	      saveShapeForMeasurement(shape.signalVars.find(systName+"up")->second,oDir,systName+"up"); 
-	      saveShapeForMeasurement(shape.signalVars.find(systName+"down")->second,oDir,systName+"down"); 
+	fprintf(pFile,"\n");
+	
+	//diepton BR
+	fprintf(pFile,"%35s %10s","br","lnN");
+	fprintf(pFile,"%6.3f ",1.017);
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	  else                                                           fprintf(pFile,"%6.3f ",1.017);
+	}
+	fprintf(pFile,"\n");
+	
+	//rate systematics
+	for(std::map<TString,std::pair<float,float> >::const_iterator rIt = shape.rateUncs.begin(); rIt!=shape.rateUncs.end(); rIt++)
+	  {
+	    fprintf(pFile,"%35s %10s",rIt->first.Data(),"lnN");
+	    fprintf(pFile,"%6.3f ",1+0.5*(fabs(rIt->second.first-1)+fabs(rIt->second.second-1)));
+	    for(size_t j=0; j<shape.bckg.size(); j++) {
+	      fprintf(pFile,"%6s ","-");
 	    }
-	  for(size_t j=0; j<shape.bckg.size(); j++) {
-	    if(shape.bckgVars.find(shape.bckg[j]->GetTitle())==shape.bckgVars.end())                                                                { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	    //else if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end())                                           { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	    else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(*it)==shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.end()) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	    else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(*it)->second->Integral()==0)                                        { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	    else                                                                                                                                  
+	  }
+	
+	//th.xsec
+	// fprintf(pFile,"%35s %10s ", "theoryUncXS_ttbar", "lnN");
+	//       std::pair<float,float> ttbarXsec=shape.crossSections.find(shape.signal->GetTitle())->second;
+	//       fprintf(pFile,"%6.3f ",1.0+ttbarXsec.second/ttbarXsec.first);
+	//       for(size_t j=0; j<shape.bckg.size(); j++) {
+	// 	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	// 	else                                                           fprintf(pFile,"%6.3f ",1.0+ttbarXsec.second/ttbarXsec.first);
+	//       }
+	//       fprintf(pFile,"\n");
+	
+	for(size_t j=0; j<shape.bckg.size(); j++)
+	  {
+	    TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+	    if(proc=="ttbar") continue;
+	    std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
+	    if(procXsec.second<=0) continue;
+	    if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
+	    
+	    TString uncName("theoryUncXS_"+proc);
+	    fprintf(pFile,"%35s %10s ", uncName.Data(), "lnN");
+	    fprintf(pFile,"%6s ","-");
+	    for(size_t k=0; k<shape.bckg.size(); k++) {
+	      if(k!=j) fprintf(pFile,"%6s ","-");
+	      else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+	      else                                                                                        fprintf(pFile,"%6.3f ",1.0+procXsec.second/procXsec.first);
+	    }
+	    fprintf(pFile,"\n");
+	  }
+	
+	//fakes
+	fprintf(pFile,"%35s %10s ", "fakes", "lnN");
+	fprintf(pFile,"%6s ","-");
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+	  if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
+	  else                                            fprintf(pFile,"%6s ","2.0");
+	}
+	fprintf(pFile,"\n");
+	
+	//systematics described by shapes
+	for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)
+	  {
+	    if(it->EndsWith("down")) continue;
+	    TString systName(*it);
+	    if(systName.EndsWith("up")) systName.Remove(systName.Length()-2,2);
+	    
+	    bool systIsValid(false);
+	    TString systLine("");
+	    char systBuf[500];
+	    sprintf(systBuf,"%35s %10s ", systName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
+	    if(shape.signalVars.find(*it)==shape.signalVars.end())     { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	    else if(shape.signalVars.find(*it)->second->Integral()==0) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	    else 
 	      { 
 		systIsValid=true;
 		sprintf(systBuf,"%6s ","1"); 
 		systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
-		saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
-		saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+	      saveShapeForMeasurement(shape.signalVars.find(systName+"up")->second,oDir,systName+"up"); 
+	      saveShapeForMeasurement(shape.signalVars.find(systName+"down")->second,oDir,systName+"down"); 
 	      }
+	    for(size_t j=0; j<shape.bckg.size(); j++) {
+	      if(shape.bckgVars.find(shape.bckg[j]->GetTitle())==shape.bckgVars.end())                                                                { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	      //else if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end())                                           { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	      else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(*it)==shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.end()) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	      else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(*it)->second->Integral()==0)                                        { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	      else                                                                                                                                  
+		{ 
+		  systIsValid=true;
+		  sprintf(systBuf,"%6s ","1"); 
+		  systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
+		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
+		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+		}
+	    }
+	    if(systIsValid) fprintf(pFile,"%s \n",systLine.Data());
 	  }
-	  if(systIsValid) fprintf(pFile,"%s \n",systLine.Data());
+	
+	//MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
+	fprintf(pFile,"%35s %10s ", ("htbsignal_"+ch+"_stat").Data(), "shape");
+	fprintf(pFile,"%6s ","1");
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  //	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	  //	else                                                           fprintf(pFile,"%6s ","1");
+	  fprintf(pFile,"%6s","-");
 	}
-
-      //MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
-      fprintf(pFile,"%35s %10s ", ("htbsignal_"+ch+"_stat").Data(), "shape");
-      fprintf(pFile,"%6s ","1");
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	//	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	//	else                                                           fprintf(pFile,"%6s ","1");
-	fprintf(pFile,"%6s","-");
-      }
-      fprintf(pFile,"\n");
-
-      for(size_t j=0; j<shape.bckg.size(); j++)
-	{
-	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	  //	  if(proc=="ttbar") continue;
-	  //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
-	  
-	  fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
-	  fprintf(pFile,"%6s ","-");
-	  for(size_t k=0; k<shape.bckg.size(); k++) {
-	    if(k!=j) fprintf(pFile,"%6s ","-");
-	    //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	    else     fprintf(pFile,"%6s ","1");
+	fprintf(pFile,"\n");
+	
+	for(size_t j=0; j<shape.bckg.size(); j++)
+	  {
+	    TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+	    //	  if(proc=="ttbar") continue;
+	    //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
+	    
+	    fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
+	    fprintf(pFile,"%6s ","-");
+	    for(size_t k=0; k<shape.bckg.size(); k++) {
+	      if(k!=j) fprintf(pFile,"%6s ","-");
+	      //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+	      else     fprintf(pFile,"%6s ","1");
+	    }
+	    fprintf(pFile,"\n");
 	  }
-	  fprintf(pFile,"\n");
-	}
-
-      //all done
-      fprintf(pFile,"\n");
-      fclose(pFile);
-    }      
-
-  fOut->Close();
+	
+	//all done
+	fprintf(pFile,"\n");
+	fclose(pFile);
+      }      
+    
+    fOut->Close();
+    
+    // }
 }      
 
 //
