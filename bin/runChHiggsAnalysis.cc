@@ -10,6 +10,8 @@
 #include "UserCode/llvv_fwk/interface/BTVAnalysis.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
+#include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
+
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -224,7 +226,7 @@ int main(int argc, char* argv[])
 	    if(ibin==1) continue;
 	    label="jet"; label+=(ibin-1);
 	 
-	    if(ibin>=3) continue; // unnecessary histos at the moment
+	    //if(ibin>=3) continue; // unnecessary histos at the moment
 	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"pt"+var,";Transverse momentum [GeV];Events",50,0,250) );
 	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"nobsmearpt"+var,";Transverse momentum [GeV];Events",50,0,250) );
 	    controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pt"+label+"smearpt"+var,";Transverse momentum [GeV];Events",50,0,250) );
@@ -508,7 +510,24 @@ int main(int argc, char* argv[])
 	    looseJets.push_back(jets[ijet]);
 	    if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	    selJets.push_back(jets[ijet]);
-	    if(jets[ijet].getVal("csv") <= 0.405) continue; // CSVV1L
+	    //if(jets[ijet].getVal("csv") <= 0.405) continue; // CSVV1L
+	    bool hasCSVV1L(jets[ijet].getVal("csv") <= 0.405); // CSVV1L
+	    if(isMC){
+	      //set a unique seed
+	      double bseed_sin_phi = sin(jets[ijet].phi()*1000000);
+	      double bseed = abs(static_cast<int>(bseed_sin_phi*100000));
+
+	      // get jet flavour
+	      const data::PhysicsObject_t &bgenJet=jets[ijet].getObject("genJet");
+	      int bflavid=bgenJet.info.find("id")->second;
+
+	      //Initialize class
+	      //	      BTagSFUtil* btsfutil = new BTagSFUtil( bseed );
+	      BTagSFUtil btsfutil( bseed );
+	      btsfutil.modifyBTagsWithSF(hasCSVV1L, bflavid, 1., 1., 1., 1.);//0.98, 0.841, 1.21, 0.137);
+	      
+	    }
+	    if(!hasCSVV1L) continue;
 	    selbJets.push_back(jets[ijet]);
 	  }
 	sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByPt);
@@ -599,7 +618,7 @@ int main(int argc, char* argv[])
 	      {
 		if(looseJets[ijet].pt()<30 || fabs(looseJets[ijet].eta())>2.5) continue;
 		TString label("jet"); label+=(ijet+1);
-		if(ijet+1 >=3) continue; // unnecessary histos at the moment 
+		//		if(ijet+1 >=3) continue; // unnecessary histos at the moment 
 		const data::PhysicsObject_t &genJet=looseJets[ijet].getObject("genJet");
 		int flavId=genJet.info.find("id")->second;
 		if(abs(flavId)==5 || abs(flavId)==4 ) flavId=abs(flavId)-1;
@@ -616,7 +635,7 @@ int main(int argc, char* argv[])
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++)
 	      {
 		TString label("jet"); label+=(ijet+1);
-		if(ijet+1 >=3) continue; // unnecessary histos at the moment 
+		//		if(ijet+1 >=3) continue; // unnecessary histos at the moment 
 		const data::PhysicsObject_t &genJet=selJets[ijet].getObject("genJet");
 		int flavId=genJet.info.find("id")->second;
 		if(abs(flavId)==5 || abs(flavId)==4 ) flavId=abs(flavId)-1;
