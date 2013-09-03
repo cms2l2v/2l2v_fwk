@@ -6,39 +6,30 @@ Charged Higgs Analysis
 
 Analyze
 -------
-NOTE: run with @runSystematics=False, 'cause the systs are not fully implemented yet, so you would produce N times the same base plots :)
 
-
-runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/539_ntuples/ -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
-runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/Summer13_ntuples/             -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
-
-
-5311 ntuples:
-runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples/             -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
+runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/539_ntuples/ -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
+runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples/             -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
 
 
 Plots & tables
 --------------
-runPlotter --iLumi 19683 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plots --json data/plot-ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plotter-with-ch-higgs.root --showUnc --plotExt .pdf 
-runPlotter --iLumi 19683 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plots --json data/plot-ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plotter-with-ch-higgs.root --showUnc --plotExt .png  
+
+runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/plot-ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-with-ch-higgs.root --showUnc --plotExt .png
+runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/top_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-smonly.root --showUnc --plotExt .png  
 
 --onlyStartWith emu_evtflow
 
-
-5311 ntuples:
-runPlotter --iLumi 19683 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/top_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-smonly.root --showUnc --plotExt .png  
-
-
 Tables only
 -----------
-runPlotter --iLumi 19683 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plots --json data/ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plotter-all-ch-higgs.root --noPlot --noPowers 
-runPlotter --iLumi 19683 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plots --json data/top_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plotter-sm-only.root --noPlot --noPowers 
+runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-all-ch-higgs.root --noPlot --noPowers 
+runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/top_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-sm-only.root --noPlot --noPowers 
 
 
 
 Datacards
 ---------
-prepareChHiggsDatacards  --in /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/plotter-with-ch-higgs.root --out /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs/datacards/ --json data/plot-ch-higgs_samples.json --noPowers --histo evtflow --bin 5  
+prepareChHiggsDatacards  --in /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-with-ch-higgs.root --out /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/datacards/ --json data/plot-ch-higgs_samples.json --noPowers --histo evtflow --bin 5  
+
 
 Options
 --out       --> output director
@@ -55,6 +46,7 @@ Options
 ###
 CHANGELOG
 ###
+2013-08-31: Top pt reweighting and so on
 2013-07-22: finished adding samples
 2013-07-18: fixed nasty bug
 2013-06-21: implemented leff and pu systematics
