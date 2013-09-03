@@ -181,7 +181,7 @@
            ]
         },
 	{
-        "tag":"#splitline{H^{+}$#rightarrow tb}{[260 GeV]}",
+        "tag":"#splitline{H^{+}#rightarrow tb}{[260 GeV]}",
         "isdata":false,
 	"spimpose":true,
         "color":"002",
