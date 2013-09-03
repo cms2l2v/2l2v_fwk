@@ -4,11 +4,10 @@
 #include <boost/shared_ptr.hpp>
 #include "Math/GenVector/Boost.h"
 
-#include "CMGTools/HtoZZ2l2nu/src/tdrstyle.C"
-#include "CMGTools/HtoZZ2l2nu/src/JSONWrapper.cc"
-#include "CMGTools/HtoZZ2l2nu/interface/setStyle.h"
-#include "CMGTools/HtoZZ2l2nu/interface/MacroUtils.h"
-#include "CMGTools/HtoZZ2l2nu/interface/plotter.h"
+#include "UserCode/llvv_fwk/src/tdrstyle.C"
+#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/RootUtils.h"
+#include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
 
 #include "TSystem.h"
@@ -198,6 +197,9 @@ class AllInfo_t
 
         // drop background process that have a negligible yield
         void dropSmallBckgProc(std::vector<TString>& selCh, string histoName, double threshold);
+
+        // drop control channels
+        void dropCtrlChannels(std::vector<TString>& selCh);
 
         // Make a summary plot
         void showShape(std::vector<TString>& selCh , TString histoName, TString SaveName);
@@ -424,6 +426,9 @@ int main(int argc, char* argv[])
   //drop backgrounds with rate<1%
   allInfo.dropSmallBckgProc(selCh, histo.Data(), 0.01);
 
+  //drop control channels
+  allInfo.dropCtrlChannels(selCh);
+
   //print event yields from the mt shapes
   pFile = fopen("Yields.tex","w");
   allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
@@ -442,6 +447,7 @@ int main(int argc, char* argv[])
   TFile *fout=TFile::Open(limitFile.c_str(),"recreate");
 
   allInfo.saveHistoForLimit(histo.Data(), fout);
+
   allInfo.buildDataCards(histo.Data(), limitFile);
 
   //all done
@@ -675,7 +681,7 @@ void initializeTGraph(){
                  rows[ch->first] += "&";
                  if(it->first=="data" || it->first=="total")rows[ch->first] += "\\boldmath ";
                  if(it->first=="data"){char tmp[256];sprintf(tmp, "%.0f", val); rows[ch->first] += tmp;
-                 }else{                rows[ch->first] += toLatexRounded(val,valerr, syst);     }
+                 }else{                rows[ch->first] += utils::toLatexRounded(val,valerr, syst);     }
 
                  bin_val   [ch->second.bin] += val;
                  bin_valerr[ch->second.bin] += pow(valerr,2);
@@ -688,7 +694,7 @@ void initializeTGraph(){
                  rowsBin[bin->first] += "&";
                  if(it->first=="data" || it->first=="total")rowsBin[bin->first] += "\\boldmath ";
                  if(it->first=="data"){char tmp[256];sprintf(tmp, "%.0f", bin_val[bin->first]); rowsBin[bin->first] += tmp;
-                 }else{                rowsBin[bin->first] += toLatexRounded(bin_val[bin->first],sqrt(bin_valerr[bin->first]), bin_syst[bin->first]<0?-1:sqrt(bin_syst[bin->first]));   }
+                 }else{                rowsBin[bin->first] += utils::toLatexRounded(bin_val[bin->first],sqrt(bin_valerr[bin->first]), bin_syst[bin->first]<0?-1:sqrt(bin_syst[bin->first]));   }
               }
            }
 
@@ -735,6 +741,23 @@ void initializeTGraph(){
               }
            }
         }
+
+        //
+        // drop control channels
+        //
+        void AllInfo_t::dropCtrlChannels(std::vector<TString>& selCh)
+        {
+           for(unsigned int p=0;p<sorted_procs.size();p++){
+              string procName = sorted_procs[p];
+              std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+              if(it==procs.end())continue;
+              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end()){it->second.channels.erase(ch); ch=it->second.channels.begin();}
+              }
+           }
+        }
+
+
 
         //
         // drop background process that have a negligible yield
@@ -1048,6 +1071,8 @@ void initializeTGraph(){
 
            //Now really take care of making the datacards
 
+
+
            std::vector<string>clean_procs;
            std::vector<string>sign_procs;
            //make a map of all systematics considered and say if it's shape-based or not.
@@ -1084,6 +1109,8 @@ void initializeTGraph(){
               combinedcard += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("ee"  )!=string::npos)eecard   += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("mumu")!=string::npos)mumucard += (C->first+"=").c_str()+dcName+" ";
+
+
 
               FILE* pFile = fopen(dcName.Data(),"w");
               //header
@@ -1124,11 +1151,14 @@ void initializeTGraph(){
               fclose(pFile);
            }
 
+
+
            FILE* pFile = fopen("combineCards.sh","w");
            fprintf(pFile,"%s;\n",(TString("combineCards.py ") + combinedcard + " > " + "card_combined.dat").Data());
            fprintf(pFile,"%s;\n",(TString("combineCards.py ") + eecard       + " > " + "card_ee.dat").Data());
            fprintf(pFile,"%s;\n",(TString("combineCards.py ") + mumucard     + " > " + "card_mumu.dat").Data());
            fclose(pFile);         
+
         }
 
 
@@ -1247,7 +1277,7 @@ void initializeTGraph(){
                   if(isnan((float)hshape->Integral())){hshape->Reset();}
                   hshape->SetDirectory(0);
                   hshape->SetTitle(proc);
-                  fixExtremities(hshape,true,true);
+                  utils::root::fixExtremities(hshape,true,true);
                   hshape->SetFillColor(color); hshape->SetLineColor(lcolor); hshape->SetMarkerColor(mcolor);
                   hshape->SetFillStyle(fill);  hshape->SetLineWidth(lwidth); hshape->SetMarkerStyle(marker); hshape->SetLineStyle(lstyle);
 
@@ -1395,10 +1425,10 @@ void initializeTGraph(){
                  //printout
                  sprintf(Lcol    , "%s%s"  ,Lcol,    "|c");
                  sprintf(Lchan   , "%s%25s",Lchan,   (string(" &") + chData->second.channel+string(" - ")+chData->second.bin).c_str());
-                 sprintf(Lalph1  , "%s%25s",Lalph1,  (string(" &") + toLatexRounded(alpha,alpha_err)).c_str());
-                 sprintf(Lalph2  , "%s%25s",Lalph2,  (string(" &") + toLatexRounded(alphaUsed,alphaUsed_err)).c_str());
-                 sprintf(Lyield  , "%s%25s",Lyield,  (string(" &") + toLatexRounded(valDD,valDD_err,valDD*NonResonnantSyst)).c_str());
-                 sprintf(LyieldMC, "%s%25s",LyieldMC,(string(" &") + toLatexRounded(valMC,valMC_err)).c_str());
+                 sprintf(Lalph1  , "%s%25s",Lalph1,  (string(" &") + utils::toLatexRounded(alpha,alpha_err)).c_str());
+                 sprintf(Lalph2  , "%s%25s",Lalph2,  (string(" &") + utils::toLatexRounded(alphaUsed,alphaUsed_err)).c_str());
+                 sprintf(Lyield  , "%s%25s",Lyield,  (string(" &") + utils::toLatexRounded(valDD,valDD_err,valDD*NonResonnantSyst)).c_str());
+                 sprintf(LyieldMC, "%s%25s",LyieldMC,(string(" &") + utils::toLatexRounded(valMC,valMC_err)).c_str());
               }
 
               //recompute total background
@@ -1476,7 +1506,7 @@ void initializeTGraph(){
 
               TH1* hMC = chMC->second.shapes[mainHisto.Data()].histo();
               TH1* hDD = gjets2Dshape->ProjectionY("tmpName",indexcut_,indexcut_);
-               fixExtremities(hDD, true, true);
+               utils::root::fixExtremities(hDD, true, true);
                if(!(mainHisto==histo && histoVBF!="" && chMC->second.bin.find("vbf")!=string::npos)){
                   for(int x=0;x<=hDD->GetXaxis()->GetNbins()+1;x++){
                      if(hDD->GetXaxis()->GetBinCenter(x)<=cutMin || hDD->GetXaxis()->GetBinCenter(x)>=cutMax){hDD->SetBinContent(x,0); hDD->SetBinError(x,0);}
@@ -1506,7 +1536,7 @@ void initializeTGraph(){
               char printout[2048];
               double valMC_err, valMC = hMC->IntegralAndError(1,hMC->GetXaxis()->GetNbins()+1,valMC_err); if(valMC<1E-6){valMC=0.0; valMC_err=0.0;}
               double valDD_err, valDD = hDD->IntegralAndError(1,hDD->GetXaxis()->GetNbins()+1,valDD_err); if(valDD<1E-6){valDD=0.0; valDD_err=0.0;}
-              sprintf(printout,"%20s & %30s & %30s\\\\", chMC->first.c_str(), toLatexRounded(valDD,valDD_err,valDD*GammaJetSyst).c_str(), toLatexRounded(valMC,valMC_err).c_str() );
+              sprintf(printout,"%20s & %30s & %30s\\\\", chMC->first.c_str(), utils::toLatexRounded(valDD,valDD_err,valDD*GammaJetSyst).c_str(), utils::toLatexRounded(valMC,valMC_err).c_str() );
               lineprintouts.push_back(printout);
 
               //add syst uncertainty
