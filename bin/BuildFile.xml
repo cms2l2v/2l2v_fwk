@@ -14,6 +14,7 @@
   <bin name="runPlotter"               file="runPlotter.cc"></bin> 
   <bin name="runPlotterFWLite"               file="runPlotterFWLite.cc"></bin>
   <bin name="jsonTools"                file="jsonTools.cc"></bin>
+  <bin name="computeLimit"             file="computeLimit.cc"></bin>
   <bin name="computePDFvariations"     file="computePDFvariations.cc"></bin> 
   <bin name="computePDFvariationsFWLite"     file="computePDFvariationsFWLite.cc"></bin>
   <bin name="fitDYforTop"              file="fitDYforTop.cc"></bin> 
