@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <fstream>
@@ -136,6 +137,8 @@ int main(int argc, char* argv[])
       systVars.push_back("_leffup"); systVars.push_back("_leffdown"  );
       systVars.push_back("_puup"  ); systVars.push_back("_pudown"    );
       systVars.push_back("_umetup"); systVars.push_back( "_umetdown" );
+      systVars.push_back("_topptuncup"); systVars.push_back("_topptuncdown"); 
+      systVars.push_back(); systVars.push_back();
       cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
     }
   
@@ -166,32 +169,36 @@ int main(int argc, char* argv[])
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+var,";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
    
-    TH1D *finalCutflowH = new TH1D("finalevtflow"+var,";Category;Events",4,0,4); 
-    finalCutflowH->GetXaxis()->SetBinLabel(1,"=1 btags");
-    finalCutflowH->GetXaxis()->SetBinLabel(2,"=2 btags");
-    finalCutflowH->GetXaxis()->SetBinLabel(3,"=3 btags");
-    finalCutflowH->GetXaxis()->SetBinLabel(4,"#geq 4 btags");
+    TH1D *finalCutflowH = new TH1D("finalevtflow"+var,";Category;Events",6,0,6); 
+    finalCutflowH->GetXaxis()->SetBinLabel(1,"=0 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(2,"=1 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(3,"=2 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(4,"=3 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(5,"=4 btags");
+    finalCutflowH->GetXaxis()->SetBinLabel(6,"#geq5 btags");
     controlHistos.addHistogram( finalCutflowH );
 
+    TH1D *finalCutflowH_0 = new TH1D("finalevtflow0"+var,";Category;Events",1,0,1); 
+    finalCutflowH_0->GetXaxis()->SetBinLabel(1,"=0 jets");
+    controlHistos.addHistogram( finalCutflowH_0 );
     TH1D *finalCutflowH_1 = new TH1D("finalevtflow1"+var,";Category;Events",1,0,1); 
-    finalCutflowH->GetXaxis()->SetBinLabel(1,"=1 jets");
+    finalCutflowH_1->GetXaxis()->SetBinLabel(1,"=1 jets");
     controlHistos.addHistogram( finalCutflowH_1 );
     TH1D *finalCutflowH_2 = new TH1D("finalevtflow2"+var,";Category;Events",1,0,1); 
-    finalCutflowH->GetXaxis()->SetBinLabel(1,"=2 jets");
+    finalCutflowH_2->GetXaxis()->SetBinLabel(1,"=2 jets");
     controlHistos.addHistogram( finalCutflowH_2 );
     TH1D *finalCutflowH_3 = new TH1D("finalevtflow3"+var,";Category;Events",1,0,1); 
-    finalCutflowH->GetXaxis()->SetBinLabel(1,"=3 jets");
+    finalCutflowH_3->GetXaxis()->SetBinLabel(1,"=3 jets");
     controlHistos.addHistogram( finalCutflowH_3 );
     TH1D *finalCutflowH_4 = new TH1D("finalevtflow4"+var,";Category;Events",1,0,1); 
-    finalCutflowH->GetXaxis()->SetBinLabel(1,"#geq 4 jets");
+    finalCutflowH_4->GetXaxis()->SetBinLabel(1,"=4 jets");
     controlHistos.addHistogram( finalCutflowH_4 );
-
-
-
-
-    
+    TH1D *finalCutflowH_5 = new TH1D("finalevtflow5"+var,";Category;Events",1,0,1); 
+    finalCutflowH_5->GetXaxis()->SetBinLabel(1,"#geq5 jets");
+    controlHistos.addHistogram( finalCutflowH_5 );
+B    
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
-    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets"};
+	TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"};
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
@@ -199,6 +206,7 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll"+var,";Dilepton transverse momentum [GeV];Events",50,0,250) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pte"+var,";Electron transverse momentum [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmu"+var,";Muon transverse momentum [GeV];Events",50,0,500) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptlep"+var,";Lepton transverse momentum [GeV];Events",50,0,500) ); 
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"sumpt"+var,";Sum of lepton transverse momenta [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+var,";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
 
@@ -215,7 +223,7 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htbnol"+var,"; H_[T] (bjets, no leptons) [GeV];Events",50,0,1000) );
 	
 	TH1F *h=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"njets"+var,";Jet multiplicity;Events",8,0,8) );
-	TH1F *hb=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"nbjets"+var,";b-Jet multiplicity;Events",8,0,8) );
+	TH1F *hb=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"nbjets"+var,";b-Jet multiplicity;Events",6,0,6) );
 	for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
 	  {
 	    TString label( ibin==h->GetXaxis()->GetNbins() ? "#geq" : "=");
@@ -354,13 +362,11 @@ int main(int argc, char* argv[])
 	  if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
 	}
 
-      // Top pt reweighting (FIXME: implement uncertainty according to twiki - see MacroUtils.hh for url)
-      if(isTTbarMC){
-	weightNom  *= utils::cmssw::ttbarReweight(tPt,tbarPt);
-	weightUp   *= utils::cmssw::ttbarReweight(tPt,tbarPt);
-	weightDown *= utils::cmssw::ttbarReweight(tPt,tbarPt);
-      }
-	
+      // Top pt reweighting: get scale factor 
+      double topPtReweightFactor(1.);
+      if(isTTbarMC)
+	topPtReweightFactor = utils::cmssw::ttbarReweight(tPt,tbarPt);
+      
       Hcutflow->Fill(1,1);
       Hcutflow->Fill(2,weightNom);
       Hcutflow->Fill(3,weightUp);
@@ -377,6 +383,21 @@ int main(int argc, char* argv[])
 	if(filterOnlyEMU)  { eeTrigger=false;                     mumuTrigger=false; }
 	if(filterOnlyMUMU) { eeTrigger=false;  emuTrigger=false;                     }
 	
+	// Top pt reweighting: apply scale factor
+	if(isTTbarMC){
+	  // down: no reweighting
+	  if(var !="_topptuncdown"){ // base: w--->w*F
+	    weightNom  *= topPtReweightFactor;
+	    weightUp   *= topPtReweightFactor;
+	    weightDown *= topPtReweightFactor;
+	  }
+	  if(var=="_topptuncup"){ // up: w--->w*F*F 
+	    weightNom  *= topPtReweightFactor;
+	    weightUp   *= topPtReweightFactor;
+	    weightDown *= topPtReweightFactor;
+	  }
+	}
+
 	data::PhysicsObjectCollection_t leptons=evSummary.getPhysicsObject(DataEventSummaryHandler::LEPTONS);
 	data::PhysicsObjectCollection_t selLeptons;
 	for(size_t ilep=0; ilep<leptons.size(); ilep++)
@@ -551,13 +572,15 @@ int main(int argc, char* argv[])
 	bool passDilSelection(mll>12 && !isZcand);
 	bool passJetSelection(selJets.size()>=2);
 	bool passMetSelection(met.pt()>40);//!isSameFlavor || met[0].pt()>40); (charged Higgs case expects high MET 
-	
+	bool passBtagSelection(selbJets.size()>=2);
+
 	//control distributions
 	std::vector<TString> ctrlCategs;
 	ctrlCategs.push_back("eq2leptons");
 	if(        passDilSelection && selJets.size()==1                    )   ctrlCategs.push_back("eq1jets");   
 	if(        passDilSelection && passJetSelection                     )   ctrlCategs.push_back("eq2jets");   
 	if(isOS && passDilSelection && passJetSelection  && passMetSelection)   ctrlCategs.push_back(""); // FIXME: add DY reweighting
+	if(isOS && passDilSelection && passJetSelection  && passMetSelection && passBtagSelection) ctrlCategs.push_back("geq2btags");
 //	if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("eq1jets");
 //	if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("lowmet");
 //	if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("eq1jetslowmet");
@@ -580,9 +603,12 @@ int main(int argc, char* argv[])
 		if(abs(selLeptons[ilep].get("id"))==11){
 		  controlHistos.fillHisto(ctrlCategs[icat]+"emva"+var, ch, selLeptons[ilep].getVal("mvatrig"), weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"pte"+var,  ch, selLeptons[ilep].pt(),        weight);
+		  controlHistos.fillHisto(ctrlCategs[icat]+"ptlep"+var,ch, selLeptons[ilep].pt(),        weight);
 		}
-		else if(abs(selLeptons[ilep].get("id"))==13)
+		else if(abs(selLeptons[ilep].get("id"))==13){
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptmu"+var,  ch, selLeptons[ilep].pt(),        weight);
+		  controlHistos.fillHisto(ctrlCategs[icat]+"ptlep"+var, ch, selLeptons[ilep].pt(),        weight);
+		}
 	      }
 	    controlHistos.fillHisto(ctrlCategs[icat]+"sumpt"+var, ch, sumpt, weight);
 
@@ -673,17 +699,19 @@ int main(int argc, char* argv[])
 	//      float nbtags(0);
 	//	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("csv")>0.405); // CSVV1L
 	float nbtags(selbJets.size());
-	if(nbtags>0){
-	  if(nbtags>4) 
-	    controlHistos.fillHisto("finalevtflow"+var, ch, 4-1, weight);
-	  else 
-	    controlHistos.fillHisto("finalevtflow"+var, ch, nbtags-1, weight);
-	}
-
+	//	if(nbtags>0){
+	if(nbtags>5) 
+	  controlHistos.fillHisto("finalevtflow"+var, ch, 5, weight);
+	else 
+	  controlHistos.fillHisto("finalevtflow"+var, ch, nbtags, weight);
+	//}
+	
+	if(nbtags==0) controlHistos.fillHisto("finalevtflow0"+var, ch, 0, weight);
 	if(nbtags==1) controlHistos.fillHisto("finalevtflow1"+var, ch, 0, weight);
 	if(nbtags==2) controlHistos.fillHisto("finalevtflow2"+var, ch, 0, weight);
 	if(nbtags==3) controlHistos.fillHisto("finalevtflow3"+var, ch, 0, weight);
-	if(nbtags>=4) controlHistos.fillHisto("finalevtflow4"+var, ch, 0, weight);
+	if(nbtags==4) controlHistos.fillHisto("finalevtflow4"+var, ch, 0, weight);
+	if(nbtags>=5) controlHistos.fillHisto("finalevtflow5"+var, ch, 0, weight);
 	
 	if(nbtags<2) continue;
 	controlHistos.fillHisto("evtflow"+var, ch, 5, weight);
