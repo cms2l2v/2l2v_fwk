@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <fstream>
@@ -138,7 +137,7 @@ int main(int argc, char* argv[])
       systVars.push_back("_puup"  ); systVars.push_back("_pudown"    );
       systVars.push_back("_umetup"); systVars.push_back( "_umetdown" );
       systVars.push_back("_topptuncup"); systVars.push_back("_topptuncdown"); 
-      systVars.push_back(); systVars.push_back();
+      //      systVars.push_back(); systVars.push_back();
       cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
     }
   
@@ -196,9 +195,9 @@ int main(int argc, char* argv[])
     TH1D *finalCutflowH_5 = new TH1D("finalevtflow5"+var,";Category;Events",1,0,1); 
     finalCutflowH_5->GetXaxis()->SetBinLabel(1,"#geq5 jets");
     controlHistos.addHistogram( finalCutflowH_5 );
-B    
+    
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
-	TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"};
+    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"};
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
