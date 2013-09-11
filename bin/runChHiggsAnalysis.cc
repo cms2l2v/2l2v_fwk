@@ -197,7 +197,9 @@ int main(int argc, char* argv[])
     controlHistos.addHistogram( finalCutflowH_5 );
     
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
-    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"};
+    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags", // through the base cutflow
+			"lowmet","eq1jetslowmet","zowmet","zeq1jets","zeq1jetslowmet","z" // for DY rescaling
+    };
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
@@ -579,14 +581,13 @@ int main(int argc, char* argv[])
 	if(        passDilSelection && selJets.size()==1                    )   ctrlCategs.push_back("eq1jets");   
 	if(        passDilSelection && passJetSelection                     )   ctrlCategs.push_back("eq2jets");   
 	if(isOS && passDilSelection && passJetSelection  && passMetSelection)   ctrlCategs.push_back(""); // FIXME: add DY reweighting
-	if(isOS && passDilSelection && passJetSelection  && passMetSelection && passBtagSelection) ctrlCategs.push_back("geq2btags");
-//	if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("eq1jets");
-//	if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("lowmet");
-//	if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("eq1jetslowmet");
-//	if(isOS && isZcand          && passJetSelection  && passMetSelection)   ctrlCategs.push_back("z");
-//	if(isOS && isZcand          && selJets.size()==1 && passMetSelection)   ctrlCategs.push_back("zeq1jets");
-//	if(isOS && isZcand          && passJetSelection  && !passMetSelection)  ctrlCategs.push_back("zlowmet");
-//	if(isOS && isZcand          && selJets.size()==1 && !passMetSelection)  ctrlCategs.push_back("zeq1jetslowmet");
+	if(isOS && passDilSelection && passJetSelection  && passMetSelection  && passBtagSelection) ctrlCategs.push_back("geq2btags");
+	if(isOS && passDilSelection && passJetSelection  && !passMetSelection /*&& passBtagSelection*/  )  ctrlCategs.push_back("lowmet");
+	if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection /*&& passBtagSelection*/  )  ctrlCategs.push_back("eq1jetslowmet");
+	if(isOS && isZcand          && passJetSelection  && passMetSelection  /*&& passBtagSelection*/  )   ctrlCategs.push_back("z");
+	if(isOS && isZcand          && selJets.size()==1 && passMetSelection  /*&& passBtagSelection*/  )   ctrlCategs.push_back("zeq1jets");
+	if(isOS && isZcand          && passJetSelection  && !passMetSelection /*&& passBtagSelection*/  )  ctrlCategs.push_back("zlowmet");
+	if(isOS && isZcand          && selJets.size()==1 && !passMetSelection /*&& passBtagSelection*/  )  ctrlCategs.push_back("zeq1jetslowmet");
 	for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	  {
 	    double ptmin(999999999.);
