@@ -21,5 +21,7 @@
   <bin name="runPLRanalysis"             file="runPLRanalysis.cc"></bin> 
   <bin name="runLandS"                   file="runLandS.cc"></bin> 
   <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin>
+  <bin name="jsonTools" file="jsonTools.cc"></bin>
+  <bin name="computeLimit" file="computeLimit.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

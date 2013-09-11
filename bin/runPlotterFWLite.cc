@@ -127,7 +127,6 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
       std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
       //loop on all Proc
       for(size_t ip=0; ip<Process.size(); ip++){
-          if(Process[ip]["isinvisible"].toBool())continue;
 	  bool isData (  Process[ip]["isdata"].toBool()  );
           bool isSign ( !isData &&  Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool());
   	  bool isMC   = !isData && !isSign; 
@@ -145,7 +144,6 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	         TFile* File = new TFile(FileName.c_str());
                  bool& fileExist = FileExist[FileName];
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
-                    printf("%s does not exist or is corrupted, it will be ignored\n", FileName.c_str());
                     fileExist=false;
                     continue; 
                  }else{
@@ -167,6 +165,15 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                }
 	    }
       }
+
+
+      printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
+      for(std::unordered_map<string, bool>::iterator it = FileExist.begin(); it!=FileExist.end(); it++){
+         if(!it->second)printf("   %s\n", it->first.c_str());
+      }
+
+
+
       //for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){printf("%s\n",it->name.c_str()); }
       return;
    }

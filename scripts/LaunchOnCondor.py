@@ -153,6 +153,7 @@ def CreateTheShellFile(argv):
 		shell_file.write(argv[1] + " %s\n" % function_argument)
 
         for i in range(len(Jobs_FinalCmds)):
+                #shell_file.write('echo ' + Jobs_FinalCmds[i]+'\n')
 		shell_file.write(Jobs_FinalCmds[i]+'\n')
         if Jobs_RunHere==0:
            outDir = Farm_Directories[3]
@@ -373,6 +374,7 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
         cfg_file.write('   )\n')
         cfg_file.write(')\n')
         cfg_file.write('\n')
+#        cfg_file.write('process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )\n')
         cfg_file.write('%s\n' % InputFilesString)
         cfg_file.write('process.OUT = cms.OutputModule("PoolOutputModule",\n')
         cfg_file.write('    outputCommands = cms.untracked.vstring(%s),\n' % KeepStatement)

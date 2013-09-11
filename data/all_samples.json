@@ -4,7 +4,6 @@
         "tag":"XH(110)#rightarrow #tau#tau",
         "isinvisible":true,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -24,7 +23,6 @@
         "tag":"XH(115)#rightarrow #tau#tau",
         "isinvisible":true,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -44,7 +42,6 @@
         "tag":"XH(120)#rightarrow #tau#tau",
         "isinvisible":true,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -64,7 +61,6 @@
         "tag":"XH(125)#rightarrow #tau#tau",
         "isinvisible":false,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -84,7 +80,6 @@
         "tag":"XH(130)#rightarrow #tau#tau",
         "isinvisible":true,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -104,7 +99,6 @@
         "tag":"XH(135)#rightarrow #tau#tau",
         "isinvisible":true,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -124,7 +118,6 @@
         "tag":"XH(140)#rightarrow #tau#tau",
         "isinvisible":true,
         "isdata":false,
-        "issignal":true,
         "spimpose":true,
         "color":"807",
         "lwidth":3,
@@ -139,6 +132,36 @@
                 "br":[0.0352]
                 }
            ]
+        },
+        {
+        "tag":"EWK ll+2j",
+        "isdata":false,
+        "issignal":true,
+        "color":"804",
+        "lcolor":1,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_lljj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM"],
+                "xsec":0.8938
+                }
+         ]
+        },
+        {
+        "tag":"EWK 2l2#nu2j",
+        "isdata":false,
+        "issignal":true,
+        "color":"804",
+        "lcolor":1,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_lljj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/llvvjj_8TeV/AODSIM"],
+                "xsec":0.002258
+                }
+         ]
         },
 	{
         "tag":"ZZ",
@@ -169,6 +192,20 @@
 		"br":[1.0],
 		"split":5
              }		
+          ]
+        },
+        {
+        "tag":"WW",
+        "isdata":false,
+        "color":"809",
+        "lcolor":1,
+        "data":[
+             {    
+                "dtag":"MC8TeV_WW",
+                "xsec":57.1097,
+                "br":[0.104976],
+                "split":5
+             }  
           ]
         },
 	{
@@ -230,7 +267,22 @@
                 "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM",
                 "xsec":3503.71,
 	        "split":15
-               }
+               },
+              {
+               "dtag":"MC8TeV_DYJetsToLL_10to50",
+               "xsec":860.5,
+               "split":15
+              },
+              {
+               "dtag":"MC8TeV_DYToMuMu_M20_powheg",
+               "xsec":1510.0,
+               "split":15
+              },
+              {
+               "dtag":"MC8TeV_DYToEE_M20_powheg",
+               "xsec":1510.0,
+               "split":15
+              }
            ]
         },
 	{
@@ -269,7 +321,83 @@
                }
            ]
         },
-
+        {
+        "tag":"W#rightarrow l#nu",
+        "isdata":false,
+        "color":"809",
+        "lcolor":1,
+        "data":[
+             {
+                "dtag":"MC8TeV_QCDPt30to80",
+                "xsec":74330000,
+                "br":[0.0621],
+                "split":2
+             },
+             {
+                "dtag":"MC8TeV_QCDPt80to170",
+                "xsec":1191000,
+                "br":[0.1539],
+                "split":2
+             },
+             {
+                "dtag":"MC8TeV_QCDPt170to250",
+                "xsec":30990,
+                "br":[0.148],
+                "split":2
+             },
+             {
+                "dtag":"MC8TeV_QCDPt250to350",
+                "xsec":4250,
+                "br":[0.131],
+                "split":2
+             },
+             {
+                "dtag":"MC8TeV_QCDPt350toInf",
+                "xsec":810,
+                "br":[0.11],
+                "split":2
+             },
+             {
+                "dtag":"MC8TeV_QCDMuPt20toInf",
+                "xsec":364000000,
+                "br":[0.00037],
+                "split":2
+             },
+             {  
+               "dtag":"MC8TeV_WJets",
+               "xsec":37509,
+               "split":15
+             },
+             {
+              "dtag":"MC8TeV_W1Jets",
+              "xsec":37509,
+              "br":[0.178],
+              "split":15
+             },
+             {
+              "dtag":"MC8TeV_W2Jets",
+              "xsec":37509,
+              "br":[0.058],
+              "split":15
+             },
+             {
+              "dtag":"MC8TeV_W3Jets",
+              "xsec":37509,
+              "br":[0.017],
+              "split":15
+             },
+             {
+              "dtag":"MC8TeV_W4Jets",
+              "xsec":37509,
+              "br":[0.007],
+              "split":15
+             },
+             {
+                "dtag":"MC8TeV_WG",
+                "xsec":461.6
+             }
+          ]
+        },
         {
 	   "tag":"data",
 	   "isdata":true,
@@ -279,12 +407,20 @@
            "data":[
                 { "dtag":"Data8TeV_DoubleElectron2012A", "split":5 },
                 { "dtag":"Data8TeV_DoubleMu2012A",       "split":5 },
-                { "dtag":"Data8TeV_DoubleElectron2012B", "split":15 },
-                { "dtag":"Data8TeV_DoubleMu2012B",       "split":15 },
-                { "dtag":"Data8TeV_DoubleElectron2012C", "split":15 },
-                { "dtag":"Data8TeV_DoubleMu2012C",       "split":15 },
-                { "dtag":"Data8TeV_DoubleElectron2012D", "split":15 },
-                { "dtag":"Data8TeV_DoubleMu2012D",       "split":15 }
+                { "dtag":"Data8TeV_SingleMu2012A",       "split":5 },
+                { "dtag":"Data8TeV_MuEG2012A",           "split":5 },
+                { "dtag":"Data8TeV_DoubleElectron2012B", "split":15},
+                { "dtag":"Data8TeV_DoubleMu2012B",       "split":15},
+                { "dtag":"Data8TeV_SingleMu2012B",       "split":15},
+                { "dtag":"Data8TeV_MuEG2012B",           "split":15},
+                { "dtag":"Data8TeV_DoubleElectron2012C", "split":15},
+                { "dtag":"Data8TeV_DoubleMu2012C",       "split":15},
+                { "dtag":"Data8TeV_SingleMu2012C",       "split":15},
+                { "dtag":"Data8TeV_MuEG2012C",           "split":15},
+                { "dtag":"Data8TeV_DoubleElectron2012D", "split":15},
+                { "dtag":"Data8TeV_DoubleMu2012D",       "split":15},
+                { "dtag":"Data8TeV_SingleMu2012D",       "split":15},
+                { "dtag":"Data8TeV_MuEG2012D",           "split":15}
 	     ]
           }
      ]	

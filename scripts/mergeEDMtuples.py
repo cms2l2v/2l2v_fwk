@@ -36,8 +36,10 @@ scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysis
 jsonFile = open(opt.samplesDB,'r')
 procList=json.load(jsonFile,encoding='utf-8').items()
 
-
-os.system("cmsMkdir " + opt.outDir) #make sure that the output dir exist
+if(opt.outDir.find('/store/')==0):
+   os.system("cmsMkdir " + opt.outDir) #make sure that the output dir exist
+elif(opt.outDir.find('srm://')==0):
+   os.system('source /nfs/soft/grid/ui/setup/grid-env.sh; voms-proxy-init -voms cms -valid 192:00; mkdir -p /nfs/home/fynu/quertenmont/x509_user_proxy; cp $X509_USER_PROXY /nfs/home/fynu/quertenmont/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems
 
 #run over sample
 for proc in procList :
@@ -91,6 +93,8 @@ for proc in procList :
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'rfcp '+mergedFileName+' ' + mergedFilePath]
                 elif(mergedFilePath.find('/store/')==0):
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'cmsStageOut '+mergedFileName+' ' + mergedFilePath]
+                elif(mergedFilePath.find('srm://')==0):
+                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'source /nfs/soft/grid/ui/setup/grid-env.sh', 'export X509_USER_PROXY=/nfs/home/fynu/quertenmont/x509_user_proxy/proxy','ls /$PWD/'+mergedFileName, 'for i in 5m 10m 15m 20m 25m 30m 45m 60m; do lcg-cp -v -D srmv2 -b file:/$PWD/'+mergedFileName+' '+mergedFilePath + ' && break || echo "Pause for $i" && sleep $i; done', 'mv ' + mergedFileName + ' /home/fynu/quertenmont/scratch/13_06_26_HTauTau/LoicFramework/CMSSW_5_3_11/src/UserCode/llvv_fwk/FARM_Merge/outputs/.', 'rm -rf ' + mergedFileName]
                 else:
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + os.getcwd()+"/FARM_Merge/outputs/"+mergedFileName, 'ls -lth '+opt.outDir]                
 #                   LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + mergedFilePath, 'ls -lth '+opt.outDir]                

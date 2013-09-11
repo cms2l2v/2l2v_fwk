@@ -105,10 +105,13 @@ class Object
                 void GetArray  (const std::string& in);
                 void Load      (const std::string& in);
                 void Print     (int Level=0);
+                void Dump      (char* pFile, int Level=0, bool whitespace=true);
+                void Dump      (FILE* pFile=stdout, int Level=0);
+                string DumpToString(int Level=0);
                 bool   isTag(std::string searchkey) {for(unsigned int i=0;i<key.size();i++){if(key[i] == searchkey)return true;}return false; }
-                Object getObject  (std::string searchkey) {for(unsigned int i=0;i<key.size();i++){if(key[i] == searchkey)return obj[i];}return Object(); }
-                Object operator[] (std::string searchkey) {return getObject(searchkey); }
-                Object operator[] (int i                ) {return obj[i]; }
+                Object& getObject  (std::string searchkey) {for(unsigned int i=0;i<key.size();i++){if(key[i] == searchkey)return obj[i];} key.push_back(searchkey); obj.push_back(Object()); return obj[obj.size()-1]; }
+                Object& operator[] (std::string searchkey) {return getObject(searchkey); }
+                Object& operator[] (int i                ) {return obj[i]; }
                 const char* c_str(){return val.c_str();}
                 string toString(){return val;}
                 double toDouble(){double tmp; sscanf(val.c_str(),"%lf",&tmp);return tmp;}
@@ -121,8 +124,13 @@ class Object
                 std::vector<Object>& daughters(){return obj;}
                 void add(std::string newkey, std::string newval){key.push_back(newkey); obj.push_back(Object(newval));}
                 void add(std::string newkey, double newval){char buffer[255];sprintf(buffer,"%f",newval); add(newkey,buffer);}
+                void addList (){key.push_back("obj"); obj.push_back(Object("LIST"));}
+                void addArray(string name){key.push_back(name); obj.push_back(Object("ARRAY"));}
+                void setValue(std::string val_){val=val_;}
 
-
+                bool isNumber(){for(std::string::iterator it=val.begin(); it!=val.end();it++){if((*it)<43 || (*it)>57)return false;} return true;}
+                bool isBool  (){if(val=="true" || val=="TRUE" || val=="True" || val=="false" || val=="FALSE" || val=="False")return true; return false;}
+                bool isString(){return !isNumber() && !isBool();}
 
         int EndOfObject;
         std::vector<std::string> key;
@@ -202,13 +210,103 @@ void Object::GetArray(const std::string& in){
    }while(nextval<=end);
 }
 
+
 void Object::Print(int Level){
       std::string indent = "";for(int i=0;i<Level;i++)indent += "   ";
 
       for(unsigned int i=0;i<key.size();i++){
-         printf("%sKEY = %20s   VAL = %s\n",indent.c_str(),key[i].c_str(), obj[i].val.c_str());
+         printf("%sKEY = %20s   VAL = %s Ndaughters=%i\n",indent.c_str(),key[i].c_str(), obj[i].val.c_str(), (int)obj[i].key.size());
          obj[i].Print(Level+1);
       }
 } 
 
+
+void Object::Dump(char* pFile, int Level, bool whitespace){
+      
+      if(Level==0){
+         sprintf(pFile, "%s{",pFile); if(whitespace)sprintf(pFile,"%s\n",pFile);        
+         Dump(pFile, Level+1);      
+         sprintf(pFile, "%s}",pFile);    
+         return;   
+      }
+
+      std::string indent = "";for(int i=0;i<Level && whitespace;i++)indent += "  ";
+      for(int i=0;i<(int)key.size();i++){
+         string keyI=key[i].c_str();
+         string valI=obj[i].val.c_str();
+         string valITxt=valI;
+         if(obj[i].isString())valITxt = string("\"") + valITxt + "\"";
+
+         if(valI=="LIST"){
+            sprintf(pFile,"%s%s{", pFile,indent.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);
+            obj[i].Dump(pFile, Level+1);
+            sprintf(pFile,"%s%s}", pFile,indent.c_str());
+         }else if(valI=="ARRAY"){
+            sprintf(pFile,"%s%s\"%s\":[", pFile,indent.c_str(), keyI.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);
+            obj[i].Dump(pFile, Level+1);
+            sprintf(pFile,"%s%s]", pFile,indent.c_str());
+         }else if(keyI=="obj"){
+            sprintf(pFile, "%s%s%s",pFile,indent.c_str(), valITxt.c_str());
+         }else{
+            sprintf(pFile, "%s%s\"%s\":%s",pFile,indent.c_str(),keyI.c_str(), valITxt.c_str());
+         }
+
+         if(i<((int)key.size())-1){
+            sprintf(pFile, "%s,",pFile);
+         }
+         if(whitespace)sprintf(pFile,"%s\n",pFile);
+      }
+}
+
+void Object::Dump(FILE* pFile, int Level){
+   char out[100000] = "";
+   Dump(out, Level, true);
+   fprintf(pFile, "%s", out);
+}
+
+string Object::DumpToString(int Level){
+   char out[100000] = "";
+   Dump(out, Level, false);
+   return string(out);
+}
+
+
+
+/*
+void Object::Dump(FILE* pFile, int Level){
+      if(Level==0){
+         fprintf(pFile, "{\n");        
+         Dump(pFile, Level+1);      
+         fprintf(pFile, "}");    
+         return;   
+      }
+
+      std::string indent = "";for(int i=0;i<Level;i++)indent += "  ";
+      for(int i=0;i<(int)key.size();i++){
+         string keyI=key[i].c_str();
+         string valI=obj[i].val.c_str();
+         string valITxt=valI;
+         if(obj[i].isString())valITxt = string("\"") + valITxt + "\"";
+
+         if(valI=="LIST"){
+            fprintf(pFile,"%s{\n", indent.c_str());
+            obj[i].Dump(pFile, Level+1);
+            fprintf(pFile,"%s}", indent.c_str());
+         }else if(valI=="ARRAY"){
+            fprintf(pFile,"%s\"%s\":[\n", indent.c_str(), keyI.c_str());
+            obj[i].Dump(pFile, Level+1);
+            fprintf(pFile,"%s]", indent.c_str());
+         }else if(keyI=="obj"){
+            fprintf(pFile, "%s%s",indent.c_str(), valITxt.c_str());
+         }else{
+            fprintf(pFile, "%s\"%s\":%s",indent.c_str(),keyI.c_str(), valITxt.c_str());
+         }
+
+         if(i<((int)key.size())-1){
+            fprintf(pFile, ",");
+         }
+         fprintf(pFile, "\n");         
+      }
+}
+*/
 }

@@ -1,0 +1,1 @@
+runPlotterFWLite --iEcm 8 --iLumi 19577 --inDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/results/ --outDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/plots/ --outFile $CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json
