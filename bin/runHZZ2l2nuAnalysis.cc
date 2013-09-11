@@ -70,11 +70,13 @@ int main(int argc, char* argv[])
   TString outdir=runProcess.getParameter<std::string>("outdir");
   TString outUrl( outdir );
   gSystem->Exec("mkdir -p " + outUrl);
-  bool filterOnlyEE(false), filterOnlyMUMU(false);
+  bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
   if(!isMC)
     {
       if(url.Contains("DoubleEle")) filterOnlyEE=true;
       if(url.Contains("DoubleMu"))  filterOnlyMUMU=true;
+      if(url.Contains("MuEG"))      filterOnlyEMU=true;
+
     }
   bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
@@ -116,7 +118,7 @@ int main(int argc, char* argv[])
   if(isMC_ZZ || isMC_WZ)
     {
       TString weightsFile=weightsDir+"/zzQ2unc.root";
-      if(isMC_WZ) weightsFile.ReplaceAll("zzQ2","wzQ2");
+      //if(isMC_WZ) weightsFile.ReplaceAll("zzQ2","wzQ2");
       gSystem->ExpandPathName(weightsFile);
       TFile *zzUncF=TFile::Open(weightsFile);
       vvShapeUnc.push_back( new TGraph( (TH1 *)zzUncF->Get("zzpt_up") ) );
@@ -279,259 +281,101 @@ int main(int argc, char* argv[])
   //##############################################
   SmartSelectionMonitor mon;
 
-  mon.addHistogram(  new TProfile("metvsrun"    ,      "Run number",     600, 190000,196000) ) ;
-  mon.addHistogram(  new TProfile("metvsavginstlumi",  "Avg. inst lumi", 60,  400,1000));
-  mon.addHistogram(  new TProfile("nvtxvsrun",         "Run number",     600, 190000,196000) ) ;
-  mon.addHistogram(  new TProfile("nvtxvsavginstlumi", "Avg. inst lumi", 60,  400,1000));
-
-  TH1F* Hcutflow  = (TH1F*) mon.addHistogram(  new TH1F ("cutflow"    , "cutflow"    ,6,0,6) ) ;
-  TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 10,0,10) );
-  h->GetXaxis()->SetBinLabel(1,"Trigger");
-  h->GetXaxis()->SetBinLabel(2,"#geq 2 leptons");
-  h->GetXaxis()->SetBinLabel(3,"#geq 2 iso leptons");
-  h->GetXaxis()->SetBinLabel(4,"|M-M_{Z}|<15");
-  h->GetXaxis()->SetBinLabel(5,"p_{T}^{ll}>55");
-  h->GetXaxis()->SetBinLabel(6,"3^{rd}-lepton veto");
-  h->GetXaxis()->SetBinLabel(7,"b-veto"); 
-  h->GetXaxis()->SetBinLabel(8,"#Delta #phi(jet,E_{T}^{miss})>0.5");
-  h->GetXaxis()->SetBinLabel(9,"E_{T}^{miss}>70");
-
-  mon.addHistogram( new TH1F ("syncheventflow", ";;Events", 9,0,9) );
-
-  mon.addHistogram( new TH1F( "leadpt", ";p_{T}^{l};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "leadeta", ";#eta^{l};Events", 50,-2.6,2.6) );
-  mon.addHistogram( new TH1F( "trailerpt", ";p_{T}^{l};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "trailereta", ";#eta^{l};Events", 50,-2.6,2.6) );
-  mon.addHistogram( new TH1F( "zpt", ";p_{T}^{ll};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "zptNM1", ";p_{T}^{ll};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "zeta", ";#eta^{ll};Events", 50,-10,10) );
-  mon.addHistogram( new TH1F( "zmass", ";M^{ll};Events", 100,40,250) );
-  mon.addHistogram( new TH1F( "zmassNM1", ";M^{ll};Events", 100,40,250) );
-
-  //for g+jets re-weighting
-//   Float_t qtaxis[100];
-//   for(size_t i=0; i<40; i++)  qtaxis[i]=2.5*i;       //0-97.5
-//   for(size_t i=0; i<20; i++)  qtaxis[40+i]=100+5*i;  //100-195
-//   for(size_t i=0; i<15; i++)  qtaxis[60+i]=200+10*i; //200-340
-//   for(size_t i=0; i<25; i++)  qtaxis[75+i]=350+25*i; //350-976
-//   mon.addHistogram( new TH1D( "qt"              , ";p_{T}^{#gamma} [GeV/c];Events / (2.5 GeV/c)",99,qtaxis));
-  mon.addHistogram( new TH1F( "qmass", ";M^{ll};Events", 15,76,106) );
-  mon.addHistogram( new TH1F( "qt",        ";p_{T}^{#gamma} [GeV/c];Events / (2.5 GeV/c)",1500,0,1500));
-  mon.addHistogram( new TH1F( "qtraw",        ";p_{T}^{#gamma} [GeV/c];Events / (2.5 GeV/c)",1500,0,1500));
-
-  //higgs mass control
-  ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Gen Higgs Mass;Events", 500,0,1500) ))->Fill(-1.0,0.0001);//add an underflow entry to make sure the histo is kept
-  ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_cpspint", ";Gen Higgs Mass;Events", 500,0,1500) ))->Fill(-1.0,0.0001);//add an underflow entry to make sure the histo is kept
+  //generator level control : add an underflow entry to make sure the histo is kept
+  ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
+  ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_cpspint", ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
   for(unsigned int nri=0;nri<NRparams.size();nri++){ 
-    ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_4nr"+NRsuffix[nri] , ";Gen Higgs Mass;Events", 500,0,1500) ))->Fill(-1.0,0.0001);//add an underflow entry to make sure the histo is kept
+    ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_4nr"+NRsuffix[nri] , ";Higgs Mass;Events [GeV]", 500,0,1500) ))->Fill(-1.0,0.0001);
   }
-  mon.addHistogram( new TH1F( "higgsMass_res",     ";M_{T}-M_{T}^{gen} [GeV];Events", 200,-500,500));
-  
-  mon.addHistogram( new TH1F( "thirdleptonpt", ";p_{T}^{l};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "thirdleptoneta", ";#eta^{l};Events", 50,-2.6,2.6) );
-  mon.addHistogram( new TH1F( "nleptons", ";Leptons;Events", 3,2,4) );
-  mon.addHistogram( new TH1F( "nleptonsNM1", ";Leptons;Events", 3,2,4) );
 
-  //LEPTON control
+  //event selection
+  TH1F* Hcutflow  = (TH1F*) mon.addHistogram(  new TH1F ("cutflow"    , "cutflow"    ,6,0,6) ) ;
+  TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 8,0,8) );
+  h->GetXaxis()->SetBinLabel(1,"#geq 2 iso leptons");
+  h->GetXaxis()->SetBinLabel(2,"|M-91|<15");
+  h->GetXaxis()->SetBinLabel(3,"p_{T}>55");
+  h->GetXaxis()->SetBinLabel(4,"3^{rd}-lepton veto");
+  h->GetXaxis()->SetBinLabel(5,"b-veto"); 
+  h->GetXaxis()->SetBinLabel(6,"#Delta #phi(jet,E_{T}^{miss})>0.5");
+  h->GetXaxis()->SetBinLabel(7,"E_{T}^{miss}>70");
 
-  //RunDependentVariable
-  mon.addHistogram( new TH1F( "RunDep_Yields", ";Run;Events",4000,170000,210000) );
-  mon.addHistogram( new TProfile( "RunDep_Met", ";Run;<Met>",4000,170000,210000) );
-
-  for(size_t ilep=0; ilep<2; ilep++)
-    {
-      TString lepStr(ilep==0? "mu" :"e");
-      mon.addHistogram(new TH1F(lepStr+"reliso",           ";RelIso;Leptons",50,0,2) );
-    }
-  
+  //pu control
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
-  mon.addHistogram( new TH1F( "rho25",";#rho(#eta<2.5);Events",50,0,25) ); 
 
-  TString jetTypes[]={"pf"};
-  const size_t nJetTypes=sizeof(jetTypes)/sizeof(TString);
-  TString jetRegs[]={"TK","HEin","HEout","HF"};
-  const size_t nJetRegs=sizeof(jetRegs)/sizeof(TString);
-  TString btagAlgos[]={"TCHE","CSV","JP"};
-  Double_t btagAlgoMin[]={-5,0,0};
-  Double_t btagAlgoMax[]={15,1.,3};
-  for(size_t i=0; i<nJetTypes; i++)
+  //lepton control
+  mon.addHistogram( new TH1F( "leadpt",     ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram( new TH1F( "leadeta",    ";Pseudo-rapidity;Events", 50,0,2.6) );
+  mon.addHistogram( new TH1F( "trailerpt",  ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram( new TH1F( "trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
+  mon.addHistogram( new TH1F( "zy",         ";Rapidity;Events", 50,0,10) );
+  mon.addHistogram( new TH1F( "zmass",      ";Mass [GeV];Events", 100,40,250) );
+  mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
+  mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
+
+  //extra leptons in the event
+  mon.addHistogram( new TH1F( "nextraleptons", ";Extra leptons;Events",4,0,4) );
+  mon.addHistogram( new TH1F( "thirdleptonpt", ";Transverse momentum;Events", 50,0,500) );
+  mon.addHistogram( new TH1F( "thirdleptoneta", ";Pseudo-rapidity;Events", 50,0,2.6) );
+  mon.addHistogram( new TH1F( "thirdleptonmt", ";Transverse mass(3^{rd} lepton,E_{T}^{miss}) [GeV];Events", 50,0,500) );
+
+
+  mon.addHistogram( new TH1F("jp",       ";Jet probability;Jets",50,0.,3.) );
+  mon.addHistogram( new TH1F("jpb",      ";Jet probability;Jets",50,0.,3.) );
+  mon.addHistogram( new TH1F("jpc",      ";Jet probability;Jets",50,0.,3.) );
+  mon.addHistogram( new TH1F("jpothers", ";Jet probability;Jets",50,0.,3.) );
+  TH1 *hbtags=mon.addHistogram( new TH1F("nbtags",   ";b-tag multiplicity;Events",5,0,5) );
+  mon.addHistogram( new TH1F("leadjetpt",    ";Transverse momentum [GeV];Events",50,0,250) );
+  mon.addHistogram( new TH1F("trailerjetpt", ";Transverse momentum [GeV];Events",50,0,250) );
+  mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
+  mon.addHistogram( new TH1F("cenjeteta",       ";Pseudo-rapidity;Events",25,0,5) );
+  mon.addHistogram( new TH1F("vbfmjj"       , ";Dijet invariant mass [GeV];Events",40,0,2000) );
+  mon.addHistogram( new TH1F("vbfdphijj"    , ";Azimuthal angle difference;Events",20,0,3.5) );
+  mon.addHistogram( new TH1F("vbfdetajj"    , ";Pseudo-rapidity span;Events",20,0,10) );
+  TH1 *hjets=mon.addHistogram( new TH1F("njets",  ";Jet multiplicity;Events",5,0,5) );
+  for(int ibin=1; ibin<=hjets->GetXaxis()->GetNbins(); ibin++)
     {
-      for(size_t ireg=0; ireg<nJetRegs; ireg++)
-	{
-	  mon.addHistogram( new TH1F(jetRegs[ireg]+jetTypes[i]+"jetbeta"    , ";#beta;Events",50,0,1) );
-	  mon.addHistogram( new TH1F(jetRegs[ireg]+jetTypes[i]+"jetmva"     , ";MVA;Events",50,-1,1) );
-	}
-      for(size_t ibtag=0; ibtag<3; ibtag++)
-	{
-	  mon.addHistogram( new TH1F(btagAlgos[ibtag]+"b"+jetTypes[i]+"jetstags",     ";b tags;Events",50,btagAlgoMin[ibtag],btagAlgoMax[ibtag]) );
-	  mon.addHistogram( new TH1F(btagAlgos[ibtag]+"other"+jetTypes[i]+"jetstags", ";udscg tags;Events",50,btagAlgoMin[ibtag],btagAlgoMax[ibtag]) );
-	  mon.addHistogram( new TH1F(btagAlgos[ibtag]+jetTypes[i]+"jetstags",         ";"+btagAlgos[ibtag]+";Events",50,btagAlgoMin[ibtag],btagAlgoMax[ibtag]) );
-	  mon.addHistogram( new TH1F("n"+jetTypes[i]+"jetsbtags"+btagAlgos[ibtag],    ";b-tag multiplicity ("+btagAlgos[ibtag] +");Events",5,0,5) );
-	  mon.addHistogram( new TH1F("n"+jetTypes[i]+"jetsbtags"+btagAlgos[ibtag]+"NM1",    ";b-tag multiplicity ("+btagAlgos[ibtag] +");Events",5,0,5) );
-	}
-     
-      mon.addHistogram( new TH1F(jetTypes[i]+"jetpt"       , ";p_{T} [GeV/c];Events",50,0,250) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"jeteta"       , ";|#eta|;Events",25,0,5) );
-      mon.addHistogram( new TH2F("n"+jetTypes[i]+"jetsvspu",          ";Pileup interactions;Jet multiplicity (p_{T}>30 GeV/c);Events",50,0,50,5,0,5) );
-      mon.addHistogram( new TH2F("n"+jetTypes[i]+"jetstightvspu",     ";Pileup interactions;Jet multiplicity (p_{T}>30 GeV/c);Events",50,0,50,5,0,5) );
-      TH1 *h=mon.addHistogram( new TH1F("n"+jetTypes[i]+"jetspresel",  ";Jet multiplicity (p_{T}>30 GeV/c);Events",5,0,5) );
-      TH1 *h2=mon.addHistogram( new TH1F("n"+jetTypes[i]+"jets",  ";Jet multiplicity (p_{T}>30 GeV/c);Events",5,0,5) );
-      for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
-	{
-	  TString label("");
-	  if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
-	  else                                label +="=";
-	  label += (ibin-1);
-	  h->GetXaxis()->SetBinLabel(ibin,label);
-	  h2->GetXaxis()->SetBinLabel(ibin,label);
-	} 
-      mon.addHistogram( new TH2F("n"+jetTypes[i]+"jetspuidloosevspu", ";Pileup interactions;Jet multiplicity (p_{T}>30 GeV/c);Events",50,0,50,5,0,5) );
-      mon.addHistogram( new TH2F("n"+jetTypes[i]+"jetspuidmediumvspu",";Pileup interactions;Jet multiplicity (p_{T}>30 GeV/c);Events",50,0,50,5,0,5) );  
+      TString label("");
+      if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
+      else                                label +="=";
+      label += (ibin-1);
+      hjets->GetXaxis()->SetBinLabel(ibin,label);
+      hbtags->GetXaxis()->SetBinLabel(ibin,label);
+    } 
 
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcandjeteta"       , ";#eta;Jets",50,0,5) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcandjetdeta"       , ";|#Delta #eta|;Jets",50,0,10) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcandjetpt"       , ";p_{T} [GeV/c];Jets",50,0,250) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfhardpt"       , ";Hard p_{T} [GeV/c];Events",25,0,250) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfhardptfinal"       , ";Hard p_{T} [GeV/c];Events",25,0,250) );
-      h=mon.addHistogram( new TH1F(jetTypes[i]+"vbfcjv"       , ";Central jet count;Events",3,0,3) );
-      h->GetXaxis()->SetBinLabel(1,"=0 jets");
-      h->GetXaxis()->SetBinLabel(2,"=1 jets");
-      h->GetXaxis()->SetBinLabel(3,"#geq 2 jets");
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfhtcjv"       , ";Central jet H_{T} [GeV/c];Events",50,0,250) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfpremjj"       , ";M(jet_{1},jet_{2}) [GeV/c^{2}];Events",40,0,2000) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfmjj"       , ";M(jet_{1},jet_{2}) [GeV/c^{2}];Events",40,0,2000) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcandjetdphi"       , ";#Delta#phi;Events",20,0,3.5) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_total"     , ";#generated vertices;Events",35,0,35) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_tag"       , ";#generated vertices;Events",35,0,35) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_tagzpt"    , ";#generated vertices;Events",35,0,35) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_tagzptpuid", ";#generated vertices;Events",35,0,35) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_tagzpttk0" , ";#generated vertices;Events",35,0,35) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_tagzpttk1" , ";#generated vertices;Events",35,0,35) );
-      mon.addHistogram( new TH1F(jetTypes[i]+"vbfcount_tagzpttk2" , ";#generated vertices;Events",35,0,35) );
+  mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+  mon.addHistogram( new TH1D( "balance",      ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
+  mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events", 50,0,500) );
+  mon.addHistogram( new TH1F( "axialmet",     ";Axial missing transvere energy [GeV];Events", 50,-100,150) );
+  mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass;Events", 100,0,1000) );
+  mon.addHistogram( new TH1F( "mtresponse",   ";Transverse mass response;Events", 100,0,2) );
 
+  //
+  // STATISTICAL ANALYSIS
+  //
+  std::vector<double> optim_Cuts1_met; 
+  for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
+  TProfile* Hoptim_cuts1_met     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut1_met"    , ";cut index;met"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) ) ;
+  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts1_met    ->Fill(index, optim_Cuts1_met[index]);  }
+  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
+    {
+      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
+
+      for(unsigned int nri=0;nri<NRparams.size();nri++){ 
+	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
+	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
+	TH2F *h=(TH2F *) mon.addHistogram( new TH2F ("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],";cut index;Selection region;Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),6,0,6) );
+	h->GetYaxis()->SetBinLabel(1,"M_{in}^{ll}/=0 b-tags");
+	h->GetYaxis()->SetBinLabel(2,"M_{out}^{ll}/=0 b-tags");
+	h->GetYaxis()->SetBinLabel(3,"M_{out+}^{ll}/=0 b-tags");
+	h->GetYaxis()->SetBinLabel(4,"M_{in}^{ll}/#geq 1 b-tag");
+	h->GetYaxis()->SetBinLabel(5,"M_{out}^{ll}/#geq 1 b-tag");
+	h->GetYaxis()->SetBinLabel(6,"M_{out+}^{ll}/#geq 1 b-tag");
+     }
     }
-
-  mon.addHistogram( new TH1F( "mindphilmet", ";min(#Delta#phi(lepton,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "maxdphilmet", ";max(#Delta#phi(lepton,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmet_0", ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmet_25", ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmet_50", ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmet", ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmetNM1", ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1D( "balance", ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
-  mon.addHistogram( new TH1D( "balance", ";|E_{T}^{miss}-q_{T}|/q_{T};Events", 25,0,1) );
-  mon.addHistogram( new TH2D( "met_mindphilmet"  , ";E_{T}^{miss};min(#Delta#phi(lepton,E_{T}^{miss});Events", 50,0,250,40,0,4) );
-  mon.addHistogram( new TH2D( "metoverlpt_mindphilmet"  , ";E_{T}^{miss}/p_{T}^{lepton};min(#Delta#phi(lepton,E_{T}^{miss});Events", 50,0,2,40,0,4) );
-  mon.addHistogram( new TH1F( "met_metSB",        ";E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_met",          ";E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_metaxial",     ";Axial E_{T}^{miss};Events", 50,-100,150) );
-  mon.addHistogram( new TH1F( "met_metNM1",          ";Reduced E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_redMetNM1",       ";Reduced E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH2F( "metvsmt",          ";E_{T}^{miss};M_{T};Events", 100,0,500,200,0,1000) );
-  mon.addHistogram( new TH1F( "met_metbeforedphilmet",          ";E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_met_blind",    ";E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_mvamet",       ";MVA E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_mvamet_blind",       ";MVA E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_typeImet",     ";Type I E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_typeImet_blind",     ";Type I E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_fulltypeImet", ";Type I E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_fulltypeImetbeforedphilmet", ";Type I E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_fulltypeImet_blind", ";Type I E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_redMet",       ";Reduced E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_redMet_blind",       ";Reduced E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "met_redMetL",      ";Reduced E_{T}^{miss};Events", 50,-250,250) );
-  mon.addHistogram( new TH1F( "met_redMetT",      ";Reduced E_{T}^{miss}.;Events", 50,-250,250) );
-  mon.addHistogram( new TH1F( "met_met3leptons",  ";E_{T}^{miss};Events", 50,0,500) );
-  mon.addHistogram( new TH2F( "met_met_vspu",       ";Pileup events; E_{T}^{miss};Events", 50,0,50,50,0,250) );
-  mon.addHistogram( new TH2F( "met_mvamet_vspu",    ";Pileup events; MVA E_{T}^{miss};Events", 50,0,50,50,0,250) );
-  mon.addHistogram( new TH2F( "met_redMet_vspu",    ";Pileup events; Reduced E_{T}^{miss};Events", 50,0,50,50,0,250) );
-  mon.addHistogram( new TH2F( "met_typeImet_vspu",  ";Pileup events; Type I E_{T}^{miss};Events", 50,0,50,50,0,250) );
-  mon.addHistogram( new TH1F( "mt"  , ";M_{T};Events", 100,0,1000) );
-  mon.addHistogram( new TH1F( "mtNM1"  , ";M_{T};Events", 100,0,1000) );
-  mon.addHistogram( new TH1F( "mt_blind"  , ";M_{T};Events", 100,0,1000) );
-  mon.addHistogram( new TH1F( "mt_unroll"  , ";M_{T};Events",       50,150,2650) );
-  mon.addHistogram( new TH1F( "mt_unroll_NM1"  , ";M_{T};Events",   50,150,2650) );
-  mon.addHistogram( new TH1F( "mt_unroll_blind"  , ";M_{T};Events", 50,150,2650) );
-
-   std::vector<double> optim_Cuts1_met; 
-   //for(double met=50;met<140;met+=2.5) {  optim_Cuts1_met    .push_back(met);  }
-   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
-
-   //make it as a TProfile so hadd does not change the value
-   TProfile* Hoptim_cuts1_met     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut1_met"    , ";cut index;met"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) ) ;
-   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts1_met    ->Fill(index, optim_Cuts1_met[index]);  }
-
-   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
-   for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
-   {
-     mon.addHistogram( new TH1F( "mtvar"+varNames[ivar]  , ";M_{T};Events", 100,0,1000) );
      
-     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-
-     for(unsigned int nri=0;nri<NRparams.size();nri++){ 
-       mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;M_{T} [GeV/c^{2}];#events (/10GeV)",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
-       mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;MET [GeV/c^{2}];#events (/10GeV)",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
-       TH2F *h=(TH2F *) mon.addHistogram( new TH2F ("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],";cut index;Selection region;Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),6,0,6) );
-       h->GetYaxis()->SetBinLabel(1,"M_{in}^{ll}/=0 b-tags");
-       h->GetYaxis()->SetBinLabel(2,"M_{out}^{ll}/=0 b-tags");
-       h->GetYaxis()->SetBinLabel(3,"M_{out+}^{ll}/=0 b-tags");
-       h->GetYaxis()->SetBinLabel(4,"M_{in}^{ll}/#geq 1 b-tag");
-       h->GetYaxis()->SetBinLabel(5,"M_{out}^{ll}/#geq 1 b-tag");
-       h->GetYaxis()->SetBinLabel(6,"M_{out+}^{ll}/#geq 1 b-tag");
-
-//       mon.addHistogram( new TH2F (TString("mt_shapes_unroll")+NRsuffix[nri]+varNames[ivar],";cut index;M_{T} [GeV/c^{2}];#events (/20GeV)",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
-//       mon.addHistogram( (TH2F *)h->Clone("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar]) );
-     }
-     
-     //      mon.addHistogram( new TH2F (TString("mt_redMet_shapes")+varNames[ivar],";cut index;M_{T} [GeV/c^{2}];",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,950) );
-     //      TH2F* h=(TH2F *) mon.addHistogram( new TH2F ("mt_redMet_shapes_NRBctrl"+varNames[ivar],";cut index;Selection region;Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),6,0,6) );
-     //      h->GetYaxis()->SetBinLabel(1,"M_{in}^{ll}/=0 b-tags");
-     //      h->GetYaxis()->SetBinLabel(2,"M_{out}^{ll}/=0 b-tags");
-     //      h->GetYaxis()->SetBinLabel(3,"M_{out+}^{ll}/=0 b-tags");
-     //      h->GetYaxis()->SetBinLabel(4,"M_{in}^{ll}/#geq 1 b-tag");
-     //      h->GetYaxis()->SetBinLabel(5,"M_{out}^{ll}/#geq 1 b-tag");
-     //      h->GetYaxis()->SetBinLabel(6,"M_{out+}^{ll}/#geq 1 b-tag");
-   }
-   
-   
-   std::vector<double> optim_Cuts2_met;
-   std::vector<double> optim_Cuts2_vbfJpt;
-   std::vector<double> optim_Cuts2_vbfdeta;
-   for(double met=50;met<=80;met+=10){
-     for(double j1=20;j1<=40;j1+=5){
-       for(double deta=2.5;deta<=5.0;deta+=0.5){
-	 optim_Cuts2_met    .push_back(met);
-	 optim_Cuts2_vbfJpt .push_back(j1);
-	 optim_Cuts2_vbfdeta.push_back(deta);
-       }
-     }
-   }
-   
-   //make it as a TProfile so hadd does not change the value
-   TProfile* Hoptim_cuts2_met     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut2_met"    , ";cut index;met"    ,optim_Cuts2_met.size(),0,optim_Cuts2_met.size()) ) ;
-   TProfile* Hoptim_cuts2_jet     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut2_jet"    , ";cut index;jet"    ,optim_Cuts2_met.size(),0,optim_Cuts2_met.size()) ) ;
-   TProfile* Hoptim_cuts2_deta    =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut2_deta"   , ";cut index;deta"   ,optim_Cuts2_met.size(),0,optim_Cuts2_met.size()) ) ;
-   for(unsigned int index=0;index<optim_Cuts2_met.size();index++){
-      Hoptim_cuts2_met    ->Fill(index, optim_Cuts2_met[index]);  
-      Hoptim_cuts2_jet    ->Fill(index, optim_Cuts2_vbfJpt[index]);  
-      Hoptim_cuts2_deta   ->Fill(index, optim_Cuts2_vbfdeta[index]);
-   }
-
-   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-     mon.addHistogram( new TH2F (TString("VBFmt_shapes")+varNames[ivar],";cut index;M_{T} [GeV/c^{2}];#events (/10GeV)",optim_Cuts2_met.size(),0,optim_Cuts2_met.size(), 160,150,1750) );
-     TH2F *h=(TH2F *) mon.addHistogram( new TH2F ("VBFmt_shapes_NRBctrl"+varNames[ivar],";cut index;Selection region;Events",optim_Cuts2_met.size(),0,optim_Cuts2_met.size(),6,0,6) );
-     h->GetYaxis()->SetBinLabel(1,"M_{in}^{ll}/=0 b-tags");
-     h->GetYaxis()->SetBinLabel(2,"M_{out}^{ll}/=0 b-tags");
-     h->GetYaxis()->SetBinLabel(3,"M_{out+}^{ll}/=0 b-tags");
-     h->GetYaxis()->SetBinLabel(4,"M_{in}^{ll}/#geq 1 b-tag");
-     h->GetYaxis()->SetBinLabel(5,"M_{out}^{ll}/#geq 1 b-tag");
-     h->GetYaxis()->SetBinLabel(6,"M_{out+}^{ll}/#geq 1 b-tag");
-   }
-
-
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
@@ -626,10 +470,12 @@ int main(int argc, char* argv[])
       bool eeTrigger          = ev.t_bits[0];
       bool muTrigger          = ev.t_bits[6];
       bool mumuTrigger        = ev.t_bits[2] || ev.t_bits[3] || muTrigger;
-      if(filterOnlyEE)   { mumuTrigger=false; }
-      if(filterOnlyMUMU) { eeTrigger=false;   }
-      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
-      
+      bool emuTrigger         = ev.t_bits[4] || ev.t_bits[5];
+      if(filterOnlyEE)   { mumuTrigger=false; emuTrigger=false;  }
+      if(filterOnlyMUMU) { eeTrigger=false;   emuTrigger=false;  }
+      if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
+      if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
+
       bool hasPhotonTrigger(false);
       float triggerPrescale(1.0),triggerThreshold(0);
       bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
@@ -775,19 +621,25 @@ int main(int argc, char* argv[])
       //
       // LEPTON ANALYSIS
       //
-      data::PhysicsObjectCollection_t selLeptons;
+      data::PhysicsObjectCollection_t selLeptons, extraLeptons;
       for(size_t ilep=0; ilep<leptons.size(); ilep++)
 	{
 	  bool passKin(true),passId(true),passIso(true);
+	  bool passLooseLepton(true), passSoftMuon(true);
+
 	  int lid=leptons[ilep].get("id");
 
 	  //apply muon corrections
-	  if(lid==13 && muCor){
-	    TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-	    muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
-	    if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
-	    leptons[ilep].SetPxPyPzE(p4.Px(),p4.Py(),p4.Pz(),p4.E());
-	  }
+	  if(abs(lid)==13)
+	    {
+	      passSoftMuon=false;
+	      if(muCor){
+		TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+		muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
+		if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
+		leptons[ilep].SetPxPyPzE(p4.Px(),p4.Py(),p4.Pz(),p4.E());
+	      }
+	    }
 
 	  //no need for charge info any longer
 	  lid=abs(lid);
@@ -801,20 +653,34 @@ int main(int argc, char* argv[])
 	  
 	  //kinematics
 	  float leta = lid==11 ? leptons[ilep].getVal("sceta") : leptons[ilep].eta();
-	  if(leptons[ilep].pt()<20)                   passKin=false;
 	  if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
 	  if(lid==11 && (leta>1.4442 && leta<1.5660)) passKin=false;
+	  passLooseLepton &= passKin;
+	  passSoftMuon    &= passKin;
+	  if(lid==13){
+	    if(leptons[ilep].pt()<10) passLooseLepton=false;
+	    if(leptons[ilep].pt()<3)  passSoftMuon=false;
+	  }
+	  else if(lid==11){
+	    if(leptons[ilep].pt()<10) passLooseLepton=false;
+	  }
+	  if(leptons[ilep].pt()<20) passKin=false;
+
 
 	  //id
 	  Int_t idbits = leptons[ilep].get("idbits");
 	  if(lid==11){
-	    if(leptons[ilep].getFlag("isconv"))              passId=false;
+	    if(leptons[ilep].getFlag("isconv"))            { passLooseLepton=false; passId=false; }
 	    bool isLoose = ((idbits >> 4) & 0x1);
-	    if(!isLoose)                                   passId=false;
+	    if(!isLoose)                                   passId=false; 
+	    bool isVeto = ((idbits >> 4) & 0x1);
+	    if(!isVeto)                                    passLooseLepton=false;
  	  }
 	  else{
 	    bool isLoose    = ((idbits >> 8) & 0x1);
-	    if(!isLoose)                                   passId=false;
+	    if(!isLoose)                                   { passLooseLepton=false; passId=false; }
+	    bool isSoft  = ((idbits >> 9) & 0x1);
+	    if(!isSoft)                                    passSoftMuon=false;
 	  }
 
 	  //isolation
@@ -827,19 +693,23 @@ int main(int argc, char* argv[])
 	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
 	    ;
 	  if(lid==11){
-	    if(relIso>0.15)                                passIso=false;
+	    if(relIso>0.15) { 
+	      passIso=false;
+	      passLooseLepton=false;
+	    }
 	  }
 	  else{
-	    if(relIso>0.20)                                passIso=false;
+	    if(relIso>0.20){
+	      passIso=false;
+	      passLooseLepton=false;
+	    }
 	  }
 	  
-	  if(!passId || !passIso || !passKin) continue;
-	  selLeptons.push_back(leptons[ilep]);
+	  if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
+	  else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
 	}
-
-      std::sort(selLeptons.begin(), selLeptons.end(), data::PhysicsObject_t::sortByPt);
-
-
+      std::sort(selLeptons.begin(),   selLeptons.end(), data::PhysicsObject_t::sortByPt);
+      std::sort(extraLeptons.begin(), extraLeptons.end(), data::PhysicsObject_t::sortByPt);
       
       //
       //JET/MET ANALYSIS
@@ -850,7 +720,8 @@ int main(int argc, char* argv[])
 
       //select the jets
       data::PhysicsObjectCollection_t selJets;
-      int njets(0);
+      int njets(0),nbtags(0);
+      float mindphijmet(9999.);
       for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
 	  if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
@@ -885,19 +756,160 @@ int main(int argc, char* argv[])
 	  
 	  if(!passPFloose || !passLooseSimplePuId) continue;
 	  selJets.push_back(jets[ijet]);
-	  if(jets[ijet].pt()>30) njets++;
+	  if(jets[ijet].pt()>30) {
+	    njets++;
+	    float dphijmet=fabs(deltaPhi(jets[ijet].phi(),met[0].phi()));
+	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
+	    if(fabs(jets[ijet].eta())<2.5) nbtags += (jets[ijet].getVal("jp")>0.264);
+	  }
 	}
       std::sort(selJets.begin(), selJets.end(), data::PhysicsObject_t::sortByPt);
 
+      //
+      // ASSIGN CHANNEL
+      //
+      std::vector<TString> chTags;
+      int dilId(1);
+      LorentzVector boson(0,0,0,0);
+      if(!runPhotonSelection && selLeptons.size()==2)
+	{
+ 	  for(size_t ilep=0; ilep<2; ilep++)
+	    {
+	      dilId *= selLeptons[ilep].get("id");
+	      int id(abs(selLeptons[ilep].get("id")));
+	      weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
+	      boson += selLeptons[ilep];
+	    }
+     
+	  //check the channel
+	  if( abs(dilId)==121 && eeTrigger)   chTags.push_back("ee");
+	  if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
+	  if( abs(dilId)==169 && emuTrigger) chTags.push_back("emu"); 
+	}
+      else{
+	if(hasPhotonTrigger) {
+	  dilId=22;
+	  chTags.push_back("ee");
+	  chTags.push_back("mumu");
+	  boson = selPhotons[0];
+	  weight *= triggerPrescale;
+	}
+      }
+      if(chTags.size()==0) continue;
 
+      TString evCat=eventCategoryInst.GetCategory(selJets,boson);
+      std::vector<TString> tags(1,"all");
+      for(size_t ich=0; ich<chTags.size(); ich++){
+	tags.push_back( chTags[ich] );
+	tags.push_back( chTags[ich]+evCat );
+      }
 
-      ///
-      // STOPPED HERE.... :(
-      ///
+      //
+      // BASELINE SELECTION
+      //
+      bool passMass( hasPhotonTrigger || fabs(boson.mass()-91)<15);
+      bool passQt(boson.pt()>55);
+      bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
+      bool passBtags(nbtags==0);
+      bool passMinDphijmet( njets>0 && mindphijmet<0.5);
 
+      mon.fillHisto("eventflow",  tags,0,weight);
+      mon.fillHisto("nvtxraw",  tags,ev.nvtx,weight/puWeight);
+      mon.fillHisto("nvtx",  tags,ev.nvtx,weight);
+      mon.fillHisto("rho",  tags,ev.rho,weight);
+      if(!runPhotonSelection){
+	mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
+	mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
+	mon.fillHisto("leadeta",     tags,fabs(selLeptons[0].eta()),weight); 
+	mon.fillHisto("trailereta",  tags,fabs(selLeptons[1].eta()),weight); 
+      }
+      mon.fillHisto("zmass", tags,boson.mass(),weight); 
+      mon.fillHisto("zy",    tags,fabs(boson.Rapidity()),weight); 
 
+      if(passMass){
+
+	mon.fillHisto("eventflow",tags, 1,weight);
+	mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
+	mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
+
+	if(passQt){
+
+	  mon.fillHisto("eventflow",tags,2,weight);
+	  int nExtraLeptons((selLeptons.size()-2)+extraLeptons.size());
+	  mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
+	  if(nExtraLeptons>0){
+	    LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1] : extraLeptons[0]);
+	    double dphi=fabs(deltaPhi(thirdLepton.phi(),met[0].phi()));
+	    double mt=TMath::Sqrt(2*thirdLepton.pt()*met[0].pt()*(1-TMath::Cos(dphi)));
+	    mon.fillHisto("thirdleptonpt",tags,thirdLepton.pt(),weight);
+	    mon.fillHisto("thirdleptoneta",tags,fabs(thirdLepton.eta()),weight);
+	    mon.fillHisto("thirdleptonmt",tags,mt,weight);
+	  }
+
+	  if(passThirdLeptonVeto){
+	    
+	    mon.fillHisto("eventflow",tags,3,weight);
+	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
+	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
+	      float jp(selJets[ijet].getVal("jp"));
+	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+	      mon.fillHisto( "jp",tags,jp,weight);
+
+	      if(!isMC) continue;
+
+	      int flavId=genJet.info.find("id")->second;
+	      TString jetFlav("others");
+	      if(abs(flavId)==5)      jetFlav="b";
+	      else if(abs(flavId)==4) jetFlav="c";
+	      mon.fillHisto( "jp"+jetFlav,tags,jp,weight);
+	    }
+	    mon.fillHisto( "nbtags",tags,nbtags,weight);
+	   
+	    if(passBtags){
+	      
+	      mon.fillHisto( "mindphijmet",tags,mindphijmet,weight);
+	      if(passMinDphijmet){
+		
+		mon.fillHisto( "njets",tags,njets,weight);
+		mon.fillHisto( "met",tags,met[0].pt(),weight);
+		mon.fillHisto( "balance",tags,met[0].pt()/boson.pt(),weight);
+		TVector2 met2(met[0].px(),met[0].py());
+		TVector2 boson2(boson.px(), boson.py());
+		double axialMet(boson2*met2);
+		mon.fillHisto( "axialmet",tags,axialMet,weight);
+		double mt=higgs::utils::transverseMass(boson,met[0],true);
+		mon.fillHisto( "mt",tags,mt,weight);
+		
+		//pre-VBF control
+		if(njets>=2){
+		  LorentzVector dijet=selJets[0]+selJets[1];
+		  float deta=fabs(selJets[0].eta()-selJets[1].eta());
+		  float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
+		  float pt1(selJets[0].pt()),pt2(selJets[1].pt());
+		  mon.fillHisto( "leadjetpt",tags,pt1,weight);
+		  mon.fillHisto( "trailerjetpt",tags,pt2,weight);
+		  if(pt1>30 && pt2>30){
+		    float eta1(selJets[0].eta()),eta2(selJets[1].eta());
+		    float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
+		    float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
+		    mon.fillHisto("fwdjeteta",tags,fabs(fwdEta),  weight);
+		    mon.fillHisto("cenjeteta",tags,fabs(cenEta),  weight);
+		    mon.fillHisto("vbfdetajj",tags,deta,        weight);
+		    if(deta>4.0){
+		      mon.fillHisto("vbfmjj",   tags,dijet.mass(),weight);
+		      if(dijet.mass()>500){
+			mon.fillHisto("vbfdphijj",tags,dphi,        weight);
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
   }
-      
+  
 //       //prepare the tag's vectors for histo filling
 //       std::vector<TString> tags_inc(1,"all");
 //       std::vector<TString> tags_small(1);

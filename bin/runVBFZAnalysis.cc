@@ -688,7 +688,7 @@ int main(int argc, char* argv[])
 	  int lid=leptons[ilep].get("id");
 
 	  //apply muon corrections
-	  if(lid==13 && muCor){
+	  if(abs(lid)==13 && muCor){
 	    TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
 	    muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
 	    if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);

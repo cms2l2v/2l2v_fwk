@@ -39,6 +39,10 @@ namespace higgs{
 
     //reweight the resonance
     double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf);
+
+    //transverse mass
+    double transverseMass(LorentzVector &visible, LorentzVector &invisible, bool assumeSameMass);
+
   }  
 }
 #endif
