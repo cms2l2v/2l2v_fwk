@@ -29,7 +29,6 @@ fi
 if [ "$step" == "2" ]; then
     echo "Computing weights"
     runPlotter --iLumi 19736 --inDir ${outdir}/ll/               --json data/vbfz_samples.json        --outFile ${outdir}/plotter.root             --forceMerged --noPlot
-    exit -1
     runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_raw.root --forceMerged --noPlot
     runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_raw.root --forceMerged --noPlot
 
@@ -42,8 +41,8 @@ fi
 
 if [ "$step" == "3" ]; then
     echo "Submitting second pass, weighting in q_T"
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/qt_tight -c ${cfg} -p "@runSystematics=False @useMVA=True @weightsFile='${outdir}/tight_gamma_weights.root'" -s 8nh -t Data
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/qt_loose -c ${cfg} -p "@runSystematics=True @useMVA=True @weightsFile='${outdir}/loose_gamma_weights.root'"  -s 8nh -t Data
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/qt_tight -c ${cfg} -p "@runSystematics=False @useMVA=True @weightsFile='${outdir}/tight_gamma_weights.root'" -s 8nh
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/qt_loose -c ${cfg} -p "@runSystematics=True @useMVA=True @weightsFile='${outdir}/loose_gamma_weights.root'"  -s 8nh
 fi
 
 if [ "$step" == "4" ]; then

@@ -83,7 +83,7 @@ void runVBFZClosure(TFile *llfile,TFile *gfile, TString outfile, bool purePhoton
 {
   TString distr[]={"qt",                                                                                                     //boson qT
   		   "vbfcandjet1eta", "vbfcandjet2eta", "vbfcandjet1pt",     "vbfcandjet2pt",                                 //tag jets
-  		   "vbfcandjetdeta", "vbfcandjetseta", "vbfcandjetetaprod", "vbfdphijj",     "vbfmjj", "vbfspt", "Fisher", "BDTD", "LikelihoodD",   //dijet 
+  		   "vbfcandjetdeta", "vbfcandjetseta", "vbfcandjetetaprod", "vbfdphijj",     "vbfmjj", "vbfspt", "Fisher",   //dijet "BDTD", "LikelihoodD",   //dijet 
   		   "vbfystar", 	     "vbfhardpt",                                                                            //dijet+Z
   		   "met",            "metL",                                                                                 //met
   		   "vbfcjv15",  "vbfhtcjv15",  "vbfmaxcjvjpt", "vbfystar3" //, "vbfcjv20", "vbfhtcjv20", "vbfcjv", "vbfhtcjv",            //central jet activity

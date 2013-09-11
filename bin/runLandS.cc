@@ -13,6 +13,7 @@
 #include "TTree.h"
 #include "TCanvas.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "TH2F.h"
 #include "TProfile.h"
 #include "TROOT.h"
@@ -1912,18 +1913,57 @@ std::cout<<"DYTEST2a " << selCh[i]+AnalysisBins[b]+"_"+mainHisto <<"\n";
               gjets2Dshape  = (TH2*)pdir->Get(selCh[i]+AnalysisBins[b]+"_"+mainHisto);
            }
 
-
+	   
            if(!gjets2Dshape)printf("Can't find histo: %s in g+jets template\n",(selCh[i]+AnalysisBins[b]+"_"+mainHisto).Data());
-std::cout<<"DYTEST2b\n";
-
+	   std::cout<<"DYTEST2b\n";
+	   
            TH1* gjets1Dshape  = NULL;
-            gjets1Dshape = gjets2Dshape->ProjectionY("tmpName",indexcut_,indexcut_);
-	    checkShape(gjets1Dshape);
-	    utils::root::fixExtremities(gjets1Dshape, true, true);
-            //apply the cuts
+	   gjets1Dshape = gjets2Dshape->ProjectionY("tmpName",indexcut_,indexcut_);
+
+	   //interpolate if sudden drop is found
+	   /*
+	   for(int ibin=2; ibin<gjets1Dshape->GetXaxis()->GetNbins()-1; ibin++){
+	     float val_m1=gjets1Dshape->GetBinContent(ibin-1);
+	     float val   =gjets1Dshape->GetBinContent(ibin);
+	     float val_p1=gjets1Dshape->GetBinContent(ibin+1);
+	     if(val>val_m1 || val>val_p1) continue;
+	     val=0.5*(val_m1+val_p1);
+	     gjets1Dshape->SetBinContent(ibin,val);
+	     gjets1Dshape->SetBinError(ibin,gjets1Dshape->GetBinError(ibin-1));
+	   }
+	   */
+	   //smooth
+	   //gjets1Dshape->Smooth();
+	   
+	   //interpolate with exponential
+	   if(AnalysisBins[b].Contains("100"))
+	     {
+	       TF1 *ffunc=new TF1("ffunc","[0]*x*pow(1.0+[1]*x,[2])",1,2.5);
+	       ffunc->SetParLimits(0,0.,1.0e8);
+	       ffunc->SetParLimits(1,-0.1,0.0);
+	       //ffunc->SetParameter(2,8000);
+	       gjets1Dshape->Fit(ffunc,"RI","",1,1.5);
+	       //gjets1Dshape->Fit(ffunc,"RI","",1,2.5);
+	       for(int xbin=gjets1Dshape->GetXaxis()->FindBin(1.0); xbin<= gjets1Dshape->GetXaxis()->FindBin(2.5); xbin++)
+		 {
+		   Double_t val=gjets1Dshape->GetBinContent(xbin);
+		   Double_t intval=ffunc->Eval(gjets1Dshape->GetXaxis()->GetBinCenter(xbin));
+		   cout << val << " ";
+		   if(val>intval) continue;
+		   cout << " * ";
+		   gjets1Dshape->SetBinContent(xbin,intval);
+		   gjets1Dshape->SetBinError(xbin,gjets1Dshape->GetBinError(xbin-1));
+		 }
+	       cout << endl;
+	     }
+
+	   gjets1Dshape->Rebin(rebinVal);
+	   checkShape(gjets1Dshape);
+	   utils::root::fixExtremities(gjets1Dshape, true, true);
+	   //apply the cuts
             if(!(mainHisto==histo && histoVBF!="" && AnalysisBins[b].Contains("vbf"))){
                for(int x=0;x<=gjets1Dshape->GetXaxis()->GetNbins()+1;x++){
-                  if(gjets1Dshape->GetXaxis()->GetBinCenter(x)<=cutMin || gjets1Dshape->GetXaxis()->GetBinCenter(x)>=cutMax){gjets1Dshape->SetBinContent(x,0); gjets1Dshape->SetBinError(x,0);}
+		 if(gjets1Dshape->GetXaxis()->GetBinCenter(x)<=cutMin || gjets1Dshape->GetXaxis()->GetBinCenter(x)>=cutMax){gjets1Dshape->SetBinContent(x,0); gjets1Dshape->SetBinError(x,0);}
                }
             }
 

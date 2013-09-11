@@ -5,20 +5,21 @@
 <use name="roostats"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
 <environment>
-  <bin name="runTopAnalysis"           file="runTopAnalysis.cc"></bin> 
-  <bin name="runChHiggsAnalysis"       file="runChHiggsAnalysis.cc"></bin>
-  <bin name="prepareChHiggsDatacards"  file="prepareChHiggsDatacards.cc"></bin>
-  <bin name="runVBFZAnalysis"          file="runVBFZAnalysis.cc"></bin> 
-  <bin name="runEWKVjjAnalysis"        file="runEWKVjjAnalysis.cc"></bin> 
-  <bin name="runVBFZAnalysisFWLite"          file="runVBFZAnalysisFWLite.cc"></bin>
-  <bin name="runPlotter"               file="runPlotter.cc"></bin> 
-  <bin name="runPlotterFWLite"               file="runPlotterFWLite.cc"></bin>
-  <bin name="computePDFvariations"     file="computePDFvariations.cc"></bin> 
-  <bin name="computePDFvariationsFWLite"     file="computePDFvariationsFWLite.cc"></bin>
-  <bin name="fitDYforTop"              file="fitDYforTop.cc"></bin> 
-  <bin name="fitTTbarCrossSection"     file="fitTTbarCrossSection.cc"></bin> 
-  <bin name="runPLRanalysis"           file="runPLRanalysis.cc"></bin> 
-  <bin name="runLandS"                 file="runLandS.cc"></bin> 
-  <bin name="runZHTauTauAnalysisFWLite" file="runZHTauTauAnalysisFWLite.cc"></bin>
+  <bin name="runTopAnalysis"             file="runTopAnalysis.cc"></bin> 
+  <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
+  <bin name="runHZZ2l2nuAnalysis"        file="runHZZ2l2nuAnalysis.cc"></bin>
+  <bin name="prepareChHiggsDatacards"    file="prepareChHiggsDatacards.cc"></bin>
+  <bin name="runVBFZAnalysis"            file="runVBFZAnalysis.cc"></bin> 
+  <bin name="runEWKVjjAnalysis"          file="runEWKVjjAnalysis.cc"></bin> 
+  <bin name="runVBFZAnalysisFWLite"      file="runVBFZAnalysisFWLite.cc"></bin>
+  <bin name="runPlotter"                 file="runPlotter.cc"></bin> 
+  <bin name="runPlotterFWLite"           file="runPlotterFWLite.cc"></bin>
+  <bin name="computePDFvariations"       file="computePDFvariations.cc"></bin> 
+  <bin name="computePDFvariationsFWLite" file="computePDFvariationsFWLite.cc"></bin>
+  <bin name="fitDYforTop"                file="fitDYforTop.cc"></bin> 
+  <bin name="fitTTbarCrossSection"       file="fitTTbarCrossSection.cc"></bin> 
+  <bin name="runPLRanalysis"             file="runPLRanalysis.cc"></bin> 
+  <bin name="runLandS"                   file="runLandS.cc"></bin> 
+  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

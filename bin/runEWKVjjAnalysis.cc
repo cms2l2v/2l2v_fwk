@@ -60,9 +60,9 @@ AnalysisBox_t assignBox(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
 
   //
   // ASSIGN THE BOX
-  // 1. ISOLATED OBJECTS     : mumu,  ee,    mu, e,  photon
-  // 2. NON-ISOLATED OBJECTS : mumu,  ee,    mu, e,  photon
-  // THRESHOLDS                20/20, 20/20, 26, 30, 50 
+  // 1. ISOLATED OBJECTS     : ll,    l,        photon
+  // 2. NON-ISOLATED OBJECTS : ll,    l,        photon
+  // THRESHOLDS                20/20, 30 or 26, 50
   //
   AnalysisBox_t box;
   if(isoLeptons.size()>=2){
@@ -79,16 +79,17 @@ AnalysisBox_t assignBox(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
     box.lead      = leptons[ isoLeptons[0] ] ;
     box.trailer   = data::PhysicsObject_t(met.px(),met.py(),0,met.pt());
     box.vCand     = box.lead+box.trailer;
-    if( abs(box.lead.get("id"))==11 )      { box.cat="e"; box.accept=(box.lead.pt()>30);  }
+    box.accept    = true;
+    if( abs(box.lead.get("id"))==11 )      { box.cat="e";  box.accept=(box.lead.pt()>30); }
     else if( abs(box.lead.get("id"))==13 ) { box.cat="mu"; box.accept=(box.lead.pt()>26); }
     box.accept    &= (box.trailer.pt()>30);
     double dphi=fabs(deltaPhi(box.lead.phi(),box.trailer.phi()));
     double mt=TMath::Sqrt(2*box.lead.pt()*box.trailer.pt()*(1-TMath::Cos(dphi)));
     box.acceptMass = (mt>30);
   }
-  else if(isoPhotons.size()>=1){
+  else if(isoPhotons.size()==1){
     box.lead    = photons[ isoPhotons[0] ]; 
-    box.trailer = photons[ isoPhotons[0] ]; 
+    box.trailer = data::PhysicsObject_t(0,0,0,0);
     box.vCand   = photons[ isoPhotons[0] ]; 
     box.cat="g";
     box.accept     = true;
@@ -116,10 +117,10 @@ AnalysisBox_t assignBox(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
     double mt=TMath::Sqrt(2*box.lead.pt()*box.trailer.pt()*(1-TMath::Cos(dphi)));
     box.acceptMass = (mt>30);
   }
-  else if(nonIsoPhotons.size()>=1){
+  else if(nonIsoPhotons.size()==1){
     box.lead    = photons[ nonIsoPhotons[0] ]; 
     box.trailer = photons[ nonIsoPhotons[0] ]; 
-    box.vCand   = photons[ nonIsoPhotons[0] ]; 
+    box.vCand   = data::PhysicsObject_t(0,0,0,0);
     box.cat="nonisog";
     box.accept=true;
     box.acceptMass=true;
@@ -299,7 +300,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("nupfilt",";NUP;Events",10,0,10) );
  
   TH1 *h=mon.addHistogram( new TH1F ("eventflow", ";;Events", 5,0,5) );
-  h->GetXaxis()->SetBinLabel(1,"box trigger");
+  h->GetXaxis()->SetBinLabel(1,"Box assign.");
   h->GetXaxis()->SetBinLabel(2,"M_{V}");
   h->GetXaxis()->SetBinLabel(3,"p_{T}^{V}>50");
   h->GetXaxis()->SetBinLabel(4,"#eta^{V}<1.4442");
@@ -314,7 +315,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "trailerpt", ";Transverse momentum [GeV];Events", 50,0,500) );
 
   //boson control
-  mon.addHistogram( new TH1F( "qt",      ";Transverse momemtum [GeV];Events",500,0,1500));
+  mon.addHistogram( new TH1F( "qt",      ";Transverse momentum [GeV];Events",500,0,1500));
   mon.addHistogram( new TH1F( "qeta",    ";Pseudo-rapidity;Events", 50,0,10) );
   mon.addHistogram( new TH1F( "qy",      ";Rapidity;Events", 50,0,6) );
   mon.addHistogram( new TH1F( "qmass",   ";Mass or transverse mass [GeV];Events", 100,0,500) );
@@ -620,8 +621,8 @@ int main(int argc, char* argv[])
       
       //select the jets for the box
       int njets(0),njetsNoId(0); 
-     data::PhysicsObjectCollection_t selJets, selJetsNoId;
-     for(size_t ijet=0; ijet<jets.size(); ijet++) 
+      data::PhysicsObjectCollection_t selJets, selJetsNoId;
+      for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
 	  double jeta=fabs(jets[ijet].eta());
 	  if(jets[ijet].pt()<15 || jeta>4.7 ) continue;
@@ -692,7 +693,7 @@ int main(int argc, char* argv[])
       for(size_t ich=0; ich<chTags.size(); ich++)
 	{
 	  std::vector<TString> tags(1,chTags[ich]);
-
+	  
 	  mon.fillHisto("eventflow",tags,0,weight);
 	  if(box.acceptMass){
 	    mon.fillHisto("eventflow",tags,1,weight);
@@ -748,8 +749,8 @@ int main(int argc, char* argv[])
 	    //end balance control
 
 	    if(box.acceptKin){
-	      mon.fillHisto("qeta"    , tags, box.vCand.eta(),      weight);
-	      mon.fillHisto("qy"      , tags, box.vCand.Rapidity(), weight);
+	      mon.fillHisto("qeta"    , tags, fabs(box.vCand.eta()),      weight);
+	      mon.fillHisto("qy"      , tags, fabs(box.vCand.Rapidity()), weight);
 	    }
 
 	    if(box.acceptKin && box.acceptRap){

@@ -179,6 +179,9 @@ int main(int argc, char* argv[])
   TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","osbtag","osbveto"};
   for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
     {
+      controlHistos.addHistogram( new TH1F("eeta", "; Pseudo-rapidity; Electrons", 50,0,2.5) );
+      controlHistos.addHistogram( new TH1F("mueta", "; Pseudo-rapidity; Muons", 50,0,2.5) );
+
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll",";Dilepton invariant mass [GeV];Events",50,0,250) );
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll",";Dilepton transverse momentum [GeV];Events",50,0,250) );
@@ -476,8 +479,13 @@ int main(int argc, char* argv[])
 	  if(passMetSelection) iweight *=dyWeight;
 	  for(size_t ilep=0; ilep<2; ilep++)
 	    {
-	      if(abs(selLeptons[ilep].get("id"))!=11) continue;
-	      controlHistos.fillHisto(ctrlCategs[icat]+"emva", ch, selLeptons[ilep].getVal("mvatrig"), iweight);
+	      if(abs(selLeptons[ilep].get("id"))!=11) {
+		controlHistos.fillHisto(ctrlCategs[icat]+"mueta", ch, fabs(selLeptons[ilep].eta()), iweight);
+	      }
+	      else{
+		controlHistos.fillHisto(ctrlCategs[icat]+"emva", ch, selLeptons[ilep].getVal("mvatrig"), iweight);
+		controlHistos.fillHisto(ctrlCategs[icat]+"eeta", ch, fabs(selLeptons[ilep].eta()), iweight);
+	      }
 	    }
 
 	  controlHistos.fillHisto(ctrlCategs[icat]+"mll",          ch, mll,            iweight);

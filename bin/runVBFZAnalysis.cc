@@ -513,9 +513,10 @@ int main(int argc, char* argv[])
 	  mon.addHistogram( new TH1F("vbfcandjet2pt"+var     , ";p_{T} [GeV];Jets",                               50,0,500) ); //nptBins,jetptaxis) );
 	  mon.addHistogram( new TH1F("vbfspt"+var            , ";Relative balance (#Delta^{rel}_{p_{T}});Events", 50,0,1) );
 	}
+      cout << "Readout " << mPDFInfo->numberPDFs() << " pdf variations" << endl;
     }
 
-  //pileup weighting: based on vtx for now...
+  //pileup weighting
   std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
   std::vector<float> dataPileupDistribution; for(unsigned int i=0;i<dataPileupDistributionDouble.size();i++){dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);}
   std::vector<float> mcPileupDistribution;
@@ -577,6 +578,7 @@ int main(int argc, char* argv[])
       
       bool hasPhotonTrigger(false);
       float triggerPrescale(1.0),triggerThreshold(0);
+      TString phoTrigCat("");
       if(runPhotonSelection)
 	{
 	  eeTrigger=false; mumuTrigger=false;
@@ -585,10 +587,10 @@ int main(int argc, char* argv[])
 	      if(!ev.t_bits[itrig]) continue;
 	      hasPhotonTrigger=true;
 	      triggerPrescale=ev.t_prescale[itrig];
-	      if(itrig==10) triggerThreshold=90;
-	      if(itrig==9)  triggerThreshold=75;
-	      if(itrig==8)  triggerThreshold=50;
-	      if(itrig==7)  triggerThreshold=36;
+	      if(itrig==10) {triggerThreshold=90; phoTrigCat="Photon90";}
+	      if(itrig==9)  {triggerThreshold=75; phoTrigCat="Photon75";}
+	      if(itrig==8)  {triggerThreshold=50; phoTrigCat="Photon50";}
+	      if(itrig==7)  {triggerThreshold=36; phoTrigCat="Photon36";}
 	      break;
 	    }
 	}
@@ -1061,6 +1063,7 @@ int main(int argc, char* argv[])
 		  TString mjjCat("");
 		  std::vector<TString> selTags;
 		  selTags = getDijetCategories(mjj,detajj,tags,mjjCat);
+		  if(phoTrigCat!="") selTags.push_back(phoTrigCat);
 
 		  //re-weight for photons if needed
 		  if(gammaWgtHandler!=0) {

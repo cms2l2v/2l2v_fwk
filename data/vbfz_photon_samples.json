@@ -1,21 +1,5 @@
 {
     "proc":[
-        {
-        "tag":"EWK #gamma+2j",
-        "isdata":false,
-        "color":"590",
-        "lcolor":1,
-        "marker":1,
-	"mctruthmode":22,
-        "data":[
-                {
-                "dtag":"MC8TeV_ajj",
-                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM"],
-                "xsec":2.72
-                }
-         ]
-        },
-        },
 	{
 	 "tag":"Multijets",
          "isdata":false,
@@ -26,31 +10,31 @@
 	        {	
 	   	  "dtag":"MC8TeV_QCDPt30to80",
 	  	  "xsec":74330000,
-		  "br":[0.0621],
+		  "br":[0.0621,1.3],
 		  "split":2
 	        },
 	        {	
 		  "dtag":"MC8TeV_QCDPt80to170",
 		  "xsec":1191000,
-		  "br":[0.1539],
+		  "br":[0.1539,1.3],
 		  "split":2
 	        },
 	        {	
 		  "dtag":"MC8TeV_QCDPt170to250",
 		  "xsec":30990,
-		  "br":[0.148],
+		  "br":[0.148,1.3],
 		  "split":2
 	        },
 	        {	
 		  "dtag":"MC8TeV_QCDPt250to350",
 		  "xsec":4250,
-		  "br":[0.131],
+		  "br":[0.131,1.3],
 		  "split":2
 	        },
 	        {	
 		  "dtag":"MC8TeV_QCDPt350toInf",
 		  "xsec":810,
-		  "br":[0.11],
+		  "br":[0.11,1.3],
 		  "split":2
 	        }
 	    ]
@@ -63,52 +47,83 @@
  	 "mctruthmode":22,
          "data":[
 	        {	
+		 "dtag":"MC8TeV_GJets_30to50",
+		 "xsec":19931.62,
+                 "br":[1.3],
+	 	 "split":3
+		},
+	        {	
 		 "dtag":"MC8TeV_GJets_50to80",
 		 "xsec":3322.309,
+                 "br":[1.3],
 	 	 "split":3
 		},
 	        {	
 		  "dtag":"MC8TeV_GJets_80to120",
 		  "xsec":558.2865,
+                  "br":[1.3],
 	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_120to170",
 		  "xsec":108.0068,
+                  "br":[1.3],
 	 	  "split":3
 	        },		
 	        {
 		  "dtag":"MC8TeV_GJets_170to300",
 		  "xsec":30.12207,
+                  "br":[1.3],
 	 	  "split":3
 		},
 	        {
 	  	  "dtag":"MC8TeV_GJets_300to470",
 		  "xsec":2.138632,
+                  "br":[1.3],
 	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_470to800",
 		  "xsec":0.2119244,
+                  "br":[1.3],
 	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_800to1400",
 		  "xsec":0.007077847,
+                  "br":[1.3],
 	 	  "split":3
 	        },
 	        {
 		  "dtag":"MC8TeV_GJets_1400to1800",
 		  "xsec":0.00004510327,
+                  "br":[1.3],
 	 	  "split":3
 		},
 	        {
 		  "dtag":"MC8TeV_GJets_1800toInf",
 		  "xsec":0.000001867141,
+                  "br":[1.3],
 	 	  "split":3
 	        }
 	    ]
     	},
+        {
+        "tag":"EWK #gamma+2j",
+        "isdata":false,
+        "color":"590",
+        "lcolor":1,
+        "marker":1,
+	"mctruthmode":22,
+	"spimpose":true,
+        "data":[
+                {
+                "dtag":"MC8TeV_ajj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM"],
+                "xsec":2.72
+                }
+         ]
+        },
 	{
 	"tag":"data (#gamma)",
         "isdata":true,
