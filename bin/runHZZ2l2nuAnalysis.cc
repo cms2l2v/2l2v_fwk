@@ -309,7 +309,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "leadeta",    ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram( new TH1F( "trailerpt",  ";Transverse momentum [GeV];Events", 50,0,500) );
   mon.addHistogram( new TH1F( "trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
-  mon.addHistogram( new TH1F( "zy",         ";Rapidity;Events", 50,0,10) );
+  mon.addHistogram( new TH1F( "zy",         ";Rapidity;Events", 50,0,3) );
   mon.addHistogram( new TH1F( "zmass",      ";Mass [GeV];Events", 100,40,250) );
   mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
   mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
@@ -811,7 +811,7 @@ int main(int argc, char* argv[])
       bool passQt(boson.pt()>55);
       bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
       bool passBtags(nbtags==0);
-      bool passMinDphijmet( njets>0 && mindphijmet<0.5);
+      bool passMinDphijmet( njets==0 || mindphijmet>0.5);
 
       mon.fillHisto("eventflow",  tags,0,weight);
       mon.fillHisto("nvtxraw",  tags,ev.nvtx,weight/puWeight);
@@ -866,10 +866,12 @@ int main(int argc, char* argv[])
 	    mon.fillHisto( "nbtags",tags,nbtags,weight);
 	   
 	    if(passBtags){
-	      
+	      mon.fillHisto("eventflow",tags,4,weight);
+
 	      mon.fillHisto( "mindphijmet",tags,mindphijmet,weight);
 	      if(passMinDphijmet){
-		
+		mon.fillHisto("eventflow",tags,5,weight);
+
 		mon.fillHisto( "njets",tags,njets,weight);
 		mon.fillHisto( "met",tags,met[0].pt(),weight);
 		mon.fillHisto( "balance",tags,met[0].pt()/boson.pt(),weight);
@@ -880,6 +882,8 @@ int main(int argc, char* argv[])
 		double mt=higgs::utils::transverseMass(boson,met[0],true);
 		mon.fillHisto( "mt",tags,mt,weight);
 		
+		if(met[0].pt()>70)mon.fillHisto("eventflow",tags,6,weight);
+
 		//pre-VBF control
 		if(njets>=2){
 		  LorentzVector dijet=selJets[0]+selJets[1];
