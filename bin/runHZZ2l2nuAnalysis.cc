@@ -784,7 +784,7 @@ int main(int argc, char* argv[])
 	  //check the channel
 	  if( abs(dilId)==121 && eeTrigger)   chTags.push_back("ee");
 	  if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-	  if( abs(dilId)==169 && emuTrigger) chTags.push_back("emu"); 
+	  if( abs(dilId)==143 && emuTrigger) chTags.push_back("emu"); 
 	}
       else{
 	if(hasPhotonTrigger) {
