@@ -1,5 +1,36 @@
 {
     "proc":[
+        {
+        "tag":"EWK 2l2#nu2j",
+        "isdata":false,
+        "issignal":true,
+	"spimpose":true,
+        "fill":"0",
+	"lwidth":2,
+        "lcolor":804,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_llvvjj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/llvvjj_8TeV/AODSIM"],
+                "xsec":0.002258
+                }
+         ]
+        },
+        {
+        "tag":"EWK ll+2j",
+        "isdata":false,
+        "color":"835",
+        "lcolor":1,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_lljj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM"],
+                "xsec":0.8938
+                }
+         ]
+        },
 	{
         "tag":"WW#rightarrow 2l2#nu",
         "isdata":false,

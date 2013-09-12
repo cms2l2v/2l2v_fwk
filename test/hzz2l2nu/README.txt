@@ -1,2 +1,4 @@
-runLocalAnalysisOverSamples.py -e  runHZZ2l2nuAnalysis -j data/htozz_samples.json -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/hzz_5311/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
-runPlotter --iLumi 19736 --inDir ~/work/hzz_5311/ --json data/htozz_samples.json --outFile ~/work/hzz_5311/plotter.root
+To run the analysis you can use steerAnalysis.sh as
+
+sh steerAnalysis.sh {1-4}
+
