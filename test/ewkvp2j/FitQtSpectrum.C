@@ -16,8 +16,9 @@
 
 using namespace std;
 
+enum AnalysisMode {EWKVJJ, HZZ};
 enum MCMode      { ALL,   PUREG };
-void FitQtSpectrum(TString url="plotter.root", TString gUrl="plotter_gamma.root", int mcMode=PUREG);
+void FitQtSpectrum(TString url="plotter.root", TString gUrl="plotter_gamma.root", int mcMode=PUREG, int anMode=EWKVJJ);
 void printCMSheader(bool isSim);
 void printCategoryToPlot(TString title);
 TGraph *computeWeights(TH1F *target, TH1F *ctrl,TString name);
@@ -97,29 +98,32 @@ void printCMSheader(bool isSim)
 }
 
 //
-void FitQtSpectrum(TString url, TString gUrl, int mcMode)
+void FitQtSpectrum(TString url, TString gUrl, int mcMode, int catMode)
 {
   std::vector<int> colors, markers;
   std::vector<TString> categs,titles,mcg;
-  categs.push_back("mjjq016"); titles.push_back("M_{jj}<250");      colors.push_back(30); markers.push_back(20);
-  categs.push_back("mjjq033"); titles.push_back("250<M_{jj}<350");  colors.push_back(32); markers.push_back(24);
-  categs.push_back("mjjq049"); titles.push_back("350<M_{jj}<450");  colors.push_back(30); markers.push_back(24);
-  categs.push_back("mjjq066"); titles.push_back("450<M_{jj}<550");  colors.push_back(32); markers.push_back(20);
-  categs.push_back("mjjq083"); titles.push_back("550<M_{jj}<750");  colors.push_back(49); markers.push_back(20);
-  categs.push_back("mjjq092"); titles.push_back("750<M_{jj}<1000"); colors.push_back(46); markers.push_back(24);
-  categs.push_back("mjjq100"); titles.push_back("M_{jj}>1000");     colors.push_back(38); markers.push_back(24);
-  /*
-  categs.push_back("eq0jets");  titles.push_back("=0 jets");
-  categs.push_back("eq1jets");  titles.push_back("=1 jets");
-  categs.push_back("eq2jets");  titles.push_back("=2 jets");
-  categs.push_back("geq3jets"); titles.push_back("#geq 3 jets");
-  categs.push_back("vbf");      titles.push_back("VBF");
-  */
+  if(catMode==EWKVJJ){
+    cout << "[FitQtSpectrum] Adding mjj categories" << endl;
+    categs.push_back("mjjq016"); titles.push_back("M_{jj}<250");      colors.push_back(30); markers.push_back(20);
+    categs.push_back("mjjq033"); titles.push_back("250<M_{jj}<350");  colors.push_back(32); markers.push_back(24);
+    categs.push_back("mjjq049"); titles.push_back("350<M_{jj}<450");  colors.push_back(30); markers.push_back(24);
+    categs.push_back("mjjq066"); titles.push_back("450<M_{jj}<550");  colors.push_back(32); markers.push_back(20);
+    categs.push_back("mjjq083"); titles.push_back("550<M_{jj}<750");  colors.push_back(49); markers.push_back(20);
+    categs.push_back("mjjq092"); titles.push_back("750<M_{jj}<1000"); colors.push_back(46); markers.push_back(24);
+    categs.push_back("mjjq100"); titles.push_back("M_{jj}>1000");     colors.push_back(38); markers.push_back(24);
+  }
+  else{
+    cout << "[FitQtSpectrum] Adding jet-bin categories" << endl;
+    categs.push_back("eq0jets");  titles.push_back("=0 jets");      colors.push_back(30); markers.push_back(20);
+    categs.push_back("geq1jets");  titles.push_back("#geq1 jets");  colors.push_back(32); markers.push_back(24);
+    categs.push_back("vbf");      titles.push_back("VBF");          colors.push_back(30); markers.push_back(24); 
+  }
   const size_t ncategs=categs.size();
   
   //mc for closure
   if(mcMode!=PUREG)
     {
+      mcg.push_back("EWK #gammajj");
       mcg.push_back("V#gamma");
       mcg.push_back("Multijets");
     }

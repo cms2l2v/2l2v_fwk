@@ -1076,6 +1076,13 @@ int main(int argc, char* argv[])
 
 		  //save for further analysis
 		  if(mjj>200) {
+		    if(mjj>2000 && ev.nvtx<18 && njets==2){
+		      fprintf(outTxtFile,"--------- CANDIDATE EVENT ---------\n");
+		      fprintf(outTxtFile,"%d:%d:%d    mjj=%f  ystar=%f spt=%f\n",ev.run,ev.lumi,ev.event,mjj,ystar,spt);
+		      fprintf(outTxtFile,"j1 (%f,%f,%f)\n",selJets[0].pt(),selJets[0].eta(),selJets[0].phi());
+		      fprintf(outTxtFile,"j2 (%f,%f,%f)\n",selJets[1].pt(),selJets[1].eta(),selJets[1].phi());
+		      fprintf(outTxtFile,"z (%f,%f,%f) m=%f\n",zll.pt(),zll.eta(),zll.phi(),zll.mass());
+		    }
 		    ev.cat=dilId;
 		    summaryTupleVars[0]=ev.cat;  
 		    summaryTupleVars[1]=catWeight*xsecWeight;    

@@ -1,5 +1,38 @@
 {
     "proc":[
+        {
+        "tag":"EWK #gammajj",
+        "isdata":false,
+        "color":"835",
+        "lcolor":1,
+        "marker":1,
+	"mctruthmode":22,
+        "data":[
+                {
+                "dtag":"MC8TeV_ajj",
+                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM"],
+                "xsec":2.72
+                }
+         ]
+        },
+        {
+        "tag":"V#gamma",
+        "isdata":false,
+        "color":"809",
+        "lcolor":1,
+        "marker":1,
+	"mctruthmode":22,
+        "data":[
+	     {
+		"dtag":"MC8TeV_WG",
+		"xsec":461.6
+             },		
+             {
+               "dtag":"MC8TeV_ZG",
+               "xsec":123.9
+              }
+	  ]
+	},
 	{
 	 "tag":"Multijets",
          "isdata":false,
@@ -114,41 +147,6 @@
 	        }
 	    ]
     	},
-        {
-        "tag":"V#gamma",
-        "isdata":false,
-        "color":"592",
-        "lcolor":1,
-        "marker":1,
-	"mctruthmode":22,
-	"spimpose":true,
-        "data":[
-	     {
-		"dtag":"MC8TeV_WG",
-		"xsec":461.6
-             },		
-             {
-               "dtag":"MC8TeV_ZG",
-               "xsec":123.9
-              }
-	  ]
-	},
-        {
-        "tag":"EWK #gamma+2j",
-        "isdata":false,
-        "color":"590",
-        "lcolor":1,
-        "marker":1,
-	"mctruthmode":22,
-	"spimpose":true,
-        "data":[
-                {
-                "dtag":"MC8TeV_ajj",
-                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM"],
-                "xsec":2.72
-                }
-         ]
-        },
        {
 	"tag":"data (#gamma)",
         "isdata":true,
@@ -158,9 +156,9 @@
         "mctruthmode":22,
 	"data":[
                { "dtag":"Data8TeV_Photon2012A", "split":2 },
-               { "dtag":"Data8TeV_DoubleElectron2012B", "split":7 },
-               { "dtag":"Data8TeV_DoubleElectron2012C", "split":7 },
-               { "dtag":"Data8TeV_DoubleElectron2012D", "split":7 }
+               { "dtag":"Data8TeV_DoubleElectron2012B", "split":5 },
+               { "dtag":"Data8TeV_DoubleElectron2012C", "split":6 },
+               { "dtag":"Data8TeV_DoubleElectron2012D", "split":6 }
 	   ]
 	}
     ]	

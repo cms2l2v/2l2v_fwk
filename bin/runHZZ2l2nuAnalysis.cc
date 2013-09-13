@@ -110,7 +110,11 @@ int main(int argc, char* argv[])
   }
   size_t nvarsToInclude=varNames.size();
   
-  std::string weightsDir = runProcess.getParameter<std::vector<std::string> >("weightsFile")[0];
+  std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
+  std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
+
+  GammaWeightsHandler *gammaWgtHandler=0;
+  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess);
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
@@ -121,9 +125,11 @@ int main(int argc, char* argv[])
       if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
       gSystem->ExpandPathName(weightsFile);
       TFile *q2UncF=TFile::Open(weightsFile);
-      vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
-      vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
-      q2UncF->Close();
+      if(q2UncF){
+	vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
+	vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
+	q2UncF->Close();
+      }
     }
 
   //HIGGS weights and uncertainties
@@ -164,114 +170,116 @@ int main(int argc, char* argv[])
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
   //#######################################
-  TString lineShapeWeightsFileURL(weightsDir+"/");
-  lineShapeWeightsFileURL += (isMC_VBF ? "VBFtoHtoZZLineShapes.root" : "GGtoHtoZZLineShapes.root");
-  gSystem->ExpandPathName(lineShapeWeightsFileURL);
-  TFile *fin=TFile::Open(lineShapeWeightsFileURL);     
-
-  TString interferenceShapeWeightsFileUrl(weightsDir+"/");
-  interferenceShapeWeightsFileUrl += (isMC_VBF ? "VBFtoHtoZZLineShapesInterference.root" : "GGtoHtoZZLineShapesInterference.root");
-  TFile *fin_int=0;
-  if(interferenceShapeWeightsFileUrl!="" && isMC_GG) 
-    {
-      gSystem->ExpandPathName(interferenceShapeWeightsFileUrl);
-      fin_int=TFile::Open(interferenceShapeWeightsFileUrl);
-    }
-
   TH1 *hGen=0;
   TGraph *hLineShapeNominal=0;
   std::map<std::pair<double,double>, std::vector<TGraph *> > hLineShapeGrVec;  
-  if(fin && (isMC_GG || isMC_VBF))
+  if(isMC_GG || isMC_VBF)
     {
-      cout << "Line shape weights (and uncertainties) will be applied from " << fin->GetName() << endl;
-      if(fin_int)
-	cout << "Inteference terms (and uncertaintnies) will be replaced from " << fin_int->GetName() << endl;
-
-      char dirBuf[100];
-      sprintf(dirBuf,"H%d/",int(HiggsMass));
+      TString lineShapeWeightsFileURL(weightsDir+"/");
+      lineShapeWeightsFileURL += (isMC_VBF ? "VBFtoHtoZZLineShapes.root" : "GGtoHtoZZLineShapes.root");
+      gSystem->ExpandPathName(lineShapeWeightsFileURL);
+      TFile *fin=TFile::Open(lineShapeWeightsFileURL);     
       
-      hLineShapeNominal      = new TGraph((TH1 *)fin->Get(dirBuf+TString("cps_shape")));
-      hGen                   = (TH1 *) fin->Get(dirBuf+TString("gen")); hGen->SetDirectory(0); hGen->Scale(1./hGen->Integral());
-      
-      TGraph *cpsGr          = (TGraph *) fin->Get(dirBuf+TString("cps"));
-      TGraph *cpspintGr      = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("nominal"));
-      TGraph *cpspint_upGr   = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("up"));
-      TGraph *cpspint_downGr = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("down"));
-      if(cpspintGr==0)
+      TString interferenceShapeWeightsFileUrl(weightsDir+"/");
+      interferenceShapeWeightsFileUrl += (isMC_VBF ? "VBFtoHtoZZLineShapesInterference.root" : "GGtoHtoZZLineShapesInterference.root");
+      TFile *fin_int=0;
+      if(interferenceShapeWeightsFileUrl!="" && isMC_GG) 
 	{
-	  cpspintGr = (TGraph *)cpsGr->Clone();
-	  for(int ip=0; ip<cpspintGr->GetN(); ip++) { Double_t x,y; cpspintGr->GetPoint(ip,x,y); cpspintGr->SetPoint(ip,x,1); }
-	  cpspint_upGr = (TGraph *) cpspintGr->Clone();
-	  cpspint_downGr=(TGraph *) cpspintGr->Clone();
+	  gSystem->ExpandPathName(interferenceShapeWeightsFileUrl);
+	  fin_int=TFile::Open(interferenceShapeWeightsFileUrl);
 	}
-      
-      //loop over possible scenarios
-      for(size_t nri=0; nri<NRparams.size(); nri++)
+      if(fin) 
 	{
-	  //recompute weights depending on the scenario (SM or BSM)
-	  TGraph *shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
-	  TGraph *shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
-	  TGraph *shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
-	  for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++)
+	  cout << "Line shape weights (and uncertainties) will be applied from " << fin->GetName() << endl;
+	  if(fin_int)
+	    cout << "Inteference terms (and uncertaintnies) will be replaced from " << fin_int->GetName() << endl;
+	  
+	  char dirBuf[100];
+	  sprintf(dirBuf,"H%d/",int(HiggsMass));
+	  
+	  hLineShapeNominal      = new TGraph((TH1 *)fin->Get(dirBuf+TString("cps_shape")));
+	  hGen                   = (TH1 *) fin->Get(dirBuf+TString("gen")); hGen->SetDirectory(0); hGen->Scale(1./hGen->Integral());
+	  
+	  TGraph *cpsGr          = (TGraph *) fin->Get(dirBuf+TString("cps"));
+	  TGraph *cpspintGr      = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("nominal"));
+	  TGraph *cpspint_upGr   = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("up"));
+	  TGraph *cpspint_downGr = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("down"));
+	  if(cpspintGr==0)
 	    {
-	      Double_t hmass    = hGen->GetBinCenter(ip);
-	      Double_t hy       = hGen->GetBinContent(ip);
-
-	      Double_t shapeWgt(1.0),shapeWgtUp(1.0),shapeWgtDown(1.0);
-	      if(NRparams[nri].first<0)
+	      cpspintGr = (TGraph *)cpsGr->Clone();
+	      for(int ip=0; ip<cpspintGr->GetN(); ip++) { Double_t x,y; cpspintGr->GetPoint(ip,x,y); cpspintGr->SetPoint(ip,x,1); }
+	      cpspint_upGr = (TGraph *) cpspintGr->Clone();
+	      cpspint_downGr=(TGraph *) cpspintGr->Clone();
+	    }
+      
+	  //loop over possible scenarios
+	  for(size_t nri=0; nri<NRparams.size(); nri++)
+	    {
+	      //recompute weights depending on the scenario (SM or BSM)
+	      TGraph *shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
+	      TGraph *shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
+	      TGraph *shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
+	      for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++)
 		{
-		  shapeWgt     = cpsGr->Eval(hmass) * cpspintGr->Eval(hmass);
-		  shapeWgtUp   = cpsGr->Eval(hmass) * cpspint_upGr->Eval(hmass);
-		  shapeWgtDown = cpsGr->Eval(hmass) * cpspint_downGr->Eval(hmass);
+		  Double_t hmass    = hGen->GetBinCenter(ip);
+		  Double_t hy       = hGen->GetBinContent(ip);
+		  
+		  Double_t shapeWgt(1.0),shapeWgtUp(1.0),shapeWgtDown(1.0);
+		  if(NRparams[nri].first<0)
+		    {
+		      shapeWgt     = cpsGr->Eval(hmass) * cpspintGr->Eval(hmass);
+		      shapeWgtUp   = cpsGr->Eval(hmass) * cpspint_upGr->Eval(hmass);
+		      shapeWgtDown = cpsGr->Eval(hmass) * cpspint_downGr->Eval(hmass);
+		    }
+		  else
+		    {
+		      Double_t nrWgt = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf);
+		      shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
+		      shapeWgtUp     = shapeWgt;
+		      shapeWgtDown   = shapeWgt;
+		    }
+		  
+		  shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
+		  shapeWgts_upGr->SetPoint(shapeWgts_upGr->GetN(),     hmass, shapeWgtUp);     shapeUpNorm   += shapeWgtUp*hy;
+		  shapeWgts_downGr->SetPoint(shapeWgts_downGr->GetN(), hmass, shapeWgtDown);   shapeDownNorm += shapeWgtDown*hy;
 		}
-	      else
+	      
+	      //fix possible normalization issues
+	      cout << "C'=" << NRparams[nri].first << " BRnew=" << NRparams[nri].second << " shape wgts will be re-normalized with: "
+		   << " nominal=" << shapeNorm
+		   << " up     =" << shapeUpNorm
+		   << " down   =" << shapeDownNorm 
+		   << endl;
+	      for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++)
 		{
-		  Double_t nrWgt = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf);
-		  shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
-		  shapeWgtUp     = shapeWgt;
-		  shapeWgtDown   = shapeWgt;
+		  Double_t x,y;
+		  shapeWgtsGr->GetPoint(ip,x,y);
+		  shapeWgtsGr->SetPoint(ip,x,y/shapeNorm);
+		  
+		  shapeWgts_upGr->GetPoint(ip,x,y);
+		  shapeWgts_upGr->SetPoint(ip,x,y/shapeUpNorm);
+		  
+		  shapeWgts_downGr->GetPoint(ip,x,y);
+		  shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
+		  
 		}
-		            
-	      shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
-	      shapeWgts_upGr->SetPoint(shapeWgts_upGr->GetN(),     hmass, shapeWgtUp);     shapeUpNorm   += shapeWgtUp*hy;
-	      shapeWgts_downGr->SetPoint(shapeWgts_downGr->GetN(), hmass, shapeWgtDown);   shapeDownNorm += shapeWgtDown*hy;
+	      
+	      //all done here...
+	      std::vector<TGraph *> inrWgts;
+	      inrWgts.push_back( shapeWgtsGr      );
+	      inrWgts.push_back( shapeWgts_upGr   );
+	      inrWgts.push_back( shapeWgts_downGr );
+	      hLineShapeGrVec[ NRparams[nri] ] = inrWgts;
 	    }
 
-	  //fix possible normalization issues
-	  cout << "C'=" << NRparams[nri].first << " BRnew=" << NRparams[nri].second << " shape wgts will be re-normalized with: "
-	       << " nominal=" << shapeNorm
-	       << " up     =" << shapeUpNorm
-	       << " down   =" << shapeDownNorm 
-	       << endl;
-	  for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++)
-	    {
-	      Double_t x,y;
-	      shapeWgtsGr->GetPoint(ip,x,y);
-	      shapeWgtsGr->SetPoint(ip,x,y/shapeNorm);
-
-	      shapeWgts_upGr->GetPoint(ip,x,y);
-	      shapeWgts_upGr->SetPoint(ip,x,y/shapeUpNorm);
-
-	      shapeWgts_downGr->GetPoint(ip,x,y);
-	      shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
-
-	    }
-
-	  //all done here...
-	  std::vector<TGraph *> inrWgts;
-	  inrWgts.push_back( shapeWgtsGr      );
-	  inrWgts.push_back( shapeWgts_upGr   );
-	  inrWgts.push_back( shapeWgts_downGr );
-	  hLineShapeGrVec[ NRparams[nri] ] = inrWgts;
+	  //close files
+	  fin->Close();
+	  delete fin;
+	  if(fin_int){
+	    fin_int->Close();
+	    delete fin_int;
+	  }
 	}
-
-      //close files
-      fin->Close();
-      delete fin;
-      if(fin_int){
-	fin_int->Close();
-	delete fin_int;
-      }
     }
 
 
@@ -310,6 +318,8 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram( new TH1F( "zy",         ";Rapidity;Events", 50,0,3) );
   mon.addHistogram( new TH1F( "zmass",      ";Mass [GeV];Events", 100,40,250) );
+  mon.addHistogram( new TH1F( "zpt",        ";Transverse momentum [GeV];Events",100,0,1500));
+  mon.addHistogram( new TH1F( "qmass",      ";Mass [GeV];Events / (1 GeV)",100,76,106));
   mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
   mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
 
@@ -580,15 +590,15 @@ int main(int argc, char* argv[])
       if(runPhotonSelection)
 	{
 	  //filter out number of prompt photons to avoid double counting
-	  int ngenpho(0);
-	  for(size_t igen=0; igen<gen.size(); igen++)
-	    {
-	      if(gen[igen].get("id")!=22 || gen[igen].get("status")!=1) continue;
-	      float lxy=gen[igen].getVal("lxy");
-	      if(lxy>0) continue;
-	      ngenpho++;
-	    }
-	  if(mctruthmode==111 && ngenpho>0) continue;
+	 //  int ngenpho(0);
+	  // 	  for(size_t igen=0; igen<gen.size(); igen++)
+	  // 	    {
+	  // 	      if(gen[igen].get("id")!=22 || gen[igen].get("status")!=1) continue;
+	  // 	      float lxy=gen[igen].getVal("lxy");
+	  // 	      if(lxy>0) continue;
+	  // 	      ngenpho++;
+	  //  }
+	  //if(mctruthmode==111 && ngenpho>0) continue;
 	  //if(mctruthmode==22 && ngenpho==0) continue;
 
 	  //select the photons
@@ -791,7 +801,7 @@ int main(int argc, char* argv[])
 	  if( abs(dilId)==143 && emuTrigger) chTags.push_back("emu"); 
 	}
       else{
-	if(hasPhotonTrigger) {
+	if(hasPhotonTrigger && selPhotons.size()) {
 	  dilId=22;
 	  chTags.push_back("ee");
 	  chTags.push_back("mumu");
@@ -821,7 +831,6 @@ int main(int argc, char* argv[])
 	  passMass=hasPhotonTrigger;
 	  passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
 	}
-      
 
       mon.fillHisto("eventflow",  tags,0,weight);
       mon.fillHisto("nvtxraw",  tags,ev.nvtx,weight/puWeight);
@@ -839,6 +848,10 @@ int main(int argc, char* argv[])
       if(passMass){
 
 	mon.fillHisto("eventflow",tags, 1,weight);
+	mon.fillHisto("zpt",      tags, boson.pt(),weight);
+
+	//these two are used to reweight photon -> Z, the 3rd is a control
+	mon.fillHisto("qmass",       tags, boson.mass(),weight); 
 	mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
 	mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
 
@@ -878,41 +891,51 @@ int main(int argc, char* argv[])
 	    if(passBtags){
 	      mon.fillHisto("eventflow",tags,4,weight);
 
-	      mon.fillHisto( "mindphijmet",tags,mindphijmet,weight);
-	      if(passMinDphijmet){
-		mon.fillHisto("eventflow",tags,5,weight);
+	      //include photon prediction from this point forward
+	      //requires looping tag by tag as weights are category-specific
+	      for(size_t itag=0; itag<tags.size(); itag++){
 
-		mon.fillHisto( "njets",tags,njets,weight);
-		mon.fillHisto( "met",tags,met[0].pt(),weight);
-		mon.fillHisto( "balance",tags,met[0].pt()/boson.pt(),weight);
-		TVector2 met2(met[0].px(),met[0].py());
-		TVector2 boson2(boson.px(), boson.py());
-		double axialMet(boson2*met2); axialMet/=boson.pt();
-		mon.fillHisto( "axialmet",tags,axialMet,weight);
-		double mt=higgs::utils::transverseMass(boson,met[0],true);
-		mon.fillHisto( "mt",tags,mt,weight);
-		
-		if(met[0].pt()>70)mon.fillHisto("eventflow",tags,6,weight);
+		//update the weight
+		TString icat=tags[itag];
+		float iweight(weight);
+		if(gammaWgtHandler!=0) iweight *= gammaWgtHandler->getWeightFor(selPhotons[0],icat);
 
-		//pre-VBF control
-		if(njets>=2){
-		  LorentzVector dijet=selJets[0]+selJets[1];
-		  float deta=fabs(selJets[0].eta()-selJets[1].eta());
-		  float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
-		  float pt1(selJets[0].pt()),pt2(selJets[1].pt());
-		  mon.fillHisto( "leadjetpt",tags,pt1,weight);
-		  mon.fillHisto( "trailerjetpt",tags,pt2,weight);
-		  if(pt1>30 && pt2>30){
-		    float eta1(selJets[0].eta()),eta2(selJets[1].eta());
-		    float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
-		    float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
-		    mon.fillHisto("fwdjeteta",tags,fabs(fwdEta),  weight);
-		    mon.fillHisto("cenjeteta",tags,fabs(cenEta),  weight);
-		    mon.fillHisto("vbfdetajj",tags,deta,        weight);
-		    if(deta>4.0){
-		      mon.fillHisto("vbfmjj",   tags,dijet.mass(),weight,true);
-		      if(dijet.mass()>500){
-			mon.fillHisto("vbfdphijj",tags,dphi,        weight);
+		mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
+		if(passMinDphijmet){
+		  mon.fillHisto("eventflow",icat,5,iweight);
+		  
+		  mon.fillHisto( "njets",icat,njets,iweight);
+		  mon.fillHisto( "met",icat,met[0].pt(),iweight);
+		  mon.fillHisto( "balance",icat,met[0].pt()/boson.pt(),iweight);
+		  TVector2 met2(met[0].px(),met[0].py());
+		  TVector2 boson2(boson.px(), boson.py());
+		  double axialMet(boson2*met2); axialMet/=-boson.pt();
+		  mon.fillHisto( "axialmet",icat,axialMet,iweight);
+		  double mt=higgs::utils::transverseMass(boson,met[0],true);
+		  mon.fillHisto( "mt",icat,mt,iweight);
+		  
+		  if(met[0].pt()>70)mon.fillHisto("eventflow",icat,6,iweight);
+		  
+		  //pre-VBF control
+		  if(njets>=2){
+		    LorentzVector dijet=selJets[0]+selJets[1];
+		    float deta=fabs(selJets[0].eta()-selJets[1].eta());
+		    float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
+		    float pt1(selJets[0].pt()),pt2(selJets[1].pt());
+		    mon.fillHisto( "leadjetpt",icat,pt1,iweight);
+		    mon.fillHisto( "trailerjetpt",icat,pt2,iweight);
+		    if(pt1>30 && pt2>30){
+		      float eta1(selJets[0].eta()),eta2(selJets[1].eta());
+		      float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
+		      float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
+		      mon.fillHisto("fwdjeteta",icat,fabs(fwdEta),  iweight);
+		      mon.fillHisto("cenjeteta",icat,fabs(cenEta),  iweight);
+		      mon.fillHisto("vbfdetajj",icat,deta,        iweight);
+		      if(deta>4.0){
+			mon.fillHisto("vbfmjj",   icat,dijet.mass(),iweight,true);
+			if(dijet.mass()>500){
+			  mon.fillHisto("vbfdphijj",icat,dphi,        iweight);
+			}
 		      }
 		    }
 		  }
