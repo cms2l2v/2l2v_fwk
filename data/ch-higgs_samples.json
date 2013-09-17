@@ -251,6 +251,100 @@
 	        "br":[0.97485758]
              }
            ]
+        },
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[350 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-350_8TeV-pythia6",
+                "split":10,
+                "xsec":5.36621,
+	        "br":[0.981614]
+             }
+           ]
+        },
+
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[400 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-400_8TeV-pythia6",
+                "split":10,
+                "xsec":3.71904,
+	        "br":[0.985974]
+             }
+           ]
+        },
+
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[500 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6",
+                "split":10,
+                "xsec":1.87822,
+	        "br":[0.993732]
+             }
+           ]
+        },
+
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[600 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-600_8TeV-pythia6",
+                "split":10,
+                "xsec":1.00715,
+	        "br":[0.995194]
+             }
+           ]
+        },
+
+	{
+        "tag":"#splitline{H^{+}#rightarrow tb}{[700 GeV]}",
+        "isdata":false,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-700_8TeV-pythia6",
+                "split":10,
+                "xsec":0.56681,
+	        "br":[0.995767]
+             }
+           ]
         }
      ]	
 }
