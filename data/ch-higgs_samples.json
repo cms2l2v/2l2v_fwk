@@ -264,7 +264,7 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_HTB_M-350_8TeV-pythia6",
-                "split":10,
+                "split":11,
                 "xsec":5.36621,
 	        "br":[0.981614]
              }
@@ -302,7 +302,7 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6",
-                "split":10,
+                "split":11,
                 "xsec":1.87822,
 	        "br":[0.993732]
              }
@@ -340,7 +340,7 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_HTB_M-700_8TeV-pythia6",
-                "split":10,
+                "split":11,
                 "xsec":0.56681,
 	        "br":[0.995767]
              }
