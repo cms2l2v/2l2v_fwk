@@ -220,7 +220,11 @@ int main(int argc, char* argv[])
 	}
     }
 
- 
+  controlHistos.addHistogram( new TH1F("leadpt",";Transverse momentum [GeV];Events",    50,0,500) );
+  controlHistos.addHistogram( new TH1F("trailerpt",";Transverse momentum [GeV];Events", 50,0,500) );
+  controlHistos.addHistogram( new TH1F("dilpt",";|#Sigma #vec{p}_{T}| [GeV];Events",    50,0,500) );
+  controlHistos.addHistogram( new TH1F("sumpt",";#Sigma p_{T} [GeV];Events",            50,0,500) );
+
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -535,6 +539,12 @@ int main(int argc, char* argv[])
 		  data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
 		  ueAn.analyze(selLeptons,looseJets,met[0],pf,gen,ev.nvtx,iweight);
 		  if(saveSummaryTree) ueAn.fillSummaryTuple(xsecWeight);
+
+		  controlHistos.fillHisto("leadpt",    ch, leptons[0].pt(), weight);
+		  controlHistos.fillHisto("trailerpt", ch, leptons[1].pt(), weight);
+		  controlHistos.fillHisto("sumpt",     ch, leptons[0].pt()+leptons[1].pt(), weight);
+		  LorentzVector dil=leptons[0]+leptons[1];
+		  controlHistos.fillHisto("dilpt",     ch, dil.pt(), weight);
 		}
 	    }
 	}

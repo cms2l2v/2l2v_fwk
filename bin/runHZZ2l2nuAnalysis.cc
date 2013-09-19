@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
   std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
 
   GammaWeightsHandler *gammaWgtHandler=0;
-  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess);
+  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,true);
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
@@ -304,7 +304,7 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(4,"3^{rd}-lepton veto");
   h->GetXaxis()->SetBinLabel(5,"b-veto"); 
   h->GetXaxis()->SetBinLabel(6,"#Delta #phi(jet,E_{T}^{miss})>0.5");
-  h->GetXaxis()->SetBinLabel(7,"E_{T}^{miss}>70");
+  h->GetXaxis()->SetBinLabel(7,"E_{T}^{miss}>80");
 
   //pu control
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
@@ -330,6 +330,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "thirdleptonmt", ";Transverse mass(3^{rd} lepton,E_{T}^{miss}) [GeV];Events", 50,0,500) );
 
 
+  mon.addHistogram( new TH1F("csv",      ";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("jp",       ";Jet probability;Jets",50,0.,3.) );
   mon.addHistogram( new TH1F("jpb",      ";Jet probability;Jets",50,0.,3.) );
   mon.addHistogram( new TH1F("jpc",      ";Jet probability;Jets",50,0.,3.) );
@@ -339,7 +340,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("trailerjetpt", ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
   mon.addHistogram( new TH1F("cenjeteta",       ";Pseudo-rapidity;Events",25,0,5) );
-   Double_t mjjaxis[32];
+  Double_t mjjaxis[32];
   mjjaxis[0]=0.01;
   for(size_t i=1; i<20; i++)  mjjaxis[i]   =50*i;        //0-1000
   for(size_t i=0; i<5; i++)   mjjaxis[20+i]=1000+100*i; //1000-1500
@@ -360,10 +361,19 @@ int main(int argc, char* argv[])
     } 
 
   mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmetNM1",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
   mon.addHistogram( new TH1D( "balance",      ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
-  mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events", 50,0,500) );
+  mon.addHistogram( new TH1D( "balanceNM1",   ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
   mon.addHistogram( new TH1F( "axialmet",     ";Axial missing transvere energy [GeV];Events", 50,-100,150) );
-  mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass;Events", 100,0,1000) );
+  mon.addHistogram( new TH1F( "axialmetNM1",   ";Axial missing transvere energy [GeV];Events", 50,-100,150) );
+  Double_t metaxis[]={0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,125,150,175,200,250,300,400,500};
+  Int_t nmetAxis=sizeof(metaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
+  mon.addHistogram( new TH1F( "metNM1",        ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
+  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,2000};
+  Int_t nmtAxis=sizeof(mtaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass;Events",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mtNM1"  ,       ";Transverse mass;Events",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mtresponse",   ";Transverse mass response;Events", 100,0,2) );
 
   //
@@ -502,8 +512,8 @@ int main(int argc, char* argv[])
 	      if(!ev.t_bits[itrig]) continue;
 	      hasPhotonTrigger=true;
 	      triggerPrescale=ev.t_prescale[itrig];
-	      if(itrig==10) triggerThreshold=90;
-	      if(itrig==9)  triggerThreshold=75;
+	      if(itrig==10) triggerThreshold=92; //90
+	      if(itrig==9)  triggerThreshold=77; //75
 	      if(itrig==8)  triggerThreshold=50;
 	      if(itrig==7)  triggerThreshold=36;
 	      break;
@@ -875,11 +885,12 @@ int main(int argc, char* argv[])
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
 	      float jp(selJets[ijet].getVal("jp"));
-	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+	      float csv(selJets[ijet].getVal("csv"));
 	      mon.fillHisto( "jp",tags,jp,weight);
+	      mon.fillHisto( "csv",tags,csv,weight);
 
 	      if(!isMC) continue;
-
+	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
 	      int flavId=genJet.info.find("id")->second;
 	      TString jetFlav("others");
 	      if(abs(flavId)==5)      jetFlav="b";
@@ -893,29 +904,65 @@ int main(int argc, char* argv[])
 
 	      //include photon prediction from this point forward
 	      //requires looping tag by tag as weights are category-specific
+	      //the following relies on the hypothesis that the tags are ordered as follows: all, ch, ch+subtag, ch, ch+subtag, etc...
+	      //so that the ch will be assigned the weight of its subtag and all will be the summ of all ch+subtag weights
+	      std::vector<LorentzVector> massiveBoson(tags.size(),boson);
+	      std::vector<float> photonWeights(tags.size(),1.0);
+	      if(gammaWgtHandler!=0) {
+		float lastPhotonWeight(1.0), totalPhotonWeight(0.0);
+		LorentzVector lastMassiveBoson(boson);
+		for(size_t itag=0; itag<tags.size(); itag++){
+		  size_t idx(tags.size()-itag-1);
+		  float photonWeight=gammaWgtHandler->getWeightFor(boson,tags[idx]);
+		  if(tags[idx]=="all")       { 
+		    photonWeights[idx]=(totalPhotonWeight==0? 1.0:totalPhotonWeight); 
+		  }
+		  else if(photonWeight!=1.0) { 
+		    photonWeights[idx]=photonWeight; 
+		    massiveBoson[idx]=gammaWgtHandler->getMassiveP4(boson,tags[idx]);
+		    totalPhotonWeight+=photonWeight; 
+		    lastPhotonWeight=photonWeight; 
+		    lastMassiveBoson=massiveBoson[idx];
+		  }
+		  else                       { 
+		    photonWeights[idx]=lastPhotonWeight; 
+		    massiveBoson[idx]=lastMassiveBoson;
+		  }
+		}
+	      }
+	      
 	      for(size_t itag=0; itag<tags.size(); itag++){
-
+		
 		//update the weight
 		TString icat=tags[itag];
-		float iweight(weight);
-		if(gammaWgtHandler!=0) iweight *= gammaWgtHandler->getWeightFor(selPhotons[0],icat);
+		float iweight(weight*photonWeights[itag]);
+		LorentzVector iboson=massiveBoson[itag];
 
 		mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
+		if(met[0].pt()>80) mon.fillHisto( "mindphijmetNM1",icat,mindphijmet,iweight);
 		if(passMinDphijmet){
 		  mon.fillHisto("eventflow",icat,5,iweight);
 		  
 		  mon.fillHisto( "njets",icat,njets,iweight);
-		  mon.fillHisto( "met",icat,met[0].pt(),iweight);
-		  mon.fillHisto( "balance",icat,met[0].pt()/boson.pt(),iweight);
+		  mon.fillHisto( "met",icat,met[0].pt(),iweight,true);
+		  mon.fillHisto( "balance",icat,met[0].pt()/iboson.pt(),iweight);
 		  TVector2 met2(met[0].px(),met[0].py());
-		  TVector2 boson2(boson.px(), boson.py());
-		  double axialMet(boson2*met2); axialMet/=-boson.pt();
+		  TVector2 boson2(iboson.px(), iboson.py());
+		  double axialMet(boson2*met2); axialMet/=-iboson.pt();
 		  mon.fillHisto( "axialmet",icat,axialMet,iweight);
-		  double mt=higgs::utils::transverseMass(boson,met[0],true);
-		  mon.fillHisto( "mt",icat,mt,iweight);
+		  double mt=higgs::utils::transverseMass(iboson,met[0],true);
+		  mon.fillHisto( "mt",icat,mt,iweight,true);
 		  
-		  if(met[0].pt()>70)mon.fillHisto("eventflow",icat,6,iweight);
-		  
+		  if(met[0].pt()>80){
+		    mon.fillHisto("eventflow",icat,6,iweight);
+		    mon.fillHisto( "mtNM1",icat,mt,iweight,true);
+		    mon.fillHisto( "balanceNM1",icat,met[0].pt()/iboson.pt(),iweight);
+		    mon.fillHisto( "axialmetNM1",icat,axialMet,iweight);
+		  }
+		  if(mt>500){
+		    mon.fillHisto( "metNM1",icat,met[0].pt(),iweight,true);
+		  }
+
 		  //pre-VBF control
 		  if(njets>=2){
 		    LorentzVector dijet=selJets[0]+selJets[1];
