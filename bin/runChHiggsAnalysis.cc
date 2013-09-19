@@ -533,7 +533,7 @@ int main(int argc, char* argv[])
 	    if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	    selJets.push_back(jets[ijet]);
 	    //if(jets[ijet].getVal("csv") <= 0.405) continue; // CSVV1L
-	    bool hasCSVV1L(jets[ijet].getVal("csv") <= 0.405); // CSVV1L
+	    bool hasCSVV1L(jets[ijet].getVal("csv") > 0.405); // CSVV1L
 	    if(isMC){
 	      //set a unique seed
 	      double bseed_sin_phi = sin(jets[ijet].phi()*1000000);
