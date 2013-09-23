@@ -14,6 +14,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
+#include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -331,11 +332,14 @@ int main(int argc, char* argv[])
 
 
   mon.addHistogram( new TH1F("csv",      ";Combined Secondary Vertex;Jets",50,0.,1.) );
-  mon.addHistogram( new TH1F("jp",       ";Jet probability;Jets",50,0.,3.) );
+  mon.addHistogram( new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("jpb",      ";Jet probability;Jets",50,0.,3.) );
   mon.addHistogram( new TH1F("jpc",      ";Jet probability;Jets",50,0.,3.) );
   mon.addHistogram( new TH1F("jpothers", ";Jet probability;Jets",50,0.,3.) );
   TH1 *hbtags=mon.addHistogram( new TH1F("nbtags",   ";b-tag multiplicity;Events",5,0,5) );
+  TH1 *hbtagsJP=mon.addHistogram( new TH1F("nbtagsJP",   ";b-tag multiplicity;Events",5,0,5) );
   mon.addHistogram( new TH1F("leadjetpt",    ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("trailerjetpt", ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
@@ -358,6 +362,7 @@ int main(int argc, char* argv[])
       label += (ibin-1);
       hjets->GetXaxis()->SetBinLabel(ibin,label);
       hbtags->GetXaxis()->SetBinLabel(ibin,label);
+      hbtagsJP->GetXaxis()->SetBinLabel(ibin,label);
     } 
 
   mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
@@ -439,6 +444,13 @@ int main(int argc, char* argv[])
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
+
+  //b-tagging: beff and leff must be derived from the MC sample using the discriminator vs flavor
+  //the scale factors are taken as average numbers from the pT dependent curves see:
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
+  BtagUncertaintyComputer btsfutil;
+  float beff(0.841), sfb(0.99), sfbunc(0.015);
+  float leff(0.137), sfl(1.05), sflunc(0.12);
 
   //pileup weighting
   std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
@@ -748,7 +760,7 @@ int main(int argc, char* argv[])
 
       //select the jets
       data::PhysicsObjectCollection_t selJets;
-      int njets(0),nbtags(0);
+      int njets(0),nbtags(0),nbtagsJP(0);
       float mindphijmet(9999.);
       for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
@@ -767,11 +779,8 @@ int main(int argc, char* argv[])
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  // float pumva=jets[ijet].getVal("puMVA");
 	  Int_t idbits=jets[ijet].get("idbits");
 	  bool passPFloose( ((idbits>>0) & 0x1));
-	  //int puId( ( idbits >>3 ) & 0xf );
-	  //bool passLoosePuId( ( puId >> 2) & 0x1);
 	  int simplePuId( ( idbits >>7 ) & 0xf );
 	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
 	  if(jets[ijet].pt()>30)
@@ -787,7 +796,19 @@ int main(int argc, char* argv[])
 	    njets++;
 	    float dphijmet=fabs(deltaPhi(jets[ijet].phi(),met[0].phi()));
 	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
-	    if(fabs(jets[ijet].eta())<2.5) nbtags += (jets[ijet].getVal("jp")>0.264);
+	    if(fabs(jets[ijet].eta())<2.5){
+	      nbtagsJP += (jets[ijet].getVal("jp")>0.264);
+
+	      bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
+	      //update according to the SF measured by BTV
+	      if(isMC)
+		{
+		  int flavId=genJet.info.find("id")->second;
+		  if(abs(flavId)!=5 && abs(flavId)!=4) flavId=1;
+		  btsfutil.modifyBTagsWithSF(hasCSVtag, flavId,sfb,beff,sfl,leff);
+		}
+	      nbtags   += hasCSVtag;
+	    }
 	  }
 	}
       std::sort(selJets.begin(), selJets.end(), data::PhysicsObject_t::sortByPt);
@@ -889,7 +910,6 @@ int main(int argc, char* argv[])
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
 	      float jp(selJets[ijet].getVal("jp"));
 	      float csv(selJets[ijet].getVal("csv"));
-	      mon.fillHisto( "jp",tags,jp,weight);
 	      mon.fillHisto( "csv",tags,csv,weight);
 
 	      if(!isMC) continue;
@@ -898,10 +918,12 @@ int main(int argc, char* argv[])
 	      TString jetFlav("others");
 	      if(abs(flavId)==5)      jetFlav="b";
 	      else if(abs(flavId)==4) jetFlav="c";
+	      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
 	      mon.fillHisto( "jp"+jetFlav,tags,jp,weight);
 	    }
 	    mon.fillHisto( "nbtags",tags,nbtags,weight);
-	   
+	    mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
+	    
 	    if(passBtags){
 	      mon.fillHisto("eventflow",tags,4,weight);
 
@@ -996,7 +1018,7 @@ int main(int argc, char* argv[])
 	}
       }
       
-      //FIXME : LES, BTAG
+      //FIXME : BTAG
       
       //
       // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
@@ -1097,14 +1119,20 @@ int main(int argc, char* argv[])
 	 
 	  //jet is selected
 	  tightVarJets.push_back(jets[ijet]);
- 
+
 	  //check b-tag
 	  if(pt<30 || fabs(eta)>2.5) continue;
+	  if(!isMC) continue;
+	  if(!varyBtagUp && !varyBtagDown) continue;
+	  
+	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+	  int flavId=genJet.info.find("id")->second;
+	  if(abs(flavId)!=5 && abs(flavId)!=4) flavId=1;
  	  if(varyBtagUp) {
-	    //btsfutil.modifyBTagsWithSF(passLocalBveto, varJets[ijet].flavid, 0.98, 0.841*1.02, 1.21, 0.137*1.11);
+	    btsfutil.modifyBTagsWithSF(passLocalBveto, flavId, sfb+sfbunc, beff, sfl+sflunc, leff);
 	  }
  	  else if(varyBtagDown) {
-	    //btsfutil.modifyBTagsWithSF(passLocalBveto, varJets[ijet].flavid, 0.98, 0.841*0.98, 1.21, 0.137*0.89);
+	    btsfutil.modifyBTagsWithSF(passLocalBveto, flavId, sfb-sfbunc, beff, sfl-sflunc, leff);
  	  }
  	}
 	
