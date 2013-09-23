@@ -797,18 +797,31 @@ void utils::cmssw::updateJEC(data::PhysicsObjectCollection_t &jets, FactorizedJe
 //
 std::vector<LorentzVector> utils::cmssw::getMETvariations(data::PhysicsObject_t &rawMETP4, data::PhysicsObjectCollection_t &jets, data::PhysicsObjectCollection_t &leptons,bool isMC)
 {
-  std::vector<LorentzVector> newMetsP4(6,rawMETP4);
+  std::vector<LorentzVector> newMetsP4(9,rawMETP4);
   if(!isMC) return newMetsP4;
 
   LorentzVector nullP4(0,0,0,0);
   
-  //leptonic flux
-  LorentzVector leptonFlux(nullP4);
-  for(size_t ilep=0; ilep<leptons.size(); ilep++) leptonFlux += leptons[ilep];
-
   //recompute the clustered and unclustered fluxes with energy variations
-  for(size_t ivar=0; ivar<6; ivar++)
+  for(size_t ivar=1; ivar<=8; ivar++)
     {
+
+      //leptonic flux
+      LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
+      for(size_t ilep=0; ilep<leptons.size(); ilep++) {
+	float varSign( (ivar==LESUP ? 1.0 : (ivar==LESDOWN ? -1.0 : 0.0) ) );
+	int id( abs(leptons[ilep].get("id")) );
+	float sf(1.0);
+	if(id==13) sf=(1.0+varSign*0.01);
+	if(id==11) {
+	  if(fabs(leptons[ilep].eta())<1.442) sf=(1.0+varSign*0.02);
+	  else                                sf=(1.0-varSign*0.05);
+	}
+	leptonFlux += leptons[ilep];
+	lepDiff += (sf-1)*leptons[ilep];
+      }
+      
+      //clustered flux
       LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
       for(size_t ijet=0; ijet<jets.size(); ijet++)
 	{
@@ -822,7 +835,9 @@ std::vector<LorentzVector> utils::cmssw::getMETvariations(data::PhysicsObject_t 
 	  jetDiff       += (newJet-jets[ijet]);
 	  clusteredFlux += jets[ijet];
 	}
-      LorentzVector iMet=rawMETP4-jetDiff;
+      LorentzVector iMet=rawMETP4-jetDiff-lepDiff;
+
+      //unclustered flux
       if(ivar==UMETUP || ivar==UMETDOWN)
 	{
 	  LorentzVector unclusteredFlux=-(iMet+clusteredFlux+leptonFlux);
@@ -830,6 +845,7 @@ std::vector<LorentzVector> utils::cmssw::getMETvariations(data::PhysicsObject_t 
 	  iMet = -clusteredFlux -leptonFlux - unclusteredFlux;
 	}
       
+      //save new met
       newMetsP4[ivar]=iMet;
     }
   
