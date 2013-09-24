@@ -13,20 +13,17 @@ else :
     cafdir='/store/caf/user/rgerosa/powheg_lhe_production/ggH_CPS'
 
     
-baseUrl='http://tier2.ihepa.ufl.edu/~tcheng/LineShape_Lineshape_runningWidth/'
+baseUrl='http://tier2.ihepa.ufl.edu/~tcheng/HighMass/ggH_shape_HTO/Tables/'
 fOut = TFile.Open(type+"_LineShapes.root","RECREATE")
 
 #
 def getShapeFromFile(fname,col,hname) :
     hmasses = commands.getstatusoutput("cat %s | awk '{print $1}'"%fname)[1].strip().split()
     shape   = commands.getstatusoutput("cat %s | awk '{print $%d}'"%(fname,col))[1].strip().split()
-    shapeH  = TH1F(hname,hname,1000,0,4000)
-    for i in xrange(0,len(hmasses)):
-        ibin = shapeH.FindBin(float(hmasses[i]))
-        shapeH.SetBinContent(ibin,max(float(shape[i]),0))
-    norm=shapeH.Integral()
-    if(norm>0):shapeH.Scale(1./norm)
-    return shapeH
+    shapeGr=TGraph()
+    shapeGr.SetName(hname)
+    for i in xrange(0,len(hmasses)): shapeGr.SetPoint(shapeGr.GetN(),float(hmasses[i]),float(shape[i]))
+    return shapeGr
 
 
 allFiles=commands.getstatusoutput("cmsLs %s | grep -ir hmass | awk '{print $5}'"%cafdir)[1].strip().split()
@@ -72,25 +69,33 @@ for lhe_file in allFiles:
 
     #get shape + interference histograms
     for h in histos :
-        #if not found clone the baseline so that the weights will be 1
-        #it typically happens for mH<400 GeV
-        shape=None
-        if(len(errorOut)>0): shape=genH.Clone(h[1])        
-        else:                shape=getShapeFromFile(sfname,h[0],h[1])
+
+        #if not found clone the baseline so that the weights will be 1 - it typically happens for mH<400 GeV
+        shape=genH.Clone(h[1])        
         shape.SetName(h[1]+"_shape")
+        if(len(errorOut)<=0): 
+            shapeGr=getShapeFromFile(sfname,h[0],h[1])
+            shape.Reset('ICE')
+            for ibin in xrange(1,shape.GetXaxis().GetNbins()+1):
+                x=shape.GetXaxis().GetBinCenter(ibin)
+                y=max(shapeGr.Eval(x),0.)                
+                shape.SetBinContent(ibin,y)
+            norm=shape.Integral()
+            if norm>0 : shape.Scale(1./norm)
+            shapeGr.Write(h[1]+'_orig')
         h.append(shape)
         shape.Write()
+        
         refShape=genH
         if(h[1].find('cps')<0): refShape=histos[0][2]
-        shapeWgt=shape.Clone(h[1])
-        shapeWgt.Divide(refShape)
-        shapeWgtGr=TGraph(shapeWgt)
+        ratio=shape.Clone(h[1]+'_ratio')
+        ratio.Divide(refShape)
+        shapeWgtGr=TGraph(ratio)
         shapeWgtGr.SetName(h[1])
         shapeWgtGr.Write()
     commands.getstatusoutput("rm %s"%sfname)
     
     print ' ... all done: <M_H> Gen:'+str(genH.GetMean())+' CPS:'+str(histos[0][2].GetMean())
-    
 
 fOut.Close()
     

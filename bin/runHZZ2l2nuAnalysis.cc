@@ -449,8 +449,8 @@ int main(int argc, char* argv[])
   //the scale factors are taken as average numbers from the pT dependent curves see:
   //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
   BtagUncertaintyComputer btsfutil;
-  float beff(0.841), sfb(0.99), sfbunc(0.015);
-  float leff(0.137), sfl(1.05), sflunc(0.12);
+  float beff(0.68), sfb(0.99), sfbunc(0.015);
+  float leff(0.13), sfl(1.05), sflunc(0.12);
 
   //pileup weighting
   std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
