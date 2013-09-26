@@ -7,8 +7,10 @@ Mailto: pietro.vischia at gmail.com
 Analyze
 -------
 
-runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/539_ntuples/ -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
-runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples/             -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
+runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/539_ntuples/ -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
+
+runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
+runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples/             -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
 
 
 Plots & tables
@@ -46,6 +48,8 @@ Options
 ###
 CHANGELOG
 ###
+2013-09-26: Datacards for likelihood fit
+2013-09-17: Extended mass range (350, 400, 500, 600, 700) 
 2013-08-31: Top pt reweighting and so on
 2013-07-22: finished adding samples
 2013-07-18: fixed nasty bug
