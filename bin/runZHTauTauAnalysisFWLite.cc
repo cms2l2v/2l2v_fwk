@@ -672,7 +672,7 @@ int main(int argc, char* argv[])
 //         if(utils::cmssw::relIso(selLeptons[l1], rho)>0.25)continue;
 //         if(utils::cmssw::relIso(selLeptons[l2], rho)>0.25)continue;
 
-         if((selLeptons[l1].pt() + selLeptons[l2].pt())<25)continue;
+//         if((selLeptons[l1].pt() + selLeptons[l2].pt())<25)continue;
  
          int muId, elId;
          if(abs(selLeptons[l1].id)==13){muId=l1; elId=l2;}else{muId=l2; elId=l1;}
@@ -700,7 +700,7 @@ int main(int argc, char* argv[])
          if(abs(selLeptons[l1].id)==11 && (!selTaus[t1].passId(llvvTAUID::decayModeFinding) || !selTaus[t1].passId(llvvTAUID::againstElectronTightMVA3) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) ))continue;
          if(abs(selLeptons[l1].id)!=11 && (!selTaus[t1].passId(llvvTAUID::decayModeFinding) || !selTaus[t1].passId(llvvTAUID::againstElectronLoose    ) || !selTaus[t1].passId(llvvTAUID::againstMuonTight2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) ))continue;
 
-         if((selLeptons[l1].pt()+selTaus[t1].pt())<45 )continue;
+//         if((selLeptons[l1].pt()+selTaus[t1].pt())<45 )continue;
 
          higgsCand=selLeptons[l1]+selTaus[t1]; higgsCandId=selLeptons[l1].id*selTaus[t1].id;  if(abs(selLeptons[l1].id)==11){higgsCandEl=l1;}else{higgsCandMu=l1;} higgsCandT1=t1;
          break;//we found a candidate, stop the loop         
@@ -726,7 +726,7 @@ int main(int argc, char* argv[])
          if(!selTaus[t1].passId(llvvTAUID::decayModeFinding) || !selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) )continue;
          if(!selTaus[t2].passId(llvvTAUID::decayModeFinding) || !selTaus[t2].passId(llvvTAUID::againstElectronLoose) || !selTaus[t2].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t2].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) )continue;
 
-         if((selTaus[t1].pt()+selTaus[t2].pt())<75)continue;
+//         if((selTaus[t1].pt()+selTaus[t2].pt())<75)continue;
 
          if(selTaus[t1].id*selTaus[t2].id<0){        
             higgsCand=selTaus[t1]+selTaus[t2]; higgsCandId=selTaus[t1].id*selTaus[t2].id;  higgsCandT1=t1; higgsCandT2=t2;
