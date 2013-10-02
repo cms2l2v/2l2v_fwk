@@ -140,8 +140,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('ZZ/optim_cut') 
-
+   cutsH = file.Get('WZ/optim_cut') 
 
    ######################################################################
 
@@ -150,43 +149,29 @@ for signalSuffix in signalSuffixVec :
       commandToRun = []
 
       FILE = open(OUT+"/LIST.txt","w")
-      for i in range(1,cuts1.GetNbinsX()):
-         #only run the optimization in step of 10GeV in MET (needed to reduce the number of points!)
-         if(cuts1.GetBinContent(i)%10!=0): continue;
-
-         #X axis of the 2D histograms does not contains the MT variation anymore -> not a big deal we can anyway cut on it via the --shapeMin/--shapeMax arguments of computeLimit.
-         for mtmin in range(125,550,25):
-            mtmin_ = mtmin
-            if(mtmin_<=125):mtmin_=0
-            if(mtmin_>350 and mtmin_%50!=0):continue;
-   #         if(mtmin_<450):continue #ONLY FOR HIGH MASS !!!!!!!!!!!!!!!!!
-            for mtmax in range(mtmin+50,mtmin+500,25):
-               mtmax_ = mtmax
-               if(mtmax_>=mtmin_+455):mtmax_=9000 
-               if(mtmin_==0 and mtmax_!=9000):continue;
-               if(mtmin_>350 and mtmax_%100!=0):continue;
-               if(mtmax_-mtmin_>200 and mtmax_%50!=0):continue;
-               #if(mtmax_!=9000):continue; #ONLY FOR HIGH MASS !!!!!!!!!!!!!!!!!
-               FILE.writelines("index="+str(i).rjust(5) + " --> met>" + str(cuts1.GetBinContent(i)).rjust(5) + " " + str(mtmin_).rjust(5) + '<mt<'+str(mtmax_).rjust(5) + "\n")
-
-               #create wrappper script for each set of cuts ans submit it
-               SCRIPT = open(OUT+'script_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.sh',"w")
-               SCRIPT.writelines('echo "TESTING SELECTION : ' + str(i).rjust(5) + ' --> met>' + str(cuts1.GetBinContent(i)).rjust(5) + ' ' + str(mtmin_) + '<mt<'+str(mtmax_)+'";\n')
-               SCRIPT.writelines('cd ' + CMSSW_BASE + '/src;\n')
-               SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
-               SCRIPT.writelines("eval `scram r -sh`;\n")
-               SCRIPT.writelines('cd /tmp/;\n')
-               for m in MASS:
-                  shapeBasedOpt=''
-                  cardsdir = 'H'+ str(m);
-                  SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
-                  SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --shapeMin " + str(mtmin_) + " --shapeMax " + str(mtmax_) + " " + LandSArg + " ;\n")
-                  SCRIPT.writelines("sh combineCards.sh;\n")
-                  SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > COMB.log;\n")
-                  SCRIPT.writelines('tail -n 100 COMB.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.log;\n')
-                  SCRIPT.writelines('cd ..;\n\n')
-               SCRIPT.close()
-               commandToRun.append("bsub -o /dev/null -G u_zh -q 8nh -J optim"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_) + " 'sh " + OUT+"script_"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+".sh &> "+OUT+"script_"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+".log'")
+      for i in range(1, cutsH.GetXaxis().GetNbins()):
+#         FILE.writelines("index="+str(i).rjust(5) + " --> cut>" + str(cuts1.GetBinContent(i)).rjust(5) + " " + str(mtmin_).rjust(5) + '<mt<'+str(mtmax_).rjust(5) + "\n")
+          #create wrappper script for each set of cuts ans submit it
+          mtmin_ = 0
+          mtmax_ = 9999
+          SCRIPT = open(OUT+'script_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.sh',"w")
+          SCRIPT.writelines('echo "TESTING SELECTION : ' + str(i).rjust(5) + ' --> met>' + str(cutsH.GetBinContent(i,1)).rjust(5) + ' ' + str(mtmin_) + '<mt<'+str(mtmax_)+'";\n')
+          SCRIPT.writelines('cd ' + CMSSW_BASE + '/src;\n')
+          SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
+          SCRIPT.writelines("eval `scram r -sh`;\n")
+          SCRIPT.writelines('cd /tmp/;\n')
+          for m in MASS:
+             if(m!=125):continue
+             shapeBasedOpt=''
+             cardsdir = 'H'+ str(m);
+             SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
+             SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --shapeMin " + str(mtmin_) + " --shapeMax " + str(mtmax_) + " " + LandSArg + " ;\n")
+             SCRIPT.writelines("sh combineCards.sh;\n")
+             SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > COMB.log;\n")
+             SCRIPT.writelines('tail -n 100 COMB.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.log;\n')
+             SCRIPT.writelines('cd ..;\n\n')
+             SCRIPT.close()
+             commandToRun.append("bsub -o /dev/null -G u_zh -q 8nh -J optim"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_) + " 'sh " + OUT+"script_"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+".sh &> "+OUT+"script_"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+".log'")
       FILE.close()
 
       for c in commandToRun:
@@ -214,7 +199,7 @@ for signalSuffix in signalSuffixVec :
             fields = f.split('_')
             N = len(fields)
             index = fields[N-3] 
-            BestLimit.append("mH="+str(m)+ " --> " + ('%07.3f' % float(median)) + " " + str(cuts1.GetBinContent(int(index))).rjust(5) + " " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
+            BestLimit.append("mH="+str(m)+ " --> " + ('%07.3f' % float(median)) + " " + str(cutsH.GetBinContent(int(index),1)).rjust(5) + " " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
 
          #sort the limits for this mass
          BestLimit.sort()
