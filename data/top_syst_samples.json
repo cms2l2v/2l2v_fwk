@@ -1,22 +1,6 @@
 {
     "proc":[
 	{
-	 "tag":"t#bar{t}systmcatnlo",
-         "isdata":false,
-         "spimpose":true,
-         "color":"8",
-	 "lcolor":1,
-  	 "mctruthmode":1,
-	 "isinvisible":true,
-         "data":[
-		{
- 	        "dtag":"MC8TeV_TT_mcatnlo",
-                "split":4,
-                "xsec":245.8
-                }
-	   ]
-	},
-	{
 	 "tag":"t#bar{t}systpowhegpy",
          "isdata":false,
          "spimpose":true,
@@ -107,20 +91,6 @@
 		"split":5
                 }
 	   ]
-	},
-	{
-           "tag":"Z#rightarrow#tau#tausystdata",
-           "isdata":true,
-           "color":1,
-           "fill":0,
-           "marker":20,
-	   "isinvisible":true,
-           "data":[
-               { "dtag":"Data8TeV_DYTauEmbedded_2012A" },
-               { "dtag":"Data8TeV_DYTauEmbedded_2012B" },
-               { "dtag":"Data8TeV_DYTauEmbedded_2012C" },
-               { "dtag":"Data8TeV_DYTauEmbedded_2012D" }
-	    ]
 	},
 	{
          "tag":"t#bar{t}systq2down",

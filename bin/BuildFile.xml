@@ -4,7 +4,9 @@
 <use name="roofit"/>
 <use name="roostats"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
+<use name="PhysicsTools/FWLite"/>
 <environment>
+  <bin                                   file="FitSecVtxDistributions.cxx"></bin>
   <bin name="runTopAnalysis"             file="runTopAnalysis.cc"></bin> 
   <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
   <bin name="runHZZ2l2nuAnalysis"        file="runHZZ2l2nuAnalysis.cc"></bin>

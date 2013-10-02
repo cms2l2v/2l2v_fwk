@@ -67,6 +67,7 @@ private:
   
   // ----------member data ---------------------------
   TH1F *h_cutflow;
+  TH1F *h_ptTop, *h_ptTopFS;
   TH1F *h_mt_gen,           *h_mt_decay,           *h_mt_decay_fs;
   TH1F *h_deltaMt_gen,      *h_deltaMt_decay,      *h_deltaMt_decay_fs;
   TH2F *h_deltaMt_gen_ttpt, *h_deltaMt_decay_ttpt, *h_deltaMt_decay_fs_ttpt;
@@ -135,6 +136,10 @@ TopMassDifferenceAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSet
       std::string name( pid==6 ? "t" : "tbar" );
       selParticles[ name ] = TLorentzVector(genParticle->px(), genParticle->py(), genParticle->pz(), genParticle->energy());
 
+      const reco::Candidate *fsTop = utils::cmssw::getGeneratorFinalStateFor( &(*genParticle),false);
+      h_ptTop->Fill(genParticle->pt());
+      h_ptTopFS->Fill(fsTop->pt());
+
       //analyze the decay products of the top
       for(size_t idaughter=0; idaughter<genParticle->numberOfDaughters(); idaughter++){
 
@@ -201,6 +206,9 @@ TopMassDifferenceAnalyzer::beginJob()
   //book the histograms
   edm::Service<TFileService> fs;
   h_cutflow          = fs->make<TH1F>("cutflow", "cutflow"    ,5,0,5);
+  h_ptTop            = fs->make<TH1F>("pttop",        ";Generated top p_{T} [GeV];Events x2",100,100.,250.);
+  h_ptTopFS           = fs->make<TH1F>("ptfstop",        ";Generated top p_{T} [GeV];Events x2",100,100.,250.);
+
   h_mt_gen           = fs->make<TH1F>("mt",        ";Generated top mass [GeV];Events x2",100,100.,250.);
   h_mt_decay         = fs->make<TH1F>("mtdecay",   ";Generated top mass [GeV];Events x2",100,100.,250.);
   h_mt_decay_fs      = fs->make<TH1F>("mtdecayFS", ";Generated top mass [GeV];Events x2",100,100.,250.);
