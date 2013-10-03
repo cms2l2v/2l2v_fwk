@@ -122,6 +122,8 @@ int main(int argc,char *argv[])
       systVars.push_back("jerdown");
       systVars.push_back("umetup");
       systVars.push_back("umetdown");
+      systVars.push_back("topptup");
+      systVars.push_back("topptdown");
 
       //theoretical variations
       //systVars.push_back("systmcatnlo");

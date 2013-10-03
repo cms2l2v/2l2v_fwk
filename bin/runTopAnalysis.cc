@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
     }
 
 
-  TString ctrlCats[]={"","mmet","eq1jets","lowmet","eq1jetslowmet","osbtag","osbveto"};
+  TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","osbtag","osbveto"};
   for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
     {
       controlHistos.addHistogram( new TH1F("eeta", "; Pseudo-rapidity; Electrons", 50,0,2.5) );
@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll",";Dilepton invariant mass [GeV];Events",50,0,250) );
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll",";Dilepton transverse momentum [GeV];Events",50,0,250) );
       controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met",";Missing transverse energy [GeV];Events",50,0,500) );
-      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"metnotopt",";Missing transverse energy [GeV];Events",50,0,500) );
+      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"metnotoppt",";Missing transverse energy [GeV];Events",50,0,500) );
       TH1F *h=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"njets",";Jet multiplicity;Events",6,0,6) );
       TH1F *h2=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"njetsnotoppt",";Jet multiplicity;Events",6,0,6) );
       for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
   controlHistos.addHistogram( new TH1F("trailerpt",";Transverse momentum [GeV];Events", 50,0,500) );
   controlHistos.addHistogram( new TH1F("dilpt",";|#Sigma #vec{p}_{T}| [GeV];Events",    50,0,500) );
   controlHistos.addHistogram( new TH1F("sumpt",";#Sigma p_{T} [GeV];Events",            50,0,500) );
-  TH1F *hch=controlHistos.addHistogram( new TH1F("dilcharge",";Charge;Events",2,0,2) );
+  TH1F *hch=(TH1F *)controlHistos.addHistogram( new TH1F("dilcharge",";Charge;Events",2,0,2) );
   hch->GetXaxis()->SetBinLabel(1,"os");
   hch->GetXaxis()->SetBinLabel(2,"ss");
   
@@ -315,6 +315,7 @@ int main(int argc, char* argv[])
   //
   DuplicatesChecker duplicatesChecker;
   int nDuplicates(0);
+  int nChargeFlaws(0);
   for (int inum=0; inum < totalEntries; ++inum)
     {
       if(inum%500==0) { printf("\r [ %d/100 ]",int(100*float(inum)/float(totalEntries))); cout << flush; }
@@ -425,6 +426,11 @@ int main(int argc, char* argv[])
 
 	  if(!passKin || !passId || !passIso) continue;
 	  selLeptons.push_back(leptons[ilep]);
+
+	  const data::PhysicsObject_t &genLep=leptons[ilep].getObject("gen");
+	  int genId=genLep.info.find("id")->second;
+	  if(genId!=0 && id!=genId)  nChargeFlaws++;
+	  
 	}
       sort(selLeptons.begin(),selLeptons.end(),data::PhysicsObject_t::sortByPt);
      
@@ -505,18 +511,21 @@ int main(int argc, char* argv[])
       // NOMINAL SELECTION CONTROL
       //
       // define control category and define DY weight: to be only applied to events passing the MET cut (it's an efficiency correction)
+      // for events with 0 jets with the DY sf from the 1 jet bin
       std::vector<TString> ctrlCategs;
       float dyWeight(1.0),ibtagdyWeight(1.0);
-      if(isOS && passDilSelection && passJetSelection  && passMetSelection)   { ctrlCategs.push_back("");        if(dySFmap.find(chName)!=dySFmap.end()) dyWeight=dySFmap[chName]; }
-      if(isOS && passDilSelection && passJetSelection                     )   { ctrlCategs.push_back("mmet"); }
-      if(isOS && passDilSelection && selJets.size()==1 && passMetSelection)   { ctrlCategs.push_back("eq1jets"); if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) dyWeight=dySFmap[chName+"eq1jets"];}
-      if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  { ctrlCategs.push_back("lowmet"); }
-      if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  { ctrlCategs.push_back("eq1jetslowmet"); }
-      if(isOS && passDilSelection && passJetSelection  && nbtags>=2)          { ctrlCategs.push_back("osbtag");  if(dySFmap.find(chName+"osbtag")!=dySFmap.end())  ibtagdyWeight=dySFmap[chName+"osbtag"]; }
-      if(isOS && passDilSelection && passJetSelection  && nbtags==0)          { ctrlCategs.push_back("osbveto"); }
+      if     (isOS && passDilSelection && passJetSelection  && passMetSelection)   { ctrlCategs.push_back("");                               if(dySFmap.find(chName)!=dySFmap.end()) dyWeight=dySFmap[chName]; }
+      else if(isOS && passDilSelection                      && passMetSelection)   { if(selJets.size()==1) ctrlCategs.push_back("eq1jets");  if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) dyWeight=dySFmap[chName+"eq1jets"]; }
+      else if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  { ctrlCategs.push_back("lowmet"); }
+      else if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  { ctrlCategs.push_back("eq1jetslowmet"); }
+      else if(isOS && passDilSelection && passJetSelection  && nbtags>=2)          { ctrlCategs.push_back("osbtag");                         if(dySFmap.find(chName+"osbtag")!=dySFmap.end())  ibtagdyWeight=dySFmap[chName+"osbtag"]; }
+      else if(isOS && passDilSelection && passJetSelection  && nbtags==0)          { ctrlCategs.push_back("osbveto"); }
 
       //control distributions
-      if(isOS && passDilSelection && passMetSelection) controlHistos.fillHisto("njets",        ch, selJets.size(), weight*dyWeight);
+      if(isOS && passDilSelection && passMetSelection) {
+	controlHistos.fillHisto("njets",        ch, selJets.size(), weight*dyWeight);
+	controlHistos.fillHisto("njetsnotoppt",  ch, selJets.size(), weight*dyWeight/wgtTopPt);
+      }
       for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	{
 	  float iweight(weight);
@@ -535,7 +544,7 @@ int main(int argc, char* argv[])
 	  controlHistos.fillHisto(ctrlCategs[icat]+"mll",          ch, mll,            iweight);
 	  controlHistos.fillHisto(ctrlCategs[icat]+"ptll",         ch, ll.pt(),        iweight);
 	  controlHistos.fillHisto(ctrlCategs[icat]+"met",          ch, met[0].pt(),    iweight);
-	  controlHistos.fillHisto(ctrlCategs[icat]+"metnotoppt",          ch, met[0].pt(),    iweight/wgtTopPt);
+	  controlHistos.fillHisto(ctrlCategs[icat]+"metnotoppt",   ch, met[0].pt(),    iweight/wgtTopPt);
 	  if(ctrlCategs[icat]!="") {
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njets",  ch, selJets.size(), iweight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njetsnotoppt",  ch, selJets.size(), iweight/wgtTopPt);
@@ -600,11 +609,10 @@ int main(int argc, char* argv[])
 	  if(isOS) {
 	    controlHistos.fillHisto("evtflow", ch, 4, iweight);
 
-	    controlHistos.fillHisto("leadpt",    ch, leptons[0].pt(), iweight);
-	    controlHistos.fillHisto("trailerpt", ch, leptons[1].pt(), iweight);
-	    controlHistos.fillHisto("sumpt",     ch, leptons[0].pt()+leptons[1].pt(), iweight);
-	    LorentzVector dil=leptons[0]+leptons[1];
-	    controlHistos.fillHisto("dilpt",     ch, dil.pt(), iweight);
+	    controlHistos.fillHisto("leadpt",    ch, selLeptons[0].pt(), iweight);
+	    controlHistos.fillHisto("trailerpt", ch, selLeptons[1].pt(), iweight);
+	    controlHistos.fillHisto("sumpt",     ch, selLeptons[0].pt()+selLeptons[1].pt(), iweight);
+	    controlHistos.fillHisto("dilpt",     ch, ll.pt(), iweight);
     	    
 	    //save selected event
 	    if(spyEvents){
@@ -689,6 +697,7 @@ int main(int argc, char* argv[])
 	}
     }
   if(nDuplicates) cout << "[Warning] found " << nDuplicates << " duplicate events in this ntuple" << endl;
+  if(nChargeFlaws) cout << "[Warning] found " << nChargeFlaws << " charge flaws between reco and gen" << endl;
 
   //
   // close opened files

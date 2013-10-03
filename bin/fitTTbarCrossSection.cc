@@ -42,8 +42,9 @@ TString histo("finalevtflow");
 std::set<TString> systVars;
 std::vector<int> binsToProject;
 std::vector<std::string> channels;
-float lumiUnc(0.044);
-float selEffUnc(0.02);
+float lumiUnc(0.027);
+float selEffUnc(0.020);
+float pdfUnc(0.026);
 float iEcm(8);
 
 //wrapper for a projected shape for a given set of cuts
@@ -76,6 +77,7 @@ TString convertNameForDataCard(TString title);
 void TLatexToTex(TString &expr);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
+std::pair<TH1F *, TH1F *> generateVariationFrom(TH1F *templ,float relVar,TString newName);
 
 //uncertainties are expressed relatively
 std::map<TString,float> getDYUncertainties(TString ch)
@@ -86,16 +88,51 @@ std::map<TString,float> getDYUncertainties(TString ch)
   if(ch=="mumu") dybin=1;
   if(ch=="emu")  dybin=2;
 
-  //build the uncertainty map (for an inclusive channel I'm averaging the unc - it doesn't really matter as it will be combined in the end)
+  //build the uncertainty map (for an inclusive channel I'm averaging the unc - it doesn't really matter as it will be combined, combined fit taking all properly into accout)
+  float dysf[]        = {1.675,     1.578,      1.072};
   std::map<TString,float> dysfUncs; 
-  float stat[]        = {0.025,      0.021,     0.043 };    dysfUncs["stat"]         = (dybin==-1 ? (stat[0]+stat[1]+stat[2])/3             : stat[dybin]);
-  float jes[]         = {0.0056,     0.0089,    0.0046};    dysfUncs["jes"]          = (dybin==-1 ? (jes[0]+jes[1]+jes[2])/3                : jes[dybin]);
-  float jer[]         = {0.0012,     0.0014,    0.0078};    dysfUncs["jer"]          = (dybin==-1 ? (jer[0]+jer[1]+jer[2])/3                : jer[dybin]);
-  float pu[]          = {0.0018,     0.0055,    0.0097};    dysfUncs["pu"]           = (dybin==-1 ? (pu[0]+pu[1]+pu[2])/3                   : pu[dybin]);
-  float mcsignal[]    = {0.1094,     0.1194,    0.0623};    dysfUncs["mcsignal"]     = (dybin==-1 ? (mcsignal[0]+mcsignal[1]+mcsignal[2])/3 : mcsignal[dybin]);
-  float q2[]          = {0.1056,     0.1056,    0.1056 };   dysfUncs["q2"]           = (dybin==-1 ? (q2[0]+q2[1]+q2[2])/3                   : q2[dybin]);
-  float meps[]        = {0.1425,     0.1425,    0.1425 };   dysfUncs["meps"]         = (dybin==-1 ? (meps[0]+meps[1]+meps[2])/3             : meps[dybin]);
-  float dy_template[] = {0.12,       0.12,      0.01 };  
+  float stat[]        = {0.083,      0.068,     0.054 };    
+  float jes[]         = {0.001,      0.001,     0.090 };    
+  float jer[]         = {0.001,      0.001,     0.034 };    
+  float pu[]          = {0.002,      0.001,     0.001 };  
+  float mcsignal[]    = {0.034,      0.010,     0.049 }; 
+  float q2[]          = {0.191,      0.200,     0.047 };  
+  float meps[]        = {0.200,      0.168,     0.121 };   
+  float dy_template[] = {0.170,      0.160,     0.030 };  
+  float toppt[]       = {0.109,      0.106,     0.120 };
+  float umet[]        = {0.030,      0.030,     0.042 };
+  float had[]         = {0.015,      0.030,     0.054 };
+  float ue[]          = {0.012,      0.010,     0.019 };
+  float cr[]          = {0.015,      0.003,     0.033 };
+  for(size_t i=0; i<3; i++)
+    {
+      stat[i]/=dysf[i];
+      jes[i]/=dysf[i];
+      jer[i]/=dysf[i];
+      pu[i]/=dysf[i];
+      mcsignal[i]/=dysf[i];
+      q2[i]/=dysf[i];
+      meps[i]/=dysf[i];
+      dy_template[i]/=dysf[i];
+      toppt[i]/=dysf[i];
+      umet[i]/=dysf[i];
+      had[i]/=dysf[i];
+      ue[i]/=dysf[i];
+      cr[i]/=dysf[i];
+    }
+
+  dysfUncs["stat"]         = (dybin==-1 ? (stat[0]+stat[1]+stat[2])/3             : stat[dybin]);
+  dysfUncs["jes"]          = (dybin==-1 ? (jes[0]+jes[1]+jes[2])/3                : jes[dybin]);
+  dysfUncs["jer"]          = (dybin==-1 ? (jer[0]+jer[1]+jer[2])/3                : jer[dybin]);
+  dysfUncs["pu"]           = (dybin==-1 ? (pu[0]+pu[1]+pu[2])/3                   : pu[dybin]);
+  dysfUncs["mcsignal"]     = (dybin==-1 ? (mcsignal[0]+mcsignal[1]+mcsignal[2])/3 : mcsignal[dybin]);
+  dysfUncs["q2"]           = (dybin==-1 ? (q2[0]+q2[1]+q2[2])/3                   : q2[dybin]);
+  dysfUncs["meps"]         = (dybin==-1 ? (meps[0]+meps[1]+meps[2])/3             : meps[dybin]);
+  dysfUncs["toppt"]        = (dybin==-1 ? (toppt[0]+toppt[1]+toppt[2])/3          : toppt[dybin]);
+  dysfUncs["umet"]         = (dybin==-1 ? (umet[0]+umet[1]+umet[2])/3             : umet[dybin]);
+  dysfUncs["had"]          = (dybin==-1 ? (had[0]+had[1]+had[2])/3                : had[dybin]);
+  dysfUncs["ue"]           = (dybin==-1 ? (ue[0]+ue[1]+ue[2])/3                   : ue[dybin]);
+  dysfUncs["cr"]           = (dybin==-1 ? (cr[0]+cr[1]+cr[2])/3                   : cr[dybin]);
   if(dybin==-1)
     {
       dysfUncs["dy_ee_template"]   = dy_template[0];
@@ -107,6 +144,22 @@ std::map<TString,float> getDYUncertainties(TString ch)
 
   return dysfUncs;
 }
+
+
+//shift up down by similar factor
+std::pair<TH1F *, TH1F *> generateVariationFrom(TH1F *templ,float relVar,TString newName)
+{
+  std::pair<TH1F *, TH1F *> toReturn((TH1F *) templ->Clone(newName+"up"),(TH1F *) templ->Clone(newName+"down"));
+  toReturn.first->SetDirectory(0);
+  toReturn.second->SetDirectory(0);
+  for(int ibin=1; ibin<=templ->GetXaxis()->GetNbins(); ibin++) 
+    {
+      toReturn.first ->SetBinContent(ibin,std::min(2*templ->GetBinContent(ibin), std::max(0.01*templ->GetBinContent(ibin), templ->GetBinContent(ibin)*(1+relVar))));
+      toReturn.second->SetBinContent(ibin,std::min(2*templ->GetBinContent(ibin), std::max(0.01*templ->GetBinContent(ibin), templ->GetBinContent(ibin)*(1-relVar))));
+    }
+  return toReturn;
+}
+
 
 
 //
@@ -189,11 +242,13 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
       for(int ivar = 1; ivar<= (syst==0? 1 : syst->GetNbinsX());ivar++)
 	{
 	  TString varName = (syst==0? "" : syst->GetXaxis()->GetBinLabel(ivar));
+	  cout << varName << endl;
 	  if(!varName.IsNull()) systVars.insert(varName);
 	  
 	  TString histoName = ch;  if(!ch.IsNull()) histoName += "_"; histoName += histo+varName ;
 	  TH1F* hshape = (TH1F*) pdir->Get( histoName );
 	  if(hshape==0) continue;
+	  cout << histoName << endl;
 
 	  //project out required bins (set the others to 0)
 	  if(binsToProject.size()) {
@@ -229,13 +284,15 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	      if(Process[i]["data"].daughters()[0].isTag("xsecunc") )  thxsecunc = Process[i]["data"].daughters()[0]["xsecunc"].toDouble();
 	      shape.crossSections[proc]=std::pair<float,float>(thxsec,thxsecunc);
 	      shape.signal=hshape;
-	      
+	      cout << "Signal " << thxsec << endl;
+
 	      //get alternative shapes for signal from systematics file
 	      if(systF)
 		{
-		  TString signalVars[]={"tunep11","mcatnlo","q2up","q2down","mepsup","mepsdown"};
+		  TString signalVars[]={"powhegpy","q2up","q2down","mepsup","mepsdown"};
 		  for(size_t isigvar=0; isigvar<sizeof(signalVars)/sizeof(TString); isigvar++)
 		    {
+		      cout << isigvar << " " << signalVars[isigvar] << endl;
 		      TH1F *hmcsig=(TH1F *)systF->Get("t#bar{t}syst"+signalVars[isigvar]+"/"+histoName);
 		      if(hmcsig==0) { cout << "Skipping null variation: " << signalVars[isigvar] << endl;  continue; }
 		      for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
@@ -263,11 +320,72 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 			    {
 			      float var=hmcsig->GetBinContent(ibin)-hshape->GetBinContent(ibin);
 			      float newVal(hshape->GetBinContent(ibin)-var);
+			      if(newVal<0) newVal=0; 
 			      hmcsigdown->SetBinContent(ibin,newVal);
 			    }
 			  shape.signalVars[signalVars[isigvar]+"down"] = hmcsigdown;
 			}
 		    }
+
+		  //UE tune 
+		  TH1F *hp11   = (TH1F *)systF->Get("t#bar{t}systtunep11/"+histoName);
+		  TH1F *hnocr  = (TH1F *)systF->Get("t#bar{t}systtunep11nocr/"+histoName);
+		  TH1F *hmpihi = (TH1F *)systF->Get("t#bar{t}systtunep11mpihi/"+histoName);
+		  TH1F *htev   = (TH1F *)systF->Get("t#bar{t}systtunep11tev/"+histoName);
+		  if(hp11)
+		    {
+		      float totalp11(0),totalnocr(0), totalmpihi(0), totaltev(0);
+		      for(int ibin=1; ibin<=hp11->GetXaxis()->GetNbins(); ibin++) { 
+			if(find(binsToProject.begin(),binsToProject.end(),ibin) != binsToProject.end()) continue;
+			totalp11   += hp11->GetBinContent(ibin);
+			if(hnocr)  totalnocr  += hnocr->GetBinContent(ibin);
+			if(hmpihi) totalmpihi += hmpihi->GetBinContent(ibin);
+			if(htev)   totaltev   += htev->GetBinContent(ibin);
+		      }
+
+		      //UE tune
+		      if(totalp11>0 && totalmpihi>0 && totaltev>0)
+			{
+			  float uncmpi(fabs(totalmpihi/totalp11)); if(uncmpi<1) uncmpi=2-uncmpi;
+			  float unctev(fabs(totaltev/totalp11));   if(unctev<1) unctev=2-unctev;
+			  float unc=max(uncmpi,unctev);
+			  TString newName(hshape->GetName()); newName+="ue";
+			  std::pair<TH1F *, TH1F *> hVars=generateVariationFrom(hshape,1-unc,newName);
+			  shape.signalVars["ueup"]  = hVars.first;
+			  shape.signalVars["uedown"]= hVars.second;		  
+			}
+		      
+		      //CR
+		      if(totalp11>0 && totalnocr>0)
+		      {
+			float unc=fabs(totalnocr/totalp11); if(unc<1) unc=2-unc;
+			TString newName(hshape->GetName()); newName+="cr";
+			std::pair<TH1F *, TH1F *> hVars=generateVariationFrom(hshape,1-unc,newName);
+			shape.signalVars["crup"]  =hVars.first;
+			shape.signalVars["crdown"]=hVars.second;		  
+		      }
+		    }
+
+		  //hadronization
+		  TH1F *hpythia=(TH1F *)systF->Get("t#bar{t}systpowhegpy/"+histoName);
+		  TH1F *hhw=(TH1F *)systF->Get("t#bar{t}systpowheghw/"+histoName);
+		  if(hpythia && hhw){
+		    float totalpy(0),totalhw(0);
+		    for(int ibin=1; ibin<=hpythia->GetXaxis()->GetNbins(); ibin++) { 
+		      if(find(binsToProject.begin(),binsToProject.end(),ibin) != binsToProject.end()) continue;
+		      totalpy += hpythia->GetBinContent(ibin);
+		      totalhw += hhw->GetBinContent(ibin);
+		    }
+		    if(totalpy>0 && totalhw>0)
+		      {
+			float unc=fabs(totalhw/totalpy); if(unc<1) unc=2-unc;
+			TString newName(hshape->GetName()); newName+="had";
+			std::pair<TH1F *, TH1F *> hVars=generateVariationFrom(hshape,1-unc,newName);
+			shape.signalVars["hadup"]  =hVars.first;
+			shape.signalVars["haddown"]=hVars.second;		  
+		      }
+		  }
+		  
 		}
             }
 	    else{
@@ -292,15 +410,9 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 		  systVars.insert(dyUncIt->first+"up");  systVars.insert(dyUncIt->first+"down");
 
 		  TString newName(hshape->GetName()); newName+=dyUncIt->first;
-		  TH1F *dyUncUp   = (TH1F *) hshape->Clone(newName+"up");   dyUncUp->SetDirectory(0);
-		  TH1F *dyUncDown = (TH1F *) hshape->Clone(newName+"down"); dyUncDown->SetDirectory(0);
-		  for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) 
-		    {
-		      dyUncUp  ->SetBinContent(ibin,std::min(2*hshape->GetBinContent(ibin), std::max(0.01*hshape->GetBinContent(ibin), hshape->GetBinContent(ibin)*(1+dyUncIt->second))));
-		      dyUncDown->SetBinContent(ibin,std::min(2*hshape->GetBinContent(ibin), std::max(0.01*hshape->GetBinContent(ibin), hshape->GetBinContent(ibin)*(1-dyUncIt->second))));
-		    }
-		  shape.bckgVars[proc][dyUncIt->first+"up"]=dyUncUp;
-		  shape.bckgVars[proc][dyUncIt->first+"down"]=dyUncDown;
+		  std::pair<TH1F *, TH1F *> dyVars=generateVariationFrom(hshape,dyUncIt->second,newName);
+		  shape.bckgVars[proc][dyUncIt->first+"up"]=dyVars.first;
+		  shape.bckgVars[proc][dyUncIt->first+"down"]=dyVars.second;		  
 		}
 	    }
 	  }
@@ -346,10 +458,12 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
   FILE* pFile = fopen(outUrl+"CrossSectionYields.tex","w");
   TH1F *dataTempl=allShapes.begin()->second.data;
   const std::vector<TH1F *> &bckgTempl=allShapes.begin()->second.bckg;
+  cout << binsToProject.size() << endl;
   for(std::vector<int>::iterator bIt = binsToProject.begin(); bIt != binsToProject.end(); bIt++)
     {
       TString cat=dataTempl->GetXaxis()->GetBinLabel(*bIt);
-        
+      cout << cat << endl;
+      
       //table header
       fprintf(pFile,"\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data for the %s category. The uncertainty associated to the limited statistics in the MC is quoted separately from the other systematic uncertainties.}\n\\label{tab:table}\n",cat.Data());
       TString Ccol   = "\\begin{tabular}{|c|";
@@ -390,6 +504,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 	      sigRateSysts[rIt->first]=0.5*(fabs(rIt->second.first-1)+fabs(rIt->second.second-1));
 	  sigRateSysts["lumi"]=lumiUnc;
 	  sigRateSysts["seleff"]=selEffUnc;
+	  sigRateSysts["pdf"]=pdfUnc;
 	  float sSyst=getIntegratedSystematics(shape.signal,shape.signalVars,sigRateSysts,*bIt);
 	  totalSyst += pow(sSyst,2); 
 	  CSyields += " & ";
@@ -563,13 +678,19 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       }
       fprintf(pFile,"\n");
 
+      //pdf unc
+      fprintf(pFile,"%30s_%dTeV %10s","pdf",int(iEcm),"lnN");
+      fprintf(pFile,"%6.3f ",1+pdfUnc);
+      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
+      fprintf(pFile,"\n");
+
       //diepton BR
-      fprintf(pFile,"%35s %10s","br","lnN");
-      fprintf(pFile,"%6.3f ",1.017);
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-        else                                                           fprintf(pFile,"%6.3f ",1.017);
-      }
+      //fprintf(pFile,"%35s %10s","br","lnN");
+      //fprintf(pFile,"%6.3f ",1.017);
+      //for(size_t j=0; j<shape.bckg.size(); j++) {
+      //	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+      //  else                                                           fprintf(pFile,"%6.3f ",1.017);
+      // }
       fprintf(pFile,"\n");
 
       //rate systematics
@@ -580,6 +701,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	  for(size_t j=0; j<shape.bckg.size(); j++) {
 	    fprintf(pFile,"%6s ","-");
 	  }
+	  fprintf(pFile,"\n");
 	}
 
       //th.xsec
@@ -612,12 +734,12 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	}
 
       //fakes
-      fprintf(pFile,"%35s %10s ", "fakes", "lnN");
+      fprintf(pFile,"%35s %10s ", "fakes", "lnU");
       fprintf(pFile,"%6s ","-");
       for(size_t j=0; j<shape.bckg.size(); j++) {
 	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
 	if(name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
-	else                             fprintf(pFile,"%6s ","2.0");
+	else                             fprintf(pFile,"%6s ","0.5");
       }
       fprintf(pFile,"\n");
 
@@ -695,9 +817,11 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 //
 int main(int argc, char* argv[])
 {
+  cout << "Starting" << endl;
   setTDRStyle();
 
   //get input arguments
+  cout << argc << endl;
   for(int i=1;i<argc;i++){
     string arg(argv[i]);
     if(arg.find("--help")        !=string::npos)              { printHelp(); return -1;} 
@@ -710,8 +834,11 @@ int main(int argc, char* argv[])
     else if(arg.find("--ch")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("ch to use are : ");  while (pch!=NULL){printf(" %s ",pch); channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
   }
   if(jsonFileUrl.IsNull() || inFileUrl.IsNull() || histo.IsNull()) { printHelp(); return -1; }
-  if(channels.size()==0) { channels.push_back("ee"); channels.push_back("mumu"); channels.push_back("emu"); channels.push_back(""); }
+  if(channels.size()==0) { channels.push_back("ee"); channels.push_back("mumu"); channels.push_back("emu"); }// channels.push_back(""); }
 
+  //create directory
+  gSystem->Exec("mkdir -p " + outUrl);
+  gSystem->Exec("rm " + outUrl + "/*" );
  
   //get the shapes
   TFile *inF = TFile::Open(inFileUrl);
@@ -722,6 +849,8 @@ int main(int argc, char* argv[])
   for(std::vector<string>::iterator cIt = channels.begin(); cIt != channels.end(); cIt++) shapes[*cIt]=getShapeFromFile(inF, *cIt, jsonF,systF);
   inF->Close();
   if(!systF) systF->Close();
+
+  cout << systF << " " << inF << endl;
 
   //print the tables/datacards
   getYieldsFromShapes(shapes);

@@ -14,14 +14,15 @@ mv top_dysf.root data/weights/
 
 ### re-run final selection for cross section measurement
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/nom/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='data/weights/'" -s 8nh
-runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/top_samples_5311.json      --outFile ~/work/top_5311/plotter_nom.root      --noLog --plotExt .pdf --showUnc
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/top_samples.json      --outFile ~/work/top_5311/plotter_nom.root      --noLog --plotExt .pdf --showUnc
 fitDYforTop --in ~/work/top_5311/plotter_nom.root  --ttrep ~/work/top_5311/plotter_syst.root --smooth --out dyFit --syst
 
-fitTTbarCrossSection --in ~/work/top_5311/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst_forxsec.root --bins 2,3,4 --out xsec      > xsec_result.txt
-fitTTbarCrossSection --in ~/work/top_5311/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst_forxsec.root --bins 1     --out xsec/1jet > xsec1j_result.txt
-fitTTbarCrossSection --in ~/work/top_5311/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst_forxsec.root --bins 2     --out xsec/2jet > xsec2j_result.txt
-fitTTbarCrossSection --in ~/work/top_5311/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst_forxsec.root --bins 3     --out xsec/3jet > xsec3j_result.txt
-fitTTbarCrossSection --in ~/work/top_5311/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst_forxsec.root --bins 4     --out xsec/4jet > xsec4j_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 1,2,3,4 --out xsec/1inc > xsec/xsec1jinc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 2,3,4   --out xsec/2inc > xsec/xsec2jinc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 1       --out xsec/1jet > xsec/xsec1jexc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 2       --out xsec/2jet > xsec/xsec2jexc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 3       --out xsec/3jet > xsec/xsec3jexc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 4       --out xsec/4jet > xsec/xsec4jexc_result.txt
 
 
 
