@@ -177,6 +177,13 @@ int main(int argc, char* argv[])
     finalCutflowH->GetXaxis()->SetBinLabel(6,"#geq5 btags");
     controlHistos.addHistogram( finalCutflowH );
 
+    TH1D *finalCutflow2btagsH = new TH1D("finalevtflow2btags"+var,";Category;Events",4,2,6); 
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(1,"=2 btags");
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(2,"=3 btags");
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(3,"=4 btags");
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(4,"#geq5 btags");
+    controlHistos.addHistogram( finalCutflow2btagsH );
+
     TH1D *finalCutflowH_0 = new TH1D("finalevtflow0"+var,";Category;Events",1,0,1); 
     finalCutflowH_0->GetXaxis()->SetBinLabel(1,"=0 jets");
     controlHistos.addHistogram( finalCutflowH_0 );
@@ -700,11 +707,12 @@ int main(int argc, char* argv[])
 	//	for(size_t ijet=0; ijet<selJets.size(); ijet++) nbtags += (selJets[ijet].getVal("csv")>0.405); // CSVV1L
 	float nbtags(selbJets.size());
 	//	if(nbtags>0){
-	if(nbtags>5) 
+	if(nbtags>5)
 	  controlHistos.fillHisto("finalevtflow"+var, ch, 5, weight);
-	else 
+	else
 	  controlHistos.fillHisto("finalevtflow"+var, ch, nbtags, weight);
-	//}
+	  
+	  //}
 	
 	if(nbtags==0) controlHistos.fillHisto("finalevtflow0"+var, ch, 0, weight);
 	if(nbtags==1) controlHistos.fillHisto("finalevtflow1"+var, ch, 0, weight);
@@ -716,7 +724,11 @@ int main(int argc, char* argv[])
 	if(nbtags<2) continue;
 	controlHistos.fillHisto("evtflow"+var, ch, 5, weight);
 	
-	
+	if(nbtags>5)
+	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, 5, weight);	
+	else
+	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, nbtags, weight);
+
 	if(spyEvents){
 	  spyEvents->getEvent().cat=ev.cat;
 	  evSummaryWeight=xsecWeight*weight;
