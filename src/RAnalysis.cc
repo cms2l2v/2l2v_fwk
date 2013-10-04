@@ -8,7 +8,6 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >::BetaVector Be
 RAnalysis::RAnalysis(SmartSelectionMonitor &mon,std::vector<TString> & vars)
   : mon_(&mon)
 {
-
   //mlj spectrum
   Float_t mljAxis[]={0,   10, 20, 30, 40, 50, 60, 70,  80,  90,
 		     100,110,120,130,140,150,160, 170, 180, 190,
@@ -18,9 +17,11 @@ RAnalysis::RAnalysis(SmartSelectionMonitor &mon,std::vector<TString> & vars)
   const size_t nMlj=sizeof(mljAxis)/sizeof(Float_t)-1;
   for(size_t i=0; i<vars.size(); i++)
     {
-      TH1F *h=new TH1F("mlj"+vars[i],";Lepton-jet invariant Mass [GeV];Lepton-jet pairs",nMlj,mljAxis);
-      mon_->addHistogram(h);
+      mon_->addHistogram( new TH1F("mlj"+vars[i],       ";Lepton-jet invariant Mass [GeV];Lepton-jet pairs",nMlj,mljAxis) );
+      mon_->addHistogram( new TH1F("correctmlj"+vars[i],";Lepton-jet invariant Mass [GeV];Lepton-jet pairs",nMlj,mljAxis) );
     }
+  mon_->addHistogram( new TH1F("rotmlj",  ";Lepton-jet invariant Mass [GeV];Lepton-jet pairs",nMlj,mljAxis) );
+  mon_->addHistogram( new TH1F("wrongmlj",";Lepton-jet invariant Mass [GeV];Lepton-jet pairs",nMlj,mljAxis) );
 }
 
 //
