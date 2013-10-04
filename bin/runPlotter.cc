@@ -38,7 +38,7 @@ double iLumi = 2007;
 double iEcm=8;
 bool showChi2 = false;
 bool showUnc=false;
-double baseRelUnc=0.044;
+double baseRelUnc=0.027;
 bool noLog=false;
 bool logX=false;
 bool isSim=false;
@@ -119,7 +119,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
       for(size_t ip=0; ip<Process.size(); ip++){
           if(Process[ip]["isinvisible"].toBool())continue;
 	  bool isData (  Process[ip]["isdata"].toBool()  );
-          bool isSign ( !isData &&  Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool());
+          bool isSign ( !isData &&  (Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool()) || (Process[ip].isTag("issignal") && Process[ip]["issignal"].toBool()));
   	  bool isMC   = !isData && !isSign; 
 	  string filtExt("");
 	  if(Process[ip].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip]["mctruthmode"].toInt()); filtExt += buf; }

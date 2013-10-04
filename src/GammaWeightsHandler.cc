@@ -3,17 +3,18 @@
 using namespace std;
 
 //
-GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess)
+GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,bool forceAllToData)
 {
   //cfg
   bool isMC = runProcess.getParameter<bool>("isMC");
+  if(forceAllToData) isMC=false;
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");  
   if(gammaPtWeightsFiles.size()==0) return;
   TString wgtName("qt");
   TString wgtType( isMC ? "mcfitwgts" : "datafitwgts");
-  
-  //categories to consider
-  TString cats[]   =  {"eq0jets","eq1jets","eq2jets","geq3jets","vbf","geq1jets","mjjq100","mjjq092","mjjq083","mjjq066","mjjq049","mjjq033","mjjq016"};
+    
+  //categories to consider, add more if needed but keep these ones 
+  TString cats[]   =  {"eq0jets","eq1jets","eq2jets","geq3jets","vbf","geq1jets","novbf","mjjq100","mjjq092","mjjq083","mjjq066","mjjq049","mjjq033","mjjq016"};
   dilCats_.push_back("ee"); dilCats_.push_back("mumu");
   
   //retrieve from file
@@ -79,9 +80,6 @@ LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVectorF &gamma,TString ev
   return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
 }
 
-
-
-//
 float GammaWeightsHandler::getWeightFor(LorentzVector &gamma, TString evCategoryLabel)
 {
   //get the weight (1.0 if not available)
@@ -96,7 +94,6 @@ float GammaWeightsHandler::getWeightFor(LorentzVector &gamma, TString evCategory
   return weight;
 }
 
-
 float GammaWeightsHandler::getWeightFor(LorentzVectorF &gamma, TString evCategoryLabel)
 {
   //get the weight (1.0 if not available)
@@ -107,7 +104,7 @@ float GammaWeightsHandler::getWeightFor(LorentzVectorF &gamma, TString evCategor
       weight=h->Eval(gamma.pt());
       if(weight<0) weight=0;
     }
-
+    
   return weight;
 }
 

@@ -122,9 +122,11 @@ int main(int argc,char *argv[])
       systVars.push_back("jerdown");
       systVars.push_back("umetup");
       systVars.push_back("umetdown");
+      systVars.push_back("topptup");
+      systVars.push_back("topptdown");
 
       //theoretical variations
-      systVars.push_back("systmcatnlo");
+      //systVars.push_back("systmcatnlo");
       systVars.push_back("systq2up");
       systVars.push_back("systq2down");
       systVars.push_back("systmepsup");
@@ -132,18 +134,21 @@ int main(int argc,char *argv[])
       systVars.push_back("systtunep11");
       systVars.push_back("systtunep11tev");
       systVars.push_back("systtunep11mpihi");
+      systVars.push_back("systtunep11nocr");
+      systVars.push_back("systpowhegpy");
+      systVars.push_back("systpowheghw");
       systVars.push_back("mcstatsup");
       systVars.push_back("mcstatsdown");
     }
   const size_t nsystVars=systVars.size();
   
   TString procs[]={"VV", "Single top", "Z#rightarrow ll","t#bar{t}","other t#bar{t}", "W,multijets"};
-  TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu",      "ee", "mumu"};
-  size_t runNsystVars[]      ={1,                              nsystVars,               1,                                nsystVars,                 1,                       nsystVars, 1,1};
-  TString signalRegionHisto[]={"ee_eq1jetsdilarccosine",       "ee_dilarccosine",       "mumu_eq1jetsdilarccosine",       "mumu_dilarccosine",       "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
-  TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum", "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
-  TString templateTitle[]    ={"Z#rightarrow ee (=1 jets)",    "Z#rightarrow ee",       "Z#rightarrow #mu#mu (=1 jets)",  "Z#rightarrow #mu#mu",     "Z#rightarrow #tau#tau (=1 jets)", "Z#rightarrow #tau#tau", "Z#rightarrow ee", "Z#rightarrow #mu#mu"};
-  TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu" ,"dytoee", "dytomumu"};
+  TString ch[]               ={"eeeq1jets",                    "ee",                    "mumueq1jets",                   "mumu",                    "emueq1jets",            "emu"};//,      "ee", "mumu"};
+  size_t runNsystVars[]      ={nsystVars,                              nsystVars,               nsystVars,                                nsystVars,                 nsystVars,                       nsystVars};//, 1,1};
+  TString signalRegionHisto[]={"ee_eq1jetsdilarccosine",       "ee_dilarccosine",       "mumu_eq1jetsdilarccosine",       "mumu_dilarccosine",       "emu_eq1jetsmtsum",      "emu_mtsum"};//, "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
+  TString templateHisto[]    ={"ee_eq1jetslowmetdilarccosine", "ee_lowmetdilarccosine", "mumu_eq1jetslowmetdilarccosine", "mumu_lowmetdilarccosine", "emu_eq1jetsmtsum",      "emu_mtsum"};//, "ee_osbtagdilarccosine", "mumu_osbtagdilarccosine"};
+  TString templateTitle[]    ={"Z#rightarrow ee (=1 jets)",    "Z#rightarrow ee",       "Z#rightarrow #mu#mu (=1 jets)",  "Z#rightarrow #mu#mu",     "Z#rightarrow #tau#tau (=1 jets)", "Z#rightarrow #tau#tau"};//, "Z#rightarrow ee", "Z#rightarrow #mu#mu"};
+  TString templateName[]     ={"dytoee",                       "dytoee",                "dytomumu",                       "dytomumu",                "dytoemu",               "dytoemu"};// ,"dytoee", "dytomumu"};
   size_t nchs=sizeof(ch)/sizeof(TString);
 
   TH1F *dysfH = new TH1F("dysf",";Category;SF_{DY}",nchs,0,nchs);
@@ -357,12 +362,15 @@ int main(int argc,char *argv[])
 
 	  if(ivar==0) nominalMCSF=ndysf.getVal();
 	  Double_t relDifference(nominalMCSF);
-	  if(ivar>0) relDifference=(ndysf.getVal()/nominalMCSF-1)*100;
-		  
+	  relDifference=(ndysf.getVal()/nominalMCSF-1)*100;
+	  Double_t absDifference(ndysf.getVal()-nominalMCSF);
+	 
 	  //report the result
 	  char resBuf[1000];
-	  if(ivar==0) sprintf(resBuf," Nominal: %3.4f",      relDifference);
-	  else        sprintf(resBuf," %s variation %3.4f %s",systVars[ivar].Data(),relDifference,"%");
+	  //if(ivar==0) sprintf(resBuf," Nominal: %3.4f",      relDifference);
+	  //else        sprintf(resBuf," %s variation %3.4f",systVars[ivar].Data(),relDifference);
+	  if(ivar==0) sprintf(resBuf," Nominal: %3.4f",      absDifference);
+	  else        sprintf(resBuf," %s variation %3.4f",systVars[ivar].Data(),absDifference);
 	  report << resBuf << endl;
 
 	  //save plot for nominal fit

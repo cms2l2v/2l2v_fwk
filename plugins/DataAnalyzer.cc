@@ -61,7 +61,7 @@ public:
 private:
 
   //  keep all GEN
-  bool keepFullGenInfo_;
+  bool keepFullGenInfo_,storeAllPF_;
 
   //monitoring
   DataEventSummaryHandler summary_;
@@ -92,7 +92,7 @@ DataAnalyzer::DataAnalyzer(const edm::ParameterSet &iConfig) : obsPU_h(0), trueP
   std::vector<string> filts=analysisCfg_.getParameter<std::vector<string> >("metFilters");
   keepFullGenInfo_ = false; 
   keepFullGenInfo_ = analysisCfg_.getParameter<bool>("keepFullGenInfo");
-
+  storeAllPF_ = analysisCfg_.getParameter<bool>("storeAllPF");
 
   //init monitoring tools
   edm::Service<TFileService> fs;
@@ -964,60 +964,62 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   //
   // charged PF candidates which haven't been clustered
   //
-  for(size_t ipf=0; ipf<pfH->size(); ipf++)
-    {
-      const reco::PFCandidate &cand=(*pfH)[ipf];
-
-      //require charged and with track associated
-      if(cand.charge()==0) continue;
-      reco::TrackBaseRef trackBaseRef( cand.trackRef() );
-      if(trackBaseRef.isNull()) continue;
-      float idz( fabs(trackBaseRef->dz( primVtx->position() )) );
-      if(idz>10) continue;
-
-      //minimum pT of 500 MeV
-      if(cand.pt()<0.5) continue;
-      
-      //check for overlaps
-      bool matches(false);
-      for(int jpf=0; jpf<ev.pfn; jpf++)
-	{
-	  LorentzVector p4(ev.pf_px[jpf],ev.pf_py[jpf], ev.pf_pz[jpf], ev.pf_en[jpf]);
-	  if( deltaR( p4.eta(), p4.phi(), cand.eta(), cand.phi()) > 0.1) continue;
-	  matches=true;
+  if(storeAllPF_){
+    for(size_t ipf=0; ipf<pfH->size(); ipf++)
+      {
+	const reco::PFCandidate &cand=(*pfH)[ipf];
+	
+	//require charged and with track associated
+	if(cand.charge()==0) continue;
+	reco::TrackBaseRef trackBaseRef( cand.trackRef() );
+	if(trackBaseRef.isNull()) continue;
+	float idz( fabs(trackBaseRef->dz( primVtx->position() )) );
+	if(idz>10) continue;
+	
+	//minimum pT of 500 MeV
+	if(cand.pt()<0.5) continue;
+	
+	//check for overlaps
+	bool matches(false);
+	for(int jpf=0; jpf<ev.pfn; jpf++)
+	  {
+	    LorentzVector p4(ev.pf_px[jpf],ev.pf_py[jpf], ev.pf_pz[jpf], ev.pf_en[jpf]);
+	    if( deltaR( p4.eta(), p4.phi(), cand.eta(), cand.phi()) > 0.1) continue;
+	    matches=true;
 	  break;
-	}
-      if(matches) continue;
-      
-      //require it to be associated to the primary vertex
-      int bestVtx(-1);
-      if(trackBaseRef.isAvailable())
-	{
-	  float bestDz(9999.);
-	  for(size_t jVtx=0; jVtx<vtxH->size(); jVtx++)
-	    {
-	      const reco::VertexRef vtxref(vtxH,jVtx);
-	      float vtxDz( fabs( trackBaseRef->dz( vtxref->position()) ) );
-	      if(vtxDz > bestDz) continue;
-	      bestDz=vtxDz;
-	      bestVtx=jVtx;
-	    }
-	} 
-      if(bestVtx!=0) continue;
-
-      ev.pf_id[ev.pfn]     = cand.pdgId();
-      ev.pf_charge[ev.pfn] = cand.charge();
-      ev.pf_px[ev.pfn]     = cand.px();
-      ev.pf_py[ev.pfn]     = cand.py();
-      ev.pf_pz[ev.pfn]     = cand.pz();
-      ev.pf_en[ev.pfn]     = cand.energy();
-      ev.pf_d0[ev.pfn]     = trackBaseRef->dxy( primVtx->position() );
-      ev.pf_d0err[ev.pfn]  = trackBaseRef->dxyError();
-      ev.pf_dZ[ev.pfn]     = trackBaseRef->dz( primVtx->position() );
-      ev.pf_dZerr[ev.pfn]  = trackBaseRef->dzError();
-      if(fabs(ev.pf_dZ[ev.pfn])>3) continue;
-      ev.pfn++;
-    }
+	  }
+	if(matches) continue;
+	
+	//require it to be associated to the primary vertex
+	int bestVtx(-1);
+	if(trackBaseRef.isAvailable())
+	  {
+	    float bestDz(9999.);
+	    for(size_t jVtx=0; jVtx<vtxH->size(); jVtx++)
+	      {
+		const reco::VertexRef vtxref(vtxH,jVtx);
+		float vtxDz( fabs( trackBaseRef->dz( vtxref->position()) ) );
+		if(vtxDz > bestDz) continue;
+		bestDz=vtxDz;
+		bestVtx=jVtx;
+	      }
+	  } 
+	if(bestVtx!=0) continue;
+	
+	ev.pf_id[ev.pfn]     = cand.pdgId();
+	ev.pf_charge[ev.pfn] = cand.charge();
+	ev.pf_px[ev.pfn]     = cand.px();
+	ev.pf_py[ev.pfn]     = cand.py();
+	ev.pf_pz[ev.pfn]     = cand.pz();
+	ev.pf_en[ev.pfn]     = cand.energy();
+	ev.pf_d0[ev.pfn]     = trackBaseRef->dxy( primVtx->position() );
+	ev.pf_d0err[ev.pfn]  = trackBaseRef->dxyError();
+	ev.pf_dZ[ev.pfn]     = trackBaseRef->dz( primVtx->position() );
+	ev.pf_dZerr[ev.pfn]  = trackBaseRef->dzError();
+	if(fabs(ev.pf_dZ[ev.pfn])>5) continue;
+	ev.pfn++;
+      }
+  }
   
   //all done here
   if(saveOnlyLeptons){

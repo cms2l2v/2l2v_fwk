@@ -25,6 +25,12 @@ except:
 process.source = cms.Source("PoolSource",
                             fileNames = inputList
                             )
+
+try:
+    print 'Will store all PF candidates?' + str(storeAllPF)
+except:
+    storeAllPF=True
+    print 'Will store all PF candidates?' + str(storeAllPF)
     
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -198,6 +204,8 @@ except:
         process.dataAnalyzer.cfg.triggerCats[2]=1113
         process.dataAnalyzer.cfg.triggerCats[3]=1113
         print 'Tweaking for tau embedded samples'
+        
+process.dataAnalyzer.cfg.storeAllPF=storeAllPF
 
 try:
     if doUnfold:

@@ -3,34 +3,33 @@ TOP
 ###
 
 ### run base
-runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples_539.json      -d /store/cmst3/user/psilva/Summer13_ntuples -o ~/work/top_539/raw/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
-runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples_539.json -d /store/cmst3/user/psilva/Summer13_ntuples -o ~/work/top_539/syst/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True"  -s 8nh
+runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/nom/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='data/weights/'" -s 8nh
+runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/syst/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/'"  -s 8nh
 
 ### fit dy and re-run with new scale
-runPlotter --iLumi 19683 --inDir ~/work/top_539/raw/  --json data/top_samples_539.json      --outFile ~/work/top_539/plotter_dy_raw.root        --noPlot --only mtsum --only dilarc
-runPlotter --iLumi 19683 --inDir ~/work/top_539/syst/ --json data/top_syst_samples_539.json --outFile ~/work/top_539/plotter_syst_ue.root --noPlot
-fitDYforTop --in ~/work/top_539/plotter_dy_raw.root  --ttrep ~/work/top_539/plotter_syst_fordyfit.root --smooth --out dyFit --syst
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/top_samples.json      --outFile ~/work/top_5311/plotter_dy_nom.root        --noPlot --only mtsum --only dilarc
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst.root          --noPlot
+fitDYforTop --in ~/work/top_5311/plotter_dy_nom.root  --ttrep ~/work/top_5311/plotter_syst.root --smooth --out dyFit 
 mv top_dysf.root data/weights/
-runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples_539.json      -d /store/cmst3/user/psilva/Summer13_ntuples -o ~/work/top_539/raw/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='data/weights/top_dysf.root'" -s 8nh -t DY
 
-runPlotter --iLumi 19683 --inDir ~/work/top_539/raw/  --json data/top_samples_539.json      --outFile ~/work/top_539/plotter_ue.root      --noPlot 
+### re-run final selection for cross section measurement
+runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/nom/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='data/weights/'" -s 8nh
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/top_samples.json      --outFile ~/work/top_5311/plotter_nom.root      --noLog --plotExt .pdf --showUnc
+fitDYforTop --in ~/work/top_5311/plotter_nom.root  --ttrep ~/work/top_5311/plotter_syst.root --smooth --out dyFit --syst
 
-### fit ttbar signal strength and re-run 
-runPlotter --iLumi 19683 --inDir ~/work/top_539/raw/  --json data/top_samples_539.json      --outFile ~/work/top_539/plotter_syst_forxsec.root --noPlot --only finalevt
-runPlotter --iLumi 19683 --inDir ~/work/top_539/syst/ --json data/top_syst_samples_539.json --outFile ~/work/top_539/plotter_syst_forxsec.root --noPlot --only finalevt
-
-fitTTbarCrossSection --in ~/work/top_539/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_539/plotter_syst_forxsec.root --bins 2,3,4 --out xsec      > xsec_result.txt
-fitTTbarCrossSection --in ~/work/top_539/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_539/plotter_syst_forxsec.root --bins 1     --out xsec/1jet > xsec1j_result.txt
-fitTTbarCrossSection --in ~/work/top_539/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_539/plotter_syst_forxsec.root --bins 2     --out xsec/2jet > xsec2j_result.txt
-fitTTbarCrossSection --in ~/work/top_539/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_539/plotter_syst_forxsec.root --bins 3     --out xsec/3jet > xsec3j_result.txt
-fitTTbarCrossSection --in ~/work/top_539/plotter_forxsec.root --json data/top_samples.json --syst ~/work/top_539/plotter_syst_forxsec.root --bins 4     --out xsec/4jet > xsec4j_result.txt
-
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 1,2,3,4 --out xsec/1inc > xsec/xsec1jinc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 2,3,4   --out xsec/2inc > xsec/xsec2jinc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 1       --out xsec/1jet > xsec/xsec1jexc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 2       --out xsec/2jet > xsec/xsec2jexc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 3       --out xsec/3jet > xsec/xsec3jexc_result.txt
+fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 4       --out xsec/4jet > xsec/xsec4jexc_result.txt
 
 
-runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/Summer13_ntuples  -o ~/work/top_539/final -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/top_dysf.root'" -s 8nh
 
-runPlotter --iLumi 19683 --inDir ~/work/top_539/final/ --json data/top_samples.json --outFile ~/work/top_539/plotter.root --noLog --showUnc
-runPlotter --iLumi 19683 --inDir ~/work/top_539/syst/ --json data/top_syst_samples.json --outFile ~/work/top_539/plotter_syst.root --noPlot
+runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/Summer13_ntuples  -o ~/work/top_5311/final -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/top_dysf.root'" -s 8nh
+
+runPlotter --iLumi 19683 --inDir ~/work/top_5311/final/ --json data/top_samples.json --outFile ~/work/top_5311/plotter.root --noLog --showUnc
+runPlotter --iLumi 19683 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst.root --noPlot
 
 
 ### UE studies

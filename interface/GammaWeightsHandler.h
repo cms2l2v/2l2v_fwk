@@ -25,7 +25,7 @@ class GammaWeightsHandler
 {
  public: 
 
-  GammaWeightsHandler(const edm::ParameterSet &runProcess);
+  GammaWeightsHandler(const edm::ParameterSet &runProcess,bool forceAllToData=false);
 
   float getWeightFor(LorentzVector &gamma, TString evCategoryLabel="");
   float getWeightFor(LorentzVectorF &gamma, TString evCategoryLabel="");

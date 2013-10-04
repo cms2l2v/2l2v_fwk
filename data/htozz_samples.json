@@ -37,9 +37,8 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_WW",
-                "xsec":57.1097,
-		"split":2,
-		"br":[0.104976]
+                "xsec":4.7,
+		"split":2
              }
 	]
 	},
@@ -52,9 +51,8 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_ZZ",
-                "xsec":7.92,
-		"split":2,
-		"br":[0.0403896]
+                "xsec":0.28,
+		"split":2
              }
 	  ]
 	},
@@ -68,7 +66,7 @@
             {
                 "dtag":"MC8TeV_WZ",
 		"split":2,
-                "xsec":1.057
+                "xsec":0.8674
              }
            ]
         },
@@ -107,11 +105,6 @@
                 "xsec":245.8,
 		"split":5,
 		"br":[0.10608049]
-                },
-		{
- 	        "dtag":"MC8TeV_TTJets_172v5",
-                "xsec":245.8,
-		"split":5
                 },
                 {
                 "dtag":"MC8TeV_TTWJets",

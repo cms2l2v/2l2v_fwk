@@ -118,6 +118,7 @@ UEAnalysis::UEAnalysis(SmartSelectionMonitor &mon)
   summaryTupleVarNames += ":gen_ptflux_away:rec_ptflux_away:gen_ptflux_tow:rec_ptflux_tow:gen_ptflux_tran:rec_ptflux_tran";
   summaryTupleVarNames += ":gen_avgptflux_away:rec_avgptflux_away:gen_avgptflux_tow:rec_avgptflux_tow:gen_avgptflux_tran:rec_avgptflux_tran";
   summaryTupleVarNames += ":nvtx:njets";
+  summaryTupleVarNames += ":leadpt:trailerpt:st:sumpt";
   summaryTuple_ = new TNtuple("ue","ue",summaryTupleVarNames);
   summaryTuple_->SetDirectory(0);
   summaryTupleVars_ = new Float_t[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
@@ -473,4 +474,9 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   summaryTupleVars_[25]=chCount[3]>0    ?  chCount[3]/chFlux[3]       : 0;
   summaryTupleVars_[26]=nvtx;
   summaryTupleVars_[27]=nExtraJets;
+  summaryTupleVars_[28]=leptons[0].pt();
+  summaryTupleVars_[29]=leptons[1].pt();
+  summaryTupleVars_[30]=leptons[0].pt()+leptons[1].pt();
+  LorentzVector dil=leptons[0]+leptons[1];
+  summaryTupleVars_[31]=dil.pt();
 }

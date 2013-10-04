@@ -684,6 +684,9 @@ void checkShape(TH1 *h)
   for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++)
     {
       Float_t y=h->GetBinContent(ibin);
+      //check for Greg
+      //Float_t x=h->GetXaxis()->GetBinCenter(ibin);
+      //if(x>2) y=0;
       if(y>0) continue;
       h->SetBinContent(ibin,1.0e-5);
       h->SetBinError(ibin,1.0e-5);

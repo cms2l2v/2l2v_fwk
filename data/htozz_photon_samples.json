@@ -30,7 +30,36 @@
              {
                "dtag":"MC8TeV_ZG",
                "xsec":123.9
-              }
+              },
+   	     {	
+               "dtag":"MC8TeV_WJets",
+ 	       "split":10,
+               "xsec":37509
+             },
+   	     {
+              "dtag":"MC8TeV_W1Jets",
+              "xsec":37509,
+	      "split":10,
+	      "br":[0.178]
+             },
+   	     {
+              "dtag":"MC8TeV_W2Jets",
+              "xsec":37509,
+	      "split":10,
+ 	      "br":[0.058]
+             },
+   	     {
+              "dtag":"MC8TeV_W3Jets",
+              "xsec":37509,
+	      "split":10,
+	      "br":[0.017]
+             },
+   	     {
+              "dtag":"MC8TeV_W4Jets",
+              "xsec":37509,
+	      "split":10,
+	      "br":[0.007]
+             }
 	  ]
 	},
 	{
@@ -39,6 +68,7 @@
          "color":"592",
 	 "lcolor":1,
  	 "mctruthmode":22,
+	 "isinvisible":true,
          "data":[
 	        {	
 	   	  "dtag":"MC8TeV_QCDPt30to80",
@@ -78,6 +108,7 @@
          "color":"800",
 	 "lcolor":1,
  	 "mctruthmode":22,
+	 "isinvisible":true,
          "data":[
 	        {	
 		 "dtag":"MC8TeV_GJets_30to50",

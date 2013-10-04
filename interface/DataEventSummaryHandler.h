@@ -98,7 +98,7 @@ namespace utils
     void updateJEC(data::PhysicsObjectCollection_t &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC);
 
     //apply MET variations
-    enum METvariations { JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN };
+    enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };
     std::vector<LorentzVector> getMETvariations(data::PhysicsObject_t &rawMETP4, data::PhysicsObjectCollection_t &jets, data::PhysicsObjectCollection_t &leptons, bool isMC);
   }
 }

@@ -14,6 +14,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
+#include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
   std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
 
   GammaWeightsHandler *gammaWgtHandler=0;
-  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess);
+  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,true);
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
@@ -304,7 +305,7 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(4,"3^{rd}-lepton veto");
   h->GetXaxis()->SetBinLabel(5,"b-veto"); 
   h->GetXaxis()->SetBinLabel(6,"#Delta #phi(jet,E_{T}^{miss})>0.5");
-  h->GetXaxis()->SetBinLabel(7,"E_{T}^{miss}>70");
+  h->GetXaxis()->SetBinLabel(7,"E_{T}^{miss}>80");
 
   //pu control
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
@@ -330,16 +331,20 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "thirdleptonmt", ";Transverse mass(3^{rd} lepton,E_{T}^{miss}) [GeV];Events", 50,0,500) );
 
 
-  mon.addHistogram( new TH1F("jp",       ";Jet probability;Jets",50,0.,3.) );
+  mon.addHistogram( new TH1F("csv",      ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("jpb",      ";Jet probability;Jets",50,0.,3.) );
   mon.addHistogram( new TH1F("jpc",      ";Jet probability;Jets",50,0.,3.) );
   mon.addHistogram( new TH1F("jpothers", ";Jet probability;Jets",50,0.,3.) );
   TH1 *hbtags=mon.addHistogram( new TH1F("nbtags",   ";b-tag multiplicity;Events",5,0,5) );
+  TH1 *hbtagsJP=mon.addHistogram( new TH1F("nbtagsJP",   ";b-tag multiplicity;Events",5,0,5) );
   mon.addHistogram( new TH1F("leadjetpt",    ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("trailerjetpt", ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
   mon.addHistogram( new TH1F("cenjeteta",       ";Pseudo-rapidity;Events",25,0,5) );
-   Double_t mjjaxis[32];
+  Double_t mjjaxis[32];
   mjjaxis[0]=0.01;
   for(size_t i=1; i<20; i++)  mjjaxis[i]   =50*i;        //0-1000
   for(size_t i=0; i<5; i++)   mjjaxis[20+i]=1000+100*i; //1000-1500
@@ -357,13 +362,23 @@ int main(int argc, char* argv[])
       label += (ibin-1);
       hjets->GetXaxis()->SetBinLabel(ibin,label);
       hbtags->GetXaxis()->SetBinLabel(ibin,label);
+      hbtagsJP->GetXaxis()->SetBinLabel(ibin,label);
     } 
 
   mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmetNM1",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
   mon.addHistogram( new TH1D( "balance",      ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
-  mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "axialmet",     ";Axial missing transvere energy [GeV];Events", 50,-100,150) );
-  mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass;Events", 100,0,1000) );
+  mon.addHistogram( new TH1D( "balanceNM1",   ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
+  mon.addHistogram( new TH1F( "axialmet",     ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
+  mon.addHistogram( new TH1F( "axialmetNM1",   ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
+  Double_t metaxis[]={0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,125,150,175,200,250,300,400,500};
+  Int_t nmetAxis=sizeof(metaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
+  mon.addHistogram( new TH1F( "metNM1",        ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
+  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,2000};
+  Int_t nmtAxis=sizeof(mtaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass;Events",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mtNM1"  ,       ";Transverse mass;Events",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mtresponse",   ";Transverse mass response;Events", 100,0,2) );
 
   //
@@ -377,7 +392,7 @@ int main(int argc, char* argv[])
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
     {
       Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-
+      
       for(unsigned int nri=0;nri<NRparams.size();nri++){ 
 	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
 	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
@@ -388,8 +403,11 @@ int main(int argc, char* argv[])
 	h->GetYaxis()->SetBinLabel(4,"M_{in}^{ll}/#geq 1 b-tag");
 	h->GetYaxis()->SetBinLabel(5,"M_{out}^{ll}/#geq 1 b-tag");
 	h->GetYaxis()->SetBinLabel(6,"M_{out+}^{ll}/#geq 1 b-tag");
-     }
+      }
     }
+
+
+
      
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
@@ -426,6 +444,13 @@ int main(int argc, char* argv[])
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
+
+  //b-tagging: beff and leff must be derived from the MC sample using the discriminator vs flavor
+  //the scale factors are taken as average numbers from the pT dependent curves see:
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
+  BTagSFUtil btsfutil;
+  float beff(0.68), sfb(0.99), sfbunc(0.015);
+  float leff(0.13), sfl(1.05), sflunc(0.12);
 
   //pileup weighting
   std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
@@ -502,8 +527,8 @@ int main(int argc, char* argv[])
 	      if(!ev.t_bits[itrig]) continue;
 	      hasPhotonTrigger=true;
 	      triggerPrescale=ev.t_prescale[itrig];
-	      if(itrig==10) triggerThreshold=90;
-	      if(itrig==9)  triggerThreshold=75;
+	      if(itrig==10) triggerThreshold=92; //90
+	      if(itrig==9)  triggerThreshold=77; //75
 	      if(itrig==8)  triggerThreshold=50;
 	      if(itrig==7)  triggerThreshold=36;
 	      break;
@@ -735,7 +760,7 @@ int main(int argc, char* argv[])
 
       //select the jets
       data::PhysicsObjectCollection_t selJets;
-      int njets(0),nbtags(0);
+      int njets(0),nbtags(0),nbtagsJP(0);
       float mindphijmet(9999.);
       for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	{
@@ -754,11 +779,8 @@ int main(int argc, char* argv[])
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  // float pumva=jets[ijet].getVal("puMVA");
 	  Int_t idbits=jets[ijet].get("idbits");
 	  bool passPFloose( ((idbits>>0) & 0x1));
-	  //int puId( ( idbits >>3 ) & 0xf );
-	  //bool passLoosePuId( ( puId >> 2) & 0x1);
 	  int simplePuId( ( idbits >>7 ) & 0xf );
 	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
 	  if(jets[ijet].pt()>30)
@@ -774,7 +796,19 @@ int main(int argc, char* argv[])
 	    njets++;
 	    float dphijmet=fabs(deltaPhi(jets[ijet].phi(),met[0].phi()));
 	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
-	    if(fabs(jets[ijet].eta())<2.5) nbtags += (jets[ijet].getVal("jp")>0.264);
+	    if(fabs(jets[ijet].eta())<2.5){
+	      nbtagsJP += (jets[ijet].getVal("jp")>0.264);
+
+	      bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
+	      //update according to the SF measured by BTV
+	      if(isMC)
+		{
+		  int flavId=genJet.info.find("id")->second;
+		  if(abs(flavId)!=5 && abs(flavId)!=4) flavId=1;
+		  btsfutil.modifyBTagsWithSF(hasCSVtag, flavId,sfb,beff,sfl,leff);
+		}
+	      nbtags   += hasCSVtag;
+	    }
 	  }
 	}
       std::sort(selJets.begin(), selJets.end(), data::PhysicsObject_t::sortByPt);
@@ -875,47 +909,85 @@ int main(int argc, char* argv[])
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
 	      float jp(selJets[ijet].getVal("jp"));
-	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-	      mon.fillHisto( "jp",tags,jp,weight);
+	      float csv(selJets[ijet].getVal("csv"));
+	      mon.fillHisto( "csv",tags,csv,weight);
 
 	      if(!isMC) continue;
-
+	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
 	      int flavId=genJet.info.find("id")->second;
 	      TString jetFlav("others");
 	      if(abs(flavId)==5)      jetFlav="b";
 	      else if(abs(flavId)==4) jetFlav="c";
+	      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
 	      mon.fillHisto( "jp"+jetFlav,tags,jp,weight);
 	    }
 	    mon.fillHisto( "nbtags",tags,nbtags,weight);
-	   
+	    mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
+	    
 	    if(passBtags){
 	      mon.fillHisto("eventflow",tags,4,weight);
 
 	      //include photon prediction from this point forward
 	      //requires looping tag by tag as weights are category-specific
+	      //the following relies on the hypothesis that the tags are ordered as follows: all, ch, ch+subtag, ch, ch+subtag, etc...
+	      //so that the ch will be assigned the weight of its subtag and all will be the summ of all ch+subtag weights
+	      std::vector<LorentzVector> massiveBoson(tags.size(),boson);
+	      std::vector<float> photonWeights(tags.size(),1.0);
+	      if(gammaWgtHandler!=0) {
+		float lastPhotonWeight(1.0), totalPhotonWeight(0.0);
+		LorentzVector lastMassiveBoson(boson);
+		for(size_t itag=0; itag<tags.size(); itag++){
+		  size_t idx(tags.size()-itag-1);
+		  float photonWeight=gammaWgtHandler->getWeightFor(boson,tags[idx]);
+		  if(tags[idx]=="all")       { 
+		    photonWeights[idx]=(totalPhotonWeight==0? 1.0:totalPhotonWeight); 
+		  }
+		  else if(photonWeight!=1.0) { 
+		    photonWeights[idx]=photonWeight; 
+		    massiveBoson[idx]=gammaWgtHandler->getMassiveP4(boson,tags[idx]);
+		    totalPhotonWeight+=photonWeight; 
+		    lastPhotonWeight=photonWeight; 
+		    lastMassiveBoson=massiveBoson[idx];
+		  }
+		  else                       { 
+		    photonWeights[idx]=lastPhotonWeight; 
+		    massiveBoson[idx]=lastMassiveBoson;
+		  }
+		}
+	      }
+	      
 	      for(size_t itag=0; itag<tags.size(); itag++){
-
+		
 		//update the weight
 		TString icat=tags[itag];
-		float iweight(weight);
-		if(gammaWgtHandler!=0) iweight *= gammaWgtHandler->getWeightFor(selPhotons[0],icat);
+		float iweight(weight*photonWeights[itag]);
+		LorentzVector iboson=massiveBoson[itag];
 
 		mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
+		if(met[0].pt()>80) mon.fillHisto( "mindphijmetNM1",icat,mindphijmet,iweight);
 		if(passMinDphijmet){
 		  mon.fillHisto("eventflow",icat,5,iweight);
 		  
 		  mon.fillHisto( "njets",icat,njets,iweight);
-		  mon.fillHisto( "met",icat,met[0].pt(),iweight);
-		  mon.fillHisto( "balance",icat,met[0].pt()/boson.pt(),iweight);
+		  mon.fillHisto( "met",icat,met[0].pt(),iweight,true);
+		  mon.fillHisto( "balance",icat,met[0].pt()/iboson.pt(),iweight);
 		  TVector2 met2(met[0].px(),met[0].py());
-		  TVector2 boson2(boson.px(), boson.py());
-		  double axialMet(boson2*met2); axialMet/=-boson.pt();
+		  TVector2 boson2(iboson.px(), iboson.py());
+		  double axialMet(boson2*met2); axialMet/=-iboson.pt();
 		  mon.fillHisto( "axialmet",icat,axialMet,iweight);
-		  double mt=higgs::utils::transverseMass(boson,met[0],true);
-		  mon.fillHisto( "mt",icat,mt,iweight);
+		  double mt=higgs::utils::transverseMass(iboson,met[0],true);
+		  mon.fillHisto( "mt",icat,mt,iweight,true);
 		  
-		  if(met[0].pt()>70)mon.fillHisto("eventflow",icat,6,iweight);
-		  
+		  if(met[0].pt()>80){
+		    mon.fillHisto("eventflow",icat,6,iweight);
+		    mon.fillHisto( "mtNM1",icat,mt,iweight,true);
+		    mon.fillHisto( "balanceNM1",icat,met[0].pt()/iboson.pt(),iweight);
+		    mon.fillHisto( "axialmetNM1",icat,axialMet,iweight);
+		  }
+		  if(mt>500){
+		    mon.fillHisto( "metNM1",icat,met[0].pt(),iweight,true);
+		  }
+
 		  //pre-VBF control
 		  if(njets>=2){
 		    LorentzVector dijet=selJets[0]+selJets[1];
@@ -945,187 +1017,176 @@ int main(int argc, char* argv[])
 	  }
 	}
       }
-  }
-
-//       //
-//       // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
-//       //
-//       //Fill histogram for posterior optimization, or for control regions
-//       for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-//         float iweight = weight;                                               //nominal
-//         if(ivar==9)                         iweight *=TotalWeight_plus;        //pu up
-//         if(ivar==10)                        iweight *=TotalWeight_minus;       //pu down
-// 	if((ivar==11 || ivar==12) && isMC_ZZ && vvShapeUnc.size()==2)
-// 	  { 
-// 	    TGraph *varGr=vvShapeUnc[ivar-11];
-// 	    if(varGr==0) continue;
-// 	    std::vector<LorentzVector> zs;
-//  	    for(Int_t ipart=0; ipart<ev.nmcparticles; ipart++)
-// 	      {
-// 		if(ev.mc_id[ipart]!=23) continue;
-// 		zs.push_back( LorentzVector(ev.mc_px[ipart],ev.mc_py[ipart],ev.mc_pz[ipart],ev.mc_en[ipart]) );
-// 	      }
-// 	    if(zs.size()==2)
-// 	      {
-// 		LorentzVector zz=zs[0]+zs[1];
-// 		iweight *= varGr->Eval(zz.pt());
-// 	      }
-// 	  }
-//         if(ivar<=14 && ivar>=11 && isMC_GG)                                  //ren/fact scales
-// 	  {
-// 	    float hptReweight = ev.hptWeights[ivar-10];
-// 	    if(ev.hptWeights[0]==0) hptReweight=0;
-// 	    else                    hptReweight/=ev.hptWeights[0];
-// 	    iweight *= hptReweight;
-
-// 	    //these are irrelevant systematics
-// 	    continue;
-// 	  }
-// 	if((ivar==17 || ivar==18) && isMC_GG)                                //shape unc
-// 	  {
-// 	    float shapeReWeight = lShapeWeights[ivar-16];
-// 	    if(lShapeWeights[0]==0) shapeReWeight=0;
-// 	    else                    shapeReWeight /= lShapeWeights[0];
-// 	    iweight                 *= shapeReWeight;
-// 	  }
-
-// 	//recompute MET/MT if JES/JER was varied
-// 	LorentzVector zvv    = zvvs[ivar>8 ? 0 : ivar];
-// 	PhysicsObjectJetCollection &varJets=variedAJets[ivar>4 ? 0  : ivar];
-// 	PhysicsObjectJetCollection tightVarJets;
-// 	LorentzVector clusteredMetP4(zll); clusteredMetP4 *= -1;
-// 	bool passLocalBveto(passBveto);
-// 	for(size_t ijet=0; ijet<varJets.size(); ijet++){
-// 	  if(!hasObjectId(varJets[ijet].pid,JETID_LOOSE) || fabs(varJets[ijet].eta())>4.7) continue;
-// 	  clusteredMetP4 -= varJets[ijet];
-// 	  if( hasObjectId(varJets[ijet].pid,JETID_CUTBASED_LOOSE) ) tightVarJets.push_back( varJets[ijet] );
-// 	  if(varJets[ijet].pt()<30 || fabs(varJets[ijet].eta())>2.5) continue;
-// 	  //FIXME
-// 	  //if(ivar==15)     {
-// 	  //btsfutil.modifyBTagsWithSF(passLocalBveto, varJets[ijet].flavid, 0.98, 0.841*1.02, 1.21, 0.137*1.11);
-// 	  //}
-// 	  //else if(ivar==16) {
-// 	  // btsfutil.modifyBTagsWithSF(passLocalBveto, varJets[ijet].flavid, 0.98, 0.841*0.98, 1.21, 0.137*0.89);
-// 	  //}
-// 	}
-// 	bool passPreselection                 (passZmass && passZpt && pass3dLeptonVeto && passDphijmet && passLocalBveto && passLMetVeto);
-// 	bool passPreselectionMbvetoMzmass     (             passZpt && pass3dLeptonVeto && passDphijmet                   && passLMetVeto);          
-// 	bool passPreselectionMdphi            (passZmass && passZpt && pass3dLeptonVeto                 && passLocalBveto && passLMetVeto);
-// 	bool passPreselectionMbvetoMzmassMdphi(             passZpt && pass3dLeptonVeto                                   && passLMetVeto);          
+      
+      //FIXME : BTAG
+      
+      //
+      // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
+      //
+      //Fill histogram for posterior optimization, or for control regions
+      for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+	float iweight = weight;                                               //nominal
 	
-// 	float mt = METUtils::transverseMass(zll,zvv,true);
-// 	LorentzVector nullP4(0,0,0,0);
-// 	LorentzVector redMet = METUtils::redMET(METUtils::INDEPENDENTLYMINIMIZED, zll, 0, nullP4, 0, clusteredMetP4, zvv,true);
+	//energy scale/resolution
+	bool varyJesUp( varNames[ivar]=="_jesup" );
+	bool varyJesDown( varNames[ivar]=="_jesdown" );
+	bool varyJerUp( varNames[ivar]=="_jerup" );
+	bool varyJerDown( varNames[ivar]=="_jerdown" );
+	bool varyUmetUp( varNames[ivar]=="_umetup" );
+	bool varyUmetDown( varNames[ivar]=="_umetdown" );
+	bool varyLesUp( varNames[ivar]=="_lesup" );
+	bool varyLesDown( varNames[ivar]=="_lesdown" );
+		
+	//pileup variations
+	if(varNames[ivar]=="_puup") iweight *=TotalWeight_plus;
+	if(varNames[ivar]=="_pudown") iweight *=TotalWeight_minus;
+	
+	//btag
+	bool varyBtagUp( varNames[ivar]=="_btagup" );
+	bool varyBtagDown( varNames[ivar]=="_btagdown" );
+	
+	//Q^2 variations on VV pT spectum
+	if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) )
+	    && vvShapeUnc.size()==2 )
+	  {
+	    size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
+	    TGraph *varGr=vvShapeUnc[idx];
+	    if(varGr==0) continue;
+	    std::vector<LorentzVector> vs;
+	    for(size_t ipart=0; ipart<gen.size(); ipart++)
+	      {
+		int status=gen[ipart].get("status");
+		if(status!=3) continue;
+		int pid=gen[ipart].get("id");
+		if(abs(pid)!=23 && abs(pid)!=24) continue;
+		vs.push_back( gen[ipart] );
+	      }
+	    if(vs.size()==2)
+	      {
+		LorentzVector vv=vs[0]+vs[1];
+		iweight *= varGr->Eval(vv.pt());
+	      }
+	  }
+	
+	//Higgs line shape
+	if(varNames[ivar].Contains("lshape"))
+	  {
+	    size_t idx( varNames[ivar].EndsWith("up") ? 1 : 2);
+	    float shapeReWeight = lShapeWeights[idx];
+	    if(lShapeWeights[0]==0) shapeReWeight=0;
+	    else                    shapeReWeight /= lShapeWeights[0];
+	    iweight                 *= shapeReWeight;
+	  }	 
+	
+	//recompute MET/MT if JES/JER was varied
+	LorentzVector zvv    = met[utils::cmssw::NOMINAL];
+	if(varyJesUp)    zvv = met[utils::cmssw::JESUP];
+	if(varyJesDown)  zvv = met[utils::cmssw::JESDOWN];
+	if(varyJerUp)    zvv = met[utils::cmssw::JERUP];
+	if(varyJerDown)  zvv = met[utils::cmssw::JERDOWN];
+	if(varyUmetUp)   zvv = met[utils::cmssw::UMETUP];
+	if(varyUmetDown) zvv = met[utils::cmssw::UMETDOWN];
+	if(varyLesUp)    zvv = met[utils::cmssw::LESUP];
+	if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
+	
+	data::PhysicsObjectCollection_t tightVarJets;
+	bool passLocalBveto(passBtags);
+ 	for(size_t ijet=0; ijet<jets.size(); ijet++){
 
-// 	//re-assign the event category if jets were varied
-// 	int eventSubCat  = eventCategoryInst.Get(phys,&tightVarJets);
-// 	TString tag_subcat = eventCategoryInst.GetLabel(eventSubCat);
-// 	tags_full.clear();
-// 	tags_full.push_back(tag_cat);
-// 	tags_full.push_back(tag_cat+tag_subcat);
-// 	//if(tag_subcat!="vbf") tags_full.push_back(tag_cat + "novbf");
-//         if(tag_subcat=="eq1jets" || tag_subcat=="geq2jets")tags_full.push_back(tag_cat + "geq1jets");
-//         //if(tag_subcat=="geq2jets" || tag_subcat=="vbf")tags_full.push_back(tag_cat + "geq2jetsInc");
-//         //if(tag_cat=="mumu" || tag_cat=="ee")tags_full.push_back(string("ll")+tag_subcat);
-//         if(tag_cat=="mumu" || tag_cat=="ee"){
-// 	  tags_full.push_back(string("ll")+tag_subcat);  
-// 	  if(tag_subcat=="eq1jets" || tag_subcat=="geq2jets")tags_full.push_back(string("ll")+string("geq1jets"));   
-// 	}
-// 	//        //remove sub VBF category to make it faster
-// 	//        if(tag_subcat=="vbf"){
-// 	//	  TString tag_subcatVBF = tag_subcat;
-// 	//	  if(fabs(tightVarJets[0].eta())<2.1 && fabs(tightVarJets[1].eta())<2.1)      { tag_subcatVBF+="2"; }
-// 	//	  else if(fabs(tightVarJets[0].eta())<2.1 || fabs(tightVarJets[1].eta())<2.1) { tag_subcatVBF+="1"; }
-// 	//	  else                                                                        { tag_subcatVBF+="0"; }
-// 	//	  tags_full.push_back(tag_cat+tag_subcatVBF);
-// 	//	  if(tag_cat=="mumu" || tag_cat=="ee")                                        { tags_full.push_back(string("ll")+tag_subcatVBF); }
-// 	//        }
-// 	if(passPreselection && zvv.pt()>30) mon.fillHisto("mtvar"+varNames[ivar],tags_full,mt,iweight);
-	
-// 	/*
-// 	//DEBUG
-// 	if(ivar==0 && outTxtFile && tag_subcat=="vbf" && zvv.pt()>70 && passPreselection){
-// 	fprintf(outTxtFile,"X----------------------------\nCat: %s - %s\n",tag_cat.Data(),tag_subcat.Data());
-// 	fprintf(outTxtFile,"inputFile = %s\n",url.Data());
-// 	fprintf(outTxtFile,"run/lumi/event = %i/%i/%i\n",ev.run, ev.lumi, ev.event);
-// 	fprintf(outTxtFile,"mt = %f met = %f -redMet = %f\n",mt, zvv.pt(), redMet.pt());
-// 	}
-	
-// 	if(ivar==0 && outTxtFile && tag_subcat=="geq2jets" && zvv.pt()>100 && mt<250 && passPreselection){
-// 	fprintf(outTxtFile,"DEBUG----------------------------\nCat: %s - %s\n",tag_cat.Data(),tag_subcat.Data());
-// 	fprintf(outTxtFile,"subcat = %s inputFile = %s\n",tag_subcat.Data(), url.Data());
-// 	fprintf(outTxtFile,"run/lumi/event = %i/%i/%i\n",ev.run, ev.lumi, ev.event);
-// 	fprintf(outTxtFile,"mt = %f met = %f -redMet = %f\n",mt, zvv.pt(), redMet.pt());
-// 	fprintf(outTxtFile,"nvtx = %i rho=%f rho25 = %f\n",ev.nvtx,ev.rho, ev.rho25Neut);
-// 	fprintf(outTxtFile,"zll  pt=%f mass=%f eta=%f phi=%f\n",zll.pt(), zll.mass(), zll.eta(), zll.phi());
-// 	for(unsigned int j=0;j<phys.ajets.size();j++){
-// 	fprintf(outTxtFile,"jet %i  pt=%f eta=%f phi=%f\n",j, phys.ajets[j].pt(), phys.ajets[j].eta(), phys.ajets[j].phi());
-// 	}
-// 	}
-// 	*/
-	
-// 	//fill shapes
-// 	for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
-// 	  //              if(redMet.pt()>optim_Cuts1_met[index]){
-// 	  //                if(passPreselection                                                         )   mon.fillHisto(TString("mt_redMet_shapes")+varNames[ivar],tags_full,index, mt,iweight);
-// 	  //                if(passPreselectionMbvetoMzmass && passZmass         && passLocalBveto      )   mon.fillHisto("mt_redMet_shapes_NRBctrl"+varNames[ivar],tags_full,index,0,iweight);
-// 	  //                if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_redMet_shapes_NRBctrl"+varNames[ivar],tags_full,index,1,iweight);
-// 	  //                if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_redMet_shapes_NRBctrl"+varNames[ivar],tags_full,index,2,iweight);
-// 	  //                if(passPreselectionMbvetoMzmass && passZmass         && !passLocalBveto     )   mon.fillHisto("mt_redMet_shapes_NRBctrl"+varNames[ivar],tags_full,index,3,iweight);
-// 	  //                if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_redMet_shapes_NRBctrl"+varNames[ivar],tags_full,index,4,iweight);
-// 	  //                if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_redMet_shapes_NRBctrl"+varNames[ivar],tags_full,index,5,iweight);
-// 	  //              }
+	  float eta=jets[ijet].eta();
+	  if( fabs(eta)>4.7 ) continue;
+	  float pt=jets[ijet].pt();
+	  if(varyJesUp)    pt=jets[ijet].getVal("jesup");
+	  if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
+	  if(varyJerUp)    pt=jets[ijet].getVal("jerup");
+	  if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
+	  if(pt<30) continue;
+
+	  //cross-clean with selected leptons and photons
+	  double minDRlj(9999.),minDRlg(9999.);
+          for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
+            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+	    minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
+	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
-// 	  //NARROW RESONANCE ANALYSIS
-// 	  if(zvv.pt()>optim_Cuts1_met[index]){
-// 	    for(unsigned int nri=0;nri<NRparams.size();nri++){
-	      
-// 	      float nrweight=iweight*NRweights[nri];
-// 	      if(nri>0)
-// 		{
-// 		  nrweight=iweight*NRweights[nri];
-// 		  if(lShapeWeights[0]==0) nrweight=0;
-// 		  else                    nrweight/=lShapeWeights[0];
-// 		}
+	  //jet id
+	  Int_t idbits=jets[ijet].get("idbits");
+	  bool passPFloose( (idbits>>0) & 0x1 );
+	  int simplePuId( (idbits >>7) & 0xf );
+	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
+	  if(!passPFloose || !passLooseSimplePuId) continue;
+	 
+	  //jet is selected
+	  tightVarJets.push_back(jets[ijet]);
 
-// 	      if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,nrweight);
-// 	      if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);
-// 	      if(passPreselectionMbvetoMzmass && passZmass         && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);
-// 	      if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,1,nrweight);
-// 	      if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
-// 	      if(passPreselectionMbvetoMzmass && passZmass         && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
-// 	      if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
-// 	      if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);
-	      
-// 	      //unrolled in dphi(jet,met)
-// //	      float unrolledmt(mt); 
-// //	      if(mt>1150)      mt=1140;
-// //	      if(passDphijmet) unrolledmt += 1000;
-// //	      if(passPreselectionMdphi                                                         )   mon.fillHisto(TString("mt_shapes_unroll")+NRsuffix[nri]+varNames[ivar],tags_full,index, unrolledmt,nrweight);
-// //	      if(passPreselectionMbvetoMzmassMdphi && passZmass         && passLocalBveto      )   mon.fillHisto("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);
-// //	      if(passPreselectionMbvetoMzmassMdphi && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,1,nrweight);
-// //	      if(passPreselectionMbvetoMzmassMdphi && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
-// //	      if(passPreselectionMbvetoMzmassMdphi && passZmass         && !passLocalBveto     )   mon.fillHisto("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
-// //	      if(passPreselectionMbvetoMzmassMdphi && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
-// //	      if(passPreselectionMbvetoMzmassMdphi && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_unroll_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);
-// 	    }
-// 	  }         
-// 	}
+	  //check b-tag
+	  if(pt<30 || fabs(eta)>2.5) continue;
+	  if(!isMC) continue;
+	  if(!varyBtagUp && !varyBtagDown) continue;
+	  
+	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+	  int flavId=genJet.info.find("id")->second;
+	  if(abs(flavId)!=5 && abs(flavId)!=4) flavId=1;
+ 	  if(varyBtagUp) {
+	    btsfutil.modifyBTagsWithSF(passLocalBveto, flavId, sfb+sfbunc, beff, sfl+sflunc, leff);
+	  }
+ 	  else if(varyBtagDown) {
+	    btsfutil.modifyBTagsWithSF(passLocalBveto, flavId, sfb-sfbunc, beff, sfl-sflunc, leff);
+ 	  }
+ 	}
 	
-// 	for(unsigned int index=0;index<optim_Cuts2_met.size();index++){
-// 	  if(varJets.size()>=2 && zvv.pt()>optim_Cuts2_met[index] && varJets[0].pt()>optim_Cuts2_vbfJpt[index] && varJets[1].pt()>optim_Cuts2_vbfJpt[index] &&  fabs(varJets[0].eta()-varJets[1].eta())>optim_Cuts2_vbfdeta[index]  ){
-// 	    if(passPreselection                                                         )   mon.fillHisto("VBFmt_shapes"        +varNames[ivar],tags_full,index, (varJets[0] + varJets[1]).M(),iweight);
-// 	    if(passPreselectionMbvetoMzmass && passZmass         && passLocalBveto      )   mon.fillHisto("VBFmt_shapes_NRBctrl"+varNames[ivar],tags_full,index,0,iweight);
-// 	    if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("VBFmt_shapes_NRBctrl"+varNames[ivar],tags_full,index,1,iweight);
-// 	    if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("VBFmt_shapes_NRBctrl"+varNames[ivar],tags_full,index,2,iweight);
-// 	    if(passPreselectionMbvetoMzmass && passZmass         && !passLocalBveto     )   mon.fillHisto("VBFmt_shapes_NRBctrl"+varNames[ivar],tags_full,index,3,iweight);
-// 	    if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("VBFmt_shapes_NRBctrl"+varNames[ivar],tags_full,index,4,iweight);
-// 	    if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("VBFmt_shapes_NRBctrl"+varNames[ivar],tags_full,index,5,iweight);
-// 	  }
-// 	}         
-//       }
-//       //cout << endl;
-    
+	bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
+	bool isZsideBandPlus( (boson.mass()>110 && boson.mass()<200) );
+ 	bool passPreselection                 (passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
+ 	bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );          
+	
+ 	//re-assign the event category to take migrations into account
+ 	TString evCat  = eventCategoryInst.GetCategory(tightVarJets,boson);
+	for(size_t ich=0; ich<chTags.size(); ich++){
+	  
+	  TString tags_full=chTags[ich]+evCat;
+	  
+	  //update weight and mass for photons
+	  LorentzVector iboson(boson);
+	  if(gammaWgtHandler!=0)
+	    {
+	      iweight *= gammaWgtHandler->getWeightFor(iboson,tags_full);
+	      iboson   = gammaWgtHandler->getMassiveP4(iboson,tags_full);
+	    }
+	  
+	  
+	  //updet the transverse mass
+	  float mt =higgs::utils::transverseMass(iboson,zvv,true);
+
+	  //scan the MET cut and fill the shapes
+	  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
+	    
+	    if(zvv.pt()>optim_Cuts1_met[index]){
+	      for(unsigned int nri=0;nri<NRparams.size();nri++){
+		
+		float nrweight=iweight*NRweights[nri];
+		if(nri>0)
+		  {
+		    nrweight=iweight*NRweights[nri];
+		    if(lShapeWeights[0]==0) nrweight=0;
+		    else                    nrweight/=lShapeWeights[0];
+		  }
+		
+		if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,nrweight);
+		if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);
+		if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);
+		if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,1,nrweight);
+		if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
+		if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
+		if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
+		if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);
+	      }
+	    }
+	  }
+	}
+      }
+  }
   printf("\n"); 
   file->Close();
   
