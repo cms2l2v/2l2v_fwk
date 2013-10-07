@@ -43,6 +43,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_TuneP11",
                 "xsec":245.8,
+		"br":[0.10608049],
 		"split":5
                 }
 	   ]
@@ -58,6 +59,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_TuneP11TeV",
                 "xsec":245.8,
+		"br":[0.10608049],
 		"split":5
                 }
 	   ]
@@ -73,6 +75,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_TuneP11noCR",
                 "xsec":245.8,
+		"br":[0.10608049],
 		"split":5
                 }
 	   ]
@@ -88,6 +91,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_TuneP11mpiHi",
                 "xsec":245.8,
+		"br":[0.10608049],
 		"split":5
                 }
 	   ]
@@ -102,8 +106,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_scaledown",
                 "xsec":245.8,
-		"split":5,
-		"br":[1.672780631]
+		"split":5
                 }
 	   ]
 	},
@@ -117,8 +120,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_scaleup",
                 "xsec":245.8,
-		"split":5,
-		"br":[0.7168011739]
+		"split":5
                 }
             ]
 	},
@@ -132,8 +134,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_matchingdown",
                 "xsec":245.8,
-		"split":5,
-		"br":[0.9537784299]
+		"split":5
                 }
 	   ]
 	},
@@ -147,8 +148,7 @@
 		{
  	        "dtag":"MC8TeV_TTJets_matchingup",
                 "xsec":245.8,
-		"split":5,
-		"br":[1.0124724872]
+		"split":5
                 }
             ]
 	},
@@ -164,7 +164,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_161v5",
                 "xsec":245.8,
-		"br":[1.2949376],
                 "split":5
                 }
      	   ]
@@ -181,7 +180,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_163v5",
                 "xsec":245.8,
-		"br":[1.2949376],
                 "split":5
                 }
      	   ]
@@ -198,7 +196,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_166v5",
                 "xsec":245.8,
-		"br":[1.1863536317],
                 "split":5
                 }
      	   ]
@@ -215,7 +212,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_169v5",
                 "xsec":245.8,
-		"br":[1.0939104916],
                 "split":5
                 }
      	   ]
@@ -232,7 +228,6 @@
 	"data":[
        		{
  	        "dtag":"MC8TeV_TTJets_172v5",
-                "xsec":245.8,
 		"split":5
                 }
      	   ]
@@ -249,7 +244,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_175v5",
                 "xsec":245.8,
-		"br":[0.9214966985],
                 "split":5
                 }
      	   ]
@@ -266,7 +260,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_178v5",
                 "xsec":245.8,
-		"br":[0.8231841526]
                 }
      	   ]
 	},
@@ -282,7 +275,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_181v5",
                 "xsec":245.8,
-		"br":[0.7586206],
                 "split":5
                 }
      	   ]
@@ -299,7 +291,6 @@
        		{
  	        "dtag":"MC8TeV_TTJets_184v5",
                 "xsec":245.8,
-		"br":[0.7586206],
                 "split":5
                 }
      	   ]
