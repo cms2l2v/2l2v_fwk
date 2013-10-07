@@ -1049,8 +1049,8 @@ int main(int argc, char* argv[]){
 	printf("--plotExt --> extension to save\n");
 	printf("--cutflow --> name of the histogram with the original number of events (cutflow by default)\n");
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
-        printf("--forceMerge --> merge splitted samples");
-	printf("--useMerged --> use merged splitted samples");
+        printf("--forceMerge --> merge splitted samples\n");
+	printf("--useMerged --> use merged splitted samples\n");
 
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;

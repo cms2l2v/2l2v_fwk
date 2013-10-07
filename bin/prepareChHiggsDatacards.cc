@@ -36,10 +36,12 @@
 using namespace std;
 
 TString outUrl("./");
+TString suffixUrl(""); 
 TString inFileUrl("");
 TString systFileUrl("");
 TString jsonFileUrl("");
 TString histo("finalevtflow");
+TString signalTag("");
 std::set<TString> systVars;
 std::vector<int> binsToProject;
 std::vector<std::string> channels;
@@ -125,34 +127,42 @@ TString convertNameForDataCard(TString title)
   if(title=="Single top")                                     return "st";
   if(title=="t#bar{t}V")                                      return "ttv";
   if(title=="t#bar{t}")                                       return "ttbar";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}") return "htaunusignal";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[200 GeV]}") return "htaunusignal";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[220 GeV]}") return "htaunusignal";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[240 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "htaunusignal";
-  if(title=="#splitline{H^{+}$#rightarrow tb}{[260 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "htbsignal";
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") return "htaunusignal";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}") return "TBH";   signalTag = "TBH" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[200 GeV]}") return "TBH";   signalTag = "TBH" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[220 GeV]}") return "TBH";   signalTag = "TBH" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[240 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "TBH";   signalTag = "TBH" ;
+  if(title=="#splitline{H^{+}$#rightarrow tb}{[260 GeV]}")    return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") return "TBH";   signalTag = "TBH" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[350 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[400 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     return "HTB";   signalTag = "HTB" ;
+  if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     return "HTB";   signalTag = "HTB" ; 
   return title;
 }
 // 
 TString convertNameForFileName(TString histoName)
 {
+  if(histoName=="finalevtflow0") return "_0btag";
   if(histoName=="finalevtflow1") return "_1btag";
   if(histoName=="finalevtflow2") return "_2btags";
   if(histoName=="finalevtflow3") return "_3btags";
-  if(histoName=="finalevtflow4") return "_geq4btags";
+  if(histoName=="finalevtflow4") return "_4btags";
+  if(histoName=="finalevtflow5") return "_geq5btags";
   return ""; 
 }
 
 // 
 TString convertMassPointNameForFileName(TString title)
 {
+
   if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     return "_m180_";
   if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     return "_m200_";
   if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     return "_m220_";
@@ -161,6 +171,12 @@ TString convertMassPointNameForFileName(TString title)
   if(title=="#splitline{H^{+}#rightarrow tb}{[260 GeV]}")     return "_m260_";
   if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "_m280_";
   if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m300_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m350_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m400_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m500_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m600_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m700_";
+
 
 
   return ""; 
@@ -197,6 +213,7 @@ void printHelp()
 {
   printf("Options\n");
   printf("--out       --> output director\n");
+  printf("--suffix    --> suffix to append to datacard filenames\n");
   printf("--in        --> input file from plotter\n");
   printf("--syst      --> input file with syst shapes\n");
   printf("--json      --> json file with the sample descriptor\n");
@@ -404,7 +421,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 //
 void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 {
-  FILE* pFile = fopen(outUrl+"CrossSectionYields"+convertNameForFileName(histo)+".tex","w");
+  FILE* pFile = fopen(outUrl+"CrossSectionYields"+convertNameForFileName(histo)+"_"+suffixUrl+".tex","w");
 
   TH1F *dataTempl=allShapes.begin()->second.data;
   const std::vector<TH1F *> &bckgTempl=allShapes.begin()->second.bckg;
@@ -535,7 +552,7 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 	//build also the statistical uncertainty shapes
 	//for each bin set content as val +/- statErr (beware however of negative and extremely large values)
 	TString statSystName(proc+"_"); 
-	if(proc=="signal") statSystName="ttbar_";
+	//	if(proc=="signal") statSystName=signalTag+"_";//"ttbar_";
 	statSystName+=oDir->GetTitle(); 
 	statSystName+="_stat";
 	TH1* statup   = (TH1 *)h->Clone(statSystName+"Up");
@@ -567,13 +584,13 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
   
   //  for(size_t currentPoint=0; currentPoint<allShapes.signalMassPoints.size(); ++currentPoint){
 
-    TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes"+convertNameForFileName(histo)+".root","RECREATE");
+    TFile *fOut = TFile::Open(outUrl+"CrossSectionShapes"+convertNameForFileName(histo)+"_"+suffixUrl+".root","RECREATE");
     for(std::map<TString, Shape_t>::const_iterator it=allShapes.begin(); it!=allShapes.end(); it++)
       {
 	TString ch(it->first); if(ch.IsNull()) ch="inclusive";
 	TDirectory *oDir=fOut->mkdir(ch);
 	
-	TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+".dat");
+	TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+"_"+suffixUrl+".dat");
 	const Shape_t &shape=it->second;
 	
 	FILE* pFile = fopen(outUrl+shapesFile,"w");
@@ -582,7 +599,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	fprintf(pFile, "jmax *\n");
 	fprintf(pFile, "kmax *\n");
 	fprintf(pFile, "-------------------------------\n");
-	TString shapesFileName("CrossSectionShapes"+convertNameForFileName(histo)+".root");
+	TString shapesFileName("CrossSectionShapes"+convertNameForFileName(histo)+"_"+suffixUrl+".root");
 	fprintf(pFile, "shapes * * %s %s/$PROCESS %s/$PROCESS_$SYSTEMATIC\n",shapesFileName.Data(), ch.Data(), ch.Data());
 	fprintf(pFile, "-------------------------------\n");
 	
@@ -732,7 +749,8 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	  }
 	
 	//MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
-	fprintf(pFile,"%35s %10s ", ("htbsignal_"+ch+"_stat").Data(), "shape");
+	TString myName=convertNameForDataCard(shape.signal->GetTitle()).Data();
+	fprintf(pFile,"%35s %10s ", (myName/*signalTag*/+"_"+ch+"_stat").Data(), "shape");
 	fprintf(pFile,"%6s ","1");
 	for(size_t j=0; j<shape.bckg.size(); j++) {
 	  //	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
@@ -777,6 +795,7 @@ int main(int argc, char* argv[])
     string arg(argv[i]);
     if(arg.find("--help")        !=string::npos)              { printHelp(); return -1;} 
     else if(arg.find("--out")     !=string::npos && i+1<argc) { outUrl = argv[i+1]; outUrl+="/";  i++;  printf("out = %s\n", outUrl.Data());  }
+    else if(arg.find("--suffix") !=string::npos && i+1<argc) { suffixUrl = argv[i+1];  i++;  printf("suffix = %s\n", suffixUrl.Data());  }
     else if(arg.find("--in")     !=string::npos && i+1<argc)  { inFileUrl = argv[i+1];  i++;  printf("in = %s\n", inFileUrl.Data());  }
     else if(arg.find("--syst")   !=string::npos && i+1<argc)  { systFileUrl = argv[i+1];  i++;  printf("syst = %s\n", systFileUrl.Data());  }
     else if(arg.find("--json")   !=string::npos && i+1<argc)  { jsonFileUrl  = argv[i+1];  i++;  printf("json = %s\n", jsonFileUrl.Data()); }
