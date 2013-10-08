@@ -40,7 +40,7 @@
 
 using namespace std;
 double NonResonnantSyst = 0.25;
-double GammaJetSyst = 1.0;
+double GammaJetSyst = 0.25;
 
 
 TString signalSufix="";
@@ -792,12 +792,15 @@ void initializeTGraph(){
         //
          void AllInfo_t::showShape(std::vector<TString>& selCh , TString histoName, TString SaveName)
          {
+           int NLegEntry = 0;
            std::map<string, THStack*          > map_stack;
            std::map<string, TGraphErrors*     > map_unc;
            std::map<string, TH1*              > map_data;
            std::map<string, std::vector<TH1*> > map_signals;
            std::map<string, int               > map_legend;
-           TLegend* legA  = new TLegend(0.6,0.5,0.99,0.85, "NDC");
+//           TLegend* legA  = new TLegend(0.6,0.5,0.99,0.85, "NDC");
+//           TLegend* legA  = new TLegend(0.03,0.00,0.97,0.70, "NDC");
+           TLegend* legA  = new TLegend(0.03,0.99,0.97,0.89, "NDC");
 
            //order the proc first
            sortProc();
@@ -847,6 +850,7 @@ void initializeTGraph(){
                  if(map_legend.find(it->first)==map_legend.end()){
                     map_legend[it->first]=1;
                     legA->AddEntry(h,it->first.c_str(),it->first=="data"?"P":it->second.isSign?"L":"F");
+                    NLegEntry++;
                  }
               }
            }
@@ -854,7 +858,10 @@ void initializeTGraph(){
            int NBins = map_data.size()/selCh.size();
            TCanvas* c1 = new TCanvas("c1","c1",300*NBins,300*selCh.size());
            c1->SetTopMargin(0.00); c1->SetRightMargin(0.00); c1->SetBottomMargin(0.00);  c1->SetLeftMargin(0.00);
-           TPad* t1 = new TPad("t1","t1", 0.03, 0.03, 1.0, 1.00);  t1->Draw();  t1->cd();
+           TPad* t2 = new TPad("t2","t2", 0.03, 0.90, 1.00, 1.00, -1, 1);  t2->Draw();  c1->cd();
+           t2->SetTopMargin(0.00); t2->SetRightMargin(0.00); t2->SetBottomMargin(0.00);  t2->SetLeftMargin(0.00);
+           TPad* t1 = new TPad("t1","t1", 0.03, 0.03, 1.00, 0.90, 4, 1);  t1->Draw();  t1->cd();
+           t1->SetTopMargin(0.00); t1->SetRightMargin(0.00); t1->SetBottomMargin(0.00);  t1->SetLeftMargin(0.00);
            t1->Divide(NBins, selCh.size(), 0, 0);
 
            int I=1;
@@ -891,12 +898,15 @@ void initializeTGraph(){
               I++;
            }
            //print legend
+           c1->cd(0);
            legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);  legA->SetBorderSize(0); legA->SetHeader("");
+           legA->SetNColumns((NLegEntry/2) + 1);
            legA->Draw("same");    legA->SetTextFont(42);
 
            //print canvas header
-           t1->cd(0);
-           TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
+           t2->cd(0);
+//           TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
+           TPaveText* T = new TPaveText(0.1,0.7,0.9,1.0, "NDC");
            T->SetFillColor(0);  T->SetFillStyle(0);  T->SetLineColor(0); T->SetBorderSize(0);  T->SetTextAlign(22);
            if(systpostfix.Contains('8')){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
            }else{                         T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
@@ -1210,7 +1220,7 @@ void initializeTGraph(){
                shortName.ReplaceAll("z-#gamma^{*}+jets#rightarrow ll","dy");
                shortName.ReplaceAll("#rightarrow","");
                shortName.ReplaceAll("(",""); shortName.ReplaceAll(")","");    shortName.ReplaceAll("+","");    shortName.ReplaceAll(" ","");   shortName.ReplaceAll("/","");  shortName.ReplaceAll("#",""); 
-               shortName.ReplaceAll("=",""); shortName.ReplaceAll(".","");    shortName.ReplaceAll("^","");    shortName.ReplaceAll("}","");   shortName.ReplaceAll("{","");
+               shortName.ReplaceAll("=",""); shortName.ReplaceAll(".","");    shortName.ReplaceAll("^","");    shortName.ReplaceAll("}","");   shortName.ReplaceAll("{","");  shortName.ReplaceAll(",","");
                shortName.ReplaceAll("ggh", "ggH");
                shortName.ReplaceAll("qqh", "qqH");
                if(shortName.Length()>8)shortName.Resize(8);
