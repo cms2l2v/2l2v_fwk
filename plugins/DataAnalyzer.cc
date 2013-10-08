@@ -90,7 +90,7 @@ DataAnalyzer::DataAnalyzer(const edm::ParameterSet &iConfig) : obsPU_h(0), trueP
   analysisCfg_ = iConfig.getParameter<edm::ParameterSet>("cfg");
   std::vector<string> trigs=analysisCfg_.getParameter<std::vector<string> >("triggerPaths");
   std::vector<string> filts=analysisCfg_.getParameter<std::vector<string> >("metFilters");
-  keepFullGenInfo_ = false; 
+  keepFullGenInfo_ = false; storeAllPF_ = false ;
   keepFullGenInfo_ = analysisCfg_.getParameter<bool>("keepFullGenInfo");
   storeAllPF_ = analysisCfg_.getParameter<bool>("storeAllPF");
 
@@ -761,7 +761,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   // https://twiki.cern.ch/twiki/bin/view/CMS/PileupJetID
   // https://twiki.cern.ch/twiki/bin/view/CMS/GluonTag
   // 
-  ev.jn=0; ev.pfn=0;
+  ev.jn=0; ev.jnUnf=0; ev.pfn=0;
   Handle<pat::JetCollection> jetH;
   event.getByLabel( analysisCfg_.getParameter<edm::InputTag>("jetSource"), jetH);
   edm::Handle<edm::ValueMap<float> >  qgTaggerH;
@@ -939,7 +939,23 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
       ev.jn++;
     }
-
+   // additional gen jets :
+   if ( !isData && keepFullGenInfo_ ){
+	edm::Handle<reco::GenJetCollection> genJetsHandle;
+	event.getByLabel("ak5GenJetsNoNu",genJetsHandle);
+	const reco::GenJetCollection* genJetColl = &(*genJetsHandle);
+        reco::GenJetCollection::const_iterator gjeti = genJetColl->begin();
+	 for(; gjeti!=genJetColl->end();gjeti++){
+                        reco::GenParticle gjet = *gjeti;
+                        //if(gjet.pt()<=5||gjet.eta()>2.5)continue;
+                        if(gjet.pt()<=10)continue;
+			ev.jn_genUnfjpx[ev.jnUnf]      =  gjet.px();
+      		        ev.jn_genUnfjpy[ev.jnUnf]      =  gjet.py();
+		        ev.jn_genUnfjpz[ev.jnUnf]      =  gjet.pz();
+		        ev.jn_genUnfjen[ev.jnUnf]      =  gjet.energy();
+			ev.jnUnf++;	
+	}
+   }
   //
   // missing transverse energy
   //
