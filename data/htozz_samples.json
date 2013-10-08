@@ -51,7 +51,7 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_ZZ",
-                "xsec":0.28,
+                "xsec":0.380,
 		"split":2
              }
 	  ]
@@ -66,7 +66,7 @@
             {
                 "dtag":"MC8TeV_WZ",
 		"split":2,
-                "xsec":0.8674
+                "xsec":1.0575
              }
            ]
         },

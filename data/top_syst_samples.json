@@ -260,6 +260,7 @@
        		{
  	        "dtag":"MC8TeV_TTJets_178v5",
                 "xsec":245.8,
+		"split":5
                 }
      	   ]
 	},
