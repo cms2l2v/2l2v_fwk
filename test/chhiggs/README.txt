@@ -21,7 +21,7 @@ runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json   
 
 
 ### FWLite test
-runLocalAnalysisOverSamples.py -e runZHTauTauAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_fwlite/ -d  /storage/data/cms/users/quertenmont/Higgs/Ntuples/13_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
+runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_fwlite/ -d  /storage/data/cms/users/quertenmont/Higgs/Ntuples/13_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
 
 
 Plots & tables
