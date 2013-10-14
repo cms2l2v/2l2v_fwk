@@ -24,7 +24,8 @@ fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_sampl
 fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 3       --out xsec/3jet > xsec/xsec3jexc_result.txt
 fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 4       --out xsec/4jet > xsec/xsec4jexc_result.txt
 
-
+### lepton-jet invariant mass analysis
+fitMljSpectrum --in ~/work/top_5311/plotter_nom.root --syst ~/work/top_5311/plotter_syst.root --json data/top_samples.json --systJson data/top_syst_samples.json
 
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/Summer13_ntuples  -o ~/work/top_5311/final -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/top_dysf.root'" -s 8nh
 

@@ -171,6 +171,7 @@ int main(int argc, char* argv[])
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
   //#######################################
+  bool useGenLineShape(true);
   TH1 *hGen=0;
   TGraph *hLineShapeNominal=0;
   std::map<std::pair<double,double>, std::vector<TGraph *> > hLineShapeGrVec;  
@@ -191,17 +192,28 @@ int main(int argc, char* argv[])
 	}
       if(fin) 
 	{
-	  cout << "Line shape weights (and uncertainties) will be applied from " << fin->GetName() << endl;
-	  if(fin_int)
-	    cout << "Inteference terms (and uncertaintnies) will be replaced from " << fin_int->GetName() << endl;
+	  if(!useGenLineShape) cout << "Line shape weights (and uncertainties) will be applied from " << fin->GetName() << endl;
+	  if(fin_int)          cout << "Inteference terms (and uncertainties) will betaken from " << fin_int->GetName() << endl;
 	  
 	  char dirBuf[100];
 	  sprintf(dirBuf,"H%d/",int(HiggsMass));
 	  
-	  hLineShapeNominal      = new TGraph((TH1 *)fin->Get(dirBuf+TString("cps_shape")));
 	  hGen                   = (TH1 *) fin->Get(dirBuf+TString("gen")); hGen->SetDirectory(0); hGen->Scale(1./hGen->Integral());
-	  
+	  if(!useGenLineShape)   hLineShapeNominal = new TGraph((TH1 *)fin->Get(dirBuf+TString("cps_shape")));	  
+	  else                   hLineShapeNominal = new TGraph(hGen);
+
+
+	  //CPS shape: if not required set all weights to 1.0
 	  TGraph *cpsGr          = (TGraph *) fin->Get(dirBuf+TString("cps"));
+	  if(useGenLineShape){
+	    for(int ip=0; ip<cpsGr->GetN(); ip++){
+	      Double_t x,y; 
+	      cpsGr->GetPoint(ip,x,y);
+	      cpsGr->SetPoint(ip,x,1.0);
+	    }
+	  }
+
+	  //interference: if not found set all weights to 1.0
 	  TGraph *cpspintGr      = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("nominal"));
 	  TGraph *cpspint_upGr   = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("up"));
 	  TGraph *cpspint_downGr = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("down"));
@@ -213,7 +225,7 @@ int main(int argc, char* argv[])
 	      cpspint_downGr=(TGraph *) cpspintGr->Clone();
 	    }
       
-	  //loop over possible scenarios
+	  //loop over possible scenarios: SM or BSM
 	  for(size_t nri=0; nri<NRparams.size(); nri++)
 	    {
 	      //recompute weights depending on the scenario (SM or BSM)
@@ -885,7 +897,6 @@ int main(int argc, char* argv[])
 	mon.fillHisto("zpt",      tags, boson.pt(),weight);
 
 	//these two are used to reweight photon -> Z, the 3rd is a control
-	mon.fillHisto("qmass",       tags, boson.mass(),weight); 
 	mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
 	mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
 
@@ -968,6 +979,9 @@ int main(int argc, char* argv[])
 		if(passMinDphijmet){
 		  mon.fillHisto("eventflow",icat,5,iweight);
 		  
+		  //this one is used to sample the boson mass: cuts may shape Z lineshape
+		  mon.fillHisto("qmass",       tags, boson.mass(),weight); 
+
 		  mon.fillHisto( "njets",icat,njets,iweight);
 		  mon.fillHisto( "met",icat,met[0].pt(),iweight,true);
 		  mon.fillHisto( "balance",icat,met[0].pt()/iboson.pt(),iweight);

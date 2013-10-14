@@ -6,7 +6,7 @@
 <use name="HiggsAnalysis/CombinedLimit"/>
 <use name="PhysicsTools/FWLite"/>
 <environment>
-  <bin                                   file="FitSecVtxDistributions.cxx"></bin>
+  <bin name="FitSecVtxDistributions"     file="FitSecVtxDistributions.cxx"></bin>
   <bin name="runTopAnalysis"             file="runTopAnalysis.cc"></bin> 
   <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
   <bin name="runHZZ2l2nuAnalysis"        file="runHZZ2l2nuAnalysis.cc"></bin>
@@ -20,9 +20,10 @@
   <bin name="computePDFvariationsFWLite" file="computePDFvariationsFWLite.cc"></bin>
   <bin name="fitDYforTop"                file="fitDYforTop.cc"></bin> 
   <bin name="fitTTbarCrossSection"       file="fitTTbarCrossSection.cc"></bin> 
+  <bin name="fitMljSpectrum"             file="fitMljSpectrum.cc"></bin>
   <bin name="runPLRanalysis"             file="runPLRanalysis.cc"></bin> 
   <bin name="runLandS"                   file="runLandS.cc"></bin> 
-  <bin name="jsonTools" file="jsonTools.cc"></bin>
-  <bin name="computeLimit" file="computeLimit.cc"></bin>
+  <bin name="jsonTools"                  file="jsonTools.cc"></bin>
+  <bin name="computeLimit"               file="computeLimit.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>

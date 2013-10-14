@@ -8,6 +8,7 @@
 #include "UserCode/llvv_fwk/interface/LxyAnalysis.h"
 #include "UserCode/llvv_fwk/interface/UEAnalysis.h"
 #include "UserCode/llvv_fwk/interface/BTVAnalysis.h"
+#include "UserCode/llvv_fwk/interface/RAnalysis.h"
 #include "UserCode/llvv_fwk/interface/TopPtWeighter.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
@@ -269,6 +270,8 @@ int main(int argc, char* argv[])
   //TNtuple *ueNtuple = ueAn.getSummaryTuple();
   //BTVAnalysis btvAn(controlHistos,runSystematics);
   //LxyAnalysis lxyAn(controlHistos,runSystematics);
+  RAnalysis rAn(controlHistos,systVars);
+
   TopPtWeighter *topPtWgt=0;
   if(isTTbarMC ){
     TString shapesDir("");
@@ -634,6 +637,7 @@ int main(int argc, char* argv[])
 
 	      //re-select the jets
 	      int nlocaljets(0),nlocalbtags(0);
+	      data::PhysicsObjectCollection_t localSelJets;
 	      for(size_t ijet=0; ijet<looseJets.size(); ijet++)
 		{
 		  float pt(looseJets[ijet].pt());
@@ -645,6 +649,7 @@ int main(int argc, char* argv[])
 		  if(eta<2.5 && pt>30) {
 		    nlocaljets++;
 		    nlocalbtags += (looseJets[ijet].getVal("csv")>0.405);
+		    localSelJets.push_back(looseJets[ijet]);
 		  }
 		}
 	      if(nlocaljets<1) continue;
@@ -693,6 +698,11 @@ int main(int argc, char* argv[])
 	      if(!passLocalMetSelection) continue;
 	      if(nlocaljets<1 || nlocaljets>4) continue;
 	      controlHistos.fillHisto("finalevtflow"+systVars[ivar], ch, nlocaljets-1, iweight);
+
+	      //R measurement
+	      if(ivar==0) rAn.prepareAnalysis(selLeptons,localSelJets);
+	      rAn.analyze(selLeptons,localSelJets,iweight,systVars[ivar],hasTop);
+
 	    }
 	}
     }

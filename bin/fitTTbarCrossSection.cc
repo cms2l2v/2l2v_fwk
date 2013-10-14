@@ -734,12 +734,14 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	}
 
       //fakes
-      fprintf(pFile,"%35s %10s ", "fakes", "lnU");
+      //fprintf(pFile,"%35s %10s ", "fakes", "lnU");
+      fprintf(pFile,"%35s %10s ", "fakes", "lnN");
       fprintf(pFile,"%6s ","-");
       for(size_t j=0; j<shape.bckg.size(); j++) {
 	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
 	if(name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
-	else                             fprintf(pFile,"%6s ","0.5");
+	//else                             fprintf(pFile,"%6s ","0.5");
+	else                             fprintf(pFile,"%6s ","2.0");
       }
       fprintf(pFile,"\n");
 
