@@ -1,5 +1,18 @@
 #!/bin/bash
 
+
+# Do input 
+# runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/plots --json data/allChsamples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/plotter-all-samplesForDatacards_evtflow.root --noPlot --noPowers  --onlyStartWith emu_evtflow &
+
+# runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/plots --json data/allChsamples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/plotter-all-samplesForDatacards_finalevtflow.root --noPlot --noPowers  --onlyStartWith emu_finalevtflow &
+
+
+runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/plots --json data/allChsamples_norm.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/plotter-all-samplesForDatacards_finalevtflow_norm.root --noPlot --noPowers  --onlyStartWith emu_finalevtflow &
+
+
+
+
+
 #mkdir -p datacardsByDecayNew/180
 #mkdir -p datacardsByDecayNew/200 
 #mkdir -p datacardsByDecayNew/220 
