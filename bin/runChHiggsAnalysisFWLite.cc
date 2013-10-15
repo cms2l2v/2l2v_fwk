@@ -920,11 +920,12 @@ int main(int argc, char* argv[])
       //	  std::vector<TString> tags(1,chTags[ich]);
       
       bool additionalLeptonsVeto(nVetoE>0 || nVetoMu>0);
-      bool passMuonPlusJets(selLeptons.size()==1 && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
+      bool passMuonPlusJets(selLeptons.size()==1 && selJets.size() > 2);//&& !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
       bool passMet(met.pt()>40.);
       bool pass1bjet(nbjets>0);
       bool pass1tau(selTaus.size()==1);
-      bool passOS((selTaus[0].id/15.0)*(selLeptons[0].id/13.0)<0);      
+      bool passOS(true);
+      if(pass1tau)  passOS = ((selTaus[0].id/15.0)*(selLeptons[0].id/13.0)<0);      
       
       
       mon.fillHisto("eventflow",chTags,0,weight);
