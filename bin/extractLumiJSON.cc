@@ -130,6 +130,7 @@ void RemoveRunsAfter(unsigned int RunMax, const std::vector<stRun*>& RunMap, std
 
 void DumpJson(const std::vector<stRun*>& RunMap, string FileName){
    FILE* json = fopen(FileName.c_str(),"w");
+   if(!json)printf("Could Not open file: %s\n", FileName.c_str());
    fprintf(json,"{");
    for(unsigned int r=0;r<RunMap.size();r++){
       stRun* tmp =  RunMap[r];

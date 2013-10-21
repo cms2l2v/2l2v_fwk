@@ -378,6 +378,7 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
         cfg_file.write('%s\n' % InputFilesString)
         cfg_file.write('process.OUT = cms.OutputModule("PoolOutputModule",\n')
         cfg_file.write('    outputCommands = cms.untracked.vstring(%s),\n' % KeepStatement)
+        cfg_file.write('    eventAutoFlushCompressedSize=cms.untracked.int32(15*1024*1024),\n')
         cfg_file.write('    fileName = cms.untracked.string(%s)\n' % OutputFile)
         cfg_file.write(')\n')
         cfg_file.write('\n')
