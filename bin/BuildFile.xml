@@ -7,6 +7,7 @@
 <use name="TauAnalysis/CandidateTools"/>
 <use name="PhysicsTools/FWLite"/>
 <environment>
+  <bin name="extractLumiJSON"           file="extractLumiJSON.cc"></bin>
   <bin name="FitSecVtxDistributions"     file="FitSecVtxDistributions.cxx"></bin>
   <bin name="runTopAnalysis"             file="runTopAnalysis.cc"></bin> 
   <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
@@ -15,6 +16,7 @@
   <bin name="prepareChHiggsDatacards"    file="prepareChHiggsDatacards.cc"></bin>
   <bin name="runVBFZAnalysis"            file="runVBFZAnalysis.cc"></bin> 
   <bin name="runEWKVjjAnalysis"          file="runEWKVjjAnalysis.cc"></bin> 
+  <bin name="runBNVAnalysisFWLite"      file="runBNVAnalysisFWLite.cc"></bin>
   <bin name="runVBFZAnalysisFWLite"      file="runVBFZAnalysisFWLite.cc"></bin>
   <bin name="runPlotter"                 file="runPlotter.cc"></bin> 
   <bin name="runPlotterFWLite"           file="runPlotterFWLite.cc"></bin>
