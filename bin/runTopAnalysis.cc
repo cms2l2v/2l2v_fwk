@@ -295,7 +295,7 @@ int main(int argc, char* argv[])
   //BTVAnalysis btvAn(controlHistos,runSystematics);
   //LxyAnalysis lxyAn(controlHistos,runSystematics);
   RAnalysis rAn(controlHistos,systVars);
-  rAn.setTaggingCorrectors(btagEffCorr);
+  if(isMC) rAn.setTaggingCorrectors(btagEffCorr);
 
   TopPtWeighter *topPtWgt=0;
   if(isTTbarMC ){
@@ -734,7 +734,7 @@ int main(int argc, char* argv[])
 
       //control region for R measurement Z with lowmet
       if(isOS && selJets.size()>1 && selJets.size()<5 && isZcand && !passMetSelection){
-	rAn.analyze(selLeptons,selJets,weight,"zlowmet",hasTop);
+	rAn.analyze(selLeptons,selJets,weight,"",hasTop,"zlowmet");
       }
 
 

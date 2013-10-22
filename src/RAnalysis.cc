@@ -103,9 +103,8 @@ void RAnalysis::prepareAnalysis(data::PhysicsObjectCollection_t &leptons, data::
 
 
 //
-void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsObjectCollection_t &jets, float weight, TString var, bool isTopMC)
+void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsObjectCollection_t &jets, float weight, TString var, bool isTopMC,TString ctrl)
 {
-
   //check channel
   TString ch("");
   int lid1(leptons[0].get("id")), lid2(leptons[1].get("id"));
@@ -113,6 +112,7 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
   else if(abs(lid1)*abs(lid2)==11*13)  ch="emu";
   else if(abs(lid1)*abs(lid2)==13*13)  ch="mumu";
   if(ch=="") return;
+  if(ctrl!="") ch =ch+ctrl; 
 
   //build categories
   std::vector<TString>    cats(1,ch);
@@ -121,7 +121,7 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
   else if(jets.size()==4) cats.push_back(ch+"eq4jets");
   else return;
   cats.push_back("all");
-
+  
   int ncorrectAssignments(0);
   std::vector<int> extraJetFlavors;
   std::vector<float> extraJetPt,matchedJetPt;
@@ -155,16 +155,16 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
       int assignCode=(genLeptonId*genPartonId); 
       bool isCorrect(assignCode<0 && isTopMC && fabs(flavId)==5 );
       correctAssignmentFound |= isCorrect;
-
+      
       //fill the histograms (don't weight by bin width to fit with unweighted events in RooFit)
       LorentzVector lj=jets[ijet]+leptons[ilep];
       mon_->fillHisto("mlj"+var,                                  cats,lj.mass(),weight);
       mon_->fillHisto((isCorrect ? "correctmlj" : "wrongmlj")+var,cats,lj.mass(),weight);
-
-      lj=jets[ijet]+rotLeptons_[ilep];
-      mon_->fillHisto("rotmlj"+var,                               cats,lj.mass(),weight);
+      if(rotLeptons_.size()>ilep){
+	lj=jets[ijet]+rotLeptons_[ilep];
+	mon_->fillHisto("rotmlj"+var,                               cats,lj.mass(),weight);
+      }
     }
-
     if(ncorrectAssignments==2) correctAssignmentFound=false; //this should never happen
     ncorrectAssignments += correctAssignmentFound;
 
@@ -196,7 +196,7 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
     if(abs(flavId)==4) flavKey="c";
     if(abs(flavId)==5) flavKey="b";
     float jetpt=min(jets[ijet].pt(),400.0);
-    for(int itagger=0; itagger<3; itagger++){
+    for(int itagger=0; itagger<3; itagger++)
       {
 	std::pair<TString,TString> key("csvL",flavKey);
 	bool hasBtagCorr(hasCSVL);
@@ -216,11 +216,9 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
 	if(itagger==1)     nCSVMcorr += hasBtagCorr;
 	if(itagger==2)     nCSVTcorr += hasBtagCorr;
       }
-    }
   }
   
   if(var!="") return;
-  
   for(size_t ijet=0; ijet<jets.size(); ijet++){
 
     //expected b-tag efficiency
@@ -273,10 +271,10 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
   mon_->fillHisto("csvMbtagsextended",cats,nCSVM+addBin,weight);
   mon_->fillHisto("csvTbtagsextended",cats,nCSVT+addBin,weight);
 
+  //this is just MC with corrected efficiencies
   mon_->fillHisto("csvLbtagsextendedcorr",cats,nCSVLcorr+addBin,weight);
   mon_->fillHisto("csvMbtagsextendedcorr",cats,nCSVMcorr+addBin,weight);
   mon_->fillHisto("csvTbtagsextendedcorr",cats,nCSVTcorr+addBin,weight);
-
 }
 
 

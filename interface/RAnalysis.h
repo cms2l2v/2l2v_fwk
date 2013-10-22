@@ -18,7 +18,7 @@ class RAnalysis
   RAnalysis(SmartSelectionMonitor &mon,std::vector<TString> &vars);
   void setTaggingCorrectors(std::map<std::pair<TString,TString>, std::pair<TGraphErrors *,TGraphErrors *> > &btagEffCorr) { btagEffCorr_=&btagEffCorr; }
   void prepareAnalysis(data::PhysicsObjectCollection_t &leptons, data::PhysicsObjectCollection_t &jets);
-  void analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsObjectCollection_t &jets, float weight, TString var, bool isTopMC);
+  void analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsObjectCollection_t &jets, float weight, TString var, bool isTopMC,TString ctrl="");
 
   ~RAnalysis(){};
   
