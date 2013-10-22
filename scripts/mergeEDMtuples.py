@@ -64,7 +64,7 @@ for proc in procList :
                if(dirToClean.find('/storage/data/cms/store/')): dirToClean = dirToClean.replace('/storage/data/cms/store/', '/storage_rw/data/cms/store/') #Hack for Louvain T2
                removeDuplicates(dirToClean);
 
-            filenames=fillFromStore(inputdir,0,-1,False)
+            filenames=LaunchOnCondor.natural_sort(fillFromStore(inputdir,0,-1,False))
             nfiles=len(filenames)
             filenames=addPrefixSuffixToFileList("   '", filenames, "',")
 
