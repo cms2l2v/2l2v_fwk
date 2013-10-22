@@ -111,6 +111,12 @@
 	 "isinvisible":true,
          "data":[
 	        {	
+		 "dtag":"MC8TeV_GJets_15to30",
+		 "xsec":200061.7,
+                 "br":[1.3],
+	 	 "split":3
+		},
+	        {	
 		 "dtag":"MC8TeV_GJets_30to50",
 		 "xsec":19931.62,
                  "br":[1.3],

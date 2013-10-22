@@ -116,6 +116,7 @@ int main(int argc, char* argv[])
 
   GammaWeightsHandler *gammaWgtHandler=0;
   if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,true);
+  //if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,false);
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
@@ -673,6 +674,7 @@ int main(int argc, char* argv[])
       //
       // LEPTON ANALYSIS
       //
+      LorentzVector muDiff(0,0,0,0);
       data::PhysicsObjectCollection_t selLeptons, extraLeptons;
       for(size_t ilep=0; ilep<leptons.size(); ilep++)
 	{
@@ -689,7 +691,9 @@ int main(int argc, char* argv[])
 		TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
 		muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
 		if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
+		muDiff -= leptons[ilep];
 		leptons[ilep].SetPxPyPzE(p4.Px(),p4.Py(),p4.Pz(),p4.E());
+		muDiff += leptons[ilep];
 	      }
 	    }
 
@@ -729,17 +733,19 @@ int main(int argc, char* argv[])
 	    if(!isVeto)                                    passLooseLepton=false;
  	  }
 	  else{
+	    bool isTight    = ((idbits >> 10) & 0x1);
+	    if(!isTight)                                   passId=false;
 	    bool isLoose    = ((idbits >> 8) & 0x1);
-	    if(!isLoose)                                   { passLooseLepton=false; passId=false; }
+	    if(!isLoose)                                   passLooseLepton=false;
 	    bool isSoft  = ((idbits >> 9) & 0x1);
 	    if(!isSoft)                                    passSoftMuon=false;
 	  }
 
 	  //isolation
-	  Float_t gIso    = leptons[ilep].getVal(lid==11 ? "gIso03"    : "gIso04");
-	  Float_t chIso   = leptons[ilep].getVal(lid==11 ? "chIso03"   : "chIso04");
-	  Float_t puchIso = leptons[ilep].getVal(lid==11 ? "puchIso03" : "puchIso04");  
-	  Float_t nhIso   = leptons[ilep].getVal(lid==11 ? "nhIso03"   : "nhIso04");
+	  Float_t gIso    = leptons[ilep].getVal("gIso04");
+	  Float_t chIso   = leptons[ilep].getVal("chIso04");
+	  Float_t puchIso = leptons[ilep].getVal("puchIso04");
+	  Float_t nhIso   = leptons[ilep].getVal("nhIso04");
 	  float relIso= lid==11 ?
 	    (TMath::Max(nhIso+gIso-ev.rho*utils::cmssw::getEffectiveArea(11,leptons[ilep].getVal("sceta")),Float_t(0.))+chIso)/leptons[ilep].pt() :
 	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
@@ -751,10 +757,8 @@ int main(int argc, char* argv[])
 	    }
 	  }
 	  else{
-	    if(relIso>0.20){
-	      passIso=false;
-	      passLooseLepton=false;
-	    }
+	    if(relIso>0.12) passIso=false;
+	    if(relIso>0.20) passLooseLepton=false;
 	  }
 	  
 	  if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
@@ -762,7 +766,8 @@ int main(int argc, char* argv[])
 	}
       std::sort(selLeptons.begin(),   selLeptons.end(), data::PhysicsObject_t::sortByPt);
       std::sort(extraLeptons.begin(), extraLeptons.end(), data::PhysicsObject_t::sortByPt);
-      
+      recoMet[0] -= muDiff;
+
       //
       //JET/MET ANALYSIS
       //
@@ -816,8 +821,9 @@ int main(int argc, char* argv[])
 	      if(isMC)
 		{
 		  int flavId=genJet.info.find("id")->second;
-		  if(abs(flavId)!=5 && abs(flavId)!=4) flavId=1;
-		  btsfutil.modifyBTagsWithSF(hasCSVtag, flavId,sfb,beff,sfl,leff);
+		  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
+		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
+		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
 		}
 	      nbtags   += hasCSVtag;
 	    }
@@ -966,12 +972,13 @@ int main(int argc, char* argv[])
 		  }
 		}
 	      }
-	      
+
 	      for(size_t itag=0; itag<tags.size(); itag++){
 		
 		//update the weight
 		TString icat=tags[itag];
 		float iweight(weight*photonWeights[itag]);
+		
 		LorentzVector iboson=massiveBoson[itag];
 
 		mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
@@ -1031,15 +1038,13 @@ int main(int argc, char* argv[])
 	  }
 	}
       }
-      
-      //FIXME : BTAG
-      
+            
       //
       // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
       //
       //Fill histogram for posterior optimization, or for control regions
       for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-	float iweight = weight;                                               //nominal
+	float iweight = weight;                            //nominal
 	
 	//energy scale/resolution
 	bool varyJesUp( varNames[ivar]=="_jesup" );
@@ -1093,7 +1098,7 @@ int main(int argc, char* argv[])
 	  }	 
 	
 	//recompute MET/MT if JES/JER was varied
-	LorentzVector zvv    = met[utils::cmssw::NOMINAL];
+	LorentzVector    zvv = met[utils::cmssw::NOMINAL];
 	if(varyJesUp)    zvv = met[utils::cmssw::JESUP];
 	if(varyJesDown)  zvv = met[utils::cmssw::JESDOWN];
 	if(varyJerUp)    zvv = met[utils::cmssw::JERUP];
@@ -1138,16 +1143,20 @@ int main(int argc, char* argv[])
 	  if(pt<30 || fabs(eta)>2.5) continue;
 	  if(!isMC) continue;
 	  if(!varyBtagUp && !varyBtagDown) continue;
-	  
 	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
 	  int flavId=genJet.info.find("id")->second;
-	  if(abs(flavId)!=5 && abs(flavId)!=4) flavId=1;
+	  bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
  	  if(varyBtagUp) {
-	    btsfutil.modifyBTagsWithSF(passLocalBveto, flavId, sfb+sfbunc, beff, sfl+sflunc, leff);
+	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
+	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
+	    else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl+sflunc,leff);
 	  }
  	  else if(varyBtagDown) {
-	    btsfutil.modifyBTagsWithSF(passLocalBveto, flavId, sfb-sfbunc, beff, sfl-sflunc, leff);
+	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb-sfbunc,beff);
+	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5-2*sfbunc,beff);
+	    else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl-sflunc,leff);
  	  }
+	  passLocalBveto |= hasCSVtag;
  	}
 	
 	bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
@@ -1160,15 +1169,16 @@ int main(int argc, char* argv[])
 	for(size_t ich=0; ich<chTags.size(); ich++){
 	  
 	  TString tags_full=chTags[ich]+evCat;
-	  
+	  float chWeight(iweight);
+
 	  //update weight and mass for photons
 	  LorentzVector iboson(boson);
 	  if(gammaWgtHandler!=0)
 	    {
-	      iweight *= gammaWgtHandler->getWeightFor(iboson,tags_full);
+	      float photonWeight=gammaWgtHandler->getWeightFor(iboson,tags_full);
+	      chWeight *= photonWeight;
 	      iboson   = gammaWgtHandler->getMassiveP4(iboson,tags_full);
 	    }
-	  
 	  
 	  //updet the transverse mass
 	  float mt =higgs::utils::transverseMass(iboson,zvv,true);
@@ -1179,10 +1189,10 @@ int main(int argc, char* argv[])
 	    if(zvv.pt()>optim_Cuts1_met[index]){
 	      for(unsigned int nri=0;nri<NRparams.size();nri++){
 		
-		float nrweight=iweight*NRweights[nri];
+		float nrweight=chWeight*NRweights[nri];
 		if(nri>0)
 		  {
-		    nrweight=iweight*NRweights[nri];
+		    nrweight=chWeight*NRweights[nri];
 		    if(lShapeWeights[0]==0) nrweight=0;
 		    else                    nrweight/=lShapeWeights[0];
 		  }

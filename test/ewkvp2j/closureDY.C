@@ -34,6 +34,43 @@ TFile *llInF=0;
 std::vector<TFile *> gInF;
 
 //
+void runFinalHZZClosure()
+{
+  systForClosure.clear();
+
+  //dilCh="ll";
+  //dilCh="ee";
+  dilCh="mumu";
+
+
+  //open the files with the input plots
+  TString llfile="~/work/hzz_5311/plotter_dy_closure.root";
+  TFile *llInF=TFile::Open(llfile);
+
+  TString gfile="~/work/hzz_5311/plotter_dy_closure_g_qt_pure.root";
+  TFile *gInF=TFile::Open(gfile);
+
+  TString distr[]={"met","mt","mtNM1","axialmet","mindphijmet","mindphijmetNM1","balance"};
+  TString cat[]={"eq0jets","geq1jets","vbf"};
+  const size_t ncat=sizeof(cat)/sizeof(TString);
+  for(size_t icat=0; icat<ncat; icat++)
+    {
+      for(size_t ich=0; ich<sizeof(distr)/sizeof(TString); ich++) 
+	{
+	  closureTest(llInF,gInF,distr[ich],dilCh,cat[icat],true);
+	}
+    }
+  
+  gSystem->Exec("mkdir -p closure");
+  gSystem->Exec("mv "+dilCh+"*closure*.* closure");
+  
+  //close all opened files
+  llInF->Close();
+  gInF->Close();
+  toSave.Clear();
+}
+
+//
 void runFinalClosure()
 {
   systForClosure.clear();
@@ -98,6 +135,7 @@ void runVBFZClosure(TFile *llfile,TFile *gfile, TString outfile, bool purePhoton
   fOut->Close();
   toSave.Clear();
 }
+
 
 //
 void closureDY(TFile *llfile,TFile *gfile, TString distr,bool purePhoton)
@@ -395,7 +433,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   hdy->Scale(1./hdy->Integral());
   Double_t xmin(hdy->GetXaxis()->GetXmin());
   Double_t xmax(hdy->GetXaxis()->GetXmax());
-  if(distr.Contains("met")) {xmin=0;   xmax=250;}
+  if(distr.Contains("met") && !distr.Contains("axial")) {xmin=0;   xmax=250;}
   if(distr.Contains("mt"))  {xmin=120; xmax=600;}
   float ymin(3e-4),ymax(hdy->GetMaximum()*1.2);
 
@@ -445,25 +483,12 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   hdy->SetTitle("QCD Z jj");
   hdy->Draw("e1same");
 
-  TLegend *leg=new TLegend(0.5,0.89,0.9,0.93);
-  leg->AddEntry(hdy,hdy->GetTitle(),"P");
-  //if(!purePhoton) leg->AddEntry(hfakes,hfakes->GetTitle(),"F");
-  leg->AddEntry(hg,hg->GetTitle(),"F");
-  leg->SetBorderSize(0);
-  leg->SetFillStyle(0);
-  leg->SetTextFont(42);
-  leg->SetTextAlign(12);
-  leg->SetTextSize(0.05);
-  //leg->SetNColumns(3);
-  leg->SetNColumns(2);
-  leg->Draw("same");
-
-  
-  TPaveText *pave = new TPaveText(0.15,0.87,0.6,0.91,"brNDC");
+  TPaveText *pave = new TPaveText(0.8,0.95,0.9,0.99,"brNDC");
   pave->SetBorderSize(0);
   pave->SetFillStyle(0);
   pave->SetTextAlign(12);
   pave->SetTextFont(42);
+  bool setLogY(false);
   TString mjjCat("M_{jj}>1000");
   if(cat.Contains("mjjq016")) mjjCat="M_{jj}<250";
   if(cat.Contains("mjjq033")) mjjCat="250<M_{jj}<350";
@@ -473,6 +498,32 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   if(cat.Contains("mjjq092")) mjjCat="750<M_{jj}<1000";
   if(cat.Contains("mjjgt092")) mjjCat="M_{jj}>750";
   if(cat.Contains("highmjj")) mjjCat="M_{jj}>1250";
+  if(cat.Contains("eq0jets"))  {mjjCat="=0 jets"; setLogY=true;}
+  if(cat.Contains("geq1jets")) {mjjCat="#geq1 jets"; setLogY=true;}
+  if(cat.Contains("vbf"))      {mjjCat="VBF"; setLogY=true;}
+  if(setLogY)t1->SetLogy();
+
+  TLegend *leg=new TLegend(0.5,0.89,0.9,0.93);
+  if(!setLogY)
+    {
+      leg->AddEntry(hdy,hdy->GetTitle(),"P");
+      leg->AddEntry(hg,hg->GetTitle(),"F");
+    }
+  else
+    {
+      leg->AddEntry(hdy,"Z","P");
+      leg->AddEntry(hg,"#gamma","F");
+    }
+  leg->SetBorderSize(0);
+  leg->SetFillStyle(0);
+  leg->SetTextFont(42);
+  leg->SetTextAlign(12);
+  leg->SetTextSize(0.05);
+  //leg->SetNColumns(3);
+  leg->SetNColumns(2);
+  leg->Draw("same");
+
+
   char buf[1000];
   //  pave->SetTextSize(0.06);
   pave->SetTextSize(0.05);
@@ -566,7 +617,8 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
     }
   uncGrUp->SetLineWidth(2);
   uncGrDown->SetLineWidth(2);
-  leg->AddEntry(uncGrUp,"QCD Z jj/QCD #gamma jj","l");
+  if(setLogY)   leg->AddEntry(uncGrUp,"Z/#gamma","l");
+  else          leg->AddEntry(uncGrUp,"QCD Z jj/QCD #gamma jj","l");
   uncGrUp->Draw("l");
   uncGrDown->Draw("l");
   toSave.Add(uncGrUp);

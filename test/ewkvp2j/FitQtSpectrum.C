@@ -176,13 +176,25 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode, int catMode)
 	eemass->SetDirectory(0);
 	toSave.Add(eemass);
       }
-
-      //mass distributions
       TH1F *mmmass=(TH1F *) fIn->Get(llDir+"/mumu"+categs[icat]+"_qmass");      
       if(mmmass){
 	mmmass->SetName("mumu"+categs[icat]+"_zmass");
 	mmmass->SetDirectory(0);
 	toSave.Add(mmmass);
+      }
+
+      //mass distribution in MC
+      TH1F *eemcmass=(TH1F *) fIn->Get(mcdy+"/ee"+categs[icat]+"_qmass");      
+      if(eemcmass){
+	eemcmass->SetName("ee"+categs[icat]+"_mczmass");
+	eemcmass->SetDirectory(0);
+	toSave.Add(eemcmass);
+      }
+      TH1F *mmmcmass=(TH1F *) fIn->Get(mcdy+"/mumu"+categs[icat]+"_qmass");      
+      if(mmmcmass){
+	mmmcmass->SetName("mumu"+categs[icat]+"_mczmass");
+	mmmcmass->SetDirectory(0);
+	toSave.Add(mmmcmass);
       }
 
       //qt distributions
@@ -242,7 +254,7 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode, int catMode)
       //
       // PHOTON DATA -> REWEIGHT TO DILEPTON DATA
       //
-      if(gqt)
+      if(gqt && (mmqt || eeqt))
 	{      
 	  if(mmqt) {c->cd(1); mmqt->Draw(icat==0 ? "e1" : "e1same"); }
 	  if(eeqt) {c->cd(2); eeqt->Draw(icat==0 ? "e1" : "e1same"); }
@@ -298,12 +310,11 @@ void FitQtSpectrum(TString url, TString gUrl, int mcMode, int catMode)
 	  if(mcmmqt) {mcc->cd(1); mcmmqt->Draw(icat==0 ? "e1" : "e1same"); }
 	  if(mceeqt) {mcc->cd(2); mceeqt->Draw(icat==0 ? "e1" : "e1same"); }
 	  if(mcgqt)  {mcc->cd(3); mcgqt ->Draw(icat==0 ? "e1" : "e1same"); }
-	  
+	        
 	  TGraph *mceewgtGr=0,*mcmmwgtGr=0;
 	  if(mceeqt) mceewgtGr = computeWeights(mceeqt,mcgqt,"ee"  +categs[icat]+"_qt_mcfitwgts");
 	  if(mcmmqt) mcmmwgtGr = computeWeights(mcmmqt,mcgqt,"mumu"+categs[icat]+"_qt_mcfitwgts");
-	  
-	  
+	  	  
 	  mcwc->cd();
 	  TPad *p=(TPad *) mcwc->cd(icat+1); 
 	  p->SetLogy();

@@ -332,7 +332,13 @@
                 { "dtag":"Data8TeV_DoubleElectron2012C", "split":6 },
                 { "dtag":"Data8TeV_DoubleMu2012C",       "split":6 },
                 { "dtag":"Data8TeV_DoubleElectron2012D", "split":6 },
-                { "dtag":"Data8TeV_DoubleMu2012D",       "split":6 }
+                { "dtag":"Data8TeV_DoubleMu2012D",       "split":6 },
+                { "dtag":"Data8TeV_SingleMu2012A", "split":5 },
+                { "dtag":"Data8TeV_SingleMu2012B", "split":10 },
+                { "dtag":"Data8TeV_SingleMu2012C", "split":10 },
+                { "dtag":"Data8TeV_SingleMu2012C_missing"},
+                { "dtag":"Data8TeV_SingleMu2012D", "split":10 },
+                { "dtag":"Data8TeV_SingleMu2012D_missing"}
 	     ]
           }
      ]	
