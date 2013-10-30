@@ -6,6 +6,14 @@ Mailto: pietro.vischia at gmail.com
 
 Analyze
 -------
+cd $CMSSW_BASE/src/UserCode/llvv_fwk/
+sh test/chhiggs/doAnal.sh current anal_sus
+sh test/chhiggs/doAnal.sh current anal_sm
+sh test/chhiggs/doAnal.sh current plots
+sh test/chhiggs/doAnal.sh current tables
+sh test/chhiggs/doAnal.sh current datacards
+
+
 
 ### Pre-approval 
 runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/539_ntuples/ -o /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False" -s 8nh
