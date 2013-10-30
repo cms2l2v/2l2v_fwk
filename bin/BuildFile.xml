@@ -11,6 +11,7 @@
   <bin name="FitSecVtxDistributions"     file="FitSecVtxDistributions.cxx"></bin>
   <bin name="runTopAnalysis"             file="runTopAnalysis.cc"></bin> 
   <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
+  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin>
   <bin name="runHZZ2l2nuAnalysis"        file="runHZZ2l2nuAnalysis.cc"></bin>
   <bin name="prepareChHiggsDatacards"    file="prepareChHiggsDatacards.cc"></bin>
   <bin name="runVBFZAnalysis"            file="runVBFZAnalysis.cc"></bin> 
@@ -30,5 +31,5 @@
   <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
 </environment>
 <!--<bin name="runBNVAnalysisFWLite"      file="runBNVAnalysisFWLite.cc"></bin>-->
-<!--  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> -->
+
 <Flags CXXFLAGS="-g"/>
