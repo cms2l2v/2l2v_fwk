@@ -127,24 +127,24 @@ TString convertNameForDataCard(TString title)
   if(title=="Single top")                                     return "st";
   if(title=="t#bar{t}V")                                      return "ttv";
   if(title=="t#bar{t}")                                       return "ttbar";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}") return "TBH";   signalTag = "TBH" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[200 GeV]}") return "TBH";   signalTag = "TBH" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[220 GeV]}") return "TBH";   signalTag = "TBH" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[240 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") return "TBH";   signalTag = "TBH" ;
-  if(title=="#splitline{H^{+}$#rightarrow tb}{[260 GeV]}")    return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") return "TBH";   signalTag = "TBH" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[350 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[400 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     return "HTB";   signalTag = "HTB" ;
-  if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     return "HTB";   signalTag = "HTB" ; 
+  if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}") {signalTag = "TBH" ; return "TBH";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[200 GeV]}") {signalTag = "TBH" ; return "TBH";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[220 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[220 GeV]}") {signalTag = "TBH" ; return "TBH";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[240 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[250 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}") {signalTag = "TBH" ; return "TBH";}   
+  if(title=="#splitline{H^{+}$#rightarrow tb}{[260 GeV]}")    {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") {signalTag = "TBH" ; return "TBH";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[350 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[400 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   return title;
 }
 // 
@@ -171,11 +171,11 @@ TString convertMassPointNameForFileName(TString title)
   if(title=="#splitline{H^{+}#rightarrow tb}{[260 GeV]}")     return "_m260_";
   if(title=="#splitline{H^{+}#rightarrow tb}{[280 GeV]}")     return "_m280_";
   if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m300_";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m350_";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m400_";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m500_";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m600_";
-  if(title=="#splitline{H^{+}#rightarrow tb}{[300 GeV]}")     return "_m700_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[350 GeV]}")     return "_m350_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[400 GeV]}")     return "_m400_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     return "_m500_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     return "_m600_";
+  if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     return "_m700_";
 
 
 
@@ -351,37 +351,37 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	    else{
 	      shape.signalVars[varName]=hshape;
             }
-	  }else if(proc.Contains("Z#rightarrow ll")){
-	    if(varName==""){
-	      shape.dataDrivenBckg.insert(proc);
-
-	      //get the parametrized dy uncertainties
-	      std::map<TString,float> dyUnc=getDYUncertainties(ch);
-	      
-	      //set the estimated stat uncertainty
-	      for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) hshape->SetBinError(ibin,hshape->GetBinContent(ibin)*dyUnc["stat"]); 
-	      shape.bckg.push_back(hshape);
-
-	      //set the other uncertainties with variations of the shape
-	      for(std::map<TString,float>::iterator dyUncIt=dyUnc.begin(); dyUncIt!=dyUnc.end(); dyUncIt++)
-		{
-		  if(dyUncIt->first=="stat") continue; //this is set separately
-		  if(dyUncIt->second<=0)     continue;
-		  systVars.insert(dyUncIt->first+"up");  systVars.insert(dyUncIt->first+"down");
-
-		  TString newName(hshape->GetName()); newName+=dyUncIt->first;
-		  TH1F *dyUncUp   = (TH1F *) hshape->Clone(newName+"up");   dyUncUp->SetDirectory(0);
-		  TH1F *dyUncDown = (TH1F *) hshape->Clone(newName+"down"); dyUncDown->SetDirectory(0);
-		  for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) 
-		    {
-		      dyUncUp  ->SetBinContent(ibin,std::min(2*hshape->GetBinContent(ibin), std::max(0.01*hshape->GetBinContent(ibin), hshape->GetBinContent(ibin)*(1+dyUncIt->second))));
-		      dyUncDown->SetBinContent(ibin,std::min(2*hshape->GetBinContent(ibin), std::max(0.01*hshape->GetBinContent(ibin), hshape->GetBinContent(ibin)*(1-dyUncIt->second))));
-		    }
-		  shape.bckgVars[proc][dyUncIt->first+"up"]=dyUncUp;
-		  shape.bckgVars[proc][dyUncIt->first+"down"]=dyUncDown;
-		}
-	    }
-	  }
+	  }//else if(proc.Contains("Z#rightarrow ll")){
+	  // if(varName==""){
+	  //   shape.dataDrivenBckg.insert(proc);
+	  //
+	  //   //get the parametrized dy uncertainties
+	  //   std::map<TString,float> dyUnc=getDYUncertainties(ch);
+	  //   
+	  //   //set the estimated stat uncertainty
+	  //   for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) hshape->SetBinError(ibin,hshape->GetBinContent(ibin)*dyUnc["stat"]); 
+	  //   shape.bckg.push_back(hshape);
+	  //
+	  //   //set the other uncertainties with variations of the shape
+	  //   for(std::map<TString,float>::iterator dyUncIt=dyUnc.begin(); dyUncIt!=dyUnc.end(); dyUncIt++)
+	  //	{
+	  //	  if(dyUncIt->first=="stat") continue; //this is set separately
+	  //	  if(dyUncIt->second<=0)     continue;
+	  //	  systVars.insert(dyUncIt->first+"up");  systVars.insert(dyUncIt->first+"down");
+	  //
+	  //	  TString newName(hshape->GetName()); newName+=dyUncIt->first;
+	  //	  TH1F *dyUncUp   = (TH1F *) hshape->Clone(newName+"up");   dyUncUp->SetDirectory(0);
+	  //	  TH1F *dyUncDown = (TH1F *) hshape->Clone(newName+"down"); dyUncDown->SetDirectory(0);
+	  //	  for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) 
+	  //	    {
+	  //	      dyUncUp  ->SetBinContent(ibin,std::min(2*hshape->GetBinContent(ibin), std::max(0.01*hshape->GetBinContent(ibin), hshape->GetBinContent(ibin)*(1+dyUncIt->second))));
+	  //	      dyUncDown->SetBinContent(ibin,std::min(2*hshape->GetBinContent(ibin), std::max(0.01*hshape->GetBinContent(ibin), hshape->GetBinContent(ibin)*(1-dyUncIt->second))));
+	  //	    }
+	  //	  shape.bckgVars[proc][dyUncIt->first+"up"]=dyUncUp;
+	  //	  shape.bckgVars[proc][dyUncIt->first+"down"]=dyUncDown;
+	  //	}
+	  // }
+	  //
 	  else{
 	    if(varName==""){
 	      shape.bckg.push_back(hshape);
