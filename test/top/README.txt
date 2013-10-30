@@ -14,7 +14,8 @@ mv top_dysf.root data/weights/
 
 ### re-run final selection for cross section measurement
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/nom/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='data/weights/'" -s 8nh
-runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/top_samples.json      --outFile ~/work/top_5311/plotter_nom.root      --noLog --plotExt .pdf --showUnc
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/top_samples.json   --outFile ~/work/top_5311/plotter_nom.root      --noLog --plotExt .pdf --showUnc
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/nom/  --json data/dataperiod_comp.json     --noRoot --noLog --plotExt .pdf --showUnc --outDir stability
 fitDYforTop --in ~/work/top_5311/plotter_nom.root  --ttrep ~/work/top_5311/plotter_syst.root --smooth --out dyFit --syst
 
 fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 1,2,3,4 --out xsec/1inc > xsec/xsec1jinc_result.txt
@@ -27,11 +28,18 @@ fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_sampl
 ### lepton-jet invariant mass analysis
 fitMljSpectrum --in ~/work/top_5311/plotter_nom.root --syst ~/work/top_5311/plotter_syst.root --json data/top_samples.json --systJson data/top_syst_samples.json
 
-runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/Summer13_ntuples  -o ~/work/top_5311/final -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/top_dysf.root'" -s 8nh
+### heavy flavor fits
+#for r in 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.91 0.92 0.93 0.94 0.95 0.96 0.97 0.98 0.99 1.0 -1.0; do	  
+for r in 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0; do
+#for r in -1.0; do
+for i in `seq 1 100`; do
+    submit2batch.sh -q8nh -JHFC${i} runHFCClosureTests.sh ${r} ${i} ~/work/top_5311/hfc_closure_${r}/ 
+done
+done
 
-runPlotter --iLumi 19683 --inDir ~/work/top_5311/final/ --json data/top_samples.json --outFile ~/work/top_5311/plotter.root --noLog --showUnc
-runPlotter --iLumi 19683 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst.root --noPlot
-
+fitHeavyFlavorContent --par test/top/hfcParams_2012_data_cfg.json --btag test/top/csvL_2012_data_cfg.json --in ~/work/top_5311/plotter_nom.root --fit 0
+fitHeavyFlavorContent --par test/top/hfcParams_2012_data_cfg.json --btag test/top/csvL_2012_data_cfg.json --in ~/work/top_5311/plotter_nom.root --fit 3
+fitHeavyFlavorContent --par test/top/hfcParams_2012_data_cfg.json --btag test/top/csvL_2012_data_cfg.json --in ~/work/top_5311/plotter_nom.root --fit 4
 
 ### UE studies
 
@@ -40,3 +48,9 @@ runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -
 
 runPlotter --iLumi 19701 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst_ue.root --noPlot
 runPlotter --iLumi 19701 --inDir ~/work/top_5311/data/ --json data/top_samples.json --outFile ~/work/top_5311/plotter_ue.root --noPlot
+
+### QCD dijet studies
+
+runLocalAnalysisOverSamples.py -e runBTVdijetAnalysis -j test/top/qcd_samples.json -d /store/cmst3/user/psilva/5311_qcd_ntuples -o ~/work/top_5311/qcd/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='data/weights/'"  -s 8nh
+runPlotter --iLumi 19407 --inDir ~/work/top_5311/qcd/ --json test/top/qcd_samples.json --outFile ~/work/top_5311/plotter_qcd.root 
+

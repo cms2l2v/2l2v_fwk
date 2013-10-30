@@ -23,9 +23,11 @@
   <bin name="fitDYforTop"                file="fitDYforTop.cc"></bin> 
   <bin name="fitTTbarCrossSection"       file="fitTTbarCrossSection.cc"></bin> 
   <bin name="fitMljSpectrum"             file="fitMljSpectrum.cc"></bin>
+  <bin name="fitHeavyFlavorContent"      file="fitHeavyFlavorContent.cc"></bin>
   <bin name="runPLRanalysis"             file="runPLRanalysis.cc"></bin> 
   <bin name="jsonTools"                  file="jsonTools.cc"></bin>
   <bin name="computeLimit"               file="computeLimit.cc"></bin>
+  <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
 </environment>
 <!--<bin name="runBNVAnalysisFWLite"      file="runBNVAnalysisFWLite.cc"></bin>-->
 <!--  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> -->

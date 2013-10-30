@@ -42,8 +42,8 @@
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
-#include "UserCode/llvv_fwk/src/tdrstyle.C"
-#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 
 #include<vector>
 #include<sstream>

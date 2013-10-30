@@ -2,8 +2,8 @@
 #include <boost/shared_ptr.hpp>
 #include "Math/GenVector/Boost.h"
 
-#include "UserCode/llvv_fwk/src/tdrstyle.C"
-#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 
 #include "TSystem.h"

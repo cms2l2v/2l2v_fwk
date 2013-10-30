@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 import os,sys
 import getopt
 import commands
-
+import re
 
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()

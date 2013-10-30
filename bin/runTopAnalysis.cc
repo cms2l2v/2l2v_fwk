@@ -94,9 +94,10 @@ int main(int argc, char* argv[])
       if(dyF!=0 && !dyF->IsZombie())
 	{
 	  TH1* dysfH=(TH1 *)dyF->Get("dysf");
+	  TH1* dysfbiasH=(TH1 *)dyF->Get("dysfbias");
 	  for(int ibin=1; ibin<=dysfH->GetXaxis()->GetNbins(); ibin++) { 
-	    dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin); 
-	    cout << dysfH->GetXaxis()->GetBinLabel(ibin) << " " << dysfH->GetBinContent(ibin) << endl;
+	    dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin)-dysfbiasH->GetBinContent(ibin); 
+	    cout << dysfH->GetXaxis()->GetBinLabel(ibin) << " " << dysfH->GetBinContent(ibin) << " - " << dysfbiasH->GetBinContent(ibin) << endl;
 	  }
 	  dyF->Close();
 	}
@@ -193,6 +194,8 @@ int main(int argc, char* argv[])
   int nsteps=sizeof(labels)/sizeof(TString);
   TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow",";Cutflow;Events",nsteps,0,nsteps) );
   for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
+
+  controlHistos.addHistogram( new TH1F("synchflow",";Cutflow;Events",6,0,6) );
 
   TString uelabels[]={"#geq 2 leptons", "dilepton", "#geq 2 jets", "#geq 2-btags"};
   int nuesteps=sizeof(uelabels)/sizeof(TString);
@@ -520,8 +523,8 @@ int main(int argc, char* argv[])
       sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByCSV);
       sort(selJets.begin(),  selJets.end(),  data::PhysicsObject_t::sortByCSV);
       
-
       //select the event
+      controlHistos.fillHisto("synchflow", ch, 0,1.);
       if(selLeptons.size()<2) continue;
       controlHistos.fillHisto("evtflow", ch, 0, weight);
       controlHistos.fillHisto("ueevtflow", ch, 0, weight);
@@ -533,7 +536,18 @@ int main(int argc, char* argv[])
       bool passDilSelection(mll>12 && !isZcand);
       bool passJetSelection(selJets.size()>=2);
       bool passMetSelection( !isSameFlavor || met[0].pt()>40);
-
+      
+      controlHistos.fillHisto("synchflow", ch, 1,1.);
+      if(passDilSelection){
+	controlHistos.fillHisto("synchflow", ch, 2,1.);
+	if(passJetSelection){
+	  controlHistos.fillHisto("synchflow", ch, 3,1.);
+	  if(passMetSelection){
+	    controlHistos.fillHisto("synchflow", ch, 4,1.);
+	  }
+	}
+      }
+      
 
       //
       // NOMINAL SELECTION CONTROL

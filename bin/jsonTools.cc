@@ -7,9 +7,9 @@
 #include <map>
 #include <unordered_map>
 
-#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 
-
+using namespace std;
 
 JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
    struct datasetinfo{std::string dset; std::string split; bool isdata; string br; string xsec;};

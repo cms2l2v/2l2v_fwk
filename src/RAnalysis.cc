@@ -120,7 +120,7 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
   else if(jets.size()==3) cats.push_back(ch+"eq3jets");
   else if(jets.size()==4) cats.push_back(ch+"eq4jets");
   else return;
-  cats.push_back("all");
+  cats.push_back("all"+ctrl);
   
   int ncorrectAssignments(0);
   std::vector<int> extraJetFlavors;
@@ -190,8 +190,14 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
     nCSVM += hasCSVM;
     nCSVT += hasCSVT;
 
-    //apply corrections
-    if(btagEffCorr_==0) continue;
+    //apply corrections (if available)
+    if(btagEffCorr_==0) {
+      nCSVLcorr += hasCSVL;
+      nCSVMcorr += hasCSVM;
+      nCSVTcorr += hasCSVT;
+      continue;
+    }
+
     TString flavKey("udsg");
     if(abs(flavId)==4) flavKey="c";
     if(abs(flavId)==5) flavKey="b";
@@ -265,8 +271,10 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
   addBin=0;
   if(jets.size()==3) addBin += 5;
   if(jets.size()==4) addBin += 10;
-  if(ch=="mumu")   addBin += 15;
-  if(ch=="emu")    addBin += 2*15;
+  if(ch.Contains("mumu"))   addBin += 15;
+  if(ch.Contains("emu"))    addBin += 2*15;
+
+  //nominal prediction
   mon_->fillHisto("csvLbtagsextended",cats,nCSVL+addBin,weight);
   mon_->fillHisto("csvMbtagsextended",cats,nCSVM+addBin,weight);
   mon_->fillHisto("csvTbtagsextended",cats,nCSVT+addBin,weight);

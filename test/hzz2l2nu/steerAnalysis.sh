@@ -19,8 +19,8 @@ lumi=19736
 
 if [ "$step" == "1" ]; then
     echo "Submitting first pass (warning no systs yet)"
-    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/htozz_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
-    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/bulkg_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh -t Bulk
+#    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/htozz_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+#    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/bulkg_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh -t Bulk
     runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/htozz_photon_samples.json -d ${indir} -o ${outdir}/g/raw -c ${cfg} -p "@runSystematics=False @useMVA=True"                                                                   -s 1nd
 fi
 

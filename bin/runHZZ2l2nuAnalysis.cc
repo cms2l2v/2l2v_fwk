@@ -81,6 +81,8 @@ int main(int argc, char* argv[])
     }
   bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
+  bool isWGmc(isMC && url.Contains("WG"));
+  bool isZGmc(isMC && url.Contains("ZG"));
   bool isMC_GG  = isMC && ( string(url.Data()).find("GG" )  != string::npos);
   bool isMC_VBF = isMC && ( string(url.Data()).find("VBF")  != string::npos);
   bool isMC_ZZ  = isMC && ( string(url.Data()).find("MC8TeV_ZZ")  != string::npos);
@@ -309,6 +311,9 @@ int main(int argc, char* argv[])
     ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_4nr"+NRsuffix[nri] , ";Higgs Mass;Events [GeV]", 500,0,1500) ))->Fill(-1.0,0.0001);
   }
 
+  mon.addHistogram( new TH1F( "wdecays",     ";W decay channel",5,0,5) );
+  mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
+
   //event selection
   TH1F* Hcutflow  = (TH1F*) mon.addHistogram(  new TH1F ("cutflow"    , "cutflow"    ,6,0,6) ) ;
   TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 8,0,8) );
@@ -518,7 +523,7 @@ int main(int argc, char* argv[])
       data::PhysicsObjectCollection_t jets    = evSummaryHandler.getPhysicsObject(DataEventSummaryHandler::JETS);
       data::PhysicsObjectCollection_t recoMet = evSummaryHandler.getPhysicsObject(DataEventSummaryHandler::MET);
       data::PhysicsObjectCollection_t gen     = evSummaryHandler.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);      
-
+    
       //require compatibilitiy of the event with the PD
       bool eeTrigger          = ev.t_bits[0];
       bool muTrigger          = ev.t_bits[6];
@@ -547,6 +552,42 @@ int main(int argc, char* argv[])
 	      break;
 	    }
 	}
+
+
+      if(hasPhotonTrigger && (isWGmc || isZGmc)){
+	int nge(0), ngm(0), ngt(0), ngj(0), ngnu(0);
+	bool zFound(false), wFound(false);
+	for(size_t ig=0; ig<gen.size(); ig++){
+	  int status=gen[ig].get("status");
+	  if(status!=3) continue;
+	  int id(gen[ig].get("id"));
+	  if(id==23) zFound=true;
+	  if(id==24) wFound=true;
+	  if(id==11) nge++;
+	  if(id==13) ngm++;
+	  if(id==15) ngt++;
+	  if(id==12 || id==14 || id==16) ngnu++;
+	  if((wFound || zFound) && id<6) ngj++;
+	}
+	if(zFound){
+	  int decBin=0;
+	  if(nge==2) decBin=1;
+	  if(ngm==2) decBin=2;
+	  if(ngt==2) decBin=3;
+	  if(ngj>=2) decBin=4;
+	  if(ngnu==2) decBin=5;
+	  mon.fillHisto("zdecays","",decBin,1);
+	}
+	if(wFound){
+	  int decBin=0;
+	  if(nge==1 && ngnu==1) decBin=1;
+	  if(ngm==1 && ngnu==1) decBin=2;
+	  if(ngt==1 && ngnu==1) decBin=3;
+	  if(ngj>=2) decBin=4;
+	  mon.fillHisto("wdecays","",decBin,1);
+	}
+      }
+
 
       //
       // DERIVE WEIGHTS TO APPLY TO SAMPLE
