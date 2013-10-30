@@ -1,6 +1,6 @@
 #!/bin/bash
 
-inputdir=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots/
+inputdir=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_e/plots/
 outputdir=tempDirForNotePlots/
 
 mkdir -p ${outputdir}
@@ -38,6 +38,10 @@ cp ${inputdir}emu_ptjet2pt.png		       ${outputdir}
 cp ${inputdir}emu_ptmin.png		       ${outputdir}
 cp ${inputdir}emu_ptmu.png		       ${outputdir}
 cp ${inputdir}emu_sumpt.png                    ${outputdir}       
+cp ${inputdir}emu_geq2btagsmet.pdf            ${outputdir}
+cp ${inputdir}emu_geq2btagsnbjets.pdf	      ${outputdir}
+cp ${inputdir}emu_geq2btagsptlep.pdf 	      ${outputdir}
+cp ${inputdir}emu_geq2btagssumpt.pdf          ${outputdir}
 
 
 scp -r ${outputdir} lnlip02.lip.pt:~/
