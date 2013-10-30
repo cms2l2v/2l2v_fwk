@@ -41,6 +41,8 @@
 #include "TEventList.h"
 #include "TRandom.h"
 
+#include "TGraphErrors.h"
+
 #include <iostream>
 
 using namespace std;
@@ -75,7 +77,7 @@ int main(int argc, char* argv[])
   bool isTTbarMC(isMC && (url.Contains("TTJets") ));
   TString out        = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
-  // weights file
+  std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
 
   //jet energy scale uncertainties
   gSystem->ExpandPathName(jecDir);
@@ -85,9 +87,32 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
 
-  // FIXME: add dy reweighting
+  // FIXME: add dy reweighting for data driven DY estimation. 
 
- 
+   //b-tag efficiencies read b-tag efficiency map
+  std::map<std::pair<TString,TString>, std::pair<TGraphErrors *,TGraphErrors *> > btagEffCorr;
+  if(weightsFile.size() && isMC)
+    {
+      TString btagEffCorrUrl(weightsFile[0].c_str()); btagEffCorrUrl += "/btagEff.root";
+      gSystem->ExpandPathName(btagEffCorrUrl);
+      TFile *btagF=TFile::Open(btagEffCorrUrl);
+      if(btagF!=0 && !btagF->IsZombie())
+	{
+	  TList *dirs=btagF->GetListOfKeys();
+	  for(int itagger=0; itagger<dirs->GetEntries(); itagger++)
+	    {
+	      TString iDir(dirs->At(itagger)->GetName());
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"b") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/beff"),(TGraphErrors *) btagF->Get(iDir+"/sfb") );
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"c") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/ceff"),(TGraphErrors *) btagF->Get(iDir+"/sfc") );
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"udsg") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/udsgeff"),(TGraphErrors *) btagF->Get(iDir+"/sfudsg") );
+	    }
+	}
+      cout << btagEffCorr.size() << " b-tag correction factors have been read" << endl;
+    }
+
   //
   // check input file
   //
@@ -291,6 +316,7 @@ int main(int argc, char* argv[])
        << "Initial number of events: " << cnorm << endl
        << "Events in tree:           " << totalEntries << endl
        << " xSec x BR:               " << xsec << endl;
+
 
 
   //check if a summary should be saved
@@ -534,30 +560,47 @@ int main(int argc, char* argv[])
 	    Int_t idbits=jets[ijet].get("idbits");
 	    bool passPFloose( ((idbits>>0) & 0x1));
 	    if(!passPFloose) continue;
+	    double jetpt(jets[ijet].pt());
 
 	    //top candidate jets
 	    looseJets.push_back(jets[ijet]);
-	    if(jets[ijet].pt()<30 || fabs(jets[ijet].eta())>2.5 ) continue;
+	    if(jetpt<30 || fabs(jets[ijet].eta())>2.5 ) continue;
 	    selJets.push_back(jets[ijet]);
 	    //if(jets[ijet].getVal("csv") <= 0.405) continue; // CSVV1L
 	    bool hasCSVV1L(jets[ijet].getVal("csv") > 0.405); // CSVV1L
+	    bool hasBtagCorr(hasCSVV1L);
 	    if(isMC){
 	      //set a unique seed
 	      double bseed_sin_phi = sin(jets[ijet].phi()*1000000);
 	      double bseed = abs(static_cast<int>(bseed_sin_phi*100000));
-
+	      
 	      // get jet flavour
 	      const data::PhysicsObject_t &bgenJet=jets[ijet].getObject("genJet");
 	      int bflavid=bgenJet.info.find("id")->second;
-
+	      
 	      //Initialize class
 	      //	      BTagSFUtil* btsfutil = new BTagSFUtil( bseed );
 	      BTagSFUtil btsfutil( bseed );
 	      //btsfutil.modifyBTagsWithSF(hasCSVV1L, bflavid, 1., 1., 1., 1.);//0.98, 0.841, 1.21, 0.137);
-	      btsfutil.modifyBTagsWithSF(hasCSVV1L, 1., 1. ); //check runTopAnalysis and RAnalysis Pietro!
+	      
+	      TString flavKey("udsg");
+	      if(abs(bflavid)==4) flavKey="c";
+	      if(abs(bflavid)==5) flavKey="b";
+	      std::pair<TString,TString> btagKey("csvL",flavKey);
+	      if(btagEffCorr.find(btagKey)!=btagEffCorr.end())
+		{
+		  TGraphErrors* mceffGr=btagEffCorr[btagKey].first;
+		  TGraphErrors* sfGr=btagEffCorr[btagKey].second;
+		  if(mceffGr && sfGr){
+		    float eff=mceffGr->Eval(jetpt);
+		    float sf=sfGr->Eval(jetpt);	
+		    btsfutil.modifyBTagsWithSF(hasBtagCorr, sf, eff);	    
+		  }
+		}
 	      
 	    }
-	    if(!hasCSVV1L) continue;
+	    //	    if(!hasCSVV1L) continue;
+	    if(!hasBtagCorr) continue;
 	    selbJets.push_back(jets[ijet]);
 	  }
 	sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByPt);
