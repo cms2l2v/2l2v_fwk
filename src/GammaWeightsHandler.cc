@@ -12,6 +12,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,boo
   if(gammaPtWeightsFiles.size()==0) return;
   TString wgtName("qt");
   TString wgtType( isMC ? "mcfitwgts" : "datafitwgts");
+  TString massType( isMC ? "mczmass" : "zmass");
     
   //categories to consider, add more if needed but keep these ones 
   TString cats[]   =  {"eq0jets","eq1jets","eq2jets","geq3jets","vbf","geq1jets","novbf","mjjq100","mjjq092","mjjq083","mjjq066","mjjq049","mjjq033","mjjq016"};
@@ -38,7 +39,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,boo
 	      if(h!=0) wgtsH_[key] = h;
 	      
 	      //mass shape
-	      hname= key+"_zmass"; 
+	      hname= key+"_"+massType;
 	      TH1 *massh = (TH1 *) fwgt->Get(hname);
 	      if(massh!=0) { massh->SetDirectory(0); zmassH_[key]= massh; }
 	    }

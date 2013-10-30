@@ -1,7 +1,7 @@
 {
     "proc":[
         {
-        "tag":"EWK ll+2j",
+        "tag":"EWK ll2j",
         "isdata":false,
         "issignal":true,
         "color":"804",
@@ -9,9 +9,9 @@
         "marker":1,
         "data":[
                 {
-                "dtag":"MC8TeV_lljj",
-                "aoddir":["/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM"],
-                "xsec":0.8938
+                "dtag":"MC8TeV_DYJJ",
+                "xsec":0.888,
+		"split":2
                 }
          ]
         },
@@ -24,17 +24,17 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_WW",
-                "xsec":5.5,
+                "xsec":4.7,
 		"split":2
              },
 	    {
                 "dtag":"MC8TeV_ZZ",
-                "xsec":0.26,
+                "xsec":0.380,
 		"split":2
              },
             {
                 "dtag":"MC8TeV_WZ",
-                "xsec":0.856,
+                "xsec":1.0575,
 		"split":2
              }
            ]
@@ -83,31 +83,31 @@
    	     {	
                "dtag":"MC8TeV_WJets",
                "xsec":37509,
-	       "split":11	
+	       "split":10	
              },
    	     {
               "dtag":"MC8TeV_W1Jets",
               "xsec":37509,
 	      "br":[0.178],
-	      "split":11	
+	      "split":10	
              },
    	     {
               "dtag":"MC8TeV_W2Jets",
               "xsec":37509,
  	      "br":[0.058],
-	      "split":11
+	      "split":10
              },
    	     {
               "dtag":"MC8TeV_W3Jets",
               "xsec":37509,
 	      "br":[0.017],
-	      "split":5	
+	      "split":10	
              },
    	     {
               "dtag":"MC8TeV_W4Jets",
               "xsec":37509,
 	      "br":[0.007],
-	      "split":11
+	      "split":10
              },
 	     {
 		"dtag":"MC8TeV_WG",
@@ -148,7 +148,7 @@
 		{
  	        "dtag":"MC8TeV_TTJetsFullLeptMGDecays",
                 "xsec":245.8,
-		"split":11,
+		"split":5,
 		"br":[0.10608049]
                 }
           ]
@@ -161,37 +161,32 @@
          "data":[
 	      {
                "dtag":"MC8TeV_DYJetsToLL_50toInf",
-               "split":5,
                 "xsec":3503.71,
-		"split":11
+		"split":10
               },
 	      {
                 "dtag":"MC8TeV_DY1JetsToLL_50toInf",
-                "split":7,
                 "xsec":3503.71,
 		"br":[0.1901694915],
-		"split":11
+		"split":10
               },
 	      {
                 "dtag":"MC8TeV_DY2JetsToLL_50toInf",
-                "split":6,
                 "xsec":3503.71,
 		"br":[0.0613559322],
-		"split":11
+		"split":10
               },
 	       {
                 "dtag":"MC8TeV_DY3JetsToLL_50toInf",
-                "split":6,
                 "xsec":3503.71,
 		"br":[0.0173220339],
-		"split":11
+		"split":10
               },
 	      {
                 "dtag":"MC8TeV_DY4JetsToLL_50toInf",
-                "split":6,
                 "xsec":3503.71,
 		"br":[0.0078101695],
-		"split":11
+		"split":10
               },
              {
                "dtag":"MC8TeV_ZG",

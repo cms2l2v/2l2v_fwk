@@ -6,8 +6,8 @@
 
 step=$1
 optim_step=$2
-outdir="/afs/cern.ch/user/p/psilva/work/ewkzp2j_539"
-indir="/store/cmst3/user/psilva/539_ntuples"
+outdir="/afs/cern.ch/user/p/psilva/work/ewkzp2j_5311"
+indir="/store/cmst3/user/psilva/5311_ntuples"
 cfg="$CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ"
 
 
@@ -21,9 +21,9 @@ mkdir -p ${outdir}/g/data/qt_pure
 
 if [ "$step" == "1" ]; then
     echo "Submitting first pass"
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_samples.json        -d ${indir} -o ${outdir}/ll/              -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_tight -c ${cfg} -p "@runSystematics=False @useMVA=True" -s 1nd
-    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_loose -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_samples.json        -d ${indir} -o ${outdir}/ll/              -c ${cfg} -p "@runSystematics=False @useMVA=True"  -s 1nd
+#    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_tight -c ${cfg} -p "@runSystematics=False @useMVA=True" -s 1nd
+#    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_loose -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
 fi
 
 if [ "$step" == "2" ]; then

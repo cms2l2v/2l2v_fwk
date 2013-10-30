@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
   int mcTruthMode     = runProcess.getParameter<int>("mctruthmode");
   double xsec         = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
-  bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_")));
+  bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_") || url.Contains("TT2l_R")));
   TString out          = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
@@ -94,14 +94,39 @@ int main(int argc, char* argv[])
       if(dyF!=0 && !dyF->IsZombie())
 	{
 	  TH1* dysfH=(TH1 *)dyF->Get("dysf");
+	  TH1* dysfbiasH=(TH1 *)dyF->Get("dysfbias");
 	  for(int ibin=1; ibin<=dysfH->GetXaxis()->GetNbins(); ibin++) { 
-	    dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin); 
-	    cout << dysfH->GetXaxis()->GetBinLabel(ibin) << " " << dysfH->GetBinContent(ibin) << endl;
+	    dySFmap[dysfH->GetXaxis()->GetBinLabel(ibin)]=dysfH->GetBinContent(ibin)-dysfbiasH->GetBinContent(ibin); 
+	    cout << dysfH->GetXaxis()->GetBinLabel(ibin) << " " << dysfH->GetBinContent(ibin) << " - " << dysfbiasH->GetBinContent(ibin) << endl;
 	  }
 	  dyF->Close();
 	}
     }
 
+  //b-tag efficiencies read b-tag efficiency map
+  std::map<std::pair<TString,TString>, std::pair<TGraphErrors *,TGraphErrors *> > btagEffCorr;
+  if(weightsFile.size() && isMC)
+    {
+      TString btagEffCorrUrl(weightsFile[0].c_str()); btagEffCorrUrl += "/btagEff.root";
+      gSystem->ExpandPathName(btagEffCorrUrl);
+      TFile *btagF=TFile::Open(btagEffCorrUrl);
+      if(btagF!=0 && !btagF->IsZombie())
+	{
+	  TList *dirs=btagF->GetListOfKeys();
+	  for(int itagger=0; itagger<dirs->GetEntries(); itagger++)
+	    {
+	      TString iDir(dirs->At(itagger)->GetName());
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"b") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/beff"),(TGraphErrors *) btagF->Get(iDir+"/sfb") );
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"c") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/ceff"),(TGraphErrors *) btagF->Get(iDir+"/sfc") );
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"udsg") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/udsgeff"),(TGraphErrors *) btagF->Get(iDir+"/sfudsg") );
+	    }
+	}
+      cout << btagEffCorr.size() << " b-tag correction factors have been read" << endl;
+    }
+  
   //
   // check input file
   //
@@ -169,6 +194,8 @@ int main(int argc, char* argv[])
   int nsteps=sizeof(labels)/sizeof(TString);
   TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow",";Cutflow;Events",nsteps,0,nsteps) );
   for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
+
+  controlHistos.addHistogram( new TH1F("synchflow",";Cutflow;Events",6,0,6) );
 
   TString uelabels[]={"#geq 2 leptons", "dilepton", "#geq 2 jets", "#geq 2-btags"};
   int nuesteps=sizeof(uelabels)/sizeof(TString);
@@ -271,6 +298,7 @@ int main(int argc, char* argv[])
   //BTVAnalysis btvAn(controlHistos,runSystematics);
   //LxyAnalysis lxyAn(controlHistos,runSystematics);
   RAnalysis rAn(controlHistos,systVars);
+  if(isMC) rAn.setTaggingCorrectors(btagEffCorr);
 
   TopPtWeighter *topPtWgt=0;
   if(isTTbarMC ){
@@ -495,8 +523,8 @@ int main(int argc, char* argv[])
       sort(looseJets.begin(),looseJets.end(),data::PhysicsObject_t::sortByCSV);
       sort(selJets.begin(),  selJets.end(),  data::PhysicsObject_t::sortByCSV);
       
-
       //select the event
+      controlHistos.fillHisto("synchflow", ch, 0,1.);
       if(selLeptons.size()<2) continue;
       controlHistos.fillHisto("evtflow", ch, 0, weight);
       controlHistos.fillHisto("ueevtflow", ch, 0, weight);
@@ -508,7 +536,18 @@ int main(int argc, char* argv[])
       bool passDilSelection(mll>12 && !isZcand);
       bool passJetSelection(selJets.size()>=2);
       bool passMetSelection( !isSameFlavor || met[0].pt()>40);
-
+      
+      controlHistos.fillHisto("synchflow", ch, 1,1.);
+      if(passDilSelection){
+	controlHistos.fillHisto("synchflow", ch, 2,1.);
+	if(passJetSelection){
+	  controlHistos.fillHisto("synchflow", ch, 3,1.);
+	  if(passMetSelection){
+	    controlHistos.fillHisto("synchflow", ch, 4,1.);
+	  }
+	}
+      }
+      
 
       //
       // NOMINAL SELECTION CONTROL
@@ -574,62 +613,64 @@ int main(int argc, char* argv[])
       //if(passDilSelection && passJetSelection &&                     isOS) lxyAn.analyze(selLeptons,selJets,met[0],gen,weightNom*llScaleFactor*dyWeight);
 
       //select the event
-      if(!passDilSelection) continue;
-      controlHistos.fillHisto("evtflow", ch, 1, weight);
-      if(isOS) controlHistos.fillHisto("ueevtflow", ch, 1, weight);
-      
-      if(passJetSelection) {
-
-	controlHistos.fillHisto("evtflow", ch, 2, weight);
-
-	//UE event analysis with PF candidates
-	/*
-	if(isOS){
-	  controlHistos.fillHisto("ueevtflow", ch, 2, weight);
-	  if(looseJets[0].pt()>30 && looseJets[1].pt()>30 && fabs(looseJets[0].eta())<2.5 && fabs(looseJets[1].eta())<2.5)
-	    {
-	      if(looseJets[0].getVal("csv")>0.405 && looseJets[1].getVal("csv")>0.405)
-		{
-		  float iweight( weight*ibtagdyWeight );
-		  controlHistos.fillHisto("ueevtflow", ch, 3, iweight);
-		  data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
-		  ueAn.analyze(selLeptons,looseJets,met[0],pf,gen,ev.nvtx,iweight);
-		  if(saveSummaryTree) ueAn.fillSummaryTuple(xsecWeight);
-		}
-	    }
-	}
-	*/
-	
-	//other analysis
-	if(passMetSelection) {
+      if(passDilSelection)
+	{
+	  controlHistos.fillHisto("evtflow", ch, 1, weight);
+	  if(isOS) controlHistos.fillHisto("ueevtflow", ch, 1, weight);
 	  
-	  float iweight( weight*dyWeight );
-	  controlHistos.fillHisto("evtflow", ch, 3, iweight);
-
-	  float dilcharge( leptons[0].get("id")*leptons[1].get("id") ); 
-	  controlHistos.fillHisto("dilcharge",     ch, (dilcharge<0 ? 0 : 1), iweight);
-
-	  if(isOS) {
-	    controlHistos.fillHisto("evtflow", ch, 4, iweight);
-
-	    controlHistos.fillHisto("leadpt",    ch, selLeptons[0].pt(), iweight);
-	    controlHistos.fillHisto("trailerpt", ch, selLeptons[1].pt(), iweight);
-	    controlHistos.fillHisto("sumpt",     ch, selLeptons[0].pt()+selLeptons[1].pt(), iweight);
-	    controlHistos.fillHisto("dilpt",     ch, ll.pt(), iweight);
-    	    
-	    //save selected event
-	    if(spyEvents){
-	      evSummaryWeight=xsecWeight*iweight;
-	      spyEvents->getTree()->Fill();
+	  if(passJetSelection) {
+	    
+	    controlHistos.fillHisto("evtflow", ch, 2, weight);
+	    
+	    //UE event analysis with PF candidates
+	    /*
+	      if(isOS){
+	      controlHistos.fillHisto("ueevtflow", ch, 2, weight);
+	      if(looseJets[0].pt()>30 && looseJets[1].pt()>30 && fabs(looseJets[0].eta())<2.5 && fabs(looseJets[1].eta())<2.5)
+	      {
+	      if(looseJets[0].getVal("csv")>0.405 && looseJets[1].getVal("csv")>0.405)
+	      {
+	      float iweight( weight*ibtagdyWeight );
+	      controlHistos.fillHisto("ueevtflow", ch, 3, iweight);
+	      data::PhysicsObjectCollection_t pf = evSummary.getPhysicsObject(DataEventSummaryHandler::PFCANDIDATES);
+	      ueAn.analyze(selLeptons,looseJets,met[0],pf,gen,ev.nvtx,iweight);
+	      if(saveSummaryTree) ueAn.fillSummaryTuple(xsecWeight);
+	      }
+	      }
+	      }
+	    */
+	    
+	    //other analysis
+	    if(passMetSelection) {
+	      
+	      float iweight( weight*dyWeight );
+	      controlHistos.fillHisto("evtflow", ch, 3, iweight);
+	      
+	      float dilcharge( leptons[0].get("id")*leptons[1].get("id") ); 
+	      controlHistos.fillHisto("dilcharge",     ch, (dilcharge<0 ? 0 : 1), iweight);
+	      
+	      if(isOS) {
+		controlHistos.fillHisto("evtflow", ch, 4, iweight);
+		
+		controlHistos.fillHisto("leadpt",    ch, selLeptons[0].pt(), iweight);
+		controlHistos.fillHisto("trailerpt", ch, selLeptons[1].pt(), iweight);
+		controlHistos.fillHisto("sumpt",     ch, selLeptons[0].pt()+selLeptons[1].pt(), iweight);
+		controlHistos.fillHisto("dilpt",     ch, ll.pt(), iweight);
+		
+		//save selected event
+		if(spyEvents){
+		  evSummaryWeight=xsecWeight*iweight;
+		  spyEvents->getTree()->Fill();
+		}
+	      }
 	    }
 	  }
 	}
-      }
-    
+
       //
       // STATISTICAL ANALYSIS (with systs variations)
       //
-      if(isOS)
+      if(passDilSelection && isOS)
 	{
 	  for(size_t ivar=0;ivar<systVars.size(); ivar++) 
 	    {
@@ -702,9 +743,15 @@ int main(int argc, char* argv[])
 	      //R measurement
 	      if(ivar==0) rAn.prepareAnalysis(selLeptons,localSelJets);
 	      rAn.analyze(selLeptons,localSelJets,iweight,systVars[ivar],hasTop);
-
 	    }
 	}
+
+      //control region for R measurement Z with lowmet
+      if(isOS && selJets.size()>1 && selJets.size()<5 && isZcand && !passMetSelection){
+	rAn.analyze(selLeptons,selJets,weight,"",hasTop,"zlowmet");
+      }
+
+
     }
   if(nDuplicates) cout << "[Warning] found " << nDuplicates << " duplicate events in this ntuple" << endl;
   if(nChargeFlaws) cout << "[Warning] found " << nChargeFlaws << " charge flaws between reco and gen" << endl;

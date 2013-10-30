@@ -1,11 +1,4 @@
-//
-// TDR style macro for plots in ROOT
-// .L tdrstyle.C
-// setTDRStyle()
-//
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TPad.h"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
 
 /*
 // tdrGrid: Turns the grid lines on (true) or off (false)

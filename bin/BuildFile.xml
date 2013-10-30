@@ -4,18 +4,18 @@
 <use name="roofit"/>
 <use name="roostats"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
-<use name="TauAnalysis/CandidateTools"/>
+<!-- <use name="TauAnalysis/CandidateTools"/> -->
 <use name="PhysicsTools/FWLite"/>
 <environment>
+  <bin name="extractLumiJSON"           file="extractLumiJSON.cc"></bin>
   <bin name="FitSecVtxDistributions"     file="FitSecVtxDistributions.cxx"></bin>
   <bin name="runTopAnalysis"             file="runTopAnalysis.cc"></bin> 
   <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
-  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin>
   <bin name="runHZZ2l2nuAnalysis"        file="runHZZ2l2nuAnalysis.cc"></bin>
   <bin name="prepareChHiggsDatacards"    file="prepareChHiggsDatacards.cc"></bin>
   <bin name="runVBFZAnalysis"            file="runVBFZAnalysis.cc"></bin> 
-  <bin name="runEWKVjjAnalysis"          file="runEWKVjjAnalysis.cc"></bin> 
   <bin name="runVBFZAnalysisFWLite"      file="runVBFZAnalysisFWLite.cc"></bin>
+  <bin name="runEWKVjjAnalysis"          file="runEWKVjjAnalysis.cc"></bin> 
   <bin name="runPlotter"                 file="runPlotter.cc"></bin> 
   <bin name="runPlotterFWLite"           file="runPlotterFWLite.cc"></bin>
   <bin name="computePDFvariations"       file="computePDFvariations.cc"></bin> 
@@ -23,8 +23,12 @@
   <bin name="fitDYforTop"                file="fitDYforTop.cc"></bin> 
   <bin name="fitTTbarCrossSection"       file="fitTTbarCrossSection.cc"></bin> 
   <bin name="fitMljSpectrum"             file="fitMljSpectrum.cc"></bin>
+  <bin name="fitHeavyFlavorContent"      file="fitHeavyFlavorContent.cc"></bin>
   <bin name="runPLRanalysis"             file="runPLRanalysis.cc"></bin> 
   <bin name="jsonTools"                  file="jsonTools.cc"></bin>
   <bin name="computeLimit"               file="computeLimit.cc"></bin>
+  <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
 </environment>
+<!--<bin name="runBNVAnalysisFWLite"      file="runBNVAnalysisFWLite.cc"></bin>-->
+<!--  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> -->
 <Flags CXXFLAGS="-g"/>

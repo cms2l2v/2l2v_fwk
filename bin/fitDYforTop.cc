@@ -40,7 +40,7 @@
 
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
-#include "UserCode/llvv_fwk/src/tdrstyle.C"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
 
 #include<vector>
 #include<sstream>
@@ -153,6 +153,8 @@ int main(int argc,char *argv[])
 
   TH1F *dysfH = new TH1F("dysf",";Category;SF_{DY}",nchs,0,nchs);
   dysfH->SetDirectory(0);
+  TH1F *dysfbiasH = new TH1F("dysfbias",";Category;SF_{DY} bias",nchs,0,nchs);
+  dysfbiasH->SetDirectory(0);
 
   for(size_t ich=0; ich<nchs; ich++)
     {
@@ -360,7 +362,14 @@ int main(int argc,char *argv[])
 	  nother.setVal(totalOthers);
 	  constrShapeModelMC.fitTo(*sumMC,Extended(kTRUE),SumW2Error(kTRUE), Constrain(nother),Save(kTRUE));
 
-	  if(ivar==0) nominalMCSF=ndysf.getVal();
+	  if(ivar==0) {
+	    nominalMCSF=ndysf.getVal();
+	    //save to bias histogram
+	    dysfbiasH->GetXaxis()->SetBinLabel(ich+1,ch[ich]);
+	    if(signalRegionHisto[ich].Contains("osbtag"))  dysfbiasH->GetXaxis()->SetBinLabel(ich+1,ch[ich]+"osbtag");
+	    dysfbiasH->SetBinContent(ich+1,nominalMCSF-1.0);
+	    dysfbiasH->SetBinError(ich+1,0);
+	  }
 	  Double_t relDifference(nominalMCSF);
 	  relDifference=(ndysf.getVal()/nominalMCSF-1)*100;
 	  Double_t absDifference(ndysf.getVal()-nominalMCSF);
@@ -386,6 +395,7 @@ int main(int argc,char *argv[])
   //save in file
   TFile *fOut=TFile::Open("top_dysf.root","RECREATE");
   dysfH->Write();
+  dysfbiasH->Write();
   fOut->Close();
 }
 

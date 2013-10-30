@@ -6,6 +6,7 @@ import sys
 import glob
 import fnmatch
 import commands
+import re
 
 CopyRights  = '####################################\n'
 CopyRights += '#        LaunchOnFarm Script       #\n'
@@ -31,6 +32,15 @@ Jobs_FinalCmds    = []
 Jobs_RunHere      = 0
 
 useLSF = True
+
+
+
+def natural_sort(l): 
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
+
 
 def usage() :
       print 'LaunchOnCondor [options]'
@@ -322,7 +332,7 @@ def GetListOfFiles(Prefix, InputPattern, Suffix):
       List = sorted(List)
       for i in range(len(List)):
          List[i] = Prefix + List[i] + Suffix
-      return List
+      return natural_sort(List)
 
 
 def ListToString(InputList):
@@ -342,7 +352,10 @@ def FileToList(path):
    input_lines = input_file.readlines()
    input_file.close()
    input_lines.sort()
-   return input_lines
+   return natural_sort(input_lines)
+
+
+
 
 
 
@@ -355,6 +368,7 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
 		return
 
         InputFilesString = ''
+        InputFiles = natural_sort(InputFiles)
         for i in range(len(InputFiles)):
 		InputFilesString += "process.source.fileNames.extend([" + InputFiles[i].replace(',',' ') + '])\n'
 
@@ -378,6 +392,7 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
         cfg_file.write('%s\n' % InputFilesString)
         cfg_file.write('process.OUT = cms.OutputModule("PoolOutputModule",\n')
         cfg_file.write('    outputCommands = cms.untracked.vstring(%s),\n' % KeepStatement)
+        cfg_file.write('    eventAutoFlushCompressedSize=cms.untracked.int32(15*1024*1024),\n')
         cfg_file.write('    fileName = cms.untracked.string(%s)\n' % OutputFile)
         cfg_file.write(')\n')
         cfg_file.write('\n')
@@ -386,4 +401,8 @@ def SendCMSMergeJob(FarmDirectory, JobName, InputFiles, OutputFile, KeepStatemen
         SendCluster_Push  (["CMSSW", Temp_Cfg])
         SendCluster_Submit()
         os.system('rm '+ Temp_Cfg)
+
+
+
+
 

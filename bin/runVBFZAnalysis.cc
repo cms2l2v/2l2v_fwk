@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
   }
   
   //summary ntuple
-  TString summaryTupleVarNames("ch:weight:cnorm:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:fisher:llr:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15");
+  TString summaryTupleVarNames("ch:weight:cnorm:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:qg1:qg2:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15:pt1:pt2");
   TNtuple *summaryTuple = new TNtuple("ewkzp2j","ewkzp2j",summaryTupleVarNames);
   Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
   summaryTuple->SetDirectory(0);
@@ -1076,13 +1076,13 @@ int main(int argc, char* argv[])
 
 		  //save for further analysis
 		  if(mjj>200) {
-		    if(mjj>2000 && ev.nvtx<18 && njets==2){
-		      fprintf(outTxtFile,"--------- CANDIDATE EVENT ---------\n");
-		      fprintf(outTxtFile,"%d:%d:%d    mjj=%f  ystar=%f spt=%f\n",ev.run,ev.lumi,ev.event,mjj,ystar,spt);
-		      fprintf(outTxtFile,"j1 (%f,%f,%f)\n",selJets[0].pt(),selJets[0].eta(),selJets[0].phi());
-		      fprintf(outTxtFile,"j2 (%f,%f,%f)\n",selJets[1].pt(),selJets[1].eta(),selJets[1].phi());
-		      fprintf(outTxtFile,"z (%f,%f,%f) m=%f\n",zll.pt(),zll.eta(),zll.phi(),zll.mass());
-		    }
+		   //  if(mjj>2000 && ev.nvtx<18 && njets==2){
+// 		      fprintf(outTxtFile,"--------- CANDIDATE EVENT ---------\n");
+// 		      fprintf(outTxtFile,"%d:%d:%d    mjj=%f  ystar=%f spt=%f\n",ev.run,ev.lumi,ev.event,mjj,ystar,spt);
+// 		      fprintf(outTxtFile,"j1 (%f,%f,%f)\n",selJets[0].pt(),selJets[0].eta(),selJets[0].phi());
+// 		      fprintf(outTxtFile,"j2 (%f,%f,%f)\n",selJets[1].pt(),selJets[1].eta(),selJets[1].phi());
+// 		      fprintf(outTxtFile,"z (%f,%f,%f) m=%f\n",zll.pt(),zll.eta(),zll.phi(),zll.mass());
+//		    }
 		    ev.cat=dilId;
 		    summaryTupleVars[0]=ev.cat;  
 		    summaryTupleVars[1]=catWeight*xsecWeight;    
@@ -1094,13 +1094,17 @@ int main(int argc, char* argv[])
 		    summaryTupleVars[7]=dphijj;  
 		    summaryTupleVars[8]=ystar;
 		    summaryTupleVars[9]=hardpt; 
-		    for(size_t im=0; im<tmvaMethods.size(); im++) summaryTupleVars[10+im]=tmvaDiscrVals[im];
+		    summaryTupleVars[10]=selJets[0].getVal("qgMVA");
+		    summaryTupleVars[11]=selJets[1].getVal("qgMVA");
+		    summaryTupleVars[12]=tmvaDiscrVals[tmvaMethods.size()-1];
 		    summaryTupleVars[13]=ystar3; 
 		    summaryTupleVars[14]=pt3; 
 		    summaryTupleVars[15]=ncjv;
 		    summaryTupleVars[16]=htcjv;  
 		    summaryTupleVars[17]=ncjv15;  
 		    summaryTupleVars[18]=htcjv15;
+		    summaryTupleVars[19]=selJets[0].pt();
+		    summaryTupleVars[20]=selJets[1].pt();
 		    summaryTuple->Fill(summaryTupleVars);
 		    for(size_t im=0; im<tmvaMethods.size(); im++) mon.fillHisto(tmvaMethods[im], selTags, tmvaDiscrVals[im], catWeight);
 		  } 

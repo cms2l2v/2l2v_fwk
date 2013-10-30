@@ -42,8 +42,8 @@
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
-#include "UserCode/llvv_fwk/src/tdrstyle.C"
-#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 
 #include<vector>
 #include<sstream>
@@ -324,10 +324,12 @@ void MljAnalyzer::analyze(TString tag)
   systTable["Q^{2}"].push_back("t#bar{t}systq2down");     systTable["Q^{2}"].push_back("t#bar{t}systq2up");
   systTable["Had"].push_back("t#bar{t}systpowhegpy");     systTable["Had"].push_back("t#bar{t}systpowheghw");
   systTable["Signal"].push_back("t#bar{t}systpowhegpy");  systTable["Signal"].push_back("t#bar{t}172.5");
-  systTable["UE"].push_back("t#bar{t}systtunep11");       systTable["UE"].push_back("t#bar{t}systtunep11mpihi"); systTable["UE"].push_back("t#bar{t}systtunep11tev");
+  systTable["UE"].push_back("t#bar{t}systtunep11");       systTable["UE"].push_back("t#bar{t}systtunep11mpihi");    systTable["UE"].push_back("t#bar{t}systtunep11tev");
   systTable["CR"].push_back("t#bar{t}systtunep11");       systTable["CR"].push_back("t#bar{t}systtunep11nocr");
-  systTable["m_{top}"].push_back("t#bar{t}166.5");        systTable["m_{top}"].push_back("t#bar{t}172.5");
-  float totalSyst(0);
+  systTable["m_{top}"].push_back("t#bar{t}169.5");        systTable["m_{top}"].push_back("t#bar{t}175.5");
+  systTable["jetflavor"].push_back("t#bar{t}systr1");     systTable["jetflavor"].push_back("t#bar{t}systr05a");
+
+  Float_t totalSyst(0);
   for( std::map<TString,std::vector<TString > >::iterator it = systTable.begin();
        it!= systTable.end(); 
        it++)
@@ -337,7 +339,7 @@ void MljAnalyzer::analyze(TString tag)
 
       int firstContrib(0);
       float nomRef(fcorrectMC);
-      if(it->first=="Had" || it->first=="UE" || it->first=="CR" || it->first=="m_{top}") { firstContrib=1; nomRef= systUnc[ it->second[0] ]; }
+      if(it->first=="Had" || it->first=="UE" || it->first=="CR" || it->first=="m_{top}" || it->first=="jetflavor") { firstContrib=1; nomRef= systUnc[ it->second[0] ]; }
 
       for(size_t icontrib=firstContrib; icontrib<it->second.size(); icontrib++)
 	{
@@ -348,7 +350,8 @@ void MljAnalyzer::analyze(TString tag)
       if(ncontribs<1) continue;
 
       float weight(1.0);
-      if(it->first=="m_{top}") weight=6.0;
+      if(it->first=="m_{top}")   weight=6.0;
+      if(it->first=="jetflavor") weight=5;
       //totalUnc=(totalUnc/(weight*ncontribs));
       totalUnc=(totalUnc/(weight*ncontribs))*100/nomRef;
       totalSyst += pow(totalUnc,2);

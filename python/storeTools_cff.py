@@ -2,6 +2,12 @@ import FWCore.ParameterSet.Config as cms
 import os,sys
 import getopt
 import commands
+import re
+
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+    return sorted(l, key = alphanum_key)
 
 """
 lists the files available in castor
@@ -73,7 +79,7 @@ def fillFromStore(dir,ffile=0,step=-1,generatePfn=True):
                 localdataset.extend( [ sline ] )
         ifile=ifile+1
 
-    return localdataset
+    return natural_sort(localdataset)
 
 """
 check that a file exist and is not corrupted
@@ -132,7 +138,7 @@ def checkStoreForDuplicates(outdir):
    	        else:
 		    print("   #corrupted file found : " + fileName)
 		    duplicatedFiles.append(fileName)
-    return duplicatedFiles
+    return natural_sort(duplicatedFiles)
 
 
 """
@@ -183,5 +189,5 @@ def addPrefixSuffixToFileList(Prefix, fileList, Suffix):
    outList = []
    for s in fileList:
       outList.append(Prefix+s+Suffix)
-   return outList
+   return natural_sort(outList)
 

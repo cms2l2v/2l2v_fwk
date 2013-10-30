@@ -2,8 +2,8 @@
 #include <boost/shared_ptr.hpp>
 #include "Math/GenVector/Boost.h"
 
-#include "UserCode/llvv_fwk/src/tdrstyle.C"
-#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 
 #include "TSystem.h"
@@ -45,6 +45,7 @@ std::vector<std::string> channels;
 float lumiUnc(0.027);
 float selEffUnc(0.020);
 float pdfUnc(0.026);
+float flavorUnc(0.001);
 float iEcm(8);
 
 //wrapper for a projected shape for a given set of cuts
@@ -292,7 +293,6 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 		  TString signalVars[]={"powhegpy","q2up","q2down","mepsup","mepsdown"};
 		  for(size_t isigvar=0; isigvar<sizeof(signalVars)/sizeof(TString); isigvar++)
 		    {
-		      cout << isigvar << " " << signalVars[isigvar] << endl;
 		      TH1F *hmcsig=(TH1F *)systF->Get("t#bar{t}syst"+signalVars[isigvar]+"/"+histoName);
 		      if(hmcsig==0) { cout << "Skipping null variation: " << signalVars[isigvar] << endl;  continue; }
 		      for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
@@ -308,13 +308,15 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 
 		      //if variation corresponds already to a signed variation save it directly
 		      //otherwise create an artificial symmetric variation to build the +/- envelope of the nominal shape
+		      TString systKey(signalVars[isigvar]);
+		      if(systKey=="powhegpy") systKey="mcsignal";
 		      if(signalVars[isigvar].EndsWith("up") || signalVars[isigvar].EndsWith("down"))  
 			{
-			  shape.signalVars[signalVars[isigvar]]=hmcsig;
+			  shape.signalVars[systKey]=hmcsig;
 			}
 		      else
 			{
-			  shape.signalVars[signalVars[isigvar]+"up"]   = hmcsig;
+			  shape.signalVars[systKey+"up"]   = hmcsig;
 			  TH1F *hmcsigdown=(TH1F *) hmcsig->Clone(hmcsig->GetName()+TString("mcsignaldown"));
 			  for(int ibin=1; ibin<=hmcsigdown->GetXaxis()->GetNbins();ibin++)
 			    {
@@ -323,7 +325,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 			      if(newVal<0) newVal=0; 
 			      hmcsigdown->SetBinContent(ibin,newVal);
 			    }
-			  shape.signalVars[signalVars[isigvar]+"down"] = hmcsigdown;
+			  shape.signalVars[systKey+"down"] = hmcsigdown;
 			}
 		    }
 
@@ -458,11 +460,9 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
   FILE* pFile = fopen(outUrl+"CrossSectionYields.tex","w");
   TH1F *dataTempl=allShapes.begin()->second.data;
   const std::vector<TH1F *> &bckgTempl=allShapes.begin()->second.bckg;
-  cout << binsToProject.size() << endl;
   for(std::vector<int>::iterator bIt = binsToProject.begin(); bIt != binsToProject.end(); bIt++)
     {
       TString cat=dataTempl->GetXaxis()->GetBinLabel(*bIt);
-      cout << cat << endl;
       
       //table header
       fprintf(pFile,"\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data for the %s category. The uncertainty associated to the limited statistics in the MC is quoted separately from the other systematic uncertainties.}\n\\label{tab:table}\n",cat.Data());
@@ -505,6 +505,7 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
 	  sigRateSysts["lumi"]=lumiUnc;
 	  sigRateSysts["seleff"]=selEffUnc;
 	  sigRateSysts["pdf"]=pdfUnc;
+	  sigRateSysts["flavor"]=flavorUnc;
 	  float sSyst=getIntegratedSystematics(shape.signal,shape.signalVars,sigRateSysts,*bIt);
 	  totalSyst += pow(sSyst,2); 
 	  CSyields += " & ";
@@ -684,6 +685,12 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
       fprintf(pFile,"\n");
 
+      //top decay uncertainty (jet flavor)
+      fprintf(pFile,"%30s_%dTeV %10s","topjetflavor",int(iEcm),"lnN");
+      fprintf(pFile,"%6.3f ",1+flavorUnc);
+      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
+      fprintf(pFile,"\n");
+
       //diepton BR
       //fprintf(pFile,"%35s %10s","br","lnN");
       //fprintf(pFile,"%6.3f ",1.017);
@@ -744,6 +751,27 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	else                             fprintf(pFile,"%6s ","2.0");
       }
       fprintf(pFile,"\n");
+
+      //single top
+      fprintf(pFile,"%35s %10s ", "singletopTh","lnN");
+      fprintf(pFile,"%6s ","-");
+      for(size_t j=0; j<shape.bckg.size(); j++) {
+	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+	if(name!="st") fprintf(pFile,"%6s ","-");
+	else           fprintf(pFile,"%6s ","1.068"); 
+      }
+      fprintf(pFile,"\n");
+
+      //dibosons
+      fprintf(pFile,"%35s %10s ", "vvTh","lnN");
+      fprintf(pFile,"%6s ","-");
+      for(size_t j=0; j<shape.bckg.size(); j++) {
+	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+	if(name!="vv") fprintf(pFile,"%6s ","-");
+	else           fprintf(pFile,"%6s ","1.050"); 
+      }
+      fprintf(pFile,"\n");
+
 
       //systematics described by shapes
       for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)

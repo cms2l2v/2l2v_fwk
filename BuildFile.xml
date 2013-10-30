@@ -20,6 +20,7 @@
 <use name="roofit"/>
 <use name="rootrflx"/>
 <use name="fastjet"/>
+<use name="roostats"/>
 <export>
   <lib name="1"/>
 </export>

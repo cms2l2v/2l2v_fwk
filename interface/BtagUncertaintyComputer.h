@@ -36,7 +36,7 @@ class BTagSFUtil{
   BTagSFUtil( int seed=0 );
   ~BTagSFUtil();
     
-  void modifyBTagsWithSF( bool& isBTagged, int pdgIdPart, float Btag_SF = 0.98, float Btag_eff = 1.0, float Bmistag_SF = 1.0, float  Bmistag_eff = 1.0);
+  void modifyBTagsWithSF( bool& isBTagged, float Btag_SF = 0.98, float Btag_eff = 1.0);
 
 
  private:
@@ -61,26 +61,10 @@ BTagSFUtil::~BTagSFUtil() {
 }
 
 
-void BTagSFUtil::modifyBTagsWithSF(bool& isBTagged, int pdgIdPart, float Btag_SF, float Btag_eff, float Bmistag_SF, float Bmistag_eff){
-
+void BTagSFUtil::modifyBTagsWithSF(bool& isBTagged, float tag_SF, float tag_Eff){
   bool newBTag = isBTagged;
-
-  // b quarks and c quarks:
-  if( abs( pdgIdPart ) == 5 ||  abs( pdgIdPart ) == 4) { 
-
-    double bctag_eff = Btag_eff;
-    if ( abs(pdgIdPart)==4 )  bctag_eff = Btag_eff/5.0; // take ctag eff as one 5th of Btag eff
-    newBTag = applySF(isBTagged, Btag_SF, bctag_eff);
-
-  // light quarks:
-  } else if( abs( pdgIdPart )>0 ) { //in data it is 0 (save computing time)
-
-    newBTag = applySF(isBTagged, Bmistag_SF, Bmistag_eff);
-    
-  }
-
+  newBTag = applySF(isBTagged, tag_SF, tag_Eff);
   isBTagged = newBTag;
-
 }
 
 

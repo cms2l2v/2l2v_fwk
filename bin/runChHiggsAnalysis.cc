@@ -553,7 +553,8 @@ int main(int argc, char* argv[])
 	      //Initialize class
 	      //	      BTagSFUtil* btsfutil = new BTagSFUtil( bseed );
 	      BTagSFUtil btsfutil( bseed );
-	      btsfutil.modifyBTagsWithSF(hasCSVV1L, bflavid, 1., 1., 1., 1.);//0.98, 0.841, 1.21, 0.137);
+	      //btsfutil.modifyBTagsWithSF(hasCSVV1L, bflavid, 1., 1., 1., 1.);//0.98, 0.841, 1.21, 0.137);
+	      btsfutil.modifyBTagsWithSF(hasCSVV1L, 1., 1. ); //check runTopAnalysis and RAnalysis Pietro!
 	      
 	    }
 	    if(!hasCSVV1L) continue;

@@ -4,8 +4,8 @@
 #include <boost/shared_ptr.hpp>
 #include "Math/GenVector/Boost.h"
 
-#include "UserCode/llvv_fwk/src/tdrstyle.C"
-#include "UserCode/llvv_fwk/src/JSONWrapper.cc"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
@@ -1367,7 +1367,7 @@ void initializeTGraph(){
               for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
                  if(!it->second.isBckg || it->second.isData)continue;
                  TString procName = it->first.c_str();
-                 if(!(procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("WW") || procName.Contains("Z#rightarrow #tau#tau") || procName.Contains("W#rightarrow l#nu")) )continue;
+                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("WW") || procName.Contains("Z#rightarrow #tau#tau") || procName.Contains("W#rightarrow l#nu") ||  procName.Contains("Top") ||  procName.Contains("W,multijets") ))continue;
                  addProc(procInfo_NRB, it->second);
                  for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)==it->first){sorted_procs.erase(p);break;}}
                  toBeDelete.push_back(it->first);
