@@ -590,7 +590,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	TString ch(it->first); if(ch.IsNull()) ch="inclusive";
 	TDirectory *oDir=fOut->mkdir(ch);
 	
-	TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+"_"+suffixUrl+".dat");
+	TString shapesFile("DataCard_"+ch+convertNameForFileName(histo)+"_"+suffixUrl+".txt");
 	const Shape_t &shape=it->second;
 	
 	FILE* pFile = fopen(outUrl+shapesFile,"w");
