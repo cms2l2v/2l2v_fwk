@@ -9,9 +9,9 @@ Analyze
 cd $CMSSW_BASE/src/UserCode/llvv_fwk/
 sh test/chhiggs/doAnal.sh current anal_sus
 sh test/chhiggs/doAnal.sh current anal_sm
-sh test/chhiggs/doAnal.sh current plots
-sh test/chhiggs/doAnal.sh current tables
-sh test/chhiggs/doAnal.sh current datacards
+sh test/chhiggs/doAnal.sh current plots &
+sh test/chhiggs/doAnal.sh current tables &
+sh test/chhiggs/doAnal.sh current datacards &
 
 
 
