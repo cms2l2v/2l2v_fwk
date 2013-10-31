@@ -234,6 +234,8 @@ int main(int argc, char* argv[])
     };
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
+
+	if(var!="") continue; // Do not create unneeded syst histograms
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll"+var,";Dilepton invariant mass [GeV];Events",50,0,250) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll"+var,";Dilepton transverse momentum [GeV];Events",50,0,250) );
