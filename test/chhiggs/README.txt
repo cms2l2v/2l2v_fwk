@@ -7,11 +7,17 @@ Mailto: pietro.vischia at gmail.com
 Analyze
 -------
 cd $CMSSW_BASE/src/UserCode/llvv_fwk/
+
+# Process ntuples
 sh test/chhiggs/doAnal.sh current anal_sus
 sh test/chhiggs/doAnal.sh current anal_sm
+# Produce plots, tables and datacards
 sh test/chhiggs/doAnal.sh current plots
 sh test/chhiggs/doAnal.sh current tables
 sh test/chhiggs/doAnal.sh current datacards
+# Copy plots for putting in AN
+sh test/chhiggs/doAnal.sh current put
+
 
 
 ### FWLite test

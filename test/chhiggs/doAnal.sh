@@ -46,6 +46,28 @@ elif [ "${1}" = "current" ]; then
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmu_pdf.root                --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptmu					     &
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_sumpt_pdf.root               --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_sumpt                                     &
 
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_evtflow_c.root             --showUnc --plotExt .C --noPowers --onlyStartWith emu_evtflow                                 &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsmet_c.root        --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagsmet		     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsnbjets_c.root     --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagsnbjets		     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsptlep_c.root      --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagsptlep		     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagssumpt_c.root      --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagssumpt		     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_met_c.root                 --showUnc --plotExt .C --noPowers --onlyStartWith emu_met					     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mll_c.root                 --showUnc --plotExt .C --noPowers --onlyStartWith emu_mll					     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mtsum_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_mtsum				     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nbjets_c.root              --showUnc --plotExt .C --noPowers --onlyStartWith emu_nbjets				     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_njets_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_njets				     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nvertices_c.root           --showUnc --plotExt .C --noPowers --onlyStartWith emu_nvertices			     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nverticesUnweighted_c.root --showUnc --plotExt .C --noPowers --onlyStartWith emu_nverticesUnweighted	     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_pte_c.root                 --showUnc --plotExt .C --noPowers --onlyStartWith emu_pte					     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1eta_c.root           --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet1eta			     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1pt_c.root            --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet1pt				     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2eta_c.root           --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet2eta			     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2pt_c.root            --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet2pt				     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmin_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptmin				     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmu_c.root                --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptmu					     &
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_sumpt_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_sumpt                                     &
+
+
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_evtflow_png.root             --showUnc --plotExt .png --noPowers --onlyStartWith emu_evtflow                                 &
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsmet_png.root        --showUnc --plotExt .png --noPowers --onlyStartWith emu_geq2btagsmet		     &
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsnbjets_png.root     --showUnc --plotExt .png --noPowers --onlyStartWith emu_geq2btagsnbjets		     &
@@ -88,5 +110,57 @@ hadd -f ${BASEDIR}plotter-forSystTable_def.root                              ${B
 hadd -f ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm.root	${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_optim.root
 
 	sh test/chhiggs/doAllDatacardsByDecay.sh
+    elif [ "${2}" = "put" ]; then
+	outputdir=tempDirForNotePlots/
+
+	mkdir -p ${outputdir}
+
+
+	cp ${BASEDIR}plots/emu_evtflow.pdf                  ${outputdir}
+	cp ${BASEDIR}plots/emu_met.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_mll.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_mtsum.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_nbjets.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_njets.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_nvertices.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_nverticesUnweighted.pdf      ${outputdir}
+	cp ${BASEDIR}plots/emu_pte.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet1eta.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet1pt.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet2eta.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet2pt.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptmin.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptmu.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_sumpt.pdf		       ${outputdir}
+	cp ${BASEDIR}plots/emu_evtflow.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_met.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_mll.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_mtsum.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_nbjets.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_njets.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_nvertices.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_nverticesUnweighted.png      ${outputdir}
+	cp ${BASEDIR}plots/emu_pte.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet1eta.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet1pt.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet2eta.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptjet2pt.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptmin.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_ptmu.png		       ${outputdir}
+	cp ${BASEDIR}plots/emu_sumpt.png                    ${outputdir}       
+	cp ${BASEDIR}plots/emu_geq2btagsmet.pdf            ${outputdir}
+	cp ${BASEDIR}plots/emu_geq2btagsnbjets.pdf	      ${outputdir}
+	cp ${BASEDIR}plots/emu_geq2btagsptlep.pdf 	      ${outputdir}
+	cp ${BASEDIR}plots/emu_geq2btagssumpt.pdf          ${outputdir}
+	
+	
+	scp -r ${outputdir} lnlip02.lip.pt:~/
+	
+	rm -rf ${outputdir} 
+
+
     fi
+
+
+
 fi
