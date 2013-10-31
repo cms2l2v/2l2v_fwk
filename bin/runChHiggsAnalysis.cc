@@ -229,8 +229,8 @@ int main(int argc, char* argv[])
     controlHistos.addHistogram( finalCutflowH_5 );
     
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
-    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags", // through the base cutflow
-			"lowmet","eq1jetslowmet","zowmet","zeq1jets","zeq1jetslowmet","z" // for DY rescaling
+    TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"//, // through the base cutflow
+			                                               //"lowmet","eq1jetslowmet","zowmet","zeq1jets","zeq1jetslowmet","z" // for DY rescaling
     };
     for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
       {
