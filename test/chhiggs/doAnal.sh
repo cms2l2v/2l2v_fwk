@@ -13,7 +13,15 @@ if [ "${1}" = "past" ]; then
     #
     #
 
-
+elif [ "${1}" = "fwklite" ]; then
+    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_fwlite/
+    if [ "${2}" = "anal_sus" ]; then
+	echo "Not ready yet" 
+    elif [ "${2}" = "anal_sm" ]; then
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json -o ${BASEDIR} -d  /store/group/phys_higgs/cmshzz2l2v/2013_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
+    elif [ "${2}" = "plots" ]; then
+	runPlotterFWLite --iEcm 8 --iLumi 19577 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSWC_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json
+    fi
 elif [ "${1}" = "current" ]; then
 # Fixed run 
     #    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_e/
