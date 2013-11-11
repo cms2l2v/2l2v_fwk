@@ -112,12 +112,58 @@ elif [ "${1}" = "current" ]; then
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forSystTable_optim.root --showUnc --noPlots --noPowers --onlyStartWith all_optim
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_optim.root --noPlot --noPowers  --onlyStartWith all_optim
 
-
-hadd -f ${BASEDIR}plotter-forSystTableInPAS_def.root			        ${BASEDIR}plotter-forSystTableInPAS.root			 	${BASEDIR}plotter-forSystTableInPAS_optim.root
-hadd -f ${BASEDIR}plotter-forSystTable_def.root                              ${BASEDIR}plotter-forSystTable.root                             	${BASEDIR}plotter-forSystTable_optim.root                             
-hadd -f ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm.root	${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_optim.root
-
-	sh test/chhiggs/doAllDatacardsByDecay.sh
+	
+	hadd -f ${BASEDIR}plotter-forSystTableInPAS_def.root			        ${BASEDIR}plotter-forSystTableInPAS.root			 	${BASEDIR}plotter-forSystTableInPAS_optim.root
+	hadd -f ${BASEDIR}plotter-forSystTable_def.root                              ${BASEDIR}plotter-forSystTable.root                             	${BASEDIR}plotter-forSystTable_optim.root                             
+	hadd -f ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm.root	${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_optim.root
+	
+	mv datacardsByDecayNew datacardsByDecayNew_bak
+	
+	mkdir -p datacardsByDecayNew/180
+	mkdir -p datacardsByDecayNew/200 
+	mkdir -p datacardsByDecayNew/220 
+	mkdir -p datacardsByDecayNew/250 
+	mkdir -p datacardsByDecayNew/300
+	mkdir -p datacardsByDecayNew/350
+	mkdir -p datacardsByDecayNew/400 
+	mkdir -p datacardsByDecayNew/500 
+	mkdir -p datacardsByDecayNew/600 
+	mkdir -p datacardsByDecayNew/700
+	
+	mkdir -p datacardsByDecaySyst/180
+	mkdir -p datacardsByDecaySyst/200 
+	mkdir -p datacardsByDecaySyst/220 
+	mkdir -p datacardsByDecaySyst/250 
+	mkdir -p datacardsByDecaySyst/300
+	mkdir -p datacardsByDecaySyst/350
+	mkdir -p datacardsByDecaySyst/400 
+	mkdir -p datacardsByDecaySyst/500 
+	mkdir -p datacardsByDecaySyst/600 
+	mkdir -p datacardsByDecaySyst/700
+	
+	mkdir -p datacardsByDecaySystPAS/180
+	mkdir -p datacardsByDecaySystPAS/200 
+	mkdir -p datacardsByDecaySystPAS/220 
+	mkdir -p datacardsByDecaySystPAS/250 
+	mkdir -p datacardsByDecaySystPAS/300
+	mkdir -p datacardsByDecaySystPAS/350
+	mkdir -p datacardsByDecaySystPAS/400 
+	mkdir -p datacardsByDecaySystPAS/500 
+	mkdir -p datacardsByDecaySystPAS/600 
+	mkdir -p datacardsByDecaySystPAS/700
+	
+	for i in 180 200 220 250 300 350 500 600 700
+	  do
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayNew/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayNew/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecaySyst/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecaySyst/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu & 
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu & 
+	done
+	
     elif [ "${2}" = "put" ]; then
 	outputdir=tempDirForNotePlots/
 
