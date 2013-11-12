@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
       systVars.push_back("umetup");     systVars.push_back("umetdown" );
       systVars.push_back("btagup");     systVars.push_back("btagdown" );
       systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
-      if(isTTbarMC) systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); 
+      if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
       //      systVars.push_back(); systVars.push_back();
       cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
     }
