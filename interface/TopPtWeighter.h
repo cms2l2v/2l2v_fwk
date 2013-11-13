@@ -26,7 +26,7 @@ class TopPtWeighter
       TFile *wgtsFile = TFile::Open(wgtsFileUrl);
       if(wgtsFile && !wgtsFile->IsZombie())
 	{
-	  std::cout << "[TopPtWeighter] will use weights previously stored @ " << wgtsFileUrl << std::endl;
+	  //std::cout << "[TopPtWeighter] will use weights previously stored @ " << wgtsFileUrl << std::endl;
 	  wgtGr_    =(TGraph *)wgtsFile->Get("topptwgt");
 	  wgtGrUp_  =(TGraph *)wgtsFile->Get("topptwgt_up");
 	  wgtGrDown_=(TGraph *)wgtsFile->Get("topptwgt_down");
@@ -46,7 +46,7 @@ class TopPtWeighter
 	  if(imtop<100) continue;
 	  mtop=imtop;
 	}
-      std::cout << "[TopPtWeighter] will compute the top pT weights for m=" << mtop << " and store them in a local file" << std::endl;
+      //std::cout << "[TopPtWeighter] will compute the top pT weights for m=" << mtop << " and store them in a local file" << std::endl;
 
       TString topPtShapeUrl(shapesDir); topPtShapeUrl += "/toppt_approxnnlo_8TeV.root";
       gSystem->ExpandPathName(topPtShapeUrl);
@@ -90,7 +90,7 @@ class TopPtWeighter
 
       //scale to the same number of events
       targetH->Scale(genH->Integral()/targetH->Integral());
-      std::cout << "[TopPtWeighter] average pT[GeV] in target is " << targetH->GetMean() << " generator is: " << genH->GetMean() << std::endl;
+      //std::cout << "[TopPtWeighter] average pT[GeV] in target is " << targetH->GetMean() << " generator is: " << genH->GetMean() << std::endl;
 
       //compute weights
       TH1 *ratio=(TH1 *) targetH->Clone("ratio"); ratio->Divide(genH); wgtGr_=new TGraph(ratio); delete ratio;
@@ -125,7 +125,7 @@ class TopPtWeighter
 	  wgtSumUp      += curWgtUp_;
 	  wgtSumDown    += curWgtDown_;
 	}
-      std::cout << "[TopPtWeighter] normalization computed for " << totalExpected << " events" << std::endl;
+      //std::cout << "[TopPtWeighter] normalization computed for " << totalExpected << " events" << std::endl;
 
       //finalize the normalization
       if(totalExpected!=0){
@@ -151,7 +151,7 @@ class TopPtWeighter
       wgtGrUp_->Write("topptwgt_up");
       wgtGrDown_->Write("topptwgt_down");
       wgtsFile->Close();
-      std::cout << "[TopPtWeighter] normalized weights saved to " << wgtsFileUrl << std::endl;
+      //std::cout << "[TopPtWeighter] normalized weights saved to " << wgtsFileUrl << std::endl;
     }
   
     /**
