@@ -79,6 +79,9 @@ int main(int argc, char* argv[])
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
 
+  TString wFile("");
+  if(weightsFile.size()) wFile = TString(gSystem->ExpandPathName(weightsFile[0].c_str()));
+
   //jet energy scale uncertainties
   gSystem->ExpandPathName(jecDir);
   FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
@@ -93,7 +96,7 @@ int main(int argc, char* argv[])
   std::map<std::pair<TString,TString>, std::pair<TGraphErrors *,TGraphErrors *> > btagEffCorr;
   if(weightsFile.size() && isMC)
     {
-      TString btagEffCorrUrl(weightsFile[0].c_str()); btagEffCorrUrl += "/btagEff.root";
+      TString btagEffCorrUrl(wFile); btagEffCorrUrl += "/btagEff.root";
       gSystem->ExpandPathName(btagEffCorrUrl);
       TFile *btagF=TFile::Open(btagEffCorrUrl);
       if(btagF!=0 && !btagF->IsZombie())
@@ -385,7 +388,7 @@ int main(int argc, char* argv[])
       TopPtWeighter* topPtWgt=0;
       if(isTTbarMC){
 	TString shapesDir("");
-	if(weightsFile.size()) shapesDir=weightsFile[0].c_str();
+	if(weightsFile.size()) shapesDir=wFile;
 	topPtWgt = new TopPtWeighter(proctag, out, shapesDir, evSummary.getTree() );
       }
 
