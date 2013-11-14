@@ -103,6 +103,11 @@ elif [ "${1}" = "current" ]; then
     elif [ "${2}" = "tables" ]; then
 	# Tables
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forTables.root --showUnc --noPlots --noPowers --onlyStartWith emu_evtflow
+	mkdir -p ${BASEDIR}tables
+	mv ${BASEDIR}plotsemu* ${BASEDIR}tables/
+	mv ${BASEDIR}plotsee* ${BASEDIR}tables/
+	mv ${BASEDIR}plotsmumu* ${BASEDIR}tables/
+
     elif [ "${2}" = "datacards" ]; then
 	# Datacards
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forSystTableInPAS.root --showUnc --noPlots --noPowers --onlyStartWith emu_evtflow
