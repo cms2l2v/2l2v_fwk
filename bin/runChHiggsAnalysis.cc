@@ -115,6 +115,24 @@ int main(int argc, char* argv[])
 	}
       cout << btagEffCorr.size() << " b-tag correction factors have been read" << endl;
     }
+  
+  std::vector<double> btagBins; btagBins.clear();
+  btagBins.push_back(35  );
+  btagBins.push_back(45  );
+  btagBins.push_back(55  );
+  btagBins.push_back(65  );
+  btagBins.push_back(75  );
+  btagBins.push_back(90  );
+  btagBins.push_back(110 );
+  btagBins.push_back(140 );
+  btagBins.push_back(185 );
+  btagBins.push_back(235 );
+  btagBins.push_back(290 );
+  btagBins.push_back(360 );
+  btagBins.push_back(450 );
+  btagBins.push_back(550 );
+  btagBins.push_back(700 );
+  
 
   //
   // check input file
@@ -359,7 +377,13 @@ int main(int argc, char* argv[])
       spyEvents->init(outT,false);
     }
 
-       
+  TopPtWeighter* topPtWgt=0;
+  if(isTTbarMC){
+    TString shapesDir("");
+    if(weightsFile.size()) shapesDir=wFile;
+    topPtWgt = new TopPtWeighter(proctag, out, shapesDir, evSummary.getTree() );
+  }
+  
   //
   // analyze (puf...)
   //
@@ -385,12 +409,6 @@ int main(int argc, char* argv[])
 
       //MC truth (filtering for other ttbar)
 
-      TopPtWeighter* topPtWgt=0;
-      if(isTTbarMC){
-	TString shapesDir("");
-	if(weightsFile.size()) shapesDir=wFile;
-	topPtWgt = new TopPtWeighter(proctag, out, shapesDir, evSummary.getTree() );
-      }
 
       data::PhysicsObjectCollection_t gen=evSummary.getPhysicsObject(DataEventSummaryHandler::GENPARTICLES);
       double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop 
@@ -605,19 +623,30 @@ int main(int argc, char* argv[])
 		  if(mceffGr && sfGr){
 		    float eff=mceffGr->Eval(jetpt);
 		    float sf=sfGr->Eval(jetpt);	
-		    // Apply uncertainty shift
-		    float sferr(0.), delta(1000000.);
-		    for(int ind=0; ind<sfGr->GetN(); ++ind){
-		      double xv(0.), yv(0.);
-		      sfGr->GetPoint(ind,xv,yv);
-		      float tempDelta(jetpt - xv );
-		      if(tempDelta<delta){
-			delta=tempDelta; 
-			if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
-			else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+		    if(var == "btagup" || var == "btagdown" || var == "unbtagup" || var == "unbtagdown"){
+		      // Apply uncertainty shift
+		      float sferr(0.), delta(1000000.);
+		      for(size_t ind=0; ind<btagBins.size(); ++ind){
+			float tempDelta( fabs(jetpt - btagBins[ind]) );
+			if(tempDelta<delta){
+			  delta=tempDelta;
+			  if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
+			  else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+			}
 		      }
+ 
+//		      for(int ind=0; ind<sfGr->GetN(); ++ind){
+//			double xv(0.), yv(0.);
+//			sfGr->GetPoint(ind,xv,yv);
+//			float tempDelta(jetpt - xv );
+//			if(tempDelta<delta){
+//			  delta=tempDelta; 
+//			  if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
+//			  else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+//			}
+//		      }
+		      sf+=sferr;
 		    }
-		    sf+=sferr;
 		    btsfutil.modifyBTagsWithSF(hasBtagCorr, sf, eff);	    
 		  }
 		}

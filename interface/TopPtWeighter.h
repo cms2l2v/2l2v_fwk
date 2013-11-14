@@ -26,7 +26,7 @@ class TopPtWeighter
       TFile *wgtsFile = TFile::Open(wgtsFileUrl);
       if(wgtsFile && !wgtsFile->IsZombie())
 	{
-	  //std::cout << "[TopPtWeighter] will use weights previously stored @ " << wgtsFileUrl << std::endl;
+	  std::cout << "[TopPtWeighter] will use weights previously stored @ " << wgtsFileUrl << std::endl;
 	  wgtGr_    =(TGraph *)wgtsFile->Get("topptwgt");
 	  wgtGrUp_  =(TGraph *)wgtsFile->Get("topptwgt_up");
 	  wgtGrDown_=(TGraph *)wgtsFile->Get("topptwgt_down");
@@ -46,7 +46,7 @@ class TopPtWeighter
 	  if(imtop<100) continue;
 	  mtop=imtop;
 	}
-      //std::cout << "[TopPtWeighter] will compute the top pT weights for m=" << mtop << " and store them in a local file" << std::endl;
+      std::cout << "[TopPtWeighter] will compute the top pT weights for m=" << mtop << " and store them in a local file" << std::endl;
 
       TString topPtShapeUrl(shapesDir); topPtShapeUrl += "/toppt_approxnnlo_8TeV.root";
       gSystem->ExpandPathName(topPtShapeUrl);
