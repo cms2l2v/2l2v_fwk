@@ -232,7 +232,7 @@
         },
 	{
 	"tag":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",
-	"label":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",	
+	"label":"#splitline{100#times H^{+}#rightarrow tb}{[250 GeV]}",	
         "isdata":false,
 	"issignal":true,
 	"spimpose":true,
