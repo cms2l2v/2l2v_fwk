@@ -552,6 +552,7 @@ data::PhysicsObjectCollection_t DataEventSummaryHandler::getPhysicsObject(int co
 	  jet.setVal("neutHadFrac",    evSummary_.jn_neutHadFrac[ijet]);
 	  jet.setVal("neutEmFrac",     evSummary_.jn_neutEmFrac[ijet]);
 	  jet.setVal("chHadFrac",      evSummary_.jn_chHadFrac[ijet]);
+	  jet.setVal("muFrac",         evSummary_.jn_muFrac[ijet]);
 	  jet.setVal("area",           evSummary_.jn_area[ijet]);
 	  jet.setVal("tchp",           evSummary_.jn_tchp[ijet]);
 	  jet.setVal("jp",             evSummary_.jn_jp[ijet]);
@@ -565,7 +566,10 @@ data::PhysicsObjectCollection_t DataEventSummaryHandler::getPhysicsObject(int co
 	  jet.setVal("puMVA",           evSummary_.jn_puMVA[ijet]);
 	  jet.setVal("qgMVA",           evSummary_.jn_qgMVA[ijet]);
 	  jet.setVal("beta",            evSummary_.jn_beta[ijet]);
+	  jet.setVal("betaStar",        evSummary_.jn_betaStar[ijet]);
+	  jet.setVal("ptD",             evSummary_.jn_ptD[ijet]);
 	  jet.setVal("dRMean",          evSummary_.jn_dRMean[ijet]);
+	  jet.setVal("dR2Mean",         evSummary_.jn_dR2Mean[ijet]);
 	  jet.setVal("ptRMS",           evSummary_.jn_ptRMS[ijet]);
 	  jet.setVal("etaW",            evSummary_.jn_etaW[ijet]);
 	  jet.setVal("phiW",            evSummary_.jn_phiW[ijet]);

@@ -81,13 +81,13 @@ void runFinalClosure()
 
 
   //open the files with the input plots
-  TString llfile="/afs/cern.ch/user/p/psilva/work/ewkzp2j_539/plotter_dy_closure.root";
+  TString llfile="/afs/cern.ch/user/p/psilva/work/ewkzp2j_5311/plotter_dy_closure.root";
   llInF=TFile::Open(llfile);
 
   TString gfiles[]={
-    "~/work/ewkzp2j_539/plotter_dy_closure_g_qt_loose.root",
-    "~/work/ewkzp2j_539/plotter_dy_closure_g_qt_pure.root",
-    "~/work/ewkzp2j_539/plotter_dy_closure_g_qt_tight.root"
+    "~/work/ewkzp2j_5311/plotter_dy_closure_g_qt_loose.root",
+    "~/work/ewkzp2j_5311/plotter_dy_closure_g_qt_pure.root",
+    "~/work/ewkzp2j_5311/plotter_dy_closure_g_qt_tight.root"
   };
   for(size_t i=0; i<3; i++) gInF.push_back( TFile::Open(gfiles[i]) );
 
@@ -118,12 +118,13 @@ void runFinalClosure()
 //
 void runVBFZClosure(TFile *llfile,TFile *gfile, TString outfile, bool purePhoton)
 {
-  TString distr[]={"qt",                                                                                                     //boson qT
-  		   "vbfcandjet1eta", "vbfcandjet2eta", "vbfcandjet1pt",     "vbfcandjet2pt",                                 //tag jets
-  		   "vbfcandjetdeta", "vbfcandjetseta", "vbfcandjetetaprod", "vbfdphijj",     "vbfmjj", "vbfspt", "Fisher",   //dijet "BDTD", "LikelihoodD",   //dijet 
-  		   "vbfystar", 	     "vbfhardpt",                                                                            //dijet+Z
-  		   "met",            "metL",                                                                                 //met
-  		   "vbfcjv15",  "vbfhtcjv15",  "vbfmaxcjvjpt", "vbfystar3" //, "vbfcjv20", "vbfhtcjv20", "vbfcjv", "vbfhtcjv",            //central jet activity
+  TString distr[]={
+    "qt",                                                                                                     //boson qT
+    "vbfcandjet1eta", "vbfcandjet2eta", "vbfcandjet1pt",     "vbfcandjet2pt", "vbfqgmva1", "vbfqgmva2",       //tag jets
+    "vbfcandjetdeta", "vbfcandjetseta", "vbfcandjetetaprod", "vbfdphijj",     "vbfmjj",    "vbfspt", "BDTD", "MLP", //dijet 
+    "vbfystar", 	     "vbfhardpt",                                                                            //dijet+Z
+    "met",            "metL",                                                                                 //met
+    "vbfcjv15",  "vbfhtcjv15",  "vbfmaxcjvjpt", "vbfystar3" //, "vbfcjv20", "vbfhtcjv20", "vbfcjv", "vbfhtcjv",            //central jet activity
   };
   for(size_t ich=0; ich<sizeof(distr)/sizeof(TString); ich++) closureDY(llfile,gfile,distr[ich],purePhoton);
   
@@ -140,7 +141,7 @@ void runVBFZClosure(TFile *llfile,TFile *gfile, TString outfile, bool purePhoton
 //
 void closureDY(TFile *llfile,TFile *gfile, TString distr,bool purePhoton)
 {
-  TString cat[]={"mjjq016","mjjq033","mjjq049","mjjq066","mjjq083","mjjq092","mjjq100","highmjj","mjjgt092"};
+  TString cat[]={"mjjq016","mjjq033","mjjq049","mjjq066","mjjq083","mjjq092","mjjq100","highmjj","mjjgt092","lowhardpt","highhardpt"};
   const size_t ncat=sizeof(cat)/sizeof(TString);
   for(size_t icat=0; icat<ncat; icat++)
     {
@@ -345,7 +346,7 @@ std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, 
 void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, bool purePhoton)
 {
 
-  bool rebin(distr.Contains("jetdeta") || distr.Contains("spt"));
+  bool rebin(distr.Contains("jetdeta") || distr.Contains("spt") || distr.Contains("qgmva"));
 
   //
   //GET HISTOS FROM FILES
@@ -427,8 +428,10 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   TPad *t1 = new TPad("p1","p1",0,0.3,1.0,1.0);
   t1->Draw();
   t1->cd();
+  t1->SetTopMargin(0.08);
   t1->SetBottomMargin(0);
-  
+  t1->SetRightMargin(0.05);
+
   //find limits
   hdy->Scale(1./hdy->Integral());
   Double_t xmin(hdy->GetXaxis()->GetXmin());
@@ -448,7 +451,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   hg->SetTitle("QCD #gamma jj");
   hg->GetYaxis()->SetLabelSize(0.06);
   hg->GetYaxis()->SetTitleSize(0.05);      
-  hg->GetYaxis()->SetTitleOffset(1.2);
+  hg->GetYaxis()->SetTitleOffset(1.0);
   hg->GetYaxis()->SetLabelSize(0.05);
   hg->GetXaxis()->SetRangeUser(xmin,xmax); 
   if(distr.Contains("qt"))
@@ -467,7 +470,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   hg->SetFillColor(800);
   hg->Draw("hist");
 
-  /*
+
   if(!purePhoton){
     hfakes->Add(hpureg,-1);
     hfakes->SetTitle("Fakes");
@@ -478,16 +481,11 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
     hfakes->SetFillColor(kGray);
     hfakes->Draw("histsame");   
   }
-  */
+
 
   hdy->SetTitle("QCD Z jj");
   hdy->Draw("e1same");
 
-  TPaveText *pave = new TPaveText(0.8,0.95,0.9,0.99,"brNDC");
-  pave->SetBorderSize(0);
-  pave->SetFillStyle(0);
-  pave->SetTextAlign(12);
-  pave->SetTextFont(42);
   bool setLogY(false);
   TString mjjCat("M_{jj}>1000");
   if(cat.Contains("mjjq016")) mjjCat="M_{jj}<250";
@@ -498,22 +496,24 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   if(cat.Contains("mjjq092")) mjjCat="750<M_{jj}<1000";
   if(cat.Contains("mjjgt092")) mjjCat="M_{jj}>750";
   if(cat.Contains("highmjj")) mjjCat="M_{jj}>1250";
+  if(cat.Contains("highhardpt")) mjjCat="Hard p_{T}>50";
+  if(cat.Contains("lowhardpt")) mjjCat="Hard p_{T}<50";
   if(cat.Contains("eq0jets"))  {mjjCat="=0 jets"; setLogY=true;}
   if(cat.Contains("geq1jets")) {mjjCat="#geq1 jets"; setLogY=true;}
   if(cat.Contains("vbf"))      {mjjCat="VBF"; setLogY=true;}
   if(setLogY)t1->SetLogy();
 
-  TLegend *leg=new TLegend(0.5,0.89,0.9,0.93);
-  if(!setLogY)
-    {
-      leg->AddEntry(hdy,hdy->GetTitle(),"P");
-      leg->AddEntry(hg,hg->GetTitle(),"F");
-    }
-  else
-    {
-      leg->AddEntry(hdy,"Z","P");
-      leg->AddEntry(hg,"#gamma","F");
-    }
+  TPaveText *pave = new TPaveText(0.7,0.85,0.95,0.9,"brNDC");
+  pave->SetBorderSize(0);
+  pave->SetFillStyle(0);
+  pave->SetTextAlign(32);
+  pave->SetTextFont(42);
+  pave->SetTextSize(0.05);
+  pave->SetTextColor(kBlue);
+  pave->AddText("["+mjjCat+"]");
+  pave->Draw();
+
+  TLegend *leg=new TLegend(0.6,0.95,0.95,0.98);
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
@@ -521,29 +521,40 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   leg->SetTextSize(0.05);
   //leg->SetNColumns(3);
   leg->SetNColumns(2);
+  if(!setLogY)
+    {
+      leg->AddEntry(hdy,hdy->GetTitle(),"P");
+      leg->AddEntry(hg,hg->GetTitle(),"F");
+      if(!purePhoton) {
+	leg->AddEntry(hfakes,hfakes->GetTitle(),"F");
+	leg->SetNColumns(3);
+      }
+    }
+  else
+    {
+      leg->AddEntry(hdy,"Z","P");
+      leg->AddEntry(hg,"#gamma","F");
+    }
   leg->Draw("same");
 
 
-  char buf[1000];
-  //  pave->SetTextSize(0.06);
+  pave = new TPaveText(0.94,0.4,1.0,0.83,"brNDC");
+  pave->SetBorderSize(0);
+  pave->SetFillStyle(0);
+  pave->SetTextAlign(21);
+  pave->SetTextFont(42);
+  pave->SetTextColor(kGray+2);
   pave->SetTextSize(0.05);
-  pave->AddText("["+mjjCat+"]");
-  /*
-  if(!purePhoton){
-    sprintf(buf,"[%s] #chi^{2}/ndof : %3.2f , K-S prob : %3.2f, f_{#gamma}=%3.2f",mjjCat.Data(), hdy->Chi2Test(hg,"WWCHI2/NDF"),hdy->KolmogorovTest(hg,""),hpureg->Integral()/hg->Integral() );
-  }
-  else{
-    sprintf(buf,"[%s] #chi^{2}/ndof : %3.2f , K-S prob : %3.2f",mjjCat.Data(), hdy->Chi2Test(hg,"WWCHI2/NDF"),hdy->KolmogorovTest(hg,"") );
-  }
-  pave->AddText(buf);
-  */
+  char buf[1000];  
+  sprintf(buf,"#chi^{2}/ndof : %3.2f , K-S prob : %3.2f",hdy->Chi2Test(hg,"WWCHI2/NDF"),hdy->KolmogorovTest(hg,"") );
+  pave->AddText(buf)->SetTextAngle(-90);
   pave->Draw();
 
-  pave = new TPaveText(0.1,0.95,0.6,0.99,"NDC");
+  pave = new TPaveText(0.09,0.95,0.35,0.98,"NDC");
   pave->SetBorderSize(0);
   pave->SetFillStyle(0);
   pave->SetTextAlign(12);
-  pave->SetTextSize(0.045);
+  pave->SetTextSize(0.05);
   pave->AddText("CMS simulation, #sqrt{s}=8 TeV");
   pave->Draw();
   
@@ -552,6 +563,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   TPad *t2 = new TPad("p2","p2",0,0.0,1.0,0.3);
   t2->SetTopMargin(0);
   t2->SetBottomMargin(0.25);
+  t2->SetRightMargin(0.05);
   t2->Draw();
   t2->cd();
 
@@ -560,7 +572,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   leg->SetFillStyle(3001);
   leg->SetFillColor(0);
   leg->SetTextFont(42);
-  leg->SetTextSize(0.09);
+  leg->SetTextSize(0.11);
   leg->SetTextAlign(12);
 
 
@@ -585,14 +597,15 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   leg->AddEntry(denRelUnc,"stat unc.","f");
   denRelUncH->GetYaxis()->SetRangeUser(0.2,1.74);
   denRelUncH->GetXaxis()->SetTitle(hdy->GetXaxis()->GetTitle());
-  denRelUncH->GetXaxis()->SetLabelSize(0.1);
-  denRelUncH->GetXaxis()->SetTitleSize(0.12);
+  denRelUncH->GetXaxis()->SetLabelSize(0.12);
+  denRelUncH->GetXaxis()->SetTitleSize(0.14);
   denRelUncH->GetXaxis()->SetTitleOffset(0.8);
-  denRelUncH->GetYaxis()->SetLabelSize(0.1);
+  denRelUncH->GetYaxis()->SetLabelSize(0.12);
+  denRelUncH->GetYaxis()->SetNdivisions(5);
   denRelUncH->GetYaxis()->SetTitleSize(0.12);
-  denRelUncH->GetYaxis()->SetTitleOffset(0.5);
   //gr->GetYaxis()->SetTitle("Pred. rel. bias");
   denRelUncH->GetYaxis()->SetTitle("Ratio");
+  denRelUncH->GetYaxis()->SetTitleOffset(0.4);
   denRelUncH->SetMarkerStyle(20);
   denRelUncH->SetMarkerColor(1);
   denRelUncH->SetLineColor(1);

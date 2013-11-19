@@ -22,8 +22,8 @@ mkdir -p ${outdir}/g/data/qt_pure
 if [ "$step" == "1" ]; then
     echo "Submitting first pass"
     runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_samples.json        -d ${indir} -o ${outdir}/ll/              -c ${cfg} -p "@runSystematics=False @useMVA=True"  -s 1nd
-#    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_tight -c ${cfg} -p "@runSystematics=False @useMVA=True" -s 1nd
-#    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_loose -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_tight -c ${cfg} -p "@runSystematics=False @useMVA=True" -s 1nd
+    runLocalAnalysisOverSamples.py -e runVBFZAnalysis -j data/vbfz_photon_samples.json -d ${indir} -o ${outdir}/g/data/raw_loose -c ${cfg} -p "@runSystematics=True @useMVA=True"  -s 1nd
 fi
 
 if [ "$step" == "2" ]; then
@@ -32,11 +32,12 @@ if [ "$step" == "2" ]; then
     runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_tight/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_tight_raw.root --forceMerged --noPlot
     runPlotter --iLumi 19736 --inDir ${outdir}/g/data/raw_loose/ --json data/vbfz_photon_samples.json --outFile ${outdir}/plotter_g_loose_raw.root --forceMerged --noPlot
 
-    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_tight_raw.root\",ALL)" 
-    mv gammawgts.root ~/work/ewkzp2j_539/tight_gamma_weights.root
-
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_loose_raw.root\",ALL)" 
-    mv gammawgts.root ~/work/ewkzp2j_539/loose_gamma_weights.root
+    mv gammawgts.root ${outdir}/loose_gamma_weights.root
+
+    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_tight_raw.root\",ALL)" 
+    mv gammawgts.root ${outdir}/tight_gamma_weights.root
+
 fi
 
 if [ "$step" == "3" ]; then
@@ -53,7 +54,7 @@ fi
 
 if [ "$step" == "5" ]; then
     echo "Running optimization"
-    python test/ewkvp2j/optimize_VBFZ.py -p ${optim_step} -b True -s Fisher_shapes -o Fisher_analysis
+    python test/ewkvp2j/optimize_VBFZ.py -p ${optim_step} -b True -s BDTD_shapes -o BDTD_analysis
 fi
 
 if [ "$step" == "6" ]; then

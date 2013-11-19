@@ -33,10 +33,48 @@ stringstream report;
  
 TH1 *getObservedBtagFrom(TString url, TString wp, TString sampleType, TH1F* mcSignalTemplate=0);
 TH1F *generateBtagsFor(float R, TString url);
+void reweightPredictionToExpectation(TH1F *targetBtag, TH1F *modelBtag);
 
 //check me
 void runCalibration(TString url, int fitType, int nuisanceType, int runMode, TString btagWP, 
 		    std::map<TString,Double_t> &fitPars, int maxPE, Double_t dataLumi, TString syst,  bool freezeResults);
+
+
+//
+void reweightPredictionToExpectation(TH1 *targetBtag, TH1 *modelBtag)
+{
+  if(targetBtag==0 || modelBtag==0) return;
+  for(Int_t ibin=1; ibin<=targetBtag->GetXaxis()->GetNbins()/5; ibin++)
+    {
+      Float_t targetTotal(0),modelTotal(0);
+      for(Int_t jbin=1; jbin<=5; jbin++){
+	Int_t idx=jbin+(ibin-1)*5;
+	targetTotal += targetBtag->GetBinContent(idx);
+	modelTotal  += modelBtag->GetBinContent(idx);
+      }
+
+      //if not counts in model, assume the target
+      if(modelTotal==0) {
+	for(Int_t jbin=1; jbin<=5; jbin++){
+	  Int_t idx=jbin+(ibin-1)*5;
+	  modelBtag->SetBinContent(idx,targetBtag->GetBinContent(idx));
+	  modelBtag->SetBinError(idx,targetBtag->GetBinError(idx));
+	}
+      }
+      else{
+	Float_t sf=targetTotal/modelTotal;
+	cout << ibin << " " << sf << endl;
+	for(Int_t jbin=1; jbin<=5; jbin++){
+	  Int_t idx=jbin+(ibin-1)*5;
+	  Float_t cts=modelBtag->GetBinContent(idx);
+	  Float_t err=modelBtag->GetBinError(idx);
+	  modelBtag->SetBinContent(idx,cts*sf);
+	  modelBtag->SetBinError(idx,err*sf);
+	}
+      }
+    }
+}
+
 
 //
 void printHelp()
@@ -133,7 +171,8 @@ TH1F *generateBtagsFor(float R, TString url)
   pt->SetBorderSize(0);
   pt->SetTextSize(0.03);
   char buf[50];
-  sprintf(buf,"|V_{tb}|=%3.2f, R=%3.2f",sqrt(R),R);
+  //sprintf(buf,"|V_{tb}|=%3.2f, R=%3.2f",sqrt(R),R);
+  sprintf(buf,"R=%3.2f",R);
   pt->AddText("CMS simulation, #sqrt{s}=8 TeV, " + TString(buf));
   pt->Draw();
 
@@ -251,7 +290,8 @@ int main(int argc, char* argv[])
 	    {
 	      
 	      //instantiate a new fitter
-	      fitter =new HFCMeasurement(HFCMeasurement::FIT_R, fitParFile,btagParFile);
+	      //fitter =new HFCMeasurement(HFCMeasurement::FIT_R, fitParFile,btagParFile);
+	      fitter =new HFCMeasurement(fitType, fitParFile,btagParFile);
 	      if(btagObsSample==0){
 		btagObsSample=(TH1 *)btagObs->Clone("btagobssample");
 		btagObsSample->SetDirectory(0);
@@ -502,8 +542,9 @@ TH1 *getObservedBtagFrom(TString url, TString wp, TString sampleType, TH1F* mcSi
       if(h==0) continue;
       cout << "Accepting " << iDir << " for " << wp << " and sample type is " << sampleType << endl;
       if(sampleType!="data" && iDir=="t#bar{t}" && mcSignalTemplate!=0){
-	cout << "Replacing nominal sample with artificial signal template" << endl;
-	mcSignalTemplate->Scale(h->Integral()/mcSignalTemplate->Integral());
+	cout << "Replacing nominal sample with artificial signal template. Re-weighting yields per categories." << endl;
+	//mcSignalTemplate->Scale(h->Integral()/mcSignalTemplate->Integral());
+	reweightPredictionToExpectation(h,mcSignalTemplate);
 	h=mcSignalTemplate;
       }
       if(btagObs==0) { btagObs = (TH1 *)h->Clone("btagobs"); btagObs->SetDirectory(0); }

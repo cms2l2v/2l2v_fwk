@@ -168,14 +168,14 @@ namespace tmva
     if (method=="FisherG")       return new TH1D( method,  method + ";Fisher discriminant;Events", 25, 0, 4 );
     if (method=="BoostedFisher") return new TH1D( method,  method + ";Fisher discriminant;Events", 25, 0, 4 );
     if (method=="LD")            return new TH1D( method,  method + ";" + method + ";Events", 50, -2, 2 );
-    if (method=="MLP")           return new TH1D( method,  method + ";" + method + ";Events", 50, -1.25, 1.5 );
+    if (method=="MLP")           return new TH1D( method,  method + ";" + method + ";Events", 28, -0.2, 1.2 );
     if (method=="MLPBFGS")       return new TH1D( method,  method + ";" + method + ";Events", 50, -1.25, 1.5 );
     if (method=="MLPBNN")        return new TH1D( method,  method + ";" + method + ";Events", 50, -1.25, 1.5 );
     if (method=="CFMlpANN")      return new TH1D( method,  method + ";" + method + ";Events", 50,  0, 1 );
     if (method=="TMlpANN")       return new TH1D( method,  method + ";" + method + ";Events", 50, -1.3, 1.3 );
-    if (method=="BDT")           return new TH1D( method,  method + ";Boosted decision tree;Events", 25, 0., 1.0 );
-    if (method=="BDTD")          return new TH1D( method,  method + ";Boosted decision tree;Events", 25, 0., 1.0 );
-    if (method=="BDTG")          return new TH1D( method,  method + ";Boosted decision tree;Events", 25, 0., 1.0 );
+    if (method=="BDT")           return new TH1D( method,  method + ";Boosted decision tree;Events", 20, -0.5, 0.5 );
+    if (method=="BDTD")          return new TH1D( method,  method + ";Boosted decision tree;Events", 20, -0.5, 0.5 );
+    if (method=="BDTG")          return new TH1D( method,  method + ";Boosted decision tree;Events", 20, -0.5, 0.5 );
     if (method=="RuleFit")       return new TH1D( method,  method + ";" + method + ";Events", 50, -2.0, 2.0 );
     if (method=="PDEFoam")       return new TH1D( method,  method + ";" + method + ";Events", 50,  0,   1 );
     if (method=="SVM_Gauss")     return new TH1D( method,  method + ";" + method + ";Events", 50,  0.0, 1.0 );

@@ -29,10 +29,9 @@ fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_sampl
 fitMljSpectrum --in ~/work/top_5311/plotter_nom.root --syst ~/work/top_5311/plotter_syst.root --json data/top_samples.json --systJson data/top_syst_samples.json
 
 ### heavy flavor fits
-#for r in 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.91 0.92 0.93 0.94 0.95 0.96 0.97 0.98 0.99 1.0 -1.0; do	  
-for r in 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0; do
+for r in 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.91 0.92 0.93 0.94 0.95 0.96 0.97 0.98 0.99 1.0; do
 #for r in -1.0; do
-for i in `seq 1 100`; do
+for i in `seq 1 200`; do
     submit2batch.sh -q8nh -JHFC${i} runHFCClosureTests.sh ${r} ${i} ~/work/top_5311/hfc_closure_${r}/ 
 done
 done

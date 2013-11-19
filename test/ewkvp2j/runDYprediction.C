@@ -24,6 +24,7 @@ strstream report;
 TStyle *tdrStyle;
 TGraph *mjjWgtGr;
 std::map<std::pair<TString,TString>,float > hzzSFs;
+std::map<TString,float> hzzEWKPhotonSFs;
 
 struct Shape_t
 {
@@ -39,12 +40,12 @@ void showShape(const Shape_t &shape,TString SaveName,int anMode);
 void drawEvolutionFor(TH1 *data, TH1 *totalPred, TH1 *mcPred, const std::map<TString,TH1 *>&sig, TString SaveName);
 TGraphErrors *getEvolutionWithErrors(TH1 *h);
 enum AnalysisMode {DISCOVERY,SEARCH};
-void runDYprediction(TString llFile="~/work/ewkzp2j_539/plotter.root",
-                     TString gammaFile="~/work/ewkzp2j_539/plotter_g_tight_qt.root",
-                     TString looseGammaFile="~/work/ewkzp2j_539/plotter_g_loose_qt.root",
-                     TString closureFile="~/work/ewkzp2j_539/closure_dy_closure_g_qt_tight.root",
+void runDYprediction(TString llFile="~/work/ewkzp2j_5311/plotter.root",
+                     TString gammaFile="~/work/ewkzp2j_5311/plotter_g_tight_qt.root",
+                     TString looseGammaFile="~/work/ewkzp2j_5311/plotter_g_loose_qt.root",
+                     TString closureFile="~/work/ewkzp2j_5311/closure_dy_closure_g_qt_tight.root",
 		     int anMode=DISCOVERY);
-TH1 *subtractEWKbkg(TH1 *gData, TH1 *ewkBkg);
+TH1 *subtractEWKbkg(TH1 *gData, TH1 *ewkBkg,int anMode=DISCOVERY);
 
 
 //
@@ -71,7 +72,9 @@ void checkShape(TH1* h,bool isData)
 
   TString hname(h->GetName());
   bool isHighReg( hname.Contains("highmjj") || hname.Contains("092") || hname.Contains("100"));
-  isHighReg &= (hname.EndsWith("1pt") || hname.EndsWith("2pt") || hname.EndsWith("deta"));
+  isHighReg |= (hname.EndsWith("1pt") || hname.EndsWith("2pt") || hname.EndsWith("deta") || hname.EndsWith("seta"));// || hname.EndsWith("MLP"));
+  isHighReg |= (hname.Contains("qgmva"));
+  if(hname.Contains("vbfcjv")) isHighReg=false;
 
   int rebinFactor(2);
   if( h->InheritsFrom("TH2") ){
@@ -238,27 +241,31 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
   std::vector<std::string> dilSignal;
   if(anMode==DISCOVERY){
     //std control plots
+    histos.push_back("vbfmjj");
     /*
-      histos.push_back("vbfmjj");
-      histos.push_back("vbfcandjet1eta");
-      histos.push_back("vbfcandjet2eta");
-      histos.push_back("vbfcandjetdeta");      
-      histos.push_back("vbfcandjetetaprod");
-      histos.push_back("vbfdphijj");
-      histos.push_back("vbfcandjet1pt");
-      histos.push_back("vbfcandjet2pt");
-      histos.push_back("vbfspt");
-      histos.push_back("vbfystar");
-      histos.push_back("vbfhardpt");
-      histos.push_back("met");
-      histos.push_back("vbfystar3");
-      histos.push_back("vbfcjv15");
-      histos.push_back("vbfhtcjv15");
-      histos.push_back("vbfmaxcjvjpt");
-      //histos.push_back("LikelihoodD");
-      */
-    histos.push_back("Fisher");
-    //histos.push_back("BDTD");
+    histos.push_back("vbfcandjet1eta");
+    histos.push_back("vbfcandjet2eta");
+    histos.push_back("vbfcandjetdeta");      
+    histos.push_back("vbfcandjetseta");      
+    histos.push_back("vbfcandjetetaprod");
+    histos.push_back("vbfdphijj");
+    histos.push_back("vbfcandjet1pt");
+    histos.push_back("vbfcandjet2pt");
+    histos.push_back("vbfqgmva1");
+    histos.push_back("vbfqgmva2");
+    histos.push_back("vbfspt");
+    histos.push_back("vbfystar");
+    histos.push_back("vbfhardpt");
+    histos.push_back("met");
+    histos.push_back("axialmet");
+    histos.push_back("vbfystar3");
+    histos.push_back("vbfcjv15");
+    histos.push_back("vbfhtcjv15");
+    histos.push_back("vbfmaxcjvjpt");
+    */
+    //histos.push_back("Fisher");
+    histos.push_back("BDTD");
+    histos.push_back("MLP");
     /*
     //soft hadronic activity control plots
     histos.push_back("softjetsvsdetajj");
@@ -278,13 +285,13 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
     histos.push_back("softinjetsvsnvtx");
     histos.push_back("softinhtvsnvtx");
     histos.push_back("vbfystarvsmjj");
-    
+    */
     //shape analysis distributions
     //histos.push_back("dijet_deta_shapes");
-    histos.push_back("Fisher_shapes");
-    //histos.push_back("LikelihoodD_shapes");
-    //histos.push_back("BDTD_shapes");
-    */
+    //histos.push_back("Fisher_shapes");
+    // histos.push_back("BDTD_shapes");
+    // histos.push_back("MLP_shapes");
+    
 
     cats.push_back("");
     cats.push_back("mjjq016");
@@ -296,6 +303,8 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
     cats.push_back("mjjq100");
     cats.push_back("mjjgt092");
     cats.push_back("highmjj");
+    cats.push_back("highhardpt");
+    cats.push_back("lowhardpt");
 
     //
     //processes to retrieve from the files 
@@ -306,31 +315,23 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
     dilprocs.push_back("Z#rightarrow ll");   dilColors.push_back(831);
     dilprocs.push_back("data");              dilColors.push_back(1);
 
-    dilSignal.push_back("EWK ll+2j");
+    dilSignal.push_back("EWK ll2j");
   }
   else{
     histos.push_back("met");
+    histos.push_back("balance");
     histos.push_back("mt");
     histos.push_back("mtNM1");
-    /*
-      histos.push_back("mindphijmet");
-      histos.push_back("balance");
-      histos.push_back("mindphijmetNM1");
-      histos.push_back("balanceNM1");
-      histos.push_back("axialmet");
-      histos.push_back("axialmetNM1");
-      //histos.push_back("metNM1");
-      histos.push_back("leadjetpt");
-      histos.push_back("trailerjetpt");
-      histos.push_back("fwdjeteta");
-      histos.push_back("cenjeteta");
-      histos.push_back("vbfmjj");
-      histos.push_back("vbfdphijj");
-      histos.push_back("vbfdetajj");
-    */
+    histos.push_back("mindphijmet");
+    histos.push_back("mindphijmetNM1");
+    histos.push_back("balanceNM1");
+    histos.push_back("axialmet");
+    histos.push_back("axialmetNM1");
+    histos.push_back("metcount");
     histos.push_back("met_shapes");
     histos.push_back("mt_shapes");
 
+    cats.push_back("");
     cats.push_back("eq0jets");
     cats.push_back("geq1jets");
     cats.push_back("vbf");
@@ -412,7 +413,7 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
 		      if(hsig==0) { cout << "Missing " << hsigname << endl; continue; }
 		      checkShape(hsig,false);
 		      TString title(dilSignal[isig].c_str());
-		      if(title=="EWK ll+2j") title="EWK Zjj";
+		      if(title=="EWK ll2j") title="EWK Zjj";
 		      hsig->SetTitle(title);
 		      hsig->SetDirectory(0);
 		      hsig->SetLineColor(1+isig/2);
@@ -524,7 +525,28 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
   //gRawIn->Close();
   if(loosegIn) loosegIn->Close();
   if(closeF) closeF->Close();
-  
+
+  //derive EWK photon scale factors from balance side band
+  if(anMode==SEARCH)
+    {
+      for(size_t ich=0; ich<nchs; ich++)
+	{
+	  string key=ch[ich]+"_balance";
+	  if(gShapesMap.find(key)==gShapesMap.end()) { cout << "Warning: balance histogram is not found, no data-driven scale factor will be derived for photons" << endl;  continue; }
+
+	  Shape_t &gShape=gShapesMap[key];
+	  TH1 *data=gShape.data;
+	  TH1 *ewk=gShape.ewkBkg;
+	  if(data==0 || ewk==0) { cout << "Warning data or ewk photons are null, no data-driven scale factor will be derived for photons" << endl; continue; }
+	  Int_t ibin=data->GetXaxis()->FindBin(2);
+	  Int_t ebin=data->GetXaxis()->GetNbins();
+	  Float_t dataCts(data->Integral(ibin,ebin)), ewkCts(ewk->Integral(ibin,ebin));
+	  if(ewkCts==0) { cout << "Warning EWK expected contribution is null, no data-driven scale factor will be derived for photons" << endl; continue; }
+	  hzzEWKPhotonSFs[ ch[ich] ]=dataCts/ewkCts;
+	  cout <<  "EWK g+jets scale factor for " << ch[ich] << " is " << hzzEWKPhotonSFs[ ch[ich] ] << endl; 
+	}
+    }
+
   //
   //PRODUCE FINAL HISTOGRAMS
   //
@@ -542,13 +564,12 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
 
      Shape_t &gShape=gShapesMap[it->first];
      corrGammaH=(TH1 *)gShape.data->Clone((it->first+"corrg").c_str());
-     corrGammaH->SetDirectory(0);
-     corrGammaH->SetFillColor(831);
 
      //subtract background if available
-     TH1 *corrGammaSubUncH=subtractEWKbkg(corrGammaH,gShape.ewkBkg);
-     //TH1 *corrGammaSubUncH=corrGammaH;
+     TH1 *corrGammaSubUncH=subtractEWKbkg(corrGammaH,gShape.ewkBkg,anMode);
 
+     corrGammaH->SetDirectory(0);
+     corrGammaH->SetFillColor(831);     
      //it->second.bckg["Instr. background (data)"]=corrGammaH;
      it->second.bckg["Instr. background (data)"]=corrGammaSubUncH;
 
@@ -556,8 +577,8 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
      gOutDir->cd();
 
      TString keyToWrite(it->first.c_str());
-     corrGammaH->Write(keyToWrite);
-     if(corrGammaSubUncH) corrGammaSubUncH->Write( keyToWrite + "_subunc");
+     corrGammaH->Write(keyToWrite+"_nosubunc");
+     if(corrGammaSubUncH) corrGammaSubUncH->Write( keyToWrite );
      
      //build the inclusive shape starting from one of the dilepton channels
      if(it->first.find("mumu")!= string::npos)
@@ -578,9 +599,17 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
 }
 
 //
-TH1 *subtractEWKbkg(TH1 *gDataOrig, TH1 *ewkBkg){
+TH1 *subtractEWKbkg(TH1 *gDataOrig, TH1 *ewkBkg,int anMode){
   if(ewkBkg==0) return 0;
-  
+
+  TString hname(gDataOrig->GetName());
+  TString ch("");
+  if(hname.BeginsWith("ee")) ch="ee";
+  if(hname.BeginsWith("mumu")) ch="mumu";
+  Float_t ewkBkgSF(1.0);
+  if(hzzEWKPhotonSFs.find(ch)!=hzzEWKPhotonSFs.end()) ewkBkgSF=hzzEWKPhotonSFs[ch]; 
+  ewkBkg->Scale(ewkBkgSF);
+
   TH1 *gData=(TH1 *)gDataOrig->Clone(gDataOrig->GetName()+TString("_sub"));
   gData->SetDirectory(0);
   gData->SetFillStyle(0);
@@ -622,8 +651,10 @@ TH1 *subtractEWKbkg(TH1 *gDataOrig, TH1 *ewkBkg){
 	gDataSubUnc->SetBinError(xbin,finalGerr);
       }
   }
-  gDataSubUnc->Scale(gDataOrig->Integral()/gDataSubUnc->Integral());
-  gData->Scale(gDataOrig->Integral()/gData->Integral());
+  if(anMode==DISCOVERY){
+    gDataSubUnc->Scale(gDataOrig->Integral()/gDataSubUnc->Integral());
+    gData->Scale(gDataOrig->Integral()/gData->Integral());
+  }
 
   //illustrate subtraction performed
   if(!is2D)
@@ -679,21 +710,23 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
 {
   float mjjCen(0);
   TString pname(shape.data->GetName());
-  TString mjjCat("ee/#mu#mu events, ");
-  if(outName.BeginsWith("ee"))        mjjCat="ee events, ";
-  if(outName.BeginsWith("mumu"))      mjjCat="#mu#mu events, ";
-  if(pname.Contains("mjjq016"))       { mjjCen=250*0.5;        mjjCat+="M_{jj}<250 GeV";     }
-  else if(pname.Contains("mjjq033"))  { mjjCen=(350+250)*0.5;  mjjCat+="250<M_{jj}<350 GeV"; }
-  else if(pname.Contains("mjjq049"))  { mjjCen=(350+450)*0.5;  mjjCat+="350<M_{jj}<450 GeV"; }
-  else if(pname.Contains("mjjq066"))  { mjjCen=(450+550)*0.5;  mjjCat+="450<M_{jj}<550 GeV"; }
-  else if(pname.Contains("mjjq083"))  { mjjCen=(750+550)*0.5;  mjjCat+="550<M_{jj}<750 GeV"; }
-  else if(pname.Contains("mjjq092"))  { mjjCen=(1000+750)*0.5; mjjCat+="750<M_{jj}<1000 GeV"; }
-  else if(pname.Contains("mjjgt092")) { mjjCen=1200;           mjjCat+="M_{jj}>750 GeV"; }
-  else if(pname.Contains("highmjj"))  { mjjCen=1700;           mjjCat+="M_{jj}>1250 GeV"; }
-  else if(pname.Contains("eq0jets"))  { mjjCen=0;              mjjCat="=0 jets"; }
-  else if(pname.Contains("geq1jets")) { mjjCen=0;              mjjCat="#geq1 jets"; }
-  else if(pname.Contains("vbf"))      { mjjCen=0;              mjjCat="VBF"; }
-  else                                { mjjCen=0;              mjjCat+="inclusive M_{jj}"; }
+  TString mjjCat("ll events, ");
+  if(outName.Contains("_ee"))           mjjCat="ee events, ";
+  if(outName.Contains("_mumu"))         mjjCat="#mu#mu events, ";
+  if(pname.Contains("mjjq016"))          { mjjCen=250*0.5;        mjjCat+="M_{jj}<250 GeV";     }
+  else if(pname.Contains("mjjq033"))     { mjjCen=(350+250)*0.5;  mjjCat+="250<M_{jj}<350 GeV"; }
+  else if(pname.Contains("mjjq049"))     { mjjCen=(350+450)*0.5;  mjjCat+="350<M_{jj}<450 GeV"; }
+  else if(pname.Contains("mjjq066"))     { mjjCen=(450+550)*0.5;  mjjCat+="450<M_{jj}<550 GeV"; }
+  else if(pname.Contains("mjjq083"))     { mjjCen=(750+550)*0.5;  mjjCat+="550<M_{jj}<750 GeV"; }
+  else if(pname.Contains("mjjq092"))     { mjjCen=(1000+750)*0.5; mjjCat+="750<M_{jj}<1000 GeV"; }
+  else if(pname.Contains("mjjgt092"))    { mjjCen=1200;           mjjCat+="M_{jj}>750 GeV"; }
+  else if(pname.Contains("highmjj"))     { mjjCen=1700;           mjjCat+="M_{jj}>1250 GeV"; }
+  else if(pname.Contains("lowhardpt"))   { mjjCen=0;              mjjCat+="#scale[0.5]{Hard p_{T}}<50 GeV"; }
+  else if(pname.Contains("highhardpt"))  { mjjCen=0;              mjjCat+="#scale[0.5]{Hard p_{T}}>50 GeV"; }
+  else if(pname.Contains("eq0jets"))     { mjjCen=0;              mjjCat="=0 jets"; }
+  else if(pname.Contains("geq1jets"))    { mjjCen=0;              mjjCat="#geq1 jets"; }
+  else if(pname.Contains("vbf"))         { mjjCen=0;              mjjCat="VBF"; }
+  else                                   { mjjCen=0;              mjjCat+="inclusive M_{jj}"; }
 
   bool is2D(shape.data->InheritsFrom("TH2"));
   if(is2D)  cout << "2D will only be profiled: " << shape.data->GetName() << endl;
@@ -704,7 +737,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
 
   TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);  t1->Draw();  t1->cd();
   t1->SetTopMargin(0.2); 
-  if(outName.Contains("Likelihood") || outName.Contains("Fisher") || outName.Contains("BDTD") )
+  if(outName.Contains("Likelihood") || outName.Contains("Fisher"))// || outName.Contains("BDTD") || outName.Contains("MLP") )
     if(!outName.Contains("092") && !outName.Contains("100") && !outName.Contains("highmjj"))
       t1->SetLogy(true);
 
@@ -765,7 +798,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       
       sfdy=( totalInstr > 0 ? (totalData-totalOthers)/totalInstr : 1.0);
       sfmcdy=(totalInstr>0 ? mcdy/totalInstr : 1.0);
-      if(mjjWgtGr && mjjCen!=0) { sfmcdy *= mjjWgtGr->Eval(mjjCen);  }
+      //      if(mjjWgtGr && mjjCen!=0) { sfmcdy *= mjjWgtGr->Eval(mjjCen);  }
     }
   else{
 
@@ -777,7 +810,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
     else if(outName.Contains("geq1jets")) key.second="geq1jets";
     else if(outName.Contains("vbf"))      key.second="vbf";
     
-    if( outName.Contains("_met") && !outName.Contains("NM1") && !outName.Contains("shapes")) {
+    if( outName.Contains("_met") && !outName.Contains("NM1") && !outName.Contains("shapes") && !outName.Contains("count")) {
       //if( outName.Contains("mindphijmet") && !outName.Contains("NM1") ) {
       //if( outName.Contains("balance") && !outName.Contains("NM1") ) {
       //Int_t maxBin=shape.data->GetXaxis()->FindBin(0.5);
@@ -795,12 +828,12 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
 
   //if(outName.Contains("_shapes")) { sfdy=0.5*(1.0+sfdy); sfmcdy=0.5*(1.0+sfmcdy); }
   cout << outName << " " << " DD:" << sfdy << " MC:" << sfmcdy << endl;  
-
+  cout << instrBckg << " " << stack << endl;
   instrBckg->Scale(sfdy);
   //instrBckg->Scale(sfmcdy);
   stack->Add(instrBckg,"HIST");
   leg->AddEntry(instrBckg,instrBckg->GetTitle(),"F");
-  
+  cout << __LINE__ << endl;
   //add the signal
   if(anMode==DISCOVERY){
     hsignal->SetFillColor(804);
@@ -809,13 +842,16 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
     stack->Add(hsignal,"HIST");
     leg->AddEntry(hsignal,hsignal->GetTitle(),"F");
   }
-
+  cout << stack->GetStack()->GetEntriesFast() << endl;
   //update total prediction
   TH1 *totalPredBkg=(TH1 *) (stack->GetStack()->At( stack->GetStack()->GetEntriesFast()-1 )->Clone(TString("totalbkg_")+shape.data->GetName()) );
   totalPredBkg->SetDirectory(0);
-
+  cout << __LINE__ << endl;
   TH1 *totalPred=(TH1 *) totalPredBkg->Clone( TString("totalbkgps_")+shape.data->GetName() );
-  totalPred->Add(hsignal);
+  cout << hsignal << endl;
+  // totalPred->Add(hsignal);
+
+  cout << __LINE__ << endl;
   if(!is2D)
     {
       //draw the stack
@@ -829,26 +865,27 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       if(anMode==SEARCH)
 	{
 	  t1->SetLogy(true);
-	  if(outName.Contains("_met") || outName.Contains("_mt") || outName.Contains("mjj")) {
+	  if((outName.Contains("_met") && !outName.Contains("count")) || outName.Contains("_mt") || outName.Contains("mjj")) {
 	    t1->SetLogx(true);
 	    frame->GetXaxis()->SetRangeUser(frame->GetXaxis()->GetBinCenter(2),frame->GetXaxis()->GetXmax());
 	  }
 	}
       
-
+  cout << __LINE__ << endl;
       stack->Draw("histsame");
-      
+        cout << __LINE__ << endl;
       //draw the uncertainty band
-      TGraphAsymmErrors *mcgr=new TGraphAsymmErrors(anMode==DISCOVERY ? totalPred : totalPredBkg);
+      //      TGraphAsymmErrors *mcgr=new TGraphAsymmErrors(anMode==DISCOVERY ? totalPred : totalPredBkg);
+      TGraphAsymmErrors *mcgr=new TGraphAsymmErrors(totalPredBkg);
       mcgr->SetFillStyle(3001);//3427);
       mcgr->SetFillColor(kGray+1);
       mcgr->SetMarkerStyle(1);
       mcgr->Draw("e2p");
-      
+        cout << __LINE__ << endl;
       //draw the data
       shape.data->Draw("e1same");
       leg->AddEntry(shape.data,shape.data->GetTitle(),"P");
-      
+        cout << __LINE__ << endl;
       //superimpose the signals 
       for(std::map<TString , TH1 *>::const_iterator it=shape.signal.begin(); it!= shape.signal.end(); it++)
 	{
@@ -861,7 +898,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
 	  h->Draw("histsame");
 	  if(it!=shape.signal.begin() || anMode==SEARCH) leg->AddEntry(h,h->GetTitle(),"L");
 	}
-      
+        cout << __LINE__ << endl;
       //caption
       drawCMSHeader();
       leg->Draw("same");  
@@ -878,7 +915,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       //pave->AddText(buf);
       pave->AddText(mjjCat);
       pave->Draw();
-      
+        cout << __LINE__ << endl;
       //ratio canvas
       c1->cd();
       TPad* t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);    
@@ -886,12 +923,12 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       t2->cd();  
       t2->SetTopMargin(0); 
       t2->SetBottomMargin(0.2);
-
+  cout << __LINE__ << endl;
       TH1 *ratio = (TH1*)shape.data->Clone("RatioHistogram");
       ratio->SetDirectory(0);
       if(anMode==DISCOVERY) ratio->Divide((TH1 *)stack->GetStack()->At( stack->GetStack()->GetEntriesFast()-1 ) );
       else                  ratio->Divide(totalPredBkg);
-      
+        cout << __LINE__ << endl;
       TGraphAsymmErrors *denRelUnc=new TGraphAsymmErrors;
       denRelUnc->SetLineColor(1);
       denRelUnc->SetFillStyle(3001);
@@ -909,15 +946,15 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
 	  denRelUnc->SetPoint(ip,x,1.0);
 	  denRelUnc->SetPointError(ip,xLo,xHi,yLo,yHi);
 	}
-
+  cout << __LINE__ << endl;
       TH1D *ratioFrame=(TH1D *) ratio->Clone("ratioframe");
       ratioFrame->Reset("ICE");       
       ratioFrame->Draw();
-      if(anMode==SEARCH && (outName.Contains("_met") || outName.Contains("_mt") || outName.Contains("mjj")) ) {
+      if(anMode==SEARCH && ((outName.Contains("_met") && !outName.Contains("count")) || outName.Contains("_mt") || outName.Contains("mjj")) ) {
 	t2->SetLogx(true);
 	ratioFrame->GetXaxis()->SetRangeUser(frame->GetXaxis()->GetBinCenter(2),ratioFrame->GetXaxis()->GetXmax());
       }
-      
+        cout << __LINE__ << endl;
       float yscale = (1.0-0.2)/(0.18-0);       
       ratioFrame->GetYaxis()->SetTitle("Data/#Sigma Bckg");
       ratioFrame->SetMinimum(0.7);
@@ -933,7 +970,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       ratioFrame->GetYaxis()->SetTitleSize(0.036*yscale);
       denRelUnc->Draw("3");
       ratio->Draw("e1 same");
-      
+        cout << __LINE__ << endl;
       c1->cd();
       c1->Modified();
       c1->Update();
@@ -941,7 +978,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       c1->SaveAs(outDir+"/"+outName+".png");
       c1->SaveAs(outDir+"/"+outName+".pdf");
       c1->SaveAs(outDir+"/"+outName+".C");
-
+  cout << __LINE__ << endl;
       //draw sub-pad with subtracted data
       t1->cd();
       TPad *t11=new TPad("t11","t11",0.67,0.48,0.94,0.83);

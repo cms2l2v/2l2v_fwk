@@ -27,7 +27,9 @@
   <bin name="runPLRanalysis"             file="runPLRanalysis.cc"></bin> 
   <bin name="jsonTools"                  file="jsonTools.cc"></bin>
   <bin name="computeLimit"               file="computeLimit.cc"></bin>
+  <bin name="runLandS"                   file="runLandS.cc"></bin>
   <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
+  <bin name="runEWKVJJunfolding"         file="runEWKVJJunfolding.cc"></bin>
 </environment>
 <!--<bin name="runBNVAnalysisFWLite"      file="runBNVAnalysisFWLite.cc"></bin>-->
 <!--  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> -->

@@ -5,8 +5,8 @@
 #
 
 step=$1
-outdir="/afs/cern.ch/user/p/psilva/work/ewkzp2j_539"
-indir="/store/cmst3/user/psilva/539_ntuples"
+outdir="/afs/cern.ch/user/p/psilva/work/ewkzp2j_5311"
+indir="/store/cmst3/user/psilva/5311_ntuples"
 cfg="$CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ"
 
 
@@ -40,13 +40,12 @@ if [ "$step" == "2" ]; then
 
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_dy_closure.root\",\"${outdir}/plotter_dy_closure_g_raw_loose.root\",ALL)";
     mv gammawgts.root ${outdir}/loose_gamma_mcweights.root;
-    
+   
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_dy_closure.root\",\"${outdir}/plotter_dy_closure_g_raw_loose.root\",PUREG)";
     mv gammawgts.root ${outdir}/pure_gamma_mcweights.root;
-    
+   
     root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter_dy_closure.root\",\"${outdir}/plotter_dy_closure_g_raw_tight.root\",ALL)";
     mv gammawgts.root ${outdir}/tight_gamma_mcweights.root;
-    
 fi
 
 if [ "$step" == "3" ]; then
@@ -61,7 +60,6 @@ if [ "$step" == "4" ]; then
     runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_tight/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_tight.root --noPlot --forceMerged;
     runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_loose/ --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_loose.root --noPlot --forceMerged;
     runPlotter --json data/vbfz_photon_samples.json --inDir ${outdir}/g/qt_pure/  --iLumi 19800 --iEcm 8 --outFile ${outdir}/plotter_dy_closure_g_qt_pure.root  --noPlot --forceMerged;
-
 fi
 
 if [ "$step" == "5" ]; then

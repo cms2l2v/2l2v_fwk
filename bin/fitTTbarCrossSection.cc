@@ -864,7 +864,7 @@ int main(int argc, char* argv[])
     else if(arg.find("--ch")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("ch to use are : ");  while (pch!=NULL){printf(" %s ",pch); channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
   }
   if(jsonFileUrl.IsNull() || inFileUrl.IsNull() || histo.IsNull()) { printHelp(); return -1; }
-  if(channels.size()==0) { channels.push_back("ee"); channels.push_back("mumu"); channels.push_back("emu"); }// channels.push_back(""); }
+  if(channels.size()==0) { channels.push_back("ee"); channels.push_back("mumu"); channels.push_back("emu"); }
 
   //create directory
   gSystem->Exec("mkdir -p " + outUrl);
@@ -877,6 +877,7 @@ int main(int argc, char* argv[])
   if(!systFileUrl.IsNull()) systF=TFile::Open(systFileUrl);
   std::map<TString, Shape_t> shapes;
   for(std::vector<string>::iterator cIt = channels.begin(); cIt != channels.end(); cIt++) shapes[*cIt]=getShapeFromFile(inF, *cIt, jsonF,systF);
+  
   inF->Close();
   if(!systF) systF->Close();
 

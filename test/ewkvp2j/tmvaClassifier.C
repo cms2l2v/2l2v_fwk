@@ -41,11 +41,9 @@
 #include "TROOT.h"
 #include "TSystem.h"
 #include "TSystemDirectory.h"
-
-//#include "TMVAGui.C"
+#include "TMVA/Config.h"
 
 #if not defined(__CINT__) || defined(__MAKECINT__)
-// needs to be included when makecint runs (ACLIC)
 #include "TMVA/Factory.h"
 #include "TMVA/Tools.h"
 #include "TMVA/MethodCategory.h"
@@ -54,9 +52,15 @@
 using namespace std;
 
 //void TMVAClassification( TString myMethodList = "" )
-void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j_5311/ll/", bool minimalTrain=false)
+void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j_5311/ll/", bool minimalTrain=false, bool useQG=false)
 {   
-  TMVA::gConfig().ioNames.weightFileDir= (minimalTrain ? "base_weights" : "full_weights" );
+  gSystem->ExpandPathName(inputDir);
+  TString pf("base_weights");
+  if(!minimalTrain){
+    if(useQG) pf="full_weights";
+    else      pf="weights";
+  }
+  TMVA::gConfig().GetIONames().fWeightFileDir = inputDir + pf;
   
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
   // if you use your private .rootrc, or run from a different directory, please copy the
@@ -200,7 +204,6 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
   // --- Register the training and test trees
   TChain *signal     = new TChain("ewkzp2j");
   TChain *background = new TChain("ewkzp2j");
-  gSystem->ExpandPathName(inputDir);
   TSystemDirectory dir(inputDir,inputDir);
   TList *files = dir.GetListOfFiles();
   if (files) {
@@ -233,16 +236,25 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
   factory->SetSignalWeightExpression( "weight/cnorm" );
 
   //define variables for the training
-  factory->AddVariable( "mjj",                                                         "M_{jj}"              "GeV", 'F' );
-  factory->AddVariable( "detajj:=TMath::Abs(detajj)",                                  "#Delta#eta_{jj}",     "",    'F' );
-  if(!minimalTrain) factory->AddVariable( "setajj",                                   "#Sigma#eta_{j}",      "",    'F' );
-  if(!minimalTrain) factory->AddVariable( "logetajjasym:=-TMath::Log(detajj/setajj)", "A_{#eta}",            "",    'F' );
-  factory->AddVariable( "spt",                                                         "#Delta_{rel}",        "GeV", 'F' );
-  if(!minimalTrain) factory->AddVariable( "pt1",                                      "p_{T}(1)",            "GeV", 'F' );
-  if(!minimalTrain) factory->AddVariable( "pt2",                                      "p_{T}(2)",            "GeV", 'F' );
-  if(!minimalTrain) factory->AddVariable( "qg1",                                      "q/g(1)",              "GeV", 'F' );
-  if(!minimalTrain) factory->AddVariable( "qg2",                                      "q/g(2)",              "GeV", 'F' );
-  if(!minimalTrain) factory->AddVariable( "hardpt",                                   "Hard proc. p_{T}",    "GeV", 'F' );
+  if(minimalTrain)
+    {
+      factory->AddVariable( "mjj",     "M_{jj}"              "GeV", 'F' );
+      factory->AddVariable( "detajj",  "#Delta#eta_{jj}",     "",    'F' );
+      factory->AddVariable( "spt",     "#Delta_{rel}",        "GeV", 'F' );
+    }
+  else
+    {
+      factory->AddVariable( "mjj",     "M_{jj}"              "GeV",  'F' );
+      factory->AddVariable( "detajj",  "#Delta#eta_{jj}",     "",    'F' );
+      factory->AddVariable( "setajj",  "#Sigma#eta_{j}",      "",    'F' );
+      factory->AddVariable( "eta1",    "#eta(1)",             "",    'F' );
+      factory->AddVariable( "eta2",    "#eta(2)",             "",    'F' );
+      factory->AddVariable( "pt1",     "p_{T}(1)",            "GeV", 'F' );
+      factory->AddVariable( "pt2",     "p_{T}(2)",            "GeV", 'F' );
+      factory->AddVariable( "spt",     "#Delta_{rel}",        "GeV", 'F' );
+      if(useQG) factory->AddVariable( "qg1",   "q/g(1)",      "",    'F' );
+      if(useQG) factory->AddVariable( "qg2",   "q/g(2)",      "",    'F' );
+    }
   
 
   // Apply additional cuts on the signal and background samples (can be different)
@@ -474,7 +486,7 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
 
   std::cout << "==> Wrote root file: " << outputFile->GetName() << std::endl;
   std::cout << "==> TMVAClassification is done!" << std::endl;
-  std::cout << " ==> Weights are stored in " << TMVA::gConfig().ioNames.weightFileDir << std::endl;
+  std::cout << " ==> Weights are stored in " << TMVA::gConfig().GetIONames().fWeightFileDir << std::endl;
   delete factory;
 
 

@@ -25,10 +25,9 @@ class GammaWeightsHandler
 {
  public: 
 
-  GammaWeightsHandler(const edm::ParameterSet &runProcess,bool forceAllToData=false);
+  GammaWeightsHandler(const edm::ParameterSet &runProcess,TString ewkSupWgt="",bool forceAllToData=false);
 
-  float getWeightFor(LorentzVector &gamma, TString evCategoryLabel="");
-  float getWeightFor(LorentzVectorF &gamma, TString evCategoryLabel="");
+  float getWeightFor(std::vector<Float_t> &vars, TString evCategoryLabel="");
   LorentzVector getMassiveP4(LorentzVector &gamma,TString evCategoryLabel="");
   LorentzVector getMassiveP4(LorentzVectorF &gamma,TString evCategoryLabel="");
   ~GammaWeightsHandler();
@@ -36,7 +35,7 @@ class GammaWeightsHandler
  private:
 
   std::vector<TString> dilCats_; 
-  std::map<TString,TGraph *> wgtsH_;
+  std::map<TString, std::vector<TGraph *> > wgtsH_;
   std::map<TString, TH1 *> zmassH_;  
 };
 

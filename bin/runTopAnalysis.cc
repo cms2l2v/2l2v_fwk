@@ -242,15 +242,20 @@ int main(int argc, char* argv[])
 	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"pt",";Transverse momentum [GeV];Events",nJetPtBins,jetPtaxis) );
 	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"ptnotoppt",";Transverse momentum [GeV];Events",nJetPtBins,jetPtaxis) );
 	  controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"eta",";Pseudo-rapidity;Events",25,0,2.5) );
+
 	  TH1F *flavH=(TH1F *)controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"flav",";Flavor;Events",5,0,5) );
-	  for(int ibin=1; ibin<=5; ibin++)
+	  for(int ibin=1; ibin<=6; ibin++)
 	    {
-	      TString label("unmatched");
-	      if(ibin==2) label="g";
-	      if(ibin==3) label="uds";
-	      if(ibin==4) label="c";
-	      if(ibin==5) label="b";
-	      flavH->GetXaxis()->SetBinLabel(ibin,label);
+	      TString binlabel("unmatched");
+	      if(ibin==2) binlabel="g";
+	      if(ibin==3) binlabel="uds";
+	      if(ibin==4) binlabel="c";
+	      if(ibin==5) binlabel="b";
+	      if(ibin==6) binlabel="";
+	      if(ibin<6) flavH->GetXaxis()->SetBinLabel(ibin,binlabel);
+	      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"betastar"+binlabel,";#beta^{*};Events",50,0,1));
+	      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"qgmva"+binlabel,";q/g discriminator;Events",50,0,1));
+	      controlHistos.addHistogram( new TH1F(ctrlCats[k]+"btag"+label+"jp"+binlabel,";JP discriminator;Events",50,0,2.5));
 	    }
 	}
 
@@ -418,6 +423,7 @@ int main(int argc, char* argv[])
 	  bool passKin(true),passId(true),passIso(true);
 	  if(abs(id)==11)
 	    {
+	      bool runLooseEle(false);
 	      float sceta=leptons[ilep].getVal("sceta");
 	      Float_t gIso    = leptons[ilep].getVal("gIso03");
 	      Float_t chIso   = leptons[ilep].getVal("chIso03");
@@ -426,9 +432,9 @@ int main(int argc, char* argv[])
 	      float relIso=(TMath::Max(nhIso+gIso-ev.rho*utils::cmssw::getEffectiveArea(11,sceta),Float_t(0.))+chIso)/leptons[ilep].pt();
 	      if(leptons[ilep].pt()<20)                      passKin=false;
 	      if(fabs(leptons[ilep].eta())>2.5)              passKin=false;
-	      if(fabs(sceta)>1.4442 && fabs(sceta)<1.5660)   passKin=false;
+	      if(!runLooseEle) if(fabs(sceta)>1.4442 && fabs(sceta)<1.5660)   passKin=false;
 	      if(leptons[ilep].getFlag("isconv"))            passId=false;
-	      if(leptons[ilep].getVal("tk_d0")>0.4)          passId=false;
+	      if(leptons[ilep].getVal("tk_d0")>0.04)          passId=false;
 	      if(leptons[ilep].getVal("tk_lostInnerHits")>0) passId=false;
 	      if(leptons[ilep].getVal("mvatrig")<0.5)        passId=false;
 	      if(relIso>0.15)                                passIso=false;
@@ -441,23 +447,32 @@ int main(int argc, char* argv[])
 		if(isMC) muCor->applyPtSmearing(p4, id<0 ? -1 : 1, false);
 		leptons[ilep].SetPxPyPzE(p4.Px(),p4.Py(),p4.Pz(),p4.E());
 	      }
-	      
+	      bool runLooseMu(false);
 	      Int_t idbits    = leptons[ilep].get("idbits");
+	      bool isLoose    = ((idbits >> 8) & 0x1);
 	      bool isTight    = ((idbits >> 10) & 0x1);
-	      Float_t gIso    = leptons[ilep].getVal("gIso04");
-	      Float_t chIso   = leptons[ilep].getVal("chIso04");
-	      Float_t puchIso = leptons[ilep].getVal("puchIso04");
-	      Float_t nhIso   = leptons[ilep].getVal("nhIso04");
+	      Float_t gIso    = leptons[ilep].getVal(runLooseMu?"gIso03":"gIso04");
+	      Float_t chIso   = leptons[ilep].getVal(runLooseMu?"chIso03":"chIso04");
+	      Float_t puchIso = leptons[ilep].getVal(runLooseMu?"puchIso03":"puchIso04");
+	      Float_t nhIso   = leptons[ilep].getVal(runLooseMu?"nhIso03":"nhIso04");
 	      Float_t relIso=(TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt();
 	      if(leptons[ilep].pt()<20)                      passKin=false;
 	      if(fabs(leptons[ilep].eta())>2.4)              passKin=false;
-	      if(!isTight)                                   passId=false;
-	      if(relIso>0.12)                                passIso=false;
+	      if(runLooseMu)
+		{
+		  if(!isLoose)                                   passId=false;
+		  if(relIso>0.15)                                passIso=false;
+		}
+	      else
+		{
+		  if(!isTight)                                   passId=false;
+		  if(relIso>0.12)                                passIso=false;
+		}
 	    }
-
+	  
 	  if(!passKin || !passId || !passIso) continue;
 	  selLeptons.push_back(leptons[ilep]);
-
+	  
 	  const data::PhysicsObject_t &genLep=leptons[ilep].getObject("gen");
 	  int genId=genLep.info.find("id")->second;
 	  if(genId!=0 && id!=genId)  nChargeFlaws++;
@@ -537,17 +552,19 @@ int main(int argc, char* argv[])
       bool passJetSelection(selJets.size()>=2);
       bool passMetSelection( !isSameFlavor || met[0].pt()>40);
       
-      controlHistos.fillHisto("synchflow", ch, 1,1.);
-      if(passDilSelection){
-	controlHistos.fillHisto("synchflow", ch, 2,1.);
-	if(passJetSelection){
-	  controlHistos.fillHisto("synchflow", ch, 3,1.);
-	  if(passMetSelection){
-	    controlHistos.fillHisto("synchflow", ch, 4,1.);
+      if(mll>20) 
+	{
+	  controlHistos.fillHisto("synchflow", ch, 1,1.);
+	  if(passDilSelection){
+	    controlHistos.fillHisto("synchflow", ch, 2,1.);
+	    if(passJetSelection){
+	      controlHistos.fillHisto("synchflow", ch, 3,1.);
+	      if(passMetSelection){
+		controlHistos.fillHisto("synchflow", ch, 4,1.);
+	      }
+	    }
 	  }
 	}
-      }
-      
 
       //
       // NOMINAL SELECTION CONTROL
@@ -597,14 +614,22 @@ int main(int argc, char* argv[])
 	      TString label("jet"); label+=(ijet+1);
 	      const data::PhysicsObject_t &genJet=selJets[ijet].getObject("genJet");
 	      int flavId=genJet.info.find("id")->second;
-	      if(abs(flavId)==5 || abs(flavId)==4 ) flavId=abs(flavId)-1;
-	      else if(abs(flavId)>6)                flavId=1;
+	      TString flavStr("unmatched");
+	      if(abs(flavId)==5 || abs(flavId)==4 ) { flavId=abs(flavId)-1; flavStr= (abs(flavId)==5? "b":"c");}
+	      else if(abs(flavId)>6)                { flavId=1; flavStr="g"; }
 	      else if(abs(flavId)==0)               flavId=0;
-	      else                                  flavId=2;
+	      else                                  { flavId=2; flavStr="uds"; }
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"pt",        ch, selJets[ijet].pt(), iweight, true);
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"ptnotoppt", ch, selJets[ijet].pt(), iweight/wgtTopPt, true);
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"eta",       ch, fabs(selJets[ijet].eta()), iweight);
 	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"flav",      ch, abs(flavId), iweight);
+	      
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"betastar",     ch, selJets[ijet].getVal("betaStar"), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"qgmva",     ch, selJets[ijet].getVal("qgMVA"), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"jp",        ch, selJets[ijet].getVal("jp"),    iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"betastar"+flavStr,     ch, selJets[ijet].getVal("betaStar"), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"qgmva"+flavStr, ch, selJets[ijet].getVal("qgMVA"), iweight);
+	      controlHistos.fillHisto(ctrlCategs[icat]+"btag"+label+"jp"+flavStr,    ch, selJets[ijet].getVal("jp"),    iweight);
 	    }
 	}
 
