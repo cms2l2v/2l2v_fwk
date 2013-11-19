@@ -366,8 +366,8 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
    T->SetFillStyle(0);  T->SetLineColor(0);
    T->SetTextAlign(12);
    char Buffer[1024]; 
-   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
    T->AddText(Buffer);
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
@@ -428,7 +428,8 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
       leg->SetFillColor(0);
       leg->SetFillStyle(0);  leg->SetLineColor(0);
       leg->SetTextAlign(12);
-      leg->AddText(Process[i]["tag"].c_str());
+      if(Process[i].isTag("label")) leg->AddText(Process[i]["label"].c_str());
+      else                          leg->AddText(Process[i]["tag"].c_str());
       leg->Draw("same");
       ObjectToDelete.push_back(leg);
 //      delete leg;
@@ -465,7 +466,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    T->SetFillColor(0);
    T->SetFillStyle(0);  T->SetLineColor(0);
    T->SetTextAlign(12);
-   char Buffer[1024]; sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   char Buffer[1024]; sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
    T->AddText(Buffer);
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
@@ -538,7 +539,8 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       leg->SetFillColor(0);
       leg->SetFillStyle(0);  leg->SetLineColor(0);
       leg->SetTextAlign(12);
-      leg->AddText(Process[i]["tag"].c_str());
+      if(Process[i].isTag("label")) leg->AddText(Process[i]["label"].c_str());
+      else                          leg->AddText(Process[i]["tag"].c_str());
       leg->Draw("same");
       ObjectToDelete.push_back(leg);
 //      delete leg;
@@ -666,13 +668,16 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if((!Process[i].isTag("spimpose") || !Process[i]["spimpose"].toBool()) && !Process[i]["isdata"].toBool()){
          //Add to Stack
 	stack->Add(hist, "HIST");               
-         legA->AddEntry(hist, Process[i]["tag"].c_str(), "F");	 
-         if(!mc){mc = (TH1D*)hist->Clone("mc");checkSumw2(mc);}else{mc->Add(hist);}
+      
+	if(Process[i].isTag("label")) legA->AddEntry(hist, Process[i]["label"].c_str(), "F");	 
+	else                          legA->AddEntry(hist, Process[i]["tag"].c_str(), "F");	 
+	if(!mc){mc = (TH1D*)hist->Clone("mc");checkSumw2(mc);}else{mc->Add(hist);}
       }
       else if(Process[i].isTag("spimpose") && Process[i]["spimpose"].toBool())
 	{
    	  //legB->AddEntry(hist, Process[i]["tag"].c_str(), "L");
-	  legA->AddEntry(hist, Process[i]["tag"].c_str(), Process[i]["isdata"].toBool() ? "P" : "L" );
+	  if(Process[i].isTag("label")) legA->AddEntry(hist, Process[i]["label"].c_str(), Process[i]["isdata"].toBool() ? "P" : "L" );
+	  else                          legA->AddEntry(hist, Process[i]["tag"].c_str(), Process[i]["isdata"].toBool() ? "P" : "L" );
 	  spimposeOpts.push_back( Process[i]["isdata"].toBool() ? "e1" : "hist" );
 	  spimpose.push_back(hist);
 	  if(maximumFound<hist->GetMaximum()) maximumFound=hist->GetMaximum()*1.1;
@@ -681,7 +686,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 	if(Process[i]["isdata"].toBool()){
 	  if(!data){
 	    data = hist; 
-	    legA->AddEntry(hist, Process[i]["tag"].c_str(), "P"); 
+	    if(Process[i].isTag("label")) legA->AddEntry(hist, Process[i]["label"].c_str(), "P"); 
+	    else                          legA->AddEntry(hist, Process[i]["tag"].c_str(), "P"); 
 	  }
 	  else data->Add(hist);
 	}
@@ -767,8 +773,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    T->SetTextAlign(12);
    char Buffer[1024]; 
    //if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV", iEcm);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV", iEcm);
+   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
    T->AddText(Buffer);
    T->Draw("same");
    T->SetBorderSize(0);

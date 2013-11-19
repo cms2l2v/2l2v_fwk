@@ -90,7 +90,7 @@ class TopPtWeighter
 
       //scale to the same number of events
       targetH->Scale(genH->Integral()/targetH->Integral());
-      std::cout << "[TopPtWeighter] average pT[GeV] in target is " << targetH->GetMean() << " generator is: " << genH->GetMean() << std::endl;
+      //std::cout << "[TopPtWeighter] average pT[GeV] in target is " << targetH->GetMean() << " generator is: " << genH->GetMean() << std::endl;
 
       //compute weights
       TH1 *ratio=(TH1 *) targetH->Clone("ratio"); ratio->Divide(genH); wgtGr_=new TGraph(ratio); delete ratio;
@@ -125,7 +125,7 @@ class TopPtWeighter
 	  wgtSumUp      += curWgtUp_;
 	  wgtSumDown    += curWgtDown_;
 	}
-      std::cout << "[TopPtWeighter] normalization computed for " << totalExpected << " events" << std::endl;
+      //std::cout << "[TopPtWeighter] normalization computed for " << totalExpected << " events" << std::endl;
 
       //finalize the normalization
       if(totalExpected!=0){
@@ -151,7 +151,7 @@ class TopPtWeighter
       wgtGrUp_->Write("topptwgt_up");
       wgtGrDown_->Write("topptwgt_down");
       wgtsFile->Close();
-      std::cout << "[TopPtWeighter] normalized weights saved to " << wgtsFileUrl << std::endl;
+      //std::cout << "[TopPtWeighter] normalized weights saved to " << wgtsFileUrl << std::endl;
     }
   
     /**
