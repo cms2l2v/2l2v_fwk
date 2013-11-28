@@ -475,11 +475,13 @@ int main(int argc, char* argv[])
       bool eeTrigger          ( triggerBits[0]                   );
       bool emuTrigger         ( triggerBits[4] || triggerBits[5] );
       bool muTrigger          ( triggerBits[6]                   );
+      //      bool eTrigger           ( triggerBits[12]                  ); // FIXME: must process singleElectron
       bool mumuTrigger        ( triggerBits[2] || triggerBits[3] );// || muTrigger;
-      if(filterOnlyEE)       {                  emuTrigger=false; mumuTrigger=false; muTrigger=false;}
-      if(filterOnlyEMU)      { eeTrigger=false;                   mumuTrigger=false; muTrigger=false;}
-      if(filterOnlyMUMU)     { eeTrigger=false; emuTrigger=false;                    muTrigger=false;}
-      if(filterOnlySINGLEMU) { eeTrigger=false; emuTrigger=false; mumuTrigger=false;                 }
+      if(filterOnlyEE)       {                  emuTrigger=false; mumuTrigger=false; muTrigger=false; /*eTrigger=false;*/}
+      if(filterOnlyEMU)      { eeTrigger=false;                   mumuTrigger=false; muTrigger=false; /*eTrigger=false;*/}
+      if(filterOnlyMUMU)     { eeTrigger=false; emuTrigger=false;                    muTrigger=false; /*eTrigger=false;*/}
+      if(filterOnlySINGLEMU) { eeTrigger=false; emuTrigger=false; mumuTrigger=false;                  /*eTrigger=false;*/}
+      //      if(filterOnlySINGLEELE){ eeTrigger=false; emuTrigger=false; mumuTrigger=false; muTrigger=false;                }
       
       if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
       
@@ -652,38 +654,9 @@ int main(int argc, char* argv[])
       
       
       if(selLeptons.size()>=2){
-	LorentzVector leadingLep, trailerLep, zll;
-	
-	double BestMass(0.);
-	//identify the best lepton pair
-	for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
-	  float relIso1( utils::cmssw::relIso(selLeptons[l1], rho) );
-	  if( relIso1>0.30 ) continue;
-	  for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
-	    if(fabs(selLeptons[l1].id)!=fabs(selLeptons[l2].id))continue; //only consider same flavor lepton pairs
-	    if(selLeptons[l1].id*selLeptons[l2].id>=0)continue; //only consider opposite charge lepton pairs
-	    if( !(selLeptons[l1].pt()>=20 && selLeptons[l2].pt()>=10) || !(selLeptons[l1].pt()>=10 && selLeptons[l2].pt()>=20))continue;
-	    float relIso2( utils::cmssw::relIso(selLeptons[l2], rho) );
-	    if( relIso2>0.30 ) continue;
-	    
-	    if(deltaR(selLeptons[l1], selLeptons[l2])<0.1)continue;
-	    if(fabs(BestMass-91.2)>fabs((selLeptons[l1]+selLeptons[l2]).mass() - 91.2)){
-	      dilLep1 = l1; 
-	      dilLep2 = l2;
-	      zll=selLeptons[l1]+selLeptons[l2];
-	      BestMass=zll.mass();
-	    }
-	  }
-	}
-	if(selLeptons[dilLep1].pt()>selLeptons[dilLep2].pt()){ leadingLep=selLeptons[dilLep1]; trailerLep=selLeptons[dilLep2]; 
-	}else{                                                 leadingLep=selLeptons[dilLep2]; trailerLep=selLeptons[dilLep1]; 
-	} 
-	float zy(zll.Rapidity());
-	bool passZmass(fabs(zll.mass()-91.2)<30);//15);
-	bool passZpt(true);//zll.pt()>50);
-	bool passZeta(true);//fabs(zll.eta())<1.4442);
-	
-	
+	dilLep1=0;
+	dilLep2=1;
+
 	dilId = selLeptons[dilLep1].id * selLeptons[dilLep2].id;
 	
       }
@@ -701,7 +674,7 @@ int main(int argc, char* argv[])
       else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
       else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& !nVetoE && !nVetoMu ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
       else continue;
-
+      
       if(chTags.size()==0) continue;
 
       if(debug && chTags.size() > 2 ) cout << "[DEBUG] ERROR. The same event has been chosen for inclusive final state and MORE THAN ONE exclusive final state" << endl;
