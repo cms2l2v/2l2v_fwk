@@ -65,13 +65,29 @@ namespace utils
 	float arcCosine = acos(cosine);
 	return arcCosine;
       }
-    
+
     template<class T>
     float getMT(T &visible, T &invisible, bool setSameMass=false)
     {
       float mt(-1);
       if(setSameMass){
 	T sum=visible+invisible;
+	mt= TMath::Power(TMath::Sqrt(TMath::Power(visible.pt(),2)+pow(visible.mass(),2))+TMath::Sqrt(TMath::Power(invisible.pt(),2)+pow(visible.mass(),2)),2);
+	mt-=TMath::Power(sum.pt(),2);
+	mt=TMath::Sqrt(mt);
+      }else{
+	double dphi=fabs(deltaPhi(invisible.phi(),visible.phi()));
+	mt=TMath::Sqrt(2*invisible.pt()*visible.pt()*(1-TMath::Cos(dphi)));
+      }
+      return mt;
+    }
+
+    template<class T1, class T2>
+    float getMT(T1 &visible, T2 &invisible, bool setSameMass=false)
+    {
+      float mt(-1);
+      if(setSameMass){
+	LorentzVector sum= LorentzVector(visible)+LorentzVector(invisible);
 	mt= TMath::Power(TMath::Sqrt(TMath::Power(visible.pt(),2)+pow(visible.mass(),2))+TMath::Sqrt(TMath::Power(invisible.pt(),2)+pow(visible.mass(),2)),2);
 	mt-=TMath::Power(sum.pt(),2);
 	mt=TMath::Sqrt(mt);
