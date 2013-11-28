@@ -40,7 +40,7 @@ class HFCMeasurement
 {
  public:
 
-  enum FitTypes        { FIT_R, FIT_EB, FIT_R_AND_EB, FIT_VTB, FIT_GAMMAT };
+  enum FitTypes        { FIT_R, FIT_EB, FIT_R_AND_EB, FIT_VTB, FIT_GAMMAT, FIT_R_AND_MU, FIT_EB_AND_MU };
     
   struct FitResult_t
   {

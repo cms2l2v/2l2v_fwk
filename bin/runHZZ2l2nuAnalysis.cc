@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
   std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
 
   GammaWeightsHandler *gammaWgtHandler=0;
-  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,true);
+  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,"",true);
   //if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,false);
 
   //shape uncertainties for dibosons
@@ -216,10 +216,11 @@ int main(int argc, char* argv[])
 	    }
 	  }
 
-	  //interference: if not found set all weights to 1.0
-	  TGraph *cpspintGr      = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("nominal"));
-	  TGraph *cpspint_upGr   = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("up"));
-	  TGraph *cpspint_downGr = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("down"));
+	  //interference: if not found set all weights to 1.0, if only nominal then set weights for 100% variation 
+	  TGraph *cpspintGr          = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("nominal"));
+	  if(cpspintGr==0) cpspintGr = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("Ratio"));
+	  TGraph *cpspint_upGr       = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("up"));
+	  TGraph *cpspint_downGr     = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("down"));
 	  if(cpspintGr==0)
 	    {
 	      cpspintGr = (TGraph *)cpsGr->Clone();
@@ -227,7 +228,18 @@ int main(int argc, char* argv[])
 	      cpspint_upGr = (TGraph *) cpspintGr->Clone();
 	      cpspint_downGr=(TGraph *) cpspintGr->Clone();
 	    }
-      
+	  else if(cpspint_upGr==0 && cpspint_downGr)
+	    {
+	      cpspint_upGr=(TGraph *)cpspintGr->Clone();
+	      cpspint_downGr=(TGraph *)cpspintGr->Clone();
+	      for(int ip=0; ip<cpspintGr->GetN(); ip++) { 
+		Double_t x,y; 
+		cpspintGr->GetPoint(ip,x,y);
+		cpspint_upGr->SetPoint(ip,x,y*y);
+		cpspint_downGr->SetPoint(ip,x,1.0);
+	      }
+	    }
+	  
 	  //loop over possible scenarios: SM or BSM
 	  for(size_t nri=0; nri<NRparams.size(); nri++)
 	    {
@@ -398,6 +410,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass;Events",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mtNM1"  ,       ";Transverse mass;Events",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mtresponse",   ";Transverse mass response;Events", 100,0,2) );
+  mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events",160,150,1750) );
+  mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events",100,0,500) );
+
 
   //
   // STATISTICAL ANALYSIS
@@ -405,6 +420,7 @@ int main(int argc, char* argv[])
   std::vector<double> optim_Cuts1_met; 
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
   TProfile* Hoptim_cuts1_met     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut1_met"    , ";cut index;met"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) ) ;
+  mon.addHistogram( new TH1F ("metcount"    , ";E_{T}^{miss} cut [GeV];Total events"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) );
   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts1_met    ->Fill(index, optim_Cuts1_met[index]);  }
   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
@@ -996,7 +1012,10 @@ int main(int argc, char* argv[])
 		LorentzVector lastMassiveBoson(boson);
 		for(size_t itag=0; itag<tags.size(); itag++){
 		  size_t idx(tags.size()-itag-1);
-		  float photonWeight=gammaWgtHandler->getWeightFor(boson,tags[idx]);
+		  std::vector<Float_t> photonVars;
+		  photonVars.push_back(boson.pt());
+		  //photonVars.push_back(met[0].pt()/boson.pt());
+		  float photonWeight=gammaWgtHandler->getWeightFor(photonVars,tags[idx]);
 		  if(tags[idx]=="all")       { 
 		    photonWeights[idx]=(totalPhotonWeight==0? 1.0:totalPhotonWeight); 
 		  }
@@ -1040,6 +1059,12 @@ int main(int argc, char* argv[])
 		  double mt=higgs::utils::transverseMass(iboson,met[0],true);
 		  mon.fillHisto( "mt",icat,mt,iweight,true);
 		  
+		  if(met[0].pt()>optim_Cuts1_met[0]) 
+		    {
+		      mon.fillHisto( "mtcheckpoint",  icat, mt,          iweight, true);
+		      mon.fillHisto( "metcheckpoint", icat, met[0].pt(), iweight, true);
+		    }
+
 		  if(met[0].pt()>80){
 		    mon.fillHisto("eventflow",icat,6,iweight);
 		    mon.fillHisto( "mtNM1",icat,mt,iweight,true);
@@ -1216,7 +1241,10 @@ int main(int argc, char* argv[])
 	  LorentzVector iboson(boson);
 	  if(gammaWgtHandler!=0)
 	    {
-	      float photonWeight=gammaWgtHandler->getWeightFor(iboson,tags_full);
+	      std::vector<Float_t> photonVars;
+	      photonVars.push_back(iboson.pt());
+	      //photonVars.push_back(met[0].pt()/iboson.pt());
+	      float photonWeight=gammaWgtHandler->getWeightFor(photonVars,tags_full);
 	      chWeight *= photonWeight;
 	      iboson   = gammaWgtHandler->getMassiveP4(iboson,tags_full);
 	    }
@@ -1238,6 +1266,7 @@ int main(int argc, char* argv[])
 		    else                    nrweight/=lShapeWeights[0];
 		  }
 		
+		if(passPreselection && ivar==0 && nri==0                                    )   mon.fillHisto("metcount", tags_full, index, nrweight);
 		if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,nrweight);
 		if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);
 		if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);

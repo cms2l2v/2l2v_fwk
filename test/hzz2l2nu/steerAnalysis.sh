@@ -19,8 +19,8 @@ lumi=19736
 
 if [ "$step" == "1" ]; then
     echo "Submitting first pass (warning no systs yet)"
-#    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/htozz_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
-#    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/bulkg_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh -t Bulk
+    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/htozz_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/bulkg_samples.json        -d ${indir} -o ${outdir}/ll    -c ${cfg} -p "@runSystematics=True @useMVA=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh -t Bulk
     runLocalAnalysisOverSamples.py -e runHZZ2l2nuAnalysis -j data/htozz_photon_samples.json -d ${indir} -o ${outdir}/g/raw -c ${cfg} -p "@runSystematics=False @useMVA=True"                                                                   -s 1nd
 fi
 
@@ -29,8 +29,8 @@ if [ "$step" == "2" ]; then
     runPlotter --iLumi ${lumi} --inDir ${outdir}/ll/    --json data/htozz_samples.json        --outFile ${outdir}/plotter.root       --forceMerged --outDir ${outdir}/ll/plots
     runPlotter --iLumi ${lumi} --inDir ${outdir}/ll/    --json data/bulkg_samples.json        --outFile ${outdir}/plotter_bulkg.root --useMerged   --outDir ${outdir}/ll/plots
     runPlotter --iLumi ${lumi} --inDir ${outdir}/g/raw/ --json data/htozz_photon_samples.json --outFile ${outdir}/plotter_g_raw.root --forceMerged --outDir ${outdir}/g/raw/plots
-    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_raw.root\",ALL,HZZ)" 
-    mv gammawgts.root ${outdir}/gamma_weights.root
+#    root -b -q "${CMSSW_BASE}/src/UserCode/llvv_fwk/test/ewkvp2j/FitQtSpectrum.C+(\"${outdir}/plotter.root\",\"${outdir}/plotter_g_raw.root\",ALL,HZZ)" 
+#    mv gammawgts.root ${outdir}/gamma_weights.root
 fi
 
 if [ "$step" == "3" ]; then

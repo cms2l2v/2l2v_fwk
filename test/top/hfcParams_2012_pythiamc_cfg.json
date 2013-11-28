@@ -1,0 +1,39 @@
+{
+"sample":"mc",
+"fcor":
+{	
+"ee2jets"  :{"val":0.253,"fcor_ee2jets_stat":0.0141,  "dy":0.0019,"pu":0.016,"jer":0.015,"jes":0.015,"ue":0.001,"umet":0.015,"mcstat":0.009,"cr":0.001,"had":0.007,"twqflav":0.005,"meps":0.027,"q2":0.020,"signal":0.009,"pttop":0.015,"mtop":0.005},
+"ee3jets"  :{"val":0.205,"fcor_ee3jets_stat":0.0294,  "dy":0.0014,"pu":0.017,"jer":0.018,"jes":0.018,"ue":0.002,"umet":0.018,"mcstat":0.013,"cr":0.006,"had":0.008,"twqflav":0.002,"meps":0.034,"q2":0.012,"signal":0.015,"pttop":0.018,"mtop":0.005},
+"ee4jets"  :{"val":0.160,"fcor_ee4jets_stat":0.0417,  "dy":0.0028,"pu":0.016,"jer":0.015,"jes":0.015,"ue":0.006,"umet":0.016,"mcstat":0.018,"cr":0.004,"had":0.008,"twqflav":0.008,"meps":0.035,"q2":0.011,"signal":0.027,"pttop":0.016,"mtop":0.004},
+"mumu2jets":{"val":0.267,"fcor_mumu2jets_stat":0.0098,"dy":0.0048,"pu":0.018,"jer":0.018,"jes":0.018,"ue":0.003,"umet":0.018,"mcstat":0.009,"cr":0.001,"had":0.002,"twqflav":0.005,"meps":0.021,"q2":0.023,"signal":0.019,"pttop":0.018,"mtop":0.006},
+"mumu3jets":{"val":0.220,"fcor_mumu3jets_stat":0.019,"dy":0.0028,"pu":0.014,"jer":0.014,"jes":0.014,"ue":0.004,"umet":0.014,"mcstat":0.011,"cr":0.008,"had":0.002,"twqflav":0.002,"meps":0.021,"q2":0.024,"signal":0.022,"pttop":0.014,"mtop":0.006},
+"mumu4jets":{"val":0.180,"fcor_mumu4jets_stat":0.034,"dy":0.0014,"pu":0.012,"jer":0.013,"jes":0.014,"ue":0.002,"umet":0.011,"mcstat":0.017,"cr":0.002,"had":0.009,"twqflav":0.008,"meps":0.036,"q2":0.022,"signal":0.021,"pttop":0.012,"mtop":0.001},
+"emu2jets" :{"val":0.3350,"fcor_emu2jets_stat":0.0056, "dy":0.0001,"pu":0.017,"jer":0.018,"jes":0.018,"ue":0.001,"umet":0.017,"mcstat":0.005,"cr":0.001,"had":0.008,"twqflav":0.001,"meps":0.026,"q2":0.023,"signal":0.016,"pttop":0.018,"mtop":0.005},
+"emu3jets" :{"val":0.2400,"fcor_emu3jets_stat":0.011, "dy":0.0001,"pu":0.013,"jer":0.013,"jes":0.013,"ue":0.003,"umet":0.013,"mcstat":0.007,"cr":0.004,"had":0.008,"twqflav":0.003,"meps":0.019,"q2":0.021,"signal":0.015,"pttop":0.013,"mtop":0.007},
+"emu4jets" :{"val":0.210,"fcor_emu4jets_stat":0.020, "dy":0.0001,"pu":0.014,"jer":0.014,"jes":0.014,"ue":0.004,"umet":0.014,"mcstat":0.011,"cr":0.004,"had":0.008,"twqflav":0.002,"meps":0.026,"q2":0.026,"signal":0.011,"pttop":0.014,"mtop":0.004}
+},
+"ftt":
+{
+"ee2jets"  :{"val":0.6735,"tt_ee2jets_stat":0.0162,  "cr":0.002,"dy":0.043,"fakes":0.010,"had":0.025,"jer":0.001,"jes":0.010,"lumi":0.024,"signal":0.009,"meps":0.044,"pdf":0.021,"q2":0.042,"pu":0.002,"seleff":0.018,"pttop":0.043,"ue":0.004,"umet":0.004,"twqflav":0.001,"stth":0.004,"vvth":0.002,"mcstat":0.004},
+"ee3jets"  :{"val":0.7870,"tt_ee3jets_stat":0.0206,  "cr":0.008,"dy":0.028,"fakes":0.009,"had":0.029,"jer":0.004,"jes":0.041,"lumi":0.027,"signal":0.005,"meps":0.028,"pdf":0.025,"q2":0.027,"pu":0.001,"seleff":0.020,"pttop":0.060,"ue":0.001,"umet":0.007,"twqflav":0.001,"stth":0.003,"vvth":0.001,"mcstat":0.006},
+"ee4jets"  :{"val":0.8129,"tt_ee4jets_stat":0.0346,  "cr":0.008,"dy":0.026,"fakes":0.009,"had":0.031,"jer":0.009,"jes":0.067,"lumi":0.027,"signal":0.004,"meps":0.027,"pdf":0.025,"q2":0.025,"pu":0.001,"seleff":0.020,"pttop":0.082,"ue":0.004,"umet":0.001,"twqflav":0.001,"stth":0.002,"vvth":0.001,"mcstat":0.010},
+"emu2jets" :{"val":0.8483,"tt_emu2jets_stat":0.0077, "cr":0.001,"dy":0.004,"fakes":0.009,"had":0.046,"jer":0.001,"jes":0.006,"lumi":0.028,"signal":0.003,"meps":0.007,"pdf":0.024,"q2":0.003,"pu":0.005,"seleff":0.020,"pttop":0.014,"ue":0.002,"umet":0.002,"twqflav":0.001,"stth":0.004,"vvth":0.002,"mcstat":0.002},
+"emu3jets" :{"val":0.9081,"tt_emu3jets_stat":0.0104, "cr":0.006,"dy":0.002,"fakes":0.009,"had":0.038,"jer":0.003,"jes":0.035,"lumi":0.032,"signal":0.002,"meps":0.004,"pdf":0.028,"q2":0.002,"pu":0.003,"seleff":0.023,"pttop":0.006,"ue":0.005,"umet":0.001,"twqflav":0.001,"stth":0.003,"vvth":0.001,"mcstat":0.004},
+"emu4jets" :{"val":0.9333,"tt_emu4jets_stat":0.0177, "cr":0.005,"dy":0.001,"fakes":0.009,"had":0.035,"jer":0.006,"jes":0.064,"lumi":0.028,"signal":0.001,"meps":0.002,"pdf":0.026,"q2":0.001,"pu":0.001,"seleff":0.021,"pttop":0.057,"ue":0.005,"umet":0.001,"twqflav":0.001,"stth":0.002,"vvth":0.001,"mcstat":0.006},
+"mumu2jets":{"val":0.6517,"tt_mumu2jets_stat":0.0156,"cr":0.003,"dy":0.045,"fakes":0.002,"had":0.021,"jer":0.001,"jes":0.009,"lumi":0.026,"signal":0.003,"meps":0.041,"pdf":0.022,"q2":0.047,"pu":0.003,"seleff":0.019,"pttop":0.043,"ue":0.008,"umet":0.008,"twqflav":0.001,"stth":0.004,"vvth":0.002,"mcstat":0.004},
+"mumu3jets":{"val":0.7802,"tt_mumu3jets_stat":0.0197,"cr":0.007,"dy":0.045,"fakes":0.003,"had":0.022,"jer":0.007,"jes":0.043,"lumi":0.028,"signal":0.002,"meps":0.025,"pdf":0.025,"q2":0.030,"pu":0.002,"seleff":0.020,"pttop":0.058,"ue":0.003,"umet":0.007,"twqflav":0.001,"stth":0.003,"vvth":0.001,"mcstat":0.005},
+"mumu4jets":{"val":0.8159,"tt_mumu4jets_stat":0.0321,"cr":0.006,"dy":0.021,"fakes":0.004,"had":0.022,"jer":0.008,"jes":0.072,"lumi":0.028,"signal":0.001,"meps":0.020,"pdf":0.026,"q2":0.024,"pu":0.001,"seleff":0.021,"pttop":0.078,"ue":0.004,"umet":0.004,"twqflav":0.001,"stth":0.002,"vvth":0.001,"mcstat":0.009}
+},
+"kst":
+{
+"ee2jets"  :{"val":0.062,"kst_stat":0.004},
+"ee3jets"  :{"val":0.040,"kst_stat":0.003},
+"ee4jets"  :{"val":0.036,"kst_stat":0.004},
+"emu2jets" :{"val":0.062,"kst_stat":0.003},
+"emu3jets" :{"val":0.041,"kst_stat":0.002},
+"emu4jets" :{"val":0.029,"kst_stat":0.003},
+"mumu2jets":{"val":0.063,"kst_stat":0.004},
+"mumu3jets":{"val":0.057,"kst_stat":0.003},
+"mumu4jets":{"val":0.036,"kst_stat":0.006}
+}
+}

@@ -30,11 +30,13 @@ HFCMeasurement::HFCMeasurement(int fitType,TString fitConfig, TString wpConfig, 
   fitType_=fitType;
   switch(fitType_)
    {
-    case FIT_EB:              fitTypeTitle_="#varepsilon_{b}";                          fitTypeName_="effb";                        break;
-    case FIT_R_AND_EB:        fitTypeTitle_="R vs #varepsilon_{b}";                     fitTypeName_="rvseffb";                     break;
-    case FIT_VTB:             fitTypeTitle_="|V_{tb}|";                                 fitTypeName_="vtb";                         break;
-    case FIT_GAMMAT:          fitTypeTitle_="#Gamma_{t} [Gev]";                         fitTypeName_="gammat";                      break;
-    default:                  fitTypeTitle_="R=B(t#rightarrow Wb)/B(t#rightarrow Wq)";  fitTypeName_="r";           fitType_=FIT_R; break;
+   case FIT_EB:              fitTypeTitle_="#varepsilon_{b}";                          fitTypeName_="effb";                        break;
+   case FIT_R_AND_EB:        fitTypeTitle_="R;#varepsilon_{b}";                        fitTypeName_="rvseffb";                     break;
+   case FIT_R_AND_MU:        fitTypeTitle_="R;#mu=#sigma/#sigma_{th}";                 fitTypeName_="rvsmu";                       break;
+   case FIT_EB_AND_MU:        fitTypeTitle_="#varepsilon_{b};#mu=#sigma/#sigma_{th}";  fitTypeName_="ebvsmu";                      break;
+   case FIT_VTB:             fitTypeTitle_="|V_{tb}|";                                 fitTypeName_="vtb";                         break;
+   case FIT_GAMMAT:          fitTypeTitle_="#Gamma_{t} [GeV]";                         fitTypeName_="gammat";                      break;
+   default:                  fitTypeTitle_="R=B(t#rightarrow Wb)/B(t#rightarrow Wq)";  fitTypeName_="r";           fitType_=FIT_R; break;
     }
 
   maxJets_=maxJets;
@@ -49,15 +51,13 @@ HFCMeasurement::HFCMeasurement(int fitType,TString fitConfig, TString wpConfig, 
   RooArgSet poi;
   char expBuf[500];
   float cenR(1.0), minR(0.0), maxR(2.0);
-  if(fitType_==FIT_R_AND_EB) { minR=0.95;  maxR=1.05;            }
-  if(fitType_==FIT_EB)       { cenR=1.0;   minR=1.0;   maxR=1.0; }
-  if(fitType_==FIT_VTB)      { minR=0.0;   maxR=1.08;            }
-  if(fitType_==FIT_GAMMAT)   { cenR=1.34;  minR=0.0;   maxR=5.0; }
-
+  if(fitType_==FIT_R_AND_EB)                            { minR=0.95;  maxR=1.05;            }
+  if(fitType_==FIT_EB || fitType_==FIT_EB_AND_MU)       { cenR=1.0;   minR=1.0;   maxR=1.0; }
+  if(fitType_==FIT_VTB)                                 { minR=0.0;   maxR=1.08;            }
+  if(fitType_==FIT_GAMMAT)                              { cenR=1.34;  minR=0.0;   maxR=5.0; }
   sprintf(expBuf,"rb[%f,%f,%f]",cenR,minR,maxR);
   ws_->factory(expBuf);
   if(minR!=maxR) poi.add( *ws_->var("rb") );
-
   if(fitType_==FIT_VTB)  
     {
       ws_->factory("FormulaVar::r('@0*@0',{rb})");
@@ -72,12 +72,18 @@ HFCMeasurement::HFCMeasurement(int fitType,TString fitConfig, TString wpConfig, 
     }
 
   float minSFb(1.0),maxSFb(1.0);
-  if(fitType_==FIT_R_AND_EB)  { minSFb=0.9; maxSFb=1.1; }
-  if(fitType_== FIT_EB)       { minSFb=0.7; maxSFb=1.3; }
+  if(fitType_==FIT_R_AND_EB)                       { minSFb=0.9;  maxSFb=1.1; }
+  if(fitType_== FIT_EB || fitType_==FIT_EB_AND_MU) { minSFb=0.01; maxSFb=1.4; }
   sprintf(expBuf,"sfeb[1.0,%f,%f]",minSFb,maxSFb);
   ws_->factory(expBuf);
   if(minSFb!=maxSFb) poi.add( *ws_->var("sfeb") );
 
+  float minMu(1.0),maxMu(1.0);
+  if(fitType_==FIT_R_AND_MU || fitType_==FIT_EB_AND_MU) { minMu=0; maxMu=2.0; }
+  sprintf(expBuf,"mu[1.0,%f,%f]",minMu,maxMu);
+  ws_->factory(expBuf);
+  if(minMu!=maxMu) poi.add( *ws_->var("mu") );
+  
   ws_->defineSet("poi",poi);  
   parseFitConfig(fitConfig);
   parseFitConfig(wpConfig);
@@ -174,12 +180,21 @@ void HFCMeasurement::parseFitConfig(TString url)
 		  formula += "*@1";
 		  varsInFormula.add( *(ws_->function("tWprod")) );
 		}
-      
+
+	      //signal strength correction
+	      if(jsonF.key[iparam]=="ftt")
+		{
+		  cout << "Attaching signal strength correction factor" << endl;
+		  varCntr++; 
+		  formula += "*@1";
+		  varsInFormula.add( *(ws_->var("mu")) );
+		}
+	      
 	      //modifiers
 	      for(size_t iunc=0; iunc<uncs.size(); iunc++)
 		{
 		  if(uncs[iunc]=="val") continue;
-		  if(uncs[iunc]=="epsb" && fitType_==FIT_EB) continue;
+		  if(uncs[iunc]=="epsb" && (fitType_==FIT_EB || fitType_==FIT_EB_AND_MU)) continue;
 
 		  //add new constraint if required
 		  RooRealVar *nuisVar=ws_->var(uncs[iunc].c_str());
@@ -1069,8 +1084,8 @@ bool HFCMeasurement::fit(bool debug)
     for(int i=0; i<3; i++)
       {
 	TString label("ee events");
-	if(i==1) label="#mu#mu events";
-	else if(i==2) label="e#mu events";
+	if(i==1) label="e#mu events";
+	else if(i==2) label="#mu#mu events";
 	TPaveText *labelt=new TPaveText(6+15*i,maxY*0.9,7+15*i,maxY*0.95,"");
 	labelt->SetBorderSize(0);
 	labelt->SetFillStyle(0);
@@ -1087,6 +1102,14 @@ bool HFCMeasurement::fit(bool debug)
   saveGraphicalResult(modelc,"DataSlicesModel");
   saveGraphicalResult(pfnc,"ExclusivePostFitNuisances");
 
+  bool is2Dfit( mc_->GetParametersOfInterest()->getSize()>1 );
+  TString plrXtitle( fitTypeTitle_ );
+  TString plrYtitle( "-log #lambda" );
+  if(is2Dfit){
+    TObjArray *tkns=fitTypeTitle_.Tokenize(";");
+    plrXtitle=tkns->At(0)->GetName();
+    plrYtitle=tkns->At(1)->GetName();
+  }
   TCanvas *excllc = new TCanvas("excllc","excllc",1200,400);
   excllc->Divide(3,1);
   TCanvas *excpfnc = new TCanvas("excpfnc","excpfnc",800,1200);
@@ -1115,10 +1138,10 @@ bool HFCMeasurement::fit(bool debug)
 	  curResults_[ch].plrGr->Draw("al");
 	  curResults_[ch].plrGr->SetTitle("combined");
 	  curResults_[ch].plrGr->SetName((ch+"_plr").c_str());
-	  curResults_[ch].plrGr->GetXaxis()->SetTitle(fitTypeTitle_);
-	  curResults_[ch].plrGr->GetYaxis()->SetTitle("-log #lambda");
-	  curResults_[ch].plrGr->GetYaxis()->SetRangeUser(0,10);
-	  if(leg)leg->AddEntry(curResults_[ch].plrGr,"combined","f");
+	  if(!is2Dfit) curResults_[ch].plrGr->GetYaxis()->SetRangeUser(0,10);
+	  if(leg) leg->AddEntry(curResults_[ch].plrGr,"combined","f");
+	  curResults_[ch].plrGr->GetXaxis()->SetTitle(plrXtitle);
+	  curResults_[ch].plrGr->GetYaxis()->SetTitle(plrYtitle);
 	}
 
       int igr(0);
@@ -1217,9 +1240,9 @@ bool HFCMeasurement::fit(bool debug)
     {
       curResults_["inclusive"].plrGr->Draw("al");
       curResults_["inclusive"].plrGr->SetTitle("combined");
-      curResults_["inclusive"].plrGr->GetXaxis()->SetTitle(fitTypeTitle_);
-      curResults_["inclusive"].plrGr->GetYaxis()->SetTitle("-log #lambda");
-      curResults_["inclusive"].plrGr->GetYaxis()->SetRangeUser(0,10);
+      curResults_["inclusive"].plrGr->GetXaxis()->SetTitle(plrXtitle);
+      curResults_["inclusive"].plrGr->GetYaxis()->SetTitle(plrYtitle);
+      if(!is2Dfit) curResults_["inclusive"].plrGr->GetYaxis()->SetRangeUser(0,10);
       leg->AddEntry(curResults_["inclusive"].plrGr,"combined","f");
     }
 
@@ -1602,42 +1625,61 @@ HFCMeasurement::FitResult_t HFCMeasurement::plrFit(RooDataSet *data, ModelConfig
     {     
       res.plrGr=new TGraph;
       res.plrGr->SetName("plr");
-      res.plrGr->SetFillStyle(0);
-      res.plrGr->SetFillColor(0);
-      res.plrGr->SetMarkerStyle(1);
-      res.plrGr->SetMarkerColor(kBlue);
-      res.plrGr->SetLineWidth(2);
-      res.plrGr->SetLineColor(kBlue);
 
       //this is the most stupid thing ... to get the likelihood curve
       //from the list of primitives in the canvas, convert the RooCurve to a TGraph
       //even if the class is derived from it (otherwise it crashes)
       TCanvas *c= new TCanvas("tmpc","tmpc",600,600);
-      LikelihoodIntervalPlot plot(interval);
-      //       float rmin=max(firstPOI->getVal()-10*firstPOI->getError(),0.);
-      //       float rmax=min(firstPOI->getVal()+10*firstPOI->getError(),2.0);
-      //       plot.SetRange(rmin,rmax);
-      plot.SetRange(0.9,1.1);
-      if(fitType_==FIT_GAMMAT) plot.SetRange(0.1,3.0);
-      plot.SetNPoints(100);
-      plot.Draw(""); 
+      if(mc_->GetParametersOfInterest()->getSize()>1)
+	{
+	  cout << "More than on POI found: generating a 90% CL contour" << endl;
+	  ProfileLikelihoodCalculator plr95(*data,*mc);
+	  plr95.SetConfidenceLevel(0.95); 	
+	  LikelihoodIntervalPlot plot( plr95.GetInterval());
+	  plot.SetRange(0.5,2.0,0.5,2.0);
+	  plot.SetNPoints(200);
+	  plot.Draw(""); 
+	}
+      else
+	{
+	  LikelihoodIntervalPlot plot(interval);
+	  //       float rmin=max(firstPOI->getVal()-10*firstPOI->getError(),0.);
+	  //       float rmax=min(firstPOI->getVal()+10*firstPOI->getError(),2.0);
+	  //       plot.SetRange(rmin,rmax);
+	  plot.SetRange(0.9,1.1);
+	  if(fitType_==FIT_GAMMAT) plot.SetRange(0.1,3.0);
+	  plot.SetNPoints(100);
+	  plot.Draw(""); 
+	}
+
       TIter nextpobj(c->GetListOfPrimitives());
       TObject *pobj;
       while ((pobj = nextpobj()))
 	{
 	  if(pobj==0) break;
 	  TString pobjName(pobj->GetName());
-	  cout << pobjName << endl;
-	  if(!pobjName.BeginsWith("nll")) continue;
-	  RooCurve *nllCurve=(RooCurve *)pobj;
-	  for(int ipt=0; ipt<nllCurve->GetN(); ipt++)
-	    {
-	      Double_t ix,iy;
-	      nllCurve->GetPoint(ipt,ix,iy);
-	      if(fabs(iy)>10 || iy<0) continue;
-	      res.plrGr->SetPoint(res.plrGr->GetN(),ix,iy);
-	    }		  
+	  if(pobjName.BeginsWith("nll")){
+	    RooCurve *nllCurve=(RooCurve *)pobj;
+	    for(int ipt=0; ipt<nllCurve->GetN(); ipt++)
+	      {
+		Double_t ix,iy;
+		nllCurve->GetPoint(ipt,ix,iy);
+		if(fabs(iy)>10 || iy<0) continue;
+		res.plrGr->SetPoint(res.plrGr->GetN(),ix,iy);
+	      }		
+	  }
+	  else if(pobjName.BeginsWith("Graph_of_Likelihood")){
+	    res.plrGr=(TGraph *) pobj;
+	  }
 	}
+
+      //final format
+      res.plrGr->SetFillStyle(0);
+      res.plrGr->SetFillColor(0);
+      res.plrGr->SetMarkerStyle(1);
+      res.plrGr->SetMarkerColor(kBlue);
+      res.plrGr->SetLineWidth(2);
+      res.plrGr->SetLineColor(kBlue);
       delete c;
     }
   

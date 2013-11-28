@@ -233,7 +233,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	const reco::GenParticle & p = dynamic_cast<const reco::GenParticle &>( (*genParticlesH)[i] );
 	if(abs(p.pdgId())==2212 && p.status()==4) isSherpa=true; //this is only used by sherpa
 	bool isHardProc(p.status()==3);
-	bool isStableOfInterest( keepFullGenInfo_ && p.status()==1 && ((abs(p.pdgId())==22 && p.pt()>20) || (p.charge()!=0 && p.pt()>0.5 && fabs(p.eta())<3.0 )) );
+	bool isStableOfInterest( keepFullGenInfo_ && p.status()==1 && p.charge()!=0 && p.pt()>0.5 && fabs(p.eta())<3.0 );
+	isStableOfInterest |= (p.status()==1 && abs(p.pdgId())==22 && p.pt()>20 && fabs(p.eta())<2.5);  // I really need this line always active...  
 	if(!isHardProc && !isStableOfInterest) continue;
 
 	//check if lepton is ok to accept (for unfolding purposes)

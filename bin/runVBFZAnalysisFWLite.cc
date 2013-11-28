@@ -1039,7 +1039,9 @@ int main(int argc, char* argv[])
 		  //re-weight for photons if needed
 		  if(gammaWgtHandler!=0) {
 		    mjjCat.ReplaceAll("mjjq100","mjjq092");
-		    photonWeight = gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		    std::vector<Float_t> photonVars;
+		    photonVars.push_back(selPhotons[0].pt());
+		    photonWeight = gammaWgtHandler->getWeightFor(photonVars,chTags[ich]+mjjCat);
 		  }
 		  float catWeight=weight*photonWeight;
 
@@ -1206,7 +1208,8 @@ int main(int argc, char* argv[])
 		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
 		    if(gammaWgtHandler!=0) {
 		      mjjCat.ReplaceAll("mjjq100","mjjq092");
-		      iweight *= gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		      std::vector<Float_t> photonVars(1,selPhotons[0].pt());
+		      iweight *= gammaWgtHandler->getWeightFor(photonVars,chTags[ich]+mjjCat);
 		    }
 		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,iweight);
 		    

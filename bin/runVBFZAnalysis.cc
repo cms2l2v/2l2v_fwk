@@ -104,7 +104,7 @@ float getAngle(LorentzVector &a, LorentzVector &b)
 }
 
 //
-std::vector<TString> getDijetCategories(double mjj,double etajj,std::vector<TString> &curTags, TString &mjjCat)
+std::vector<TString> getDijetCategories(double mjj,double hardpt,std::vector<TString> &curTags, TString &mjjCat)
 {
   std::vector<TString> mjjCats;
   if(mjj<250)               mjjCats.push_back("mjjq016");
@@ -116,8 +116,13 @@ std::vector<TString> getDijetCategories(double mjj,double etajj,std::vector<TStr
   if(mjj>=1000)             mjjCats.push_back("mjjq100");
   if(mjj>=1250)             mjjCats.push_back("highmjj");
   if(mjj>=750)              mjjCats.push_back("mjjgt092");  
+  if(mjj>350)
+    {
+      if(hardpt<50)            mjjCats.push_back("lowhardpt");
+      else                     mjjCats.push_back("highhardpt");
+    }
   mjjCat=mjjCats[0];
-
+  
   //include new tags
   std::vector<TString> selTags;
   for(size_t i=0; i<curTags.size(); i++)
@@ -210,7 +215,7 @@ int main(int argc, char* argv[])
   }
   
   //summary ntuple
-  TString summaryTupleVarNames("ch:weight:cnorm:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:qg1:qg2:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15:pt1:pt2");
+  TString summaryTupleVarNames("ch:weight:cnorm:mjj:detajj:setajj:pt1:pt2:eta1:eta2:qg1:qg2:spt:ystar:hardpt:ncjv15:htcjv15:pt3:ystar3:mva");
   TNtuple *summaryTuple = new TNtuple("ewkzp2j","ewkzp2j",summaryTupleVarNames);
   Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
   summaryTuple->SetDirectory(0);
@@ -219,7 +224,7 @@ int main(int argc, char* argv[])
   bool useMVA = runProcess.getParameter<bool>("useMVA");
   TMVA::Reader *tmvaReader = 0;
   std::vector<string> tmvaMethods;
-  std::vector<Float_t> tmvaDiscrVals(3,0);
+  std::vector<Float_t> tmvaDiscrVals(3,0.0);
   std::vector<std::string> tmvaVarNames;
   std::vector<Float_t> tmvaVars;
   if(useMVA)
@@ -281,6 +286,15 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(4, "#eta^{ll}<1.44");
   h->GetXaxis()->SetBinLabel(5,"#geq 2 jets"); 
 
+  h=mon.addHistogram( new TH1F ("triggerProj", ";;Events", 7,0,7) );
+  h->GetXaxis()->SetBinLabel(1,"8 TeV baseline");
+  h->GetXaxis()->SetBinLabel(2,"1/2 rate");
+  h->GetXaxis()->SetBinLabel(3,"p^{boson}_{T}>30");
+  h->GetXaxis()->SetBinLabel(4,"p^{boson}_{T}>50");
+  h->GetXaxis()->SetBinLabel(5,"p_{T}^{jet}>50");
+  h->GetXaxis()->SetBinLabel(6,"M_{jj}>120");
+  h->GetXaxis()->SetBinLabel(7,"#splitline{p^{boson}_{T}>30}{M_{jj}>120}");
+
   h=mon.addHistogram( new TH1F ("psacceptance", ";;Events", 5,0,5) );
   h->GetXaxis()->SetBinLabel(1,"Gen");
   h->GetXaxis()->SetBinLabel(2,"Gen Acc");
@@ -311,6 +325,10 @@ int main(int argc, char* argv[])
     TString regStr("lt15collinear");
     if(ireg==1) regStr="gt50back2back";
     if(ireg==2) regStr="lt50back2back";
+    mon.addHistogram( new TH1F("qgmva"+regStr, "; Quark/gluon discriminator; Jets", 100,0,1) );
+    mon.addHistogram( new TH1F("ptd"+regStr, "; p_{T}D; Jets", 100,0,1) );
+    mon.addHistogram( new TH1F("betastar"+regStr, "; #beta^{*}; Jets", 100,0,1) );
+    mon.addHistogram( new TH1F("dr2mean"+regStr, "; <#DeltaR^{2}>; Jets", 100,0,1) );
     mon.addHistogram( new TH1F("recoilbalance"+regStr, "; p_{T}(jet)/p_{T}; Jets", 100,0,5) );
     mon.addHistogram( new TH2F("recoilbalancevseta"+regStr, "; #eta(jet); <p_{T}(jet)/p_{T}>", 50,0,5,100,0,5) );
     TH2 *idH=(TH2 *)mon.addHistogram( new TH2F("recoilbalanceid"+regStr, "; Pseudo-rapidity; ID", 50,0,5,4,0,4) );
@@ -370,7 +388,8 @@ int main(int argc, char* argv[])
 
   mon.addHistogram( new TH1F("vbfcandjet1pt"     , ";Leading jet p_{T} [GeV];Events",     50,0,1000) );
   mon.addHistogram( new TH1F("vbfcandjet2pt"     , ";Trailer jet p_{T} [GeV];Events",     50,0,500) );
-
+  mon.addHistogram( new TH1F("vbfqgmva1",             "; Quark/gluon discriminator; Events", 100,0,1) );
+  mon.addHistogram( new TH1F("vbfqgmva2",             "; Quark/gluon discriminator; Events", 100,0,1) );
   mon.addHistogram( new TH1F("vbfcandjet1eta"    , ";Forward jet #eta;Events",                                 25,0,5) );
   mon.addHistogram( new TH1F("vbfcandjet2eta"    , ";Central jet #eta;Events",                                 25,0,5) );
   mon.addHistogram( new TH1F("vbfcandjetdeta"    , ";Dijet pseudo-rapidity distance (#Delta#eta);Events",   50,0,10) );  
@@ -841,7 +860,8 @@ int main(int argc, char* argv[])
 	}
       }
       if(chTags.size()==0) continue;
-    
+
+   
       //
       // DILEPTON ANALYSIS
       //
@@ -864,7 +884,6 @@ int main(int argc, char* argv[])
 	  genll += gen[ig];
 	}
       
-
       //analyze dijets and activity in the dijet rapidity distance
       float maxPt(0), minPt(0), maxEta(0), minEta(0), maxAbsEta(0), minAbsEta(0);
       float dphijj(0), detajj(0), setajj(0), etaprod(0), ystar(0), mjj(0),ptjj(0),spt(0);
@@ -877,8 +896,8 @@ int main(int argc, char* argv[])
 	{
 	  LorentzVector jet1=selJets[0];
 	  LorentzVector jet2=selJets[1];
-	  maxPt=max(jet1.pt(),jet2.pt());
-	  minPt=min(jet1.pt(),jet2.pt());
+	  maxPt=jet1.pt();
+	  minPt=jet2.pt();
 	  maxAbsEta=max(fabs(jet1.eta()),fabs(jet2.eta()));
 	  minAbsEta=min(fabs(jet1.eta()),fabs(jet2.eta()));
 	  maxEta=max(jet1.eta(),jet2.eta());
@@ -940,18 +959,56 @@ int main(int argc, char* argv[])
 	  }
 	}
       
-      //set the variables to be used in the MVA evaluation (independently of its use)
-      for(size_t ivar=0; ivar<tmvaVarNames.size(); ivar++) 
-	{
-	  std::string variable     = tmvaVarNames[ivar];
-	  if(variable=="mjj")        tmvaVars[ivar]=mjj;
-	  if(variable=="detajj")     tmvaVars[ivar]=detajj;
-          if(variable=="spt")        tmvaVars[ivar]=spt;
-	}
-      if(tmvaReader) {
-	for(size_t im=0; im<tmvaMethods.size(); im++)
-	  tmvaDiscrVals[im]=tmvaReader->EvaluateMVA( tmvaMethods[im] );
+      { 
+	//trigger studies
+	bool passHalfRate(false);
+	bool passZpt30( zll.pt()>30 );
+	bool passZpt50( zll.pt()>50 );
+	bool passJet50( maxPt>50 );
+	bool passMjj( mjj>120 );
+	bool passBase( abs(dilId)==22 ? passZpt50 : true );
+	
+	if(abs(dilId)==11*11) passHalfRate=(leadingLep.pt()>30 && trailerLep.pt()>27 );
+	if(abs(dilId)==13*13) passHalfRate=(leadingLep.pt()>23 && trailerLep.pt()>10 );
+	if(abs(dilId)==22)    passHalfRate=(zll.pt()>155);
+	
+	if(passBase)
+	  {
+	    mon.fillHisto("triggerProj",chTags,0,1);
+	    if(passHalfRate)              mon.fillHisto("triggerProj",chTags,1,weight);
+	    if(passZpt30)                 mon.fillHisto("triggerProj",chTags,2,weight);
+	    if(passZpt50)                 mon.fillHisto("triggerProj",chTags,3,weight);
+	    if(passJet50)                 mon.fillHisto("triggerProj",chTags,4,weight);
+	    if(passMjj)                   mon.fillHisto("triggerProj",chTags,5,weight);
+	    if(passZpt30 && passMjj)      mon.fillHisto("triggerProj",chTags,6,weight);
+	  }
       }
+
+
+      
+      //set the variables to be used in the MVA evaluation (independently of its use)
+      if(njets>1)
+	{
+	  for(size_t ivar=0; ivar<tmvaVarNames.size(); ivar++) 
+	    {
+	      std::string variable     = tmvaVarNames[ivar];
+	      if(variable=="mjj")        tmvaVars[ivar]=mjj;
+	      if(variable.find("detajj")!=string::npos)     tmvaVars[ivar]=detajj;
+	      if(variable=="spt")        tmvaVars[ivar]=spt;
+	      if(variable=="setajj")     tmvaVars[ivar]=setajj;
+	      if(variable=="pt1")        tmvaVars[ivar]=selJets[0].pt();
+	      if(variable=="pt2")        tmvaVars[ivar]=selJets[1].pt();
+	      if(variable=="eta1")       tmvaVars[ivar]=selJets[0].eta();
+	      if(variable=="eta2")       tmvaVars[ivar]=selJets[1].eta();
+	      if(variable=="qg1")        tmvaVars[ivar]=selJets[0].getVal("qgMVA");
+	      if(variable=="qg2")        tmvaVars[ivar]=selJets[1].getVal("qgMVA");
+	      if(variable=="hardpt")     tmvaVars[ivar]=hardpt;
+	    }
+	  if(tmvaReader) {
+	    for(size_t im=0; im<tmvaMethods.size(); im++)
+	      tmvaDiscrVals[im]=tmvaReader->EvaluateMVA( tmvaMethods[im] );
+	  }
+	}
             
       //
       // NOW FOR THE CONTROL PLOTS
@@ -1016,7 +1073,13 @@ int main(int argc, char* argv[])
 		    mon.fillHisto("recoilbalanceid"+regStr,    tags,fabs(selJetsNoId[0].eta()),0, weight);
 		    if(passPFloose)                         mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),1, weight);
 		    if(passLooseSimplePuId)                 mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),2, weight);
-		    if(passPFloose && passLooseSimplePuId)  mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),3, weight);
+		    if(passPFloose && passLooseSimplePuId) {
+		      mon.fillHisto("recoilbalanceid"+regStr,tags,fabs(selJetsNoId[0].eta()),      3,    weight);
+		      mon.fillHisto("qgmva"+regStr,         tags,selJetsNoId[0].getVal("qgMVA"),         weight);
+		      mon.fillHisto("ptd"+regStr,           tags,selJetsNoId[0].getVal("ptD"),           weight);
+		      mon.fillHisto("betastar"+regStr,      tags,selJetsNoId[0].getVal("betaStar"),      weight);
+		      mon.fillHisto("dr2mean"+regStr,       tags,selJetsNoId[0].getVal("dR2Mean"),       weight);
+		    }
 		  }
 	      }
 	    //end balance control
@@ -1058,16 +1121,17 @@ int main(int argc, char* argv[])
 		
 	      //signal region
 	      float photonWeight(1.0);
-	      if(njets>=2)
+	      if(njets>1)
 		{
 		  TString mjjCat("");
 		  std::vector<TString> selTags;
-		  selTags = getDijetCategories(mjj,detajj,tags,mjjCat);
+		  selTags = getDijetCategories(mjj,hardpt,tags,mjjCat);
 		  if(phoTrigCat!="") selTags.push_back(phoTrigCat);
-
+	  
 		  //re-weight for photons if needed
 		  if(gammaWgtHandler!=0) {
-		    photonWeight = gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
+		    std::vector<Float_t> gammaVars(1,selPhotons[0].pt());
+		    photonWeight = gammaWgtHandler->getWeightFor(gammaVars,chTags[ich]+mjjCat);
 		  }
 		  float catWeight=weight*photonWeight;
 
@@ -1075,36 +1139,38 @@ int main(int argc, char* argv[])
 		  if(isMC && catWeight>5) catWeight=0;
 
 		  //save for further analysis
-		  if(mjj>200) {
-		   //  if(mjj>2000 && ev.nvtx<18 && njets==2){
-// 		      fprintf(outTxtFile,"--------- CANDIDATE EVENT ---------\n");
-// 		      fprintf(outTxtFile,"%d:%d:%d    mjj=%f  ystar=%f spt=%f\n",ev.run,ev.lumi,ev.event,mjj,ystar,spt);
-// 		      fprintf(outTxtFile,"j1 (%f,%f,%f)\n",selJets[0].pt(),selJets[0].eta(),selJets[0].phi());
-// 		      fprintf(outTxtFile,"j2 (%f,%f,%f)\n",selJets[1].pt(),selJets[1].eta(),selJets[1].phi());
-// 		      fprintf(outTxtFile,"z (%f,%f,%f) m=%f\n",zll.pt(),zll.eta(),zll.phi(),zll.mass());
-//		    }
-		    ev.cat=dilId;
-		    summaryTupleVars[0]=ev.cat;  
+		  Int_t summaryDilId=dilId;
+		  if(gammaWgtHandler && chTags[ich].Contains("ee")   ) summaryDilId=-11*11;
+		  if(gammaWgtHandler && chTags[ich].Contains("mumu") ) summaryDilId=-13*13;
+		  if(mjj>200 && (abs(summaryDilId)==11*11 || abs(summaryDilId)==13*13) ) {
+		    //  if(mjj>2000 && ev.nvtx<18 && njets==2){
+		    // 	  fprintf(outTxtFile,"--------- CANDIDATE EVENT ---------\n");
+		    // 	  fprintf(outTxtFile,"%d:%d:%d    mjj=%f  ystar=%f spt=%f\n",ev.run,ev.lumi,ev.event,mjj,ystar,spt);
+		    // 	  fprintf(outTxtFile,"j1 (%f,%f,%f)\n",selJets[0].pt(),selJets[0].eta(),selJets[0].phi());
+		    // 	  fprintf(outTxtFile,"j2 (%f,%f,%f)\n",selJets[1].pt(),selJets[1].eta(),selJets[1].phi());
+		    // 	  fprintf(outTxtFile,"z (%f,%f,%f) m=%f\n",zll.pt(),zll.eta(),zll.phi(),zll.mass());
+		    //	}
+		    summaryTupleVars[0]=summaryDilId;
 		    summaryTupleVars[1]=catWeight*xsecWeight;    
 		    summaryTupleVars[2]=cnorm;
 		    summaryTupleVars[3]=mjj;     
-		    summaryTupleVars[4]=detajj;               
-		    summaryTupleVars[5]=spt;
-		    summaryTupleVars[6]=setajj;  
-		    summaryTupleVars[7]=dphijj;  
-		    summaryTupleVars[8]=ystar;
-		    summaryTupleVars[9]=hardpt; 
+		    summaryTupleVars[4]=fabs(detajj);               
+		    summaryTupleVars[5]=fabs(setajj);
+		    summaryTupleVars[6]=selJets[0].pt();
+		    summaryTupleVars[7]=selJets[1].pt();
+		    summaryTupleVars[8]=fabs(selJets[0].eta());
+		    summaryTupleVars[9]=fabs(selJets[1].eta());
 		    summaryTupleVars[10]=selJets[0].getVal("qgMVA");
 		    summaryTupleVars[11]=selJets[1].getVal("qgMVA");
-		    summaryTupleVars[12]=tmvaDiscrVals[tmvaMethods.size()-1];
-		    summaryTupleVars[13]=ystar3; 
-		    summaryTupleVars[14]=pt3; 
-		    summaryTupleVars[15]=ncjv;
-		    summaryTupleVars[16]=htcjv;  
-		    summaryTupleVars[17]=ncjv15;  
-		    summaryTupleVars[18]=htcjv15;
-		    summaryTupleVars[19]=selJets[0].pt();
-		    summaryTupleVars[20]=selJets[1].pt();
+		    summaryTupleVars[12]=spt;
+		    summaryTupleVars[13]=ystar;
+		    summaryTupleVars[14]=hardpt;
+		    summaryTupleVars[15]=ncjv15;
+		    summaryTupleVars[16]=htcjv15;  
+		    summaryTupleVars[17]=pt3; 
+		    summaryTupleVars[18]=ystar3;
+		    if(tmvaMethods.size() ) summaryTupleVars[19]=tmvaDiscrVals[ tmvaMethods.size()-1 ];
+
 		    summaryTuple->Fill(summaryTupleVars);
 		    for(size_t im=0; im<tmvaMethods.size(); im++) mon.fillHisto(tmvaMethods[im], selTags, tmvaDiscrVals[im], catWeight);
 		  } 
@@ -1118,6 +1184,8 @@ int main(int argc, char* argv[])
 		  mon.fillHisto("vbfcandjet2pt",      selTags, minPt,catWeight);//,true);
 		  mon.fillHisto("vbfcandjet1eta",     selTags, maxAbsEta, catWeight);
 		  mon.fillHisto("vbfcandjet2eta",     selTags, minAbsEta, catWeight);
+		  mon.fillHisto("vbfqgmva1",          selTags, selJets[0].getVal("qgMVA"), catWeight);
+		  mon.fillHisto("vbfqgmva2",          selTags, selJets[1].getVal("qgMVA"), catWeight);
 		  mon.fillHisto("vbfcandjeteta",      selTags, maxAbsEta, catWeight);
 		  mon.fillHisto("vbfcandjeteta",      selTags, minAbsEta, catWeight);
 		  mon.fillHisto("vbfcandjetdeta",     selTags, detajj,catWeight);
@@ -1249,45 +1317,56 @@ int main(int argc, char* argv[])
 			localSelJets[ijet] *= (ivar==11 ? 1+sfEnvelope : 1-sfEnvelope);
 		      }
 		  }
-
+		
+		//recompute the discriminator variables
+		LorentzVector vbfSyst=localSelJets[0]+localSelJets[1];
+		float mjj=vbfSyst.M();
+		float detajj=fabs(localSelJets[0].eta()-localSelJets[1].eta());
+		float setajj=fabs(localSelJets[0].eta())+fabs(localSelJets[1].eta());
+		float spt=vbfSyst.pt()/(localSelJets[0].pt()+localSelJets[1].pt());
+		std::vector<Float_t> localTmvaDiscrVals(tmvaDiscrVals.size(),0.0);
+		for(size_t iMvaVar=0; iMvaVar<tmvaVarNames.size(); iMvaVar++) 
+		  {
+		    std::string variable     = tmvaVarNames[iMvaVar];
+		    if(variable=="mjj")        tmvaVars[iMvaVar]=mjj;
+		    if(variable.find("detajj")!=string::npos)     tmvaVars[iMvaVar]=detajj;
+		    if(variable=="spt")        tmvaVars[iMvaVar]=spt;
+		    if(variable=="setajj")     tmvaVars[iMvaVar]=setajj;
+		    if(variable=="pt1")        tmvaVars[iMvaVar]=localSelJets[0].pt();
+		    if(variable=="pt2")        tmvaVars[iMvaVar]=localSelJets[1].pt();
+		    if(variable=="eta1")       tmvaVars[iMvaVar]=localSelJets[0].eta();
+		    if(variable=="eta2")       tmvaVars[iMvaVar]=localSelJets[1].eta();
+		    if(variable=="qg1")        tmvaVars[iMvaVar]=localSelJets[0].getVal("qgMVA");
+		    if(variable=="qg2")        tmvaVars[iMvaVar]=localSelJets[1].getVal("qgMVA");
+		  }
+		if(tmvaReader) {
+		  for(size_t im=0; im<tmvaMethods.size(); im++)
+		    localTmvaDiscrVals[im]=tmvaReader->EvaluateMVA( tmvaMethods[im] );
+		}
+		
 		//re-assign the event category;
 		std::vector<TString> locTags(1,chTags[ich]);
+		TString mjjCat("");
+		std::vector<TString> localSelTags=getDijetCategories(mjj,hardpt,locTags,mjjCat);
+		float finalWeight(iweight);
+		if(gammaWgtHandler!=0) {
+		  std::vector<Float_t> gammaWgtVars(1,selPhotons[0].pt());
+		  finalWeight *= gammaWgtHandler->getWeightFor(gammaWgtVars,chTags[ich]+mjjCat);
+		}
+
+		//re-select the event and fill the shapes
 		for(unsigned int index=0; index<optim_Cuts2_jet_pt1.size();index++)
 		  {
 		    float minJetPt1=optim_Cuts2_jet_pt1[index];
 		    float minJetPt2=optim_Cuts2_jet_pt2[index];
-
 		    bool passLocalJet1Pt(localSelJets[0].pt()>minJetPt1);
 		    bool passLocalJet2Pt(localSelJets[1].pt()>minJetPt2);
 		    if(!passLocalJet1Pt || !passLocalJet2Pt) continue; 
 		    
-		    LorentzVector vbfSyst=localSelJets[0]+localSelJets[1];
-		    float mjj=vbfSyst.M();
-		    float detajj=fabs(localSelJets[0].eta()-localSelJets[1].eta());
-		    float spt=vbfSyst.pt()/(localSelJets[0].pt()+localSelJets[1].pt());
-		    
-		    TString mjjCat("");
-		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
-		    float finalWeight(iweight);
-		    if(gammaWgtHandler!=0) {
-		      finalWeight *= gammaWgtHandler->getWeightFor(selPhotons[0],chTags[ich]+mjjCat);
-		    }
 		    mon.fillHisto(TString("dijet_deta_shapes")+varNames[ivar],localSelTags,index,detajj,finalWeight);
-		    
-		    //set the variables to be used in the MVA evaluation (independently of its use)
-		    for(size_t mvar=0; mvar<tmvaVarNames.size(); mvar++) 
-		      {
-			std::string variable     = tmvaVarNames[mvar];
-			if(variable=="mjj")        tmvaVars[mvar]=mjj;
-			if(variable=="detajj")     tmvaVars[mvar]=detajj;
-			if(variable=="spt")        tmvaVars[mvar]=spt;
-		      }
 		    if(tmvaReader)
 		      for(size_t im=0; im<tmvaMethods.size(); im++)
-			{
-			  float iTmvaDiscrVal=tmvaReader->EvaluateMVA( tmvaMethods[im] );
-			  mon.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],localSelTags,index,iTmvaDiscrVal,finalWeight);
-			}
+			mon.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],localSelTags,index,localTmvaDiscrVals[im],finalWeight);
 		  }
 	      }
 	    }//end passZpt && passZeta

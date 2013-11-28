@@ -3,14 +3,16 @@
 using namespace std;
 
 //
-GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,bool forceAllToData)
+GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TString ewkSupWgt,bool forceAllToData)
 {
   //cfg
   bool isMC = runProcess.getParameter<bool>("isMC");
   if(forceAllToData) isMC=false;
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");  
   if(gammaPtWeightsFiles.size()==0) return;
-  TString wgtName("qt");
+  std::vector<TString> wgtNames; 
+  wgtNames.push_back("qt");
+  if(ewkSupWgt!="") wgtNames.push_back(ewkSupWgt);
   TString wgtType( isMC ? "mcfitwgts" : "datafitwgts");
   TString massType( isMC ? "mczmass" : "zmass");
     
@@ -32,16 +34,24 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,boo
 	  for(size_t id=0; id<dilCats_.size(); id++)
 	    {
 	      TString key = dilCats_[id] + cats[ic];
-
-	      //weights
-	      TString hname= key + "_" + wgtName + "_" + wgtType;
-	      TGraph *h = (TGraph *) fwgt->Get(hname);
-	      if(h!=0) wgtsH_[key] = h;
+	      std::vector<TGraph *> iwgts;
+	      for(size_t iw=0; iw<wgtNames.size(); iw++)
+		{ 
+		  //weights
+		  TString hname= key + "_" + wgtNames[iw] + "_" + wgtType;
+		  cout << hname << endl;
+		  TGraph *h = (TGraph *) fwgt->Get(hname);
+		  if(h) iwgts.push_back(h);
+		  
 	      
-	      //mass shape
-	      hname= key+"_"+massType;
-	      TH1 *massh = (TH1 *) fwgt->Get(hname);
-	      if(massh!=0) { massh->SetDirectory(0); zmassH_[key]= massh; }
+		  //mass shape
+		  if(iw>0) continue;
+		  hname= key+"_"+massType;
+		  TH1 *massh = (TH1 *) fwgt->Get(hname);
+		  if(massh!=0) { massh->SetDirectory(0); zmassH_[key]= massh; }
+		}
+	      
+	      if(iwgts.size()) wgtsH_[key] = iwgts;
 	    }
 	}
       fwgt->Close();
@@ -81,29 +91,19 @@ LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVectorF &gamma,TString ev
   return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
 }
 
-float GammaWeightsHandler::getWeightFor(LorentzVector &gamma, TString evCategoryLabel)
+float GammaWeightsHandler::getWeightFor(std::vector<Float_t> &vars, TString evCategoryLabel)
 {
   //get the weight (1.0 if not available)
   float weight(1.0);
   if(wgtsH_.find(evCategoryLabel) != wgtsH_.end())
     {
-      TGraph *h = wgtsH_[evCategoryLabel];
-      weight=h->Eval(gamma.pt());
-      if(weight<0) weight=0;
-    }
-    
-  return weight;
-}
-
-float GammaWeightsHandler::getWeightFor(LorentzVectorF &gamma, TString evCategoryLabel)
-{
-  //get the weight (1.0 if not available)
-  float weight(1.0);
-  if(wgtsH_.find(evCategoryLabel) != wgtsH_.end())
-    {
-      TGraph *h = wgtsH_[evCategoryLabel];
-      weight=h->Eval(gamma.pt());
-      if(weight<0) weight=0;
+      std::vector<TGraph *> &availableWeights=wgtsH_[evCategoryLabel];
+      for(size_t ivar=0; ivar<availableWeights.size(); ivar++)
+	{
+	  TGraph *h = availableWeights[ivar];
+	  if(vars.size()>ivar) weight*=h->Eval(vars[ivar]);
+	  if(weight<0) weight=0;
+	}
     }
     
   return weight;

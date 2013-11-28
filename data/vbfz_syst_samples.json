@@ -9,12 +9,12 @@
          "data":[
 	      {
                "dtag":"MC8TeV_DYToMuMu_M20_powheg",
-               "split":11,
+               "split":10,
                 "xsec":1510.0
               },
 	      {
                "dtag":"MC8TeV_DYToEE_M20_powheg",
-               "split":11,
+               "split":10,
                 "xsec":1510.0
               }
  	  ]
