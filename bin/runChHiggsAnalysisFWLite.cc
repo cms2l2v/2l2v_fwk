@@ -227,7 +227,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "taucharge",  ";p_{T}^{#tau};Events", 5,-2,2) );
   mon.addHistogram( new TH1F( "taudz",      ";dz^{#tau};Events", 50,0,10) );
   mon.addHistogram( new TH1F( "tauvz",      ";vz^{#tau};Events", 50,0,10) );
-
+  mon.addHistogram( new TH1F( "tauemfraction", ";emf^{#tau};Events", 50, 0., 5.) );
+  mon.addHistogram( new TH1F( "taudizeta"    , ";dZ^{#tau};Events", 50, 0., 10.) );
+  
   mon.addHistogram( new TH1F( "ntausos",      ";ntaus;Events", 6,0,6) );
   mon.addHistogram( new TH1F( "tauleadptos",  ";p_{T}^{#tau};Events", 50,0,500) );
   mon.addHistogram( new TH1F( "tauleadetaos", ";#eta^{#tau};Events", 50,-2.6,2.6) );
@@ -236,7 +238,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "tauchargeos",  ";p_{T}^{#tau};Events", 5,-2,2) );
   mon.addHistogram( new TH1F( "taudzos",      ";dz^{#tau};Events", 50,0,10) );
   mon.addHistogram( new TH1F( "tauvzos",      ";vz^{#tau};Events", 50,0,10) );
-
+  mon.addHistogram( new TH1F( "tauemfractionos", ";emf^{#tau};Events", 50, 0., 5.) );
+  mon.addHistogram( new TH1F( "taudizetaos"    , ";dZ^{#tau};Events", 50, 0., 10.) );
+  
 
   //bjets control
   mon.addHistogram( new TH1F( "nbjets",      ";ntaus;Events", 6,0,6) );
@@ -442,7 +446,8 @@ int main(int argc, char* argv[])
       for(unsigned int i=0;i<jetCollHandle->size();i++){jets.push_back(llvvJetExt((*jetCollHandle)[i]));}
 
       fwlite::Handle< llvvMet > metHandle;
-      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow"); 
+      //      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow"); 
+      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfType1CorrectedMet"); 
       if(!metHandle.isValid()){printf("llvvMet Object NotFound\n");continue;}
       llvvMet met = *metHandle;
 
@@ -1078,6 +1083,12 @@ int main(int argc, char* argv[])
 	  
 	  //         printf("TauId: "); for(unsigned int i=0;i<64;i++){printf("%i ", (int) ((tau.idbits>>i)&1));}printf("\n");
 	  
+	  if(!tau.isPF) continue; // We want PF taus
+	  if(abs(tau.dZ)>=0.5) continue;  
+	  if( tau.emfraction >= 2. /*0.95*/ ) continue;
+	  if(abs(tau.id/15.0) !=1) continue; // Non non-1 taus. Actually this should be always ok 
+	  
+
 	  if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))continue;
 	  if(!tau.passId(llvvTAUID::againstMuonTight2))continue; 
 	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
@@ -1103,13 +1114,12 @@ int main(int argc, char* argv[])
 	bool passOS(true);
 	if(pass1tau)  passOS = ((selTaus[0].id)*(selSingleLepLeptons[0].id)<0);      
 	
-	
-	mon.fillHisto("eventflowsinglelepton",chTags,0,weight);
-	if(passMuonPlusJets)                                               mon.fillHisto("eventflowsinglelepton",chTags,1,weight);
-	if(passMuonPlusJets && passMet)                                    mon.fillHisto("eventflowsinglelepton",chTags,2,weight);
-	if(passMuonPlusJets && passMet && pass1bjet)                       mon.fillHisto("eventflowsinglelepton",chTags,3,weight);
-	if(passMuonPlusJets && passMet && pass1bjet && pass1tau)           mon.fillHisto("eventflowsinglelepton",chTags,4,weight);
-	if(passMuonPlusJets && passMet && pass1bjet && pass1tau && passOS) mon.fillHisto("eventflowsinglelepton",chTags,5,weight);
+
+	if(passMuonPlusJets)                                               mon.fillHisto("eventflowsinglelepton",chTags,0,weight);
+	if(passMuonPlusJets && passMet)                                    mon.fillHisto("eventflowsinglelepton",chTags,1,weight);
+	if(passMuonPlusJets && passMet && pass1bjet)                       mon.fillHisto("eventflowsinglelepton",chTags,2,weight);
+	if(passMuonPlusJets && passMet && pass1bjet && pass1tau)           mon.fillHisto("eventflowsinglelepton",chTags,3,weight);
+	if(passMuonPlusJets && passMet && pass1bjet && pass1tau && passOS) mon.fillHisto("eventflowsinglelepton",chTags,4,weight);
 	
 	
 	if(passMuonPlusJets){
@@ -1129,21 +1139,26 @@ int main(int argc, char* argv[])
 	  mon.fillHisto("ntaus_1tau"        ,  chTags, selTaus.size(), weight);
 	  //mon.fillHisto("tauleadpt_1tau"    ,  chTags, selTaus.size()>0?selTaus[0].pt():-1,  weight);
 	  //mon.fillHisto("tauleadeta_1tau"   ,  chTags, selTaus.size()>0?selTaus[0].eta():-10, weight);
-	  mon.fillHisto("taupt"    ,  chTags, selTaus[0].pt(),  weight);
-	  mon.fillHisto("taueta"    , chTags, selTaus[0].eta(),  weight);
-	  mon.fillHisto("taucharge",  chTags, selTaus[0].id/15.0, weight);
-	  mon.fillHisto("taudz"    ,  chTags, selTaus[0].vz,  weight);
-	  mon.fillHisto("tauvz"    ,  chTags, selTaus[0].z_expo,  weight);
+	  mon.fillHisto("taupt"        , chTags, selTaus[0].pt(),  weight);
+	  mon.fillHisto("taueta"       , chTags, selTaus[0].eta(),  weight);
+	  mon.fillHisto("taucharge"    , chTags, selTaus[0].id/15.0, weight);
+	  mon.fillHisto("taudz"        , chTags, selTaus[0].vz,  weight);
+	  mon.fillHisto("tauvz"        , chTags, selTaus[0].z_expo,  weight);
+	  mon.fillHisto("tauemfraction", chTags, selTaus[0].emfraction,  weight);
+	  mon.fillHisto("taudizeta"    , chTags, selTaus[0].dZ,  weight);
 	  
 	  if(passOS){
 	    mon.fillHisto("ntausos"        ,  chTags, selTaus.size(), weight);
 	    //mon.fillHisto("tauleadptos"    ,  chTags, selTaus.size()>0?selTaus[0].pt():-1,  weight);
 	    //mon.fillHisto("tauleadetaos"   ,  chTags, selTaus.size()>0?selTaus[0].eta():-10, weight);
-	    mon.fillHisto("tauptos"    ,  chTags, selTaus[0].pt(),  weight);
-	    mon.fillHisto("tauetaos"    , chTags, selTaus[0].eta(),  weight);
-	    mon.fillHisto("tauchargeos",  chTags, selTaus[0].id/15.0, weight);
-	    mon.fillHisto("taudzos"    ,  chTags, selTaus[0].vz,  weight);
-	    mon.fillHisto("tauvzos"    ,  chTags, selTaus[0].z_expo,  weight);
+	    mon.fillHisto("tauptos"        ,  chTags, selTaus[0].pt(),  weight);
+	    mon.fillHisto("tauetaos"       , chTags, selTaus[0].eta(),  weight);
+	    mon.fillHisto("tauchargeos"    ,  chTags, selTaus[0].id/15.0, weight);
+	    mon.fillHisto("taudzos"        ,  chTags, selTaus[0].vz,  weight);
+	    mon.fillHisto("tauvzos"        ,  chTags, selTaus[0].z_expo,  weight);
+	    mon.fillHisto("tauemfractionos", chTags, selTaus[0].emfraction,  weight);
+	    mon.fillHisto("taudizetaos"    , chTags, selTaus[0].dZ,  weight);
+	  
 	  }
 	}
      }
