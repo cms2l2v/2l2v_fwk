@@ -45,7 +45,7 @@ TString signalTag("");
 std::set<TString> systVars;
 std::vector<int> binsToProject;
 std::vector<std::string> channels;
-float lumiUnc(0.044);
+float lumiUnc(0.027);
 float selEffUnc(0.02);
 float iEcm(8);
 bool doPowers = true;
