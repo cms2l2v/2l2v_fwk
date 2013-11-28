@@ -18,9 +18,9 @@ elif [ "${1}" = "fwlite" ]; then
     if [ "${2}" = "anal_sus" ]; then
 	echo "Not ready yet" 
     elif [ "${2}" = "anal_sm" ]; then
-	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json -o ${BASEDIR} -d  /store/group/phys_higgs/cmshzz2l2v/2013_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/all-samples_fwlite.json -o ${BASEDIR} -d  /store/group/phys_higgs/cmshzz2l2v/2013_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
     elif [ "${2}" = "plots" ]; then
-	runPlotterFWLite --iEcm 8 --iLumi 19577 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSWC_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json
+	runPlotterFWLite --iEcm 8 --iLumi 19782 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc
     fi
 elif [ "${1}" = "current" ]; then
 # Fixed run 
@@ -156,6 +156,7 @@ elif [ "${1}" = "current" ]; then
 	mkdir -p datacardsByDecaySystPAS/500 
 	mkdir -p datacardsByDecaySystPAS/600 
 	mkdir -p datacardsByDecaySystPAS/700
+
 	
 	for i in 180 200 220 250 300 350 500 600 700
 	  do
@@ -168,6 +169,28 @@ elif [ "${1}" = "current" ]; then
 	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu & 
 	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu & 
 	done
+
+
+    elif [ "${2}" = "mhmax" ]; then
+	
+	mkdir -p datacardsByDecayMhmax/180
+	mkdir -p datacardsByDecayMhmax/200 
+	mkdir -p datacardsByDecayMhmax/220 
+	mkdir -p datacardsByDecayMhmax/250 
+	mkdir -p datacardsByDecayMhmax/300
+
+	mkdir -p datacardsByDecayScan/180
+	mkdir -p datacardsByDecayScan/200 
+	mkdir -p datacardsByDecayScan/220 
+	mkdir -p datacardsByDecayScan/250 
+	mkdir -p datacardsByDecayScan/300
+	
+	for i in 180 200 220 250 300
+	  do
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecayMhmax/${i}/ --suffix mhmax --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayScan/${i}/ --suffix scan --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	done
+	
 	
     elif [ "${2}" = "put" ]; then
 	outputdir=tempDirForNotePlots/
