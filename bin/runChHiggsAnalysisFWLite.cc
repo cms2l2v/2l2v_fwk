@@ -714,7 +714,7 @@ int main(int argc, char* argv[])
 	//
 	//JET/MET ANALYSIS
 	//
-	llvvJetExtCollection selJets, selJetsNoId, selBJets;
+	llvvJetExtCollection selJets, /*selJetsNoId,*/ selBJets;
 	int njets(0), nbjets(0);
 	
 	for(size_t ijet=0; ijet<jets.size(); ijet++) 
@@ -731,16 +731,6 @@ int main(int argc, char* argv[])
 	    jets[ijet] *= newJECSF;
 	    jets[ijet].torawsf = 1./newJECSF;
 	    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
-	    
-	    //bjets
-	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
-	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
-	    if(jets[ijet].pt()>30 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.244){
-	      // if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.898){
-	      selBJets.push_back(jets[ijet]);  
-	      nbjets++;
-	    }
-	    
 	    
 	    //cross-clean with selected leptons and photons
 	    double minDRlj(9999.),minDRlg(9999.);
@@ -769,22 +759,33 @@ int main(int argc, char* argv[])
 	      }
 	    
 	  	
-	  //add scale/resolution uncertainties
-	  std::vector<float> smearPt=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),jets[ijet].genj.pt());
-	  jets[ijet].jer     = isMC ? smearPt[0] : jets[ijet].pt();
-	  jets[ijet].jerup   = isMC ? smearPt[1] : jets[ijet].pt();
-	  jets[ijet].jerdown = isMC ? smearPt[2] : jets[ijet].pt();
-	  smearPt=utils::cmssw::smearJES(jets[ijet].pt(),jets[ijet].eta(), totalJESUnc);
-	  jets[ijet].jesup   = isMC ? smearPt[0] : jets[ijet].pt();
-	  jets[ijet].jesdown = isMC ? smearPt[1] : jets[ijet].pt();
-
-	  selJetsNoId.push_back(jets[ijet]);
-	  
-	  
-	  if(passPFloose && passLooseSimplePuId){
+	    //add scale/resolution uncertainties
+	    std::vector<float> smearPt=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),jets[ijet].genj.pt());
+	    jets[ijet].jer     = isMC ? smearPt[0] : jets[ijet].pt();
+	    jets[ijet].jerup   = isMC ? smearPt[1] : jets[ijet].pt();
+	    jets[ijet].jerdown = isMC ? smearPt[2] : jets[ijet].pt();
+	    smearPt=utils::cmssw::smearJES(jets[ijet].pt(),jets[ijet].eta(), totalJESUnc);
+	    jets[ijet].jesup   = isMC ? smearPt[0] : jets[ijet].pt();
+	    jets[ijet].jesdown = isMC ? smearPt[1] : jets[ijet].pt();
+	    
+	    //selJetsNoId.push_back(jets[ijet]);
+	    
+	    if(!passPFloose || !passLooseSimplePuId || jets[ijet].pt()<minJetPtToApply || abs(jets[ijet].eta())>2.5) continue;
+	    
+	    //if(passPFloose && passLooseSimplePuId){
+	    //  selJets.push_back(jets[ijet]);
+	    //  if(jets[ijet].pt()>minJetPtToApply) njets++;
+	    //}
 	    selJets.push_back(jets[ijet]);
-	    if(jets[ijet].pt()>minJetPtToApply) njets++;
-	  }
+	    njets++;
+
+	    
+	    //bjets
+	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
+	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
+	    if(jets[ijet].origcsv<0.244) continue;
+	    selBJets.push_back(jets[ijet]);  
+	    nbjets++;
 	  }
 	std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
 	std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
@@ -926,7 +927,7 @@ int main(int argc, char* argv[])
 	mon.fillHisto("nvtxraw"  ,   chTags, nvtx,      weight/puWeight);
 	
 	//select the event
-	TString var(""); // FIXME: statistical analysis 
+ 	TString var(""); // FIXME: statistical analysis 
 	if(passDileptonSelection){     mon.fillHisto("eventflowdileptons"+var, chTags, 1, weight);
 	  if( passJetSelection){  mon.fillHisto("eventflowdileptons"+var, chTags, 2, weight);
 	    // jets control
@@ -954,7 +955,7 @@ int main(int argc, char* argv[])
 
       }
 
-
+      
       // Single lepton analysis
       // ----------------------
       if(chTags[1] == "singlemu"){
@@ -981,7 +982,7 @@ int main(int argc, char* argv[])
 	//
 	//JET/MET ANALYSIS
 	//
-	llvvJetExtCollection selJets, selJetsNoId, selBJets;
+	llvvJetExtCollection selJets, /*selJetsNoId,*/ selBJets;
 	int njets(0), nbjets(0);
 	int nTrueJets(0);
 	int nTauJet(0);
@@ -1000,15 +1001,6 @@ int main(int argc, char* argv[])
 	    jets[ijet] *= newJECSF;
 	    jets[ijet].torawsf = 1./newJECSF;
 	    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
-	    
-	    //bjets
-	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
-	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
-	    if(jets[ijet].pt()>30 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.244){
-	      // if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.898){
-	      selBJets.push_back(jets[ijet]);  
-	      nbjets++;
-	    }
 	    
 	    
 	    //cross-clean with selected leptons and photons
@@ -1038,15 +1030,6 @@ int main(int argc, char* argv[])
 	      }
 	    
 	    
-	    
-	    bool jLock(false);
-	    if(jets[ijet].pt()>30 && fabs(jets[ijet].eta())<2.4 && passPFloose && passLooseSimplePuId){
-	      nTrueJets++;
-	      jLock=true;
-	    }
-	    if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && !jLock && passPFloose && passLooseSimplePuId)
-	      nTauJet++;
-	    
 	    //add scale/resolution uncertainties
 	    std::vector<float> smearPt=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),jets[ijet].genj.pt());
 	    jets[ijet].jer     = isMC ? smearPt[0] : jets[ijet].pt();
@@ -1056,11 +1039,31 @@ int main(int argc, char* argv[])
 	    jets[ijet].jesup   = isMC ? smearPt[0] : jets[ijet].pt();
 	    jets[ijet].jesdown = isMC ? smearPt[1] : jets[ijet].pt();
 	    
-	    selJetsNoId.push_back(jets[ijet]);
-	    if(passPFloose && passLooseSimplePuId){
-	      selJets.push_back(jets[ijet]);
-	      if(jets[ijet].pt()>minJetPtToApply) njets++;
+	    //selJetsNoId.push_back(jets[ijet]);
+    
+	    
+	    bool jLock(false);
+	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId){
+	      nTrueJets++;
+	      jLock=true;
 	    }
+	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && !jLock && passPFloose && passLooseSimplePuId)
+	      nTauJet++;
+	    
+	    if(!passPFloose || !passLooseSimplePuId || jets[ijet].pt()<minJetPtToApply || abs(jets[ijet].eta())>2.5) continue;	    
+	    //	    if(passPFloose && passLooseSimplePuId){
+	    //	      selJets.push_back(jets[ijet]);
+	    //	      if(jets[ijet].pt()>minJetPtToApply) njets++;
+	    selJets.push_back(jets[ijet]);
+	    njets++;
+
+	    //bjets
+	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
+	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
+	    if(jets[ijet].origcsv<0.244) continue;
+	      // if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.898){
+	    selBJets.push_back(jets[ijet]);  
+	    nbjets++;
 	  }
 	std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
 	std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
@@ -1088,7 +1091,7 @@ int main(int argc, char* argv[])
 	  if( tau.emfraction >= 2. /*0.95*/ ) continue;
 	  if(abs(tau.id/15.0) !=1) continue; // Non non-1 taus. Actually this should be always ok 
 	  
-
+	  
 	  if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))continue;
 	  if(!tau.passId(llvvTAUID::againstMuonTight2))continue; 
 	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
@@ -1107,14 +1110,13 @@ int main(int argc, char* argv[])
 	
 	//      bool otherTriggersVeto( mumuTrigger && eeTrigger ); 
 	bool additionalLeptonsVeto(muTrigger && (nVetoE>0 || nVetoMu>1) );
-	bool passMuonPlusJets(selSingleLepLeptons.size()==1 && selJets.size() > 2 && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
+	bool passMuonPlusJets(selSingleLepLeptons.size()==1 && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tau(selTaus.size()==1);
 	bool passOS(true);
 	if(pass1tau)  passOS = ((selTaus[0].id)*(selSingleLepLeptons[0].id)<0);      
 	
-
 	if(passMuonPlusJets)                                               mon.fillHisto("eventflowsinglelepton",chTags,0,weight);
 	if(passMuonPlusJets && passMet)                                    mon.fillHisto("eventflowsinglelepton",chTags,1,weight);
 	if(passMuonPlusJets && passMet && pass1bjet)                       mon.fillHisto("eventflowsinglelepton",chTags,2,weight);
@@ -1158,10 +1160,10 @@ int main(int argc, char* argv[])
 	    mon.fillHisto("tauvzos"        ,  chTags, selTaus[0].z_expo,  weight);
 	    mon.fillHisto("tauemfractionos", chTags, selTaus[0].emfraction,  weight);
 	    mon.fillHisto("taudizetaos"    , chTags, selTaus[0].dZ,  weight);
-	  
+	    
 	  }
 	}
-     }
+      }
       
       
       //       //
