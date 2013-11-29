@@ -27,6 +27,7 @@
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
+#include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 
 
 
@@ -36,6 +37,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TGraphErrors.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TEventList.h"
@@ -115,8 +117,55 @@ int main(int argc, char* argv[])
     fIn->Close();
     cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
   }
+ 
+
+  std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
   
+  TString wFile("");
+  if(weightsFile.size()) wFile = TString(gSystem->ExpandPathName(weightsFile[0].c_str()));
   
+  //b-tag efficiencies read b-tag efficiency map
+  std::map<std::pair<TString,TString>, std::pair<TGraphErrors *,TGraphErrors *> > btagEffCorr;
+  if(weightsFile.size() && isMC)
+    {
+      TString btagEffCorrUrl(wFile); btagEffCorrUrl += "/btagEff.root";
+      gSystem->ExpandPathName(btagEffCorrUrl);
+      TFile *btagF=TFile::Open(btagEffCorrUrl);
+      if(btagF!=0 && !btagF->IsZombie())
+	{
+	  TList *dirs=btagF->GetListOfKeys();
+	  for(int itagger=0; itagger<dirs->GetEntries(); itagger++)
+	    {
+	      TString iDir(dirs->At(itagger)->GetName());
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"b") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/beff"),(TGraphErrors *) btagF->Get(iDir+"/sfb") );
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"c") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/ceff"),(TGraphErrors *) btagF->Get(iDir+"/sfc") );
+	      btagEffCorr[ std::pair<TString,TString>(iDir,"udsg") ] 
+		= std::pair<TGraphErrors *,TGraphErrors *>( (TGraphErrors *) btagF->Get(iDir+"/udsgeff"),(TGraphErrors *) btagF->Get(iDir+"/sfudsg") );
+	    }
+	}
+      cout << btagEffCorr.size() << " b-tag correction factors have been read" << endl;
+    }
+  
+  std::vector<double> btagBins; btagBins.clear();
+  btagBins.push_back(35  );
+  btagBins.push_back(45  );
+  btagBins.push_back(55  );
+  btagBins.push_back(65  );
+  btagBins.push_back(75  );
+  btagBins.push_back(90  );
+  btagBins.push_back(110 );
+  btagBins.push_back(140 );
+  btagBins.push_back(185 );
+  btagBins.push_back(235 );
+  btagBins.push_back(290 );
+  btagBins.push_back(360 );
+  btagBins.push_back(450 );
+  btagBins.push_back(550 );
+  btagBins.push_back(700 );
+  
+
   //summary ntuple
   TString summaryTupleVarNames("ch:weight:nInitEvent:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:fisher:llr:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15");
   TNtuple *summaryTuple = new TNtuple("ewkzp2j","ewkzp2j",summaryTupleVarNames);
@@ -520,15 +569,15 @@ int main(int argc, char* argv[])
 	  if(isSingleMuPD && abs(lid)==11) continue; // FIXME: raw veto
 	  
 	  //apply muon corrections
-	  if(lid==13 && muCor){
+	  if(abs(lid)==13 && muCor){
             TLorentzVector p4(leptons[ilep].px(), leptons[ilep].py(), leptons[ilep].pz(), leptons[ilep].energy());
 	    muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
 	    if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
             leptons[ilep].SetPxPyPzE(p4.Px(), p4.Py(), p4.Pz(), p4.Energy());
 	  }
-	  
-	  //no need for charge info any longer
+	  // no need for charge sign anymore
 	  lid=abs(lid);
+	  
 	  TString lepStr( lid==13 ? "mu" : "e");
 	  
 	  //kinematics
@@ -537,7 +586,7 @@ int main(int argc, char* argv[])
 
 
 	  // Dilepton kin
-	  if(leptons[ilep].pt()< (lid==11 ? 35 :20 ) )                   passKin=false;
+	  if(leptons[ilep].pt()< 20. )                   passKin=false;
 	  if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
 	  if(lid==11 && (leta>1.4442 && leta<1.5660)) passKin=false; // Crack veto
 
@@ -565,7 +614,7 @@ int main(int argc, char* argv[])
 	  //isolation
           float relIso( utils::cmssw::relIso(leptons[ilep], rho) );
           if( (lid==11 && relIso>0.15) || (lid==13 && relIso>0.20) ) passIso=false;
-          if( (lid==11 && relIso>0.1)  || (lid==13 && relIso>0.12) ) passSingleLepIso=false;
+          if( (lid==11 && relIso>0.15)  || (lid==13 && relIso>0.12) ) passSingleLepIso=false;
 	  
 	  if(passId          && passIso          && passKin         ) selLeptons.push_back(leptons[ilep]);
 	  if(passSingleLepId && passSingleLepIso && passSingleLepKin) selSingleLepLeptons.push_back(leptons[ilep]);
@@ -597,23 +646,13 @@ int main(int argc, char* argv[])
       if(selSingleLepLeptons.size()>0){
 	for(size_t ilep=0; ilep<leptons.size(); ilep++)
 	  {
-	    bool passKin(true),passId(true),passIso(true);
-	    int lid(leptons[ilep].id);
 	    if(leptons[ilep] == leadingSingleLep) continue; // Don't veto on the main lepton
+	    int lid(abs(leptons[ilep].id));
+    	    if(isSingleMuPD && abs(lid)==11){ nVetoE++; continue;} // FIXME: temp Raw veto
+
+	    bool passKin(true),passId(true),passIso(true);	    
+	    // Muon correction already applied in the first loop. LoL.
 	    
-	    if(isSingleMuPD && abs(lid)==11){ nVetoE++; continue;} // FIXME: temp Raw veto
-	    
-	    // Already applied in the first loop. LoL.
-	    //	  //apply muon corrections
-	    //	  if(lid==13 && muCor){
-	    //            TLorentzVector p4(leptons[ilep].px(), leptons[ilep].py(), leptons[ilep].pz(), leptons[ilep].energy());
-	    //	    muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
-	    //	    if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
-	    //            leptons[ilep].SetPxPyPzE(p4.Px(), p4.Py(), p4.Pz(), p4.Energy());
-	    //	  }
-	    
-	    //no need for charge info any longer
-	    lid=abs(lid);
 	    TString lepStr( lid==13 ? "mu" : "e");
 	    
 	    
@@ -731,7 +770,7 @@ int main(int argc, char* argv[])
 	    jets[ijet] *= newJECSF;
 	    jets[ijet].torawsf = 1./newJECSF;
 	    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
-	    
+
 	    //cross-clean with selected leptons and photons
 	    double minDRlj(9999.),minDRlg(9999.);
 	    for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
@@ -767,7 +806,8 @@ int main(int argc, char* argv[])
 	    smearPt=utils::cmssw::smearJES(jets[ijet].pt(),jets[ijet].eta(), totalJESUnc);
 	    jets[ijet].jesup   = isMC ? smearPt[0] : jets[ijet].pt();
 	    jets[ijet].jesdown = isMC ? smearPt[1] : jets[ijet].pt();
-	    
+	  
+	    double jetpt=jets[ijet].pt();
 	    //selJetsNoId.push_back(jets[ijet]);
 	    
 	    if(!passPFloose || !passLooseSimplePuId || jets[ijet].pt()<minJetPtToApply || abs(jets[ijet].eta())>2.5) continue;
@@ -783,7 +823,62 @@ int main(int argc, char* argv[])
 	    //bjets
 	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
 	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
-	    if(jets[ijet].origcsv<0.244) continue;
+	
+	    bool hasCSVV1L(jets[ijet].csv >0.405);
+	    bool hasBtagCorr(hasCSVV1L);
+	    if(isMC){
+	      // set a unique seed
+	      double bseed_sin_phi = sin(jets[ijet].phi()*1000000);
+	      double bseed = abs(static_cast<int>(bseed_sin_phi*100000));
+	      
+	      // get jet flavour
+	      int bflavid= jets[ijet].genflav;
+	      
+	      //Initialize
+	      BTagSFUtil btsfutil( bseed );
+	      
+	      TString flavKey("udsg");
+	      if(abs(bflavid)==4) flavKey="c";
+	      if(abs(bflavid)==5) flavKey="b";
+	      std::pair<TString,TString> btagKey("csvL",flavKey);
+	      if(btagEffCorr.find(btagKey)!=btagEffCorr.end())
+		{
+		  TGraphErrors* mceffGr=btagEffCorr[btagKey].first;
+		  TGraphErrors* sfGr=btagEffCorr[btagKey].second;
+		  if(mceffGr && sfGr){
+		    float eff=mceffGr->Eval(jetpt);
+		    float sf=sfGr->Eval(jetpt);	
+		    if(var == "btagup" || var == "btagdown" || var == "unbtagup" || var == "unbtagdown"){
+		      // Apply uncertainty shift
+		      float sferr(0.), delta(1000000.);
+		      for(size_t ind=0; ind<btagBins.size(); ++ind){
+			float tempDelta( fabs(jetpt - btagBins[ind]) );
+			if(tempDelta<delta){
+			  delta=tempDelta;
+			  if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
+			  else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+			}
+		      }
+		      
+		      //		      for(int ind=0; ind<sfGr->GetN(); ++ind){
+		      //			double xv(0.), yv(0.);
+		      //			sfGr->GetPoint(ind,xv,yv);
+		      //			float tempDelta(jetpt - xv );
+		      //			if(tempDelta<delta){
+		      //			  delta=tempDelta; 
+		      //			  if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
+		      //			  else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+		      //			}
+		      //		      }
+		      sf+=sferr;
+		    }
+		    btsfutil.modifyBTagsWithSF(hasBtagCorr, sf, eff);	    
+		  }
+		}
+	    }
+	    //	    if(!hasCSVV1L) continue;
+	    if(!hasBtagCorr) continue;
+	    
 	    selBJets.push_back(jets[ijet]);  
 	    nbjets++;
 	  }
@@ -1040,7 +1135,7 @@ int main(int argc, char* argv[])
 	    jets[ijet].jesdown = isMC ? smearPt[1] : jets[ijet].pt();
 	    
 	    //selJetsNoId.push_back(jets[ijet]);
-    
+	    double jetpt=jets[ijet].pt();
 	    
 	    bool jLock(false);
 	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId){
@@ -1060,7 +1155,62 @@ int main(int argc, char* argv[])
 	    //bjets
 	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
 	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
-	    if(jets[ijet].origcsv<0.244) continue;
+
+	    bool hasCSVV1L(jets[ijet].csv >0.405);
+	    bool hasBtagCorr(hasCSVV1L);
+	    if(isMC){
+	      // set a unique seed
+	      double bseed_sin_phi = sin(jets[ijet].phi()*1000000);
+	      double bseed = abs(static_cast<int>(bseed_sin_phi*100000));
+	      
+	      // get jet flavour
+	      int bflavid= jets[ijet].genflav;
+	      
+	      //Initialize
+	      BTagSFUtil btsfutil( bseed );
+	      
+	      TString flavKey("udsg");
+	      if(abs(bflavid)==4) flavKey="c";
+	      if(abs(bflavid)==5) flavKey="b";
+	      std::pair<TString,TString> btagKey("csvL",flavKey);
+	      if(btagEffCorr.find(btagKey)!=btagEffCorr.end())
+		{
+		  TGraphErrors* mceffGr=btagEffCorr[btagKey].first;
+		  TGraphErrors* sfGr=btagEffCorr[btagKey].second;
+		  if(mceffGr && sfGr){
+		    float eff=mceffGr->Eval(jetpt);
+		    float sf=sfGr->Eval(jetpt);	
+		    if(var == "btagup" || var == "btagdown" || var == "unbtagup" || var == "unbtagdown"){
+		      // Apply uncertainty shift
+		      float sferr(0.), delta(1000000.);
+		      for(size_t ind=0; ind<btagBins.size(); ++ind){
+			float tempDelta( fabs(jetpt - btagBins[ind]) );
+			if(tempDelta<delta){
+			  delta=tempDelta;
+			  if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
+			  else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+			}
+		      }
+		      
+		      //		      for(int ind=0; ind<sfGr->GetN(); ++ind){
+		      //			double xv(0.), yv(0.);
+		      //			sfGr->GetPoint(ind,xv,yv);
+		      //			float tempDelta(jetpt - xv );
+		      //			if(tempDelta<delta){
+		      //			  delta=tempDelta; 
+		      //			  if      (var == "btagup"   || var == "unbtagup")   sferr=fabs(sfGr->GetErrorYhigh(ind));  // Ensure positive number
+		      //			  else if (var == "btagdown" || var == "unbtagdown") sferr=0-fabs(sfGr->GetErrorYlow(ind)); // Ensure negative number
+		      //			}
+		      //		      }
+		      sf+=sferr;
+		    }
+		    btsfutil.modifyBTagsWithSF(hasBtagCorr, sf, eff);	    
+		  }
+		}
+	    }
+	    //	    if(!hasCSVV1L) continue;
+	    if(!hasBtagCorr) continue;
+
 	      // if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.898){
 	    selBJets.push_back(jets[ijet]);  
 	    nbjets++;
