@@ -2,6 +2,7 @@
     "proc":[
 	{
         "tag":"VV",
+        "label":"Diboson",			
         "isdata":false,
         "color":"592",
         "lcolor":1,
@@ -154,6 +155,7 @@
         },
 	{
 	 "tag":"Z#rightarrow ll",
+	 "label": "DY+jets",
          "isdata":false,
          "color":"831",
 	 "lcolor":1,
