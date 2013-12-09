@@ -100,20 +100,26 @@ JSONWrapper::Object make_multicrab_json(std::string jsonFile){
    return AllJson;
 }
 
-void make_multicrab_cfg(JSONWrapper::Object& Root){
+void make_multicrab_cfg(JSONWrapper::Object& Root, bool forData){
     FILE* pFile;
    /////////////  MC ///////////////////
-   pFile = fopen("multicrab_mc.cfg", "w");
+   pFile = fopen("multicrab.cfg", "w");
    fprintf(pFile, "[MULTICRAB]\n");
    fprintf(pFile, "\n");
    fprintf(pFile, "[COMMON]\n");
-   fprintf(pFile, "CMSSW.pset            = runObjectProducer_mc_cfg.py\n");
-   fprintf(pFile, "USER.user_remote_dir  = /store/user/quertenmont/13_08_15_2l2nu_EDMtuples/\n");
+   if(forData){
+      fprintf(pFile, "CMSSW.pset            = runObjectProducer_data_cfg.py\n");
+      fprintf(pFile, "USER.user_remote_dir  = /store/user/quertenmont/13_08_15_2l2nu_EDMtuples/\n");
+      fprintf(pFile, "CMSSW.lumi_mask       = /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt\n");
+   }else{
+     fprintf(pFile, "CMSSW.pset            = runObjectProducer_mc_cfg.py\n");
+     fprintf(pFile, "USER.user_remote_dir  = /store/user/quertenmont/13_08_15_2l2nu_EDMtuples/\n");
+   }
    fprintf(pFile, "\n");
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(size_t ip=0; ip<Process.size(); ip++){
-       if(Process[ip].getBool  ("isdata"))continue;          
+       if((forData && !Process[ip].getBool  ("isdata")) or (!forData && Process[ip].getBool  ("isdata")))continue;          
        std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
        for(size_t id=0; id<Samples.size(); id++){
           if(!Samples[id].isTag("dtag")) continue;
@@ -122,59 +128,49 @@ void make_multicrab_cfg(JSONWrapper::Object& Root){
           fprintf(pFile, "CMSSW.datasetpath     = %s\n", Samples[id].getString("dset", "").c_str());
           fprintf(pFile, "\n");
        }
-    }
-   fclose(pFile);
-
-   /////////////  data ///////////////////
-   pFile = fopen("multicrab_data.cfg", "w");
-   fprintf(pFile, "[MULTICRAB]\n");
-   fprintf(pFile, "\n");
-   fprintf(pFile, "[COMMON]\n");
-   fprintf(pFile, "CMSSW.pset            = runObjectProducer_data_cfg.py\n");
-   fprintf(pFile, "USER.user_remote_dir  = /store/user/quertenmont/13_08_15_2l2nu_EDMtuples/\n");
-   fprintf(pFile, "CMSSW.lumi_mask       = /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt\n");
-   fprintf(pFile, "\n");
-
-   for(size_t ip=0; ip<Process.size(); ip++){
-       if(!Process[ip].getBool  ("isdata"))continue;   
-       std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
-       for(size_t id=0; id<Samples.size(); id++){
-          if(!Samples[id].isTag("dtag")) continue;
-
-          fprintf(pFile, "[%s]\n",Samples[id].getString("dtag").c_str());
-          fprintf(pFile, "CMSSW.datasetpath     = %s\n", Samples[id].getString("dset", "").c_str());
-          fprintf(pFile, "\n");
-       }
-    }
+   }
    fclose(pFile);
 }
 
 
 int main(int argc, char* argv[]){
+   bool multicrab   = false;
+   bool multicrabMC = false;
+   std::vector<string> inJsons;
+   string outJson = "";    
+
    std::vector<string> args;
    for(int i=1;i<argc;i++){
      args.push_back(argv[i]);
      string arg(argv[i]);
      if(arg.find("--help")!=string::npos){
-        printf("--help   --> print this helping text\n");
-//        printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
+        printf("--help               --> print this helping text\n");
+        printf("--in  [in1,...,inN)] --> input  Json files \n");
+        printf("--out [out]          --> output Json file \n");
+        printf("--multicrab          --> create a multicrab.cfg file for the data samples \n");
+        printf("--multicrabMC        --> create a multicrab.cfg file for the MC samples \n");
 	return 0;
      }
-//     if(arg.find("--iLumi"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iLumi); i++; printf("Lumi = %f\n", iLumi); }
+
+     else if(arg.find("--in")!=string::npos){ while(i+1<argc && string(argv[i+1]).find("--")!=0){inJsons.push_back(argv[i+1]);  i++;}  printf("input  Json files:\n"); for(unsigned int j=0;j<inJsons.size();j++){printf("\t - %s\n", inJsons[j].c_str());}  }
+     else if(arg.find("--out")!=string::npos && i+1<argc){outJson = argv[i+1];  i++;  printf("output Json file : %s\n", outJson.c_str());}
+     else if(arg.find("--multicrabMC")!=string::npos){ multicrabMC = true; }
+     else if(arg.find("--multicrab"  )!=string::npos){ multicrab   = true; }
    }
 
 
- 
-   JSONWrapper::Object AllJson = merge_json(args);
+   if(multicrab || multicrabMC){
+      JSONWrapper::Object AllJson = make_multicrab_json(inJsons[0]);
+      make_multicrab_cfg(AllJson, !multicrabMC);
+   }
 
 
-//   JSONWrapper::Object AllJson = make_multicrab_json(argv[1]);
-//   make_multicrab_cfg(AllJson);
-
- 
-   FILE* pFile = fopen("tmp.json", "w"); 
-   AllJson.Dump(pFile);
-   fclose(pFile);
+   if(outJson!=""){
+      JSONWrapper::Object AllJson = merge_json(inJsons); 
+      FILE* pFile = fopen("tmp.json", "w"); 
+      AllJson.Dump(pFile);
+      fclose(pFile);
+   }
 
 
 
