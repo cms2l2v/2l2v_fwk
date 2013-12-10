@@ -28,7 +28,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
-
+#include "UserCode/llvv_fwk/interface/TopPtWeighter.h"
 
 
 #include "TSystem.h"
@@ -164,6 +164,8 @@ int main(int argc, char* argv[])
   btagBins.push_back(450 );
   btagBins.push_back(550 );
   btagBins.push_back(700 );
+
+
   
 
   //summary ntuple
@@ -368,6 +370,15 @@ int main(int argc, char* argv[])
   }
   double xsecWeight(xsec/nInitEvent);
   if(!isMC) xsecWeight=1.0;
+
+  bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_") ));
+  // Top Pt weighter
+  TopPtWeighter* topPtWgt=0;
+  if(isTTbarMC){
+    TString shapesDir("");
+    if(weightsFile.size()) shapesDir=wFile;
+    topPtWgt = new TopPtWeighter(outFileUrl, outUrl, shapesDir, ev );
+  }
 
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
@@ -1072,6 +1083,41 @@ int main(int argc, char* argv[])
 	  TotalWeight_minus = singleLepPuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (singleLepPUNorm[1]/singleLepPUNorm[0]);
 	}
 	// FIXME: add single lepton SFs
+
+	// Top Pt reweighting
+	double tPt(0.), tbarPt(0.); 
+	bool hasTop(false);
+	int ngenLeptonsStatus3(0);
+	float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+	if(isMC)
+	  {
+	    for(size_t igen=0; igen<gen.size(); igen++){
+	      if(gen[igen].status!=3) continue;
+	      int absid=abs(gen[igen].id);
+	      if(absid==6){
+		hasTop=true;
+		if(isTTbarMC){
+		  if(gen[igen].id > 0) tPt=gen[igen].pt();
+		  else              tbarPt=gen[igen].pt();
+		}
+	      }
+	      if(absid!=11 && absid!=13 && absid!=15) continue;
+	      ngenLeptonsStatus3++;
+	    }
+	    if(mctruthmode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
+	    if(mctruthmode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
+	  }
+	
+	if(tPt>0 && tbarPt>0 && topPtWgt)
+	  {
+	    topPtWgt->computeWeight(tPt,tbarPt);
+	    topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
+	    wgtTopPtUp /= wgtTopPt;
+	    wgtTopPtDown /= wgtTopPt;
+	  }
+
+	weight *= wgtTopPt; //*singlelscaleFactor
+	// FIXME: add top pt weight syst
 
 
 	//generator level
