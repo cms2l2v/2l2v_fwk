@@ -525,7 +525,7 @@ int main(int argc, char* argv[])
       if(!nvtxHandle.isValid()){printf("nvtx Object NotFound\n");continue;}
       int nvtx(*nvtxHandle);
 
-      //require compatibilitiy of the event with the PD
+      //require compatibilitity of the event with the PD
       bool eeTrigger          ( triggerBits[0]                   );
       bool emuTrigger         ( triggerBits[4] || triggerBits[5] );
       bool muTrigger          ( triggerBits[6]                   );
@@ -537,8 +537,16 @@ int main(int argc, char* argv[])
       if(filterOnlySINGLEMU) { eeTrigger=false; emuTrigger=false; mumuTrigger=false;                  /*eTrigger=false;*/}
       //      if(filterOnlySINGLEELE){ eeTrigger=false; emuTrigger=false; mumuTrigger=false; muTrigger=false;                }
       
-      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
-      
+      //      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
+
+// test mu//      //////////////////////
+// test mu//      if(muTrigger){
+// test mu//	eeTrigger=false;
+// test mu//	emuTrigger=false;
+// test mu//	mumuTrigger=false;
+// test mu//      }
+// test mu//      //////////////////////
+     
       // PU weighting now follows channel selection, to take into account the different pileup distribution between singleMu and dileptons
       //pileup weight
       float weight(1.0);
@@ -716,7 +724,7 @@ int main(int argc, char* argv[])
       if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
       else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
       else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-      else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& !nVetoE && !nVetoMu ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
+      else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
       else continue;
       
       if(chTags.size()==0) continue;
@@ -1138,14 +1146,14 @@ int main(int argc, char* argv[])
 	    double jetpt=jets[ijet].pt();
 	    
 	    bool jLock(false);
-	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId){
+	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId){
 	      nTrueJets++;
 	      jLock=true;
 	    }
-	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && !jLock && passPFloose && passLooseSimplePuId)
+	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && !jLock && passPFloose && passLoosePuId)
 	      nTauJet++;
 	    
-	    if(!passPFloose || !passLooseSimplePuId || jets[ijet].pt()<minJetPtToApply || abs(jets[ijet].eta())>2.5) continue;	    
+	    if(!passPFloose || !passLoosePuId || jets[ijet].pt()<30 || abs(jets[ijet].eta())>2.5) continue;	    
 	    //	    if(passPFloose && passLooseSimplePuId){
 	    //	      selJets.push_back(jets[ijet]);
 	    //	      if(jets[ijet].pt()>minJetPtToApply) njets++;
@@ -1258,9 +1266,9 @@ int main(int argc, char* argv[])
 	//	{
 	//	  std::vector<TString> tags(1,chTags[ich]);
 	
-	//      bool otherTriggersVeto( mumuTrigger && eeTrigger ); 
-	bool additionalLeptonsVeto(muTrigger && (nVetoE>0 || nVetoMu>1) );
-	bool passMuonPlusJets(selSingleLepLeptons.size()==1 && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
+	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  
+	bool additionalLeptonsVeto( nVetoE>0 || nVetoMu>0 );
+	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 && !otherTriggersVeto && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tau(selTaus.size()==1);
