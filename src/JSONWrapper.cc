@@ -178,9 +178,15 @@ namespace JSONWrapper{
   void Object::Dump(char* pFile, int Level, bool whitespace){
       
     if(Level==0){
-      sprintf(pFile, "%s{",pFile); if(whitespace)sprintf(pFile,"%s\n",pFile);        
-      Dump(pFile, Level+1);      
-      sprintf(pFile, "%s}",pFile);    
+      string bracketL=""; string bracketR="";
+      if(val=="ARRAY"){bracketL="["; bracketR="]";
+      }else if(val=="LIST" || key.size()>=1){bracketL="{"; bracketR="}";
+      }
+
+      sprintf(pFile, "%s%s",pFile, bracketL.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);        
+//      Dump(pFile, Level+1);      
+      Dump(pFile, Level+1, whitespace);      
+      sprintf(pFile, "%s%s",pFile, bracketR.c_str());    
       return;   
     }
 
@@ -220,7 +226,7 @@ namespace JSONWrapper{
 
   string Object::DumpToString(int Level){
     char out[100000] = "";
-    Dump(out, Level, false);
+    Dump(out, 0, false);
     return string(out);
   }
 
