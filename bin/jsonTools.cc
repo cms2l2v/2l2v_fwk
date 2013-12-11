@@ -12,60 +12,20 @@
 using namespace std;
 
 
-bool compareJSON(JSONWrapper::Object a, JSONWrapper::Object b, std::string indent=""){
-   indent = indent + " - ";
-   printf("%sVAL: %s vs %s", indent.c_str(),  a.val.c_str(), b.val.c_str());
-   if(a.val != b.val){printf("  pasOk\n");return false;}else{ printf("\n");}
-   printf("%sKEYS: %i vs %i", indent.c_str(), (int)a.key.size(), (int)b.key.size());
-   if(a.key.size()!=b.key.size()){printf("  pasOk\n");return false;}else{printf("\n");}
-   for(unsigned int i=0;i<a.key.size();i++){
-printf("%sXXX %i\n", indent.c_str(), i);
-             
-       printf("%sKEY  %s vs %s", indent.c_str(), a.key[i].c_str(), b.key[i].c_str());       
-       if(std::find(b.key.begin(), b.key.end(), a.key[i])==b.key.end()){printf("  pasOk\n");return false;}else{ printf("\n");}
-       if(!compareJSON(a.obj[i], b[a.key[i].c_str()], indent))return false;
-   }
-
-   return true;
-}
-
-
-/*
-JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
-   JSONWrapper::Object* Roots = new JSONWrapper::Object[jsonFiles.size()];
-   for(unsigned int J=0;J<jsonFiles.size();J++){
-      Roots[J] = JSONWrapper::Object(jsonFiles[J], true);
-
-      if()
-
-   }
-
-  if(jsonFiles.size()>1){
-     
-
-     printf("%s and %s comparison = %i\n", jsonFiles[0].c_str(), jsonFiles[1].c_str(), compareJSON(Roots[0], Roots[1])==true?1:0);
-  }
-
-
-   return Roots[0];
-}
-*/
-
-
 JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
    struct datasetinfo{std::map<string, string> prop;
       datasetinfo(){};
-      datasetinfo(JSONWrapper::Object dtagObj){
+      datasetinfo(JSONWrapper::Object& dtagObj, bool isdata=false){
          for(unsigned int i=0;i<dtagObj.key.size();i++){
             prop[dtagObj.key[i]] = dtagObj.obj[i].key.size()==0 ? dtagObj.obj[i].toString() : dtagObj.obj[i].DumpToString();
          }
-         if(prop["dset" ]=="")prop["dset" ]="Unknown";
-         if(prop["split"]=="")prop["split"]="1";
-         if(prop["br"   ]=="")prop["br"   ]="[1.0]";
-         if(prop["xsec" ]=="")prop["xsec" ]="0.0";
+         if(prop["dset"]=="")prop["dset"]="Unknown";
+         if(isdata) prop["isdata"] = "true";         
       };
    }; 
    std::map<std::string, datasetinfo> Datasets;
+
+   if(jsonFiles.size()>1)printf("Checking differences between input files and uniformize the content assuming the first files are the references:\n");
 
    for(unsigned int J=0;J<jsonFiles.size();J++){
       JSONWrapper::Object Root(jsonFiles[J], true);
@@ -76,19 +36,28 @@ JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
              if(!Samples[id].isTag("dtag")) continue;
                string dtag = Samples[id].getString("dtag");
 
-               datasetinfo infodef;
-               datasetinfo info(Samples[id]);
+               datasetinfo info(Samples[id], Process[ip].getBool("isdata", false) );
                
                if(Datasets.find(dtag)!=Datasets.end()){
                   //check if they are the same
                   datasetinfo& infosaved = Datasets[dtag];
                   for(std::map<string, string>::iterator it = infosaved.prop.begin(); it != infosaved.prop.end(); it++){
                      string k = it->first;
-                     if(infosaved.prop[k]  != info.prop[k] ){printf("DIFF in file=%35s dtag=%35s var=%10s : %30s vs %30s  Please fix the files\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), infosaved.prop[k].c_str(), info.prop[k].c_str());} 
+                     if(infosaved.prop[k]  != info.prop[k] ){
+                        if(info.prop[k]==""){
+                           printf("FIX in file=%35s dtag=%35s var=%10s : %30s changed to %30s\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), info.prop[k].c_str(), infosaved.prop[k].c_str());
+                           infosaved.prop[k]=info.prop[k];
+                        }else{
+                           printf("DIF in file=%35s dtag=%35s var=%10s : %30s differs to %30s  Please fix the files\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), infosaved.prop[k].c_str(), info.prop[k].c_str());
+                        } 
+                     }
                   }
-
-                  continue;//dataset already exist
-                  //need to add a function to check if they are the same or not and print a warning if they are not
+                  for(std::map<string, string>::iterator it = info.prop.begin(); it != info.prop.end(); it++){
+                     string k = it->first;
+                     if(infosaved.prop.find(k)!=infosaved.prop.end())continue;
+                     printf("ADD in file=%35s dtag=%35s var=%10s : %30s\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), info.prop[k].c_str());                     
+                     infosaved.prop[k]=info.prop[k];
+                  }
                }else{
 //                  for(unsigned int k=0;k<Samples[id].key.size();k++){printf("%30s / %30s --> %30s - %30s\n", Process[ip].getString("tag").c_str(), Samples[id].getString("dtag").c_str(), Samples[id].key[k].c_str(), Samples[id].getString(Samples[id].key[k]).c_str());}
                   Datasets[dtag] = info;
@@ -100,86 +69,27 @@ JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
 
    JSONWrapper::Object AllJson;
 
-//   AllJson.addArray("proc");
-//   for(std::map<std::string, datasetinfo>::iterator it = Datasets.begin(); it!=Datasets.end();it++){
-//          int I = AllJson["proc"].daughters().size();
-//          AllJson["proc"].addList(); 
-//          AllJson["proc"][I].add("tag", it->first);      
-//          if(it->second.isdata)   AllJson["proc"][I].add("isdata","true");
-//          AllJson["proc"][I].addArray("data");
-//          AllJson["proc"][I]["data"].addList();
-//          if(it->first       !="")AllJson["proc"][I]["data"][0].add("dtag", it->first);      
-//          if(it->second.dset !="")AllJson["proc"][I]["data"][0].add("dset", it->second.dset);
-//          if(it->second.split!="")AllJson["proc"][I]["data"][0].add("split",it->second.split);
-//          if(it->second.xsec !="")AllJson["proc"][I]["data"][0].add("xsec" ,it->second.xsec);
-//          if(it->second.br   !="")AllJson["proc"][I]["data"][0].add("br"   ,it->second.br);
-//   }
-
-   return AllJson;
-}
-
-
-/*
-JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
-   struct datasetinfo{std::string dset; std::string split; bool isdata; string br; string xsec;
-   datasetinfo(){dset="Unknown", split="1"; isdata=false; br="[1.0]"; xsec="0.0";};
-   }; 
-   std::map<std::string, datasetinfo> Datasets;
-
-   for(unsigned int J=0;J<jsonFiles.size();J++){
-      JSONWrapper::Object Root(jsonFiles[J], true);
-      std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-      for(size_t ip=0; ip<Process.size(); ip++){
-          std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
-          for(size_t id=0; id<Samples.size(); id++){
-             if(!Samples[id].isTag("dtag")) continue;
-               string dtag = Samples[id].getString("dtag");
-
-               datasetinfo infodef;
-               datasetinfo info;
-               info.dset   = Samples[id].getString("dset", infodef.dset);
-               info.split  = Samples[id].getString("split", infodef.split);                  
-               info.br     = Samples[id].getFullString("br",infodef.br);
-               info.xsec   = Samples[id].getString("xsec" , infodef.xsec);
-               info.isdata = Process[ip].getBool  ("isdata", infodef.isdata); 
-               
-               if(Datasets.find(dtag)!=Datasets.end()){
-                  //check if they are the same
-                  datasetinfo& infosaved = Datasets[dtag];
-                  if(infosaved.dset  != info.dset ){if(infosaved.dset  == infodef.dset ){infosaved.dset  = info.dset ;}else{printf("DIFF dset  in %s dtag %s : %s vs %s  Please fix the files\n", jsonFiles[J].c_str(), dtag.c_str(), infosaved.dset .c_str(), info.dset .c_str());} }
-                  if(infosaved.split != info.split){if(infosaved.split == infodef.split){infosaved.split = info.split;}else{printf("DIFF split in %s dtag %s : %s vs %s  Please fix the files\n", jsonFiles[J].c_str(), dtag.c_str(), infosaved.split.c_str(), info.split.c_str());} }
-
-                  continue;//dataset already exist
-                  //need to add a function to check if they are the same or not and print a warning if they are not
-               }else{
-//                  for(unsigned int k=0;k<Samples[id].key.size();k++){printf("%30s / %30s --> %30s - %30s\n", Process[ip].getString("tag").c_str(), Samples[id].getString("dtag").c_str(), Samples[id].key[k].c_str(), Samples[id].getString(Samples[id].key[k]).c_str());}
-                  Datasets[dtag] = info;
-               }
+   AllJson.addArray("proc");
+   for(std::map<std::string, datasetinfo>::iterator it = Datasets.begin(); it!=Datasets.end();it++){
+          int I = AllJson["proc"].daughters().size();
+          AllJson["proc"].addList(); 
+          AllJson["proc"][I].add("tag", it->first);      
+          if(it->second.prop["isdata"]=="true")AllJson["proc"][I].add("isdata","true");
+          AllJson["proc"][I].addArray("data");
+          AllJson["proc"][I]["data"].addList();
+          if(it->second.prop.find("dtag" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dtag" , JSONWrapper::removeWhiteSpace(it->second.prop["dtag" ]));
+          if(it->second.prop.find("xsec" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("xsec" , JSONWrapper::removeWhiteSpace(it->second.prop["xsec" ]));
+          if(it->second.prop.find("br"   )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("br"   , JSONWrapper::removeWhiteSpace(it->second.prop["br"   ]));
+          if(it->second.prop.find("split")!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("split", JSONWrapper::removeWhiteSpace(it->second.prop["split"]));
+          if(it->second.prop.find("dset" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dset" , JSONWrapper::removeWhiteSpace(it->second.prop["dset" ]));
+          for(std::map<string, string>::iterator itp = it->second.prop.begin(); itp != it->second.prop.end(); itp++){
+             if(itp->first=="dtag" || itp->first=="isdata" || itp->first=="xsec" || itp->first=="br" || itp->first=="split" || itp->first=="dset")continue;
+             AllJson["proc"][I]["data"][0].add(itp->first, JSONWrapper::removeWhiteSpace(itp->second));
           }
-      }
    }
-
-
-   JSONWrapper::Object AllJson;
-
-//   AllJson.addArray("proc");
-//   for(std::map<std::string, datasetinfo>::iterator it = Datasets.begin(); it!=Datasets.end();it++){
-//          int I = AllJson["proc"].daughters().size();
-//          AllJson["proc"].addList(); 
-//          AllJson["proc"][I].add("tag", it->first);      
-//          if(it->second.isdata)   AllJson["proc"][I].add("isdata","true");
-//          AllJson["proc"][I].addArray("data");
-//          AllJson["proc"][I]["data"].addList();
-//          if(it->first       !="")AllJson["proc"][I]["data"][0].add("dtag", it->first);      
-//          if(it->second.dset !="")AllJson["proc"][I]["data"][0].add("dset", it->second.dset);
-//          if(it->second.split!="")AllJson["proc"][I]["data"][0].add("split",it->second.split);
-//          if(it->second.xsec !="")AllJson["proc"][I]["data"][0].add("xsec" ,it->second.xsec);
-//          if(it->second.br   !="")AllJson["proc"][I]["data"][0].add("br"   ,it->second.br);
-//   }
-
    return AllJson;
 }
-*/
+
 
 void make_multicrab_cfg(JSONWrapper::Object& Root, bool forData){
     FILE* pFile;
