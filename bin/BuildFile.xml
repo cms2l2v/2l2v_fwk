@@ -4,7 +4,7 @@
 <use name="roofit"/>
 <use name="roostats"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
-<!-- <use name="TauAnalysis/CandidateTools"/> -->
+<use name="TauAnalysis/CandidateTools"/>
 <use name="PhysicsTools/FWLite"/>
 <environment>
   <bin name="extractLumiJSON"           file="extractLumiJSON.cc"></bin>
@@ -31,7 +31,8 @@
   <bin name="computeLimit"               file="computeLimit.cc"></bin>
   <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
   <bin name="runEWKVJJunfolding"         file="runEWKVJJunfolding.cc"></bin>
+  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin>
+  <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
 </environment>
-<!--<bin name="runBNVAnalysisFWLite"      file="runBNVAnalysisFWLite.cc"></bin>-->
 
 <Flags CXXFLAGS="-g"/>

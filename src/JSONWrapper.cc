@@ -176,15 +176,22 @@ namespace JSONWrapper{
 
 
   void Object::Dump(char* pFile, int Level, bool whitespace){
-      
+    int maxLevel=4; 
     if(Level==0){
-      sprintf(pFile, "%s{",pFile); if(whitespace)sprintf(pFile,"%s\n",pFile);        
-      Dump(pFile, Level+1);      
-      sprintf(pFile, "%s}",pFile);    
+      string bracketL=""; string bracketR="";
+      if(val=="ARRAY"){bracketL="["; bracketR="]";
+      }else if(val=="LIST" || key.size()>=1){bracketL="{"; bracketR="}";
+      }
+
+      sprintf(pFile, "%s%s",pFile, bracketL.c_str()); if(whitespace && Level<maxLevel)sprintf(pFile,"%s\n",pFile);        
+//      Dump(pFile, Level+1);      
+      Dump(pFile, Level+1, whitespace);      
+      sprintf(pFile, "%s%s",pFile, bracketR.c_str());    
       return;   
     }
 
     std::string indent = "";for(int i=0;i<Level && whitespace;i++)indent += "  ";
+    if(Level>maxLevel)indent=" ";
     for(int i=0;i<(int)key.size();i++){
       string keyI=key[i].c_str();
       string valI=obj[i].val.c_str();
@@ -192,11 +199,11 @@ namespace JSONWrapper{
       if(obj[i].isString())valITxt = string("\"") + valITxt + "\"";
 
       if(valI=="LIST"){
-	sprintf(pFile,"%s%s{", pFile,indent.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);
+	sprintf(pFile,"%s%s{", pFile,indent.c_str()); if(whitespace && Level<maxLevel)sprintf(pFile,"%s\n",pFile);
 	obj[i].Dump(pFile, Level+1);
 	sprintf(pFile,"%s%s}", pFile,indent.c_str());
       }else if(valI=="ARRAY"){
-	sprintf(pFile,"%s%s\"%s\":[", pFile,indent.c_str(), keyI.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);
+	sprintf(pFile,"%s%s\"%s\":[", pFile,indent.c_str(), keyI.c_str()); if(whitespace && Level<maxLevel)sprintf(pFile,"%s\n",pFile);
 	obj[i].Dump(pFile, Level+1);
 	sprintf(pFile,"%s%s]", pFile,indent.c_str());
       }else if(keyI=="obj"){
@@ -208,7 +215,7 @@ namespace JSONWrapper{
       if(i<((int)key.size())-1){
 	sprintf(pFile, "%s,",pFile);
       }
-      if(whitespace)sprintf(pFile,"%s\n",pFile);
+      if(whitespace && Level<maxLevel+1)sprintf(pFile,"%s\n",pFile);
     }
   }
 
@@ -220,7 +227,7 @@ namespace JSONWrapper{
 
   string Object::DumpToString(int Level){
     char out[100000] = "";
-    Dump(out, Level, false);
+    Dump(out, 0, false);
     return string(out);
   }
 

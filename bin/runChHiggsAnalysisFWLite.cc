@@ -28,7 +28,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
-
+#include "UserCode/llvv_fwk/interface/TopPtWeighter.h"
 
 
 #include "TSystem.h"
@@ -164,6 +164,8 @@ int main(int argc, char* argv[])
   btagBins.push_back(450 );
   btagBins.push_back(550 );
   btagBins.push_back(700 );
+
+
   
 
   //summary ntuple
@@ -369,6 +371,15 @@ int main(int argc, char* argv[])
   double xsecWeight(xsec/nInitEvent);
   if(!isMC) xsecWeight=1.0;
 
+  bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_") ));
+  // Top Pt weighter
+  TopPtWeighter* topPtWgt=0;
+  if(isTTbarMC){
+    TString shapesDir("");
+    if(weightsFile.size()) shapesDir=wFile;
+    topPtWgt = new TopPtWeighter(outFileUrl, outUrl, shapesDir, ev );
+  }
+
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
@@ -525,7 +536,7 @@ int main(int argc, char* argv[])
       if(!nvtxHandle.isValid()){printf("nvtx Object NotFound\n");continue;}
       int nvtx(*nvtxHandle);
 
-      //require compatibilitiy of the event with the PD
+      //require compatibilitity of the event with the PD
       bool eeTrigger          ( triggerBits[0]                   );
       bool emuTrigger         ( triggerBits[4] || triggerBits[5] );
       bool muTrigger          ( triggerBits[6]                   );
@@ -537,8 +548,16 @@ int main(int argc, char* argv[])
       if(filterOnlySINGLEMU) { eeTrigger=false; emuTrigger=false; mumuTrigger=false;                  /*eTrigger=false;*/}
       //      if(filterOnlySINGLEELE){ eeTrigger=false; emuTrigger=false; mumuTrigger=false; muTrigger=false;                }
       
-      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
-      
+      //      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
+
+// test mu//      //////////////////////
+// test mu//      if(muTrigger){
+// test mu//	eeTrigger=false;
+// test mu//	emuTrigger=false;
+// test mu//	mumuTrigger=false;
+// test mu//      }
+// test mu//      //////////////////////
+     
       // PU weighting now follows channel selection, to take into account the different pileup distribution between singleMu and dileptons
       //pileup weight
       float weight(1.0);
@@ -716,7 +735,7 @@ int main(int argc, char* argv[])
       if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
       else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
       else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-      else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& !nVetoE && !nVetoMu ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
+      else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
       else continue;
       
       if(chTags.size()==0) continue;
@@ -1065,6 +1084,41 @@ int main(int argc, char* argv[])
 	}
 	// FIXME: add single lepton SFs
 
+	// Top Pt reweighting
+	double tPt(0.), tbarPt(0.); 
+	bool hasTop(false);
+	int ngenLeptonsStatus3(0);
+	float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+	if(isMC)
+	  {
+	    for(size_t igen=0; igen<gen.size(); igen++){
+	      if(gen[igen].status!=3) continue;
+	      int absid=abs(gen[igen].id);
+	      if(absid==6){
+		hasTop=true;
+		if(isTTbarMC){
+		  if(gen[igen].id > 0) tPt=gen[igen].pt();
+		  else              tbarPt=gen[igen].pt();
+		}
+	      }
+	      if(absid!=11 && absid!=13 && absid!=15) continue;
+	      ngenLeptonsStatus3++;
+	    }
+	    if(mctruthmode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
+	    if(mctruthmode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
+	  }
+	
+	if(tPt>0 && tbarPt>0 && topPtWgt)
+	  {
+	    topPtWgt->computeWeight(tPt,tbarPt);
+	    topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
+	    wgtTopPtUp /= wgtTopPt;
+	    wgtTopPtDown /= wgtTopPt;
+	  }
+
+	weight *= wgtTopPt; //*singlelscaleFactor
+	// FIXME: add top pt weight syst
+
 
 	//generator level
 	LorentzVector genll;
@@ -1138,14 +1192,14 @@ int main(int argc, char* argv[])
 	    double jetpt=jets[ijet].pt();
 	    
 	    bool jLock(false);
-	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId){
+	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId){
 	      nTrueJets++;
 	      jLock=true;
 	    }
-	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && !jLock && passPFloose && passLooseSimplePuId)
+	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && !jLock && passPFloose && passLoosePuId)
 	      nTauJet++;
 	    
-	    if(!passPFloose || !passLooseSimplePuId || jets[ijet].pt()<minJetPtToApply || abs(jets[ijet].eta())>2.5) continue;	    
+	    if(!passPFloose || !passLoosePuId || jets[ijet].pt()<30 || abs(jets[ijet].eta())>2.5) continue;	    
 	    //	    if(passPFloose && passLooseSimplePuId){
 	    //	      selJets.push_back(jets[ijet]);
 	    //	      if(jets[ijet].pt()>minJetPtToApply) njets++;
@@ -1258,9 +1312,9 @@ int main(int argc, char* argv[])
 	//	{
 	//	  std::vector<TString> tags(1,chTags[ich]);
 	
-	//      bool otherTriggersVeto( mumuTrigger && eeTrigger ); 
-	bool additionalLeptonsVeto(muTrigger && (nVetoE>0 || nVetoMu>1) );
-	bool passMuonPlusJets(selSingleLepLeptons.size()==1 && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
+	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  
+	bool additionalLeptonsVeto( nVetoE>0 || nVetoMu>0 );
+	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 && !otherTriggersVeto && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tau(selTaus.size()==1);
