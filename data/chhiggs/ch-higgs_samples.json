@@ -35,7 +35,7 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_HTB_M-180_8TeV-pythia6",
-		"dtag":"/HplusToTBbar_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM",
+		"dset":"/HplusToTBbar_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM",
                 "split":10,
                 "xsec":45.395,
 	        "br":[0.168148]
@@ -225,7 +225,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-260_8TeV-pythia6",
 		"dset":"/HplusToTBbar_M-260_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM",	 
-               "split":10,
+                "split":10,
                 "xsec":21.9758,
 	        "br":[0.9638012]
              }
@@ -253,7 +253,7 @@
            ]
         },
 	{
-        "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[300	GeV]}",
+   	"tag":"#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}",
 	"label":"#splitline{100#times H^{+}#rightarrow#tau#nu}{[300 GeV]}",	
         "isdata":false,
         "issignal":true,	
