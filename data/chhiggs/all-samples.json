@@ -244,7 +244,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-180_8TeV-pythia6",
                 "split":7,
-                "xsec":22.6975,
+                "xsec":45.395,
 	        "br":[0.831852]
              }
            ]
@@ -262,7 +262,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-180_8TeV-pythia6",
                 "split":10,
-                "xsec":22.6975,
+                "xsec":45.395,
 	        "br":[0.168148]
              }
            ]
@@ -280,7 +280,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-190_8TeV-pythia6",
                 "split":7,
-                "xsec":20.4088,
+                "xsec":40.8176,
 	        "br":[0.407966]
              }
            ]
@@ -298,7 +298,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-200_8TeV-pythia6",
                 "split":8,
-                "xsec":18.4811,
+                "xsec":36.9622,
 	        "br":[0.228564]
              }
            ]
@@ -316,7 +316,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-200_8TeV-pythia6",
                 "split":10,
-                "xsec":18.4811,
+                "xsec":36.9622,
 	        "br":[0.771436]
              }
            ]
@@ -334,7 +334,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-220_8TeV-pythia6",
                 "split":7,
-                "xsec":15.4027,
+                "xsec":30.8054,
 	        "br":[0.106446]
              }
            ]
@@ -352,7 +352,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-220_8TeV-pythia6",
                 "split":10,
-                "xsec":15.4027,
+                "xsec":30.8054,
 	        "br":[0.893554]
              }
            ]
@@ -370,7 +370,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-240_8TeV-pythia6",
                 "split":10,
-                "xsec":12.9842,
+                "xsec":25.9684,
 	        "br":[0.95097477]
              }
            ]
@@ -388,7 +388,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6",
                 "split":7,
-                "xsec":11.9413,
+                "xsec":23.8826,
 	        "br":[0.04129783]
              }
            ]
@@ -406,7 +406,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6",
                 "split":10,
-                "xsec":11.9413,
+                "xsec":23.8826,
 	        "br":[0.95870217]
              }
            ]
@@ -424,7 +424,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-260_8TeV-pythia6",
                 "split":10,
-                "xsec":10.9879,
+                "xsec":21.9758,
 	        "br":[0.9638012]
              }
            ]
@@ -442,7 +442,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-280_8TeV-pythia6",
                 "split":10,
-                "xsec":9.31608,
+                "xsec":18.63216,
 	        "br":[0.97015566]
              }
            ]
@@ -460,7 +460,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-300_8TeV-pythia6",
                 "split":7,
-                "xsec":7.91902,
+                "xsec":15.83804,
 	        "br":[0.02514242]
              }
            ]
@@ -478,7 +478,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-300_8TeV-pythia6",
                 "split":10,
-                "xsec":7.91902,
+                "xsec":15.83804,
 	        "br":[0.97485758]
              }
            ]
@@ -496,7 +496,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-350_8TeV-pythia6",
                 "split":11,
-                "xsec":5.36621,
+                "xsec":10.73242,
 	        "br":[0.981614]
              }
            ]
@@ -515,7 +515,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-400_8TeV-pythia6",
                 "split":10,
-                "xsec":3.71904,
+                "xsec":7.43808,
 	        "br":[0.985974]
              }
            ]
@@ -534,7 +534,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6",
                 "split":11,
-                "xsec":1.87822,
+                "xsec":3.75644,
 	        "br":[0.993732]
              }
            ]
@@ -553,7 +553,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-600_8TeV-pythia6",
                 "split":10,
-                "xsec":1.00715,
+                "xsec":2.0143,
 	        "br":[0.995194]
              }
            ]
@@ -572,7 +572,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-700_8TeV-pythia6",
                 "split":11,
-                "xsec":0.56681,
+                "xsec":1.13362,
 	        "br":[0.995767]
              }
            ]

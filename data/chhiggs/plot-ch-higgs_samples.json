@@ -227,7 +227,7 @@
 	    {
                 "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6",
                 "split":7,
-                "xsec":11.9413,
+                "xsec":23.8826,
 	        "br":[0.04129783]
              }
            ]
@@ -247,7 +247,7 @@
 	    {
                 "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6",
                 "split":10,
-                "xsec":11.9413,
+                "xsec":23.8826,
 	        "br":[0.95870217]
              }
            ]
