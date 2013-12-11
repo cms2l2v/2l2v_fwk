@@ -11,9 +11,21 @@
 
 using namespace std;
 
+
 JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
-   struct datasetinfo{std::string dset; std::string split; bool isdata; string br; string xsec;};
+   struct datasetinfo{std::map<string, string> prop;
+      datasetinfo(){};
+      datasetinfo(JSONWrapper::Object& dtagObj, bool isdata=false){
+         for(unsigned int i=0;i<dtagObj.key.size();i++){
+            prop[dtagObj.key[i]] = dtagObj.obj[i].key.size()==0 ? dtagObj.obj[i].toString() : dtagObj.obj[i].DumpToString();
+         }
+         if(prop["dset"]=="")prop["dset"]="Unknown";
+         if(isdata) prop["isdata"] = "true";         
+      };
+   }; 
    std::map<std::string, datasetinfo> Datasets;
+
+   if(jsonFiles.size()>1)printf("Checking differences between input files and uniformize the content assuming the first files are the references:\n");
 
    for(unsigned int J=0;J<jsonFiles.size();J++){
       JSONWrapper::Object Root(jsonFiles[J], true);
@@ -22,87 +34,65 @@ JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
           std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
           for(size_t id=0; id<Samples.size(); id++){
              if(!Samples[id].isTag("dtag")) continue;
+               string dtag = Samples[id].getString("dtag");
 
-               if(Datasets.find(Samples[id].getString("dtag"))!=Datasets.end()){
-                  continue;//dataset already exist
-                  //need to add a function to check if they are the same or not and print a warning if they are not
+               datasetinfo info(Samples[id], Process[ip].getBool("isdata", false) );
+               
+               if(Datasets.find(dtag)!=Datasets.end()){
+                  //check if they are the same
+                  datasetinfo& infosaved = Datasets[dtag];
+                  for(std::map<string, string>::iterator it = infosaved.prop.begin(); it != infosaved.prop.end(); it++){
+                     string k = it->first;
+                     if(infosaved.prop[k]  != info.prop[k] ){
+                        if(info.prop[k]==""){
+                           printf("FIX in file=%35s dtag=%35s var=%10s : %30s changed to %30s\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), info.prop[k].c_str(), infosaved.prop[k].c_str());
+                           infosaved.prop[k]=info.prop[k];
+                        }else{
+                           printf("DIF in file=%35s dtag=%35s var=%10s : %30s differs to %30s  Please fix the files\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), infosaved.prop[k].c_str(), info.prop[k].c_str());
+                        } 
+                     }
+                  }
+                  for(std::map<string, string>::iterator it = info.prop.begin(); it != info.prop.end(); it++){
+                     string k = it->first;
+                     if(infosaved.prop.find(k)!=infosaved.prop.end())continue;
+                     printf("ADD in file=%35s dtag=%35s var=%10s : %30s\n", jsonFiles[J].c_str(), dtag.c_str(), k.c_str(), info.prop[k].c_str());                     
+                     infosaved.prop[k]=info.prop[k];
+                  }
                }else{
-                  datasetinfo info;
-                  info.dset   = Samples[id].getString("dset", "");
-                  info.split  = Samples[id].getString("split", "");
-                  info.br     = Samples[id]["br"].DumpToString(1);
-                  info.xsec   = Samples[id].getString("xsec" , "");
-                  info.isdata = Process[ip].getBool  ("isdata"); 
-                  Datasets[Samples[id].getString("dtag")] = info;
+//                  for(unsigned int k=0;k<Samples[id].key.size();k++){printf("%30s / %30s --> %30s - %30s\n", Process[ip].getString("tag").c_str(), Samples[id].getString("dtag").c_str(), Samples[id].key[k].c_str(), Samples[id].getString(Samples[id].key[k]).c_str());}
+                  Datasets[dtag] = info;
                }
           }
       }
    }
 
+
    JSONWrapper::Object AllJson;
+
    AllJson.addArray("proc");
    for(std::map<std::string, datasetinfo>::iterator it = Datasets.begin(); it!=Datasets.end();it++){
           int I = AllJson["proc"].daughters().size();
           AllJson["proc"].addList(); 
           AllJson["proc"][I].add("tag", it->first);      
-          if(it->second.isdata)   AllJson["proc"][I].add("isdata","true");
+          if(it->second.prop["isdata"]=="true")AllJson["proc"][I].add("isdata","true");
           AllJson["proc"][I].addArray("data");
           AllJson["proc"][I]["data"].addList();
-          if(it->first       !="")AllJson["proc"][I]["data"][0].add("dtag", it->first);      
-          if(it->second.dset !="")AllJson["proc"][I]["data"][0].add("dset", it->second.dset);
-          if(it->second.split!="")AllJson["proc"][I]["data"][0].add("split",it->second.split);
-          if(it->second.xsec !="")AllJson["proc"][I]["data"][0].add("xsec" ,it->second.xsec);
-          if(it->second.br   !="")AllJson["proc"][I]["data"][0].add("br"   ,it->second.br);
+          if(it->second.prop.find("dtag" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dtag" , JSONWrapper::removeWhiteSpace(it->second.prop["dtag" ]));
+          if(it->second.prop.find("xsec" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("xsec" , JSONWrapper::removeWhiteSpace(it->second.prop["xsec" ]));
+          if(it->second.prop.find("br"   )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("br"   , JSONWrapper::removeWhiteSpace(it->second.prop["br"   ]));
+          if(it->second.prop.find("split")!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("split", JSONWrapper::removeWhiteSpace(it->second.prop["split"]));
+          if(it->second.prop.find("dset" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dset" , JSONWrapper::removeWhiteSpace(it->second.prop["dset" ]));
+          for(std::map<string, string>::iterator itp = it->second.prop.begin(); itp != it->second.prop.end(); itp++){
+             if(itp->first=="dtag" || itp->first=="isdata" || itp->first=="xsec" || itp->first=="br" || itp->first=="split" || itp->first=="dset")continue;
+             AllJson["proc"][I]["data"][0].add(itp->first, JSONWrapper::removeWhiteSpace(itp->second));
+          }
    }
-
    return AllJson;
 }
 
-
-
-
-JSONWrapper::Object make_multicrab_json(std::string jsonFile){
-   struct datasetinfo{std::string dset; std::string split; bool isdata;};
-   std::map<std::string, datasetinfo> Datasets;
-
-   JSONWrapper::Object Root(jsonFile, true);
-   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-   for(size_t ip=0; ip<Process.size(); ip++){
-       std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
-       for(size_t id=0; id<Samples.size(); id++){
-          if(!Samples[id].isTag("dtag")) continue;
-
-            datasetinfo info;
-            info.dset   = Samples[id].getString("dset", "Unknown");
-            info.split  = Samples[id].getString("split", "1");
-            info.isdata = Process[ip].getBool  ("isdata"); 
-            Datasets[Samples[id].getString("dtag")] = info;
-
-//          printf("%s\n", Samples[id].getString("dtag","").c_str());
-       }
-   }
-
-   JSONWrapper::Object AllJson;
-   AllJson.addArray("proc");
-   for(std::map<std::string, datasetinfo>::iterator it = Datasets.begin(); it!=Datasets.end();it++){
-          int I = AllJson["proc"].daughters().size();
-          AllJson["proc"].addList(); 
-          AllJson["proc"][I].add("tag", it->first);      
-          AllJson["proc"][I].addArray("data");
-          AllJson["proc"][I]["data"].addList();
-          AllJson["proc"][I]["data"][0].add("dtag", it->first);
-          AllJson["proc"][I]["data"][0].add("dset", it->second.dset);
-          AllJson["proc"][I]["data"][0].add("split",it->second.split);
-          if(it->second.isdata)
-          AllJson["proc"][I].add("isdata","true");
-   }
-
-   return AllJson;
-}
 
 void make_multicrab_cfg(JSONWrapper::Object& Root, bool forData){
     FILE* pFile;
-   /////////////  MC ///////////////////
    pFile = fopen("multicrab.cfg", "w");
    fprintf(pFile, "[MULTICRAB]\n");
    fprintf(pFile, "\n");
@@ -160,7 +150,7 @@ int main(int argc, char* argv[]){
 
 
    if(multicrab || multicrabMC){
-      JSONWrapper::Object AllJson = make_multicrab_json(inJsons[0]);
+      JSONWrapper::Object AllJson = merge_json(inJsons);
       make_multicrab_cfg(AllJson, !multicrabMC);
    }
 
