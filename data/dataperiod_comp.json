@@ -1,60 +1,60 @@
 {
-    "proc":[
-        {
-	   "tag":"2012A",
-	   "isdata":true,
-	   "spimpose":true,
-	   "normto":1,	
-	   "color":1,
-           "fill":0,
-           "marker":20,
-           "data":[
-                { "dtag":"Data8TeV_DoubleElectron2012A", "split":2 },
-                { "dtag":"Data8TeV_DoubleMu2012A",       "split":2 },
-                { "dtag":"Data8TeV_MuEG2012A",           "split":2 }
-	    ]
-	},
-        {
-	   "tag":"2012B",
-	   "isdata":true,
-	   "spimpose":true,
-	   "normto":1,	
-	   "color":1,
-           "fill":0,
-           "marker":24,
-           "data":[
-                { "dtag":"Data8TeV_DoubleElectron2012B", "split":5 },
-                { "dtag":"Data8TeV_DoubleMu2012B",       "split":5 },
-                { "dtag":"Data8TeV_MuEG2012B",           "split":5 }
-	    ]
-	},
-        {
-	   "tag":"2012C",
-	   "isdata":true,
-	   "spimpose":true,
-	   "normto":1,	
-	   "color":2,
-           "fill":0,
-           "marker":20,
-           "data":[
-                { "dtag":"Data8TeV_DoubleElectron2012C", "split":6 },
-                { "dtag":"Data8TeV_DoubleMu2012C",       "split":6 },
-                { "dtag":"Data8TeV_MuEG2012C",           "split":6 }
-	    ]
-	},
-        {
-	   "tag":"2012D",
-	   "isdata":true,
-	   "spimpose":true,
-	   "normto":1,	
-	   "color":2,
-           "fill":0,
-           "marker":24,
-           "data":[
-                { "dtag":"Data8TeV_DoubleElectron2012D", "split":6 },
-                { "dtag":"Data8TeV_DoubleMu2012D",       "split":6 },
-                { "dtag":"Data8TeV_MuEG2012D",           "split":6 }
-	    ]
-	}
-     ]	
+  "proc":[
+    {
+      "tag":"2012A",
+      "isdata":true,
+      "spimpose":true,
+      "normto":1,
+      "color":1,
+      "fill":0,
+      "marker":20,
+      "data":[
+        { "dtag":"Data8TeV_DoubleElectron2012A"            , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012A-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMu/Run2012A-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012A"                      , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012A-22Jan2013-v1/AOD"        }
+      ]
+    },
+    {
+      "tag":"2012B",
+      "isdata":true,
+      "spimpose":true,
+      "normto":1,
+      "color":1,
+      "fill":0,
+      "marker":24,
+      "data":[
+        { "dtag":"Data8TeV_DoubleElectron2012B"            , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012B"                      , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012B-22Jan2013-v1/AOD"        }
+      ]
+    },
+    {
+      "tag":"2012C",
+      "isdata":true,
+      "spimpose":true,
+      "normto":1,
+      "color":2,
+      "fill":0,
+      "marker":20,
+      "data":[
+        { "dtag":"Data8TeV_DoubleElectron2012C"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012C-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012C-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012C"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012C-22Jan2013-v1/AOD"        }
+      ]
+    },
+    {
+      "tag":"2012D",
+      "isdata":true,
+      "spimpose":true,
+      "normto":1,
+      "color":2,
+      "fill":0,
+      "marker":24,
+      "data":[
+        { "dtag":"Data8TeV_DoubleElectron2012D"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012D-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012D"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012D-22Jan2013-v1/AOD"        }
+      ]
+    }
+  ]
 }
