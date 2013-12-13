@@ -254,7 +254,7 @@ int main(int argc, char* argv[]){
    }
 
    if(outJson!=""){
-      FILE* pFile = fopen("tmp.json", "w"); 
+      FILE* pFile = fopen(outJson.c_str(), "w"); 
       AllJson.Dump(pFile);
       fclose(pFile);
    }
