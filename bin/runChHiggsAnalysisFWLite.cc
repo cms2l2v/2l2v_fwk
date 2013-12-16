@@ -1134,7 +1134,7 @@ int main(int argc, char* argv[])
 	llvvJetExtCollection selJets, /*selJetsNoId,*/ selBJets;
 	int njets(0), nbjets(0);
 	int nTrueJets(0);
-	int nTauJet(0);
+	int nTauJets(0);
 	
 	for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	  {
@@ -1191,13 +1191,10 @@ int main(int argc, char* argv[])
 	    //selJetsNoId.push_back(jets[ijet]);
 	    double jetpt=jets[ijet].pt();
 	    
-	    bool jLock(false);
-	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId){
+	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId)
 	      nTrueJets++;
-	      jLock=true;
-	    }
-	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && !jLock && passPFloose && passLoosePuId)
-	      nTauJet++;
+	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId)
+	      nTauJets++;
 	    
 	    if(!passPFloose || !passLoosePuId || jets[ijet].pt()<30 || abs(jets[ijet].eta())>2.5) continue;	    
 	    //	    if(passPFloose && passLooseSimplePuId){
@@ -1314,7 +1311,7 @@ int main(int argc, char* argv[])
 	
 	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  
 	bool additionalLeptonsVeto( nVetoE>0 || nVetoMu>0 );
-	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 && !otherTriggersVeto && !additionalLeptonsVeto && nTrueJets>1 && nTauJet>0 );    
+	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 && !otherTriggersVeto && !additionalLeptonsVeto && nTrueJets>1 && nTauJets>2 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tau(selTaus.size()==1);

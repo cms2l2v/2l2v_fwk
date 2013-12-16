@@ -12,17 +12,22 @@
 using namespace std;
 
 
+struct datasetinfo{std::map<string, string> prop;
+   datasetinfo(){};
+   datasetinfo(JSONWrapper::Object& dtagObj, bool isdata=false){
+      for(unsigned int i=0;i<dtagObj.key.size();i++){
+         prop[dtagObj.key[i]] = dtagObj.obj[i].key.size()==0 ? dtagObj.obj[i].toString() : dtagObj.obj[i].DumpToString();
+      }
+      if(prop["dset" ]=="")prop["dset" ]="Unknown";
+      if(prop["xsec" ]=="")prop["xsec" ]="1.0";
+      if(prop["br"   ]=="")prop["br"   ]="[1.0]";
+      if(prop["split"]=="")prop["split"]="1";
+      if(isdata) prop["isdata"] = "true";         
+   };
+}; 
+
+
 JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
-   struct datasetinfo{std::map<string, string> prop;
-      datasetinfo(){};
-      datasetinfo(JSONWrapper::Object& dtagObj, bool isdata=false){
-         for(unsigned int i=0;i<dtagObj.key.size();i++){
-            prop[dtagObj.key[i]] = dtagObj.obj[i].key.size()==0 ? dtagObj.obj[i].toString() : dtagObj.obj[i].DumpToString();
-         }
-         if(prop["dset"]=="")prop["dset"]="Unknown";
-         if(isdata) prop["isdata"] = "true";         
-      };
-   }; 
    std::map<std::string, datasetinfo> Datasets;
 
    if(jsonFiles.size()>1)printf("Checking differences between input files and uniformize the content assuming the first files are the references:\n");
@@ -77,10 +82,10 @@ JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
           if(it->second.prop["isdata"]=="true")AllJson["proc"][I].add("isdata","true");
           AllJson["proc"][I].addArray("data");
           AllJson["proc"][I]["data"].addList();
-          if(it->second.prop.find("dtag" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dtag" , JSONWrapper::removeWhiteSpace(it->second.prop["dtag" ]));
-          if(it->second.prop.find("xsec" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("xsec" , JSONWrapper::removeWhiteSpace(it->second.prop["xsec" ]));
-          if(it->second.prop.find("br"   )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("br"   , JSONWrapper::removeWhiteSpace(it->second.prop["br"   ]));
-          if(it->second.prop.find("split")!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("split", JSONWrapper::removeWhiteSpace(it->second.prop["split"]));
+          if(it->second.prop.find("dtag" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dtag" , JSONWrapper::removeWhiteSpace(it->second.prop["dtag" ]), 50);
+          if(it->second.prop.find("split")!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("split", JSONWrapper::removeWhiteSpace(it->second.prop["split"]), 5);
+          if(it->second.prop.find("xsec" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("xsec" , JSONWrapper::removeWhiteSpace(it->second.prop["xsec" ]), 20);
+          if(it->second.prop.find("br"   )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("br"   , JSONWrapper::removeWhiteSpace(it->second.prop["br"   ]), 30);
           if(it->second.prop.find("dset" )!=it->second.prop.end())AllJson["proc"][I]["data"][0].add("dset" , JSONWrapper::removeWhiteSpace(it->second.prop["dset" ]));
           for(std::map<string, string>::iterator itp = it->second.prop.begin(); itp != it->second.prop.end(); itp++){
              if(itp->first=="dtag" || itp->first=="isdata" || itp->first=="xsec" || itp->first=="br" || itp->first=="split" || itp->first=="dset")continue;
@@ -123,10 +128,97 @@ void make_multicrab_cfg(JSONWrapper::Object& Root, bool forData){
 }
 
 
+
+void fix_json(JSONWrapper::Object& Ref, std::string jsonFileToBeFixed){
+   printf("\n");
+   printf("------------------------------------------------------------------------------\n");
+   printf("Fixing %50s, the file content will be overwritten\n", jsonFileToBeFixed.c_str());
+   printf("------------------------------------------------------------------------------\n");
+
+   std::map<std::string, datasetinfo> Datasets;
+   //Load the datasets from the reference
+   if(true){//just here to avoid variable redeclaration error
+      std::vector<JSONWrapper::Object> Process = Ref["proc"].daughters();
+      for(size_t ip=0; ip<Process.size(); ip++){
+          std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
+          for(size_t id=0; id<Samples.size(); id++){
+             if(!Samples[id].isTag("dtag")) continue;
+             string dtag = Samples[id].getString("dtag");
+             datasetinfo info(Samples[id], Process[ip].getBool("isdata", false) );
+             Datasets[dtag] = info;                         
+         }
+      }
+   }
+
+   //Load the info from the file to fix
+   if(true){//just here to avoid variable redeclaration error
+      //prepare the output json
+      JSONWrapper::Object OutJson;
+      OutJson.addArray("proc");
+      int I=0;
+
+      JSONWrapper::Object Root(jsonFileToBeFixed, true);
+      std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+      for(size_t ip=0; ip<Process.size(); ip++){   
+          OutJson["proc"].addList();
+
+          //copy all json properties except "data" that is taken from the reference
+          for(unsigned int i=0;i<Process[ip].key.size();i++){
+             if(Process[ip].key[i]=="data")continue;//data field is specialy treated afterward
+             OutJson["proc"][I].add(Process[ip].key[i],Process[ip].obj[i].key.size()==0 ? Process[ip].obj[i].toString() : Process[ip].obj[i].DumpToString());
+          }
+
+          //add the data block
+          OutJson["proc"][I].addArray("data");
+          int J=0;
+
+          //check the samples in the data block and replace them by the reference
+          std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
+          for(size_t id=0; id<Samples.size(); id++){
+             OutJson["proc"][I]["data"].addList();
+
+             if(!Samples[id].isTag("dtag")) continue;
+             string dtag = Samples[id].getString("dtag");
+             if(Datasets.find(dtag)==Datasets.end()){ //make sure that the sample is in the reference, if not add it
+                printf("WARNING: dtag=%s is not found in the reference files --> the block will be copied from the current file\n", dtag.c_str());
+                datasetinfo info(Samples[id], Process[ip].getBool("isdata", false) );
+                Datasets[dtag] = info;
+             }
+             datasetinfo& inforef = Datasets[dtag];
+
+             //copy the info from the ref
+             if(inforef.prop.find("dtag" )!=inforef.prop.end())OutJson["proc"][I]["data"][J].add("dtag" , JSONWrapper::removeWhiteSpace(inforef.prop["dtag" ]), 50);
+             if(inforef.prop.find("split")!=inforef.prop.end())OutJson["proc"][I]["data"][J].add("split", JSONWrapper::removeWhiteSpace(inforef.prop["split"]), 5);
+             if(inforef.prop.find("xsec" )!=inforef.prop.end())OutJson["proc"][I]["data"][J].add("xsec" , JSONWrapper::removeWhiteSpace(inforef.prop["xsec" ]), 20);
+             if(inforef.prop.find("br"   )!=inforef.prop.end())OutJson["proc"][I]["data"][J].add("br"   , JSONWrapper::removeWhiteSpace(inforef.prop["br"   ]), 30);
+             if(inforef.prop.find("dset" )!=inforef.prop.end())OutJson["proc"][I]["data"][J].add("dset" , JSONWrapper::removeWhiteSpace(inforef.prop["dset" ]));
+             for(std::map<string, string>::iterator itp = inforef.prop.begin(); itp != inforef.prop.end(); itp++){
+                if(itp->first=="dtag" || itp->first=="isdata" || itp->first=="xsec" || itp->first=="br" || itp->first=="split" || itp->first=="dset")continue;
+                OutJson["proc"][I]["data"][J].add(itp->first, JSONWrapper::removeWhiteSpace(itp->second));
+             }
+             J++;
+          }
+          I++;
+      }
+
+      //save the output json to file
+      FILE* pFile = fopen((jsonFileToBeFixed).c_str(), "w");
+      OutJson.Dump(pFile);
+      fclose(pFile);
+   }
+
+}
+
+
+
+
+
+
 int main(int argc, char* argv[]){
    bool multicrab   = false;
    bool multicrabMC = false;
    std::vector<string> inJsons;
+   std::vector<string> fixJsons;
    string outJson = "";    
 
    std::vector<string> args;
@@ -136,33 +228,36 @@ int main(int argc, char* argv[]){
      if(arg.find("--help")!=string::npos){
         printf("--help               --> print this helping text\n");
         printf("--in  [in1,...,inN)] --> input  Json files \n");
+        printf("--fix [fx1,...,fxN)] --> Json files to be fixed.  The input files are considered as the reference and the files to be fixed will be modified according to the reference input files\n");
         printf("--out [out]          --> output Json file \n");
         printf("--multicrab          --> create a multicrab.cfg file for the data samples \n");
         printf("--multicrabMC        --> create a multicrab.cfg file for the MC samples \n");
 	return 0;
      }
 
-     else if(arg.find("--in")!=string::npos){ while(i+1<argc && string(argv[i+1]).find("--")!=0){inJsons.push_back(argv[i+1]);  i++;}  printf("input  Json files:\n"); for(unsigned int j=0;j<inJsons.size();j++){printf("\t - %s\n", inJsons[j].c_str());}  }
+     else if(arg.find("--in" )!=string::npos){ while(i+1<argc && string(argv[i+1]).find("--")!=0){inJsons.push_back(argv[i+1]);  i++;}  printf("input  Json files:\n"); for(unsigned int j=0;j<inJsons.size();j++){printf("\t - %s\n", inJsons[j].c_str());}  }
+     else if(arg.find("--fix")!=string::npos){ while(i+1<argc && string(argv[i+1]).find("--")!=0){fixJsons.push_back(argv[i+1]);  i++;}  printf("to be fixed Json files:\n"); for(unsigned int j=0;j<fixJsons.size();j++){printf("\t - %s\n", fixJsons[j].c_str());}  }
      else if(arg.find("--out")!=string::npos && i+1<argc){outJson = argv[i+1];  i++;  printf("output Json file : %s\n", outJson.c_str());}
      else if(arg.find("--multicrabMC")!=string::npos){ multicrabMC = true; }
      else if(arg.find("--multicrab"  )!=string::npos){ multicrab   = true; }
    }
 
 
+   JSONWrapper::Object AllJson = merge_json(inJsons);
+
    if(multicrab || multicrabMC){
-      JSONWrapper::Object AllJson = merge_json(inJsons);
       make_multicrab_cfg(AllJson, !multicrabMC);
    }
 
+   for(unsigned int i=0;i<fixJsons.size();i++){
+      fix_json(AllJson, fixJsons[i]);
+   }
 
    if(outJson!=""){
-      JSONWrapper::Object AllJson = merge_json(inJsons); 
-      FILE* pFile = fopen("tmp.json", "w"); 
+      FILE* pFile = fopen(outJson.c_str(), "w"); 
       AllJson.Dump(pFile);
       fclose(pFile);
    }
-
-
 
    return 0;
 }
