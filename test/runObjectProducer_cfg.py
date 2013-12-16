@@ -254,9 +254,11 @@ process.out.outputCommands = cms.untracked.vstring('drop *',
                                                    'keep double_kt6PFJets_rho_*',
                                                    'keep double_kt6PFJetsCentral_rho_*',
                                                    'keep *_lumiProducer_*_*',
-#                                                   'keep GenEventInfoProduct_*_*_*',
-#                                                   'keep LHEEventProduct_*_*_*',
-#                                                   'keep PileupSummaryInfos_*_*_*'
+                                                   'keep edmTriggerResults_TriggerResults_*_HLT',
+                                                   'keep edmTriggerResults_TriggerResults_*_DataAna',
+#                                                  'keep GenEventInfoProduct_*_*_*',
+#                                                  'keep LHEEventProduct_*_*_*',
+#                                                  'keep PileupSummaryInfos_*_*_*'
                                                   )
 
 

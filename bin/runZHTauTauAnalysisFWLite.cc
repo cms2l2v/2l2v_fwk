@@ -165,16 +165,20 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(14,"ee_mt");
   h->GetXaxis()->SetBinLabel(15,"ee_tt");
 
-  TH1 *h1=mon1.addHistogram( new TH1F ("failreason", ";;Events", 10,0,10) );
-  h1->GetXaxis()->SetBinLabel(1,"2lep");
-  h1->GetXaxis()->SetBinLabel(2,"Zmass");
-  h1->GetXaxis()->SetBinLabel(3,"overJet");
-  h1->GetXaxis()->SetBinLabel(4,"4lep");
-  h1->GetXaxis()->SetBinLabel(4,"ME"); 
-  h1->GetXaxis()->SetBinLabel(5,"LT");
-  h1->GetXaxis()->SetBinLabel(6,"TT");
-  h1->GetXaxis()->SetBinLabel(7,"leptVeto");
-  h1->GetXaxis()->SetBinLabel(8,"bjetVeto");
+  TH1 *h1=mon1.addHistogram( new TH1F ("failreason", ";;Events", 20,0,20) );
+  h1->GetXaxis()->SetBinLabel(1,"no event");
+  h1->GetXaxis()->SetBinLabel(2,"2lep");
+  h1->GetXaxis()->SetBinLabel(3,"2SelLep");
+  h1->GetXaxis()->SetBinLabel(4,"Trigger");
+  h1->GetXaxis()->SetBinLabel(5,"Zmass");
+  h1->GetXaxis()->SetBinLabel(6,"overJet");
+  h1->GetXaxis()->SetBinLabel(7,"4lep");
+  h1->GetXaxis()->SetBinLabel(8,"ME"); 
+  h1->GetXaxis()->SetBinLabel(9,"LT");
+  h1->GetXaxis()->SetBinLabel(10,"TT");
+  h1->GetXaxis()->SetBinLabel(11,"leptVeto");
+  h1->GetXaxis()->SetBinLabel(12,"bjetVeto");
+  h1->GetXaxis()->SetBinLabel(13,"matched");
 
   mon.addHistogram( new TH1F("pthat",";#hat{p}_{T} [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("nup",";NUP;Events",10,0,10) );
@@ -345,7 +349,8 @@ int main(int argc, char* argv[])
 
   std::vector<long> events;
   ifstream inTxtEvents;
-  inTxtEvents.open("/nfs/scratch/fynu/lperrini/Loic_Code/CMSSW_5_3_11/src/UserCode/llvv_fwk/test/zhtautau/only_lucia.txt");
+//  inTxtEvents.open("/afs/cern.ch/user/q/querten/workspace/public/HZZ2l2v_onCondor/CMSSW_5_3_11/src/UserCode/llvv_fwk/test/only_lucia.txt");
+  inTxtEvents.open("/afs/cern.ch/user/q/querten/workspace/public/HZZ2l2v_onCondor/CMSSW_5_3_11/src/UserCode/llvv_fwk/test/lucia_events.txt");
   if (inTxtEvents.is_open()){
 	  while ( inTxtEvents.good() ){
 		  long num;
@@ -371,7 +376,7 @@ int main(int argc, char* argv[])
       //##############################################   EVENT LOOP STARTS   ##############################################
       //load the event content from tree
 //      evSummary.getEntry(iev);
-      ev.to(iev);
+      ev.to(1,events[iev]);
 //      if you need to run just on 1 event
       //ev.to(1,1997);
       //if(ev.eventAuxiliary().event()==1997)
@@ -379,9 +384,24 @@ int main(int argc, char* argv[])
    
       //if (ev.eventAuxiliary().run() != 1 || ev.eventAuxiliary().event() != 1997) continue;
 //      DataEventSummary &ev = evSummary.getEvent();
-      if(examineThisEvent) cout << "EXAMINING event..." << endl;
+      if(examineThisEvent) cout << "EXAMINING event... " << ev.eventAuxiliary().run() << "-" << ev.eventAuxiliary().event() << endl;
       if(examineThisEvent) cout << "Which event are you considering? " << events[iev] << endl;
-      if(!isMC && duplicatesChecker.isDuplicate( ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event()) ) { nDuplicates++; continue; }
+
+
+      std::vector<TString> failTags;
+      failTags.push_back("all");
+
+      if(events[iev]!=ev.eventAuxiliary().event()){
+        printf("%i is MISSING in the ntuples\n", (int)events[iev]);
+        mon1.fillHisto("failreason",failTags,0,1);
+        continue;
+      }
+
+
+
+//      if(!isMC && duplicatesChecker.isDuplicate( ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event()) ) { nDuplicates++; continue; }
+
+
 
       //get the collection of generated Particles
       fwlite::Handle< llvvGenEvent > genEventHandle;
@@ -534,7 +554,7 @@ int main(int argc, char* argv[])
           float relIso = utils::cmssw::relIso(leptons[ilep], rho);
 	  if(examineThisEvent) cout << "relIso: " << relIso << endl;
 	  if(examineThisEvent) cout << "passId/passIso/passKin: " << passId << "/" << passIso << "/" << passKin << endl;
-          //if( (lid==11 && relIso>0.40) || (lid!=11 && relIso>0.40) ) passIso=false;
+          if( (lid==11 && relIso>0.40) || (lid!=11 && relIso>0.40) ) passIso=false;
 
 	  if(!passId || !passIso || !passKin) continue;
 	  selLeptons.push_back(leptons[ilep]);
@@ -542,11 +562,15 @@ int main(int argc, char* argv[])
       std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
 
       //at this point check if it's worth continuing
-      std::vector<TString> failTags;
-      failTags.push_back("all");
       if(examineThisEvent) cout << "Lepton size is: " << selLeptons.size() << endl;
+
+      if(leptons.size()<2){
+        mon1.fillHisto("failreason",failTags,1,1);
+        continue;
+      }
+
       if(selLeptons.size()<2){ 
-      	mon1.fillHisto("failreason",failTags,0,1);
+      	mon1.fillHisto("failreason",failTags,2,1);
         continue;
       }
     
@@ -607,12 +631,15 @@ int main(int argc, char* argv[])
       chTags.push_back("all");
       if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
       if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-      if(chTags.size()==0) continue;
+      if(chTags.size()==0){
+        mon1.fillHisto("failreason",failTags,3,1);
+          continue;
+      }
 
       mon.fillHisto("eventflow",chTags,0,weight);
       
       if(!passZmass){ 
-      	mon1.fillHisto("failreason",failTags,1,1);
+      	mon1.fillHisto("failreason",failTags,4,1);
       	continue;
       }
 
@@ -667,8 +694,6 @@ int main(int argc, char* argv[])
                 overlapJets=true;
           	continue;
           }
-	  if(overlapJets)
-		mon1.fillHisto("failreason",failTags,2,1);
 
 	  //jet id
 	  // float pumva=jets[ijet].puMVA;
@@ -707,6 +732,16 @@ int main(int argc, char* argv[])
       std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
       std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
       mon.fillHisto("nbjets"    ,  chTags, nbjets,  weight);
+
+//this one does not really make sense
+//      if(overlapJets){
+//    	      mon1.fillHisto("failreason",failTags,5,1);
+//              continue;
+//      }
+
+
+
+
 
       if(examineThisEvent) cout << "number of bjets" << nbjets << endl;
 
@@ -748,7 +783,7 @@ int main(int argc, char* argv[])
       int higgsCandId=0,  higgsCandMu=-1, higgsCandEl=-1, higgsCandT1=-1, higgsCandT2=-1;
 
       if(selLeptons.size()+selTaus.size()<4){ 
-	      mon1.fillHisto("failreason",failTags,3,1);
+	      mon1.fillHisto("failreason",failTags,6,1);
 	      continue;
       }
 	  
@@ -792,7 +827,7 @@ int main(int argc, char* argv[])
       if(higgsCandId)
 	 if(examineThisEvent) cout << "MU-ELE candidate is here!" << endl;
       if(!higgsCandId && selTaus.size()==0){ 
-	      mon1.fillHisto("failreason",failTags,4,1);
+	      mon1.fillHisto("failreason",failTags,7,1);
 	      continue;
       }
       
@@ -840,7 +875,7 @@ int main(int argc, char* argv[])
       }}
 
       if(!higgsCandId && selLeptons.size()==3 && selTaus.size()==1){ 
-	      mon1.fillHisto("failreason",failTags,5,1);
+	      mon1.fillHisto("failreason",failTags,8,1);
 	      continue;
       }
 
@@ -879,7 +914,7 @@ int main(int argc, char* argv[])
       }}
 
       if(!higgsCandId && selLeptons.size()==2 && selTaus.size()==2){ 
-	      mon1.fillHisto("failreason",failTags,6,1);
+	      mon1.fillHisto("failreason",failTags,9,1);
 	      continue;
       }
 
@@ -920,7 +955,7 @@ int main(int argc, char* argv[])
       } 
 
       if(!passLepVeto){ 
-	      mon1.fillHisto("failreason",failTags,6,1);
+	      mon1.fillHisto("failreason",failTags,10,1);
 	      continue;
       }
 
@@ -949,13 +984,20 @@ int main(int argc, char* argv[])
       }
 
       if(!passBJetVeto){ 
-	      mon1.fillHisto("failreason",failTags,7,1);
+	      mon1.fillHisto("failreason",failTags,11,1);
 	      continue;
       }
 
       if(examineThisEvent) cout << "B-tag veto passed!" << endl;
       mon.fillHisto("eventflow",chTags,5,weight);
       mon.fillHisto("eventflow",chTags,7+HiggsShortId,weight);
+
+
+
+      if(true){
+              mon1.fillHisto("failreason",failTags,12,1);
+      } 
+
 
       //SVFIT MASS
       /*double diTauMass = -1;

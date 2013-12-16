@@ -434,7 +434,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("beamSpotSource"), beamSpotH);
 	edm::Handle<reco::VertexCollection> vtxH;
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("vtxSource"), vtxH);
-	if(vtxH->size()==0) return false;
+//	if(vtxH->size()==0) return false; //also keep events without vertex -> in principle this neverhappens
         nvtx = vtxH->size();
 	reco::VertexRef primVtx(vtxH,0);
 
@@ -450,7 +450,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 	// https://twiki.cern.ch/twiki/bin/view/CMS/EgammaCutBasedIdentification
 	// https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
 	//
-        int nElecs=0, nMuons=0, nPhotons=0;
+        int nMuons17(0), nMuons8(0), nElecs17(0), nElecs8(0),  nPhotons=0;
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
   //Muons
 	edm::Handle<View<Candidate> > muH, eH;
@@ -476,7 +476,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		bool isGlobal( muon->isGlobalMuon() );
 		bool isTracker( muon->isTrackerMuon() );
 		bool isLoose( isPF && (isGlobal || isTracker) );
-		if(!isLoose) continue;
+		//if(!isLoose) continue;
 		if(muon->pt()<3 || fabs(muon->eta())>2.5) continue;
 
                 llvvLepton lep;
@@ -560,7 +560,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
                muInfoColl.push_back(muInfo);
                lepColl.push_back(lep);
-               if(muon->pt()>18) nMuons++;
+               if(muon->pt()> 8) nMuons8++;
+               if(muon->pt()>17) nMuons17++;
 	}
 
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
@@ -575,7 +576,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
 		//pre-selection
 		if(ele->gsfTrack().isNull() || ele->superCluster().isNull() || gsfEle==0) continue;
-		if(ele->pt()<10 || !(ele->isEB() || ele->isEE()) )                        continue;
+		if(ele->pt()<8  || !(ele->isEB() || ele->isEE()) )                        continue;
 		bool overlapFound(false);
 		for(unsigned int ilep=0; ilep<lepColl.size(); ilep++)
 		{
@@ -699,7 +700,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
                elInfoColl.push_back(elInfo);
                lepColl.push_back(lep);
-               if(ele->pt()>18) nElecs++;
+               if(ele->pt()> 8) nElecs8++;
+               if(ele->pt()>17) nElecs17++;
 	}
 
 
@@ -904,12 +906,12 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
   for(unsigned int itrig=0; itrig<triggerCats.size(); itrig++){
       if(!triggerBits[itrig]) continue;
       int cat=triggerCats[itrig];
-      if     (cat==11   && nElecs==0)                continue;
-      else if(cat==13   && nMuons==0)                continue;
+      if     (cat==11   && nElecs17==0)              continue;
+      else if(cat==13   && nMuons17==0)              continue;
       else if(cat==22   && nPhotons==0)              continue;
-      else if(cat==1111 && nElecs<2)                 continue;
-      else if(cat==1113 && (nMuons==0 || nElecs==0)) continue;
-      else if(cat==1313 && nMuons<2)                 continue;
+      else if(cat==1111 && nElecs8<2)                 continue;
+      else if(cat==1113 && (nMuons8+nElecs17<2 || nMuons17+nElecs8<2)) continue;
+      else if(cat==1313 && nMuons8<2)                 continue;
       filterOut=false;
       break;
     }
