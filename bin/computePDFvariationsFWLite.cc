@@ -175,6 +175,7 @@ int main(int argc, char* argv[])
   printf("Loop on PDF sets and variations\n");   
   for(size_t ipdf=0; ipdf<nPdfSets; ipdf++){
     for(int i=0; i <(nPdfVars[ipdf]+1); ++i){
+      printf("%i/%i - %i/%i\n", (int)ipdf, (int)nPdfSets, (int)i, (int)(nPdfVars[ipdf]+1));
 
       LHAPDF::usePDFMember(ipdf+1,i);
       char nameBuf[256];sprintf(nameBuf,"%s_var%d", pdfSets[ipdf].c_str(), i);
