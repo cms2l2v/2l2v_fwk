@@ -1,5 +1,173 @@
 {
   "proc":[
+        {
+        "tag":"ZH(110)#rightarrow #tau#tau", 
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true, 
+        "spimpose":true,
+        "color":"807", 
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[ 
+                { 
+                "dtag":"MC8TeV_ZH110toTauTau",
+                "dset":"/ZH_HToTauTau_M-110_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1, 
+                "xsec":1, 
+                "br":[1] 
+                }
+           ]
+        },
+        { 
+        "tag":"ZH(115)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3, 
+        "lstyle":3, 
+        "fill":0, 
+        "marker":1, 
+        "data":[  
+                {  
+                "dtag":"MC8TeV_ZH115toTauTau",
+                "dset":"/ZH_HToTauTau_M-115_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":1,       
+                "br":[1]     
+                } 
+           ] 
+        }, 
+        { 
+        "tag":"ZH(120)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3, 
+        "lstyle":3, 
+        "fill":0, 
+        "marker":1, 
+        "data":[  
+                {  
+                "dtag":"MC8TeV_ZH120toTauTau",
+                "dset":"/ZH_HToTauTau_M-120_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":1,       
+                "br":[1]     
+                } 
+           ] 
+        }, 
+        {
+        "tag":"ZH(125)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3,
+        "lstyle":3,
+        "fill":0,
+        "marker":1,
+        "data":[
+                {
+                "dtag":"MC8TeV_ZH125toTauTau",
+                "dset":"/ZH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":0.4153,
+                "br":[0.0632]
+                }
+           ]
+        },
+        { 
+        "tag":"ZH(130)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3, 
+        "lstyle":3, 
+        "fill":0, 
+        "marker":1, 
+        "data":[  
+                {  
+                "dtag":"MC8TeV_ZH130toTauTau",
+                "dset":"/ZH_HToTauTau_M-130_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":1,       
+                "br":[1]     
+                } 
+           ] 
+        }, 
+        { 
+        "tag":"ZH(135)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3, 
+        "lstyle":3, 
+        "fill":0, 
+        "marker":1, 
+        "data":[  
+                {  
+                "dtag":"MC8TeV_ZH135toTauTau",
+                "dset":"/ZH_HToTauTau_M-135_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":1,       
+                "br":[1]     
+                } 
+           ] 
+        }, 
+        { 
+        "tag":"ZH(140)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3, 
+        "lstyle":3, 
+        "fill":0, 
+        "marker":1, 
+        "data":[  
+                {  
+                "dtag":"MC8TeV_ZH140toTauTau",
+                "dset":"/ZH_HToTauTau_M-140_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":1,       
+                "br":[1]     
+                } 
+           ] 
+        }, 
+        { 
+        "tag":"ZH(145)#rightarrow #tau#tau",
+        "isinvisible":false,
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":"807",
+        "lwidth":3, 
+        "lstyle":3, 
+        "fill":0, 
+        "marker":1, 
+        "data":[  
+                {  
+                "dtag":"MC8TeV_ZH145toTauTau",
+                "dset":"/ZH_HToTauTau_M-145_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM",
+                "split":1,
+                "xsec":1,       
+                "br":[1]     
+                } 
+           ] 
+        }, 
     {
       "tag":"XH(110)#rightarrow #tau#tau",
       "isinvisible":true,
@@ -12,7 +180,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH110toTauTau"                    , "split":1, "xsec":1.8706      , "br":[ 0.0795 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH110toTauTau"                    , "split":1, "xsec":1.8706      , "br":[ 0.0795 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-110_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -27,7 +195,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH115toTauTau"                    , "split":1, "xsec":1.6275      , "br":[ 0.0758 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH115toTauTau"                    , "split":1, "xsec":1.6275      , "br":[ 0.0758 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-115_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -42,7 +210,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH120toTauTau"                    , "split":1, "xsec":1.4221      , "br":[ 0.0704 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH120toTauTau"                    , "split":1, "xsec":1.4221      , "br":[ 0.0704 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-120_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -57,7 +225,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH125toTauTau"                    , "split":1, "xsec":1.2492      , "br":[ 0.0632 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH125toTauTau"                    , "split":1, "xsec":1.2492      , "br":[ 0.0632 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -72,7 +240,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH130toTauTau"                    , "split":1, "xsec":1.0989      , "br":[ 0.0545 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH130toTauTau"                    , "split":1, "xsec":1.0989      , "br":[ 0.0545 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-130_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -87,7 +255,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH135toTauTau"                    , "split":1, "xsec":0.9699      , "br":[ 0.0449 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH135toTauTau"                    , "split":1, "xsec":0.9699      , "br":[ 0.0449 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-135_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -102,7 +270,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_XH140toTauTau"                    , "split":1, "xsec":0.8581      , "br":[ 0.0352 ]              , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_XH140toTauTau"                    , "split":1, "xsec":0.8581      , "br":[ 0.0352 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-140_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {

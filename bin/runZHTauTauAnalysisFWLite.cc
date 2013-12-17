@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
   //##############################################
 
   // check arguments
-  if(argc<2){ std::if(examineThisEvent) cout << "Usage : " << argv[0] << " parameters_cfg.py" << std::endl; exit(0); }
+  if(argc<2){ std::cout << "Usage : " << argv[0] << " parameters_cfg.py" << std::endl; exit(0); }
   
   // load framework libraries
   gSystem->Load( "libFWCoreFWLite" );
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 
   std::vector<int> jacknifeCfg=runProcess.getParameter<std::vector<int> >("jacknife");
   int jacknife(jacknifeCfg[0]), jacks(jacknifeCfg[1]);
-  if(jacknife>0 && jacks>0) if(examineThisEvent) cout << "Jacknife will be applied to every " << jacknife << " out of " << jacks << " events" << endl;
+  if(jacknife>0 && jacks>0) cout << "Jacknife will be applied to every " << jacknife << " out of " << jacks << " events" << endl;
   
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
   TString url = TString(urls[0]);
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
     gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfgdata2mc");
     if(gr) recoilResidualsGr.push_back( gr );
     fIn->Close();
-    if(examineThisEvent) cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
+    cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
   }
   
   
@@ -139,13 +139,14 @@ int main(int argc, char* argv[])
 //	  varNames.push_back("_balanceup"); varNames.push_back("_balancedown");
 	}
       nvarsToInclude=varNames.size();
-      if(examineThisEvent) cout << nvarsToInclude << " systematics will be computed for this analysis" << endl;
+      cout << nvarsToInclude << " systematics will be computed for this analysis" << endl;
     }
 
   //##############################################
   //########    INITIATING HISTOGRAMS     ########
   //##############################################
   SmartSelectionMonitor mon;
+  SmartSelectionMonitor mon1;
 
   TH1 *h=mon.addHistogram( new TH1F ("eventflow", ";;Events", 17,0,17) );
   h->GetXaxis()->SetBinLabel(1,"#geq 2 leptons");
@@ -163,6 +164,21 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(13,"ee_et");
   h->GetXaxis()->SetBinLabel(14,"ee_mt");
   h->GetXaxis()->SetBinLabel(15,"ee_tt");
+
+  TH1 *h1=mon1.addHistogram( new TH1F ("failreason", ";;Events", 20,0,20) );
+  h1->GetXaxis()->SetBinLabel(1,"no event");
+  h1->GetXaxis()->SetBinLabel(2,"2lep");
+  h1->GetXaxis()->SetBinLabel(3,"2SelLep");
+  h1->GetXaxis()->SetBinLabel(4,"Trigger");
+  h1->GetXaxis()->SetBinLabel(5,"Zmass");
+  h1->GetXaxis()->SetBinLabel(6,"overJet");
+  h1->GetXaxis()->SetBinLabel(7,"4lep");
+  h1->GetXaxis()->SetBinLabel(8,"ME"); 
+  h1->GetXaxis()->SetBinLabel(9,"LT");
+  h1->GetXaxis()->SetBinLabel(10,"TT");
+  h1->GetXaxis()->SetBinLabel(11,"leptVeto");
+  h1->GetXaxis()->SetBinLabel(12,"bjetVeto");
+  h1->GetXaxis()->SetBinLabel(13,"matched");
 
   mon.addHistogram( new TH1F("pthat",";#hat{p}_{T} [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("nup",";NUP;Events",10,0,10) );
@@ -329,28 +345,63 @@ int main(int argc, char* argv[])
   //TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
   FILE* outTxtEvents = NULL;
   outTxtEvents = fopen(outTxtUrl.Data(), "w");
-
   bool examineThisEvent=false;
 
-  for( int iev=0; iev<totalEntries; iev++ ) 
+  std::vector<long> events;
+  ifstream inTxtEvents;
+//  inTxtEvents.open("/afs/cern.ch/user/q/querten/workspace/public/HZZ2l2v_onCondor/CMSSW_5_3_11/src/UserCode/llvv_fwk/test/only_lucia.txt");
+  inTxtEvents.open("/afs/cern.ch/user/q/querten/workspace/public/HZZ2l2v_onCondor/CMSSW_5_3_11/src/UserCode/llvv_fwk/test/lucia_events.txt");
+  if (inTxtEvents.is_open()){
+	  while ( inTxtEvents.good() ){
+		  long num;
+		  inTxtEvents >> num;
+		  events.push_back(num);
+	  }
+	  inTxtEvents.close();
+  }
+     cout << "SIZE of events..." << events.size() << endl;
+
+  for( uint iev=0; iev<events.size(); iev++ ) 
+  //for( int iev=0; iev<totalEntries; iev++ ) 
     {
+	    //uint pos_helper=0;
+	    //pos_helper = std::find(events.begin(), events.end(), ev.eventAuxiliary().event()) - events.begin();
+	    //cout << "POS HELPER: " << pos_helper << endl;
+	    //if(pos_helper < events.size()) 
+            examineThisEvent=true;
 
       if(iev%step==0){printf(".");fflush(stdout);}
-      if(!isMC && jacknife>0 && jacks>0 && iev%jacks==jacknife) continue;
+      if(!isMC && jacknife>0 && jacks>0 && iev%jacks==(uint)jacknife) continue;
       
       //##############################################   EVENT LOOP STARTS   ##############################################
       //load the event content from tree
 //      evSummary.getEntry(iev);
-      //ev.to(iev);
+      ev.to(1,events[iev]);
 //      if you need to run just on 1 event
-      ev.to(1,1839);
-      if(ev.eventAuxiliary().event()==1839)
-      	examineThisEvent = true;
+      //ev.to(1,1997);
+      //if(ev.eventAuxiliary().event()==1997)
+      //	examineThisEvent = true;
    
-      //if (ev.eventAuxiliary().run() != 1 || ev.eventAuxiliary().event() != 1839) continue;
+      //if (ev.eventAuxiliary().run() != 1 || ev.eventAuxiliary().event() != 1997) continue;
 //      DataEventSummary &ev = evSummary.getEvent();
-      if(examineThisEvent) cout << "Which event are you considering? " << ev.eventAuxiliary().event() << endl;
-      if(!isMC && duplicatesChecker.isDuplicate( ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event()) ) { nDuplicates++; continue; }
+      if(examineThisEvent) cout << "EXAMINING event... " << ev.eventAuxiliary().run() << "-" << ev.eventAuxiliary().event() << endl;
+      if(examineThisEvent) cout << "Which event are you considering? " << events[iev] << endl;
+
+
+      std::vector<TString> failTags;
+      failTags.push_back("all");
+
+      if(events[iev]!=ev.eventAuxiliary().event()){
+        printf("%i is MISSING in the ntuples\n", (int)events[iev]);
+        mon1.fillHisto("failreason",failTags,0,1);
+        continue;
+      }
+
+
+
+//      if(!isMC && duplicatesChecker.isDuplicate( ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event()) ) { nDuplicates++; continue; }
+
+
 
       //get the collection of generated Particles
       fwlite::Handle< llvvGenEvent > genEventHandle;
@@ -450,6 +501,7 @@ int main(int argc, char* argv[])
       //
       //
 
+
       //
       // LEPTON ANALYSIS
       //
@@ -488,9 +540,10 @@ int main(int argc, char* argv[])
 	  Int_t idbits = leptons[ilep].idbits;
 	  if(lid==11){
 	    if(leptons[ilep].electronInfoRef->isConv)              passId=false;
-	    bool isLoose = ((idbits >> 4) & 0x1);
+	    bool isLoose = leptons[ilep].electronInfoRef->mvanontrigv0; 
 	    if(examineThisEvent) cout << "Lepton ID loose: " << isLoose << endl;
 	    if(!isLoose)                                   passId=false;
+	    else                                           passId=true;
  	  }
 	  else{
 	    bool isLoose    = ((idbits >> 8) & 0x1);
@@ -502,7 +555,7 @@ int main(int argc, char* argv[])
 	  if(examineThisEvent) cout << "relIso: " << relIso << endl;
 	  if(examineThisEvent) cout << "passId/passIso/passKin: " << passId << "/" << passIso << "/" << passKin << endl;
           if( (lid==11 && relIso>0.40) || (lid!=11 && relIso>0.40) ) passIso=false;
-	  
+
 	  if(!passId || !passIso || !passKin) continue;
 	  selLeptons.push_back(leptons[ilep]);
 	}
@@ -510,7 +563,16 @@ int main(int argc, char* argv[])
 
       //at this point check if it's worth continuing
       if(examineThisEvent) cout << "Lepton size is: " << selLeptons.size() << endl;
-      if(selLeptons.size()<2) continue;
+
+      if(leptons.size()<2){
+        mon1.fillHisto("failreason",failTags,1,1);
+        continue;
+      }
+
+      if(selLeptons.size()<2){ 
+      	mon1.fillHisto("failreason",failTags,2,1);
+        continue;
+      }
     
       //
       // DILEPTON ANALYSIS
@@ -518,35 +580,45 @@ int main(int argc, char* argv[])
       LorentzVector leadingLep, trailerLep, zll;
       int dilLep1=-1, dilLep2=-1;
       double BestMass=0;
+      bool passZmass=false;
+      bool ptorder=false;
       //identify the best lepton pair
       for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
          float relIso1 = utils::cmssw::relIso(selLeptons[l1], rho);
-         if( relIso1>0.30 ) continue;
+         //if( relIso1>0.30 ) continue;
          for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
+	    if(examineThisEvent) cout << "ID lepton1: " << fabs(selLeptons[l1].id) << " ID lepton2: " << fabs(selLeptons[l2].id) << endl;
+	    if(examineThisEvent) cout << "Pt lepton1: " << selLeptons[l1].pt() << " Pt lepton2: " << selLeptons[l2].pt() << endl;
+	    if(examineThisEvent) cout << "ISO lepton1: " << relIso1 << endl;
             if(fabs(selLeptons[l1].id)!=fabs(selLeptons[l2].id)) continue; //only consider same flavor lepton pairs
+	    if(examineThisEvent) cout << "SAME flavor lepton pairs --> OK! " << endl;
             if(selLeptons[l1].id*selLeptons[l2].id>=0) continue; //only consider opposite charge lepton pairs
-            if( !(selLeptons[l1].pt()>=20 && selLeptons[l2].pt()>=10) || !(selLeptons[l1].pt()>=10 && selLeptons[l2].pt()>=20)) continue;
+	    if(examineThisEvent) cout << "OPPOSITE charge lepton pairs --> OK! " << endl;
+            if( selLeptons[l1].pt()>20 && selLeptons[l2].pt()>10 ) ptorder=true;
+            if(!ptorder)
+            	if( selLeptons[l2].pt()>20 && selLeptons[l1].pt()>10) ptorder=true;
+            if(!ptorder) continue;
+            //if( !(selLeptons[l1].pt()>=20 && selLeptons[l2].pt()>=10) || !(selLeptons[l1].pt()>=10 && selLeptons[l2].pt()>=20)) continue;
             float relIso2 = utils::cmssw::relIso(selLeptons[l2], rho);
-            if( relIso2>0.30 ) continue;
-
+	    if(examineThisEvent) cout << "ISO lepton2: " << relIso2 << endl;
+            //if( relIso2>0.30 ) continue;
             if(deltaR(selLeptons[l1], selLeptons[l2])<0.1) continue;
-            //mass should be 60<mass<120;
-            //if(60>fabs(selLeptons[l1]+selLeptons[l2]).mass() || fabs(selLeptons[l1]+selLeptons[l2]).mass()>120) continue;
-            if(fabs(BestMass-91.2)>fabs((selLeptons[l1]+selLeptons[l2]).mass() - 91.2)){
+            if(fabs(BestMass-91.2)>fabs((selLeptons[l1]+selLeptons[l2]).mass() - 91.2) && fabs(zll.mass()-91.2)>60 && fabs(zll.mass()-91.2)<120){
                dilLep1 = l1; 
                dilLep2 = l2;
                zll=selLeptons[l1]+selLeptons[l2];
                BestMass=zll.mass();
+               passZmass=true;
             }
          }
       }
+
       if(selLeptons[dilLep1].pt()>selLeptons[dilLep2].pt()){ leadingLep=selLeptons[dilLep1]; trailerLep=selLeptons[dilLep2]; 
       }else{                                                 leadingLep=selLeptons[dilLep2]; trailerLep=selLeptons[dilLep1]; 
       } 
       float zy(zll.Rapidity());
-      bool passZmass(fabs(zll.mass()-91.2)<30);//15);
-      bool passZpt(true);//zll.pt()>50);
-      bool passZeta(true);//fabs(zll.eta())<1.4442);
+      //bool passZpt(true);//zll.pt()>50);
+      //bool passZeta(true);//fabs(zll.eta())<1.4442);
 
       //apply data/mc correction factors
       int dilId = selLeptons[dilLep1].id * selLeptons[dilLep2].id;
@@ -559,8 +631,20 @@ int main(int argc, char* argv[])
       chTags.push_back("all");
       if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
       if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-      if(chTags.size()==0) continue;
+      if(chTags.size()==0){
+        mon1.fillHisto("failreason",failTags,3,1);
+          continue;
+      }
 
+      mon.fillHisto("eventflow",chTags,0,weight);
+      
+      if(!passZmass){ 
+      	mon1.fillHisto("failreason",failTags,4,1);
+      	continue;
+      }
+
+      if(examineThisEvent) cout << "We have the Z!" << endl;
+      mon.fillHisto("eventflow",chTags,1,weight);
 
       //generator level
       LorentzVector genll;
@@ -600,15 +684,17 @@ int main(int argc, char* argv[])
              nbjets++;
           }
 
-
 	  //cross-clean with selected leptons and photons
 	  double minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
             minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
           if(examineThisEvent) cout << "dR jets-leptons (should be > 0.4)" << minDRlj << endl;
-	  if(minDRlj<0.4 || minDRlg<0.4) continue;
+          bool overlapJets=false;
+	  if(minDRlj<0.4 || minDRlg<0.4){ 
+                overlapJets=true;
+          	continue;
+          }
 
-	  
 	  //jet id
 	  // float pumva=jets[ijet].puMVA;
 	  Int_t idbits=jets[ijet].idbits;
@@ -647,6 +733,16 @@ int main(int argc, char* argv[])
       std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
       mon.fillHisto("nbjets"    ,  chTags, nbjets,  weight);
 
+//this one does not really make sense
+//      if(overlapJets){
+//    	      mon1.fillHisto("failreason",failTags,5,1);
+//              continue;
+//      }
+
+
+
+
+
       if(examineThisEvent) cout << "number of bjets" << nbjets << endl;
 
       //
@@ -655,7 +751,8 @@ int main(int argc, char* argv[])
       llvvTauCollection selTaus;
       for(size_t itau=0; itau<taus.size(); itau++){
          llvvTau& tau = taus[itau];
-	 if(examineThisEvent) cout << "tau pt/eta" << tau.pt() << "/" << fabs(tau.eta()) << endl;
+	 if(examineThisEvent) cout << "tau n: " << itau << " pt/eta" << tau.pt() << "/" << fabs(tau.eta()) << endl;
+	 if(examineThisEvent) cout << "muonLoose " << tau.passId(llvvTAUID::againstMuonLoose2)  << " DM " << tau.passId(llvvTAUID::decayModeFinding) << endl;
          if(tau.pt()<15.0 || fabs(tau.eta()) > 2.3) continue; 
 
 
@@ -685,10 +782,15 @@ int main(int argc, char* argv[])
       LorentzVector higgsCand;
       int higgsCandId=0,  higgsCandMu=-1, higgsCandEl=-1, higgsCandT1=-1, higgsCandT2=-1;
 
-      bool passNLep = (selLeptons.size()+selTaus.size())>=4;
+      if(selLeptons.size()+selTaus.size()<4){ 
+	      mon1.fillHisto("failreason",failTags,6,1);
+	      continue;
+      }
+	  
+      mon.fillHisto("eventflow",chTags,2,weight);
 
       //Check if the event is compatible with a Mu-El candidate
-      if(examineThisEvent) cout << "mu-ele final state" << endl;
+      if(examineThisEvent) cout << "Checking mu-ele final state..." << endl;
       for(int l1=0   ;!higgsCandId && l1<(int)selLeptons.size();l1++){
          float relIso1 = utils::cmssw::relIso(selLeptons[l1], rho);
          if( relIso1>0.30 ) continue;
@@ -722,9 +824,18 @@ int main(int argc, char* argv[])
          break;//we found a candidate, stop the loop
       }}
 
+      if(higgsCandId)
+	 if(examineThisEvent) cout << "MU-ELE candidate is here!" << endl;
+      if(!higgsCandId && selTaus.size()==0){ 
+	      mon1.fillHisto("failreason",failTags,7,1);
+	      continue;
+      }
+      
       //Check if the event is compatible with a Lep-Tau candidate
-      if(examineThisEvent) cout << "lep-tau final state" << endl;
+      if(examineThisEvent) cout << "Checking lep-tau final state..." << endl;
 
+      bool isET=false;
+      bool isMT=false;
       for(int l1=0;!higgsCandId && l1<(int)selLeptons.size();l1++){
          if(l1==dilLep1 || l1==dilLep2) continue; //lepton already used in the dilepton pair
       for(int t1=0;!higgsCandId && t1<(int)selTaus   .size();t1++){
@@ -741,46 +852,71 @@ int main(int argc, char* argv[])
 //         if(utils::cmssw::relIso(selLeptons[l1], rho)>0.25) continue;
          float relIso1 = utils::cmssw::relIso(selLeptons[l1], rho);
 
-         if(abs(selLeptons[l1].id)==11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::decayModeFinding) || !selTaus[t1].passId(llvvTAUID::againstElectronTightMVA3) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<30)) continue;
-         if(abs(selLeptons[l1].id)!=11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::decayModeFinding) || !selTaus[t1].passId(llvvTAUID::againstElectronLoose    ) || !selTaus[t1].passId(llvvTAUID::againstMuonTight2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<45)) continue;
+         if(abs(selLeptons[l1].id)==11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::againstElectronTightMVA3) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<30)) continue;
+         if(abs(selLeptons[l1].id)!=11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::againstElectronLoose    ) || !selTaus[t1].passId(llvvTAUID::againstMuonTight2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<45)) continue;
 
 //         if((selLeptons[l1].pt()+selTaus[t1].pt())<45 ) continue;
 
-         higgsCand=selLeptons[l1]+selTaus[t1]; higgsCandId=selLeptons[l1].id*selTaus[t1].id;  if(abs(selLeptons[l1].id)==11){higgsCandEl=l1;}else{higgsCandMu=l1;} higgsCandT1=t1;
+         higgsCand=selLeptons[l1]+selTaus[t1]; higgsCandId=selLeptons[l1].id*selTaus[t1].id;  
+         if(abs(selLeptons[l1].id)==11){
+            higgsCandEl=l1;
+            isET=true;
+         }
+         else{
+            higgsCandMu=l1;
+            isMT=true;
+         }
+         higgsCandT1=t1;
+         if(isET){
+		 if(examineThisEvent) cout << "e-tau candidate is here!" << endl;}
+         if(isMT){
+		 if(examineThisEvent) cout << "mu-tau candidate is here!" << endl;}
          break;//we found a candidate, stop the loop         
       }}
 
+      if(!higgsCandId && selLeptons.size()==3 && selTaus.size()==1){ 
+	      mon1.fillHisto("failreason",failTags,8,1);
+	      continue;
+      }
+
       //Check if the event is compatible with a Tau-Tau candidate
+      if(examineThisEvent) cout << "Checking tau-tau final state..." << endl;
       for(int t1=0   ;!higgsCandId && t1<(int)selTaus   .size();t1++){
       for(int t2=t1+1;!higgsCandId && t2<(int)selTaus   .size();t2++){
 
-         //printf("Tau %6.2f %6.2f %+3i %i %i %i %i\n", selTaus[t1].pt(), fabs(selTaus[t1].eta()), selTaus[t1].id, (int)selTaus[t1].passId(llvvTAUID::decayModeFinding), (int)selTaus[t1].passId(llvvTAUID::againstElectronLoose), (int) selTaus[t1].passId(llvvTAUID::againstMuonLoose2), (int) selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) );
-         //printf("    %6.2f %6.2f %+3i %i %i %i %i\n", selTaus[t2].pt(), fabs(selTaus[t2].eta()), selTaus[t2].id, (int)selTaus[t2].passId(llvvTAUID::decayModeFinding), (int)selTaus[t2].passId(llvvTAUID::againstElectronLoose), (int) selTaus[t2].passId(llvvTAUID::againstMuonLoose2), (int) selTaus[t2].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) );
+      if(examineThisEvent) cout << "TAU 1 --> pt: " << selTaus[t1].pt() << " eta: " << fabs(selTaus[t1].eta()) << " ID: " << selTaus[t1].id << " DM: " << (int)selTaus[t1].passId(llvvTAUID::decayModeFinding) << " eleLoose: " << (int)selTaus[t1].passId(llvvTAUID::againstElectronLoose) << " muonLoose2: " << (int) selTaus[t1].passId(llvvTAUID::againstMuonLoose2) << " 3Hits: " << (int) selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << endl;
+      if(examineThisEvent) cout << "TAU 2 --> pt: " << selTaus[t2].pt() << " eta: " << fabs(selTaus[t2].eta()) << " ID: " << selTaus[t2].id << " DM: " << (int)selTaus[t2].passId(llvvTAUID::decayModeFinding) << " eleLoose: " << (int)selTaus[t2].passId(llvvTAUID::againstElectronLoose) << " muonLoose2: " << (int) selTaus[t2].passId(llvvTAUID::againstMuonLoose2) << " 3Hits: " << (int) selTaus[t2].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << endl;
 
          if(selTaus[t1].pt()<15 || fabs(selTaus[t1].eta())>2.3) continue;
          if(selTaus[t2].pt()<15 || fabs(selTaus[t2].eta())>2.3) continue;
          if((selTaus[t1].pt()+selTaus[t2].pt())<70) continue;//Only consider pairs with LT>25 GeV
 
          //check all deltaRs
+      if(examineThisEvent) cout << "dr(tau1,tau2): " << deltaR(selTaus[t1],selTaus[t2]) << endl;
+      if(examineThisEvent) cout << "TAU 1 --> dr(tau,lep1): " << deltaR(selTaus[t1],selLeptons[dilLep1]) << " dr(tau,lep2) " << deltaR(selTaus[t1],selLeptons[dilLep2]) << endl;
+      if(examineThisEvent) cout << "TAU 2 --> dr(tau,lep1): " << deltaR(selTaus[t2],selLeptons[dilLep1]) << " dr(tau,lep2) " << deltaR(selTaus[t2],selLeptons[dilLep2]) << endl;
          if(deltaR(selTaus[t1]   , selLeptons[dilLep1])<0.1) continue;
          if(deltaR(selTaus[t1]   , selLeptons[dilLep2])<0.1) continue;
          if(deltaR(selTaus[t2]   , selLeptons[dilLep1])<0.1) continue;
          if(deltaR(selTaus[t2]   , selLeptons[dilLep2])<0.1) continue;
          if(deltaR(selTaus[t1]   , selTaus[t2        ])<0.1) continue;
 
-         if(!selTaus[t1].passId(llvvTAUID::decayModeFinding) || !selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) ) continue;
-         if(!selTaus[t2].passId(llvvTAUID::decayModeFinding) || !selTaus[t2].passId(llvvTAUID::againstElectronLoose) || !selTaus[t2].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t2].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) ) continue;
-
-//         if((selTaus[t1].pt()+selTaus[t2].pt())<75) continue;
+         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) ) continue;
+         if(!selTaus[t2].passId(llvvTAUID::againstElectronLoose) || !selTaus[t2].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) ) continue;
 
          if(selTaus[t1].id*selTaus[t2].id<0){        
             higgsCand=selTaus[t1]+selTaus[t2]; higgsCandId=selTaus[t1].id*selTaus[t2].id;  higgsCandT1=t1; higgsCandT2=t2;
          }else{
             higgsCand=selTaus[t1]+selTaus[t2]; higgsCandId=selTaus[t1].id;  higgsCandT1=t1; higgsCandT2=t2;            
          }
+	 if(examineThisEvent) cout << "tau-tau candidate is here!" << endl;
          break;//we found a candidate, stop the loop
       }}
 
+      if(!higgsCandId && selLeptons.size()==2 && selTaus.size()==2){ 
+	      mon1.fillHisto("failreason",failTags,9,1);
+	      continue;
+      }
 
       //apply data/mc correction factors
       if(higgsCandMu!=-1)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[higgsCandMu].pt(), selLeptons[higgsCandMu].eta(), abs(selLeptons[higgsCandMu].id),  abs(selLeptons[higgsCandMu].id) ==11 ? "loose" : "loose" ).first : 1.0;
@@ -795,6 +931,10 @@ int main(int argc, char* argv[])
       else if( abs(higgsCandId)==225 ){ chTags.push_back(chTags[chTags.size()-1] + string("_haha")); HiggsShortId+=3;}
       else if( abs(higgsCandId)== 15 ){ chTags.push_back(chTags[chTags.size()-1] + string("_haCtrl"));}
       else                              chTags.push_back(chTags[chTags.size()-1] + string("_none"));
+
+      if(!passHiggs) continue;
+      if(examineThisEvent) cout << "The Higgs is here!" << endl;
+      mon.fillHisto("eventflow",chTags,3,weight);
 
       bool passLepVeto  = true;
       for(int l1=0;l1<(int)selLeptons.size();l1++){
@@ -814,6 +954,14 @@ int main(int argc, char* argv[])
          passLepVeto = false; break;          
       } 
 
+      if(!passLepVeto){ 
+	      mon1.fillHisto("failreason",failTags,10,1);
+	      continue;
+      }
+
+      if(examineThisEvent) cout << "All leptons OK!" << endl;
+      mon.fillHisto("eventflow",chTags,4,weight);
+      
       bool passBJetVeto = true;;
       for(int j1=0;j1<(int)selBJets.size();j1++){
          if(                   deltaR(selBJets[j1]   , selLeptons[dilLep1    ])>0.4){passBJetVeto=false; break;}
@@ -835,6 +983,20 @@ int main(int argc, char* argv[])
          NCleanedJet++;
       }
 
+      if(!passBJetVeto){ 
+	      mon1.fillHisto("failreason",failTags,11,1);
+	      continue;
+      }
+
+      if(examineThisEvent) cout << "B-tag veto passed!" << endl;
+      mon.fillHisto("eventflow",chTags,5,weight);
+      mon.fillHisto("eventflow",chTags,7+HiggsShortId,weight);
+
+
+
+      if(true){
+              mon1.fillHisto("failreason",failTags,12,1);
+      } 
 
 
       //SVFIT MASS
@@ -869,29 +1031,20 @@ int main(int argc, char* argv[])
 //	{
 //	  std::vector<TString> tags(1,chTags[ich]);
 
-            	                                                     mon.fillHisto("eventflow",chTags,0,weight);
-	  if(passZmass)                                              mon.fillHisto("eventflow",chTags,1,weight);
-	  if(passZmass && passNLep)                                  mon.fillHisto("eventflow",chTags,2,weight);
-          if(passZmass && passHiggs)                                 mon.fillHisto("eventflow",chTags,3,weight);
-	  if(passZmass && passHiggs && passLepVeto)                  mon.fillHisto("eventflow",chTags,4,weight);
-	  if(passZmass && passHiggs && passLepVeto && passBJetVeto)  mon.fillHisto("eventflow",chTags,5,weight);
-          if(passZmass && passHiggs && passLepVeto && passBJetVeto)  mon.fillHisto("eventflow",chTags,7+HiggsShortId,weight);
+            	                                                     //mon.fillHisto("eventflow",chTags,0,weight);
 
 	  mon.fillHisto("zmass",    chTags, zll.mass(), weight);  
 
-        if(passZmass && passBJetVeto && passLepVeto && !passHiggs && abs(higgsCandId)== 15){
-            mon.fillHisto("higgsmass"    , chTags, higgsCand.mass(),  weight);
-           
-            mon.fillHisto("taufakerate"     ,   chTags, 1,  selTaus   [higgsCandT1].jet.pt(),    weight);
-            mon.fillHisto("taufakerate"     ,   chTags, 1,  selTaus   [higgsCandT2].jet.pt(),    weight);
-
-            for(size_t itau=0; itau<taus.size(); itau++){
-               llvvTau& tau = taus[itau];
-               if(tau.pt()<15.0 || fabs(tau.eta()) > 2.3) continue;
-               mon.fillHisto("taufakerate"     ,   chTags, 0,  tau.jet.pt(),    weight);
-            }
-
-        }
+        //if(passZmass && passBJetVeto && passLepVeto && !passHiggs && abs(higgsCandId)== 15){
+        //    mon.fillHisto("higgsmass"    , chTags, higgsCand.mass(),  weight);
+        //    mon.fillHisto("taufakerate"     ,   chTags, 1,  selTaus   [higgsCandT1].jet.pt(),    weight);
+        //    mon.fillHisto("taufakerate"     ,   chTags, 1,  selTaus   [higgsCandT2].jet.pt(),    weight);
+        //    for(size_t itau=0; itau<taus.size(); itau++){
+        //       llvvTau& tau = taus[itau];
+        //       if(tau.pt()<15.0 || fabs(tau.eta()) > 2.3) continue;
+        //       mon.fillHisto("taufakerate"     ,   chTags, 0,  tau.jet.pt(),    weight);
+        //    }
+        //}
 
 //	  if(passZmass){
         if(passZmass && passHiggs && passLepVeto && passBJetVeto){
@@ -1048,6 +1201,7 @@ int main(int argc, char* argv[])
   //save all to the file
   TFile *ofile=TFile::Open(outUrl, "recreate");
   mon.Write();
+  mon1.Write();
   ofile->Close();
 
   //save summary tuple

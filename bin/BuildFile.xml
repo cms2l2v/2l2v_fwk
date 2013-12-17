@@ -31,8 +31,7 @@
   <bin name="computeLimit"               file="computeLimit.cc"></bin>
   <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
   <bin name="runEWKVJJunfolding"         file="runEWKVJJunfolding.cc"></bin>
-<!--  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin>  Commit 8a2db9e74c04acab7d5862fdcf70dc2e282146d7 has broken it apparently-->
-
+  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
   <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
 </environment>
 
