@@ -95,28 +95,28 @@
       "tag":"Data8TeV_SingleMu2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012A"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012A-22Jan2013-v1/AOD"        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012B-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":15, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012B-22Jan2013-v1/AOD"        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012C-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012C"                  , "split":15, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012C-22Jan2013-v1/AOD"        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012D-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012D"                  , "split":15, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012D-22Jan2013-v1/AOD"        }
       ]
     },
     {
