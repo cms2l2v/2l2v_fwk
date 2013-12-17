@@ -434,7 +434,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("beamSpotSource"), beamSpotH);
 	edm::Handle<reco::VertexCollection> vtxH;
 	iEvent.getByLabel( analysisCfg_.getParameter<edm::InputTag>("vtxSource"), vtxH);
-//	if(vtxH->size()==0) return false; //also keep events without vertex -> in principle this neverhappens
+	if(vtxH->size()==0) return false; //also keep events without vertex -> in principle this neverhappens
         nvtx = vtxH->size();
 	reco::VertexRef primVtx(vtxH,0);
 
@@ -475,8 +475,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		bool isPF( muon->isPFMuon() );
 		bool isGlobal( muon->isGlobalMuon() );
 		bool isTracker( muon->isTrackerMuon() );
-		bool isLoose( isPF && (isGlobal || isTracker) );
-		//if(!isLoose) continue;
+		bool isLoose( isPF && (isGlobal || isTracker) );                
+		if(!isLoose) continue;
 		if(muon->pt()<3 || fabs(muon->eta())>2.5) continue;
 
                 llvvLepton lep;
