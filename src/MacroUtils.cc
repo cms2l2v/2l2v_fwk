@@ -306,7 +306,8 @@ namespace utils
       
       fwlite::Handle< llvvGenEvent > genEventHandle;
       genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
+//      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
+      if(!genEventHandle.isValid()){continue;} //remove the warning... CAREFULL!
       unsigned int ngenITpu = (int)genEventHandle->ngenITpu;
       if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
       mcpileup[ngenITpu]++;
