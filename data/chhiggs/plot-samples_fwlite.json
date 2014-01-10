@@ -2,7 +2,6 @@
   "proc":[
     {
       "tag":"VV",
-      "label":"Diboson",
       "isdata":false,
       "color":592,
       "lcolor":1,
@@ -60,13 +59,12 @@
     },
     {
       "tag":"Z#rightarrow ll",
-      "label":"DY+jets",
       "isdata":false,
       "color":831,
       "lcolor":1,
       "data":[
         { "dtag":"MC8TeV_DYJetsToLL_50toInf"               , "split":10, "xsec":3503.71     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
-        { "dtag":"MC8TeV_DY1JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.1901694915 ]        , "dset":"/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
+	        { "dtag":"MC8TeV_DY1JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.1901694915 ]        , "dset":"/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
         { "dtag":"MC8TeV_DY2JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0613559322 ]        , "dset":"/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        },
         { "dtag":"MC8TeV_DY3JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0173220339 ]        , "dset":"/DY3JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
         { "dtag":"MC8TeV_DY4JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0078101695 ]        , "dset":"/DY4JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
@@ -85,10 +83,33 @@
       ]
     },
     {
+      "tag":"data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "marker":20,
+      "data":[
+        { "dtag":"Data8TeV_SingleMu2012A"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012A-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":15, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_SingleMu2012C"                  , "split":16, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012C-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_SingleMu2012D"                  , "split":16, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012D-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleElectron2012A"            , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012A-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012A"                  , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMu/Run2012A-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012A"                      , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012A-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleElectron2012B"            , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012B"                  , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012B"                      , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleElectron2012C"            , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012C-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012C"                  , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012C-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012C"                      , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012C-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleElectron2012D"            , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012D-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_MuEG2012D"                      , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012D-22Jan2013-v1/AOD"        }
+      ]
+    },
+    {
       "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}",
-      "label":"#splitline{100#times H^{+}#rightarrow#tau#nu}{[250 GeV]}",
       "isdata":false,
-      "issignal":true,
       "spimpose":true,
       "color":001,
       "lwidth":2,
@@ -101,9 +122,7 @@
     },
     {
       "tag":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",
-      "label":"#splitline{100#times H^{+}#rightarrow tb}{[250 GeV]}",
       "isdata":false,
-      "issignal":true,
       "spimpose":true,
       "color":002,
       "lwidth":2,
@@ -115,24 +134,7 @@
       ]
     },
     {
-      "tag":"data",
-      "isdata":true,
-      "color":1,
-      "fill":0,
-      "marker":20,
       "data":[
-        { "dtag":"Data8TeV_DoubleElectron2012A"            , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012A-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMu/Run2012A-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_MuEG2012A"                      , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012A-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleElectron2012B"            , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012B-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012B-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_MuEG2012B"                      , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012B-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleElectron2012C"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012C-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleMu2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012C-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_MuEG2012C"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012C-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleElectron2012D"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012D-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_MuEG2012D"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012D-22Jan2013-v1/AOD"        }
       ]
     }
   ]

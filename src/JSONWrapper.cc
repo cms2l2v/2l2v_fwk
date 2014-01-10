@@ -4,7 +4,7 @@ using namespace std;
 
 namespace JSONWrapper{
 
-  std::string removeWhiteSpace(const std::string& in){
+  std::string removeWhiteSpace(const std::string& in, int N){
     int n = in.size();
     std::string out = "";
      
@@ -17,6 +17,7 @@ namespace JSONWrapper{
       if(!isText1 && !isText2 && (in[i]==' ' || in[i]=='\n' || in[i]=='\t' || in[i]=='\r'))continue;
       out += in[i];  
     } 
+    if(N>=0){out.resize(N, ' ');}
     return out;
   }
 
@@ -93,11 +94,13 @@ namespace JSONWrapper{
   bool isComma (const std::string& in){return in[0]==',';}
 
 
-  Object::Object(const std::string& in, bool IsInputFile){
+  Object::Object(const std::string& in, bool IsInputFile, int length){
     if(IsInputFile){
       Load(in);
+      length=-1;
     }else{
       ParseObject(in);
+      valLength = length;
     }
   }
 
@@ -176,27 +179,35 @@ namespace JSONWrapper{
 
 
   void Object::Dump(char* pFile, int Level, bool whitespace){
-      
+    int maxLevel=4; 
     if(Level==0){
-      sprintf(pFile, "%s{",pFile); if(whitespace)sprintf(pFile,"%s\n",pFile);        
-      Dump(pFile, Level+1);      
-      sprintf(pFile, "%s}",pFile);    
+      string bracketL=""; string bracketR="";
+      if(val=="ARRAY"){bracketL="["; bracketR="]";
+      }else if(val=="LIST" || key.size()>=1){bracketL="{"; bracketR="}";
+      }
+
+      sprintf(pFile, "%s%s",pFile, bracketL.c_str()); if(whitespace && Level<maxLevel)sprintf(pFile,"%s\n",pFile);        
+//      Dump(pFile, Level+1);      
+      Dump(pFile, Level+1, whitespace);      
+      sprintf(pFile, "%s%s",pFile, bracketR.c_str());    
       return;   
     }
 
     std::string indent = "";for(int i=0;i<Level && whitespace;i++)indent += "  ";
+    if(Level>maxLevel)indent=" ";
     for(int i=0;i<(int)key.size();i++){
       string keyI=key[i].c_str();
       string valI=obj[i].val.c_str();
       string valITxt=valI;
       if(obj[i].isString())valITxt = string("\"") + valITxt + "\"";
 
+      int startpos = (int)strlen(pFile);
       if(valI=="LIST"){
-	sprintf(pFile,"%s%s{", pFile,indent.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);
+	sprintf(pFile,"%s%s{", pFile,indent.c_str()); if(whitespace && Level<maxLevel)sprintf(pFile,"%s\n",pFile);
 	obj[i].Dump(pFile, Level+1);
 	sprintf(pFile,"%s%s}", pFile,indent.c_str());
       }else if(valI=="ARRAY"){
-	sprintf(pFile,"%s%s\"%s\":[", pFile,indent.c_str(), keyI.c_str()); if(whitespace)sprintf(pFile,"%s\n",pFile);
+	sprintf(pFile,"%s%s\"%s\":[", pFile,indent.c_str(), keyI.c_str()); if(whitespace && Level<maxLevel)sprintf(pFile,"%s\n",pFile);
 	obj[i].Dump(pFile, Level+1);
 	sprintf(pFile,"%s%s]", pFile,indent.c_str());
       }else if(keyI=="obj"){
@@ -205,10 +216,14 @@ namespace JSONWrapper{
 	sprintf(pFile, "%s%s\"%s\":%s",pFile,indent.c_str(),keyI.c_str(), valITxt.c_str());
       }
 
+      //add empty characters until we have the expected size (only if valLength is defined)
+      int NAddedChar = (int)strlen(pFile) - startpos;
+      if(obj[i].valLength>=0 && NAddedChar<obj[i].valLength){string buffer=""; buffer.resize(obj[i].valLength-NAddedChar, ' '); sprintf(pFile,"%s%s", pFile, buffer.c_str());} 
+
       if(i<((int)key.size())-1){
 	sprintf(pFile, "%s,",pFile);
       }
-      if(whitespace)sprintf(pFile,"%s\n",pFile);
+      if(whitespace && Level<maxLevel+1)sprintf(pFile,"%s\n",pFile);
     }
   }
 
@@ -220,48 +235,9 @@ namespace JSONWrapper{
 
   string Object::DumpToString(int Level){
     char out[100000] = "";
-    Dump(out, Level, false);
+    Dump(out, 0, false);
     return string(out);
   }
 
-
-
-  /*
-    void Object::Dump(FILE* pFile, int Level){
-    if(Level==0){
-    fprintf(pFile, "{\n");        
-    Dump(pFile, Level+1);      
-    fprintf(pFile, "}");    
-    return;   
-    }
-
-    std::string indent = "";for(int i=0;i<Level;i++)indent += "  ";
-    for(int i=0;i<(int)key.size();i++){
-    string keyI=key[i].c_str();
-    string valI=obj[i].val.c_str();
-    string valITxt=valI;
-    if(obj[i].isString())valITxt = string("\"") + valITxt + "\"";
-
-    if(valI=="LIST"){
-    fprintf(pFile,"%s{\n", indent.c_str());
-    obj[i].Dump(pFile, Level+1);
-    fprintf(pFile,"%s}", indent.c_str());
-    }else if(valI=="ARRAY"){
-    fprintf(pFile,"%s\"%s\":[\n", indent.c_str(), keyI.c_str());
-    obj[i].Dump(pFile, Level+1);
-    fprintf(pFile,"%s]", indent.c_str());
-    }else if(keyI=="obj"){
-    fprintf(pFile, "%s%s",indent.c_str(), valITxt.c_str());
-    }else{
-    fprintf(pFile, "%s\"%s\":%s",indent.c_str(),keyI.c_str(), valITxt.c_str());
-    }
-
-    if(i<((int)key.size())-1){
-    fprintf(pFile, ",");
-    }
-    fprintf(pFile, "\n");         
-    }
-    }
-  */
 }
 

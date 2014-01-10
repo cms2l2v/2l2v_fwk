@@ -18,9 +18,27 @@ elif [ "${1}" = "fwlite" ]; then
     if [ "${2}" = "anal_sus" ]; then
 	echo "Not ready yet" 
     elif [ "${2}" = "anal_sm" ]; then
-	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json -o ${BASEDIR} -d  /store/group/phys_higgs/cmshzz2l2v/2013_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s 8nh
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/all-samples_fwlite.json -o ${BASEDIR} -d  /store/group/phys_higgs/cmshzz2l2v/2013_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+
     elif [ "${2}" = "plots" ]; then
-	runPlotterFWLite --iEcm 8 --iLumi 19577 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSWC_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json
+#	runPlotterFWLite --iEcm 8 --iLumi 22000 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc --noLog
+	runPlotterFWLite --iEcm 8 --iLumi 19782 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc
+		#runPlotterFWLite --iEcm 8 --iLumi 20090 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc
+   elif [ "${2}" = "display" ]; then	
+	cp ${BASEDIR}/plots/ee_* ~/www/newAnal/ee/
+	cp ${BASEDIR}/plots/emu_* ~/www/newAnal/emu/
+	cp ${BASEDIR}/plots/mumu_* ~/www/newAnal/mumu/
+	cp ${BASEDIR}/plots/singlemu_* ~/www/newAnal/singlemu/
+   elif [ "${2}" = "cleanDisplay" ]; then	
+	rm ~/www/newAnal/ee/*png
+	rm ~/www/newAnal/emu/*png
+	rm ~/www/newAnal/mumu/*png
+	rm ~/www/newAnal/singlemu/*png
+
+	rm ~/www/newAnal/ee/*tex
+	rm ~/www/newAnal/emu/*tex
+	rm ~/www/newAnal/mumu/*tex
+	rm ~/www/newAnal/singlemu/*tex
     fi
 elif [ "${1}" = "current" ]; then
 # Fixed run 
@@ -29,7 +47,7 @@ elif [ "${1}" = "current" ]; then
     if [ "${2}" = "anal_sus" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_sm" ]; then
-       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
 
     elif [ "${2}" = "plots" ]; then
 	# Plots
@@ -156,6 +174,7 @@ elif [ "${1}" = "current" ]; then
 	mkdir -p datacardsByDecaySystPAS/500 
 	mkdir -p datacardsByDecaySystPAS/600 
 	mkdir -p datacardsByDecaySystPAS/700
+
 	
 	for i in 180 200 220 250 300 350 500 600 700
 	  do
@@ -168,6 +187,28 @@ elif [ "${1}" = "current" ]; then
 	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu & 
 	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu & 
 	done
+
+
+    elif [ "${2}" = "mhmax" ]; then
+	
+	mkdir -p datacardsByDecayMhmax/180
+	mkdir -p datacardsByDecayMhmax/200 
+	mkdir -p datacardsByDecayMhmax/220 
+	mkdir -p datacardsByDecayMhmax/250 
+	mkdir -p datacardsByDecayMhmax/300
+
+	mkdir -p datacardsByDecayScan/180
+	mkdir -p datacardsByDecayScan/200 
+	mkdir -p datacardsByDecayScan/220 
+	mkdir -p datacardsByDecayScan/250 
+	mkdir -p datacardsByDecayScan/300
+	
+	for i in 180 200 220 250 300
+	  do
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecayMhmax/${i}/ --suffix mhmax --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayScan/${i}/ --suffix scan --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	done
+	
 	
     elif [ "${2}" = "put" ]; then
 	outputdir=tempDirForNotePlots/
@@ -176,6 +217,7 @@ elif [ "${1}" = "current" ]; then
 
 
 	cp ${BASEDIR}plots/emu_evtflow.pdf                  ${outputdir}
+	cp ${BASEDIR}plots/emu_evtflow.C                  ${outputdir}
 	cp ${BASEDIR}plots/emu_met.pdf		       ${outputdir}
 	cp ${BASEDIR}plots/emu_mll.pdf		       ${outputdir}
 	cp ${BASEDIR}plots/emu_mtsum.pdf		       ${outputdir}
@@ -209,6 +251,7 @@ elif [ "${1}" = "current" ]; then
 	cp ${BASEDIR}plots/emu_sumpt.png                    ${outputdir}       
 	cp ${BASEDIR}plots/emu_geq2btagsmet.pdf            ${outputdir}
 	cp ${BASEDIR}plots/emu_geq2btagsnbjets.pdf	      ${outputdir}
+	cp ${BASEDIR}plots/emu_geq2btagsnbjets.C	      ${outputdir}
 	cp ${BASEDIR}plots/emu_geq2btagsptlep.pdf 	      ${outputdir}
 	cp ${BASEDIR}plots/emu_geq2btagssumpt.pdf          ${outputdir}
 	

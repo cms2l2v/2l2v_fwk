@@ -416,7 +416,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   edm::Handle<View<Candidate> > muH, eH;
   event.getByLabel( analysisCfg_.getParameter<edm::InputTag>("muonSource"),     muH);
   event.getByLabel( analysisCfg_.getParameter<edm::InputTag>("electronSource"), eH);
-  int nMuons(0), nElecs(0);
+  int nMuons17(0), nMuons8(0), nElecs17(0), nElecs8(0);
   edm::Handle<reco::ConversionCollection> convH;
   event.getByLabel( analysisCfg_.getParameter<edm::InputTag>("conversionSource"), convH);
   EcalClusterLazyTools egLazyTool( event, iSetup, analysisCfg_.getParameter<edm::InputTag>("ebrechitsSource"), analysisCfg_.getParameter<edm::InputTag>("eerechitsSource") );
@@ -432,7 +432,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       bool isGlobal( muon->isGlobalMuon() );
       bool isTracker( muon->isTrackerMuon() );
       bool isLoose( isPF && (isGlobal || isTracker) );
-      if(!isLoose) continue;
+//      if(!isLoose) continue;
       if(muon->pt()<3 || fabs(muon->eta())>2.5) continue;
       
       //store information
@@ -517,7 +517,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       //increment
       ev.ln++;
       ev.mn++;
-      if(muon->pt()>18) nMuons++;
+      if(muon->pt()> 8) nMuons8++;
+      if(muon->pt()>17) nMuons17++;
     }
   
   for(size_t iele=0; iele< eH->size(); ++iele)
@@ -529,7 +530,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
       //pre-selection
       if(ele->gsfTrack().isNull() || ele->superCluster().isNull() || gsfEle==0) continue;
-      if(ele->pt()<10 || !(ele->isEB() || ele->isEE()) )                        continue;
+      if(ele->pt()<8  || !(ele->isEB() || ele->isEE()) )                        continue;
       bool overlapFound(false);
       for(int ilep=0; ilep<ev.ln; ilep++)
 	{
@@ -649,7 +650,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       //increment counters
       ev.ln++;
       ev.egn++;
-      if(ele->pt()>18) nElecs++;
+      if(ele->pt()> 8) nElecs8++;
+      if(ele->pt()>17) nElecs17++;
     }
 
   //
@@ -743,12 +745,12 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
     {
       if(!ev.t_bits[itrig]) continue;
       int cat=triggerCats[itrig];
-      if     (cat==11   && nElecs==0)                continue;
-      else if(cat==13   && nMuons==0)                continue;
+      if     (cat==11   && nElecs17==0)              continue;
+      else if(cat==13   && nMuons17==0)              continue;
       else if(cat==22   && nPhotons==0)              continue;
-      else if(cat==1111 && nElecs<2)                 continue;
-      else if(cat==1113 && (nMuons==0 || nElecs==0)) continue;
-      else if(cat==1313 && nMuons<2)                 continue;
+      else if(cat==1111 && nElecs8<2)                 continue;
+      else if(cat==1113 && (nMuons8+nElecs17<2 || nMuons17+nElecs8<2)) continue;
+      else if(cat==1313 && nMuons8<2)                 continue;
       toSave=true;
       break;
     }
