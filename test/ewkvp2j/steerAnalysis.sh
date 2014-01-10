@@ -54,7 +54,7 @@ fi
 
 if [ "$step" == "5" ]; then
     echo "Running optimization"
-    python test/ewkvp2j/optimize_VBFZ.py -p ${optim_step} -b True -s BDTD_shapes -o BDTD_analysis
+    python test/ewkvp2j/optimize_VBFZ.py -p ${optim_step} -b True -s MLP_shapes -o MLP_analysis
 fi
 
 if [ "$step" == "6" ]; then

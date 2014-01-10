@@ -202,7 +202,9 @@ void HFCMeasurement::parseFitConfig(TString url)
 
 		  if(nuisVar==0)
 		    {
-		      sprintf(expBuf,"Gaussian::%s_constr(%s0[0,-5,5],%s[0,-5,5].0,1.0)",uncs[iunc].c_str(), uncs[iunc].c_str(), uncs[iunc].c_str());
+		      sprintf(expBuf,"Gaussian::%s_constr(%s0[0,-5,5],%s[0,-5,5],1.0)",uncs[iunc].c_str(), uncs[iunc].c_str(), uncs[iunc].c_str());
+		      //is this a bug?
+		      //sprintf(expBuf,"Gaussian::%s_constr(%s0[0,-5,5],%s[0,-5,5].0,1.0)",uncs[iunc].c_str(), uncs[iunc].c_str(), uncs[iunc].c_str());
 		      RooGaussian *nuisConstr=(RooGaussian *)ws_->factory(expBuf);
 		      constr.add( *nuisConstr );
 		      
