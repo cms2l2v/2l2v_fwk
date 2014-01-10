@@ -5,7 +5,7 @@ export SCRAM_ARCH=slc5_amd64_gcc462
 scramv1 project CMSSW CMSSW_5_3_11
 cd CMSSW_5_3_11/src/
 
-wget -q -O - --no-check-certificate https://raw.github.com/pfs/2l2v_fwk/master/TAGS.txt | sh
+wget -q -O - --no-check-certificate https://raw.github.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
 
 ## Ntuples
 
@@ -17,7 +17,7 @@ runOverSamples.py -j data/vbfz_samples.json -R "tmp>5000" -n 1 -d aoddir -p "-ca
 
 ### Analysing
 
-539: /store/cmst3/user/psilva/539_ntuples
+5311: /store/cmst3/user/psilva/5311_ntuples
 
 
 ## Analysis specific
