@@ -214,6 +214,7 @@ int main(int argc, char* argv[])
     }
 
 
+  controlHistos.addHistogram( new TH1F("premet",";Missing transverse energy [GeV];Events",50,0,500) );
   TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","osbtag","osbveto"};
   for(size_t k=0;k<sizeof(ctrlCats)/sizeof(TString); k++)
     {
@@ -581,9 +582,12 @@ int main(int argc, char* argv[])
       else if(isOS && passDilSelection && passJetSelection  && nbtags==0)          { ctrlCategs.push_back("osbveto"); }
 
       //control distributions
-      if(isOS && passDilSelection && passMetSelection) {
-	controlHistos.fillHisto("njets",        ch, selJets.size(), weight*dyWeight);
-	controlHistos.fillHisto("njetsnotoppt",  ch, selJets.size(), weight*dyWeight/wgtTopPt);
+      if(isOS && passDilSelection) {
+	if(selJets.size()>=2) controlHistos.fillHisto("premet",          ch, met[0].pt(),    weight*dyWeight);
+	if(passMetSelection){
+	  controlHistos.fillHisto("njets",        ch, selJets.size(), weight*dyWeight);
+	  controlHistos.fillHisto("njetsnotoppt",  ch, selJets.size(), weight*dyWeight/wgtTopPt);
+	}
       }
       for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	{

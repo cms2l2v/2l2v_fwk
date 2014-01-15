@@ -334,12 +334,12 @@ void BTVAnalysis::fillCategories(bool runSystematics)
 
 
   //note TCHPL, TCHPM, IFVM, IFVT, SSVHET are dummy
-  TString btagger[]  = {"origcsv", "csv", "jpcsv", "slcsv", "supercsv", "jp", "tchp", "ivf", "ssvhe" };
-  float btaggerMin[] = {-0.2,      -0.2,  -0.2,     -0.2,    -0.2,       0.0,   -2,    -2,    -2     };
-  float btaggerMax[] = {1.2,       1.2,   1.2,      1.2,     1.2,        2.5,   20,    8,     8      };
-  float btaggerL[]   = {0.244,     0.405, 0.529,    0.527,   0.531,      0.264, 1.19,  0,     0      };
-  float btaggerM[]   = {0.679,     0.783, 0.753,    0.756,   0.758,      0.753, 1.93,  2,     1.74   };
-  float btaggerT[]   = {0.898,     0.920, 0.855,    0.859,   0.849,      0.855, 3.41,  3,     3      };
+  TString btagger[]  = {"csv"}; //{"origcsv", "csv", "jpcsv", "slcsv", "supercsv", "jp", "tchp", "ivf", "ssvhe" };
+  float btaggerMin[] = {-0.2};  //{-0.2,      -0.2,  -0.2,     -0.2,    -0.2,       0.0,   -2,    -2,    -2     };
+  float btaggerMax[] = {1.2};   //{1.2,       1.2,   1.2,      1.2,     1.2,        2.5,   20,    8,     8      };
+  float btaggerL[]   = {0.405}; //{0.244,     0.405, 0.529,    0.527,   0.531,      0.264, 1.19,  0,     0      };
+  float btaggerM[]   = {0.783}; //{0.679,     0.783, 0.753,    0.756,   0.758,      0.753, 1.93,  2,     1.74   };
+  float btaggerT[]   = {0.855}; //{0.898,     0.920, 0.855,    0.859,   0.849,      0.855, 3.41,  3,     3      };
   
   const size_t nTaggers=sizeof(btagger)/sizeof(TString);
   for(size_t ib=0; ib<nTaggers; ib++){

@@ -58,6 +58,77 @@ RAnalysis::RAnalysis(SmartSelectionMonitor &mon,std::vector<TString> & vars)
   mon_->addHistogram( (TH1F *) hl->Clone("csvLbtagsextendedcorr") );
   mon_->addHistogram( (TH1F *) hm->Clone("csvMbtagsextendedcorr") );
   mon_->addHistogram( (TH1F *) ht->Clone("csvTbtagsextendedcorr") );
+
+  //differential b-tag efficiency measurement
+  Float_t ptCats[]={30,50,80,120,210,320};
+  const size_t nPtCats(sizeof(ptCats)/sizeof(Float_t));
+  Int_t totalCats(Int_t(TMath::Binomial(nPtCats,2))+nPtCats);
+  mon_->addHistogram( new TH1F("btvkincats1",";Kinematics categories;",totalCats,0,totalCats) );
+  mon_->addHistogram( new TH1F("btvkincats2",";Kinematics categories;",totalCats,0,totalCats) );
+  diffTaggers_.push_back(std::pair<TString,Float_t>("csv",0.405));
+  diffTaggers_.push_back(std::pair<TString,Float_t>("csv",0.594));
+  diffTaggers_.push_back(std::pair<TString,Float_t>("csv",0.783));
+  diffTaggers_.push_back(std::pair<TString,Float_t>("csv",0.819));
+  diffTaggers_.push_back(std::pair<TString,Float_t>("csv",0.855));
+  size_t nTaggers(diffTaggers_.size());
+  Int_t catCtr(0);
+  for(size_t icat=0; icat<nPtCats; icat++)
+    {
+      for(size_t jcat=0; jcat<=icat; jcat++, catCtr++)
+	{
+	  mon_->fillHisto("btvkincats1","all",catCtr,ptCats[icat]);
+	  mon_->fillHisto("btvkincats2","all",catCtr,ptCats[jcat]);
+
+	  //flavor counting for efficiency versus pT can be taken inclusively for each pT bin
+	  if(jcat==0)
+	    {
+	      TString singleTag("kin"); singleTag += catCtr;
+	      TH1F *hflavCts=(TH1F *)mon_->addHistogram( new TH1F("btvflavcounts"+singleTag,";Jet flavour;Jets",4,0.,4.) );
+	      hflavCts->GetXaxis()->SetBinLabel(1,"l");
+	      hflavCts->GetXaxis()->SetBinLabel(2,"c");
+	      hflavCts->GetXaxis()->SetBinLabel(3,"b");
+	      hflavCts->GetXaxis()->SetBinLabel(4,"Total");
+	      for(size_t itagger=0; itagger<nTaggers; itagger++)
+		{
+		  TString tagToFill(diffTaggers_[itagger].first); tagToFill += itagger;
+		  mon_->addHistogram( (TH1F *)hflavCts->Clone("btvflavcounts"+singleTag+tagToFill) );
+		}
+	    }
+
+	  //define the kinematics category
+	  TString tag("kin"); tag+=catCtr;
+	  Float_t j1ptLo(ptCats[icat]);
+	  Float_t j1ptHi(icat==nPtCats-1 ?  99999. : ptCats[icat+1]);
+	  Float_t j2ptLo(ptCats[jcat]);
+	  Float_t j2ptHi(jcat==nPtCats-1 ?  99999. : ptCats[jcat+1]);
+	  btvKinCatsLo_.push_back( std::pair<Float_t,Float_t>(j1ptLo,j2ptLo) );
+	  btvKinCatsHi_.push_back( std::pair<Float_t,Float_t>(j1ptHi,j2ptHi) );
+	  
+	  //flavour categories
+	  TH1F *hfij=(TH1F *)mon_->addHistogram( new TH1F("btvfij"+tag,";Flavour category;Events",3*3,0,3*3) );
+	  hfij->GetXaxis()->SetBinLabel(1,"ll");
+	  hfij->GetXaxis()->SetBinLabel(2,"lc");
+	  hfij->GetXaxis()->SetBinLabel(3,"lb");
+	  hfij->GetXaxis()->SetBinLabel(4,"cl");
+	  hfij->GetXaxis()->SetBinLabel(5,"cc");
+	  hfij->GetXaxis()->SetBinLabel(6,"cb");
+	  hfij->GetXaxis()->SetBinLabel(7,"bl");
+	  hfij->GetXaxis()->SetBinLabel(8,"bc");
+	  hfij->GetXaxis()->SetBinLabel(9,"bb");
+	  
+	  //tag counting
+	  for(size_t itagger=0; itagger<nTaggers; itagger++)
+	    {
+	      TString tagToFill(diffTaggers_[itagger].first); tagToFill += itagger;
+	      TH1F *htagCts=(TH1F *)mon_->addHistogram( new TH1F("btv"+tag+tagToFill,";b-tag multiplicity;Events", 3*3, 0.,3*3.) );
+	      for(int ibin=1; ibin<=htagCts->GetXaxis()->GetNbins(); ibin++)
+		{
+		  TString label(""); label += (ibin-1)%3;
+		  htagCts->GetXaxis()->SetBinLabel(ibin,label);
+		}
+	    }
+	}
+    }
 }
 
 //
@@ -224,7 +295,9 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
       }
   }
   
+
   if(var!="") return;
+
   for(size_t ijet=0; ijet<jets.size(); ijet++){
 
     //expected b-tag efficiency
@@ -283,6 +356,92 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
   mon_->fillHisto("csvLbtagsextendedcorr",cats,nCSVLcorr+addBin,weight);
   mon_->fillHisto("csvMbtagsextendedcorr",cats,nCSVMcorr+addBin,weight);
   mon_->fillHisto("csvTbtagsextendedcorr",cats,nCSVTcorr+addBin,weight);
+
+
+  //differential measurements
+  std::vector<Int_t> ptIdx(2,-1);
+  std::vector<Float_t> ptLead(2,0);
+  for(size_t ijet=0; ijet<jets.size(); ijet++)
+    {
+      if( jets[ijet].pt()>ptLead[0] )
+	{
+	  ptIdx[1]=ptIdx[0]; ptLead[1]=ptLead[0];
+	  ptIdx[0]=ijet;     ptLead[0]=jets[ijet].pt();
+	}
+      else if( jets[ijet].pt()>ptLead[1] )
+	{
+	  ptIdx[1]=ijet;     ptLead[1]=jets[ijet].pt();
+	}
+    }
+
+  //differential flavours
+  std::vector<Int_t> flavIds;
+  std::map<TString,Int_t> nDiffTaggersForBTV;
+  for(size_t ijet=0; ijet<2; ijet++)
+    {
+      Int_t jCat( getKinCategory(jets[ ptIdx[ijet] ].pt()) );
+
+      const data::PhysicsObject_t &genJet=jets[ ptIdx[ijet] ].getObject("genJet");
+      int flavId=genJet.info.find("id")->second;
+      const data::PhysicsObject_t &genParton=jets[ ptIdx[ijet] ].getObject("gen");
+      int genPartonId=genParton.info.find("id")->second;
+      flavIds.push_back(flavId);
+
+      std::vector<TString> taggersToFill(1,"");
+      for(size_t itag=0; itag<diffTaggers_.size(); itag++)
+	{
+	  TString algo(diffTaggers_[itag].first);
+	  Float_t wp(diffTaggers_[itag].second);
+	  bool hasTag(jets[ ptIdx[ijet] ].getVal(algo)>wp);
+	  TString tagToFill(algo);  tagToFill+= itag;	 
+	  if(hasTag) taggersToFill.push_back( tagToFill );
+	  if(nDiffTaggersForBTV.find( tagToFill )==nDiffTaggersForBTV.end() ) nDiffTaggersForBTV[ tagToFill ]=0;
+	  nDiffTaggersForBTV[ tagToFill ] += hasTag;
+	}
+      
+      TString baseName("btvflavcountskin"); baseName += jCat;
+      for(size_t itagger=0; itagger<taggersToFill.size(); itagger++)
+	{
+	  TString name=baseName+taggersToFill[itagger];
+	  mon_->fillHisto(name,cats,3,weight);
+	  if(abs(flavId)==5)      mon_->fillHisto(name,cats,2,weight);
+	  else if(abs(flavId)==4) mon_->fillHisto(name,cats,1,weight);
+	  else                    mon_->fillHisto(name,cats,0,weight);
+	}
+    }
+  
+  //dijet category
+  Int_t jjCat( getKinCategory(jets[ ptIdx[0] ].pt(),jets[ ptIdx[1] ].pt()) );
+  TString jjCatStr("kin"); jjCatStr += jjCat;
+
+  //determine the flavour category
+  Int_t fijBin=1;
+  if(abs(flavIds[0])==5)
+    {
+      if(abs(flavIds[1])==5)      fijBin=9;
+      else if(abs(flavIds[1])==4) fijBin=8;
+      else                        fijBin=7;
+    }
+  else if(abs(flavIds[0])==4)
+    {
+      if(abs(flavIds[1])==5)      fijBin=6;
+      else if(abs(flavIds[1])==4) fijBin=5;
+      else                        fijBin=4;
+    }
+  else
+    {
+      if(abs(flavIds[1])==5)      fijBin=3;
+      else if(abs(flavIds[1])==4) fijBin=2;
+      else                        fijBin=1;
+    }
+  mon_->fillHisto("btvfij"+jjCatStr,cats,fijBin-1,weight);
+
+  //tag multplicity
+  addBin=0;
+  if(ch.Contains("mumu")) addBin +=3;
+  if(ch.Contains("emu")) addBin +=2*3;
+  for(std::map<TString,Int_t>::iterator it=nDiffTaggersForBTV.begin(); it!=nDiffTaggersForBTV.end(); it++)
+    mon_->fillHisto("btv"+jjCatStr+it->first,cats,it->second+addBin,weight);
 }
 
 

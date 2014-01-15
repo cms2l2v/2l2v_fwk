@@ -1,4 +1,5 @@
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
+#include "TGraphErrors.h"
 
 namespace higgs{
 
@@ -101,10 +102,44 @@ namespace higgs{
       return -1;
     }
     
-    
     //    
-    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf){
+    double weightToH125Interference(double mass,double width,TFile *intFile, TString var)
+    {
+      if(width==0 || intFile==0) return 1.0;
+      TString name("weights_ceq"); name+=Int_t(width); 
+      if(var!="") name += "_"+var;
+      TGraphErrors *gr=(TGraphErrors *)intFile->Get(name);
+      if(gr==0) return 1.0;
+      return gr->Eval(mass);
+    }
+
+    //    
+    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile){
       if((Cprime<0 || BRnew<0) || (Cprime==0 && BRnew==0)) return 1.0;
+
+
+      //1st check if is in the file
+      if(nrLineShapesFile)
+	{
+	  char nrShapeBuf[100];
+	  sprintf(nrShapeBuf,"NR_%04d_%02d_%02d",int(m_gen),int(Cprime*10),int(BRnew*10));
+	  TGraphErrors *nrGr=(TGraphErrors *)nrLineShapesFile->Get(nrShapeBuf);
+	  if(nrGr){
+	    float weight=nrGr->Eval(mass);
+	    if(weight<0) weight=0;
+	    return weight;
+	    //float targetNorm=nrGr->Integral();
+	    //std::cout << nrShapeBuf<< " " << targetNorm << std::endl;
+	    //if(targetNorm==0) targetNorm=1.0; 
+	    //float targetProb=nrGr->Eval(mass);
+	    //if(targetProb<0) targetProb=0;
+	    //float nominalProb=hLineShapeNominal->Eval(mass);
+	    //if(nominalProb==0) return 0;
+	    //else return targetProb/(targetNorm*nominalProb);
+	  }
+	}
+
+      //if not found than use relativistic breit-wigner
       double decay_width = -1;
       if(m_gen == 130){    decay_width =   0.00487; 
       }else if(m_gen == 140){    decay_width =   0.00812; 
