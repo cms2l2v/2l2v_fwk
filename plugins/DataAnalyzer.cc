@@ -162,7 +162,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   ev.run    = event.id().run();
   ev.lumi   = event.luminosityBlock();
   ev.event  = event.id().event();
-
+  
   //filter bits
   ev.f_bits=0;
   std::vector<string> filts=analysisCfg_.getParameter<std::vector<string> >("metFilters");
@@ -306,7 +306,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	      }
 	  }
       }
-    
+
     //heavy flavors
     for (size_t i=0; i<genParticlesH->size(); i++)
       {
@@ -355,7 +355,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	  }
       }
   }
-  
+
   //
   // trigger (require at least for data)
   //
@@ -383,7 +383,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	  break;
 	}
     }
-
 
   //
   // vertex, beam spot, avg energy densities
@@ -737,7 +736,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	if(isLoose && pho->isEB() && ev.egn_r9[ev.egn]>0.9 && pho->pt()>20) nPhotons++;
       }
 
-
   //now check if at least one trigger condition is fullfilled
   bool toSave(false);
   bool saveOnlyLeptons(false);
@@ -757,7 +755,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   
   if(!isData && nHardProcGenLeptons>0 && nHardProcGenBosons>0 && keepFullGenInfo_) toSave=true; 
   if(!toSave) return;
-  
+
   //
   // jets
   // https://twiki.cern.ch/twiki/bin/view/CMS/JetID
@@ -959,6 +957,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 			ev.jnUnf++;	
 	}
    }
+
   //
   // missing transverse energy
   //
@@ -979,7 +978,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.metn++;
     }    
   
-
   //
   // charged PF candidates which haven't been clustered
   //
