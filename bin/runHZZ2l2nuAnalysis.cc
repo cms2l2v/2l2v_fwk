@@ -143,7 +143,14 @@ int main(int argc, char* argv[])
   double brnew  = runProcess.getParameter<double>("brnew");
   std::vector<std::pair<double, double> > NRparams;
   NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
-  if(suffix==""){ //consider the other points only when no suffix is being used
+  if(mctruthmode==125){
+    NRparams.push_back(std::make_pair<double,double>(1, 0));
+    NRparams.push_back(std::make_pair<double,double>(5, 0));
+    NRparams.push_back(std::make_pair<double,double>(10,0));
+    NRparams.push_back(std::make_pair<double,double>(15,0));
+    NRparams.push_back(std::make_pair<double,double>(25,0));
+  }
+ else if(suffix==""){ //consider the other points only when no suffix is being used
     NRparams.push_back(std::make_pair<double,double>(0.1, 0) );
     NRparams.push_back(std::make_pair<double,double>(0.3, 0) );
     NRparams.push_back(std::make_pair<double,double>(0.2, 0) );
@@ -153,6 +160,8 @@ int main(int argc, char* argv[])
     NRparams.push_back(std::make_pair<double,double>(0.8, 0) );
     NRparams.push_back(std::make_pair<double,double>(1.0, 0) );
   }
+
+
   std::vector<TGraph *> NRweightsGr;
   std::vector<double> NRweights(NRparams.size());
   std::vector<TString>NRsuffix; for(unsigned int nri=0;nri<NRparams.size();nri++){if(NRparams[nri].first<0 && NRparams[nri].second<0){NRsuffix.push_back(TString(""));}else{char tmp[255];sprintf(tmp,"_cp%3.2f_brn%3.2f",NRparams[nri].first, NRparams[nri].second); NRsuffix.push_back(TString(tmp));} }
@@ -170,16 +179,29 @@ int main(int argc, char* argv[])
     string StringMass = string(url.Data()).substr(VBFStringpos+6,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
     VBFString = string(url.Data()).substr(VBFStringpos);
   }
+  if(mctruthmode==125) HiggsMass=124;
   
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
   //#######################################
-  bool useGenLineShape(true);
+  bool useGenLineShape(true),useGenLineShapeForNR(true);
   TH1 *hGen=0;
   TGraph *hLineShapeNominal=0;
   std::map<std::pair<double,double>, std::vector<TGraph *> > hLineShapeGrVec;  
+  TFile *nrLineShapesFile=0;
   if(isMC_GG || isMC_VBF)
     {
+      if(mctruthmode==125){
+	TString nrLineShapesFileUrl(weightsDir+"/higgs_width_zz2l2nu.root");
+	gSystem->ExpandPathName(nrLineShapesFileUrl);
+	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
+      }
+      else if(useGenLineShapeForNR){
+	TString nrLineShapesFileUrl(weightsDir+"/NR_weights.root");
+	gSystem->ExpandPathName(nrLineShapesFileUrl);
+	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
+      }
+
       TString lineShapeWeightsFileURL(weightsDir+"/");
       lineShapeWeightsFileURL += (isMC_VBF ? "VBFtoHtoZZLineShapes.root" : "GGtoHtoZZLineShapes.root");
       gSystem->ExpandPathName(lineShapeWeightsFileURL);
@@ -188,7 +210,7 @@ int main(int argc, char* argv[])
       TString interferenceShapeWeightsFileUrl(weightsDir+"/");
       interferenceShapeWeightsFileUrl += (isMC_VBF ? "VBFtoHtoZZLineShapesInterference.root" : "GGtoHtoZZLineShapesInterference.root");
       TFile *fin_int=0;
-      if(interferenceShapeWeightsFileUrl!="" && isMC_GG) 
+      if(interferenceShapeWeightsFileUrl!="")// && (isMC_GG) 
 	{
 	  gSystem->ExpandPathName(interferenceShapeWeightsFileUrl);
 	  fin_int=TFile::Open(interferenceShapeWeightsFileUrl);
@@ -200,8 +222,8 @@ int main(int argc, char* argv[])
 	  
 	  char dirBuf[100];
 	  sprintf(dirBuf,"H%d/",int(HiggsMass));
-	  
-	  hGen                   = (TH1 *) fin->Get(dirBuf+TString("gen")); hGen->SetDirectory(0); hGen->Scale(1./hGen->Integral());
+	  	  
+	  hGen                   = (TH1 *) fin->Get(dirBuf+TString("gen")); hGen->SetDirectory(0); hGen->Scale(1./hGen->Integral()); 
 	  if(!useGenLineShape)   hLineShapeNominal = new TGraph((TH1 *)fin->Get(dirBuf+TString("cps_shape")));	  
 	  else                   hLineShapeNominal = new TGraph(hGen);
 
@@ -228,16 +250,22 @@ int main(int argc, char* argv[])
 	      cpspint_upGr = (TGraph *) cpspintGr->Clone();
 	      cpspint_downGr=(TGraph *) cpspintGr->Clone();
 	    }
-	  else if(cpspint_upGr==0 && cpspint_downGr)
+	  else if(cpspint_upGr==0 && cpspint_downGr==0)
 	    {
 	      cpspint_upGr=(TGraph *)cpspintGr->Clone();
 	      cpspint_downGr=(TGraph *)cpspintGr->Clone();
 	      for(int ip=0; ip<cpspintGr->GetN(); ip++) { 
 		Double_t x,y; 
 		cpspintGr->GetPoint(ip,x,y);
-		cpspint_upGr->SetPoint(ip,x,y*y);
 		cpspint_downGr->SetPoint(ip,x,1.0);
+		float yDiff(fabs(1-y));
+		float yMirror(1-2*yDiff);
+		if(y>1)        yMirror=1+2*yDiff;
+		if(yMirror<0)  yMirror=0;
+		if(yMirror>10) yMirror=10;
+		cpspint_upGr->SetPoint(ip,x,yMirror);
 	      }
+	      
 	    }
 	  
 	  //loop over possible scenarios: SM or BSM
@@ -259,9 +287,18 @@ int main(int argc, char* argv[])
 		      shapeWgtUp   = cpsGr->Eval(hmass) * cpspint_upGr->Eval(hmass);
 		      shapeWgtDown = cpsGr->Eval(hmass) * cpspint_downGr->Eval(hmass);
 		    }
+		  else if(mctruthmode==125){
+		    TString var("");
+		    if(url.Contains("ScaleUp"))   var="up";
+		    if(url.Contains("ScaleDown")) var="down";
+		    Double_t nrWgt = higgs::utils::weightToH125Interference(hmass,NRparams[nri].first,nrLineShapesFile,var);
+		    shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
+		    shapeWgtUp     = shapeWgt;
+		    shapeWgtDown   = shapeWgt;
+		  }
 		  else
 		    {
-		      Double_t nrWgt = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf);
+		      Double_t nrWgt = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
 		      shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
 		      shapeWgtUp     = shapeWgt;
 		      shapeWgtDown   = shapeWgt;
@@ -272,25 +309,26 @@ int main(int argc, char* argv[])
 		  shapeWgts_downGr->SetPoint(shapeWgts_downGr->GetN(), hmass, shapeWgtDown);   shapeDownNorm += shapeWgtDown*hy;
 		}
 	      
-	      //fix possible normalization issues
-	      cout << "C'=" << NRparams[nri].first << " BRnew=" << NRparams[nri].second << " shape wgts will be re-normalized with: "
-		   << " nominal=" << shapeNorm
-		   << " up     =" << shapeUpNorm
-		   << " down   =" << shapeDownNorm 
-		   << endl;
-	      for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++)
-		{
-		  Double_t x,y;
-		  shapeWgtsGr->GetPoint(ip,x,y);
-		  shapeWgtsGr->SetPoint(ip,x,y/shapeNorm);
-		  
-		  shapeWgts_upGr->GetPoint(ip,x,y);
-		  shapeWgts_upGr->SetPoint(ip,x,y/shapeUpNorm);
-		  
-		  shapeWgts_downGr->GetPoint(ip,x,y);
-		  shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
-		  
-		}
+	      if(mctruthmode!=125){
+		//fix possible normalization issues
+		cout << "C'=" << NRparams[nri].first << " BRnew=" << NRparams[nri].second << " shape wgts will be re-scaled to preserve unitarity with: "
+		     << " nominal=" << shapeNorm
+		     << " up     =" << shapeUpNorm
+		     << " down   =" << shapeDownNorm 
+		     << endl;
+		for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++)
+		  {
+		    Double_t x,y;
+		    shapeWgtsGr->GetPoint(ip,x,y);
+		    shapeWgtsGr->SetPoint(ip,x,y/shapeNorm);
+		    
+		    shapeWgts_upGr->GetPoint(ip,x,y);
+		    shapeWgts_upGr->SetPoint(ip,x,y/shapeUpNorm);
+		    
+		    shapeWgts_downGr->GetPoint(ip,x,y);
+		    shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
+		  }
+	      }
 	      
 	      //all done here...
 	      std::vector<TGraph *> inrWgts;
@@ -299,7 +337,7 @@ int main(int argc, char* argv[])
 	      inrWgts.push_back( shapeWgts_downGr );
 	      hLineShapeGrVec[ NRparams[nri] ] = inrWgts;
 	    }
-
+	  
 	  //close files
 	  fin->Close();
 	  delete fin;
@@ -543,11 +581,11 @@ int main(int argc, char* argv[])
       //require compatibilitiy of the event with the PD
       bool eeTrigger          = ev.t_bits[0];
       bool muTrigger          = ev.t_bits[6];
-      bool mumuTrigger        = ev.t_bits[2] || ev.t_bits[3] || muTrigger;
+      bool mumuTrigger        = ev.t_bits[2] || ev.t_bits[3]; 
       bool emuTrigger         = ev.t_bits[4] || ev.t_bits[5];
       if(filterOnlyEE)   { mumuTrigger=false; emuTrigger=false;  }
       if(filterOnlyMUMU) { eeTrigger=false;   emuTrigger=false;  }
-      if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
+      if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
       if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
 
       bool hasPhotonTrigger(false);
@@ -627,12 +665,14 @@ int main(int argc, char* argv[])
       if(isMC){
 
 	LorentzVector higgs(0,0,0,0);
+	LorentzVector totLeptons(0,0,0,0);
 	for(size_t igen=0; igen<gen.size(); igen++){
 	  if(gen[igen].get("status")!=3) continue;
-	  if(gen[igen].get("id")!=25) continue;
-	  higgs=gen[igen];
+	  if(abs(gen[igen].get("id"))>=11 && abs(gen[igen].get("id"))<=16) totLeptons += gen[igen];
+	  if(gen[igen].get("id")==25)                                      higgs=gen[igen];
 	}
-	
+	if(mctruthmode==125) higgs=totLeptons;
+
 	float shapeWeight(1.0);
         if((isMC_VBF || isMC_GG) && higgs.pt()>0){
 	  {

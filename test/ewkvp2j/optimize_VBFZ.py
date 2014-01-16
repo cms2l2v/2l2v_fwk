@@ -90,7 +90,8 @@ if(blind) : LandSArg='--blindWithSignal'
 LandSArg+=' --systpostfix _%sTeV'%sqrts
 if(len(dyTemplates)>0) : LandSArg+=' --subDY '+dyTemplates
 #LandSArg +=' --bins mjjq016,mjjq033,mjjq049,mjjq066,mjjq083,mjjq092,mjjq100'
-LandSArg +=' --bins mjjq033,mjjq049,mjjq066,mjjq083,mjjq092,mjjq100'
+#LandSArg +=' --bins mjjq033,mjjq049,mjjq066,mjjq083,mjjq092,mjjq100'
+LandSArg +=' --bins lowhardpt,highhardpt'
 LandSArg +=' --addGammaNorm'
 
 DataCardsDir='cards%s'%(sqrts)
@@ -171,7 +172,7 @@ if( phase == 1 ):
          SCRIPT.writelines('cd ' + CMSSW_BASE + swDir+';\n')
          SCRIPT.close()
       FULLOUT=CMSSW_BASE + swDir +OUT
-      commandToRun.append("bsub -G u_zh -q 8nh -J optim"+str(i)+" 'sh " + FULLOUT+"script_"+str(i)+".sh &> "+FULLOUT+"script_"+str(i)+".log'")
+      commandToRun.append("bsub -G u_zh -q 1nh -J optim"+str(i)+" 'sh " + FULLOUT+"script_"+str(i)+".sh &> "+FULLOUT+"script_"+str(i)+".log'")
    FILE.close()
 
    for c in commandToRun:

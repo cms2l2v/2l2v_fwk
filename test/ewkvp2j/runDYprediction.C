@@ -346,8 +346,8 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
     dilprocs.push_back("Z#rightarrow ll");         dilColors.push_back(831);
     dilprocs.push_back("data");                    dilColors.push_back(1);
 
-    dilSignal.push_back("ggH(350)#rightarrow ZZ");
-    dilSignal.push_back("qqH(350)#rightarrow ZZ");
+    dilSignal.push_back("ggH(600)#rightarrow ZZ");
+    dilSignal.push_back("qqH(600)#rightarrow ZZ");
   }
 
   //

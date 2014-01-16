@@ -192,6 +192,7 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
 
 
 #the analyzer
+print'here'
 from UserCode.llvv_fwk.dataAnalyzer_cfi import *
 try:
     if runDijetsAnalysis :
@@ -204,7 +205,14 @@ except:
         process.dataAnalyzer.cfg.triggerCats[2]=1113
         process.dataAnalyzer.cfg.triggerCats[3]=1113
         print 'Tweaking for tau embedded samples'
-        
+    try:
+        if is7TeV:
+            print '7 TeV run'
+            process.dataAnalyzer.cfg.triggerPaths=triggerPaths7TeV[0]
+            process.dataAnalyzer.cfg.triggerCats=triggerCats7TeV
+    except:
+        print '8 TeV run'
+print'got here'
 process.dataAnalyzer.cfg.storeAllPF=storeAllPF
 
 try:

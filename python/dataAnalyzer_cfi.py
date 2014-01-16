@@ -64,8 +64,60 @@ dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
                                              )
                                )
 
+
+#######################################
+# 7 TeV trigger pathcs and categories #
+#######################################
+triggerPaths7TeV = cms.vstring('HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v',                                       #ee: 0-1
+                               'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v',
+                               'HLT_DoubleMu7_v',                                                                            #mumu: 2-5
+                               'HLT_Mu13_Mu8_v',
+                               'HLT_Mu17_Mu8_v',
+                               'HLT_Mu17_TkMu8_v',
+                               'HLT_Mu17_Ele8_CaloIdL_v',                                                                    #emu:6-9
+                               'HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v',
+                               'HLT_Mu8_Ele17_CaloIdL_v',
+                               'HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v',
+                               'HLT_IsoMu17_v',                                                                              #mu:10-12
+                               'HLT_IsoMu24_v',
+                               'HLT_IsoMu30_eta2p1_v',
+                               'HLT_Photon30_CaloIdVL_IsoL_v',                                                               #gamma:13-20
+                               'HLT_Photon50_CaloIdVL_IsoL_v',
+                               'HLT_Photon75_CaloIdVL_IsoL_v',
+                               'HLT_Photon90_CaloIdVL_IsoL_v',
+                               'HLT_Photon125_v',
+                               'HLT_Photon125_NoSpikeFilter_v',
+                               'HLT_Photon135_v',
+                               'HLT_Photon200_NoHE_v'
+                               ),
+triggerCats7TeV  = cms.vint32(1111,
+                              1111,
+                              1313,
+                              1313,
+                              1313,
+                              1313,
+                              1113,
+                              1113,
+                              1113,
+                              1113,
+                              13,
+                              13,
+                              13,
+                              22,
+                              22,
+                              22,
+                              22,
+                              22,
+                              22,
+                              22,
+                              22
+                              )
+
+
 ## configure specifically for a dijet analysis
 dijetAnalyzer = dataAnalyzer.clone()
 dijetAnalyzer.cfg.triggerPaths=cms.vstring("BTagMu_DiJet20","BTagMu_DiJet40","BTagMu_DiJet70","BTagMu_DiJet110","BTagMu_Jet300")
 dijetAnalyzer.cfg.triggerCats=cms.vint32(1,1,1,1,1)
+
+
 

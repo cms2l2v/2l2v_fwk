@@ -25,6 +25,8 @@ fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_sampl
 fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 3       --out xsec/3jet > xsec/xsec3jexc_result.txt
 fitTTbarCrossSection --in ~/work/top_5311/plotter_nom.root --json data/top_samples.json --syst ~/work/top_5311/plotter_syst.root --bins 4       --out xsec/4jet > xsec/xsec4jexc_result.txt
 
+## TOP-12-035
+
 ### lepton-jet invariant mass analysis
 fitMljSpectrum --in ~/work/top_5311/plotter_nom.root --syst ~/work/top_5311/plotter_syst.root --json data/top_samples.json --systJson data/top_syst_samples.json
 
@@ -40,7 +42,14 @@ fitHeavyFlavorContent --par test/top/hfcParams_2012_data_cfg.json --btag test/to
 fitHeavyFlavorContent --par test/top/hfcParams_2012_data_cfg.json --btag test/top/csvL_2012_data_cfg.json --in ~/work/top_5311/plotter_nom.root --fit 3
 fitHeavyFlavorContent --par test/top/hfcParams_2012_data_cfg.json --btag test/top/csvL_2012_data_cfg.json --in ~/work/top_5311/plotter_nom.root --fit 4
 
-### UE studies
+## BTV-13-001
+for i in `seq 0 4`; do rundFtM --flav ~/www/BTV-13-001/dFtM/csv${i}/flavbreakup.json --btag ~/www/BTV-13-001/dFtM/csv${i}/csv${i}_eff.json --in ~/www/BTV-13-001/dFtM/csv${i}/csv${i}_btags.root --fit 0; done
+a=(`ls ~/www/BTV-13-001/dFtM/csv*/*workspace.root`)
+allWS=""
+for i in ${a[@]}; do allWS="${allWS},${i}"; done 
+rundFtM  --ws ${allWS}
+
+## TOP-13-007
 
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/data/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/top_dysf.root'" -s 8nh
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/syst/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True"  -s 8nh
@@ -48,7 +57,7 @@ runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -
 runPlotter --iLumi 19701 --inDir ~/work/top_5311/syst/ --json data/top_syst_samples.json --outFile ~/work/top_5311/plotter_syst_ue.root --noPlot
 runPlotter --iLumi 19701 --inDir ~/work/top_5311/data/ --json data/top_samples.json --outFile ~/work/top_5311/plotter_ue.root --noPlot
 
-### QCD dijet studies
+## TOP-12-030
 
 runLocalAnalysisOverSamples.py -e runBTVdijetAnalysis -j test/top/qcd_samples.json -d /store/cmst3/user/psilva/5311_qcd_ntuples -o ~/work/top_5311/qcd/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='data/weights/'"  -s 8nh
 runPlotter --iLumi 19407 --inDir ~/work/top_5311/qcd/ --json test/top/qcd_samples.json --outFile ~/work/top_5311/plotter_qcd.root 

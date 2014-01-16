@@ -246,6 +246,40 @@ int main(int argc, char* argv[])
   //  h->GetXaxis()->SetBinLabel(13,"ee_et");
   //  h->GetXaxis()->SetBinLabel(14,"ee_mt");
   //  h->GetXaxis()->SetBinLabel(15,"ee_tt");
+
+
+
+  std::vector<TString> controlCats;
+  controlCats.push_back("eq2leptons");
+  controlCats.push_back("eq1jets");   
+  controlCats.push_back("eq2jets");   
+  controlCats.push_back(""); // FIXME: add DY reweighting
+  controlCats.push_back("geq2btags");
+  controlCats.push_back("lowmet");
+  controlCats.push_back("eq1jetslowmet");
+  controlCats.push_back("z");
+  controlCats.push_back("zeq1jets");
+  controlCats.push_back("zlowmet");
+  controlCats.push_back("zeq1jetslowmet");
+  
+  for(size_t k=0; k<controlCats.size(); ++k){
+    mon.addHistogram( new TH1F(controlCats[k]+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
+    mon.addHistogram( new TH1F(controlCats[k]+"mll",";Dilepton invariant mass [GeV];Events",50,0,250) );
+    mon.addHistogram( new TH1F(controlCats[k]+"ptll",";Dilepton transverse momentum [GeV];Events",50,0,250) );
+    mon.addHistogram( new TH1F(controlCats[k]+"pte",";Electron transverse momentum [GeV];Events",50,0,500) );
+    mon.addHistogram( new TH1F(controlCats[k]+"ptmu",";Muon transverse momentum [GeV];Events",50,0,500) );
+    mon.addHistogram( new TH1F(controlCats[k]+"ptlep",";Lepton transverse momentum [GeV];Events",50,0,500) ); 
+    mon.addHistogram( new TH1F(controlCats[k]+"sumpt",";Sum of lepton transverse momenta [GeV];Events",50,0,500) );
+    mon.addHistogram( new TH1F(controlCats[k]+"ptmin",";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
+    mon.addHistogram( new TH1F(controlCats[k]+"dilarccosine",";#theta(l,l') [rad];Events",50,0,3.2) );
+    mon.addHistogram( new TH1F(controlCats[k]+"mtsum",";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
+    mon.addHistogram( new TH1F(controlCats[k]+"met",";Missing transverse energy [GeV];Events",50,0,500) );
+    mon.addHistogram( new TH1F(controlCats[k]+"metnotoppt",";Missing transverse energy [GeV];Events",50,0,500) );
+    mon.addHistogram( new TH1F(controlCats[k]+"ht",";H_{T} [GeV];Events",50,0,1000) );
+    mon.addHistogram( new TH1F(controlCats[k]+"htb",";H_{T} (bjets) [GeV];Events",50,0,1000) );
+    mon.addHistogram( new TH1F(controlCats[k]+"htnol","; H_[T] (no leptons) [GeV];Events",50,0,1000) );
+    mon.addHistogram( new TH1F(controlCats[k]+"htbnol","; H_[T] (bjets, no leptons) [GeV];Events",50,0,1000) );
+  }
   
   mon.addHistogram( new TH1F("pthat",";#hat{p}_{T} [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("nup",";NUP;Events",10,0,10) );
@@ -550,14 +584,6 @@ int main(int argc, char* argv[])
       
       //      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
 
-// test mu//      //////////////////////
-// test mu//      if(muTrigger){
-// test mu//	eeTrigger=false;
-// test mu//	emuTrigger=false;
-// test mu//	mumuTrigger=false;
-// test mu//      }
-// test mu//      //////////////////////
-     
       // PU weighting now follows channel selection, to take into account the different pileup distribution between singleMu and dileptons
       //pileup weight
       float weight(1.0);
@@ -606,28 +632,28 @@ int main(int argc, char* argv[])
 
 	  // Dilepton kin
 	  if(leptons[ilep].pt()< 20. )                   passKin=false;
-	  if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
-	  if(lid==11 && (leta>1.4442 && leta<1.5660)) passKin=false; // Crack veto
+	  if(leta> (lid==11 ? 2.5 : 2.4) )               passKin=false;
+	  if(lid==11 && (leta>1.4442 && leta<1.5660))    passKin=false; // Crack veto
 
 	  // SingleLepton kin
-	  if(leptons[ilep].pt()< (lid==11 ? 35 :30 ) )                   passSingleLepKin=false;
-	  if(leta> (lid==11 ? 2.5 : 2.1) )            passSingleLepKin=false;
-	  if(lid==11 && (leta>1.4442 && leta<1.5660)) passSingleLepKin=false; // Crack veto
-	  
+	  if(leptons[ilep].pt()< (lid==11 ? 35 :30 ) )  passSingleLepKin=false;
+	  if(leta> (lid==11 ? 2.5 : 2.1) )              passSingleLepKin=false;
+	  if(lid==11 && (leta>1.4442 && leta<1.5660))   passSingleLepKin=false; // Crack veto
+
 	  //id
 	  Int_t idbits(leptons[ilep].idbits);
 	  if(lid==11){
 	    if(leptons[ilep].electronInfoRef->isConv)              passId=false;
 	    bool isLoose(((idbits >> 4) & 0x1));
-	    if(!isLoose)                                   passId=false;
+	    if(!isLoose)                                           passId=false;
 
 	    passSingleLepId=passId;
  	  }
 	  else{
-	    //	    bool isLoose    = ((idbits >> 8) & 0x1);
+	    bool isLoose    = ((idbits >> 8) & 0x1);
 	    bool isTight    (((idbits >> 10) & 0x1));
-	    if(!isTight)                                   passId=false;
-	    passSingleLepId=passId;
+	    if(!isLoose)                                   passId=false;
+	    if(!isTight)          	          passSingleLepId=false;
 	  }
 	  
 	  //isolation
@@ -690,8 +716,8 @@ int main(int argc, char* argv[])
 	      if(!isLoose)                                   passId=false;
 	    }
 	    else{
-	      bool isLoose    ( ((idbits >> 8) & 0x1) );
-	    //bool isTight    = ((idbits >> 10) & 0x1);
+	      bool isLoose    ( ((idbits >> 8) & 0x1) ); // Veto is loose
+	      //bool isTight    = ((idbits >> 10) & 0x1);
 	      if(!isLoose)                                   passId=false;
 	    }
 	    
@@ -730,15 +756,14 @@ int main(int argc, char* argv[])
       //check the channel
       //prepare the tag's vectors for histo filling
       std::vector<TString> chTags;
-      chTags.push_back("all");
+      chTags.push_back("ll"); // FIXME: legacy to remove.
       
       if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
       else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
       else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
       else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
-      else continue;
       
-      if(chTags.size()==0) continue;
+      if(chTags.size()<2) continue;
 
       if(debug && chTags.size() > 2 ) cout << "[DEBUG] ERROR. The same event has been chosen for inclusive final state and MORE THAN ONE exclusive final state" << endl;
 
@@ -747,7 +772,7 @@ int main(int argc, char* argv[])
       
       // Dilepton full analysis
       // ----------------------
-      if(chTags[1] == "ee" || chTags[1] == "emu" || chTags[1] == "mumu"){
+      if(chTags[1] == "ee" || chTags[1] == "emu" || chTags[1] == "mumu" /*|| chTags[0] == "ll" */ ){
 
 	if(selLeptons.size()<2) continue; // 2 leptons
 	
@@ -935,12 +960,12 @@ int main(int argc, char* argv[])
 	if(        passDileptonSelection && passJetSelection                                                 ) ctrlCategs.push_back("eq2jets");   
 	if(isOS && passDileptonSelection && passJetSelection  && passMetSelection                            ) ctrlCategs.push_back(""); // FIXME: add DY reweighting
 	if(isOS && passDileptonSelection && passJetSelection  && passMetSelection  && passBtagSelection      ) ctrlCategs.push_back("geq2btags");
-	if(isOS && passDileptonSelection && passJetSelection  && !passMetSelection /*&& passBtagSelection*/  ) ctrlCategs.push_back("lowmet");
-	if(isOS && passDileptonSelection && selJets.size()==1 && !passMetSelection /*&& passBtagSelection*/  ) ctrlCategs.push_back("eq1jetslowmet");
+	if(isOS && passDileptonSelection && passJetSelection  && met.pt()<30       /*&& passBtagSelection*/  ) ctrlCategs.push_back("lowmet");
+	if(isOS && passDileptonSelection && selJets.size()==1 && met.pt()<30       /*&& passBtagSelection*/  ) ctrlCategs.push_back("eq1jetslowmet");
 	if(isOS && isZcand          && passJetSelection  && passMetSelection  /*&& passBtagSelection*/       ) ctrlCategs.push_back("z");
 	if(isOS && isZcand          && selJets.size()==1 && passMetSelection  /*&& passBtagSelection*/       ) ctrlCategs.push_back("zeq1jets");
-	if(isOS && isZcand          && passJetSelection  && !passMetSelection /*&& passBtagSelection*/       ) ctrlCategs.push_back("zlowmet");
-	if(isOS && isZcand          && selJets.size()==1 && !passMetSelection /*&& passBtagSelection*/       ) ctrlCategs.push_back("zeq1jetslowmet");
+	if(isOS && isZcand          && passJetSelection  && met.pt()<30       /*&& passBtagSelection*/       ) ctrlCategs.push_back("zlowmet");
+	if(isOS && isZcand          && selJets.size()==1 && met.pt()<30       /*&& passBtagSelection*/       ) ctrlCategs.push_back("zeq1jetslowmet");
 	for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	  {
 	    double ptmin((selLeptons[dilLep1].pt()>selLeptons[dilLep2].pt()) ? selLeptons[dilLep2].pt() : selLeptons[dilLep1].pt() );
@@ -1082,7 +1107,8 @@ int main(int argc, char* argv[])
 	  TotalWeight_plus  = singleLepPuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (singleLepPUNorm[2]/singleLepPUNorm[0]);
 	  TotalWeight_minus = singleLepPuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (singleLepPUNorm[1]/singleLepPUNorm[0]);
 	}
-	// FIXME: add single lepton SFs
+	
+	weight *= isMC ? lepEff.getLeptonEfficiency( selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), abs(selSingleLepLeptons[0].id),  abs(selSingleLepLeptons[0].id) ==11 ? "loose" : "tight" ).first : 1.0;
 
 	// Top Pt reweighting
 	double tPt(0.), tbarPt(0.); 
