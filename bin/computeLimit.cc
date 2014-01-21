@@ -840,7 +840,7 @@ void initializeTGraph(){
                     }
                     map_stack   [ch->first]->Add(h,"HIST");
 
-                 }else if(it->second.isSign){
+                 }else if(it->second.isSign){                    
                     map_signals [ch->first].push_back(h);
                    
                  }else if(it->first=="data"){
@@ -876,7 +876,8 @@ void initializeTGraph(){
               axis->Reset();      
               axis->GetXaxis()->SetRangeUser(0, axis->GetXaxis()->GetXmax());
               axis->SetMinimum(1E-2);
-              axis->SetMaximum(1.5*std::max( map_unc[p->first]->GetMaximum(), map_data[p->first]->GetMaximum()));
+              double signalHeight=0; for(unsigned int s=0;s<map_signals[p->first].size();s++){signalHeight = std::max(signalHeight, map_signals[p->first][s]->GetMaximum());}
+              axis->SetMaximum(1.5*std::max(signalHeight , std::max( map_unc[p->first]->GetMaximum(), map_data[p->first]->GetMaximum())));
               if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
               axis->Draw();
               p->second->Draw("same");

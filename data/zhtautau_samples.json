@@ -492,8 +492,7 @@
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_ggZZ2l2L"                             , "split":2, "xsec":0.01203       , "br":[1]           , "dset":"/GluGluToZZTo2L2L_TuneZ2star_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM
-"        }
+        { "dtag":"MC8TeV_ggZZ2l2L"                             , "split":2, "xsec":0.01203       , "br":[1]           , "dset":"/GluGluToZZTo2L2L_TuneZ2star_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
