@@ -52,9 +52,9 @@ except:
 process.out = cms.OutputModule("PoolOutputModule",
                                outputCommands = cms.untracked.vstring('drop *'),
                                fileName = cms.untracked.string(outFile),
-#                               SelectEvents = cms.untracked.PSet(
-#                                  SelectEvents = cms.vstring('p')
-#                               ),
+                              SelectEvents = cms.untracked.PSet(
+                                 SelectEvents = cms.vstring('p')
+                              ),
                            )
 
 if(isMC) : process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
@@ -225,29 +225,27 @@ process.startCounter = cms.EDProducer("EventCountProducer")
 process.scrapCounter = process.startCounter.clone()
 process.vtxCounter   = process.startCounter.clone()
 process.metCounter   = process.startCounter.clone() 
-process.start        = cms.Path(
-                       process.startCounter)
-process.noscraping   = cms.Path(
-                       process.noscraping
-                      *process.scrapCounter)
-process.goodvertex   = cms.Path(
-                       process.goodOfflinePrimaryVertices
+process.endCounter   = process.startCounter.clone()
+
+process.p            = cms.Path(
+                       process.startCounter
+                      *process.noscraping
+                      *process.scrapCounter
+                      *process.goodOfflinePrimaryVertices
                       *process.goodVertexFilter
-                      *process.vtxCounter)
-process.metfilter    = cms.Path(
-                       process.metFilteringTaggers
-		      *process.metCounter)
-process.pf2pat       = cms.Path(
-                       process.eidMVASequence
+                      *process.vtxCounter
+                      *process.metFilteringTaggers
+		      *process.metCounter
+                      *process.eidMVASequence
                       *getattr(process,"patPF2PATSequence"+postfix)
                       *process.btvSequence
                       *process.kt6PFJetsCentral
                       *process.qgSequence
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
                       *process.selectedPatElectronsWithTrigger*process.selectedPatElectronsPFlowHeep
-                      *process.selectedPatMuonsTriggerMatch )
-process.llvvprod     = cms.Path(
-                       process.llvvObjectProducersUsed
+                      *process.selectedPatMuonsTriggerMatch 
+                      *process.llvvObjectProducersUsed
+                      *process.endCounter
                       )
 
 
@@ -261,7 +259,7 @@ process.out.outputCommands = cms.untracked.vstring('drop *',
                                                    'keep double_kt6PFJetsCentral_rho_*',
                                                    'keep *_lumiProducer_*_*',
                                                    'keep edmTriggerResults_TriggerResults_*_HLT',
-                                                   'keep edmTriggerResults_TriggerResults_*_DataAna',
+#                                                  'keep edmTriggerResults_TriggerResults_*_DataAna',
 #                                                  'keep GenEventInfoProduct_*_*_*',
 #                                                  'keep LHEEventProduct_*_*_*',
 #                                                  'keep PileupSummaryInfos_*_*_*'
@@ -269,7 +267,7 @@ process.out.outputCommands = cms.untracked.vstring('drop *',
 
 
 process.endPath = cms.EndPath(process.out)	
-process.schedule = cms.Schedule(process.start, process.noscraping, process.goodvertex, process.metfilter, process.pf2pat, process.llvvprod, process.endPath)
+process.schedule = cms.Schedule(process.p, process.endPath)
 
 
 
