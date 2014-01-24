@@ -1105,7 +1105,7 @@ int main(int argc, char* argv[])
               if(passHiggs){
                  mon.fillHisto("higgspt"      , chTags, higgsCand.pt(),    weight);
                  mon.fillHisto("higgsmass"    , chTags, higgsCand.mass(),  weight);
-                 //mon.fillHisto("higgsmasssvfit", chTags, diTauMass,  weight);
+                 mon.fillHisto("higgsmasssvfit", chTags, diTauMass,  weight);
                  mon.fillHisto("higgsnjets"   , chTags, NCleanedJet      , weight); 
                  mon.fillHisto("higgsmet"     , chTags, met.pt()         , weight);
               }
