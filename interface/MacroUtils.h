@@ -108,8 +108,8 @@ namespace utils
     Float_t getEffectiveArea(int id, float eta,int cone=3,TString isoSum="");
     double relIso(llvvLepton lep, double rho);
 
-    // Top/antitop pt reweighting
-    double ttbarReweight(double, double);
+    // Single muon trigger efficiency 
+    void getSingleMuTrigEff(const double&, const double&, double& );
 
     //cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
     FactorizedJetCorrector *getJetCorrector(TString baseDir, bool isMC);
