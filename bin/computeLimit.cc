@@ -389,6 +389,7 @@ int main(int argc, char* argv[])
   inF->Close();
   printf("Loading all shapes... Done\n");
 
+
   allInfo.computeTotalBackground();
   if(MCclosureTest)allInfo.blind();
 
@@ -1294,6 +1295,8 @@ void initializeTGraph(){
 
                   //if current shape is the one to cut on, then apply the cuts
                   if(shapeName == histo){
+                     if(ivar==1 && isSignal)printf("A %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
+
                      for(int x=0;x<=hshape->GetXaxis()->GetNbins()+1;x++){
                         if(hshape->GetXaxis()->GetBinCenter(x)<=minCut || hshape->GetXaxis()->GetBinCenter(x)>=maxCut){ hshape->SetBinContent(x,0); hshape->SetBinError(x,0); }
                      }
@@ -1301,8 +1304,13 @@ void initializeTGraph(){
                      }else{                                     hshape->Rebin(rebinVal);
                      }
                      hshape->GetYaxis()->SetTitle("Entries (/25GeV)");
+
+                     if(ivar==1 && isSignal)printf("B %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
                   }
                   hshape->Scale(MCRescale);
+
+                     if(ivar==1 && isSignal && shapeName == histo)printf("C %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
+
 
 
                    //Do Renaming and cleaning
@@ -1329,6 +1337,8 @@ void initializeTGraph(){
                    }else{
                       shapeInfo.uncShape[varName.Data()]->Add(hshape);
                    }
+
+                     if(ivar==1 && isSignal && shapeName == histo)printf("D %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
                 }
             }
            }
@@ -1400,8 +1410,11 @@ void initializeTGraph(){
                     alpha     = hChan_SB->GetBinContent(5) / hCtrl_SB->GetBinContent(5);
                     alpha_err = ( fabs( hChan_SB->GetBinContent(5) * hCtrl_SB->GetBinError(5) ) + fabs(hChan_SB->GetBinError(5) * hCtrl_SB->GetBinContent(5) )  ) / pow(hCtrl_SB->GetBinContent(5), 2);        
                  }
-                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.44; alphaUsed_err=0.03;}
-                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.71; alphaUsed_err=0.04;}
+//                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.44; alphaUsed_err=0.03;}
+//                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.71; alphaUsed_err=0.04;}
+                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.47; alphaUsed_err=0.03;} //25/01/2014
+                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.61; alphaUsed_err=0.04;}
+
 
                  double valDD, valDD_err;
                  double valMC, valMC_err;
