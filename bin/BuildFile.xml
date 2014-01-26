@@ -32,7 +32,10 @@
   <bin name="runBTVdijetAnalysis"        file="runBTVdijetAnalysis.cc"></bin>
   <bin name="runEWKVJJunfolding"         file="runEWKVJJunfolding.cc"></bin>
   <bin name="rundFtM"                    file="rundFtM.cc"></bin>
-  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
-  <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
 </environment>
 <Flags CXXFLAGS="-g"/>
+
+<!--
+  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
+  <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
+-->

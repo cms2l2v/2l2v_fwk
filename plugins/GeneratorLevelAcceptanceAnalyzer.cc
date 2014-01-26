@@ -46,7 +46,7 @@ private:
   virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
   
   // ----------member data ---------------------------
-  TH1F *h_cutflow, *h_ptTop;
+  TH1F *h_cutflow, *h_cutflow1b, *h_ptTop;
 };
 
 //
@@ -89,6 +89,7 @@ GeneratorLevelAcceptanceAnalyzer::analyze(const edm::Event& iEvent, const edm::E
    using namespace edm;
 
    h_cutflow->Fill(0);
+   h_cutflow1b->Fill(0);
 
    //
    // gen particles
@@ -99,11 +100,16 @@ GeneratorLevelAcceptanceAnalyzer::analyze(const edm::Event& iEvent, const edm::E
    TLorentzVector neutFlux(0,0,0,0);
    std::vector<int> chLeptonsId; 
    std::vector<TLorentzVector> chLeptons;
+   std::vector<TLorentzVector> bQuarks;
    for(std::vector<reco::GenParticle>::const_iterator genParticle = genParticles->begin(); genParticle != genParticles->end(); ++genParticle) 
      {
        int status=genParticle->status();
        int pid=genParticle->pdgId();
        if(status==3 && abs(pid)==6) h_ptTop->Fill(genParticle->pt());
+       if(status==3 && abs(pid)==5) {
+	 TLorentzVector p4( genParticle->px(), genParticle->py(), genParticle->pz(), genParticle->energy() );
+	 bQuarks.push_back(p4);
+       }
        if(status==1)
 	 {
 	   TLorentzVector p4( genParticle->px(), genParticle->py(), genParticle->pz(), genParticle->energy() );
@@ -133,6 +139,7 @@ GeneratorLevelAcceptanceAnalyzer::analyze(const edm::Event& iEvent, const edm::E
    iEvent.getByLabel("ak5GenJets", genJets);
    if(!genJets.isValid())     cerr << "  WARNING: genJets is not valid! " << endl;
    std::vector<TLorentzVector> jets;
+   std::vector<TLorentzVector> bJets;
    for(std::vector<reco::GenJet>::const_iterator genJet=genJets->begin(); genJet!=genJets->end(); genJet++)
      {
        TLorentzVector p4( genJet->px(), genJet->py(), genJet->pz(), genJet->energy() );
@@ -148,7 +155,16 @@ GeneratorLevelAcceptanceAnalyzer::analyze(const edm::Event& iEvent, const edm::E
 	 }
        if(matchesLepton) continue;
 
+       bool matchesBquark(false);
+       for(size_t i=0; i<bQuarks.size(); i++)
+	 {
+	   float dR=p4.DeltaR(bQuarks[i]);
+	   if(dR>0.4) continue;
+	   matchesBquark=true;
+	 }
+
        jets.push_back(p4);
+       if(matchesBquark) bJets.push_back(p4);
      }
 
    //compute acceptance
@@ -157,24 +173,40 @@ GeneratorLevelAcceptanceAnalyzer::analyze(const edm::Event& iEvent, const edm::E
    bool passMET(true);
    if(abs(ch)==11*11 || abs(ch)==13*13) passMET = (neutFlux.Pt()>30);
 
-   if(passLeptons                                      ) h_cutflow->Fill(1);
-   if(passLeptons                  && passMET          ) h_cutflow->Fill(2);
-   if(passLeptons                  && passMET && passOS) h_cutflow->Fill(3);
-   if(passLeptons && jets.size()>1                     ) h_cutflow->Fill(4);
-   if(passLeptons && jets.size()>1 && passMET          ) h_cutflow->Fill(5);
-   if(passLeptons && jets.size()>1 && passMET && passOS) h_cutflow->Fill(6);
-   if(passLeptons && jets.size()>2                     ) h_cutflow->Fill(7);
-   if(passLeptons && jets.size()>2 && passMET          ) h_cutflow->Fill(8);
-   if(passLeptons && jets.size()>2 && passMET && passOS) h_cutflow->Fill(9);
-   if(passLeptons && jets.size()>3                     ) h_cutflow->Fill(10);
-   if(passLeptons && jets.size()>3 && passMET          ) h_cutflow->Fill(11);
-   if(passLeptons && jets.size()>3 && passMET && passOS) h_cutflow->Fill(12);
-   if(passLeptons && jets.size()>4                     ) h_cutflow->Fill(13);
-   if(passLeptons && jets.size()>4 && passMET          ) h_cutflow->Fill(14);
-   if(passLeptons && jets.size()>4 && passMET && passOS) h_cutflow->Fill(15);
-   if(passLeptons && jets.size()>5                     ) h_cutflow->Fill(16);
-   if(passLeptons && jets.size()>5 && passMET          ) h_cutflow->Fill(17);
-   if(passLeptons && jets.size()>5 && passMET && passOS) h_cutflow->Fill(18);
+   if(passLeptons                                       ) h_cutflow->Fill(1);
+   if(passLeptons                   && passMET          ) h_cutflow->Fill(2);
+   if(passLeptons                   && passMET && passOS) h_cutflow->Fill(3);
+   if(passLeptons && jets.size()>=1                     ) h_cutflow->Fill(4);
+   if(passLeptons && jets.size()>=1 && passMET          ) h_cutflow->Fill(5);
+   if(passLeptons && jets.size()>=1 && passMET && passOS) h_cutflow->Fill(6);
+   if(passLeptons && jets.size()>=2                     ) h_cutflow->Fill(7);
+   if(passLeptons && jets.size()>=2 && passMET          ) h_cutflow->Fill(8);
+   if(passLeptons && jets.size()>=2 && passMET && passOS) h_cutflow->Fill(9);
+   if(passLeptons && jets.size()>=3                     ) h_cutflow->Fill(10);
+   if(passLeptons && jets.size()>=3 && passMET          ) h_cutflow->Fill(11);
+   if(passLeptons && jets.size()>=3 && passMET && passOS) h_cutflow->Fill(12);
+   if(passLeptons && jets.size()>=4                     ) h_cutflow->Fill(13);
+   if(passLeptons && jets.size()>=4 && passMET          ) h_cutflow->Fill(14);
+   if(passLeptons && jets.size()>=4 && passMET && passOS) h_cutflow->Fill(15);
+   if(passLeptons && jets.size()>=5                     ) h_cutflow->Fill(16);
+   if(passLeptons && jets.size()>=5 && passMET          ) h_cutflow->Fill(17);
+   if(passLeptons && jets.size()>=5 && passMET && passOS) h_cutflow->Fill(18);
+
+   if(passLeptons &&                   bJets.size()>=1                      ) h_cutflow1b->Fill(1);
+   if(passLeptons &&                   bJets.size()>=1 && passMET           ) h_cutflow1b->Fill(2);
+   if(passLeptons &&                   bJets.size()>=1 && passMET && passOS ) h_cutflow1b->Fill(3);
+   if(passLeptons && jets.size()>=2 && bJets.size()>=1                      ) h_cutflow1b->Fill(4);
+   if(passLeptons && jets.size()>=2 && bJets.size()>=1 && passMET           ) h_cutflow1b->Fill(5);
+   if(passLeptons && jets.size()>=2 && bJets.size()>=1 && passMET && passOS ) h_cutflow1b->Fill(6);
+   if(passLeptons && jets.size()>=3 && bJets.size()>=1                      ) h_cutflow1b->Fill(7);
+   if(passLeptons && jets.size()>=3 && bJets.size()>=1 && passMET           ) h_cutflow1b->Fill(8);
+   if(passLeptons && jets.size()>=3 && bJets.size()>=1 && passMET && passOS ) h_cutflow1b->Fill(9);
+   if(passLeptons && jets.size()>=4 && bJets.size()>=1                      ) h_cutflow1b->Fill(10);
+   if(passLeptons && jets.size()>=4 && bJets.size()>=1 && passMET           ) h_cutflow1b->Fill(11);
+   if(passLeptons && jets.size()>=4 && bJets.size()>=1 && passMET && passOS ) h_cutflow1b->Fill(12);
+   if(passLeptons && jets.size()>=5 && bJets.size()>=1                      ) h_cutflow1b->Fill(13);
+   if(passLeptons && jets.size()>=5 && bJets.size()>=1 && passMET           ) h_cutflow1b->Fill(14);
+   if(passLeptons && jets.size()>=5 && bJets.size()>=1 && passMET && passOS ) h_cutflow1b->Fill(15);
 }
 
 
@@ -207,6 +239,24 @@ GeneratorLevelAcceptanceAnalyzer::beginJob()
   h_cutflow->GetXaxis()->SetBinLabel(17,"2l5j     ");
   h_cutflow->GetXaxis()->SetBinLabel(18,"2l5jMET  ");
   h_cutflow->GetXaxis()->SetBinLabel(19,"2l5jMETOS");
+
+  h_cutflow1b = fs->make<TH1F>("cutflow1b", "cutflow1b"    ,16,0,16);
+  h_cutflow1b->GetXaxis()->SetBinLabel(1, "Generated  ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(2, "2l1j1b     ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(3, "2l1j1bMET  ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(4, "2l1j1bMETOS");
+  h_cutflow1b->GetXaxis()->SetBinLabel(5, "2l2j1b     ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(6, "2l2j1bMET  ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(7, "2l2j1bMETOS");
+  h_cutflow1b->GetXaxis()->SetBinLabel(8, "2l3j1b     ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(9, "2l3j1bMET  ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(10,"2l3j1bMETOS");
+  h_cutflow1b->GetXaxis()->SetBinLabel(11,"2l4j1b     ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(12,"2l4j1bMET  ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(13,"2l4j1bMETOS");
+  h_cutflow1b->GetXaxis()->SetBinLabel(14,"2l5j1b     ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(15,"2l5j1bMET  ");
+  h_cutflow1b->GetXaxis()->SetBinLabel(16,"2l5j1bMETOS");
 }
 
 
