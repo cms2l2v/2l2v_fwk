@@ -204,15 +204,43 @@ namespace utils
           return -1;
       }
    }
-
-    double ttbarReweight(double genTPt, double genTbarPt){
-      return ( (genTPt>400 || genTbarPt>400) ? 1.0 : sqrt( exp( 0.148-0.00129*genTPt + 0.148-0.00129*genTbarPt ) )         );
-      // dilepton values at 8 TeV (https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting#MC_SFs_Reweighting)
-    }
     
+    
+    void getSingleMuTrigEff(const double& pt, const double& abseta, double& muontriggerefficiency){
+      // Muon trigger/ID/Iso scale factors for efficiency are taken from https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffs                                                                                                                                           
+      if(abseta>=0. && abseta <0.9){ // ABCD
+	if(pt>=140. /*&& pt<500.*/) muontriggerefficiency=0.98041749810533507;
+	if(pt>=25.  && pt<30.)      muontriggerefficiency=0.98372524384334614;
+	if(pt>=30.  && pt<35.)      muontriggerefficiency=0.98406344315477012;
+	if(pt>=35.  && pt<40.)      muontriggerefficiency=0.98391658181685537;
+	if(pt>=40.  && pt<50.)      muontriggerefficiency=0.98345252700570363;
+	if(pt>=50.  && pt<60.)      muontriggerefficiency=0.98429177039157478;
+	if(pt>=60.  && pt<90.)      muontriggerefficiency=0.98467201842489449;
+	if(pt>=90.  && pt<140.)     muontriggerefficiency=0.98091711658069591;
+      }
+      if(abseta>=0.9 && abseta <1.2){ // ABCD
+	if(pt>=140. /*&& pt<500.*/) muontriggerefficiency=0.97127896196175556;
+	if(pt>=25.  && pt<30.)      muontriggerefficiency=0.96838127559931908;
+	if(pt>=30.  && pt<35.)      muontriggerefficiency=0.96538054889610103;
+	if(pt>=35.  && pt<40.)      muontriggerefficiency=0.96696514151670487;
+	if(pt>=40.  && pt<50.)      muontriggerefficiency=0.96667958160832501;
+	if(pt>=50.  && pt<60.)      muontriggerefficiency=0.96273957552501865;
+	if(pt>=60.  && pt<90.)      muontriggerefficiency=0.95952416834753307;
+	if(pt>=90.  && pt<140.)     muontriggerefficiency=0.96444182461126438;
+      }
+      if(abseta>=1.2 && abseta <2.1){ // ABCD
+	if(pt>=140. /*&& pt<500.*/) muontriggerefficiency=0.99416866829048334;
+	if(pt>=25.  && pt<30.)      muontriggerefficiency=1.0051991254438037;
+	if(pt>=30.  && pt<35.)      muontriggerefficiency=1.0013781590159485;
+	if(pt>=35.  && pt<40.)      muontriggerefficiency=0.99616640424792002;
+	if(pt>=40.  && pt<50.)      muontriggerefficiency=0.99425410141043047;
+	if(pt>=50.  && pt<60.)      muontriggerefficiency=0.99054467301217797;
+	if(pt>=60.  && pt<90.)      muontriggerefficiency=0.98829374192885855;
+	if(pt>=90.  && pt<140.)     muontriggerefficiency=0.98187598993908232;
+      }
+    }
+  
   }
-
-
   //
   std::string toLatexRounded(double value, double error, double systError,bool doPowers)
   {
