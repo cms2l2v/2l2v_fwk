@@ -371,56 +371,56 @@ int main(int argc, char* argv[])
 
       fwlite::Handle< llvvGenParticleCollection > genPartCollHandle;
       genPartCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!genPartCollHandle.isValid()){printf("llvvGenParticleCollection Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!genPartCollHandle.isValid()){printf("llvvGenParticleCollection Object NotFound\n");  continue;}
       llvvGenParticleCollection gen = *genPartCollHandle;
 
       fwlite::Handle< llvvLeptonCollection > leptonCollHandle;
       leptonCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!leptonCollHandle.isValid()){printf("llvvLeptonCollection Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!leptonCollHandle.isValid()){printf("llvvLeptonCollection Object NotFound\n"); continue;}
       llvvLeptonCollection leptons = *leptonCollHandle;
 
       fwlite::Handle< llvvElectronInfoCollection > electronInfoCollHandle;
       electronInfoCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!electronInfoCollHandle.isValid()){printf("llvvElectronInfoCollection Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!electronInfoCollHandle.isValid()){printf("llvvElectronInfoCollection Object NotFound\n");  continue;}
 
       fwlite::Handle< llvvMuonInfoCollection > muonInfoCollHandle;
       muonInfoCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!muonInfoCollHandle.isValid()){printf("llvvMuonInfoCollection Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!muonInfoCollHandle.isValid()){printf("llvvMuonInfoCollection Object NotFound\n");  continue;}
 
       fwlite::Handle< llvvTauCollection > tauCollHandle;
       tauCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!tauCollHandle.isValid()){printf("llvvLeptonCollection Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!tauCollHandle.isValid()){printf("llvvLeptonCollection Object NotFound\n");  continue;}
       llvvTauCollection taus = *tauCollHandle;
 
       fwlite::Handle< llvvJetCollection > jetCollHandle;
       jetCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
-      if(!jetCollHandle.isValid()){printf("llvvJetCollection Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!jetCollHandle.isValid()){printf("llvvJetCollection Object NotFound\n");  continue;}
       llvvJetExtCollection jets;
       for(unsigned int i=0;i<jetCollHandle->size();i++){jets.push_back(llvvJetExt((*jetCollHandle)[i]));}
 
       fwlite::Handle< llvvMet > metHandle;
       metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow"); 
-      if(!metHandle.isValid()){printf("llvvMet Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!metHandle.isValid()){printf("llvvMet Object NotFound\n");  continue;}
       llvvMet met = *metHandle;
 
       fwlite::Handle< std::vector<bool> > triggerBitsHandle;
       triggerBitsHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerBits");
-      if(!triggerBitsHandle.isValid()){printf("triggerBits Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!triggerBitsHandle.isValid()){printf("triggerBits Object NotFound\n");  continue;}
       std::vector<bool> triggerBits = *triggerBitsHandle;
 
       fwlite::Handle< std::vector<int> > triggerPrescalesHandle;
       triggerPrescalesHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerPrescales");
-      if(!triggerPrescalesHandle.isValid()){printf("triggerPrescales Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!triggerPrescalesHandle.isValid()){printf("triggerPrescales Object NotFound\n");  continue;}
       std::vector<int> triggerPrescales = *triggerPrescalesHandle;
 
       fwlite::Handle< double > rhoHandle;
       rhoHandle.getByLabel(ev, "kt6PFJets", "rho");
-      if(!rhoHandle.isValid()){printf("rho Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!rhoHandle.isValid()){printf("rho Object NotFound\n");  continue;}
       double rho = *rhoHandle;
 
       fwlite::Handle< double > rho25Handle;
       rho25Handle.getByLabel(ev, "kt6PFJetsCentral", "rho");
-      if(!rho25Handle.isValid()){printf("rho25 Object NotFound\n"); mon1.fillHisto("failreason",failTags,1,1); continue;}
+      if(!rho25Handle.isValid()){printf("rho25 Object NotFound\n");  continue;}
       double rho25 = *rho25Handle;
 
 
@@ -562,6 +562,7 @@ int main(int argc, char* argv[])
       //prepare the tag's vectors for histo filling
       bool isDileptonCandidate = false; 
       std::vector<TString> chTags;
+      chTags.push_back("all");
       if( abs(dilId)==121 && eeTrigger  ){ chTags.push_back("ee"); isDileptonCandidate=true; }
       if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mm"); isDileptonCandidate=true; }
       if( !isDileptonCandidate           ) chTags.push_back("ct");
@@ -925,25 +926,25 @@ int main(int argc, char* argv[])
                mon.fillHisto("eventflow",   chTags,                 8+HiggsShortId, weight);
 
 
-               mon.fillHisto("higgspt"      , chTags, higgsCand.pt(),    weight);
-               mon.fillHisto("higgsmass"    , chTags, higgsCand.mass(),  weight);
-               //mon.fillHisto("higgsmasssvfit", chTags, diTauMass,  weight);
-               mon.fillHisto("higgsnjets"   , chTags, NCleanedJet      , weight); 
-               mon.fillHisto("higgsmet"     , chTags, met.pt()         , weight);
+               mon.fillHisto("higgspt"       , chTags, higgsCand.pt(),    weight);
+               mon.fillHisto("higgsmass"     , chTags, higgsCand.mass(),  weight);
+               mon.fillHisto("higgsmasssvfit", chTags, diTauMass,         weight);
+               mon.fillHisto("higgsnjets"    , chTags, NCleanedJet      , weight); 
+               mon.fillHisto("higgsmet"      , chTags, met.pt()         , weight);
 
                if(examineThisEvent) cout << "event passed the selection" << endl;
                fprintf(outTxtEvents, "%d %d %d\n",ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().run(),ev.eventAuxiliary().event());
 
                //SYSTEMATIC STUDY
-               /*
+               
                for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
                   float iweight = weight;                                                //nominal
                   if(ivar==5)                        iweight *= TotalWeight_plus;        //pu up
                   if(ivar==6)                        iweight *= TotalWeight_minus;       //pu down
-                  if(ivar==7)                        iweight *= Q2Weight_plus;
-                  if(ivar==8)                        iweight *= Q2Weight_down;
-                  if(ivar==9)                        iweight *= PDFWeight_plus;
-                  if(ivar==10)                       iweight *= PDFWeight_down;
+//                  if(ivar==7)                        iweight *= Q2Weight_plus;
+//                  if(ivar==8)                        iweight *= Q2Weight_down;
+//                  if(ivar==9)                        iweight *= PDFWeight_plus;
+//                  if(ivar==10)                       iweight *= PDFWeight_down;
 
                   //re-assign the event category;
                   std::vector<TString> locTags = chTags;
@@ -966,9 +967,9 @@ int main(int argc, char* argv[])
                      //		    TString mjjCat("");
                      //		    std::vector<TString> localSelTags=getDijetCategories(mjj,detajj,locTags,mjjCat);
                      std::vector<TString> localSelTags=locTags;
-                     //if(passSumPt && passIso)mon.fillHisto(TString("svfit_shapes")+varNames[ivar],localSelTags,index,diTauMass,iweight);		    
+                     if(passSumPt && passIso)mon.fillHisto(TString("svfit_shapes")+varNames[ivar],localSelTags,index,diTauMass,iweight);		    
                   }
-               }*/
+               }
 
                }else{mon.fillHisto("failreason",chTags,11,weight);      } //BJETVETO 
                }else{mon.fillHisto("failreason",chTags,10,weight);      } //LEPVETO
