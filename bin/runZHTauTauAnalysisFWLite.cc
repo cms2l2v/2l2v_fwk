@@ -135,14 +135,13 @@ int main(int argc, char* argv[])
   //##############################################
   SmartSelectionMonitor mon;
   TH1 *h=mon.addHistogram( new TH1F ("eventflow", ";;Events", 20,0,20) );
-  h->GetXaxis()->SetBinLabel(1,"");
-  h->GetXaxis()->SetBinLabel(2,"Nlep#geq2");
-  h->GetXaxis()->SetBinLabel(3,"Zmass");
-  h->GetXaxis()->SetBinLabel(4,"Zkin");
-  h->GetXaxis()->SetBinLabel(5,"Nlep+Ntau#geq4"); 
-  h->GetXaxis()->SetBinLabel(6,"Higgs Cand");
-  h->GetXaxis()->SetBinLabel(7,"Lep Veto");
-  h->GetXaxis()->SetBinLabel(8,"Btag Veto");
+  h->GetXaxis()->SetBinLabel(1,"Nlep#geq2");
+  h->GetXaxis()->SetBinLabel(2,"Zmass");
+  h->GetXaxis()->SetBinLabel(3,"Zkin");
+  h->GetXaxis()->SetBinLabel(4,"Nlep+Ntau#geq4"); 
+  h->GetXaxis()->SetBinLabel(5,"Higgs Cand");
+  h->GetXaxis()->SetBinLabel(6,"Lep Veto");
+  h->GetXaxis()->SetBinLabel(7,"Btag Veto");
   h->GetXaxis()->SetBinLabel(9,"mm_em");
   h->GetXaxis()->SetBinLabel(10,"mm_et");
   h->GetXaxis()->SetBinLabel(11,"mm_mt");
@@ -214,10 +213,10 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zmass",   ";M^{ll};Events", 60,60,120) );
 
   //higgs control
-  mon.addHistogram( new TH1F( "higgspt",      ";p_{T}^{#higgs} [GeV];Events",100,0,100));
-  mon.addHistogram( new TH1F( "higgsmass",    ";M^{#higgs} [GeV];Events",300,0,300));
-  mon.addHistogram( new TH1F( "higgsmasssvfit",    ";M^{#higgs} [GeV];Events",300,0,300));
-  mon.addHistogram( new TH1F( "higgsmet",    ";MET [GeV];Events",100,0,200));
+  mon.addHistogram( new TH1F( "higgspt",      ";p_{T}^{#higgs} [GeV];Events",25,0,100));
+  mon.addHistogram( new TH1F( "higgsmass",    ";M^{#higgs} [GeV];Events",25,0,300));
+  mon.addHistogram( new TH1F( "higgsmasssvfit",    ";M^{#higgs} [GeV];Events",25,0,300));
+  mon.addHistogram( new TH1F( "higgsmet",    ";MET [GeV];Events",20,0,200));
   mon.addHistogram( new TH1F( "higgsnjets",   ";NJets;Events",10,-0.5,9.5));
 
   //statistical analysis
@@ -564,7 +563,7 @@ int main(int argc, char* argv[])
       std::vector<TString> chTags;
       chTags.push_back("all");
       if( abs(dilId)==121 && eeTrigger  ){ chTags.push_back("ee"); isDileptonCandidate=true; }
-      if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mm"); isDileptonCandidate=true; }
+      if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); isDileptonCandidate=true; }
       if( !isDileptonCandidate           ) chTags.push_back("ct");
 
       //generator level
@@ -849,9 +848,13 @@ int main(int argc, char* argv[])
       if(examineThisEvent) cout << "B-tag veto passed!" << endl;
 
 
+      bool passZpt = (zll.pt()>20);
+      bool passZeta = true;//(fabs(zll.eta())<1.4442);
+
+
       //SVFIT MASS
       double diTauMass = -1;
-      if(passHiggs && passLepVeto && passBJetVeto){
+      if(passZpt && passZeta && passHiggs && passLepVeto && passBJetVeto){
             //taken from https://twiki.cern.ch/twiki/bin/view/CMS/HiggsToTauTauWorkingSummer2013
             TMatrixD covMET(2, 2); // PFMET significance matrix
             covMET[0][0] = met.sigx2;
@@ -877,16 +880,13 @@ int main(int argc, char* argv[])
       // NOW FOR THE CONTROL PLOTS
       //
 
-      bool passZpt = (zll.pt()>50);
-      bool passZeta = (fabs(zll.eta())<1.4442);
 
-      mon.fillHisto("eventflow"         ,   chTags,                 0, weight);
-      mon.fillHisto("nlep"              ,   chTags, selLeptons.size(), weight);
       if(selLeptons.size()>=2){
-         mon.fillHisto("eventflow"      ,   chTags,                 1, weight);
+         mon.fillHisto("nlep"           ,   chTags, selLeptons.size(), weight);
+         mon.fillHisto("eventflow"      ,   chTags,                 0, weight);
          mon.fillHisto("zmass"          ,   chTags,        zll.mass(), weight);  
          if(passZmass){
-            mon.fillHisto("eventflow"   ,   chTags,                 2, weight);
+            mon.fillHisto("eventflow"   ,   chTags,                 1, weight);
 
             //pu control
             mon.fillHisto("nvtx"        ,   chTags, nvtx,      weight);
@@ -906,23 +906,23 @@ int main(int argc, char* argv[])
             mon.fillHisto("zy"          ,   chTags, zll.Rapidity(),weight);
 
             if(passZpt && passZeta){
-               mon.fillHisto("eventflow",   chTags,                 3, weight);
+               mon.fillHisto("eventflow",   chTags,                 2, weight);
 
                mon.fillHisto("ntaus"        ,  chTags, selTaus.size(), weight);
                mon.fillHisto("tauleadpt"    ,  chTags, selTaus.size()>0?selTaus[0].pt():-1,  weight);
                mon.fillHisto("tauleadeta"   ,  chTags, selTaus.size()>0?selTaus[0].eta():-10, weight);
 
                if(selLeptons.size()+selTaus.size()>=4){
-               mon.fillHisto("eventflow",   chTags,                 4, weight);
+               mon.fillHisto("eventflow",   chTags,                 3, weight);
 
                if(passHiggs){
-               mon.fillHisto("eventflow",   chTags,                 5, weight);
+               mon.fillHisto("eventflow",   chTags,                 4, weight);
 
                if(passLepVeto){
-               mon.fillHisto("eventflow",   chTags,                 6, weight);
+               mon.fillHisto("eventflow",   chTags,                 5, weight);
 
                if(passBJetVeto){
-               mon.fillHisto("eventflow",   chTags,                 7, weight);
+               mon.fillHisto("eventflow",   chTags,                 6, weight);
                mon.fillHisto("eventflow",   chTags,                 8+HiggsShortId, weight);
 
 
