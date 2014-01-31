@@ -142,6 +142,7 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(5,"Higgs Cand");
   h->GetXaxis()->SetBinLabel(6,"Lep Veto");
   h->GetXaxis()->SetBinLabel(7,"Btag Veto");
+  h->GetXaxis()->SetBinLabel(8," ");
   h->GetXaxis()->SetBinLabel(9,"mm_em");
   h->GetXaxis()->SetBinLabel(10,"mm_et");
   h->GetXaxis()->SetBinLabel(11,"mm_mt");
