@@ -10,18 +10,18 @@ sys.path.append('../../../scripts/')
 import LaunchOnCondor
 
 #default values
-shapeName='svfit_shapes '
+shapeName='svfit_shapes'
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/plotter.root'
 CWD=os.getcwd()
 phase=-1
-jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/data/zhtautau_samples.json'
+jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/jsonForLucia.json'
 CMSSW_BASE=os.environ.get('CMSSW_BASE')
 
 
-MASS = [110, 115, 120, 125, 130, 135, 140]
-SUBMASS = [110, 115, 120, 125, 130, 135, 140]
+MASS = [125]
+SUBMASS = [125]
 
-LandSArgCommonOptions=" --index 1 "
+LandSArgCommonOptions=" --index 1 --channels ee,mm"
 signalSuffixVec = []
 OUTName         = []
 LandSArgOptions = []
@@ -140,7 +140,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('WZ/optim_cut') 
+   cutsH = file.Get('VV/optim_cut') 
 
    ######################################################################
 

@@ -96,9 +96,12 @@ int main(int argc, char* argv[])
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
   bool isSignal(isMC && (url.Contains("VBFNLO") || url.Contains("lljj")) );
 
+  bool examineThisEvent=false;
+
+
   TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
   FILE* outTxtFile = NULL;
-  if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
+  if(!isMC || examineThisEvent)outTxtFile = fopen(outTxtUrl.Data(), "w");
   printf("TextFile URL = %s\n",outTxtUrl.Data());
 
   
@@ -312,14 +315,6 @@ int main(int argc, char* argv[])
   }
 
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-
-
-
-  //TString outFileUrl(gSystem->BaseName(url)+"_events");
-  //TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
-  FILE* outTxtEvents = NULL;
-  outTxtEvents = fopen(outTxtUrl.Data(), "w");
-  bool examineThisEvent=false;
 
 
   //##############################################
@@ -934,7 +929,7 @@ int main(int argc, char* argv[])
                mon.fillHisto("higgsmet"      , chTags, met.pt()         , weight);
 
                if(examineThisEvent) cout << "event passed the selection" << endl;
-               fprintf(outTxtEvents, "%d %d %d\n",ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().run(),ev.eventAuxiliary().event());
+               if(outTxtFile)fprintf(outTxtFile, "%6i %6i %10i  -  %30s  -  w=%6.2f\n",ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event(), chTags[chTags.size()-1].Data(), weight);
 
                //SYSTEMATIC STUDY
                
@@ -1003,7 +998,6 @@ int main(int argc, char* argv[])
   summaryTuple->Write();
   ofile->Close();
   if(outTxtFile)fclose(outTxtFile);
-  fclose(outTxtEvents);
 }  
 
 
