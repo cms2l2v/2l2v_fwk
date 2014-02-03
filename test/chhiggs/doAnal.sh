@@ -19,11 +19,8 @@ elif [ "${1}" = "fwlite" ]; then
 	echo "Not ready yet" 
     elif [ "${2}" = "anal_sm" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/all-samples_fwlite.json -o ${BASEDIR} -d  /store/group/phys_higgs/cmshzz2l2v/2013_08_30/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
-
     elif [ "${2}" = "plots" ]; then
-#	runPlotterFWLite --iEcm 8 --iLumi 22000 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc --noLog
 	runPlotterFWLite --iEcm 8 --iLumi 19782 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc
-		#runPlotterFWLite --iEcm 8 --iLumi 20090 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc
    elif [ "${2}" = "display" ]; then	
 	cp ${BASEDIR}/plots/ee_* ~/www/newAnal/ee/
 	cp ${BASEDIR}/plots/emu_* ~/www/newAnal/emu/
@@ -39,6 +36,13 @@ elif [ "${1}" = "fwlite" ]; then
 	rm ~/www/newAnal/emu/*tex
 	rm ~/www/newAnal/mumu/*tex
 	rm ~/www/newAnal/singlemu/*tex
+   elif [ "${2}" = "cleanArea" ]; then	
+	rm ${BASEDIR}/plots/*
+	rm -r ${BASEDIR}/FARM
+	rm -r ${BASEDIR}/*py
+	rm -r ${BASEDIR}/*txt
+	rm -r ${BASEDIR}/*root
+
     fi
 elif [ "${1}" = "current" ]; then
 # Fixed run 

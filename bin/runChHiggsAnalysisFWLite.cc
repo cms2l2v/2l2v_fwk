@@ -611,7 +611,7 @@ int main(int argc, char* argv[])
 	    passSingleLepKin(true),passSingleLepId(true),passSingleLepIso(true);
 
 	  int lid(leptons[ilep].id);
-	  if(isSingleMuPD && abs(lid)==11) continue; // FIXME: raw veto
+	  //if(isSingleMuPD && abs(lid)==11) continue; // FIXME: raw veto
 	  
 	  //apply muon corrections
 	  if(abs(lid)==13 && muCor){
@@ -693,7 +693,7 @@ int main(int argc, char* argv[])
 	  {
 	    if(leptons[ilep] == leadingSingleLep) continue; // Don't veto on the main lepton
 	    int lid(abs(leptons[ilep].id));
-    	    if(isSingleMuPD && abs(lid)==11){ nVetoE++; continue;} // FIXME: temp Raw veto
+	    //    	    if(isSingleMuPD && abs(lid)==11){ nVetoE++; continue;} // FIXME: temp Raw veto
 
 	    bool passKin(true),passId(true),passIso(true);	    
 	    // Muon correction already applied in the first loop. LoL.
@@ -773,6 +773,9 @@ int main(int argc, char* argv[])
       // Dilepton full analysis
       // ----------------------
       if(chTags[1] == "ee" || chTags[1] == "emu" || chTags[1] == "mumu" /*|| chTags[0] == "ll" */ ){
+
+	// FIXME temporary for running fast on singlemu only. Must add command line switch 
+	continue;
 
 	if(selLeptons.size()<2) continue; // 2 leptons
 	
@@ -1108,6 +1111,9 @@ int main(int argc, char* argv[])
 	  TotalWeight_minus = singleLepPuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (singleLepPUNorm[1]/singleLepPUNorm[0]);
 	}
 	
+	// 
+
+
 	weight *= isMC ? lepEff.getLeptonEfficiency( selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), abs(selSingleLepLeptons[0].id),  abs(selSingleLepLeptons[0].id) ==11 ? "loose" : "tight" ).first : 1.0;
 
 	// Top Pt reweighting
@@ -1142,7 +1148,9 @@ int main(int argc, char* argv[])
 	    wgtTopPtDown /= wgtTopPt;
 	  }
 
-	weight *= wgtTopPt; //*singlelscaleFactor
+	double muontrigeff(1.); 
+	utils::cmssw::getSingleMuTrigEff(selSingleLepLeptons[0].pt(), abs(selSingleLepLeptons[0].eta()),muontrigeff);
+	weight *= wgtTopPt*muontrigeff;
 	// FIXME: add top pt weight syst
 
 
