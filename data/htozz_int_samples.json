@@ -1,0 +1,56 @@
+{
+    "proc":[
+	{
+	"tag":"ggH(125)#rightarrow ZZ (OS)",
+	"isdata":false,
+	"color":"803",
+	"lwidth":2,
+	"fill":0,
+	"marker":1,
+        "mctruthmode":521,
+	"spimpose":true,
+	"data":[
+		{ "dtag":"MC8TeV_GGtoH125toZZto2L2Nu_gg2vv", "xsec":0.1, "aoddir":["/store/cmst3/user/psilva/gg2VV/virtualScale/AODSIM/nominal"] }
+	   ]
+	},
+	{
+	"tag":"ggH(125)#rightarrow ZZ",
+	"isdata":false,
+	"color":"803",
+	"lwidth":2,
+	"fill":0,
+	"marker":1,
+        "mctruthmode":125,
+	"spimpose":true,
+	"data":[
+		{ "dtag":"MC8TeV_GGtoH125toZZto2L2Nu_gg2vv", "xsec":0.1, "aoddir":["/store/cmst3/user/psilva/gg2VV/virtualScale/AODSIM/nominal"] }
+	   ]
+	},
+	{
+	"tag":"ggH(125)#rightarrow ZZ (2Q)^{2}",
+	"isdata":false,
+	"color":"803",
+	"lwidth":2,
+	"fill":0,
+	"marker":1,
+        "mctruthmode":125,
+	"spimpose":true,
+	"data":[
+		{ "dtag":"MC8TeV_GGtoH125toZZto2L2Nu_gg2vvScaleUp", "xsec":0.1, "aoddir":["/store/cmst3/user/psilva/gg2VV/virtualScale/AODSIM/scaleUp"] }
+	   ]
+	},
+	{
+	"tag":"ggH(125)#rightarrow ZZ (Q/2)^{2}",
+	"isdata":false,
+	"color":"803",
+	"lwidth":2,
+	"fill":0,
+	"marker":1,
+        "mctruthmode":125,
+	"spimpose":true,
+	"data":[
+		{ "dtag":"MC8TeV_GGtoH125toZZto2L2Nu_gg2vvScaleDown", "xsec":0.1, "aoddir":["/store/cmst3/user/psilva/gg2VV/virtualScale/AODSIM/scaleDown"] }
+	   ]
+	}
+    ]	
+}

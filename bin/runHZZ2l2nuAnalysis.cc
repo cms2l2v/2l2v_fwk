@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
   bool isMC       = runProcess.getParameter<bool>("isMC");
   int mctruthmode = runProcess.getParameter<int>("mctruthmode");
 
+
   TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
   TString url=TString(urls[0]);
@@ -85,6 +86,8 @@ int main(int argc, char* argv[])
   bool isZGmc(isMC && url.Contains("ZG"));
   bool isMC_GG  = isMC && ( string(url.Data()).find("GG" )  != string::npos);
   bool isMC_VBF = isMC && ( string(url.Data()).find("VBF")  != string::npos);
+  bool isMC_125OnShell = isMC && (mctruthmode==521);
+  if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(url.Data()).find("MC8TeV_ZZ")  != string::npos);
   bool isMC_WZ  = isMC && ( string(url.Data()).find("MC8TeV_WZ")  != string::npos);
 
@@ -144,11 +147,22 @@ int main(int argc, char* argv[])
   std::vector<std::pair<double, double> > NRparams;
   NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
   if(mctruthmode==125){
-    NRparams.push_back(std::make_pair<double,double>(1, 0));
     NRparams.push_back(std::make_pair<double,double>(5, 0));
+    NRparams.push_back(std::make_pair<double,double>(8, 0));
     NRparams.push_back(std::make_pair<double,double>(10,0));
+    NRparams.push_back(std::make_pair<double,double>(11,0));
+    NRparams.push_back(std::make_pair<double,double>(12,0));
+    NRparams.push_back(std::make_pair<double,double>(13,0));
+    NRparams.push_back(std::make_pair<double,double>(14,0));
     NRparams.push_back(std::make_pair<double,double>(15,0));
+    NRparams.push_back(std::make_pair<double,double>(16,0));
+    NRparams.push_back(std::make_pair<double,double>(17,0));
+    NRparams.push_back(std::make_pair<double,double>(18,0));
+    NRparams.push_back(std::make_pair<double,double>(19,0));
+    NRparams.push_back(std::make_pair<double,double>(20,0));
+    NRparams.push_back(std::make_pair<double,double>(22,0));
     NRparams.push_back(std::make_pair<double,double>(25,0));
+    NRparams.push_back(std::make_pair<double,double>(30,0));
   }
  else if(suffix==""){ //consider the other points only when no suffix is being used
     NRparams.push_back(std::make_pair<double,double>(0.1, 0) );
@@ -265,7 +279,6 @@ int main(int argc, char* argv[])
 		if(yMirror>10) yMirror=10;
 		cpspint_upGr->SetPoint(ip,x,yMirror);
 	      }
-	      
 	    }
 	  
 	  //loop over possible scenarios: SM or BSM
@@ -275,6 +288,7 @@ int main(int argc, char* argv[])
 	      TGraph *shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
 	      TGraph *shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
 	      TGraph *shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
+	      Float_t hySum(0);
 	      for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++)
 		{
 		  Double_t hmass    = hGen->GetBinCenter(ip);
@@ -298,10 +312,13 @@ int main(int argc, char* argv[])
 		  }
 		  else
 		    {
+		      Double_t cpsWgt=cpsGr->Eval(hmass);
 		      Double_t nrWgt = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
-		      shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
-		      shapeWgtUp     = shapeWgt;
-		      shapeWgtDown   = shapeWgt;
+		      shapeWgt       = cpsWgt * nrWgt;
+		      Double_t nrWgtUp = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");
+		      shapeWgtUp     = cpsWgt * nrWgtUp;
+		      Double_t nrWgtDown = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down");
+		      shapeWgtDown   = cpsWgt *nrWgtDown;
 		    }
 		  
 		  shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
@@ -309,7 +326,14 @@ int main(int argc, char* argv[])
 		  shapeWgts_downGr->SetPoint(shapeWgts_downGr->GetN(), hmass, shapeWgtDown);   shapeDownNorm += shapeWgtDown*hy;
 		}
 	      
-	      if(mctruthmode!=125){
+	      if(mctruthmode!=125)
+	      {
+		cout << "C'=" << NRparams[nri].first << " " << hySum << " " << shapeNorm << endl;
+		if(hySum>0){
+		  shapeNorm     /= hySum;
+		  shapeUpNorm   /= hySum;
+		  shapeDownNorm /= hySum;
+		}
 		//fix possible normalization issues
 		cout << "C'=" << NRparams[nri].first << " BRnew=" << NRparams[nri].second << " shape wgts will be re-scaled to preserve unitarity with: "
 		     << " nominal=" << shapeNorm
@@ -671,8 +695,11 @@ int main(int argc, char* argv[])
 	  if(abs(gen[igen].get("id"))>=11 && abs(gen[igen].get("id"))<=16) totLeptons += gen[igen];
 	  if(gen[igen].get("id")==25)                                      higgs=gen[igen];
 	}
-	if(mctruthmode==125) higgs=totLeptons;
-
+	if(mctruthmode==125) {
+	  higgs=totLeptons;
+	  if(isMC_125OnShell && higgs.mass()>180) continue;
+	  if(!isMC_125OnShell && higgs.mass()<=180) continue;
+	}
 	float shapeWeight(1.0);
         if((isMC_VBF || isMC_GG) && higgs.pt()>0){
 	  {

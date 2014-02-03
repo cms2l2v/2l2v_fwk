@@ -114,7 +114,7 @@ namespace higgs{
     }
 
     //    
-    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile){
+    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile,TString pf){
       if((Cprime<0 || BRnew<0) || (Cprime==0 && BRnew==0)) return 1.0;
 
 
@@ -122,8 +122,8 @@ namespace higgs{
       if(nrLineShapesFile)
 	{
 	  char nrShapeBuf[100];
-	  sprintf(nrShapeBuf,"NR_%04d_%02d_%02d",int(m_gen),int(Cprime*10),int(BRnew*10));
-	  TGraphErrors *nrGr=(TGraphErrors *)nrLineShapesFile->Get(nrShapeBuf);
+	  sprintf(nrShapeBuf,"NR_%04d_%02d_%02d_weights%s",int(m_gen),int(Cprime*10),int(BRnew*10),pf.Data());
+	  TGraph *nrGr=(TGraph *)nrLineShapesFile->Get(nrShapeBuf);
 	  if(nrGr){
 	    float weight=nrGr->Eval(mass);
 	    if(weight<0) weight=0;

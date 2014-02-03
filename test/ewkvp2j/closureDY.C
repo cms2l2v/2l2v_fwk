@@ -38,9 +38,9 @@ void runFinalHZZClosure()
 {
   systForClosure.clear();
 
-  //dilCh="ll";
+  dilCh="ll";
   //dilCh="ee";
-  dilCh="mumu";
+  //dilCh="mumu";
 
 
   //open the files with the input plots
@@ -50,8 +50,8 @@ void runFinalHZZClosure()
   TString gfile="~/work/hzz_5311/plotter_dy_closure_g_qt_pure.root";
   TFile *gInF=TFile::Open(gfile);
 
-  TString distr[]={"met","mt","mtNM1","axialmet","mindphijmet","mindphijmetNM1","balance"};
-  TString cat[]={"eq0jets","geq1jets","vbf"};
+  TString distr[]={"met","mindphijmet"}; //"mt","mtNM1","axialmet","mindphijmet","mindphijmetNM1","balance"};
+  TString cat[]={"","eq0jets","geq1jets","vbf"};
   const size_t ncat=sizeof(cat)/sizeof(TString);
   for(size_t icat=0; icat<ncat; icat++)
     {
@@ -498,6 +498,7 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   if(cat.Contains("highmjj")) mjjCat="M_{jj}>1250";
   if(cat.Contains("highhardpt")) mjjCat="Hard p_{T}>50";
   if(cat.Contains("lowhardpt")) mjjCat="Hard p_{T}<50";
+  if(cat=="") { mjjCat="inclusive"; }
   if(cat.Contains("eq0jets"))  {mjjCat="=0 jets"; setLogY=true;}
   if(cat.Contains("geq1jets")) {mjjCat="#geq1 jets"; setLogY=true;}
   if(cat.Contains("vbf"))      {mjjCat="VBF"; setLogY=true;}

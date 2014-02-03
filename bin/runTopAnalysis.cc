@@ -72,6 +72,7 @@ int main(int argc, char* argv[])
   double xsec         = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
   bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_") || url.Contains("TT2l_R")));
+  bool isRunDependentMC(isMC && (url.Contains("RD")) );
   TString out          = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
@@ -160,8 +161,14 @@ int main(int argc, char* argv[])
   }
   while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
   while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
+			   
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-  edm::LumiReWeighting *LumiWeights= isMC ? new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution): 0;
+  edm::LumiReWeighting *LumiWeights=0;
+  if(isMC)
+    {
+      if(isRunDependentMC) cout << "[Warning] identified run-dependent simulation: no pileup weights will be applied" << endl;
+      else                 LumiWeights = new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution);
+    }
   utils::cmssw::PuShifter_t PuShifters;
   if(isMC) PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
   

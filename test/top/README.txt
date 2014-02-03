@@ -2,6 +2,10 @@
 TOP
 ###
 
+### l+jets
+runLocalAnalysisOverSamples.py -e runLjetsAnalysis -j data/top_lj_samples.json  -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/lj/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='data/weights/'" -s 8nh
+runPlotter --iLumi 19701 --inDir ~/work/top_5311/lj/  --json data/top_lj_samples.json      --outFile ~/work/top_5311/plotter_lj.root    --noLogy --showUnc
+
 ### run base
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_samples.json      -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/nom/  -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='data/weights/'" -s 8nh
 runLocalAnalysisOverSamples.py -e runTopAnalysis -j data/top_syst_samples.json -d /store/cmst3/user/psilva/5311_ntuples -o ~/work/top_5311/syst/ -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='data/weights/'"  -s 8nh

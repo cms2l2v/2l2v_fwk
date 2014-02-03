@@ -7,7 +7,7 @@
       "color":804,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_llvvjj"                           , "split":1, "xsec":0.002258    , "br":100                     , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/llvvjj_8TeV/AODSIM" ]        }
+        { "dtag":"MC8TeV_llvvjj"                           , "split":1, "xsec":0.002258    , "br":[1.0]                    , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/llvvjj_8TeV/AODSIM" ]        }
       ]
     },
     {
@@ -27,7 +27,7 @@
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_WW"                               , "split":2, "xsec":57.1097     , "br":[ 0.104976 ]            , "dset":"/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WW"                               , "split":2, "xsec":5.995    , "br":[ 1.0 ]            , "dset":"/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -47,7 +47,7 @@
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_WZ"                               , "split":2, "xsec":1.057       , "br":[ 1.0 ]                 , "dset":"/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WZ"                               , "split":2, "xsec":0.73       , "br":[ 1.0 ]                 , "dset":"/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {

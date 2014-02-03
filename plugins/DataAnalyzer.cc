@@ -433,7 +433,9 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       bool isLoose( isPF && (isGlobal || isTracker) );
 //      if(!isLoose) continue;
       if(muon->pt()<3 || fabs(muon->eta())>2.5) continue;
-      
+
+      try{
+
       //store information
       ev.ln_id[ev.ln]                         = -13*muon->charge();
       ev.ln_pid[ev.ln]                        = ev.mn;
@@ -518,6 +520,11 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.mn++;
       if(muon->pt()> 8) nMuons8++;
       if(muon->pt()>17) nMuons17++;
+
+      }catch(std::exception &e){
+	cout << "@muon selection "<< e.what() << endl;
+	continue;
+      }
     }
   
   for(size_t iele=0; iele< eH->size(); ++iele)
@@ -526,6 +533,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       const pat::Electron *ele        = dynamic_cast<const pat::Electron *>( elePtr.get() );
       const reco::Candidate *genLep   = ele->genLepton();
       const reco::GsfElectron *gsfEle = dynamic_cast<const reco::GsfElectron *>(ele);
+
+      try{
 
       //pre-selection
       if(ele->gsfTrack().isNull() || ele->superCluster().isNull() || gsfEle==0) continue;
@@ -562,6 +571,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.ln_trkPtErr[ev.ln]                   = fabs(ele->gsfTrack()->ptError()/ele->gsfTrack()->pt());
       ev.ln_d0[ev.ln]                         = fabs(ele->gsfTrack()->dxy(primVtx->position()));
       ev.ln_dZ[ev.ln]                         = fabs(ele->gsfTrack()->dz(primVtx->position()));
+
       std::pair<bool,Measurement1D> ip3dRes = utils::cmssw::getImpactParameter<reco::GsfTrackRef>(ele->gsfTrack(), primVtx, iSetup, true);
       ev.ln_ip3d[ev.ln]                       = ip3dRes.second.value();
       ev.ln_ip3dsig[ev.ln]                    = ip3dRes.second.significance();
@@ -651,6 +661,12 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.egn++;
       if(ele->pt()> 8) nElecs8++;
       if(ele->pt()>17) nElecs17++;
+
+      }catch(std::exception &e){
+	cout << "@electron selection "<< e.what() << endl;
+	continue;
+      }
+
     }
 
   //
@@ -668,6 +684,10 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	const reco::Photon *pho = dynamic_cast<const reco::Photon *>( photonH->ptrAt(ipho).get() );
 	if(pho==0) continue;
 	if(pho->pt()<20 || !(pho->isEB() || pho->isEE())) continue;
+
+	try{
+
+
 	bool matchesElectron(ConversionTools::hasMatchedPromptElectron(pho->superCluster(), gsfEleH, convH, beamSpotH->position()));
 	bool matchesMuon(false);
 	for(int ilep=0; ilep<ev.ln; ilep++)
@@ -731,9 +751,14 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	  }
 
 	ev.gn_idbits[ev.gn]    = (isLoose << 0) | (isMedium << 1 ) | (isTight << 2);
+	
 	ev.gn++;
 	ev.egn++;
 	if(isLoose && pho->isEB() && ev.egn_r9[ev.egn]>0.9 && pho->pt()>20) nPhotons++;
+
+	}catch(std::exception &e){
+	  cout << "@photon selection "<< e.what() << endl;
+	}
       }
 
   //now check if at least one trigger condition is fullfilled
@@ -787,6 +812,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       const pat::Jet *jet              = &((*jetH)[ijet]);
       const reco::Candidate *genParton = jet->genParton();
       const reco::GenJet *genJet       = jet->genJet();
+
+      try{
 
       //pre-selection (note: raw jet energy must be used otherwise you'll have large inefficiencies for |eta|>3!!!!)
       float rawJetEn( jet->correctedJet("Uncorrected").energy() );
@@ -939,6 +966,10 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	| ( ( uint(cutBasedPuIdentifier.idFlag()) & 0xf ) << 7 );
 
       ev.jn++;
+
+      }catch(std::exception &e){
+	cout << "@jet selection "<< e.what() << endl;
+      }
     }
    // additional gen jets :
    if ( !isData && keepFullGenInfo_ ){
