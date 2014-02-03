@@ -38,7 +38,7 @@ namespace higgs{
     };
 
     //reweight the resonance
-    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile=0);
+    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile=0,TString pf="");
 
     //reweight to H125 interference
     double weightToH125Interference(double mass,double width,TFile *intFile,TString var); 

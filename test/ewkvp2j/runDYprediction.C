@@ -346,8 +346,8 @@ void runDYprediction(TString llFile,TString gammaFile,TString looseGammaFile,TSt
     dilprocs.push_back("Z#rightarrow ll");         dilColors.push_back(831);
     dilprocs.push_back("data");                    dilColors.push_back(1);
 
-    dilSignal.push_back("ggH(600)#rightarrow ZZ");
-    dilSignal.push_back("qqH(600)#rightarrow ZZ");
+    //dilSignal.push_back("ggH(600)#rightarrow ZZ");
+    //dilSignal.push_back("qqH(600)#rightarrow ZZ");
   }
 
   //
@@ -726,7 +726,8 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
   else if(pname.Contains("eq0jets"))     { mjjCen=0;              mjjCat="=0 jets"; }
   else if(pname.Contains("geq1jets"))    { mjjCen=0;              mjjCat="#geq1 jets"; }
   else if(pname.Contains("vbf"))         { mjjCen=0;              mjjCat="VBF"; }
-  else                                   { mjjCen=0;              mjjCat+="inclusive M_{jj}"; }
+  else if(anMode==DISCOVERY)             { mjjCen=0;              mjjCat+="inclusive M_{jj}"; }
+  else                                   { mjjCen=0;              mjjCat+="inclusive";        }
 
   bool is2D(shape.data->InheritsFrom("TH2"));
   if(is2D)  cout << "2D will only be profiled: " << shape.data->GetName() << endl;
@@ -833,7 +834,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
   //instrBckg->Scale(sfmcdy);
   stack->Add(instrBckg,"HIST");
   leg->AddEntry(instrBckg,instrBckg->GetTitle(),"F");
-  cout << __LINE__ << endl;
+
   //add the signal
   if(anMode==DISCOVERY){
     hsignal->SetFillColor(804);
@@ -846,7 +847,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
   //update total prediction
   TH1 *totalPredBkg=(TH1 *) (stack->GetStack()->At( stack->GetStack()->GetEntriesFast()-1 )->Clone(TString("totalbkg_")+shape.data->GetName()) );
   totalPredBkg->SetDirectory(0);
-  cout << __LINE__ << endl;
+
   TH1 *totalPred=(TH1 *) totalPredBkg->Clone( TString("totalbkgps_")+shape.data->GetName() );
   cout << hsignal << endl;
   // totalPred->Add(hsignal);
@@ -864,7 +865,7 @@ void showShape(const Shape_t &shape,TString outName,int anMode)
       frame->SetMaximum(1.3*max(totalPred->GetMaximum(),shape.data->GetMaximum()));
       if(anMode==SEARCH)
 	{
-	  t1->SetLogy(true);
+	  if(!outName.Contains("mindphijmet")) t1->SetLogy(true);
 	  if((outName.Contains("_met") && !outName.Contains("count")) || outName.Contains("_mt") || outName.Contains("mjj")) {
 	    t1->SetLogx(true);
 	    frame->GetXaxis()->SetRangeUser(frame->GetXaxis()->GetBinCenter(2),frame->GetXaxis()->GetXmax());

@@ -23,7 +23,8 @@ except:
     if isMC : inputList = cms.untracked.vstring('/store/relval/CMSSW_5_3_6-START53_V14/RelValTTbar/GEN-SIM-RECO/v2/00000/16D5D599-F129-E211-AB60-00261894390B.root')
     else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
 process.source = cms.Source("PoolSource",
-                            fileNames = inputList
+                            fileNames = inputList,
+                            skipEvents=cms.untracked.uint32(4000) 
                             )
 
 try:
