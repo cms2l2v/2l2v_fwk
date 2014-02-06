@@ -164,15 +164,10 @@ int main(int argc, char* argv[])
     NRparams.push_back(std::make_pair<double,double>(25,0));
     NRparams.push_back(std::make_pair<double,double>(30,0));
   }
- else if(suffix==""){ //consider the other points only when no suffix is being used
-    NRparams.push_back(std::make_pair<double,double>(0.1, 0) );
-    NRparams.push_back(std::make_pair<double,double>(0.3, 0) );
-    NRparams.push_back(std::make_pair<double,double>(0.2, 0) );
-    NRparams.push_back(std::make_pair<double,double>(0.4, 0) );
-    NRparams.push_back(std::make_pair<double,double>(0.5, 0) );
-    NRparams.push_back(std::make_pair<double,double>(0.6, 0) );
-    NRparams.push_back(std::make_pair<double,double>(0.8, 0) );
-    NRparams.push_back(std::make_pair<double,double>(1.0, 0) );
+ else if(suffix==""){ //consider the other points only when no suffix is being used    
+    for(double cp=0.1;cp<=1.0;cp+=0.1)
+       for(double brn=0.0; brn<=0.5;brn+=0.1)
+          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
   }
 
 
@@ -288,6 +283,11 @@ int main(int argc, char* argv[])
 	      TGraph *shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
 	      TGraph *shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
 	      TGraph *shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
+
+              TGraph* nrWgtGr    =NULL;
+              TGraph* nrWgtUpGr  =NULL;
+              TGraph* nrWgtDownGr=NULL;              
+
 	      Float_t hySum(0);
 	      for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++)
 		{
@@ -312,13 +312,14 @@ int main(int argc, char* argv[])
 		  }
 		  else
 		    {
+                      if(!nrWgtGr)    nrWgtGr     = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
+                      if(!nrWgtUpGr)  nrWgtUpGr   = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");          
+                      if(!nrWgtDownGr)nrWgtDownGr = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down"); 
+
 		      Double_t cpsWgt=cpsGr->Eval(hmass);
-		      Double_t nrWgt = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
-		      shapeWgt       = cpsWgt * nrWgt;
-		      Double_t nrWgtUp = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");
-		      shapeWgtUp     = cpsWgt * nrWgtUp;
-		      Double_t nrWgtDown = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down");
-		      shapeWgtDown   = cpsWgt *nrWgtDown;
+		      shapeWgt       = cpsWgt * std::max(0.0, nrWgtGr    ->Eval(hmass));
+		      shapeWgtUp     = cpsWgt * std::max(0.0, nrWgtUpGr  ->Eval(hmass));
+		      shapeWgtDown   = cpsWgt * std::max(0.0, nrWgtDownGr->Eval(hmass));
 		    }
 		  
 		  shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
@@ -353,7 +354,6 @@ int main(int argc, char* argv[])
 		    shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
 		  }
 	      }
-	      
 	      //all done here...
 	      std::vector<TGraph *> inrWgts;
 	      inrWgts.push_back( shapeWgtsGr      );

@@ -1,4 +1,3 @@
-<use name="UserCode/llvv_fwk"/>
 <use name="lhapdf"/>
 <use name="roottmva"/>
 <use name="roofit"/>
@@ -6,6 +5,7 @@
 <use name="HiggsAnalysis/CombinedLimit"/>
 <use name="TauAnalysis/CandidateTools"/>
 <use name="PhysicsTools/FWLite"/>
+<use name="UserCode/llvv_fwk"/>
 <environment>
   <bin name="extractLumiJSON"           file="extractLumiJSON.cc"></bin>
   <bin name="FitSecVtxDistributions"     file="FitSecVtxDistributions.cxx"></bin>

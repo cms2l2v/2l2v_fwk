@@ -200,18 +200,18 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
     
   //limits in terms of signal strength
   TCanvas* c = new TCanvas("c", "c",600,600);
-  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?108:108,142);
+  TH1F* framework = new TH1F("Graph","Graph",1,90,160);
   framework->SetStats(false);
   framework->SetTitle("");
   framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-  framework->GetYaxis()->SetRangeUser(1E-1,25);
+  framework->GetYaxis()->SetRangeUser(9E-1,1E3);
   c->SetLogy(true);
   }else{
   framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
-  framework->GetYaxis()->SetRangeUser(1E-1,100);
+  framework->GetYaxis()->SetRangeUser(1E-1,1E3);
   c->SetLogy(true);
   }
   framework->Draw();
@@ -268,6 +268,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");
   if(!blind) LEG->AddEntry(TGObsLimit  , "observed"  ,"LP");
   LEG->Draw();
+  c->RedrawAxis();
   c->SaveAs(outputDir+"Limit.png");
   c->SaveAs(outputDir+"Limit.C");
   c->SaveAs(outputDir+"Limit.pdf"); 

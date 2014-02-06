@@ -781,7 +781,8 @@ void initializeTGraph(){
 
            double total = map_yields["total"];
            for(std::map<string, double>::iterator Y=map_yields.begin();Y!=map_yields.end();Y++){
-              if(Y->second/total<threshold){
+              if(Y->second/total<threshold && Y->first.find("XH")==std::string::npos){
+                 printf("Drop %s from the list of backgrounds because of negligible rate\n", Y->first.c_str());
                  for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)==Y->first ){sorted_procs.erase(p);break;}}
                  procs.erase(procs.find(Y->first ));
               }
@@ -1210,6 +1211,11 @@ void initializeTGraph(){
                   sprintf(procMassStr,"%i",(int)procMass);
                }
 
+               if(!isSignal &&  mass>0 && proc.Contains("XH(") && proc.Contains(")#rightarrow WW")){
+                  sscanf(proc.Data()+proc.First("H(")+2,"%lf",&procMass);
+                  if(!(procMass==mass || procMass==massL || procMass==massR))continue; //skip XH-->WW background sample not concerned
+               }
+
                     if(isSignal && mass>0 && proc.Contains("ggH") && proc.Contains("ZZ"))proc = TString("ggH")  +procMassStr;
                else if(isSignal && mass>0 && proc.Contains("qqH") && proc.Contains("ZZ"))proc = TString("qqH")  +procMassStr;
                else if(isSignal && mass>0 && proc.Contains("ggH") && proc.Contains("WW"))proc = TString("ggHWW")+procMassStr;
@@ -1295,7 +1301,8 @@ void initializeTGraph(){
 
                   //if current shape is the one to cut on, then apply the cuts
                   if(shapeName == histo){
-                     if(ivar==1 && isSignal)printf("A %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
+//                     if(ivar==1 && isSignal)printf("A %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
+                     if(ivar==1)printf("A %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
 
                      for(int x=0;x<=hshape->GetXaxis()->GetNbins()+1;x++){
                         if(hshape->GetXaxis()->GetBinCenter(x)<=minCut || hshape->GetXaxis()->GetBinCenter(x)>=maxCut){ hshape->SetBinContent(x,0); hshape->SetBinError(x,0); }
@@ -1707,7 +1714,6 @@ void initializeTGraph(){
               procs.erase(procs.find(procLR->second.second ));
            }
          }
-
 
 
          //

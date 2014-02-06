@@ -18,10 +18,10 @@ jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/jsonForLucia.json'
 CMSSW_BASE=os.environ.get('CMSSW_BASE')
 
 
-MASS = [125]
-SUBMASS = [125]
+MASS = [90,100,110,120,125,130,140,150,160]
+SUBMASS = [90,100,110,120,125,130,140,150,160]
 
-LandSArgCommonOptions=" --index 1 --channels ee,mm"
+LandSArgCommonOptions=" "
 signalSuffixVec = []
 OUTName         = []
 LandSArgOptions = []
@@ -165,7 +165,7 @@ for signalSuffix in signalSuffixVec :
              shapeBasedOpt=''
              cardsdir = 'H'+ str(m);
              SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
-             SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --shapeMin " + str(mtmin_) + " --shapeMax " + str(mtmax_) + " " + LandSArg + " ;\n")
+             SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --rebin 2 --shapeMin " + str(mtmin_) + " --shapeMax " + str(mtmax_) + " " + LandSArg + " ;\n")
              SCRIPT.writelines("sh combineCards.sh;\n")
              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > COMB.log;\n")
              SCRIPT.writelines('tail -n 100 COMB.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.log;\n')
@@ -186,6 +186,7 @@ for signalSuffix in signalSuffixVec :
       fileName = OUT + "/OPTIM" + signalSuffix
       FILE = open(fileName+".txt","w")
       for m in MASS:
+         if(m!=125):continue
          print 'Starting mass ' + str(m)
          FILE.writelines("------------------------------------------------------------------------------------\n")
          BestLimit = []
@@ -199,7 +200,7 @@ for signalSuffix in signalSuffixVec :
             fields = f.split('_')
             N = len(fields)
             index = fields[N-3] 
-            BestLimit.append("mH="+str(m)+ " --> " + ('%07.3f' % float(median)) + " " + str(cutsH.GetBinContent(int(index),1)).rjust(5) + " " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
+            BestLimit.append("mH="+str(m)+ " --> " + ('%07.3f' % float(median)) + " " + str(index) + "  " + str(cutsH.GetBinContent(int(index),1)).rjust(5) + " " + str(cutsH.GetBinContent(int(index),2)).rjust(5) + "  " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
 
          #sort the limits for this mass
          BestLimit.sort()

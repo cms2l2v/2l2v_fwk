@@ -234,12 +234,12 @@ int main(int argc, char* argv[])
 	  optim_Cuts_lepIso.push_back(lepIso);
 	} 
     }
-  TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts_sumpt.size(),0,optim_Cuts_sumpt.size(), 2, 0, 2)) ;
-  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "jpt1>");
-  Hoptim_cuts->GetYaxis()->SetBinLabel(2, "jpt2>");
+  TH2D* Hoptim_cuts  =(TH2D*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts_sumpt.size(),0,optim_Cuts_sumpt.size(), 2, 0, 2)) ;
+  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "sumpt");
+  Hoptim_cuts->GetYaxis()->SetBinLabel(2, "iso>");
   for(unsigned int index=0;index<optim_Cuts_sumpt.size();index++){
-    Hoptim_cuts->Fill(index,0.0,optim_Cuts_sumpt[index]); 
-    Hoptim_cuts->Fill(index,1.0,optim_Cuts_lepIso[index]); 
+    Hoptim_cuts->Fill(index,0.5,optim_Cuts_sumpt[index]); 
+    Hoptim_cuts->Fill(index,1.5,optim_Cuts_lepIso[index]); 
   }
 
   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;

@@ -1,5 +1,6 @@
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "TGraphErrors.h"
+#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
 
 namespace higgs{
 
@@ -114,31 +115,95 @@ namespace higgs{
     }
 
     //    
-    double weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile,TString pf){
-      if((Cprime<0 || BRnew<0) || (Cprime==0 && BRnew==0)) return 1.0;
+    TGraph* weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile,TString pf){
+      if((Cprime<0 || BRnew<0) || (Cprime==0 && BRnew==0)){
+         TGraph* g = new TGraph(2);
+         g->SetPoint(0,    0, 1.0);
+         g->SetPoint(1, 9999, 1.0);
+         return g;
+      }
 
+
+      //We only have lineshape for Cprime=X and BRnew=0, so we need to find the lineshape equivalent to (Cprime, BRnew) to (Csecond, 0)
+      //that is easy because the signal width for (Cprime, Brnew) is SM width * cprimeÂ / (1-BRnew), so the equivalent with can be taken from the pair (Cprime/sqrt(1-BRnew), 0) in order to get the same width
+      //some care is needed for the cross-section because it does not scale the same way, but this does not matter since we have the xsection normalized to SM afterward
+      //do not allow Csecond to be larger than 1 though
+      double Csecond = std::min(1.0, Cprime / sqrt(1-BRnew));
+      double BRnew2  = 0;
+
+      if(BRnew!=0)printf("BRnew is different than 0, so apply the change of variable (cprime=%f, Brnew=%f) --> (csecond=%f, 0)\n", Cprime, BRnew, Csecond);
 
       //1st check if is in the file
       if(nrLineShapesFile)
 	{
-	  char nrShapeBuf[100];
-	  sprintf(nrShapeBuf,"NR_%04d_%02d_%02d_weights%s",int(m_gen),int(Cprime*10),int(BRnew*10),pf.Data());
-	  TGraph *nrGr=(TGraph *)nrLineShapesFile->Get(nrShapeBuf);
-	  if(nrGr){
-	    float weight=nrGr->Eval(mass);
-	    if(weight<0) weight=0;
-	    return weight;
-	    //float targetNorm=nrGr->Integral();
-	    //std::cout << nrShapeBuf<< " " << targetNorm << std::endl;
-	    //if(targetNorm==0) targetNorm=1.0; 
-	    //float targetProb=nrGr->Eval(mass);
-	    //if(targetProb<0) targetProb=0;
-	    //float nominalProb=hLineShapeNominal->Eval(mass);
-	    //if(nominalProb==0) return 0;
-	    //else return targetProb/(targetNorm*nominalProb);
-	  }
-	}
+          //very likely Csecond is not a multiple of 0.1 anymore,
+          //we need to morph between to 0.1 multiple
+          //first check if Csecond is multiple of 0.1
+          if( int(Csecond*1000)%100 ==0 ){
+ 	     char nrShapeBuf[100];
+  	     sprintf(nrShapeBuf,"NR_%04d_%02d_%02d_weights%s",int(m_gen),int(Csecond*10),int(BRnew2*10),pf.Data());
+	     TGraph *nrGr=(TGraph *)nrLineShapesFile->Get(nrShapeBuf);               
+	     if(nrGr){
+               for(int i=0;i<nrGr->GetN();i++){double x, y; nrGr->GetPoint(i, x, y);  if(y<0 || y>1000){y=0;} nrGr->SetPoint(i, x, y);}
 
+               return nrGr;
+//	       float weight=nrGr->Eval(mass);
+//	       if(weight<0) weight=0;
+//	       return weight;
+	       //float targetNorm=nrGr->Integral();
+	       //std::cout << nrShapeBuf<< " " << targetNorm << std::endl;
+	       //if(targetNorm==0) targetNorm=1.0; 
+	       //float targetProb=nrGr->Eval(mass);
+	       //if(targetProb<0) targetProb=0;
+	       //float nominalProb=hLineShapeNominal->Eval(mass);
+	       //if(nominalProb==0) return 0;
+	       //else return targetProb/(targetNorm*nominalProb);
+  	     }
+          }else{               //Csecond is NOT a multiple of 0.1
+             printf("Csecond %f is NOT a multiple of 0.1\n", Csecond);
+
+             //identify neighboring values that are multiple of 0.1
+             double CsecondL = (int(Csecond*1000)/100)/10.0;
+             double CsecondR = CsecondL+0.1;
+             printf("morph the lineshape between %f and %f\n", CsecondL, CsecondR);
+
+             char nrShapeBufL[100];   sprintf(nrShapeBufL,"NR_%04d_%02d_%02d_weights%s",int(m_gen),int(CsecondL*10),int(BRnew2*10),pf.Data());
+             TGraph *nrGrL=(TGraph *)nrLineShapesFile->Get(nrShapeBufL);
+             char nrShapeBufR[100];   sprintf(nrShapeBufR,"NR_%04d_%02d_%02d_weights%s",int(m_gen),int(CsecondR*10),int(BRnew2*10),pf.Data());
+             TGraph *nrGrR=(TGraph *)nrLineShapesFile->Get(nrShapeBufR);
+             if(nrGrL && nrGrR){
+                for(int i=0;i<nrGrL->GetN();i++){double x, y; nrGrL->GetPoint(i, x, y);  if(y<0 || y>1000){y=0;}  nrGrL->SetPoint(i, x, y);}
+                for(int i=0;i<nrGrR->GetN();i++){double x, y; nrGrR->GetPoint(i, x, y);  if(y<0 || y>1000){y=0;}  nrGrR->SetPoint(i, x, y);}
+
+                TH1F* hL = new TH1F("hL", "hL", 1000, 0, std::max(nrGrL->GetX()[nrGrL->GetN()-1], nrGrR->GetX()[nrGrR->GetN()-1]) );
+                TH1F* hR = new TH1F("hR", "hR", 1000, 0, std::max(nrGrL->GetX()[nrGrL->GetN()-1], nrGrR->GetX()[nrGrR->GetN()-1]) );
+                for(int i=0;i<hL->GetXaxis()->GetNbins();i++){
+                   if(nrGrL->Eval(hL->GetXaxis()->GetBinCenter(i))>1000 || nrGrR->Eval(hR->GetXaxis()->GetBinCenter(i))>1000)printf("check AB %f --> %f - %f\n", hL->GetXaxis()->GetBinCenter(i), nrGrL->Eval(hL->GetXaxis()->GetBinCenter(i)), nrGrR->Eval(hR->GetXaxis()->GetBinCenter(i)));
+                   float valL = std::max(0.0, nrGrL->Eval(hL->GetXaxis()->GetBinCenter(i)));  if(valL>1000)valL=0;
+                   float valR = std::max(0.0, nrGrR->Eval(hR->GetXaxis()->GetBinCenter(i)));  if(valR>1000)valR=0;                   
+                   hL->SetBinContent(i, valL);
+                   hR->SetBinContent(i, valR);
+                }
+                TH1F* hC = th1fmorph("hC","hC", hL, hR, CsecondL, CsecondR, Csecond, 1.0, 0);
+
+                TGraph* nrGrC = new TGraph(hC->GetXaxis()->GetNbins());
+                for(int i=0;i<hC->GetXaxis()->GetNbins();i++){
+                   if(hC->GetBinContent(i)>1000) printf("check C %f --> %f\n", hC->GetXaxis()->GetBinCenter(i), hC->GetBinContent(i));
+                   nrGrC->SetPoint(i, hC->GetXaxis()->GetBinCenter(i), hC->GetBinContent(i));
+                }
+
+                delete hL;
+                delete hR;
+                delete hC;
+
+                return nrGrC;
+             }
+          }
+      }
+      printf("weight for narrow resonnance not in file\n");
+      exit(0);
+
+/*
       //if not found than use relativistic breit-wigner
       double decay_width = -1;
       if(m_gen == 130){    decay_width =   0.00487; 
@@ -167,9 +232,9 @@ namespace higgs{
       }else if(m_gen ==1000){    decay_width = 647.00000;
       }
 	 
-      double OverallXSectionScaleFactor = 1.0;//*hLineShapeNominal->Integral();
-      decay_width = decay_width * pow(Cprime,2) / (1-BRnew);      
-      //      OverallXSectionScaleFactor *= pow(Cprime,2) * (1-BRnew);
+      double OverallXSectionScaleFactor = 1.0;// *hLineShapeNominal->Integral();
+      decay_width = decay_width * pow(Csecond,2) / (1-BRnew);      
+      //      OverallXSectionScaleFactor *= pow(Csecond,2) * (1-BRnew);
     
       //the CPS shape
       double weight_CPS = hLineShapeNominal->Eval(mass);
@@ -196,6 +261,7 @@ namespace higgs{
       if(toReturn<0){toReturn=1.0;}
       if(weight_CPS<=0)toReturn = 0.0;
       return toReturn;
+*/
     }
     
   }
