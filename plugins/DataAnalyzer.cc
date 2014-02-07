@@ -630,6 +630,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	  if(iid==0) hasVetoId=hasId;
 	  ev.ln_idbits[ev.ln] |=  (hasId << (3+iid));
 	}
+        if ( DEBUG ) cout << "electrons: " << ele->pt()<< "   " << ele->eta()<<"    " << ele->photonIso() <<"  " << ele->chargedHadronIso() << "   " <<  ele->puChargedHadronIso() <<"   " << ele->neutralHadronIso() << "  ID: " <<passesMediumID  << endl; 
       for(size_t iid=0; iid<2; iid++)
 	{
 	  int id(EgammaCutBasedEleId::TRIGGERTIGHT);
@@ -761,6 +762,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	}
       }
 
+
   //now check if at least one trigger condition is fullfilled
   bool toSave(false);
   bool saveOnlyLeptons(false);
@@ -810,6 +812,9 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
     {
       edm::RefToBase<pat::Jet> jetRef(edm::Ref<pat::JetCollection>(jetH,ijet));
       const pat::Jet *jet              = &((*jetH)[ijet]);
+        //if(jet->pt()<10  /*|| !passLooseId*/) continue;
+        if(jet->pt()<10 || fabs(jet->eta())>4.7 /*|| !passLooseId*/) continue;
+
       const reco::Candidate *genParton = jet->genParton();
       const reco::GenJet *genJet       = jet->genJet();
 
@@ -926,6 +931,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.jn_puMVA[ev.jn]       = puIdentifier.mva();
       ev.jn_qgMVA[ev.jn]       = qgTaggerH.isValid() ? (*qgTaggerH)[jetRef] : 0;
 	
+        if ( DEBUG ) cout << " reco Jets:  " << jet->pt() <<"  " << jet->eta() << "   " << passLooseId + passMediumId + passTightId << "   " << uint(cutBasedPuIdentifier.idFlag() & 0xf) << endl;
       //save pf constituents (only for jets with pT>20 in the central region)
       ev.jn_pfstart[ev.jn]=-1;
       ev.jn_pfend[ev.jn]=-1;
@@ -977,6 +983,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	event.getByLabel("ak5GenJetsNoNu",genJetsHandle);
 	const reco::GenJetCollection* genJetColl = &(*genJetsHandle);
         reco::GenJetCollection::const_iterator gjeti = genJetColl->begin();
+        if ( DEBUG ) cout << " to gen jets:"<< endl;
 	 for(; gjeti!=genJetColl->end();gjeti++){
                         reco::GenParticle gjet = *gjeti;
                         //if(gjet.pt()<=5||gjet.eta()>2.5)continue;
@@ -985,6 +992,21 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       		        ev.jn_genUnfjpy[ev.jnUnf]      =  gjet.py();
 		        ev.jn_genUnfjpz[ev.jnUnf]      =  gjet.pz();
 		        ev.jn_genUnfjen[ev.jnUnf]      =  gjet.energy();
+            ev.jn_genUnfjhad[ev.jnUnf]     =  gjeti->hadEnergy();
+            ev.jn_genUnfjem[ev.jnUnf]      =  gjeti->emEnergy();
+
+            bool isChargedJet=false;
+            double chargedFraction = 0.;
+            std::vector<const GenParticle*> mcparticles = gjeti->getGenConstituents();
+            for(std::vector <const GenParticle*>::const_iterator thepart =mcparticles.begin();thepart != mcparticles.end(); ++ thepart ) {
+                if ( (**thepart).charge()!=0 ){
+                    isChargedJet=true;
+                    chargedFraction += (**thepart).pt();
+                }
+            }
+            if ( ! (isChargedJet > 0 ) ) cout << " is chargeid: " << isChargedJet << "   " << chargedFraction/gjet.pt()<<"   " << gjet.pt() <<"    " <<gjet.eta()<< endl;
+            ev.jn_genUnfjptcf[ev.jnUnf]      = chargedFraction/gjet.pt();
+
 			ev.jnUnf++;	
 	}
    }
