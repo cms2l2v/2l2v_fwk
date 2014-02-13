@@ -78,13 +78,16 @@ private:
 
   //pileup jet id
   PileupJetIdAlgo *puJetIdAlgo_,*cutBasedPuJetIdAlgo_;
+  
+  bool DEBUG;
+
 };
 
 using namespace std;
 
 
 //
-DataAnalyzer::DataAnalyzer(const edm::ParameterSet &iConfig) : obsPU_h(0), truePU_h(0)
+DataAnalyzer::DataAnalyzer(const edm::ParameterSet &iConfig) : obsPU_h(0), truePU_h(0), DEBUG(false)
 {
   //configure selection
   analysisCfg_ = iConfig.getParameter<edm::ParameterSet>("cfg");
@@ -630,7 +633,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	  if(iid==0) hasVetoId=hasId;
 	  ev.ln_idbits[ev.ln] |=  (hasId << (3+iid));
 	}
-        if ( DEBUG ) cout << "electrons: " << ele->pt()<< "   " << ele->eta()<<"    " << ele->photonIso() <<"  " << ele->chargedHadronIso() << "   " <<  ele->puChargedHadronIso() <<"   " << ele->neutralHadronIso() << "  ID: " <<passesMediumID  << endl; 
+      //        if ( DEBUG ) cout << "electrons: " << ele->pt()<< "   " << ele->eta()<<"    " << ele->photonIso() <<"  " << ele->chargedHadronIso() << "   " <<  ele->puChargedHadronIso() <<"   " << ele->neutralHadronIso() << "  ID: " <<passesMediumID  << endl; 
       for(size_t iid=0; iid<2; iid++)
 	{
 	  int id(EgammaCutBasedEleId::TRIGGERTIGHT);
@@ -992,8 +995,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       		        ev.jn_genUnfjpy[ev.jnUnf]      =  gjet.py();
 		        ev.jn_genUnfjpz[ev.jnUnf]      =  gjet.pz();
 		        ev.jn_genUnfjen[ev.jnUnf]      =  gjet.energy();
-            ev.jn_genUnfjhad[ev.jnUnf]     =  gjeti->hadEnergy();
-            ev.jn_genUnfjem[ev.jnUnf]      =  gjeti->emEnergy();
+//            ev.jn_genUnfjhad[ev.jnUnf]     =  gjeti->hadEnergy();
+//            ev.jn_genUnfjem[ev.jnUnf]      =  gjeti->emEnergy();
 
             bool isChargedJet=false;
             double chargedFraction = 0.;
@@ -1005,7 +1008,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
                 }
             }
             if ( ! (isChargedJet > 0 ) ) cout << " is chargeid: " << isChargedJet << "   " << chargedFraction/gjet.pt()<<"   " << gjet.pt() <<"    " <<gjet.eta()<< endl;
-            ev.jn_genUnfjptcf[ev.jnUnf]      = chargedFraction/gjet.pt();
+	    //            ev.jn_genUnfjptcf[ev.jnUnf]      = chargedFraction/gjet.pt();
 
 			ev.jnUnf++;	
 	}
