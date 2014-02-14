@@ -1216,10 +1216,16 @@ void initializeTGraph(){
                   if(!(procMass==mass || procMass==massL || procMass==massR))continue; //skip XH-->WW background sample not concerned
                }
 
+               TString procSave = proc;
                     if(isSignal && mass>0 && proc.Contains("ggH") && proc.Contains("ZZ"))proc = TString("ggH")  +procMassStr;
                else if(isSignal && mass>0 && proc.Contains("qqH") && proc.Contains("ZZ"))proc = TString("qqH")  +procMassStr;
                else if(isSignal && mass>0 && proc.Contains("ggH") && proc.Contains("WW"))proc = TString("ggHWW")+procMassStr;
                else if(isSignal && mass>0 && proc.Contains("qqH") && proc.Contains("WW"))proc = TString("qqHWW")+procMassStr;
+
+                    if(procSave.Contains("SandBandInterf"))proc+="_SBI";
+               else if(procSave.Contains("SOnly"))         proc+="_S";
+               else if(procSave.Contains("BOnly"))         proc+="_B";
+
 
                TString shortName = proc;
                shortName.ToLower();
@@ -1232,6 +1238,7 @@ void initializeTGraph(){
                shortName.ReplaceAll("ggh", "ggH");
                shortName.ReplaceAll("qqh", "qqH");
                if(shortName.Length()>8)shortName.Resize(8);
+
 
                if(procs.find(proc.Data())==procs.end()){sorted_procs.push_back(proc.Data());}
                ProcessInfo_t& procInfo = procs[proc.Data()];
@@ -1290,7 +1297,8 @@ void initializeTGraph(){
                   
                   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
                   hshape   = hshape2D->ProjectionY(histoName,cutBinUsed,cutBinUsed);
-                  if(hshape->Integral()<=0 && varName=="" && !isData){hshape->Reset(); hshape->SetBinContent(1, 1E-10);}
+                  if(ivar==1)printf("0 %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
+                  //if(hshape->Integral()<=0 && varName=="" && !isData){hshape->Reset(); hshape->SetBinContent(1, 1E-10);} //TEST FOR HIGGS WIDTH MEASUREMENTS, MUST BE UNCOMMENTED ASAP
 
                   if(isnan((float)hshape->Integral())){hshape->Reset();}
                   hshape->SetDirectory(0);
