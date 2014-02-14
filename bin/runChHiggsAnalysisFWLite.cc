@@ -1186,11 +1186,15 @@ int main(int argc, char* argv[])
 	    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
 	    
 	    
-	    //cross-clean with selected leptons and photons
-	    double minDRlj(9999.),minDRlg(9999.);
+	    //cross-clean with selected leptons, photons and taus
+	    double minDRlj(9999.),minDRlg(9999.), minDRtj(9999.);
 	    for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
 	      minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
-	    if(minDRlj<0.4 || minDRlg<0.4) continue;
+	    for(size_t itau=0; itau<taus.size(); ++itau){
+	      if( taus[itau].pt()<20.0 || fabs(taus[itau].eta()) > 2.3) continue;
+	      minDRtj = TMath::Min( minDRtj, deltaR(jets[ijet],taus[itau] ) );
+	    }
+	    if(minDRlj<0.4 || minDRlg<0.4 || minDRtj<0.4) continue;
 	    
 	    
 	    //jet id
