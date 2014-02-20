@@ -540,8 +540,8 @@ int main(int argc, char* argv[])
       for(unsigned int i=0;i<jetCollHandle->size();i++){jets.push_back(llvvJetExt((*jetCollHandle)[i]));}
 
       fwlite::Handle< llvvMet > metHandle;
-      //      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow"); 
-      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfType1CorrectedMet"); 
+      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow"); 
+      //metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfType1CorrectedMet"); 
       if(!metHandle.isValid()){printf("llvvMet Object NotFound\n");continue;}
       llvvMet met = *metHandle;
 
@@ -632,13 +632,13 @@ int main(int argc, char* argv[])
 
 	  // Dilepton kin
 	  if(leptons[ilep].pt()< 20. )                   passKin=false;
-	  if(leta> (lid==11 ? 2.5 : 2.4) )               passKin=false;
-	  if(lid==11 && (leta>1.4442 && leta<1.5660))    passKin=false; // Crack veto
+	  if(abs(leta)> (lid==11 ? 2.5 : 2.4) )               passKin=false;
+	  if(lid==11 && (abs(leta)>1.4442 && abs(leta)<1.5660))    passKin=false; // Crack veto
 
 	  // SingleLepton kin
 	  if(leptons[ilep].pt()< (lid==11 ? 35 :30 ) )  passSingleLepKin=false;
-	  if(leta> (lid==11 ? 2.5 : 2.1) )              passSingleLepKin=false;
-	  if(lid==11 && (leta>1.4442 && leta<1.5660))   passSingleLepKin=false; // Crack veto
+	  if(abs(leta)> (lid==11 ? 2.5 : 2.1) )              passSingleLepKin=false;
+	  if(lid==11 && (abs(leta)>1.4442 && abs(leta)<1.5660))   passSingleLepKin=false; // Crack veto
 
 	  //id
 	  Int_t idbits(leptons[ilep].idbits);
@@ -705,8 +705,8 @@ int main(int argc, char* argv[])
 	    //	  float leta = lid==11 ? leptons[ilep].getVal("sceta") : leptons[ilep].eta();
 	    float leta( lid==11 ? leptons[ilep].electronInfoRef->sceta : leptons[ilep].eta() );
 	    if(leptons[ilep].pt()< (lid==11 ? 20 : 10 ) )                   passKin=false; // Single lepton has a higher cut for muons
-	    if(leta> 2.5 )            passKin=false; // Single lepton has 2.1 for eta. Double lepton 2.1 
-	    if(lid==11 && (leta>1.4442 && leta<1.5660)) passKin=false; // Crack veto
+	    if(abs(leta)> 2.5 )                                             passKin=false; // Single lepton has 2.1 for eta. Double lepton 2.1 
+	    if(lid==11 && (abs(leta)>1.4442 && abs(leta)<1.5660))           passKin=false; // Crack veto
 	    
 	    //id
 	    Int_t idbits(leptons[ilep].idbits);
@@ -725,11 +725,11 @@ int main(int argc, char* argv[])
 	    float relIso( utils::cmssw::relIso(leptons[ilep], rho) );
 	    if( (lid==11 && relIso>0.15) || (lid!=11 && relIso>0.2) ) passIso=false; // SingleLepton values
 	    
-	  if(!passId || !passIso || !passKin) continue;
+	    if(!passId || !passIso || !passKin) continue;
 	  
-	  
-	  if(lid==11) nVetoE++;
-	  if(lid==13) nVetoMu++; 
+	    
+	    if(lid==11) nVetoE++;
+	    if(lid==13) nVetoMu++; 
 	  }
       }
       
@@ -759,9 +759,10 @@ int main(int argc, char* argv[])
       chTags.push_back("ll"); // FIXME: legacy to remove.
       
       if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
+      else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
       else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
       else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-      else if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
+      
       
       if(chTags.size()<2) continue;
 
@@ -773,9 +774,6 @@ int main(int argc, char* argv[])
       // Dilepton full analysis
       // ----------------------
       if(chTags[1] == "ee" || chTags[1] == "emu" || chTags[1] == "mumu" /*|| chTags[0] == "ll" */ ){
-
-	// FIXME temporary for running fast on singlemu only. Must add command line switch 
-	continue;
 
 	if(selLeptons.size()<2) continue; // 2 leptons
 	
@@ -1188,8 +1186,8 @@ int main(int argc, char* argv[])
 	    
 	    //cross-clean with selected leptons, photons and taus
 	    double minDRlj(9999.),minDRlg(9999.), minDRtj(9999.);
-	    for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-	      minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+	    for(size_t ilep=0; ilep<selSingleLepLeptons.size(); ilep++)
+	      minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selSingleLepLeptons[ilep]) );
 	    for(size_t itau=0; itau<taus.size(); ++itau){
 	      if( taus[itau].pt()<20.0 || fabs(taus[itau].eta()) > 2.3) continue;
 	      minDRtj = TMath::Min( minDRtj, deltaR(jets[ijet],taus[itau] ) );
@@ -1318,8 +1316,8 @@ int main(int argc, char* argv[])
 	  
 	  
 	  bool overalWithLepton(false);
-	  for(int l1=0   ;l1<(int)selLeptons.size();l1++){
-	    if(deltaR(tau, selLeptons[l1])<0.1){overalWithLepton=true; break;}
+	  for(int l1=0   ;l1<(int)selSingleLepLeptons.size();l1++){
+	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overalWithLepton=true; break;}
 	  }
 	  if(overalWithLepton)continue;
 	  
