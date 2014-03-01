@@ -77,6 +77,7 @@ double shapeMinVBF = 0;
 double shapeMaxVBF = 9999;
 bool doInterf = false;
 double minSignalYield = 0;
+float statBinByBin = -1;
 
 bool dirtyFix1 = false;
 bool dirtyFix2 = false;
@@ -116,9 +117,30 @@ class ShapeData_t
      return uncShape[""];
   }
 
-  void makeStatUnc(string prefix="", string suffix=""){
-     TH1* h = histo();
-     if(!h || h->Integral()<=0)return;
+  void makeStatUnc(string prefix="", string suffix="", string suffix2=""){
+     if(!histo() || histo()->Integral()<=0)return;
+     TH1* h = (TH1*) histo()->Clone("TMPFORSTAT");
+
+     //bin by bin stat uncertainty
+     if(statBinByBin>0 && shape==true){
+        int BIN=0;
+        for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
+           if(h->GetBinContent(ibin)<=0 || h->GetBinError(ibin)/h->GetBinContent(ibin)<statBinByBin)continue;
+           char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+           TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);  statU->Reset();
+           TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);  statD->Reset();           
+           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));
+           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));            
+           uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
+           uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
+           h->SetBinContent(ibin, 0);  h->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
+           //printf("%s --> %f - %f - %f\n", (prefix+"stat"+suffix+ibintxt+suffix2+"Up").c_str(), statD->Integral(), h->GetBinContent(ibin), statU->Integral() );
+        }
+     }
+
+     //after this line, all bins with large stat uncertainty have been considered separately
+     //so now it remains to consider all the other bins for which we assume a total correlation bin by bin
+     if(h->Integral()<=0)return; //all non empty bins have already bin variated
      TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU");
      TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD");
      for(int ibin=1; ibin<=statU->GetXaxis()->GetNbins(); ibin++){
@@ -127,6 +149,8 @@ class ShapeData_t
      }
      uncShape[prefix+"stat"+suffix+"Up"  ] = statU;
      uncShape[prefix+"stat"+suffix+"Down"] = statD;
+
+     delete h; //all done with this copy
   }
 
   double getScaleUncertainty(){
@@ -271,7 +295,7 @@ void printHelp()
   printf("--minSignalYield   --> use this to specify the minimum Signal yield you want in each channel)\n");
   printf("--signalSufix --> use this flag to specify a suffix string that should be added to the signal 'histo' histogram\n");
   printf("--rebin         --> rebin the histogram\n");
-  printf("--BackExtrapol --> extrapollate background histograms to high mass/met\n");
+  printf("--statBinByBin --> make bin by bin statistical uncertainty\n");
 }
 
 //
@@ -337,6 +361,7 @@ int main(int argc, char* argv[])
     else if(arg.find("--signalSufix") !=string::npos) { signalSufix = argv[i+1]; i++; printf("signalSufix '%s' will be used\n", signalSufix.Data()); }
     else if(arg.find("--rebin")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&rebinVal); i++; printf("rebin = %i\n", rebinVal);}
     else if(arg.find("--BackExtrapol")    !=string::npos) { BackExtrapol=true; printf("BackExtrapol = True\n");}
+    else if(arg.find("--statBinByBin")    !=string::npos) { sscanf(argv[i+1],"%f",&statBinByBin); i++; printf("statBinByBin = %f\n", statBinByBin);}
   }
   if(jsonFile.IsNull() || inFileUrl.IsNull() || histo.IsNull() || indexcut == -1 || mass==-1) { printHelp(); return -1; }
   if(AnalysisBins.size()==0)AnalysisBins.push_back("");
@@ -829,7 +854,8 @@ void initializeTGraph(){
                     for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){
                         if(h->GetBinContent(ibin)>0)
                         errors->SetPoint(icutg,h->GetXaxis()->GetBinCenter(ibin), h->GetBinContent(ibin));
-                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, sqrt(pow(h->GetBinContent(ibin)*Uncertainty,2) + pow(h->GetBinError(ibin),2) ) );
+//                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, sqrt(pow(h->GetBinContent(ibin)*Uncertainty,2) + pow(h->GetBinError(ibin),2) ) );
+                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, 0 );
                         Maximum =  std::max(Maximum , h->GetBinContent(ibin) + errors->GetErrorYhigh(icutg));
                         icutg++;
                     }errors->Set(icutg);
@@ -884,7 +910,7 @@ void initializeTGraph(){
               axis->Draw();
               p->second->Draw("same");
               map_unc [p->first]->Draw("2 same");
-              map_data[p->first]->Draw("same");
+//              map_data[p->first]->Draw("same");
               for(unsigned int i=0;i<map_signals[p->first].size();i++){
               map_signals[p->first][i]->Draw("HIST same");
               }
@@ -942,7 +968,7 @@ void initializeTGraph(){
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];      
                  TH1* h = shapeInfo.histo();
-                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName+systpostfix).Data());//add stat uncertainty to the uncertainty map;
+                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data());//add stat uncertainty to the uncertainty map;
 
                  TString proc = it->second.shortName.c_str();
                   for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
@@ -971,8 +997,8 @@ void initializeTGraph(){
                            hshape->Write(proc+postfix);
                         }
                       }else if(runSystematics && proc!="data" && (syst.Contains("Up") || syst.Contains("Down"))){
-                        //if empty histogram --> no variation is applied
-                        if(hshape->Integral()<h->Integral()*0.01 || isnan((float)hshape->Integral())){hshape->Reset(); hshape->Add(h,1); }
+                        //if empty histogram --> no variation is applied except for stat
+                        if(!syst.Contains("stat") && hshape->Integral()<h->Integral()*0.01 || isnan((float)hshape->Integral())){hshape->Reset(); hshape->Add(h,1); }
 
                         //write variation to file
                         hshape->SetName(proc+syst);
@@ -1270,11 +1296,14 @@ void initializeTGraph(){
                channelInfo.channel    = chName.Data();
                ShapeData_t& shapeInfo = channelInfo.shapes[shapeName.Data()];
 
-               for(int ivar = 1; ivar<=syst->GetNbinsX();ivar++){                 
+               //printf("%s SYST SIZE=%i\n", (ch+"_"+shapeName).Data(), syst->GetNbinsX() );
+               for(int ivar = 1; ivar<=syst->GetNbinsX();ivar++){                
                   TH1D* hshape   = NULL;
                   TString varName   = syst->GetXaxis()->GetBinLabel(ivar);
                   TString histoName = ch+"_"+shapeName+(isSignal?signalSufix:"")+varName ;
                   if(shapeName==histo && histoVBF!="" && ch.Contains("vbf"))histoName = ch+"_"+histoVBF+(isSignal?signalSufix:"")+varName ;
+                  //printf("Syst %i = %s\n", ivar, varName.Data()); 
+
                   TH2* hshape2D = (TH2*)pdir->Get(histoName );
                   if(!hshape2D){
                      if(shapeName==histo && histoVBF!="" && ch.Contains("vbf")){   hshape2D = (TH2*)pdir->Get(histoVBF+(isSignal?signalSufix:"")+varName);
@@ -1297,7 +1326,7 @@ void initializeTGraph(){
                   
                   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
                   hshape   = hshape2D->ProjectionY(histoName,cutBinUsed,cutBinUsed);
-                  if(ivar==1)printf("0 %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
+                  //printf("%s %s %s Integral = %f\n", ch.Data(), shortName.Data(), varName.Data(), hshape->Integral() );
                   //if(hshape->Integral()<=0 && varName=="" && !isData){hshape->Reset(); hshape->SetBinContent(1, 1E-10);} //TEST FOR HIGGS WIDTH MEASUREMENTS, MUST BE UNCOMMENTED ASAP
 
                   if(isnan((float)hshape->Integral())){hshape->Reset();}
@@ -1310,7 +1339,6 @@ void initializeTGraph(){
                   //if current shape is the one to cut on, then apply the cuts
                   if(shapeName == histo){
 //                     if(ivar==1 && isSignal)printf("A %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
-                     if(ivar==1)printf("A %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
 
                      for(int x=0;x<=hshape->GetXaxis()->GetNbins()+1;x++){
                         if(hshape->GetXaxis()->GetBinCenter(x)<=minCut || hshape->GetXaxis()->GetBinCenter(x)>=maxCut){ hshape->SetBinContent(x,0); hshape->SetBinError(x,0); }
@@ -1320,13 +1348,8 @@ void initializeTGraph(){
                      }
                      hshape->GetYaxis()->SetTitle("Entries (/25GeV)");
 
-                     if(ivar==1 && isSignal)printf("B %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
                   }
                   hshape->Scale(MCRescale);
-
-                     if(ivar==1 && isSignal && shapeName == histo)printf("C %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
-
-
 
                    //Do Renaming and cleaning
                    varName.ReplaceAll("down","Down");
@@ -1352,8 +1375,6 @@ void initializeTGraph(){
                    }else{
                       shapeInfo.uncShape[varName.Data()]->Add(hshape);
                    }
-
-                     if(ivar==1 && isSignal && shapeName == histo)printf("D %s %s Integral = %f\n", ch.Data(), shortName.Data(), hshape->Integral() );
                 }
             }
            }
@@ -1633,9 +1654,14 @@ void initializeTGraph(){
                         xbins[2] = histo->GetXaxis()->GetBinLowEdge(histo->GetXaxis()->FindBin(150));
                         xbins[3] = histo->GetXaxis()->GetBinLowEdge(histo->GetNbinsX()+1);
                      }else{
-                        nbins = histo->GetXaxis()->FindBin(1000)+1;
+//                        nbins = histo->GetXaxis()->FindBin(1000)+1;
+//                        xbins = new double[nbins+1];
+//                        for(int x=0;x<=histo->GetXaxis()->FindBin(1000)+1;x++){xbins[x]=histo->GetXaxis()->GetBinLowEdge(x);}
+//                        xbins[nbins] = histo->GetXaxis()->GetBinLowEdge(histo->GetNbinsX()+1);
+
+                        nbins = histo->GetXaxis()->FindBin(800)+1;
                         xbins = new double[nbins+1];
-                        for(int x=0;x<=histo->GetXaxis()->FindBin(1000)+1;x++){xbins[x]=histo->GetXaxis()->GetBinLowEdge(x);}
+                        for(int x=0;x<=histo->GetXaxis()->FindBin(800)+1;x++){xbins[x]=histo->GetXaxis()->GetBinLowEdge(x);}
                         xbins[nbins] = histo->GetXaxis()->GetBinLowEdge(histo->GetNbinsX()+1);
                      }
                      unc->second = histo->Rebin(nbins, histo->GetName(), (double*)xbins);
