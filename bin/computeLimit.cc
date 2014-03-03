@@ -125,12 +125,14 @@ class ShapeData_t
      if(statBinByBin>0 && shape==true){
         int BIN=0;
         for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
-           if(h->GetBinContent(ibin)<=0 || h->GetBinError(ibin)/h->GetBinContent(ibin)<statBinByBin)continue;
+           if(h->GetBinContent(ibin)<=0 || h->GetBinContent(ibin)/h->Integral()<0.01 || h->GetBinError(ibin)/h->GetBinContent(ibin)<statBinByBin)continue;
            char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
            TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);  statU->Reset();
            TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);  statD->Reset();           
-           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));
-           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));            
+           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
+           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+//           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
+//           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
            uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
            uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
            h->SetBinContent(ibin, 0);  h->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
@@ -854,8 +856,8 @@ void initializeTGraph(){
                     for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){
                         if(h->GetBinContent(ibin)>0)
                         errors->SetPoint(icutg,h->GetXaxis()->GetBinCenter(ibin), h->GetBinContent(ibin));
-//                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, sqrt(pow(h->GetBinContent(ibin)*Uncertainty,2) + pow(h->GetBinError(ibin),2) ) );
-                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, 0 );
+                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, sqrt(pow(h->GetBinContent(ibin)*Uncertainty,2) + pow(h->GetBinError(ibin),2) ) );
+//                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, 0 );
                         Maximum =  std::max(Maximum , h->GetBinContent(ibin) + errors->GetErrorYhigh(icutg));
                         icutg++;
                     }errors->Set(icutg);
@@ -910,7 +912,7 @@ void initializeTGraph(){
               axis->Draw();
               p->second->Draw("same");
               map_unc [p->first]->Draw("2 same");
-//              map_data[p->first]->Draw("same");
+              map_data[p->first]->Draw("same");
               for(unsigned int i=0;i<map_signals[p->first].size();i++){
               map_signals[p->first][i]->Draw("HIST same");
               }
@@ -1579,12 +1581,16 @@ void initializeTGraph(){
                  double dywidth = hDD->GetXaxis()->GetBinWidth(1);
                  printf("Gamma+Jet templates have a different bin width:");
                  double mcwidth = hMC->GetXaxis()->GetBinWidth(1);
-                 if(dywidth>mcwidth){printf("bin width in Gamma+Jet templates is larger than in MC samples --> can not rebin!\nStop the script here\n"); exit(0);}
-                 int rebinfactor = (int)(mcwidth/dywidth);
-                 if(((int)mcwidth)%((int)dywidth)!=0){printf("bin width in Gamma+Jet templates are not multiple of the mc histograms bin width\n"); exit(0);}
-                 printf("Rebinning by %i --> ", rebinfactor);
-                 hDD->Rebin(rebinfactor);
-                 printf("Binning DataDriven ZJets Min=%7.2f  Max=%7.2f Width=%7.2f compared to MC ZJets Min=%7.2f  Max=%7.2f Width=%7.2f\n", hDD->GetXaxis()->GetXmin(), hDD->GetXaxis()->GetXmax(), hDD->GetXaxis()->GetBinWidth(1), hMC->GetXaxis()->GetXmin(), hMC->GetXaxis()->GetXmax(), hMC->GetXaxis()->GetBinWidth(1));
+                 if(dywidth>mcwidth){
+                    printf("bin width in Gamma+Jet templates is larger than in MC samples (%f vs %f) --> can not rebin!\nStop the script here\n", dywidth,mcwidth); 
+                    exit(0);
+                 }else{
+                    int rebinfactor = (int)(mcwidth/dywidth);
+                    if(((int)mcwidth)%((int)dywidth)!=0){printf("bin width in Gamma+Jet templates are not multiple of the mc histograms bin width\n"); exit(0);}
+                    printf("Rebinning by %i --> ", rebinfactor);
+                    hDD->Rebin(rebinfactor);
+                    printf("Binning DataDriven ZJets Min=%7.2f  Max=%7.2f Width=%7.2f compared to MC ZJets Min=%7.2f  Max=%7.2f Width=%7.2f\n", hDD->GetXaxis()->GetXmin(), hDD->GetXaxis()->GetXmax(), hDD->GetXaxis()->GetBinWidth(1), hMC->GetXaxis()->GetXmin(), hMC->GetXaxis()->GetXmax(), hMC->GetXaxis()->GetBinWidth(1));
+                 }
               }
 
               //save histogram to the structure
