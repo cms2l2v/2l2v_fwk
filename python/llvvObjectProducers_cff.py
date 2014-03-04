@@ -43,7 +43,8 @@ llvvObjectProducers = cms.EDFilter( "llvvObjectProducers",
                                              'HLT_Photon250_NoHE_v1_v',
                                              'HLT_Photon300_NoHE_v1_v',
                                              'HLT_Ele27_WP80_v',
-                                             'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v'
+                                             'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v',
+                                             'HLT_IsoMu24_v'
                                              ),
                      triggerCats      = cms.vint32(
                                             1111,
@@ -60,7 +61,8 @@ llvvObjectProducers = cms.EDFilter( "llvvObjectProducers",
                                             22,
                                             22,
                                             11,
-                                            11
+                                            11,
+                                            13
                                             ),
 
 )
