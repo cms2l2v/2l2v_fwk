@@ -1066,22 +1066,32 @@ void initializeTGraph(){
                  double integral = shapeInfo.histo()->Integral();
 
                  //lumi
-                 if(!it->second.isData && systpostfix.Contains('8'))shapeInfo.uncScale["lumi_8TeV"] = integral*0.05;
+                 if(!it->second.isData && systpostfix.Contains('8'))shapeInfo.uncScale["lumi_8TeV"] = integral*0.026;
                  if(!it->second.isData && systpostfix.Contains('7'))shapeInfo.uncScale["lumi_7TeV"] = integral*0.022;
 
                  //Id+Trigger efficiencies combined
                  if(!it->second.isData){
+                    if(mass==125){
+                    if(chbin.Contains("ee"  ))  shapeInfo.uncScale["CMS_eff_e"] = integral*0.046;
+                    if(chbin.Contains("mumu"))  shapeInfo.uncScale["CMS_eff_m"] = integral*0.026;
+                    }else{
                     if(chbin.Contains("ee"  ))  shapeInfo.uncScale["CMS_eff_e"] = integral*0.03;
                     if(chbin.Contains("mumu"))  shapeInfo.uncScale["CMS_eff_m"] = integral*0.03;
+                    }
                  }
-
+   
                  //uncertainties to be applied only in higgs analyses
                  if(mass>0){
                     //uncertainty on Th XSec
                     //if(it->second.isSignal)shapeInfo.uncScale["theoryUncXS_HighMH"] = std::min(1.0+1.5*pow((mass/1000.0),3),2.0);
 
+                    if(mass==125){
+                    if(it->second.shortName.find("ggH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_gg"]    = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
+                    if(it->second.shortName.find("qqH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_qqbar"] = integral*0.04;}
+                    }else{
                     if(it->second.shortName.find("ggH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_gg"]    = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
                     if(it->second.shortName.find("qqH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_qqbar"] = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
+                    }
                     if(it->second.shortName.find("zz" )!=string::npos){                                              shapeInfo.uncScale["pdf_qqbar"] = integral*(systpostfix.Contains('8')?0.0312:0.0360);}
                   //if(it->second.shortName.find("wz" )!=string::npos){setTGraph(                                    shapeInfo.uncScale["pdf_qqbar"] = integral*(systpostfix.Contains('8')?0.0455:0.0502);}
 
@@ -1176,6 +1186,8 @@ void initializeTGraph(){
               fprintf(pFile, "-------------------------------\n");
 
               for(std::map<string, bool>::iterator U=allSysts.begin(); U!=allSysts.end();U++){
+                 if(mass==125 && U->first=="CMS_hzz2l2v_lshape")continue;//skip lineshape uncertainty for 125GeV Higgs
+
                  char line[2048];
                  sprintf(line,"%-45s %-10s ", U->first.c_str(), U->second?"shapeN2":"lnN");
                  bool isNonNull = false;
