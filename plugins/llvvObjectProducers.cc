@@ -32,12 +32,12 @@
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
 
 #include "EgammaAnalysis/ElectronTools/interface/EGammaCutBasedEleId.h"
-#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
+#include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
-#include "CMGTools/External/interface/PileupJetIdAlgo.h"
+#include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
 
 
 //Tau stuff... somecleaning needed
@@ -802,18 +802,24 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
 
                    //save charged hadron information
+		   //commented: check me Loic
+		   /*
        	           for(unsigned int iCharged=0; iCharged < tau->signalPFChargedHadrCands().size() && iCharged<3; iCharged++){
-		      const reco::PFCandidateRef& cand = tau->signalPFChargedHadrCands().at(iCharged);
+		     const reco::PFCandidateRef& cand = tau->signalPFChargedHadrCands().at(iCharged);
 	   	      math::XYZTLorentzVector candP4 = cand->p4();
                       tauInfo.tracks.push_back(LorentzVectorF(candP4.px(), candP4.py(), candP4.pz(), candP4.energy()));
 	           }
+		   */
 
                    //save neutral hadron information
+		   //commented: Check me Loic
+		   /*
  	           for(unsigned int iPi0=0; iPi0 < tau->signalPiZeroCandidates().size() && iPi0<2; iPi0++){
-		      const reco::RecoTauPiZero& cand = tau->signalPiZeroCandidates().at(iPi0);
-		      math::XYZTLorentzVector candP4 = cand.p4();
+		     const reco::RecoTauPiZero& cand = tau->signalPiZeroCandidates().at(iPi0);
+		      math::XYZTLorentzVector candP4 = cand->p4();
                       tauInfo.pi0s.push_back(LorentzVectorF(candP4.px(), candP4.py(), candP4.pz(), candP4.energy()));
  	           }
+		   */
 
                    if(tauInfo.pt()>tauPtCut && (tauInfo.idbits&tauIdMask)>0 ){
                       tauColl.push_back(tauInfo);
