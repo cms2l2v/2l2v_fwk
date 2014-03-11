@@ -1,9 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
 #Only for debug
-#isMC=False
-#isTauEmbed=False
-#gtag="FT_53_V21_AN4::All"
+isMC=False
+isTauEmbed=False
+gtag="FT_53_V21_AN4::All"
 #gtag="START53_V23::All"
 
 
@@ -145,16 +145,16 @@ process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
 process.eidMVASequence = cms.Sequence(  process.mvaTrigV0 + process.mvaNonTrigV0 )
 process.patElectronsPFlow.electronIDSources.mvaTrigV0    = cms.InputTag("mvaTrigV0")
 process.patElectronsPFlow.electronIDSources.mvaNonTrigV0 = cms.InputTag("mvaNonTrigV0")
-from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *
-process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
-                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
-                                                       barrelCuts = cms.PSet(heepBarrelCuts),
-                                                       endcapCuts = cms.PSet(heepEndcapCuts),
-                                                       applyRhoCorrToEleIsol = cms.bool(True),
-                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
-                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
-                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
-                                                       )
+#from SHarper.HEEPAnalyzer.HEEPSelectionCuts_cfi import *  #FIXME
+#process.selectedPatElectronsPFlowHeep = cms.EDProducer("HEEPAttStatusToPAT",
+#                                                       eleLabel = cms.InputTag("selectedPatElectronsWithTrigger"),
+#                                                       barrelCuts = cms.PSet(heepBarrelCuts),
+#                                                       endcapCuts = cms.PSet(heepEndcapCuts),
+#                                                       applyRhoCorrToEleIsol = cms.bool(True),
+#                                                       eleIsolEffectiveAreas = cms.PSet (heepEffectiveAreas),
+#                                                       eleRhoCorrLabel = cms.InputTag("kt6PFJets:rho"),
+#                                                       verticesLabel = cms.InputTag("goodOfflinePrimaryVertices"),
+#                                                       )
 
 #custom muons
 process.patMuonsPFlow.pfMuonSource = cms.InputTag("pfSelectedMuonsPFlow")
@@ -169,14 +169,14 @@ getattr(process,"pfNoElectron"+postfix).enable = False # to use electron-cleaned
 getattr(process,"pfNoTau"+postfix).enable = False      # to use tau-cleaned jet collection set to True (check what is a tau)
 getattr(process,"pfNoJet"+postfix).enable = True       # this i guess it's for photons...      
 
-#add q/g discriminator
-process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
-process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
-process.QGTagger.isPatJet  = cms.untracked.bool(True)
-process.QGTagger.useCHS    = cms.untracked.bool(True) 
-process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
-process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
-process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
+#add q/g discriminator  #FIXME
+#process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
+#process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
+#process.QGTagger.isPatJet  = cms.untracked.bool(True)
+#process.QGTagger.useCHS    = cms.untracked.bool(True) 
+#process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
+#process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
+#process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
 
 #compute rho from central pf candidates only
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
@@ -186,8 +186,8 @@ process.kt6PFJetsCentral = kt4PFJets.clone( rParam = cms.double(0.6),
                                             Rho_EtaMax = cms.double(2.5),
                                             Ghost_EtaMax = cms.double(2.5) )
 
-from UserCode.llvv_fwk.btvDefaultSequence_cff import *
-btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+#from UserCode.llvv_fwk.btvDefaultSequence_cff import *  #FIXME
+#btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
 
 # cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis
 process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
@@ -200,7 +200,6 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
 
 #the analyzer
 process.load("UserCode.llvv_fwk.llvvObjectProducers_cff")
-process.load("UserCode.llvv_fwk.dataAnalyzer_cfi")
 try:
     if runDijetsAnalysis :
         process.llvvEventlProducerUsed = process.dijetAnalyzer.clone()
@@ -238,11 +237,12 @@ process.p            = cms.Path(
 		      *process.metCounter
                       *process.eidMVASequence
                       *getattr(process,"patPF2PATSequence"+postfix)
-                      *process.btvSequence
+#                      *process.btvSequence  #FIXME
                       *process.kt6PFJetsCentral
-                      *process.qgSequence
+#                      *process.qgSequence #FIXME
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
-                      *process.selectedPatElectronsWithTrigger*process.selectedPatElectronsPFlowHeep
+                      *process.selectedPatElectronsWithTrigger
+#                      *process.selectedPatElectronsPFlowHeep  #FIXME
                       *process.selectedPatMuonsTriggerMatch 
                       *process.llvvObjectProducersUsed
                       *process.endCounter
