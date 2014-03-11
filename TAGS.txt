@@ -12,7 +12,7 @@ cd -
 git cms-merge-topic -u cms-met:53X-MVaNoPuMET-20131217-01
 git clone https://github.com/violatingcp/Jets_Short.git
 cp -r Jets_Short/* .
-rm -rf Jets_Short
+rm -rf Jets_Short README.md
 
 #this prints out some divergent branches? check me Loic
 git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17
