@@ -16,8 +16,6 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
 
-#include "TauAnalysis/CandidateTools/interface/NSVfitStandaloneAlgorithm.h" //for svfit
-
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 //#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"

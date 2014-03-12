@@ -31,13 +31,13 @@
   <bin name="runEWKVJJunfolding"         file="runEWKVJJunfolding.cc"></bin>
   <bin name="rundFtM"                    file="rundFtM.cc"></bin>
   <bin name="runLjetsAnalysis"           file="runLjetsAnalysis.cc"></bin>
+  <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
+  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> 
+  <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
 </environment>
 
 <!-- check me Loic and Pietro...
-  <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
-  <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> 
   <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
-  <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
 -->
 
 <Flags CXXFLAGS="-g"/>
