@@ -1345,9 +1345,9 @@ int main(int argc, char* argv[])
 	//	{
 	//	  std::vector<TString> tags(1,chTags[ich]);
 	
-	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  
+	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  // No. emu and mumu trigger may fire but we select the event for mutau  
 	bool additionalLeptonsVeto( nVetoE>0 || nVetoMu>0 );
-	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 && !otherTriggersVeto && !additionalLeptonsVeto && nTrueJets>1 && nTauJets>2 );    
+	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 /*&& !otherTriggersVeto*/ && !additionalLeptonsVeto && nTrueJets>1 && nTauJets>2 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tau(selTaus.size()==1);
