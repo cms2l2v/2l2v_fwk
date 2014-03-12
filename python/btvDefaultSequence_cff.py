@@ -96,15 +96,18 @@ def btvDefaultSequence(process, isMC=True, jetCollection="selectedPatJetsPFlow",
     ############################################################################
     # For the Soft Lepton taggers
     ############################################################################
-    process.load("RecoBTag.SoftLepton.negativeSoftMuonES_cfi")
-    process.load("RecoBTag.SoftLepton.positiveSoftMuonES_cfi")
-    process.load("RecoBTag.SoftLepton.negativeSoftMuonBJetTags_cfi")
-    process.load("RecoBTag.SoftLepton.positiveSoftMuonBJetTags_cfi")
 
-    process.load("RecoBTag.SoftLepton.negativeSoftLeptonByPtES_cfi")
-    process.load("RecoBTag.SoftLepton.positiveSoftLeptonByPtES_cfi")
-    process.load("RecoBTag.SoftLepton.negativeSoftMuonByPtBJetTags_cfi")
-    process.load("RecoBTag.SoftLepton.positiveSoftMuonByPtBJetTags_cfi")
+    process.load("RecoBTag.SoftLepton.softLepton_cff")
+
+#    process.load("RecoBTag.SoftLepton.positiveSoftMuonES_cfi")
+#    process.load("RecoBTag.SoftLepton.negativeSoftMuonES_cfi")
+#    process.load("RecoBTag.SoftLepton.negativeSoftMuonBJetTags_cfi")
+#    process.load("RecoBTag.SoftLepton.positiveSoftMuonBJetTags_cfi")
+
+#    process.load("RecoBTag.SoftLepton.negativeSoftLeptonByPtES_cfi")
+#    process.load("RecoBTag.SoftLepton.positiveSoftLeptonByPtES_cfi")
+#    process.load("RecoBTag.SoftLepton.negativeSoftMuonByPtBJetTags_cfi")
+#    process.load("RecoBTag.SoftLepton.positiveSoftMuonByPtBJetTags_cfi")
 
     # for new softElectron tagger 
     process.softPFElectronRetrained = process.softElectron.clone()

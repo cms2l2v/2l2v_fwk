@@ -738,7 +738,7 @@ int main(int argc, char* argv[])
             if(deltaR(selLeptons[l1], selTaus[t1        ])<0.1) continue;
 
             float relIso1 = utils::cmssw::relIso(selLeptons[l1], rho);
-            if(abs(selLeptons[l1].id)==11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::againstElectronTightMVA3) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<30)) continue;
+            if(abs(selLeptons[l1].id)==11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::againstElectronTightMVA5) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<30)) continue;
             if(abs(selLeptons[l1].id)!=11 && (relIso1>0.3 || !selTaus[t1].passId(llvvTAUID::againstElectronLoose    ) || !selTaus[t1].passId(llvvTAUID::againstMuonTight2) || !selTaus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) || (selTaus[t1].pt()+selLeptons[l1].pt())<45)) continue;
 
             higgsCand=selLeptons[l1]+selTaus[t1]; higgsCandId=selLeptons[l1].id*selTaus[t1].id;  

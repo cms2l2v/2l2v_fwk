@@ -130,6 +130,9 @@ class llvvTau  : public LorentzVectorF {
    uint64_t idbits;
    LorentzVectorF gen;
    float d0,        dZ,        ip3d,      ip3dsig;
+   float dxy, dxySig, flightLength, flightLengthSig;
+   bool hasSV;
+
    float trkchi2, trkValidPixelHits, trkValidTrackerHits, trkLostInnerHits, trkPtErr;
    std::vector<LorentzVectorF> tracks;
    std::vector<LorentzVectorF> pi0s;
@@ -141,7 +144,7 @@ class llvvTau  : public LorentzVectorF {
    int   numChargedParticlesIsoCone, numNeutralHadronsIsoCone, numPhotonsIsoCone,                   numParticlesIsoCone;
    float ptSumChargedParticlesIsoCone, ptSumPhotonsIsoCone;
    float mva_e_pi, mva_pi_mu, mva_e_mu;
-
+ 
    //functions
    bool passId(unsigned int IdBit){return ((idbits&(1<<IdBit))>0);}
 };
@@ -268,40 +271,73 @@ inline bool sort_llvvJetByCSV(const llvvJet &a, const llvvJet &b) { return a.sup
 
 //ONLY ADD STUFF AT THE END... CAN HOST UP TO 64 VARIABLES
 enum llvvTAUID {
-	 decayModeFinding
-	,byVLooseCombinedIsolationDeltaBetaCorr
-	,byLooseCombinedIsolationDeltaBetaCorr
-	,byMediumCombinedIsolationDeltaBetaCorr
-	,byTightCombinedIsolationDeltaBetaCorr
-	,byLooseCombinedIsolationDeltaBetaCorr3Hits
-	,byMediumCombinedIsolationDeltaBetaCorr3Hits
-	,byTightCombinedIsolationDeltaBetaCorr3Hits
-	,byCombinedIsolationDeltaBetaCorrRaw3Hits
-	,againstElectronLoose                    
-	,againstElectronMedium
-	,againstElectronTight
-	,againstElectronMVA3category
-        ,againstElectronMVA3raw
-	,againstElectronLooseMVA3
-	,againstElectronMediumMVA3
-	,againstElectronTightMVA3
-	,againstElectronVTightMVA3
-	,againstMuonLoose
-	,againstMuonMedium
-	,againstMuonTight
-	,againstMuonLoose2
-	,againstMuonMedium2
-	,againstMuonTight2
-	,againstMuonLoose3
-	,againstMuonTight3
-	,byIsolationMVAraw
-	,byLooseIsolationMVA
-	,byMediumIsolationMVA
-	,byTightIsolationMVA
-	,byIsolationMVA2raw
-	,byLooseIsolationMVA2
-	,byMediumIsolationMVA2
-	,byTightIsolationMVA2
+   decayModeFindingNewDMs,
+   decayModeFindingOldDMs,
+   decayModeFinding,
+//   byLooseIsolation,
+//   byVLooseCombinedIsolationDeltaBetaCorr,
+//   byLooseCombinedIsolationDeltaBetaCorr,
+   byMediumCombinedIsolationDeltaBetaCorr,
+   byTightCombinedIsolationDeltaBetaCorr,
+   byCombinedIsolationDeltaBetaCorrRaw,
+   byLooseCombinedIsolationDeltaBetaCorr3Hits,
+   byMediumCombinedIsolationDeltaBetaCorr3Hits,
+   byTightCombinedIsolationDeltaBetaCorr3Hits,
+   byCombinedIsolationDeltaBetaCorrRaw3Hits,
+   chargedIsoPtSum,
+   neutralIsoPtSum,
+   puCorrPtSum,
+   byIsolationMVA3oldDMwoLTraw,
+   byVLooseIsolationMVA3oldDMwoLT,
+   byLooseIsolationMVA3oldDMwoLT,
+   byMediumIsolationMVA3oldDMwoLT,
+   byTightIsolationMVA3oldDMwoLT,
+   byVTightIsolationMVA3oldDMwoLT,
+   byVVTightIsolationMVA3oldDMwoLT,
+   byIsolationMVA3oldDMwLTraw,
+   byVLooseIsolationMVA3oldDMwLT,
+   byLooseIsolationMVA3oldDMwLT,
+   byMediumIsolationMVA3oldDMwLT,
+   byTightIsolationMVA3oldDMwLT,
+   byVTightIsolationMVA3oldDMwLT,
+   byVVTightIsolationMVA3oldDMwLT,
+   byIsolationMVA3newDMwoLTraw,
+   byVLooseIsolationMVA3newDMwoLT,
+   byLooseIsolationMVA3newDMwoLT,
+   byMediumIsolationMVA3newDMwoLT,
+   byTightIsolationMVA3newDMwoLT,
+   byVTightIsolationMVA3newDMwoLT,
+   byVVTightIsolationMVA3newDMwoLT,
+   byIsolationMVA3newDMwLTraw,
+   byVLooseIsolationMVA3newDMwLT,
+   byLooseIsolationMVA3newDMwLT,
+   byMediumIsolationMVA3newDMwLT,
+   byTightIsolationMVA3newDMwLT,
+   byVTightIsolationMVA3newDMwLT,
+   byVVTightIsolationMVA3newDMwLT,
+   againstElectronLoose,
+   againstElectronMedium,
+   againstElectronTight,
+   againstElectronMVA5raw,
+   againstElectronMVA5category,
+   againstElectronVLooseMVA5,
+   againstElectronLooseMVA5,
+   againstElectronMediumMVA5,
+   againstElectronTightMVA5,
+   againstElectronVTightMVA5,
+   againstElectronDeadECAL,
+   againstMuonLoose,
+   againstMuonMedium,
+   againstMuonTight,
+   againstMuonLoose2,
+   againstMuonMedium2,
+   againstMuonTight2,
+   againstMuonLoose3,
+   againstMuonTight3,
+   againstMuonMVAraw,
+   againstMuonLooseMVA,
+   againstMuonMediumMVA,
+   againstMuonTightMVA
 };
 
 

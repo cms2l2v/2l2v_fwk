@@ -31,12 +31,12 @@
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertexContainer.h"
 
 #include "EgammaAnalysis/ElectronTools/interface/EGammaCutBasedEleId.h"
-#include "EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h"
+#include "EgammaAnalysis/ElectronTools/interface/PFIsolationEstimator.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
-#include "CMGTools/External/interface/PileupJetIdAlgo.h"
+#include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
 
 #include "TH1D.h"
 
@@ -491,7 +491,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       bool isSoft(isTracker && muon->muonID("TMOneStationTight") 
 		  && fabs(ev.ln_d0[ev.ln])<3.  && fabs(ev.ln_dZ[ev.ln])<30.
 		  && ev.mn_trkLayersWithMeasurement[ev.mn]>5 && ev.mn_pixelLayersWithMeasurement[ev.mn]>1  && ev.mn_innerTrackChi2[ev.mn] < 1.8 );
-      bool isHighNew = muon::isHighPtMuon(dynamic_cast<const reco::Muon &>(*muon), dynamic_cast<const reco::Vertex &> (*primVtx)) ;
+      bool isHighNew = muon::isHighPtMuon(dynamic_cast<const reco::Muon &>(*muon), dynamic_cast<const reco::Vertex &> (*primVtx), reco::improvedTuneP) ;
 
       
       //save id summary
