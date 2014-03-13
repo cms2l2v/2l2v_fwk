@@ -40,7 +40,12 @@ except:
     else    : inputList = cms.untracked.vstring('/store/data/Run2012D/SingleMu/AOD/22Jan2013-v1/20000/46F1F062-0685-E211-9E77-001EC9D7F1FF.root')
 process.source = cms.Source("PoolSource",
                             skipEvents=cms.untracked.uint32(3000),
-                            fileNames = inputList
+                            fileNames = inputList,
+                            dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
+                            inputCommands = cms.untracked.vstring(
+                               'keep *',
+                               'drop recoPFTaus_*_*_*'
+                               )
                             )
     
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(30000) )
@@ -116,6 +121,9 @@ process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter*
                                            process.trackingFailureFilter *
                                            process.trkPOGFilters)
 
+
+
+
 #PF2PAT
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 from PhysicsTools.PatAlgos.tools.pfTools import *
@@ -134,6 +142,23 @@ usePF2PAT(process,
           jetCorrections=('AK5PFchs', jecLevels),
           pvCollection=cms.InputTag('goodOfflinePrimaryVertices'),
           typeIMetCorrections=False)
+
+
+
+#TAU Stuff
+process.load("RecoTauTag.Configuration.RecoPFTauTag_cff")
+process.load("RecoTauTag.Configuration.boostedHPSPFTaus_cff")
+
+# prepare RECO sequence that produces boosted taus
+boostedtaupostfix="Boost"
+from RecoTauTag.Configuration.tools.boostTools import *
+clonePFTau(process,boostedtaupostfix)
+
+from PhysicsTools.PatAlgos.tools.tauTools import *
+
+#switchToPFTauHPS(process)
+AddBoostedPATTaus(process,boostedtaupostfix) #add boosted taus to pat sequence
+
 
 #setup trigger matching
 from UserCode.llvv_fwk.triggerMatching_cfg import *
@@ -186,8 +211,8 @@ process.kt6PFJetsCentral = kt4PFJets.clone( rParam = cms.double(0.6),
                                             Rho_EtaMax = cms.double(2.5),
                                             Ghost_EtaMax = cms.double(2.5) )
 
-from UserCode.llvv_fwk.btvDefaultSequence_cff import *  #FIXME
-btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+#from UserCode.llvv_fwk.btvDefaultSequence_cff import *  #FIXME
+#btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
 
 # cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis
 process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
@@ -236,7 +261,12 @@ process.p            = cms.Path(
                       *process.metFilteringTaggers
 		      *process.metCounter
                       *process.eidMVASequence
+                      *process.produceAndDiscriminateBoostedHPSPFTaus
+#                      *process.PFTau
+                      *getattr(process,"PFTau"+boostedtaupostfix) # run boosted tau producer
                       *getattr(process,"patPF2PATSequence"+postfix)
+                      *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
+                      *getattr(process,"patTaus"+boostedtaupostfix)
 #                      *process.btvSequence  #FIXME
                       *process.kt6PFJetsCentral
 #                      *process.qgSequence #FIXME
@@ -244,14 +274,14 @@ process.p            = cms.Path(
                       *process.selectedPatElectronsWithTrigger
 #                      *process.selectedPatElectronsPFlowHeep  #FIXME
                       *process.selectedPatMuonsTriggerMatch 
-                      *process.llvvObjectProducersUsed
+##                      *process.llvvObjectProducersUsed
                       *process.endCounter
                       )
 
 
 
 process.out.fileName = cms.untracked.string("Events.root")
-process.out.outputCommands = cms.untracked.vstring('drop *', 
+process.out.outputCommands = cms.untracked.vstring('keep *', 
                                                    'keep *_llvv*_*_*', 
                                                    'keep edmMergeableCounter_*_*_*', 
                                                    'keep bool_*Filter_*_*',
@@ -262,12 +292,9 @@ process.out.outputCommands = cms.untracked.vstring('drop *',
 #                                                  'keep edmTriggerResults_TriggerResults_*_DataAna',
 #                                                  'keep GenEventInfoProduct_*_*_*',
 #                                                  'keep LHEEventProduct_*_*_*',
-#                                                  'keep PileupSummaryInfos_*_*_*'
+#                                                  'keep PileupSummaryInfos_*_*_*'                                                    
                                                   )
 
 
 process.endPath = cms.EndPath(process.out)	
 process.schedule = cms.Schedule(process.p, process.endPath)
-
-
-

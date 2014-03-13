@@ -191,6 +191,10 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
   std::auto_ptr<llvvTauCollection> tauCollOut(new llvvTauCollection());
   llvvTauCollection& tauColl = *tauCollOut;
 
+  std::auto_ptr<llvvTauCollection> boostedTauCollOut(new llvvTauCollection());
+  llvvTauCollection& boostedTauColl = *boostedTauCollOut;
+
+
   std::auto_ptr<llvvPhotonCollection> phoCollOut(new llvvPhotonCollection());
   llvvPhotonCollection& phoColl = *phoCollOut;
 
@@ -706,10 +710,14 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
 
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
-  //Taus
-        if(analysisCfg_.getParameter<edm::InputTag>("tauSource").label()!=""){
+  //Taus and boostedTaus
+        for(int L=0;L<2;L++){
+        string tauSourceLabel = "tauSource";
+        if(L==1){tauSourceLabel = "boostedTauSource";}
+        
+        if(analysisCfg_.getParameter<edm::InputTag>(tauSourceLabel.c_str()).label()!=""){
 		Handle<pat::TauCollection> tauH;
-		iEvent.getByLabel(analysisCfg_.getParameter<edm::InputTag>("tauSource"), tauH);
+		iEvent.getByLabel(analysisCfg_.getParameter<edm::InputTag>(tauSourceLabel.c_str()), tauH);
 		for(size_t itau=0; itau<tauH->size(); itau++)
 		{
 		   const pat::Tau* tau = &((*tauH)[itau]);
@@ -860,10 +868,13 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		   */
 
                    if(tauInfo.pt()>tauPtCut && (tauInfo.idbits&tauIdMask)>0 ){
-                      tauColl.push_back(tauInfo);
+                      if(L==0){     tauColl.push_back(tauInfo);
+                      }else{ boostedTauColl.push_back(tauInfo);
+                      }
                    }
 		}
         }
+        }//end loop on different Tau sources
 
 
   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////   //////////////////////////////////
@@ -1247,6 +1258,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
        iEvent.put(genEvOut);
        iEvent.put(lepCollOut);         
        iEvent.put(tauCollOut);
+       iEvent.put(boostedTauCollOut);
        iEvent.put(phoCollOut);
        iEvent.put(jetCollOut);
        iEvent.put(pfCollOut);

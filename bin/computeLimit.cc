@@ -117,25 +117,25 @@ class ShapeData_t
      return uncShape[""];
   }
 
-  void makeStatUnc(string prefix="", string suffix="", string suffix2=""){
+  void makeStatUnc(string prefix="", string suffix="", string suffix2="", bool noBinByBin=false){
      if(!histo() || histo()->Integral()<=0)return;
      TH1* h = (TH1*) histo()->Clone("TMPFORSTAT");
 
      //bin by bin stat uncertainty
-     if(statBinByBin>0 && shape==true){
+     if(statBinByBin>0 && shape==true && !noBinByBin){
         int BIN=0;
         for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
            if(h->GetBinContent(ibin)<=0 || h->GetBinContent(ibin)/h->Integral()<0.01 || h->GetBinError(ibin)/h->GetBinContent(ibin)<statBinByBin)continue;
            char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
-           TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);  statU->Reset();
-           TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);  statD->Reset();           
+           TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
+           TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
            statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
            statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
 //           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
 //           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
            uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
            uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
-           h->SetBinContent(ibin, 0);  h->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
+           /*h->SetBinContent(ibin, 0);*/  h->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
            //printf("%s --> %f - %f - %f\n", (prefix+"stat"+suffix+ibintxt+suffix2+"Up").c_str(), statD->Integral(), h->GetBinContent(ibin), statU->Integral() );
         }
      }
@@ -970,7 +970,8 @@ void initializeTGraph(){
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];      
                  TH1* h = shapeInfo.histo();
-                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data());//add stat uncertainty to the uncertainty map;
+//                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), it->second.isSign );//add stat uncertainty to the uncertainty map;
+                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );//add stat uncertainty to the uncertainty map;
 
                  TString proc = it->second.shortName.c_str();
                   for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
