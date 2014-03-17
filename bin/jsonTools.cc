@@ -117,10 +117,12 @@ void make_multicrab_cfg(JSONWrapper::Object& Root, bool forData){
        if((forData && !Process[ip].getBool  ("isdata")) or (!forData && Process[ip].getBool  ("isdata")))continue;          
        std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
        for(size_t id=0; id<Samples.size(); id++){
-          if(!Samples[id].isTag("dtag")) continue;
+          if(!Samples[id].isTag("dtag") || Samples[id].getString("dset", "")=="EOS" || Samples[id].getString("dbsurl", "")=="local" ) continue;
 
           fprintf(pFile, "[%s]\n",Samples[id].getString("dtag").c_str());
           fprintf(pFile, "CMSSW.datasetpath     = %s\n", Samples[id].getString("dset", "").c_str());
+          if(Samples[id].isTag("dbsurl"))
+          fprintf(pFile, "CMSSW.dbs_url         = %s\n", Samples[id].getString("dbsurl", "").c_str());
           fprintf(pFile, "\n");
        }
    }
