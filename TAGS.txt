@@ -1,7 +1,4 @@
 #cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATReleaseNotes52X#Add_CSCTightHaloFilter
-cmsrel CMSSW_5_3_15
-cd CMSSW_5_3_15/src/
-cmsenv
 git cms-addpkg PhysicsTools/PatAlgos
 git cms-merge-topic cms-analysis-tools:5_3_15-addCSCTightHaloFilter
 git cms-addpkg EgammaAnalysis/ElectronTools
@@ -15,6 +12,7 @@ cp -r Jets_Short/* .
 rm -rf Jets_Short README.md
 git cms-addpkg RecoBTag/SecondaryVertex 
 git cms-addpkg RecoVertex/AdaptiveVertexFinder 
+git clone https://github.com/amarini/QuarkGluonTagger.git; cd QuarkGluonTagger ; git checkout v1-2-6; cd -;
 
 #this prints out some divergent branches? check me Loic
 git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17

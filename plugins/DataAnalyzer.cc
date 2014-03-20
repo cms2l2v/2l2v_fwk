@@ -867,11 +867,11 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.jn_jp[ev.jn]          = (*jpTags)[ijet].second;
       ev.jn_ssvhe[ev.jn]       = (*ssvheTags)[ijet].second;
       ev.jn_ivf[ev.jn]         = ivfTags.isValid() ? (*ivfTags)[ijet].second : 0;
-      ev.jn_origcsv[ev.jn]     = (*origcsvTags)[ijet].second;
-      ev.jn_csv[ev.jn]         = (*csvTags)[ijet].second;
-      ev.jn_jpcsv[ev.jn]       = (*jpcsvTags)[ijet].second;
-      ev.jn_slcsv[ev.jn]       = (*slcsvTags)[ijet].second;
-      ev.jn_supercsv[ev.jn]    = (*supercsvTags)[ijet].second;
+      ev.jn_origcsv[ev.jn]     = origcsvTags.isValid() ? (*origcsvTags)[ijet].second : 0;
+      ev.jn_csv[ev.jn]         = csvTags.isValid() ? (*csvTags)[ijet].second : 0;
+      ev.jn_jpcsv[ev.jn]       = jpcsvTags.isValid() ? (*jpcsvTags)[ijet].second : 0;
+      ev.jn_slcsv[ev.jn]       = slcsvTags.isValid() ? (*slcsvTags)[ijet].second : 0;
+      ev.jn_supercsv[ev.jn]    = supercsvTags.isValid() ? (*supercsvTags)[ijet].second : 0;
 
       //secondary vertex from associated tracks
       if(svTagInfo.isValid() && svTagInfo->size()>ijet);
@@ -921,8 +921,9 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	    }
 	}
 
-      PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet), 0, primVtx.get(), *vtxH.product(), true);
-      PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet), 0, primVtx.get(), *vtxH.product(), true);
+      float jec=1./ev.jn_torawsf[ev.jn];
+      PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet->originalObject()), jec, primVtx.get(), *vtxH.product(), true);
+      PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet->originalObject()), jec, primVtx.get(), *vtxH.product(), true);
       ev.jn_beta[ev.jn]        = puIdentifier.beta();
       ev.jn_betaStar[ev.jn]    = puIdentifier.betaStar();
       ev.jn_dRMean[ev.jn]      = puIdentifier.dRMean();

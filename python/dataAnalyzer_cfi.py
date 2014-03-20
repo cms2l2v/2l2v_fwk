@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from RecoJets.JetProducers.PileupJetID_cfi  import pileupJetIdProducerChs
-pileupJetIdProducerChs.algos[0].tmvaWeights=cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml")  
+#pileupJetIdProducerChs.algos[0].tmvaWeights=cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml")  
 
 
                  

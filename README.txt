@@ -2,8 +2,9 @@
 
 export SCRAM_ARCH=slc5_amd64_gcc462
 
-scramv1 project CMSSW CMSSW_5_3_11
-cd CMSSW_5_3_11/src/
+scramv1 project CMSSW CMSSW_5_3_15
+cd CMSSW_5_3_15/src/
+cmsenv
 
 wget -q -O - --no-check-certificate https://raw.github.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
 

@@ -12,7 +12,7 @@ process.load("Configuration.Geometry.GeometryIdeal_cff")
 ## MessageLogger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False),#True),
                                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                                         ) 
 
@@ -164,13 +164,13 @@ getattr(process,"pfNoTau"+postfix).enable = False      # to use tau-cleaned jet 
 getattr(process,"pfNoJet"+postfix).enable = True       # this i guess it's for photons...      
 
 #add q/g discriminator  #FIXME
-#process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
-#process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
-#process.QGTagger.isPatJet  = cms.untracked.bool(True)
-#process.QGTagger.useCHS    = cms.untracked.bool(True) 
-#process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
-#process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
-#process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
+process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
+process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
+process.QGTagger.isPatJet  = cms.untracked.bool(True)
+process.QGTagger.useCHS    = cms.untracked.bool(True) 
+process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
+process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
+process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
 
 #compute rho from central pf candidates only
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
@@ -240,7 +240,7 @@ process.p = cms.Path( process.startCounter
                       *getattr(process,"patPF2PATSequence"+postfix)
                       *process.btvSequence
                       *process.kt6PFJetsCentral
-#                      *process.qgSequence  #FIXME
+                      *process.qgSequence  #FIXME
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
                       *process.selectedPatElectronsWithTrigger
 #                      *process.selectedPatElectronsPFlowHeep  #FIXME - not needed most probably? Tomislav if you want this one fix it ;)
