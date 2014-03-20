@@ -23,8 +23,8 @@ except:
     if isMC : inputList = cms.untracked.vstring('/store/relval/CMSSW_5_3_6-START53_V14/RelValTTbar/GEN-SIM-RECO/v2/00000/16D5D599-F129-E211-AB60-00261894390B.root')
     else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
 process.source = cms.Source("PoolSource",
-                            fileNames = inputList,
-                            skipEvents=cms.untracked.uint32(4000) 
+                            fileNames = inputList
+                            #,skipEvents=cms.untracked.uint32(4000) 
                             )
 
 try:
@@ -180,8 +180,8 @@ process.kt6PFJetsCentral = kt4PFJets.clone( rParam = cms.double(0.6),
                                             Rho_EtaMax = cms.double(2.5),
                                             Ghost_EtaMax = cms.double(2.5) )
 
-#from UserCode.llvv_fwk.btvDefaultSequence_cff import *  #FIXME
-#btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+from UserCode.llvv_fwk.btvDefaultSequence_cff import * 
+btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
 
 # cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis
 process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
@@ -238,12 +238,12 @@ process.p = cms.Path( process.startCounter
 		      *process.metCounter
                       *process.eidMVASequence
                       *getattr(process,"patPF2PATSequence"+postfix)
-#                      *process.btvSequence #FIXME
+                      *process.btvSequence
                       *process.kt6PFJetsCentral
 #                      *process.qgSequence  #FIXME
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
                       *process.selectedPatElectronsWithTrigger
-#                      *process.selectedPatElectronsPFlowHeep  #FIXME
+#                      *process.selectedPatElectronsPFlowHeep  #FIXME - not needed most probably? Tomislav if you want this one fix it ;)
                       *process.selectedPatMuonsTriggerMatch 
                       *process.dataAnalyzer
                       )

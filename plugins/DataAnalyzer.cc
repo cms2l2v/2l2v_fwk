@@ -801,7 +801,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   event.getByLabel("trackCountingHighPurBJetTags",                  tchpTags);          
   event.getByLabel("jetProbabilityBJetTags",                        jpTags);            
   event.getByLabel("simpleSecondaryVertexHighEffBJetTags",          ssvheTags);  
-  event.getByLabel("simpleInclusiveSecondaryVertexHighEffBJetTags", ivfTags); 
+  //event.getByLabel("simpleInclusiveSecondaryVertexHighEffBJetTags", ivfTags); 
   event.getByLabel("combinedSecondaryVertexBJetTags",               origcsvTags);       
   event.getByLabel("combinedSecondaryVertexRetrainedBJetTags",      csvTags);           
   event.getByLabel("combinedCSVJPBJetTags",                         jpcsvTags);         
@@ -866,7 +866,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.jn_tchp[ev.jn]        = (*tchpTags)[ijet].second;
       ev.jn_jp[ev.jn]          = (*jpTags)[ijet].second;
       ev.jn_ssvhe[ev.jn]       = (*ssvheTags)[ijet].second;
-      ev.jn_ivf[ev.jn]         = (*ivfTags)[ijet].second;
+      ev.jn_ivf[ev.jn]         = ivfTags.isValid() ? (*ivfTags)[ijet].second : 0;
       ev.jn_origcsv[ev.jn]     = (*origcsvTags)[ijet].second;
       ev.jn_csv[ev.jn]         = (*csvTags)[ijet].second;
       ev.jn_jpcsv[ev.jn]       = (*jpcsvTags)[ijet].second;
