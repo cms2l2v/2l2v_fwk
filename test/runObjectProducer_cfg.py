@@ -19,7 +19,7 @@ process.load("Configuration.Geometry.GeometryIdeal_cff")
 ## MessageLogger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False),
                                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                                         ) 
 
@@ -194,14 +194,14 @@ getattr(process,"pfNoElectron"+postfix).enable = False # to use electron-cleaned
 getattr(process,"pfNoTau"+postfix).enable = False      # to use tau-cleaned jet collection set to True (check what is a tau)
 getattr(process,"pfNoJet"+postfix).enable = True       # this i guess it's for photons...      
 
-#add q/g discriminator  #FIXME
-#process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
-#process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
-#process.QGTagger.isPatJet  = cms.untracked.bool(True)
-#process.QGTagger.useCHS    = cms.untracked.bool(True) 
-#process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
-#process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
-#process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
+#add q/g discriminator
+process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
+process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
+process.QGTagger.isPatJet  = cms.untracked.bool(True)
+process.QGTagger.useCHS    = cms.untracked.bool(True) 
+process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
+process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
+process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
 
 #compute rho from central pf candidates only
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
@@ -211,8 +211,9 @@ process.kt6PFJetsCentral = kt4PFJets.clone( rParam = cms.double(0.6),
                                             Rho_EtaMax = cms.double(2.5),
                                             Ghost_EtaMax = cms.double(2.5) )
 
-#from UserCode.llvv_fwk.btvDefaultSequence_cff import *  #FIXME
-#btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+from UserCode.llvv_fwk.btvDefaultSequence_cff import * 
+btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+
 
 # cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis
 process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
@@ -267,14 +268,14 @@ process.p            = cms.Path(
                       *getattr(process,"patPF2PATSequence"+postfix)
                       *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
                       *getattr(process,"patTaus"+boostedtaupostfix)
-#                      *process.btvSequence  #FIXME
+                      *process.btvSequence
                       *process.kt6PFJetsCentral
-#                      *process.qgSequence #FIXME
+                      *process.qgSequence 
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
                       *process.selectedPatElectronsWithTrigger
 #                      *process.selectedPatElectronsPFlowHeep  #FIXME
                       *process.selectedPatMuonsTriggerMatch 
-##                      *process.llvvObjectProducersUsed
+                      *process.llvvObjectProducersUsed
                       *process.endCounter
                       )
 
@@ -288,7 +289,7 @@ process.out.outputCommands = cms.untracked.vstring('keep *',
                                                    'keep double_kt6PFJets_rho_*',
                                                    'keep double_kt6PFJetsCentral_rho_*',
                                                    'keep *_lumiProducer_*_*',
-                                                   'keep edmTriggerResults_TriggerResults_*_HLT',
+#                                                  'keep edmTriggerResults_TriggerResults_*_HLT',
 #                                                  'keep edmTriggerResults_TriggerResults_*_DataAna',
 #                                                  'keep GenEventInfoProduct_*_*_*',
 #                                                  'keep LHEEventProduct_*_*_*',
