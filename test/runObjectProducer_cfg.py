@@ -1,10 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-#Only for debug
-isMC=False
-isTauEmbed=False
-gtag="FT_53_V21_AN4::All"
-#gtag="START53_V23::All"
+##Only for debug
+#isMC=False
+#isTauEmbed=False
+#gtag="FT_53_V21_AN4::All"
+##gtag="START53_V23::All"
 
 
 process = cms.Process("DataAna")
@@ -39,16 +39,13 @@ except:
 #    else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
     else    : inputList = cms.untracked.vstring('/store/data/Run2012D/SingleMu/AOD/22Jan2013-v1/20000/46F1F062-0685-E211-9E77-001EC9D7F1FF.root')
 process.source = cms.Source("PoolSource",
-                            skipEvents=cms.untracked.uint32(3000),
+#                            skipEvents=cms.untracked.uint32(3000),
                             fileNames = inputList,
                             dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-                            inputCommands = cms.untracked.vstring(
-                               'keep *',
-                               'drop recoPFTaus_*_*_*'
-                               )
-                            )
+                            inputCommands = cms.untracked.vstring('keep *','drop recoPFTaus_*_*_*')
+                         )
     
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(30000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 try:
     print 'EDM output set to %s'%outFile
@@ -156,7 +153,7 @@ clonePFTau(process,boostedtaupostfix)
 
 from PhysicsTools.PatAlgos.tools.tauTools import *
 
-#switchToPFTauHPS(process)
+switchToPFTauHPS(process)
 AddBoostedPATTaus(process,boostedtaupostfix) #add boosted taus to pat sequence
 
 
@@ -223,6 +220,18 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
                                                                  cms.InputTag('pfJetMETcorr', 'type1')
                                                                  )
 
+#MVA MET (need to modify some files because of the changes in the tau Id)
+process.load('JetMETCorrections.Configuration.JetCorrectionProducers_cff')
+process.load('RecoMET.METPUSubtraction.mvaPFMET_leptons_cff')
+
+process.isotaus.src = cms.InputTag('pfTausProducerPFlow')
+process.isotaus.discriminators = cms.VPSet(
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingPFlow"),                             selectionCut=cms.double(0.5)),
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr3HitsPFlow"),       selectionCut=cms.double(0.5)),
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseElectronRejectionPFlow"),                       selectionCut=cms.double(0.5)),
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseMuonRejection3PFlow"),                          selectionCut=cms.double(0.5))
+)
+process.isotauseq  = cms.Sequence( process.isotaus )
 
 #the analyzer
 process.load("UserCode.llvv_fwk.llvvObjectProducers_cff")
@@ -263,7 +272,6 @@ process.p            = cms.Path(
 		      *process.metCounter
                       *process.eidMVASequence
                       *process.produceAndDiscriminateBoostedHPSPFTaus
-#                      *process.PFTau
                       *getattr(process,"PFTau"+boostedtaupostfix) # run boosted tau producer
                       *getattr(process,"patPF2PATSequence"+postfix)
                       *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
@@ -272,6 +280,7 @@ process.p            = cms.Path(
                       *process.kt6PFJetsCentral
                       *process.qgSequence 
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
+                      *process.pfMEtMVAsequence
                       *process.selectedPatElectronsWithTrigger
 #                      *process.selectedPatElectronsPFlowHeep  #FIXME
                       *process.selectedPatMuonsTriggerMatch 
@@ -282,7 +291,7 @@ process.p            = cms.Path(
 
 
 process.out.fileName = cms.untracked.string("Events.root")
-process.out.outputCommands = cms.untracked.vstring('keep *', 
+process.out.outputCommands = cms.untracked.vstring('drop *', 
                                                    'keep *_llvv*_*_*', 
                                                    'keep edmMergeableCounter_*_*_*', 
                                                    'keep bool_*Filter_*_*',

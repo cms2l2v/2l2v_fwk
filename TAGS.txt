@@ -5,18 +5,25 @@ git cms-addpkg EgammaAnalysis/ElectronTools
 cd EgammaAnalysis/ElectronTools/data
 cat download.url | xargs wget
 cd -
+
 #git cms-addpkg RecoMET/METFilters
 git cms-merge-topic -u cms-met:53X-MVaNoPuMET-20131217-01
 git clone https://github.com/violatingcp/Jets_Short.git
 cp -r Jets_Short/* .
 rm -rf Jets_Short README.md
+
+#btv related algorithms
 git cms-addpkg RecoBTag/SecondaryVertex 
 git cms-addpkg RecoVertex/AdaptiveVertexFinder 
+
+#quark/gluon tagger
 git clone https://github.com/amarini/QuarkGluonTagger.git; cd QuarkGluonTagger ; git checkout v1-2-6; cd -;
 
 #this prints out some divergent branches? check me Loic
 git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17
+cp ~jez/public/forLoic/140313/tauTools.py ../../PhysicsTools/PatAlgos/python/tools/tauTools.py
 
+#checkout the 2l2v framework
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
 
 scram b -j 20

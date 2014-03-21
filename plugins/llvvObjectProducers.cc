@@ -132,6 +132,7 @@ llvvObjectProducers::llvvObjectProducers(const edm::ParameterSet &iConfig)
         produces<llvvMuonInfoCollection>();
         produces<llvvElectronInfoCollection>();
         produces<llvvTauCollection>();
+        produces<llvvTauCollection>("boosted");
         produces<llvvPhotonCollection>();
         produces<llvvJetCollection>();
         produces<llvvPFParticleCollection>();
@@ -193,7 +194,6 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
   std::auto_ptr<llvvTauCollection> boostedTauCollOut(new llvvTauCollection());
   llvvTauCollection& boostedTauColl = *boostedTauCollOut;
-
 
   std::auto_ptr<llvvPhotonCollection> phoCollOut(new llvvPhotonCollection());
   llvvPhotonCollection& phoColl = *phoCollOut;
@@ -1259,7 +1259,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
        iEvent.put(genEvOut);
        iEvent.put(lepCollOut);         
        iEvent.put(tauCollOut);
-       iEvent.put(boostedTauCollOut);
+       iEvent.put(boostedTauCollOut, "boosted");
        iEvent.put(phoCollOut);
        iEvent.put(jetCollOut);
        iEvent.put(pfCollOut);
