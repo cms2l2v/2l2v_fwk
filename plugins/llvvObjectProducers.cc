@@ -132,6 +132,7 @@ llvvObjectProducers::llvvObjectProducers(const edm::ParameterSet &iConfig)
         produces<llvvMuonInfoCollection>();
         produces<llvvElectronInfoCollection>();
         produces<llvvTauCollection>();
+        produces<llvvTauCollection>("boosted");
         produces<llvvPhotonCollection>();
         produces<llvvJetCollection>();
         produces<llvvPFParticleCollection>();
@@ -193,7 +194,6 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
   std::auto_ptr<llvvTauCollection> boostedTauCollOut(new llvvTauCollection());
   llvvTauCollection& boostedTauColl = *boostedTauCollOut;
-
 
   std::auto_ptr<llvvPhotonCollection> phoCollOut(new llvvPhotonCollection());
   llvvPhotonCollection& phoColl = *phoCollOut;
@@ -991,7 +991,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		iEvent.getByLabel("trackCountingHighPurBJetTags",                  tchpTags);          
 		iEvent.getByLabel("jetProbabilityBJetTags",                        jpTags);            
 		iEvent.getByLabel("simpleSecondaryVertexHighEffBJetTags",          ssvheTags);  
-		iEvent.getByLabel("simpleInclusiveSecondaryVertexHighEffBJetTags", ivfTags); 
+		//iEvent.getByLabel("simpleInclusiveSecondaryVertexHighEffBJetTags", ivfTags); 
 		iEvent.getByLabel("combinedSecondaryVertexBJetTags",               origcsvTags);       
 		iEvent.getByLabel("combinedSecondaryVertexRetrainedBJetTags",      csvTags);           
 		iEvent.getByLabel("combinedCSVJPBJetTags",                         jpcsvTags);         
@@ -1051,12 +1051,12 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 			jet.tchp        = (*tchpTags)[ijet].second;
 			jet.jp          = (*jpTags)[ijet].second;
 			jet.ssvhe       = (*ssvheTags)[ijet].second;
-			jet.ivf         = (*ivfTags)[ijet].second;
-			jet.origcsv     = (*origcsvTags)[ijet].second;
-			jet.csv         = (*csvTags)[ijet].second;
-			jet.jpcsv       = (*jpcsvTags)[ijet].second;
-			jet.slcsv       = (*slcsvTags)[ijet].second;
-			jet.supercsv    = (*supercsvTags)[ijet].second;
+			jet.ivf         = ivfTags.isValid() ? (*ivfTags)[ijet].second : 0;
+			jet.origcsv     = origcsvTags.isValid() ? (*origcsvTags)[ijet].second : 0;
+			jet.csv         = csvTags.isValid() ?  (*csvTags)[ijet].second : 0;
+			jet.jpcsv       = jpcsvTags.isValid() ?  (*jpcsvTags)[ijet].second : 0;
+			jet.slcsv       = slcsvTags.isValid() ? (*slcsvTags)[ijet].second : 0;
+			jet.supercsv    = supercsvTags.isValid() ? (*supercsvTags)[ijet].second : 0;
 
 			//secondary vertex from associated tracks
 			if(svTagInfo.isValid() && svTagInfo->size()>ijet);
@@ -1106,8 +1106,9 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 				}
 			}
 
-			PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet), 0, primVtx.get(), *vtxH.product(), true);
-			PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet), 0, primVtx.get(), *vtxH.product(), true);
+                        float jec=1./jet.torawsf;
+                        PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet->originalObject()), jec, primVtx.get(), *vtxH.product(), true);
+                        PileupJetIdentifier puIdentifier         = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(patjet->originalObject()), jec, primVtx.get(), *vtxH.product(), true);
 			jet.beta        = puIdentifier.beta();
 			jet.betaStar    = puIdentifier.betaStar();
 			jet.dRMean      = puIdentifier.dRMean();
@@ -1258,7 +1259,7 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
        iEvent.put(genEvOut);
        iEvent.put(lepCollOut);         
        iEvent.put(tauCollOut);
-       iEvent.put(boostedTauCollOut);
+       iEvent.put(boostedTauCollOut, "boosted");
        iEvent.put(phoCollOut);
        iEvent.put(jetCollOut);
        iEvent.put(pfCollOut);

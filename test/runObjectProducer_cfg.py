@@ -1,10 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-#Only for debug
-isMC=False
-isTauEmbed=False
-gtag="FT_53_V21_AN4::All"
-#gtag="START53_V23::All"
+##Only for debug
+#isMC=False
+#isTauEmbed=False
+#gtag="FT_53_V21_AN4::All"
+##gtag="START53_V23::All"
 
 
 process = cms.Process("DataAna")
@@ -19,7 +19,7 @@ process.load("Configuration.Geometry.GeometryIdeal_cff")
 ## MessageLogger
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False),
                                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                                         ) 
 
@@ -39,16 +39,13 @@ except:
 #    else    : inputList = cms.untracked.vstring('/store/data//Run2012A/DoubleMu/AOD//22Jan2013-v1/20000/F4C34C30-B581-E211-8269-003048FFD7A2.root') 
     else    : inputList = cms.untracked.vstring('/store/data/Run2012D/SingleMu/AOD/22Jan2013-v1/20000/46F1F062-0685-E211-9E77-001EC9D7F1FF.root')
 process.source = cms.Source("PoolSource",
-                            skipEvents=cms.untracked.uint32(3000),
+#                            skipEvents=cms.untracked.uint32(3000),
                             fileNames = inputList,
                             dropDescendantsOfDroppedBranches = cms.untracked.bool(False),
-                            inputCommands = cms.untracked.vstring(
-                               'keep *',
-                               'drop recoPFTaus_*_*_*'
-                               )
-                            )
+                            inputCommands = cms.untracked.vstring('keep *','drop recoPFTaus_*_*_*')
+                         )
     
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(30000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 try:
     print 'EDM output set to %s'%outFile
@@ -156,7 +153,7 @@ clonePFTau(process,boostedtaupostfix)
 
 from PhysicsTools.PatAlgos.tools.tauTools import *
 
-#switchToPFTauHPS(process)
+switchToPFTauHPS(process)
 AddBoostedPATTaus(process,boostedtaupostfix) #add boosted taus to pat sequence
 
 
@@ -194,14 +191,14 @@ getattr(process,"pfNoElectron"+postfix).enable = False # to use electron-cleaned
 getattr(process,"pfNoTau"+postfix).enable = False      # to use tau-cleaned jet collection set to True (check what is a tau)
 getattr(process,"pfNoJet"+postfix).enable = True       # this i guess it's for photons...      
 
-#add q/g discriminator  #FIXME
-#process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
-#process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
-#process.QGTagger.isPatJet  = cms.untracked.bool(True)
-#process.QGTagger.useCHS    = cms.untracked.bool(True) 
-#process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
-#process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
-#process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
+#add q/g discriminator
+process.load('QuarkGluonTagger.EightTeV.QGTagger_RecoJets_cff')
+process.QGTagger.srcJets    = cms.InputTag("selectedPatJets"+postfix)
+process.QGTagger.isPatJet  = cms.untracked.bool(True)
+process.QGTagger.useCHS    = cms.untracked.bool(True) 
+process.QGTagger.srcRho    = cms.InputTag('kt6PFJets','rho')
+process.QGTagger.srcRhoIso = cms.InputTag('kt6PFJetsCentral','rho')
+process.qgSequence=cms.Sequence(process.goodOfflinePrimaryVerticesQG+process.QGTagger)
 
 #compute rho from central pf candidates only
 from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
@@ -211,8 +208,9 @@ process.kt6PFJetsCentral = kt4PFJets.clone( rParam = cms.double(0.6),
                                             Rho_EtaMax = cms.double(2.5),
                                             Ghost_EtaMax = cms.double(2.5) )
 
-#from UserCode.llvv_fwk.btvDefaultSequence_cff import *  #FIXME
-#btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+from UserCode.llvv_fwk.btvDefaultSequence_cff import * 
+btvDefaultSequence(process,isMC,"selectedPatJets"+postfix,"goodOfflinePrimaryVertices")
+
 
 # cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis
 process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
@@ -222,6 +220,18 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( cms.InputTag('p
                                                                  cms.InputTag('pfJetMETcorr', 'type1')
                                                                  )
 
+#MVA MET (need to modify some files because of the changes in the tau Id)
+process.load('JetMETCorrections.Configuration.JetCorrectionProducers_cff')
+process.load('RecoMET.METPUSubtraction.mvaPFMET_leptons_cff')
+
+process.isotaus.src = cms.InputTag('pfTausProducerPFlow')
+process.isotaus.discriminators = cms.VPSet(
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByDecayModeFindingPFlow"),                             selectionCut=cms.double(0.5)),
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr3HitsPFlow"),       selectionCut=cms.double(0.5)),
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseElectronRejectionPFlow"),                       selectionCut=cms.double(0.5)),
+    cms.PSet( discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseMuonRejection3PFlow"),                          selectionCut=cms.double(0.5))
+)
+process.isotauseq  = cms.Sequence( process.isotaus )
 
 #the analyzer
 process.load("UserCode.llvv_fwk.llvvObjectProducers_cff")
@@ -262,33 +272,33 @@ process.p            = cms.Path(
 		      *process.metCounter
                       *process.eidMVASequence
                       *process.produceAndDiscriminateBoostedHPSPFTaus
-#                      *process.PFTau
                       *getattr(process,"PFTau"+boostedtaupostfix) # run boosted tau producer
                       *getattr(process,"patPF2PATSequence"+postfix)
                       *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
                       *getattr(process,"patTaus"+boostedtaupostfix)
-#                      *process.btvSequence  #FIXME
+                      *process.btvSequence
                       *process.kt6PFJetsCentral
-#                      *process.qgSequence #FIXME
+                      *process.qgSequence 
                       *process.type0PFMEtCorrection*process.producePFMETCorrections
+                      *process.pfMEtMVAsequence
                       *process.selectedPatElectronsWithTrigger
 #                      *process.selectedPatElectronsPFlowHeep  #FIXME
                       *process.selectedPatMuonsTriggerMatch 
-##                      *process.llvvObjectProducersUsed
+                      *process.llvvObjectProducersUsed
                       *process.endCounter
                       )
 
 
 
 process.out.fileName = cms.untracked.string("Events.root")
-process.out.outputCommands = cms.untracked.vstring('keep *', 
+process.out.outputCommands = cms.untracked.vstring('drop *', 
                                                    'keep *_llvv*_*_*', 
                                                    'keep edmMergeableCounter_*_*_*', 
                                                    'keep bool_*Filter_*_*',
                                                    'keep double_kt6PFJets_rho_*',
                                                    'keep double_kt6PFJetsCentral_rho_*',
                                                    'keep *_lumiProducer_*_*',
-                                                   'keep edmTriggerResults_TriggerResults_*_HLT',
+#                                                  'keep edmTriggerResults_TriggerResults_*_HLT',
 #                                                  'keep edmTriggerResults_TriggerResults_*_DataAna',
 #                                                  'keep GenEventInfoProduct_*_*_*',
 #                                                  'keep LHEEventProduct_*_*_*',

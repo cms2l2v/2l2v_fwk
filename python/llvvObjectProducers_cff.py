@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 from RecoJets.JetProducers.PileupJetID_cfi  import pileupJetIdProducerChs
-pileupJetIdProducerChs.algos[0].tmvaWeights=cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml")  
+#pileupJetIdProducerChs.algos[0].tmvaWeights=cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_chs_Dec2012.weights.xml")  
 
 llvvGenParticleProducer = cms.EDFilter( "llvvGenParticleProducer",
    genSource       = cms.InputTag("genParticles"),
@@ -15,7 +15,7 @@ llvvObjectProducers = cms.EDFilter( "llvvObjectProducers",
                      beamSpotSource   = cms.InputTag("offlineBeamSpot"),
                      pfSource         = cms.InputTag("particleFlow"),
                      tauSource        = cms.InputTag("selectedPatTausPFlow"),
-                     boostedTauSource = cms.InputTag("selectedPatTausBoost"),
+                     boostedTauSource = cms.InputTag("patTausBoost"),
                      muonSource       = cms.InputTag("selectedPatMuonsTriggerMatch"),
                      electronSource   = cms.InputTag("selectedPatElectronsWithTrigger"),
                      photonSource     = cms.InputTag("photons"),
@@ -27,7 +27,7 @@ llvvObjectProducers = cms.EDFilter( "llvvObjectProducers",
                      jetSource        = cms.InputTag("selectedPatJetsPFlow"),
                      pujetidAlgo      = pileupJetIdProducerChs.algos,
                      keepPfCandidates = cms.int32(0), #0 PFCandidates are not saved, #1 save PF candidates in Jets, #2 Save all with pT>0.3
-                     metSource        = cms.VInputTag("pfMETPFlow","pfMet","pfType1CorrectedMet","pfType1p2CorrectedMet"),
+                     metSource        = cms.VInputTag("pfMETPFlow","pfMet","pfType1CorrectedMet","pfType1p2CorrectedMet", "pfMEtMVA"),
                      triggerSource    = cms.InputTag("TriggerResults::HLT"),
                      triggerPaths     = cms.vstring(
                                              'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v',

@@ -420,6 +420,42 @@
       ]
     },
     {
+      "tag":"MC8TeV_HZAtoBB_350_15",
+      "data":[
+        { "dtag":"MC8TeV_HZAtoBB_350_15"                   , "split":1, "xsec":"0.74328E-03", "br":[ 1 ]                   , "dset":"/higgsToZATollbb_mH_350_mA_15_i2HDM_V1_GEN_SIM/lperrini-higgsToZAtollbb_350_15_V1_RECO-78c73df84bde083c7b913ff3f061559a/USER", "dbsurl":"phys03"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_HZAtoBB_350_30",
+      "data":[
+        { "dtag":"MC8TeV_HZAtoBB_350_30"                   , "split":1, "xsec":"0.78903E-03", "br":[ 1 ]                   , "dset":"/higgsToZATollbb_mH_350_mA_30_i2HDM_V1_GEN_SIM/lperrini-higgsToZAtollbb_350_30_V1_RECO-78c73df84bde083c7b913ff3f061559a/USER", "dbsurl":"phys03"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_HZAtoBB_350_70",
+      "data":[
+        { "dtag":"MC8TeV_HZAtoBB_350_70"                   , "split":1, "xsec":"0.81211E-03", "br":[ 1 ]                   , "dset":"/higgsToZATollbb_mH_350_mA_70_i2HDM_V1_GEN_SIM/lperrini-higgsToZAtollbb_350_70_V1_RECO-78c73df84bde083c7b913ff3f061559a/USER", "dbsurl":"phys03"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_HZAtoTauTau_350_15",
+      "data":[
+        { "dtag":"MC8TeV_HZAtoTauTau_350_15"               , "split":1, "xsec":"0.36009E-04", "br":[ 1 ]                   , "dset":"/higgsToZATolltautau_mH_350_mA_15_i2HDM_V1_GEN_SIM/lperrini-higgsToZAtolltautau_350_15_V1_RECO-78c73df84bde083c7b913ff3f061559a/USER", "dbsurl":"phys03"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_HZAtoTauTau_350_30",
+      "data":[
+        { "dtag":"MC8TeV_HZAtoTauTau_350_30"               , "split":1, "xsec":"0.31267E-04", "br":[ 1 ]                   , "dset":"/higgsToZATolltautau_mH_350_mA_30_i2HDM_V1_GEN_SIM/lperrini-higgsToZAtolltautau_350_30_V1_RECO-78c73df84bde083c7b913ff3f061559a/USER", "dbsurl":"phys03"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_HZAtoTauTau_350_70",
+      "data":[
+        { "dtag":"MC8TeV_HZAtoTauTau_350_70"               , "split":1, "xsec":"0.33050E-04", "br":[ 1 ]                   , "dset":"/higgsToZATolltautau_mH_350_mA_70_i2HDM_V1_GEN_SIM/lperrini-higgsToZAtolltautau_350_70_V1_RECO-78c73df84bde083c7b913ff3f061559a/USER", "dbsurl":"phys03"        }
+      ]
+    },
+    {
       "tag":"MC8TeV_QCDMuPt20toInf",
       "data":[
         { "dtag":"MC8TeV_QCDMuPt20toInf"                   , "split":2, "xsec":364000000   , "br":[ 0.00037 ]             , "dset":"/QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
