@@ -165,7 +165,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
   ev.run    = event.id().run();
   ev.lumi   = event.luminosityBlock();
   ev.event  = event.id().event();
-  
+
   //filter bits
   ev.f_bits=0;
   std::vector<string> filts=analysisCfg_.getParameter<std::vector<string> >("metFilters");
@@ -260,7 +260,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	nHardProcGenLeptons += leptonIsOkToAccept;
 	nHardProcGenBosons  += (isHardProc && (abs(p.pdgId())==24 || abs(p.pdgId())==23));
 	
-
 	ev.mc_id[ev.mcn]=p.pdgId();
 	ev.mc_status[ev.mcn]=p.status();
 	ev.mc_px[ev.mcn]=p.px();
@@ -284,7 +283,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	
 	ev.mcn++;
       }
-    
+
     // FSR photons (if full gen info is set to true)
     if(keepFullGenInfo_)
       {
@@ -529,7 +528,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	continue;
       }
     }
-  
+
   for(size_t iele=0; iele< eH->size(); ++iele)
     {
       reco::CandidatePtr elePtr       = eH->ptrAt(iele);
@@ -765,7 +764,6 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	}
       }
 
-
   //now check if at least one trigger condition is fullfilled
   bool toSave(false);
   bool saveOnlyLeptons(false);
@@ -981,6 +979,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	cout << "@jet selection "<< e.what() << endl;
       }
     }
+
    // additional gen jets :
    if ( !isData && keepFullGenInfo_ ){
 	edm::Handle<reco::GenJetCollection> genJetsHandle;
@@ -1013,7 +1012,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
 			ev.jnUnf++;	
 	}
-   }
+   }  
 
   //
   // missing transverse energy
@@ -1034,7 +1033,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       ev.met_sig[ev.metn] = significance;
       ev.metn++;
     }    
-  
+
   //
   // charged PF candidates which haven't been clustered
   //
@@ -1094,11 +1093,13 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 	ev.pfn++;
       }
   }
-  
+
   //all done here
   if(saveOnlyLeptons){
     ev.metn=0; ev.gn=0; ev.jn=0; ev.pfn=0;  ev.egn=0;
   }
+
+  ev.checkBoundaries();
   summary_.fill();
 }
 

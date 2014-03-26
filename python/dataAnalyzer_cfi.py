@@ -6,7 +6,7 @@ from RecoJets.JetProducers.PileupJetID_cfi  import pileupJetIdProducerChs
 
                  
 dataAnalyzer = cms.EDAnalyzer( "DataAnalyzer",
-                               cfg=cms.PSet( metFilters=cms.vstring('HBHENoiseFilter',
+                               cfg=cms.PSet( metFilters=cms.vstring(#'HBHENoiseFilter',
                                                                     'hcalLaserEventFilter',
                                                                     'EcalDeadCellTriggerPrimitiveFilter',
                                                                     'eeBadScFilter',
