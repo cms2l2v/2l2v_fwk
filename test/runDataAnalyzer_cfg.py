@@ -102,7 +102,7 @@ process.toomanystripclus53X.forcedValue     = cms.untracked.bool(False)
 process.logErrorTooManyClusters.taggedMode  = cms.untracked.bool(True)
 process.logErrorTooManyClusters.forcedValue = cms.untracked.bool(False)  
 
-process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter*
+process.metFilteringTaggers = cms.Sequence(#process.HBHENoiseFilter*
                                            process.hcalLaserEventFilter *
                                            process.EcalDeadCellTriggerPrimitiveFilter *
                                            process.eeBadScFilter *
