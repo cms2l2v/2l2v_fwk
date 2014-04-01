@@ -469,7 +469,7 @@
         { "dtag":"Data8TeV_DoubleElectron2012C"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012C-22Jan2013-v1/AOD"        },
         { "dtag":"Data8TeV_DoubleMu2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012C-22Jan2013-v1/AOD"        },
         { "dtag":"Data8TeV_DoubleElectron2012D"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012D-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"        }
       ]
     }
   ]

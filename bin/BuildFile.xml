@@ -34,10 +34,14 @@
   <bin name="runChHiggsAnalysis"         file="runChHiggsAnalysis.cc"></bin>
   <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> 
   <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
+  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
 </environment>
 
-<!-- check me Loic and Pietro...
-  <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
+<!-- 
+IF YOU HAVE AN ISSUE TO COMPILE runZHTauTauAnalysisFWLite, it means you miss the following package, just add it
+cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit
 -->
+
+
 
 <Flags CXXFLAGS="-g"/>
