@@ -48,6 +48,7 @@ elif [ "${1}" = "current" ]; then
 # Fixed run 
     #    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_e/
     BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_dio/
+    #    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/ run in 5315
     if [ "${2}" = "anal_sus" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_sm" ]; then
@@ -122,6 +123,7 @@ elif [ "${1}" = "current" ]; then
 
 #	mkdir ${BASEDIR}plots/tabs
 #	mv ${BASEDIR}plotse* ${BASEDIR}plots/tabs/
+
     elif [ "${2}" = "tables" ]; then
 	# Tables
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forTables.root --showUnc --noPlots --noPowers --onlyStartWith emu_evtflow
@@ -209,10 +211,39 @@ elif [ "${1}" = "current" ]; then
 	
 	for i in 180 200 220 250 300
 	  do
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecayMhmax/${i}/ --suffix mhmax --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayScan/${i}/ --suffix scan --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  #JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/
+	  JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315/
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecayMhmax/${i}/ --suffix mhmax --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayScan/${i}/ --suffix scan --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
 	done
 	
+
+    elif [ "${2}" = "mhmodp" ]; then
+	mkdir -p ${BASEDIR}outputs/
+
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter-all-samples_mhmodp_finalevtflow.root --noPlot --noPowers  --onlyStartWith emu_finalevtflow2btags
+
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/220 
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/250 
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/300
+
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/180
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/200 
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/220 
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/250 
+	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/300
+	
+	for i in 180 200 220 250 300
+	  do
+	  JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
+	  prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter-all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+
+	  JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb30/
+	  prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter-all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	done
+
 	
     elif [ "${2}" = "put" ]; then
 	outputdir=tempDirForNotePlots/
