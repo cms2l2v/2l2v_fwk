@@ -19,9 +19,10 @@ git cms-addpkg RecoVertex/AdaptiveVertexFinder
 #quark/gluon tagger
 git clone https://github.com/amarini/QuarkGluonTagger.git; cd QuarkGluonTagger ; git checkout v1-2-6; cd -;
 
-#this prints out some divergent branches? check me Loic
+#updated Tau object (Run2 Id and boosted taus)
 git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17
 cp ~jez/public/forLoic/140313/tauTools.py ../../PhysicsTools/PatAlgos/python/tools/tauTools.py
+cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit
 
 #checkout the 2l2v framework
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk

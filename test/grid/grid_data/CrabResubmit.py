@@ -6,14 +6,20 @@ import commands
 workingDir=''
 JobsToResubmit=''
 JobsToSubmit=''
+JobsToKill=''
 NJobsToSubmit=0
 NJobsToResubmit=0
+NJobsToKill=0
+summaryTotalJob=0
+summaryRetrieved=0
+summaryError=0
+summaryOther=0
 
 os.system('rm CrabResubmit.sh')
 os.system('rm CrabResubmit.log')
+os.system('rm CrabResubmit.summary')
 inputFiles = sys.argv[1:]
 ReadingData=False
-print inputFiles
 for input in inputFiles:
 	f = open(input,'r')
 	for line in f :
@@ -23,13 +29,30 @@ for input in inputFiles:
 			workingDir = linesplits[len(linesplits)-2]
                         JobsToResubmit=''
                         JobsToSubmit=''
+                        JobsToKill=''
                         NJobsToSubmit=0
+                        NJobsToResubmit=0
+                        NJobsToKill=0
 			print '###################### %40s ######################' % workingDir
 
                  #identify the begining of a data block
                  if(line.find('ID    END STATUS            ACTION       ExeExitCode JobExitCode E_HOST')>=0):
                         ReadingData=True
+                        summaryTotalJob=0
+                        summaryRetrieved=0
+                        summaryError=0
+                        summaryOther=0
                         continue
+
+                 #prepare to make a summary file
+#                 print line
+                 if(line.find('Log file')==0):
+                    if(summaryTotalJob>0): 
+                       RatioRetrieve = float(100 * summaryRetrieved) / float (summaryTotalJob)
+                       os.system(('echo "%40s'% workingDir) + ('%7.2f%% Retrieved'%RatioRetrieve) + (' of %i Jobs --> ' % summaryTotalJob) + (' %i (Retrieved)   %i (Other)   %i (Error)'%(summaryRetrieved,summaryOther,summaryError)) + '" >> CrabResubmit.summary')
+                    else:
+                       os.system(('echo "%40s'% workingDir) + 'ERROR (0Jobs)" >> CrabResubmit.summary')
+
 
                  #if out of a datablock, skip all the lines
                  if(not ReadingData):continue
@@ -44,9 +67,17 @@ for input in inputFiles:
                         #Finalize the current project, basically simply printout the resubmit command:
                         NJobsToSubmit=500;
                         NJobsToResubmit=500;
+                        NJobsToKill=500;
+
                         #continue
 
                  #check that we do not need to submit/resubmit jobs
+                 if(NJobsToResubmit>=499):
+                    if(len(JobsToKill)>0):
+                       os.system('echo "crab -kill ' + JobsToKill + ' -c ' + workingDir+'" >> CrabResubmit.sh')
+                    JobsToKill=''
+                    NJobsToKill=0
+
                  if(NJobsToSubmit>=499):
                     if(len(JobsToSubmit)>0):
                        os.system('echo "crab -submit ' + JobsToSubmit + ' -c ' + workingDir+'" >> CrabResubmit.sh')
@@ -65,6 +96,16 @@ for input in inputFiles:
 
                   ############################################### HERE IS THE TREATMENT OF EACH STATUS LINE
                  print linesplits
+
+                 #START THE PART USED FOR THE SUMMARY
+                 summaryTotalJob = summaryTotalJob+1
+                 if(linesplits[1].find('Y')>=0 and linesplits[2].find('Retrieved')==0 and (linesplits[5][0].isdigit() and int(linesplits[5])==0)):
+                    summaryRetrieved = summaryRetrieved+1
+                 elif(linesplits[1].find('Y')>=0 and linesplits[2].find('Retrieved')==0):
+                    summaryError = summaryError+1;
+                 else:
+                    summaryOther = summaryOther+1
+                 #END THE PART USED FOR THE SUMMARY
       
                  #resubmit all aborted jobs or CannotSubmit jobs
                  if(linesplits[1].find('Y')>=0 and (linesplits[2].find('Aborted')>=0 or linesplits[2].find('CannotSubmit')>=0) ):
@@ -95,10 +136,14 @@ for input in inputFiles:
                         continue;
 
 
-                 #resubmit all jobs in ready or scheduled state (for too long) 
-#                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0)):
-#                        if len(JobsToResubmit)>0: JobsToResubmit+=','
-#                        JobsToResubmit += str((int(linesplits[0])))
-#                        continue;
+                 #resubmit all jobs in ready or scheduled or submited state (for too long) 
+                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0 or linesplits[2].find('Submitted')>=0)):
+                        if len(JobsToResubmit)>0: JobsToResubmit+=','
+                        JobsToResubmit += str((int(linesplits[0])))
+                        NJobsToResubmit+=1;
+                        if len(JobsToKill)>0: JobsToKill+=','
+                        JobsToKill += str((int(linesplits[0])))
+                        NJobsToKill+=1;
+                        continue;
 
 	f.close()

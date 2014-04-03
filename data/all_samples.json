@@ -716,7 +716,7 @@
     {
       "tag":"MC8TeV_WWZJets",
       "data":[
-        { "dtag":"MC8TeV_WWZJets"                          , "split":1, "xsec":0.0633      , "br":[ 1.0 ]                 , "dset":"/WWZJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WWZJets"                          , "split":1, "xsec":0.0633      , "br":[ 1.0 ]                 , "dset":"/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -728,7 +728,7 @@
     {
       "tag":"MC8TeV_WZZJets",
       "data":[
-        { "dtag":"MC8TeV_WZZJets"                          , "split":1, "xsec":0.01922     , "br":[ 1.0 ]                 , "dset":"/WZZJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WZZJets"                          , "split":1, "xsec":0.01922     , "br":[ 1.0 ]                 , "dset":"/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
@@ -902,7 +902,7 @@
     {
       "tag":"MC8TeV_ZH150toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH150toTauTau"                    , "split":1, "xsec":0.0004148912, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-150_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH150toTauTau"                    , "split":1, "xsec":0.0004148912, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-150_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
     {
@@ -944,7 +944,7 @@
     {
       "tag":"MC8TeV_ZZZJets",
       "data":[
-        { "dtag":"MC8TeV_ZZZJets"                          , "split":1, "xsec":0.004587    , "br":[ 1.0 ]                 , "dset":"/ZZZJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZZZJets"                          , "split":1, "xsec":0.004587    , "br":[ 1.0 ]                 , "dset":"/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {

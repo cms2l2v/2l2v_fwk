@@ -212,6 +212,66 @@ void fix_json(JSONWrapper::Object& Ref, std::string jsonFileToBeFixed){
 }
 
 
+void clean_json(JSONWrapper::Object& Root, std::vector<string>& keepFiles){
+   if(keepFiles.size()<=0)return;
+
+   //build list of dtag to keep
+   std::vector<string> dtagstokeep;
+   for(unsigned int f=0;f<keepFiles.size();f++){
+      FILE* pFile = fopen(keepFiles[f].c_str(), "r");
+      if(!pFile)continue;
+      char line[4096];
+      char* toReturn = fgets(line, 4096, pFile);
+      while(toReturn){
+         char* pch=strtok(line," "); int Arg=0;
+         while (pch!=NULL){
+            switch(Arg){           
+               case  0:
+                  if(pch[0]=='-' or pch[0]=='/' or pch[0]=='#')break;
+                  dtagstokeep.push_back(pch); 
+                  break;
+               default:break;
+            }
+            pch=strtok(NULL," ");Arg++;
+         }
+         toReturn = fgets(line, 4096, pFile);
+      }
+   fclose(pFile);
+   }
+
+  //print identified dtags
+  printf("List of tags that will be kept:\n");
+  for(unsigned int s=0;s<dtagstokeep.size();s++){ printf("%s ", dtagstokeep[s].c_str());
+  } printf("\n\n");
+
+
+
+  //loop on the json list of dtags and remove the one that are not in the list
+   std::vector<string> droppedTags; //just for information
+   std::vector<JSONWrapper::Object>& Process = Root["proc"].daughters();
+   for(size_t ip=0; ip<Process.size(); ip++){
+       string tag = Process[ip].getString("tag");
+       //search if this tag is in the vector of object to keep
+       bool drop=true;
+       for(unsigned int s=0;s<dtagstokeep.size();s++){ if(dtagstokeep[s]==tag){drop=false; break;} };
+       if(drop){
+          droppedTags.push_back(tag);
+          Root["proc"].obj.erase(Root["proc"].obj.begin()+ip); 
+          Root["proc"].key.erase(Root["proc"].key.begin()+ip);
+          ip--;
+       }
+   }
+
+  //print list of dropped tags
+  printf("List of tags that have been dropped:\n");
+  for(unsigned int s=0;s<droppedTags.size();s++){ printf("%s ", droppedTags[s].c_str());
+  } printf("\n\n");    
+}
+
+//for input in inputFiles:
+//        f = open(input,'r')
+//        for line in f :
+//        if(line.startswith('--') or line.startswith('//') or line.startswith('\#')):continue
 
 
 
@@ -221,6 +281,7 @@ int main(int argc, char* argv[]){
    bool multicrabMC = false;
    std::vector<string> inJsons;
    std::vector<string> fixJsons;
+   std::vector<string> keepFiles;
    string outJson = "";    
 
    std::vector<string> args;
@@ -228,12 +289,13 @@ int main(int argc, char* argv[]){
      args.push_back(argv[i]);
      string arg(argv[i]);
      if(arg.find("--help")!=string::npos){
-        printf("--help               --> print this helping text\n");
-        printf("--in  [in1,...,inN)] --> input  Json files \n");
-        printf("--fix [fx1,...,fxN)] --> Json files to be fixed.  The input files are considered as the reference and the files to be fixed will be modified according to the reference input files\n");
-        printf("--out [out]          --> output Json file \n");
-        printf("--multicrab          --> create a multicrab.cfg file for the data samples \n");
-        printf("--multicrabMC        --> create a multicrab.cfg file for the MC samples \n");
+        printf("--help                        --> print this helping text\n");
+        printf("--in  [in1,...,inN)]          --> input  Json files \n");
+        printf("--fix [fx1,...,fxN)]          --> Json files to be fixed.  The input files are considered as the reference and the files to be fixed will be modified according to the reference input files\n");
+        printf("--keepFromFile [fk1,...,fkN)] --> Files that list all the processes to be kept from the input json files.  Only the first word of each line is considered\n");
+        printf("--out [out]                   --> output Json file \n");
+        printf("--multicrab                   --> create a multicrab.cfg file for the data samples \n");
+        printf("--multicrabMC                 --> create a multicrab.cfg file for the MC samples \n");
 	return 0;
      }
 
@@ -242,10 +304,13 @@ int main(int argc, char* argv[]){
      else if(arg.find("--out")!=string::npos && i+1<argc){outJson = argv[i+1];  i++;  printf("output Json file : %s\n", outJson.c_str());}
      else if(arg.find("--multicrabMC")!=string::npos){ multicrabMC = true; }
      else if(arg.find("--multicrab"  )!=string::npos){ multicrab   = true; }
+     else if(arg.find("--keepFromFile")!=string::npos){ while(i+1<argc && string(argv[i+1]).find("--")!=0){keepFiles.push_back(argv[i+1]);  i++;}  printf("keeping files:\n"); for(unsigned int j=0;j<keepFiles.size();j++){printf("\t - %s\n", keepFiles[j].c_str());}  }
    }
 
 
    JSONWrapper::Object AllJson = merge_json(inJsons);
+
+   clean_json(AllJson, keepFiles);
 
    if(multicrab || multicrabMC){
       make_multicrab_cfg(AllJson, !multicrabMC);

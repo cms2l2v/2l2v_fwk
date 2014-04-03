@@ -7,7 +7,7 @@
 
 //#include "TObject.h"
 
-#define MAXDATAOBJECTS 1000
+#define MAXDATAOBJECTS 2000
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
@@ -95,6 +95,28 @@ class DataEventSummary //: public TObject
 
   DataEventSummary() { } 
   ~DataEventSummary() { }
+  
+  //
+  void checkBoundaries()
+  {
+    bool doWarn(false);
+    if(pfn>MAXDATAOBJECTS)   { doWarn=true; pfn=MAXDATAOBJECTS; }
+    if(metn>MAXDATAOBJECTS)  { doWarn=true; metn=MAXDATAOBJECTS; }
+    if(gn>MAXDATAOBJECTS)    { doWarn=true; gn=MAXDATAOBJECTS; }
+    if(jn>MAXDATAOBJECTS)    { doWarn=true; jn=MAXDATAOBJECTS; }
+    if(jnUnf>MAXDATAOBJECTS) { doWarn=true; jnUnf=MAXDATAOBJECTS; }
+    if(egn>MAXDATAOBJECTS)   { doWarn=true; egn=MAXDATAOBJECTS; }
+    if(ln>MAXDATAOBJECTS)    { doWarn=true; ln=MAXDATAOBJECTS; }
+    if(tn>MAXDATAOBJECTS)    { doWarn=true; tn=MAXDATAOBJECTS; }
+    if(doWarn){
+      std::cout << "[DataEventSummary][checkBoundaries] one or more counters found to be above MAXDATAOBJECTS - limited "
+		<< " run=" << run
+		<< " event=" << event
+		<< " lumi=" << lumi
+		<< std::endl;
+    }
+
+  }
 
   //
   void reset()
