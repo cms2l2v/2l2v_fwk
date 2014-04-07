@@ -86,7 +86,7 @@
     },
     {
       "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[250 GeV]}",
-      "label":"#splitline{100#times H^{+}#rightarrow#tau#nu}{[250 GeV]}",
+      "label":"#splitline{10#times H^{+}#rightarrow#tau#nu}{[250 GeV]}",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -94,14 +94,15 @@
       "lwidth":2,
       "lstyle":7,
       "fill":0,
-      "marker":1,
+      "marker":1,    
       "data":[
-        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":7, "xsec":23.8826     , "br":[ 0.04129783 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":7, "xsec":15.24899     , "br":[ 0.257198 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
-    },
+    }, 
+
     {
       "tag":"#splitline{H^{+}#rightarrow tb}{[250 GeV]}",
-      "label":"#splitline{100#times H^{+}#rightarrow tb}{[250 GeV]}",
+      "label":"#splitline{10#times H^{+}#rightarrow tb}{[250 GeV]}",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -111,7 +112,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6"           , "split":10, "xsec":23.8826     , "br":[ 0.95870217 ]          , "dset":"/HplusToTBbar_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6"           , "split":10, "xsec":15.24899     , "br":[ 0.705360 ]          , "dset":"/HplusToTBbar_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
     {
