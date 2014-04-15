@@ -35,6 +35,7 @@
   <bin name="runChHiggsAnalysisFWLite"   file="runChHiggsAnalysisFWLite.cc"></bin> 
   <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
   <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
+  <bin name="runTStauStauAnalysisFWLite" file="runTStauStauAnalysisFWLite.cc"></bin>
 </environment>
 
 <!-- 
