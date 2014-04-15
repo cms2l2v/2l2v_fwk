@@ -67,14 +67,12 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode = runProcess.getParameter<int>("mctruthmode"); // What is this one for?
-  //std::vector<int> jacknifeCfg = runProcess.getParameter<std::vector<int> >("jacknife");
-    //int jacknife(jacknifeCfg[0]), jacks(jacknifeCfg[1]);
-    //if(jacknife > 0 && jacks > 0) std::cout << "Jacknife will be applied to every " << jacknife << " out of " << jacks << " events." << std::endl;
   std::vector<std::string> urls = runProcess.getParameter<std::vector<std::string> >("input");
   std::string baseDir = runProcess.getParameter<std::string>("dirName");
   std::string outdir = runProcess.getParameter<std::string>("outdir");
   std::string jecDir = runProcess.getParameter<std::string>("jecDir");
   bool runSystematics = runProcess.getParameter<bool>("runSystematics");
+  bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
 
   // Hardcoded configs
   bool runLoosePhotonSelection(false); // Specific to ZHTauTau?
@@ -181,11 +179,40 @@ int main(int argc, char* argv[])
     std::vector<TString> chTags;
     chTags.push_back("all");
 
-    // First fill the all events bin in the cutflow:
-    mon.fillHisto("cutFlow", chTags, 0, weight);
+    // Fill the all events bin in the cutflow:
+    mon.fillHisto("cutFlow", chTags, 0, weight); //Might have to remove this later...
 
     // Load the event content from tree
-//    ev.to(iev);
+    ev.to(iev);
+
+
+    /****     Get information/collections from the event     ****/
+    // Number of vertexes
+    int nvtx = 0;
+    fwlite::Handle<int> nvtxHandle;
+    nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
+    if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
+
+    // Collection of generated particles
+    fwlite::Handle<llvvGenEvent> genEventHandle;
+    genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!genEventHandle.isValid())
+    {
+      std::cout << "llvvGenEvent Object NotFound" << std::endl;
+      continue;
+    }
+    llvvGenEvent genEv = *genEventHandle;
+
+    fwlite::Handle<llvvGenParticleCollection> genPartCollHandle;
+    genPartCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!genPartCollHandle.isValid())
+    {
+      std::cout << "llvvGenParticleCollection Object NotFound" << std::endl;
+      continue;
+    }
+    llvvGenParticleCollection gen = *genPartCollHandle;
+
+
   }
 
   std::cout << std::endl;
@@ -203,14 +230,17 @@ int main(int argc, char* argv[])
   outfile->Close();
   delete outfile;
 
-  outUrl.replace(outUrl.find(".root", 0), 5, "_summary.root");
-  std::cout << "Saving summary results in " << outUrl << std::endl;
-  outfile = new TFile(outUrl.c_str(), "RECREATE");
-  // Write Tuple/Tree
-  //summaryTuple->SetDirectory(ofile);
-  //summaryTuple->Write();
-  outfile->Close();
-  delete outfile;
+  if(saveSummaryTree)
+  {
+    outUrl.replace(outUrl.find(".root", 0), 5, "_summary.root");
+    std::cout << "Saving summary results in " << outUrl << std::endl;
+    outfile = new TFile(outUrl.c_str(), "RECREATE");
+    // Write Tuple/Tree
+    //summaryTuple->SetDirectory(ofile);
+    //summaryTuple->Write();
+    outfile->Close();
+    delete outfile;
+  }
 
   return 0;
 }  
