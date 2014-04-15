@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
     xsecWeight = 1.;
 
   // Jet Energy Scale and Uncertainties
-  gSystem->ExpandPathName(jecDir.c_str());
+  jecDir = gSystem->ExpandPathName(jecDir.c_str());
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector(jecDir, isMC);
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt"));
   
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
     chTags.push_back("all");
 
     // First fill the all events bin in the cutflow:
-    mon.fillHisto("cutflow", chTags, 0, weight);
+    mon.fillHisto("cutFlow", chTags, 0, weight);
 
     // Load the event content from tree
 //    ev.to(iev);
