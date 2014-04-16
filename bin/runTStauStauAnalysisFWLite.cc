@@ -40,6 +40,8 @@
 #include "TNtuple.h"
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <boost/shared_ptr.hpp>
 #include <Math/VectorUtil.h>
 
@@ -105,8 +107,12 @@ int main(int argc, char* argv[])
   SmartSelectionMonitor mon;
   TH1F *h = (TH1F*)mon.addHistogram(new TH1F("cutFlow", ";;Events", 20, 0, 20));
   h->GetXaxis()->SetBinLabel(1, "All");
+  h->GetXaxis()->SetBinLabel(2, "HLT");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
+
+  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,-0.5,49.5) );
+  mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,-0.5,49.5) ); 
 
 
 
@@ -166,21 +172,24 @@ int main(int argc, char* argv[])
   DuplicatesChecker duplicatesChecker;
   int nDuplicates(0);
   int step(totalEntries/50);
-
+  
+  // Redirect stdout and stderr to a temporary buffer, then output buffer after event loop
+  std::ostream myCout(std::cout.rdbuf());
+  std::stringstream buffer;
+  std::streambuf *coutbuf = std::cout.rdbuf();
+  std::streambuf *cerrbuf = std::cerr.rdbuf();
+  std::cout.rdbuf(buffer.rdbuf());
+  std::cerr.rdbuf(buffer.rdbuf());
+  
   // Loop on events
   for(int iev = 0; iev < totalEntries; ++iev)
   {
     if(iev%step == 0)
-      std::cout << "_" << std::flush;
-
-    double weight = 1;
+      myCout << "_" << std::flush;
 
     // Prepare tags to fill the histograms
     std::vector<TString> chTags;
     chTags.push_back("all");
-
-    // Fill the all events bin in the cutflow:
-    mon.fillHisto("cutFlow", chTags, 0, weight); //Might have to remove this later...
 
     // Load the event content from tree
     ev.to(iev);
@@ -315,10 +324,44 @@ int main(int argc, char* argv[])
     double rho25 = *rho25Handle;
 
 
+    /****         Filter events acording to HLT Path         ****/
+    bool singleETrigger  = triggerBits[13]; // HLT_Ele27_WP80_v*
+    bool singleMuTrigger = triggerBits[15]; // HLT__IsoMu24_v*
+    if(singleETrigger)
+      chTags.push_back("singleE");
+    if(singleMuTrigger)
+      chTags.push_back("singleMu");
+
+
+    // Pileup Weight
+    double weight       = 1.;
+    double weight_plus  = 1.;
+    double weight_minus = 1.;
+    double puWeight     = 1.;
+    if(isMC)
+    {
+      puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
+      weight       = xsecWeight*puWeight;
+      weight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
+      weight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
+    }
+
+    // Fill the all events bin in the cutflow:
+    mon.fillHisto("cutFlow", chTags, 0, weight); //Might have to remove this later...
+
+    if(singleETrigger || singleMuTrigger)
+      mon.fillHisto("cutFlow", chTags, 1, weight); //Might have to remove this later...
+    
+    mon.fillHisto("nvtx", chTags, nvtx, weight);
+    mon.fillHisto("nvtxraw", chTags, nvtx, weight);
+
+
   }
 
+  std::cout.rdbuf(coutbuf);
+  std::cerr.rdbuf(cerrbuf);
   std::cout << std::endl;
-
+  std::cout << buffer.str();
 
 
   /***************************************************************************/
