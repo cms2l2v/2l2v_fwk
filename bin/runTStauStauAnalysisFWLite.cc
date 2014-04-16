@@ -212,6 +212,108 @@ int main(int argc, char* argv[])
     }
     llvvGenParticleCollection gen = *genPartCollHandle;
 
+    // Collection of leptons
+    fwlite::Handle<llvvLeptonCollection> leptonCollHandle;
+    leptonCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!leptonCollHandle.isValid())
+    {
+      std::cout << "llvvLeptonCollection Object NotFound" << std::endl;
+      continue;
+    }
+    llvvLeptonCollection leptons = *leptonCollHandle;
+
+    // Electron Information Collection
+    fwlite::Handle<llvvElectronInfoCollection> electronInfoCollHandle;
+    electronInfoCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!electronInfoCollHandle.isValid())
+    {
+      std::cout << "llvvElectronInfoCollection Object NotFound" << std::endl;
+      continue;
+    }
+
+    // Muon Information Collection
+    fwlite::Handle<llvvMuonInfoCollection> muonInfoCollHandle;
+    muonInfoCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!muonInfoCollHandle.isValid())
+    {
+      std::cout << "llvvMuonInfoCollection Object NotFound" << std::endl;
+      continue;
+    }
+
+    // Tau Collection
+    fwlite::Handle<llvvTauCollection> tauCollHandle;
+    tauCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!tauCollHandle.isValid())
+    {
+      std::cout << "llvvLeptonCollection Object NotFound" << std::endl;
+      continue;
+    }
+    llvvTauCollection taus = *tauCollHandle;
+
+    // Jet Collection
+    fwlite::Handle<llvvJetCollection> jetCollHandle;
+    jetCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
+    if(!jetCollHandle.isValid())
+    {
+      std::cout << "llvvJetCollection Object NotFound" << std::endl;
+      continue;
+    }
+    llvvJetExtCollection jets;
+    //for(unsigned int i = 0; i < jetCollHandle->size(); ++i)
+      //jets.push_back(llvvJetExt((*jetCollHandle)[i]));
+    for(auto i = jetCollHandle->begin(); i != jetCollHandle->end(); ++i)
+      jets.push_back(llvvJetExt(*i));
+
+    // MET Collection
+    fwlite::Handle<llvvMet> metHandle;
+    metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow");
+    if(!metHandle.isValid())
+    {
+      std::cout << "llvvMet Object NotFound" << std::endl;
+      continue;
+    }
+    llvvMet met = *metHandle;
+
+    // Trigger Bits
+    fwlite::Handle<std::vector<bool> > triggerBitsHandle;
+    triggerBitsHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerBits");
+    if(!triggerBitsHandle.isValid())
+    {
+      std::cout << "triggerBits Object NotFound" << std::endl;
+      continue;
+    }
+    std::vector<bool> triggerBits = *triggerBitsHandle;
+
+    // Trigger Prescales
+    fwlite::Handle<std::vector<int> > triggerPrescalesHandle;
+    triggerPrescalesHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerPrescales");
+    if(!triggerPrescalesHandle.isValid())
+    {
+      std::cout << "triggerPrescales Object NotFound" << std::endl;
+      continue;
+    }
+    std::vector<int> triggerPrescales = *triggerPrescalesHandle;
+
+    // Rho
+    fwlite::Handle<double> rhoHandle;
+    rhoHandle.getByLabel(ev, "kt6PFJets", "rho");
+    if(!rhoHandle.isValid())
+    {
+      std::cout << "rho Object NotFound" << std::endl;
+      continue;
+    }
+    double rho = *rhoHandle;
+
+    // Rho25
+    fwlite::Handle<double> rho25Handle;
+    rho25Handle.getByLabel(ev, "kt6PFJetsCentral", "rho");
+    if(!rho25Handle.isValid())
+    {
+      std::cout << "rho25 Object NotFound" << std::endl;
+      continue;
+    }
+    double rho25 = *rho25Handle;
+
 
   }
 
