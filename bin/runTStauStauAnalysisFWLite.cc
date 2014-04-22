@@ -373,7 +373,7 @@ int main(int argc, char* argv[])
       mon.fillHisto("cutFlow", chTags, 1, weight); //Might have to remove this later...
 
     mon.fillHisto("nvtx", chTags, nvtx, weight);
-    mon.fillHisto("nvtxraw", chTags, nvtx, weight);
+    mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
 
 
   }
