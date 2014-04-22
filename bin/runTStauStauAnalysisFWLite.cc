@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
 
   // Lepton Efficiencies
   LeptonEfficiencySF lepEff;
-  
-  
+
+
   // Setting Up
   gSystem->Exec(("mkdir -p " + outdir).c_str());
   std::string url = urls[0];
@@ -111,8 +111,28 @@ int main(int argc, char* argv[])
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
-  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,-0.5,49.5) );
-  mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,-0.5,49.5) ); 
+  mon.addHistogram(new TH1F("nup",     ";NUP;Events", 10, 0, 10));
+  mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
+
+  // PU
+  mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("rho",     ";#rho;Events",           50,  0,   25));
+  mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 50,  0,   25));
+
+  // Leptons
+  mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
+  mon.addHistogram(new TH1F("leadpt",     ";p_{T}^{l};Events", 100,  0,  100));
+  mon.addHistogram(new TH1F("leadeta",    ";#eta^{l};Events",   50, -2.6,  2.6));
+  mon.addHistogram(new TH1F("leadcharge", ";p_{T}^{l};Events",   5, -2,    2));
+
+  // Taus
+  mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10, -0.5,  9.5));
+  mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events", 100,  0,  100));
+  mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   50, -2.6,  2.6));
+  mon.addHistogram(new TH1F("tauleadcharge", ";p_{T}^{#tau};Events",   5, -2,    2));
+  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
+  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
 
 
 
@@ -121,7 +141,7 @@ int main(int argc, char* argv[])
   /***************************************************************************/
   fwlite::ChainEvent ev(urls);
   const Int_t totalEntries = ev.size();
-  
+
   // MC normalization to 1/pb
   double nInitEvent = 1.;
   if(isMC)
@@ -134,10 +154,10 @@ int main(int argc, char* argv[])
   jecDir = gSystem->ExpandPathName(jecDir.c_str());
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector(jecDir, isMC);
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt"));
-  
+
   // Muon Energy Scale and Uncertainties
   MuScleFitCorrector* muCor = getMuonCorrector(jecDir, url);
-  
+
   // Pileup Weighting: Based on vtx (For now?)
   edm::LumiReWeighting* LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
@@ -149,7 +169,7 @@ int main(int argc, char* argv[])
       for(unsigned int i = 0; i < dataPileupDistributionDouble.size(); ++i)
         dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);
     std::vector<float> mcPileupDistribution;
-    
+
     utils::getMCPileupDistribution(ev, dataPileupDistribution.size(), mcPileupDistribution);
     while(mcPileupDistribution.size() < dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
     while(mcPileupDistribution.size() > dataPileupDistribution.size())  dataPileupDistribution.push_back(0.0);
@@ -172,7 +192,7 @@ int main(int argc, char* argv[])
   DuplicatesChecker duplicatesChecker;
   int nDuplicates(0);
   int step(totalEntries/50);
-  
+
   // Redirect stdout and stderr to a temporary buffer, then output buffer after event loop
   std::ostream myCout(std::cout.rdbuf());
   std::stringstream buffer;
@@ -180,7 +200,7 @@ int main(int argc, char* argv[])
   std::streambuf *cerrbuf = std::cerr.rdbuf();
   std::cout.rdbuf(buffer.rdbuf());
   std::cerr.rdbuf(buffer.rdbuf());
-  
+
   // Loop on events
   for(int iev = 0; iev < totalEntries; ++iev)
   {
@@ -351,7 +371,7 @@ int main(int argc, char* argv[])
 
     if(singleETrigger || singleMuTrigger)
       mon.fillHisto("cutFlow", chTags, 1, weight); //Might have to remove this later...
-    
+
     mon.fillHisto("nvtx", chTags, nvtx, weight);
     mon.fillHisto("nvtxraw", chTags, nvtx, weight);
 
@@ -388,4 +408,4 @@ int main(int argc, char* argv[])
   }
 
   return 0;
-}  
+}
