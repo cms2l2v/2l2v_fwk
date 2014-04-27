@@ -108,6 +108,8 @@ int main(int argc, char* argv[])
   TH1F *h = (TH1F*)mon.addHistogram(new TH1F("cutFlow", ";;Events", 20, 0, 20));
   h->GetXaxis()->SetBinLabel(1, "All");
   h->GetXaxis()->SetBinLabel(2, "HLT");
+  h->GetXaxis()->SetBinLabel(3, "> 1l");
+  h->GetXaxis()->SetBinLabel(4, "> 1#tau");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
@@ -124,15 +126,19 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
   mon.addHistogram(new TH1F("leadpt",     ";p_{T}^{l};Events", 100,  0,  100));
   mon.addHistogram(new TH1F("leadeta",    ";#eta^{l};Events",   50, -2.6,  2.6));
-  mon.addHistogram(new TH1F("leadcharge", ";p_{T}^{l};Events",   5, -2,    2));
+  mon.addHistogram(new TH1F("leadcharge", ";q^{l};Events",   5, -2,    2));
+
+  // Lepton Isolation
+  mon.addHistogram(new TH1F("isomu",  "RelIso(#mu)", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1F("isoele", "RelIso(ele)", 100, -0.5, 9.5));
 
   // Taus
   mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10, -0.5,  9.5));
   mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events", 100,  0,  100));
   mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   50, -2.6,  2.6));
-  mon.addHistogram(new TH1F("tauleadcharge", ";p_{T}^{#tau};Events",   5, -2,    2));
-  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
-  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
+  mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events",   5, -2,    2));
+//  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
+//  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
 
 
 
@@ -367,17 +373,132 @@ int main(int argc, char* argv[])
     }
 
     // Fill the all events bin in the cutflow:
-    mon.fillHisto("cutFlow", chTags, 0, weight); //Might have to remove this later...
+    mon.fillHisto("cutFlow", chTags, 0, weight);
 
-    if(singleETrigger || singleMuTrigger)
-      mon.fillHisto("cutFlow", chTags, 1, weight); //Might have to remove this later...
+    if(!(singleETrigger || singleMuTrigger))
+      continue;
+    mon.fillHisto("cutFlow", chTags, 1, weight);
+
+    // Get Leading Lepton
+    llvvLeptonCollection selLeptons;
+    for(size_t i = 0; i < leptons.size(); ++i)
+    {
+      int lepId = leptons[i].id;
+
+      if(abs(lepId) == 13)
+        mon.fillHisto("isomu", "all", utils::cmssw::relIso(leptons[i], rho), weight);
+      else if(abs(lepId) == 11)
+        mon.fillHisto("isoele", "all", utils::cmssw::relIso(leptons[i], rho), weight);
+
+      if(lepId == 13 && muCor)
+      {
+        TLorentzVector p4(leptons[i].px(), leptons[i].py(), leptons[i].pz(), leptons[i].energy());
+        muCor->applyPtCorrection(p4, (lepId>0)?1:-1);
+        if(isMC)
+          muCor->applyPtSmearing(p4, (lepId>0)?1:-1, false);
+        leptons[i].SetPxPyPzE(p4.Px(), p4.Py(), p4.Pz(), p4.Energy());
+      }
+
+      lepId = abs(lepId);
+
+      // Lepton Kinematics
+      double eta = (lepId == 11)?(leptons[i].electronInfoRef->sceta):(leptons[i].eta());
+      if(leptons[i].pt() < 10)  // Remove low Pt leptons
+        continue;
+      if(abs(eta) > ((lepId == 11)?(2.5):(2.4))) // Only keep leptons inside detector acceptance (different for el and mu)
+        continue;
+      if(lepId == 11 && (eta > 1.4442 && eta < 1.5660)) // Remove electrons that fall in ECAL "hole"
+        continue;
+
+      // Lepton ID
+      Int_t idbits = leptons[i].idbits;
+      if(lepId == 11)
+      {
+        //if(leptons[i].electronInfoRef->isConv)
+        //  continue;
+        bool isLoose = leptons[i].electronInfoRef->mvanontrigv0;
+        if(!isLoose)
+          continue;
+      }
+      else
+      {
+        bool isLoose = ((idbits >> 8) & 0x1);
+        if(!isLoose)
+          continue;
+      }
+
+      // Lepton Isolation
+      double relIso = utils::cmssw::relIso(leptons[i], rho);
+      if(relIso > 0.4)
+        continue;
+
+      selLeptons.push_back(leptons[i]);
+    }
+    if(selLeptons.size() == 0)
+      continue;
+    std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
+    mon.fillHisto("cutFlow", chTags, 2, weight);
+
+    // Get taus
+    llvvTauCollection selTaus;
+    for(size_t i = 0; i < taus.size(); ++i)
+    {
+      llvvTau& tau = taus[i];
+
+      // Tau Kinematics
+      if(tau.pt() < 15.0)
+        continue;
+      if(abs(tau.eta()) > 2.3)
+        continue;
+
+      // Tau overlap with leptons
+      bool overlapWithLepton = false;
+      for(size_t lep = 0; lep < selLeptons.size(); ++lep)
+      {
+        if(deltaR(tau, selLeptons[lep]) < 0.1)
+        {
+          overlapWithLepton = true;
+          break;
+        }
+      }
+      if(overlapWithLepton)
+        continue;
+
+      // Tau ID
+      //if(!tau.passId(llvvTAUID::againstMuonLoose2))
+      //  continue;
+      //if(!tau.passId(llvvTAUID::decayModeFinding))
+      //  continue;
+
+      selTaus.push_back(tau);
+    }
+    if(selTaus.size() == 0)
+      continue;
+    std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
+    mon.fillHisto("cutFlow", chTags, 3, weight);
+
 
     mon.fillHisto("nvtx", chTags, nvtx, weight);
     mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
+    mon.fillHisto("nup", "", genEv.nup, 1);
 
+    mon.fillHisto("rho", chTags, rho, weight);
+    mon.fillHisto("rho25", chTags, rho25, weight);
 
+    mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
+    mon.fillHisto("leadeta", chTags, selLeptons[0].eta(), weight);
+    mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
+    mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
+
+    mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
+    mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
+    mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
+    mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
+
+//    break;
   }
 
+  // Output temporary buffer and restore cout and cerr behaviour
   std::cout.rdbuf(coutbuf);
   std::cerr.rdbuf(cerrbuf);
   std::cout << std::endl;
