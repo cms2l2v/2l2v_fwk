@@ -1,7 +1,8 @@
 ## Installation
 
 export SCRAM_ARCH=slc5_amd64_gcc462
-
+# For CVS access
+# export CVSROOT :ext:YOURUSERNAME@lxplus.cern.ch:/afs/cern.ch/user/c/cvscmssw/public/CMSSW
 scramv1 project CMSSW CMSSW_5_3_15
 cd CMSSW_5_3_15/src/
 cmsenv

@@ -21,8 +21,11 @@ git clone https://github.com/amarini/QuarkGluonTagger.git; cd QuarkGluonTagger ;
 
 #updated Tau object (Run2 Id and boosted taus)
 git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17
+
 cp ~jez/public/forLoic/140313/tauTools.py PhysicsTools/PatAlgos/python/tools/tauTools.py
-cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit
+cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit.
+# Needs to set up cvsroot as in the readme file or to copy the dir from
+# cp -r /afs/cern.ch/user/v/vischia/public/TauAnalysis_forSVfit/ TauAnalysis
 
 #checkout the 2l2v framework
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk

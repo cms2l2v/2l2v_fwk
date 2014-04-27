@@ -40,10 +40,12 @@
 
 <!-- 
 IF YOU HAVE AN ISSUE TO COMPILE runZHTauTauAnalysisFWLite, it means you miss the following package, just add it
+export CVSROOT=:ext:YOURUSERNAME@lxplus.cern.ch:/afs/cern.ch/user/c/cvscmssw/public/CMSSW
 cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit
 
-Actually CVS is down forevah (yuhu!): please copy it from the web area:
-cp -r /afs/cern.ch/user/v/vischia/www/TauAnalysis_forSVfit/ TauAnalysis
+Or copy it from the web area:
+cp -r /afs/cern.ch/user/v/vischia/public/TauAnalysis_forSVfit/ TauAnalysis
+
 -->
 
 
