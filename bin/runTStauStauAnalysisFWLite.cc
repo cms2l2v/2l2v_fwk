@@ -136,9 +136,13 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10, -0.5,  9.5));
   mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events", 100,  0,  100));
   mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   50, -2.6,  2.6));
-  mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events",   5, -2,    2));
-//  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
-//  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
+  mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events",       5, -2,    2));
+  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
+  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
+  mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events",    50,  0,    5));
+
+  // Jets
+  mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
 
 
 
@@ -403,7 +407,7 @@ int main(int argc, char* argv[])
 
       // Lepton Kinematics
       double eta = (lepId == 11)?(leptons[i].electronInfoRef->sceta):(leptons[i].eta());
-      if(leptons[i].pt() < 10)  // Remove low Pt leptons
+      if(leptons[i].pt() < ((lepId == 11)?(35):(30)))  // Remove low Pt leptons
         continue;
       if(abs(eta) > ((lepId == 11)?(2.5):(2.4))) // Only keep leptons inside detector acceptance (different for el and mu)
         continue;
@@ -414,22 +418,24 @@ int main(int argc, char* argv[])
       Int_t idbits = leptons[i].idbits;
       if(lepId == 11)
       {
-        //if(leptons[i].electronInfoRef->isConv)
-        //  continue;
-        bool isLoose = leptons[i].electronInfoRef->mvanontrigv0;
+        if(leptons[i].electronInfoRef->isConv)
+          continue;
+
+        bool isLoose = ((idbits >> 4) & 0x1);
         if(!isLoose)
           continue;
       }
       else
       {
         bool isLoose = ((idbits >> 8) & 0x1);
+        bool isTight = ((idbits >> 10) & 0x1);
         if(!isLoose)
           continue;
       }
 
       // Lepton Isolation
       double relIso = utils::cmssw::relIso(leptons[i], rho);
-      if(relIso > 0.4)
+      if((lepId == 11 && relIso > 0.15) || (lepId == 13 && relIso > 0.12))
         continue;
 
       selLeptons.push_back(leptons[i]);
