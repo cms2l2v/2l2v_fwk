@@ -81,6 +81,8 @@ int main(int argc, char* argv[])
   bool Cut_tautau_MVA_iso(true); // Specific to ZHTauTau?
   float minJetPtToApply(30); // Min Jet Pt to accept jet?
   bool examineThisEvent(false); // ?
+  double minTauPt = 20;
+  double maxTauEta = 2.3;
 
   // Lepton Efficiencies
   LeptonEfficiencySF lepEff;
@@ -406,44 +408,94 @@ int main(int argc, char* argv[])
       lepId = abs(lepId);
 
       // Lepton Kinematics
+      bool passKin = true;
       double eta = (lepId == 11)?(leptons[i].electronInfoRef->sceta):(leptons[i].eta());
       if(leptons[i].pt() < ((lepId == 11)?(35):(30)))  // Remove low Pt leptons
-        continue;
+        passKin = false;
       if(abs(eta) > ((lepId == 11)?(2.5):(2.4))) // Only keep leptons inside detector acceptance (different for el and mu)
-        continue;
+        passKin = false;
       if(lepId == 11 && (eta > 1.4442 && eta < 1.5660)) // Remove electrons that fall in ECAL "hole"
-        continue;
+        passKin = false;
 
       // Lepton ID
+      bool passID = true;
       Int_t idbits = leptons[i].idbits;
       if(lepId == 11)
       {
         if(leptons[i].electronInfoRef->isConv)
-          continue;
+          passID = false;
 
         bool isLoose = ((idbits >> 4) & 0x1);
         if(!isLoose)
-          continue;
+          passID = false;
       }
       else
       {
         bool isLoose = ((idbits >> 8) & 0x1);
         bool isTight = ((idbits >> 10) & 0x1);
         if(!isLoose)
-          continue;
+          passID = false;
       }
 
       // Lepton Isolation
+      bool passIso = true;
       double relIso = utils::cmssw::relIso(leptons[i], rho);
       if((lepId == 11 && relIso > 0.15) || (lepId == 13 && relIso > 0.12))
-        continue;
+        passIso = false;
 
-      selLeptons.push_back(leptons[i]);
+      // Keep desired leptons
+      if(passKin && passID && passIso)
+        selLeptons.push_back(leptons[i]);
+
+      // Fill lepton control plots
     }
     if(selLeptons.size() == 0)
       continue;
     std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
     mon.fillHisto("cutFlow", chTags, 2, weight);
+
+    // Get Jets
+    llvvJetExtCollection selJets, selJetsNoId, selBJets;
+    int nJets = 0;
+    int nbJets = 0;
+    int nTrueJets = 0;
+    int nTauJets = 0;
+    for(size_t i = 0; i < jets.size(); ++i)
+    {
+      // Apply jet corrections
+      double toRawSF = jets[i].torawsf;
+      LorentzVector rawJet(jets[i]*toRawSF);
+      jesCor->setJetEta(rawJet.eta());
+      jesCor->setJetPt(rawJet.pt());
+      jesCor->setJetA(jets[i].area);
+      jesCor->setRho(rho);
+
+      double newJECSF(jesCor->getCorrection());
+      jets[i].SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
+      jets[i] *= newJECSF;
+      jets[i].torawsf = 1./newJECSF;
+
+      // Jet Kinematics
+      if(jets[i].pt() < 15)
+        continue;
+      if(abs(jets[i].eta()) > 4.7)
+        continue;
+
+      // Cross clean with selected leptons and taus
+      double minDRlj = 9999.9;
+      double minDRlg = 9999.9;
+      double minDRtj = 9999.9;
+      for(size_t j = 0; j < selLeptons.size(); ++j)
+        minDRlj = TMath::Min(minDRlj, deltaR(jets[i], selLeptons[j]));
+      for(size_t j = 0; j < taus.size(); ++j)
+      {
+        if(taus[j].pt() < minTauPt || abs(taus[j].eta()) > maxTauEta)
+          continue;
+        minDRtj = TMath::Min(minDRtj, deltaR(jets[i], taus[j]));
+      }
+      if(minDRlj < 0.4 || minDRlg < 0.4 || minDRtj < 0.4)
+        continue;
+    }
 
     // Get taus
     llvvTauCollection selTaus;
@@ -452,9 +504,9 @@ int main(int argc, char* argv[])
       llvvTau& tau = taus[i];
 
       // Tau Kinematics
-      if(tau.pt() < 20.0)
+      if(tau.pt() < minTauPt)
         continue;
-      if(abs(tau.eta()) > 2.3)
+      if(abs(tau.eta()) > maxTauEta)
         continue;
 
       // Tau overlap with leptons
