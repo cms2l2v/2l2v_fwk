@@ -107,16 +107,21 @@ int main(int argc, char* argv[])
   /*                         Initializing Histograms                         */
   /***************************************************************************/
   SmartSelectionMonitor mon;
-  TH1F *h = (TH1F*)mon.addHistogram(new TH1F("cutFlow", ";;Events", 20, 0, 20));
-  h->GetXaxis()->SetBinLabel(1, "All");
-  h->GetXaxis()->SetBinLabel(2, "HLT");
-  h->GetXaxis()->SetBinLabel(3, "> 1l");
-  h->GetXaxis()->SetBinLabel(4, "> 1#tau");
+  TH1F *cutFlow = (TH1F*)mon.addHistogram(new TH1F("cutFlow", ";;Events", 20, 0, 20));
+  cutFlow->GetXaxis()->SetBinLabel(1, "All");
+  cutFlow->GetXaxis()->SetBinLabel(2, "HLT");
+  cutFlow->GetXaxis()->SetBinLabel(3, "> 1l");
+  cutFlow->GetXaxis()->SetBinLabel(4, "> 1#tau");
+  TH1F *fractions = (TH1F*)mon.addHistogram(new TH1F("fractions", ";;Events", 20, 0, 20));
+  fractions->GetXaxis()->SetBinLabel(1, "All");
+  fractions->GetXaxis()->SetBinLabel(2, "HLT");
+  fractions->GetXaxis()->SetBinLabel(3, "> 1l");
+  fractions->GetXaxis()->SetBinLabel(4, "> 1#tau");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
   mon.addHistogram(new TH1F("nup",     ";NUP;Events", 10, 0, 10));
-  mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
+  //mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
 
   // PU
   mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
@@ -128,11 +133,21 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
   mon.addHistogram(new TH1F("leadpt",     ";p_{T}^{l};Events", 100,  0,  100));
   mon.addHistogram(new TH1F("leadeta",    ";#eta^{l};Events",   50, -2.6,  2.6));
-  mon.addHistogram(new TH1F("leadcharge", ";q^{l};Events",   5, -2,    2));
+  mon.addHistogram(new TH1F("leadcharge", ";q^{l};Events",       5, -2,    2));
+  TH1F *leptonCutFlow   = (TH1F*)mon.addHistogram(new TH1F("leptonCutFlow",   ";;Leptons", 4, 0, 4));
+  TH1F *leptonFractions = (TH1F*)mon.addHistogram(new TH1F("leptonFractions", ";;Leptons", 4, 0, 4));
+  leptonCutFlow->GetXaxis()->SetBinLabel(1, "All");
+  leptonFractions->GetXaxis()->SetBinLabel(1, "All");
+  leptonCutFlow->GetXaxis()->SetBinLabel(2, "ID");
+  leptonFractions->GetXaxis()->SetBinLabel(2, "ID");
+  leptonCutFlow->GetXaxis()->SetBinLabel(3, "Kin");
+  leptonFractions->GetXaxis()->SetBinLabel(3, "Kin");
+  leptonCutFlow->GetXaxis()->SetBinLabel(4, "Iso");
+  leptonFractions->GetXaxis()->SetBinLabel(4, "Iso");
 
   // Lepton Isolation
-  mon.addHistogram(new TH1F("isomu",  "RelIso(#mu)", 100, -0.5, 9.5));
-  mon.addHistogram(new TH1F("isoele", "RelIso(ele)", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1F("isomu",  "RelIso(#mu);;Leptons", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1F("isoele", "RelIso(ele);;Leptons", 100, -0.5, 9.5));
 
   // Taus
   mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10, -0.5,  9.5));
@@ -356,9 +371,12 @@ int main(int argc, char* argv[])
     double rho25 = *rho25Handle;
 
 
-    /****         Filter events acording to HLT Path         ****/
+    /****          Sort events acording to HLT Path          ****/
     bool singleETrigger  = triggerBits[13]; // HLT_Ele27_WP80_v*
-    bool singleMuTrigger = triggerBits[15]; // HLT__IsoMu24_v*
+    bool singleMuTrigger = triggerBits[15]; // HLT_IsoMu24_v*
+    if(triggerBits.size() > 16)
+    { // Add here my trigger bits for TauPlusX
+    }
     if(singleETrigger)
       chTags.push_back("singleE");
     if(singleMuTrigger)
@@ -448,6 +466,23 @@ int main(int argc, char* argv[])
         selLeptons.push_back(leptons[i]);
 
       // Fill lepton control plots
+      mon.fillHisto("leptonCutFlow", "all", 0, weight);
+      mon.fillHisto("leptonFractions", "all", 0, weight);
+      if(passID)
+      {
+        mon.fillHisto("leptonCutFlow", "all", 1, weight);
+        mon.fillHisto("leptonFractions", "all", 1, weight);
+        if(passKin)
+        {
+          mon.fillHisto("leptonCutFlow", "all", 2, weight);
+          if(passIso)
+            mon.fillHisto("leptonCutFlow", "all", 3, weight);
+        }
+      }
+      if(passKin)
+        mon.fillHisto("leptonFractions", "all", 2, weight);
+      if(passIso)
+        mon.fillHisto("leptonFractions", "all", 2, weight);
     }
     if(selLeptons.size() == 0)
       continue;
