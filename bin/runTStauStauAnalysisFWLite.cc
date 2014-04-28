@@ -452,7 +452,7 @@ int main(int argc, char* argv[])
       llvvTau& tau = taus[i];
 
       // Tau Kinematics
-      if(tau.pt() < 15.0)
+      if(tau.pt() < 20.0)
         continue;
       if(abs(tau.eta()) > 2.3)
         continue;
@@ -470,11 +470,18 @@ int main(int argc, char* argv[])
       if(overlapWithLepton)
         continue;
 
+      if(!tau.isPF)  // Only keep PF taus
+        continue;
+      if(abs(tau.dz) > 0.5)
+        continue;
+      if(tau.emfraction >= 2.0)
+        continue;
+
       // Tau ID
-      //if(!tau.passId(llvvTAUID::againstMuonLoose2))
-      //  continue;
-      //if(!tau.passId(llvvTAUID::decayModeFinding))
-      //  continue;
+      if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   continue;
+      if(!tau.passId(llvvTAUID::againstMuonTight2))                           continue;
+      if(!tau.passId(llvvTAUID::decayModeFinding))                            continue;
+      if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) continue;
 
       selTaus.push_back(tau);
     }
