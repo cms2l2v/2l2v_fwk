@@ -472,7 +472,7 @@ int main(int argc, char* argv[])
 
       if(!tau.isPF)  // Only keep PF taus
         continue;
-      if(abs(tau.dz) > 0.5)
+      if(abs(tau.dZ) > 0.5)
         continue;
       if(tau.emfraction >= 2.0)
         continue;
