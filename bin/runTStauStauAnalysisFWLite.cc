@@ -79,10 +79,13 @@ int main(int argc, char* argv[])
   // Hardcoded configs
   bool runLoosePhotonSelection(false); // Specific to ZHTauTau?
   bool Cut_tautau_MVA_iso(true); // Specific to ZHTauTau?
-  float minJetPtToApply(30); // Min Jet Pt to accept jet?
   bool examineThisEvent(false); // ?
-  double minTauPt = 20;
-  double maxTauEta = 2.3;
+  double minTauPt     = 20;
+  double maxTauEta    = 2.3;
+  double minJetPt     = 30;
+  double maxJetEta    =  2.5;
+  double minTauJetPt  = 20;
+  double maxTauJetEta =  2.5;
 
   // Lepton Efficiencies
   LeptonEfficiencySF lepEff;
@@ -157,9 +160,44 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
   mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
   mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events",    50,  0,    5));
+  TH1F *tauCutFlow   = (TH1F*)mon.addHistogram(new TH1F("tauCutFlow",   ";;#tau", 6, 0, 6));
+  TH1F *tauFractions = (TH1F*)mon.addHistogram(new TH1F("tauFractions", ";;#tau", 6, 0, 6));
+  tauCutFlow->GetXaxis()->SetBinLabel(1, "All");
+  tauFractions->GetXaxis()->SetBinLabel(1, "All");
+  tauCutFlow->GetXaxis()->SetBinLabel(2, "PF");
+  tauFractions->GetXaxis()->SetBinLabel(2, "PF");
+  tauCutFlow->GetXaxis()->SetBinLabel(3, "ID");
+  tauFractions->GetXaxis()->SetBinLabel(3, "ID");
+  tauCutFlow->GetXaxis()->SetBinLabel(4, "Quality");
+  tauFractions->GetXaxis()->SetBinLabel(4, "Quality");
+  tauCutFlow->GetXaxis()->SetBinLabel(5, "Kin");
+  tauFractions->GetXaxis()->SetBinLabel(5, "Kin");
+  tauCutFlow->GetXaxis()->SetBinLabel(6, "Iso");
+  tauFractions->GetXaxis()->SetBinLabel(6, "Iso");
+  TH1F *tauID = (TH1F*)mon.addHistogram(new TH1F("tauID", ";;#tau", 6, 0, 6));
+  tauID->GetXaxis()->SetBinLabel(1, "All");
+  tauID->GetXaxis()->SetBinLabel(2, "Not e");
+  tauID->GetXaxis()->SetBinLabel(3, "Not #mu");
+  tauID->GetXaxis()->SetBinLabel(4, "Not decay mode");
+  tauID->GetXaxis()->SetBinLabel(5, "Not medium comb iso");
+  tauID->GetXaxis()->SetBinLabel(6, "Overall ID");
 
   // Jets
   mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
+  TH1F *jetCutFlow   = (TH1F*)mon.addHistogram(new TH1F("jetCutFlow",   ";;jets", 6, 0, 6));
+  TH1F *jetFractions = (TH1F*)mon.addHistogram(new TH1F("jetFractions", ";;jets", 6, 0, 6));
+  jetCutFlow->GetXaxis()->SetBinLabel(1, "All");
+  jetFractions->GetXaxis()->SetBinLabel(1, "All");
+  jetCutFlow->GetXaxis()->SetBinLabel(2, "PF Loose");
+  jetFractions->GetXaxis()->SetBinLabel(2, "PF Loose");
+  jetCutFlow->GetXaxis()->SetBinLabel(3, "Pre-Selection");
+  jetFractions->GetXaxis()->SetBinLabel(3, "Pre-Selection");
+  jetCutFlow->GetXaxis()->SetBinLabel(4, "ID");
+  jetFractions->GetXaxis()->SetBinLabel(4, "ID");
+  jetCutFlow->GetXaxis()->SetBinLabel(5, "Iso");
+  jetFractions->GetXaxis()->SetBinLabel(5, "Iso");
+  jetCutFlow->GetXaxis()->SetBinLabel(6, "Kin");
+  jetFractions->GetXaxis()->SetBinLabel(6, "Kin");
 
 
 
@@ -377,6 +415,7 @@ int main(int argc, char* argv[])
     if(triggerBits.size() > 16)
     { // Add here my trigger bits for TauPlusX
     }
+    bool triggeredOn = singleETrigger || singleMuTrigger;
     if(singleETrigger)
       chTags.push_back("singleE");
     if(singleMuTrigger)
@@ -399,7 +438,7 @@ int main(int argc, char* argv[])
     // Fill the all events bin in the cutflow:
     mon.fillHisto("cutFlow", chTags, 0, weight);
 
-    if(!(singleETrigger || singleMuTrigger))
+    if(!triggeredOn)
       continue;
     mon.fillHisto("cutFlow", chTags, 1, weight);
 
@@ -482,7 +521,7 @@ int main(int argc, char* argv[])
       if(passKin)
         mon.fillHisto("leptonFractions", "all", 2, weight);
       if(passIso)
-        mon.fillHisto("leptonFractions", "all", 2, weight);
+        mon.fillHisto("leptonFractions", "all", 3, weight);
     }
     if(selLeptons.size() == 0)
       continue;
@@ -491,9 +530,6 @@ int main(int argc, char* argv[])
 
     // Get Jets
     llvvJetExtCollection selJets, selJetsNoId, selBJets;
-    int nJets = 0;
-    int nbJets = 0;
-    int nTrueJets = 0;
     int nTauJets = 0;
     for(size_t i = 0; i < jets.size(); ++i)
     {
@@ -510,13 +546,15 @@ int main(int argc, char* argv[])
       jets[i] *= newJECSF;
       jets[i].torawsf = 1./newJECSF;
 
-      // Jet Kinematics
+      // Jet Pre-Selection
+      bool passPreSel = true;
       if(jets[i].pt() < 15)
-        continue;
+        passPreSel = false;
       if(abs(jets[i].eta()) > 4.7)
-        continue;
+        passPreSel = false;
 
       // Cross clean with selected leptons and taus
+      bool passIso = true;
       double minDRlj = 9999.9;
       double minDRlg = 9999.9;
       double minDRtj = 9999.9;
@@ -529,7 +567,84 @@ int main(int argc, char* argv[])
         minDRtj = TMath::Min(minDRtj, deltaR(jets[i], taus[j]));
       }
       if(minDRlj < 0.4 || minDRlg < 0.4 || minDRtj < 0.4)
-        continue;
+        passIso = false;
+
+      // Jet ID
+      Int_t idbits = jets[i].idbits;
+      bool passPFLoose = (idbits & 0x01);
+      int puID = (idbits >> 3) & 0x0f;
+      bool passLoosePuID = ((puID >> 2) & 0x01);
+      int simplePuID = (idbits >> 7) & 0x0f;
+      bool passLooseSimplePuID = ((simplePuID >> 2) & 0x01);
+      std::string jetType = ((jets[i].genj.pt() > 0)?("truejetsid"):("pujetsid"));
+      bool passID = passLoosePuID;
+
+      // Jet Kinematics
+      bool passKin = true;
+      if(jets[i].pt() < minJetPt)
+        passKin = false;
+      if(abs(jets[i].eta()) > maxJetEta)
+        passKin = false;
+      bool isTauJet = (jets[i].pt() > minTauJetPt) && (abs(jets[i].eta()) < maxTauJetEta);
+
+      // Compute scale and resolution uncertainties
+      if(isMC)
+      {
+        std::vector<float> smearPt = utils::cmssw::smearJER(jets[i].pt(),jets[i].eta(),jets[i].genj.pt());
+        jets[i].jer     = smearPt[0];
+        jets[i].jerup   = smearPt[1];
+        jets[i].jerdown = smearPt[2];
+        smearPt = utils::cmssw::smearJES(jets[i].pt(),jets[i].eta(), totalJESUnc);
+        jets[i].jesup   = smearPt[0];
+        jets[i].jesdown = smearPt[1];
+      }
+      else
+      {
+        jets[i].jer     = jets[i].pt();
+        jets[i].jerup   = jets[i].pt();
+        jets[i].jerdown = jets[i].pt();
+        jets[i].jesup   = jets[i].pt();
+        jets[i].jesdown = jets[i].pt();
+      }
+
+      // Save selected jets/counters
+      if(passPreSel && passIso)
+        selJetsNoId.push_back(jets[i]);
+      if(passPreSel && passIso && passPFLoose && passLoosePuID && isTauJet)
+        ++nTauJets;
+      if(passPreSel && passIso && passPFLoose && passID && passKin)
+        selJets.push_back(jets[i]);
+
+      // Fill Jet control histograms
+      mon.fillHisto("jetCutFlow", chTags, 0, weight);
+      mon.fillHisto("jetFractions", chTags, 0, weight);
+      if(passPFLoose)
+      {
+        mon.fillHisto("jetCutFlow", chTags, 1, weight);
+        mon.fillHisto("jetFractions", chTags, 1, weight);
+        if(passPreSel)
+        {
+          mon.fillHisto("jetCutFlow", chTags, 2, weight);
+          if(passID)
+          {
+            mon.fillHisto("jetCutFlow", chTags, 3, weight);
+            if(passIso)
+            {
+              mon.fillHisto("jetCutFlow", chTags, 4, weight);
+              if(passKin)
+                mon.fillHisto("jetCutFlow", chTags, 5, weight);
+            }
+          }
+        }
+      }
+      if(passPreSel)
+        mon.fillHisto("jetFractions", chTags, 2, weight);
+      if(passID)
+        mon.fillHisto("jetFractions", chTags, 3, weight);
+      if(passIso)
+        mon.fillHisto("jetFractions", chTags, 4, weight);
+      if(passKin)
+        mon.fillHisto("jetFractions", chTags, 5, weight);
     }
 
     // Get taus
@@ -539,38 +654,76 @@ int main(int argc, char* argv[])
       llvvTau& tau = taus[i];
 
       // Tau Kinematics
+      bool passKin = true;
       if(tau.pt() < minTauPt)
-        continue;
+        passKin = false;
       if(abs(tau.eta()) > maxTauEta)
-        continue;
+        passKin = false;
 
       // Tau overlap with leptons
-      bool overlapWithLepton = false;
+      bool passIso = true;
       for(size_t lep = 0; lep < selLeptons.size(); ++lep)
       {
         if(deltaR(tau, selLeptons[lep]) < 0.1)
         {
-          overlapWithLepton = true;
+          passIso = false;
           break;
         }
       }
-      if(overlapWithLepton)
-        continue;
 
-      if(!tau.isPF)  // Only keep PF taus
-        continue;
+      bool passQual = true;
       if(abs(tau.dZ) > 0.5)
-        continue;
+        passQual = false;
       if(tau.emfraction >= 2.0)
-        continue;
+        passQual = false;
 
       // Tau ID
-      if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   continue;
-      if(!tau.passId(llvvTAUID::againstMuonTight2))                           continue;
-      if(!tau.passId(llvvTAUID::decayModeFinding))                            continue;
-      if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) continue;
+      bool passID = true;
+      mon.fillHisto("tauID", chTags, 0, weight);
+      //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
+      //else mon.fillHisto("tauID", chTags, 1, weight);
+      //if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
+      //else mon.fillHisto("tauID", chTags, 2, weight);
+      if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
+      else mon.fillHisto("tauID", chTags, 3, weight);
+      if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      else mon.fillHisto("tauID", chTags, 4, weight);
+      if(passID) mon.fillHisto("tauID", chTags, 5, weight);
 
-      selTaus.push_back(tau);
+      // Keep selected taus
+      if(passID && passKin && passIso && passQual && tau.isPF)
+        selTaus.push_back(tau);
+
+      // Fill control histograms
+      mon.fillHisto("tauCutFlow", chTags, 0, weight);
+      mon.fillHisto("tauFractions", chTags, 0, weight);
+      if(tau.isPF)
+      {
+        mon.fillHisto("tauCutFlow", chTags, 1, weight);
+        mon.fillHisto("tauFractions", chTags, 1, weight);
+        if(passID)
+        {
+          mon.fillHisto("tauCutFlow", chTags, 2, weight);
+          if(passQual)
+          {
+            mon.fillHisto("tauCutFlow", chTags, 3, weight);
+            if(passKin)
+            {
+              mon.fillHisto("tauCutFlow", chTags, 4, weight);
+              if(passIso)
+                mon.fillHisto("tauCutFlow", chTags, 5, weight);
+            }
+          }
+        }
+      }
+      if(passIso)
+        mon.fillHisto("tauFractions", chTags, 5, weight);
+      if(passKin)
+        mon.fillHisto("tauFractions", chTags, 4, weight);
+      if(passQual)
+        mon.fillHisto("tauFractions", chTags, 3, weight);
+      if(passID)
+        mon.fillHisto("tauFractions", chTags, 2, weight);
     }
     if(selTaus.size() == 0)
       continue;
