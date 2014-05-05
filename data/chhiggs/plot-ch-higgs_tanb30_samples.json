@@ -96,7 +96,7 @@
       "fill":0,
       "marker":1,    
       "data":[ 
-        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":7, "xsec":0.7624495     , "br":[ 0.257198 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":7, "xsec":1.524899     , "br":[ 0.257198 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     }, 
 
@@ -112,7 +112,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6"           , "split":10, "xsec":0.7624495     , "br":[ 0.705360 ]          , "dset":"/HplusToTBbar_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6"           , "split":10, "xsec":1.524899     , "br":[ 0.705360 ]          , "dset":"/HplusToTBbar_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
     {
