@@ -93,7 +93,7 @@ public:
           }else{              h->second->Write();}
         }
 
-        if(neverFilled){printf("SmartSelectionMonitor: histo = '%s' is empty for all the category, you may want to cleanup your project to remove this histogram\n",it->first.Data());}
+        if(neverFilled){printf("SmartSelectionMonitor: histo = '%s' is empty for all categories, you may want to cleanup your project to remove this histogram\n",it->first.Data());}
      } 
   }
 
