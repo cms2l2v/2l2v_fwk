@@ -1,19 +1,6 @@
 #!/bin/bash
 
-if [ "${1}" = "past" ]; then
-    runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_d/plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_d/plotter-with-ch-higgs_new.root --showUnc --plotExt .pdf --noPowers --onlyStartWith emu
-    runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_b/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_d/plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_d/plotter-with-ch-higgs_new.root --showUnc --plotExt .png --noPowers --onlyStartWith emu
-	#
-    #
-    #Tables only
-    #-----------
-    #runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/ch-higgs_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-all-ch-higgs.root --noPlot --noPowers 
-    #runPlotter --iLumi 19702 --inDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/ --outDir /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plots --json data/top_samples.json --outFile /afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311/plotter-sm-only.root --noPlot --noPowers 
-    #
-    #
-    #
-
-elif [ "${1}" = "fwlite" ]; then
+if [ "${1}" = "fwlite" ]; then
     BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_fwlite/
     if [ "${2}" = "anal_sus" ]; then
 	echo "Not ready yet" 
@@ -22,9 +9,9 @@ elif [ "${1}" = "fwlite" ]; then
     elif [ "${2}" = "plots" ]; then
 	runPlotterFWLite --iEcm 8 --iLumi 19782 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot-samples_fwlite.json --noPowers --showUnc
    elif [ "${2}" = "display" ]; then	
-	cp ${BASEDIR}/plots/ee_* ~/www/newAnal/ee/
-	cp ${BASEDIR}/plots/emu_* ~/www/newAnal/emu/
-	cp ${BASEDIR}/plots/mumu_* ~/www/newAnal/mumu/
+	cp ${BASEDIR}/plots/ee_*       ~/www/newAnal/ee/
+	cp ${BASEDIR}/plots/emu_*      ~/www/newAnal/emu/
+	cp ${BASEDIR}/plots/mumu_*     ~/www/newAnal/mumu/
 	cp ${BASEDIR}/plots/singlemu_* ~/www/newAnal/singlemu/
    elif [ "${2}" = "cleanDisplay" ]; then	
 	rm ~/www/newAnal/ee/*png
@@ -47,8 +34,9 @@ elif [ "${1}" = "fwlite" ]; then
 elif [ "${1}" = "current" ]; then
 # Fixed run 
     #    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_e/
-    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_dio/
-    #    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/ run in 5315
+#    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_dio/
+    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/
+# run in 5315
     if [ "${2}" = "anal_sus" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_sm" ]; then
@@ -56,73 +44,18 @@ elif [ "${1}" = "current" ]; then
 
     elif [ "${2}" = "plots" ]; then
 	# Plots
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_evtflow_pdf.root             --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_evtflow                                 &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsmet_pdf.root        --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_geq2btagsmet		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsnbjets_pdf.root     --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_geq2btagsnbjets		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsptlep_pdf.root      --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_geq2btagsptlep		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagssumpt_pdf.root      --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_geq2btagssumpt		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_met_pdf.root                 --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_met					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mll_pdf.root                 --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_mll					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mtsum_pdf.root               --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_mtsum				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nbjets_pdf.root              --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_nbjets				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_njets_pdf.root               --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_njets				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nvertices_pdf.root           --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_nvertices			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nverticesUnweighted_pdf.root --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_nverticesUnweighted	     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_pte_pdf.root                 --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_pte					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1eta_pdf.root           --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptjet1eta			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1pt_pdf.root            --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptjet1pt				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2eta_pdf.root           --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptjet2eta			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2pt_pdf.root            --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptjet2pt				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmin_pdf.root               --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptmin				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmu_pdf.root                --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_ptmu					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_sumpt_pdf.root               --showUnc --plotExt .pdf --noPowers --onlyStartWith emu_sumpt                                     &
-
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_evtflow_c.root             --showUnc --plotExt .C --noPowers --onlyStartWith emu_evtflow                                 &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsmet_c.root        --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagsmet		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsnbjets_c.root     --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagsnbjets		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsptlep_c.root      --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagsptlep		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagssumpt_c.root      --showUnc --plotExt .C --noPowers --onlyStartWith emu_geq2btagssumpt		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_met_c.root                 --showUnc --plotExt .C --noPowers --onlyStartWith emu_met					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mll_c.root                 --showUnc --plotExt .C --noPowers --onlyStartWith emu_mll					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mtsum_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_mtsum				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nbjets_c.root              --showUnc --plotExt .C --noPowers --onlyStartWith emu_nbjets				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_njets_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_njets				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nvertices_c.root           --showUnc --plotExt .C --noPowers --onlyStartWith emu_nvertices			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nverticesUnweighted_c.root --showUnc --plotExt .C --noPowers --onlyStartWith emu_nverticesUnweighted	     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_pte_c.root                 --showUnc --plotExt .C --noPowers --onlyStartWith emu_pte					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1eta_c.root           --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet1eta			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1pt_c.root            --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet1pt				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2eta_c.root           --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet2eta			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2pt_c.root            --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptjet2pt				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmin_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptmin				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmu_c.root                --showUnc --plotExt .C --noPowers --onlyStartWith emu_ptmu					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_sumpt_c.root               --showUnc --plotExt .C --noPowers --onlyStartWith emu_sumpt                                     &
-
-
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_evtflow_png.root             --showUnc --plotExt .png --noPowers --onlyStartWith emu_evtflow                                 &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsmet_png.root        --showUnc --plotExt .png --noPowers --onlyStartWith emu_geq2btagsmet		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsnbjets_png.root     --showUnc --plotExt .png --noPowers --onlyStartWith emu_geq2btagsnbjets		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagsptlep_png.root      --showUnc --plotExt .png --noPowers --onlyStartWith emu_geq2btagsptlep		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_geq2btagssumpt_png.root      --showUnc --plotExt .png --noPowers --onlyStartWith emu_geq2btagssumpt		     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_met_png.root                 --showUnc --plotExt .png --noPowers --onlyStartWith emu_met					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mll_png.root                 --showUnc --plotExt .png --noPowers --onlyStartWith emu_mll					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_mtsum_png.root               --showUnc --plotExt .png --noPowers --onlyStartWith emu_mtsum				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nbjets_png.root              --showUnc --plotExt .png --noPowers --onlyStartWith emu_nbjets				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_njets_png.root               --showUnc --plotExt .png --noPowers --onlyStartWith emu_njets				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nvertices_png.root           --showUnc --plotExt .png --noPowers --onlyStartWith emu_nvertices			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_nverticesUnweighted_png.root --showUnc --plotExt .png --noPowers --onlyStartWith emu_nverticesUnweighted	     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_pte_png.root                 --showUnc --plotExt .png --noPowers --onlyStartWith emu_pte					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1eta_png.root           --showUnc --plotExt .png --noPowers --onlyStartWith emu_ptjet1eta			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet1pt_png.root            --showUnc --plotExt .png --noPowers --onlyStartWith emu_ptjet1pt				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2eta_png.root           --showUnc --plotExt .png --noPowers --onlyStartWith emu_ptjet2eta			     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptjet2pt_png.root            --showUnc --plotExt .png --noPowers --onlyStartWith emu_ptjet2pt				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmin_png.root               --showUnc --plotExt .png --noPowers --onlyStartWith emu_ptmin				     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_ptmu_png.root                --showUnc --plotExt .png --noPowers --onlyStartWith emu_ptmu					     &
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/plot-ch-higgs_samples.json --outFile ${BASEDIR}plotter-forPlotting_sumpt_png.root               --showUnc --plotExt .png --noPowers --onlyStartWith emu_sumpt                                     &
-
-
-#	mkdir ${BASEDIR}plots/tabs
-#	mv ${BASEDIR}plotse* ${BASEDIR}plots/tabs/
+	JSONFILE=data/chhiggs/plot-ch-higgs_tanb30_samples.json
+	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
+	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt
+	  do
+	  for chanList in emu ee mumu
+	    do
+	    for formatList in pdf png C
+	      do
+	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json ${JSONFILE} --outFile ${BASEDIR}plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --onlyStartWith ${chanList}_${plotList}                                 &
+	    done
+	  done
+	done
 
     elif [ "${2}" = "tables" ]; then
 	# Tables
@@ -133,19 +66,22 @@ elif [ "${1}" = "current" ]; then
 	mv ${BASEDIR}plotsmumu* ${BASEDIR}tables/
 
     elif [ "${2}" = "datacards" ]; then
-	# Datacards
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forSystTableInPAS.root --showUnc --noPlots --noPowers --onlyStartWith emu_evtflow
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forSystTable.root --showUnc --noPlots --noPowers --onlyStartWith emu_finalevtflow2btags
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm.root --noPlot --noPowers  --onlyStartWith emu_finalevtflow2btags
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forSystTableInPAS_optim.root --showUnc --noPlots --noPowers --onlyStartWith all_optim
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json --outFile ${BASEDIR}plotter-forSystTable_optim.root --showUnc --noPlots --noPowers --onlyStartWith all_optim
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_optim.root --noPlot --noPowers  --onlyStartWith all_optim
-
 	
-	hadd -f ${BASEDIR}plotter-forSystTableInPAS_def.root			        ${BASEDIR}plotter-forSystTableInPAS.root			 	${BASEDIR}plotter-forSystTableInPAS_optim.root
-	hadd -f ${BASEDIR}plotter-forSystTable_def.root                              ${BASEDIR}plotter-forSystTable.root                             	${BASEDIR}plotter-forSystTable_optim.root                             
-	hadd -f ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm.root	${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_optim.root
-	
+	for chanList in emu ee mumu
+	  do
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}plotter_${chanList}_forSystTableInPAS.root --showUnc --noPlots --noPowers --onlyStartWith ${chanList}_evtflow
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}plotter_${chanList}_forSystTable.root      --showUnc --noPlots --noPowers --onlyStartWith ${chanList}_finalevtflow2btags
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm.root --noPlot --noPowers  --onlyStartWith ${chanList}_finalevtflow2btags
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}plotter_${chanList}_forSystTableInPAS_optim.root --showUnc --noPlots --noPowers --onlyStartWith all_optim
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}plotter_${chanList}_forSystTable_optim.root --showUnc --noPlots --noPowers --onlyStartWith all_optim
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm_optim.root --noPlot --noPowers  --onlyStartWith all_optim
+	  
+	  # Merge syst components list 
+	  hadd -f ${BASEDIR}plotter_${chanList}_forSystTableInPAS_def.root		             ${BASEDIR}plotter_${chanList}_forSystTableInPAS.root			 	${BASEDIR}plotter_${chanList}_forSystTableInPAS_optim.root
+	  hadd -f ${BASEDIR}plotter_${chanList}_forSystTable_def.root                              ${BASEDIR}plotter_${chanList}_forSystTable.root                             	${BASEDIR}plotter_${chanList}_forSystTable_optim.root                             
+	  hadd -f ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm_def.root ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm.root	${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm_optim.root
+	  
+	done
 	mv datacardsByDecayNew datacardsByDecayNew_bak
 	
 	mkdir -p datacardsByDecayNew/180
@@ -181,20 +117,21 @@ elif [ "${1}" = "current" ]; then
 	mkdir -p datacardsByDecaySystPAS/600 
 	mkdir -p datacardsByDecaySystPAS/700
 
-	
 	for i in 180 200 220 250 300 350 500 600 700
 	  do
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayNew/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayNew/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-	  
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecaySyst/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecaySyst/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-	  
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu & 
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu & 
+	  for chanList in emu ee mumu  
+	    do
+	    prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayNew/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	    prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayNew/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	    
+	    prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_forSystTable_def.root --out datacardsByDecaySyst/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	    prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_forSystTable_def.root --out datacardsByDecaySyst/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	    
+	    prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch ${chanList} & 
+	    prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_forSystTableInPAS_def.root --out datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch ${chanList} & 
+	  done
 	done
-
-
+	
     elif [ "${2}" = "mhmax" ]; then
 	
 	mkdir -p datacardsByDecayMhmax/180
@@ -209,95 +146,80 @@ elif [ "${1}" = "current" ]; then
 	mkdir -p datacardsByDecayScan/250 
 	mkdir -p datacardsByDecayScan/300
 	
+	#JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/
+	JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315/
+	
 	for i in 180 200 220 250 300
 	  do
-	  #JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/
-	  JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315/
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-forSystTable_def.root --out datacardsByDecayMhmax/${i}/ --suffix mhmax --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-	  prepareChHiggsDatacards --in ${BASEDIR}plotter-all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayScan/${i}/ --suffix scan --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	   for chanList in emu ee mumu
+	     do
+	     prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_forSystTable_def.root --out datacardsByDecayMhmax/${i}/ --suffix mhmax --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	     prepareChHiggsDatacards --in ${BASEDIR}plotter_${chanList}_all-samplesForDatacards_finalevtflow_norm_def.root --out datacardsByDecayScan/${i}/ --suffix scan --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	   done
 	done
 	
-
     elif [ "${2}" = "mhmodp" ]; then
 	mkdir -p ${BASEDIR}outputs/
-
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter-all-samples_mhmodp_finalevtflow.root --noPlot --noPowers  --onlyStartWith emu_finalevtflow2btags
-
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/220 
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/250 
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/300
-
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/180
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/200 
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/220 
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/250 
-	mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/300
+	mkdir -p ${BASEDIR}outputs/tables_tanb5/
+	mkdir -p ${BASEDIR}outputs/tables_tanb30/
 	
-	for i in 180 200 220 250 300
+	for chanList in emu ee mumu
 	  do
-	  JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
-	  prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter-all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
-
-	  JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb30/
-	  prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter-all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu & 
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb5_fy_x10.json --outFile ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow_tanb5.root --noPlot --noPowers  --onlyStartWith ${chanList}_evtflow
+	  mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb5/ 
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb30_fy_x10.json --outFile ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow_tanb30.root --noPlot --noPowers  --onlyStartWith ${chanList}_evtflow
+	  mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb30/ 
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --noPlot --noPowers  --onlyStartWith ${chanList}_finalevtflow2btags
+	## # 
+	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
+	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
+	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/220 
+	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/250 
+	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/300
+	## # 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/180
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/200 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/220 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/250 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/300
+	## # 
+	  for i in 180 200 220 250 300
+	    do
+	## #   JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
+	## #   prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_{chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	## # 
+	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb30/
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	  done
 	done
-
 	
     elif [ "${2}" = "put" ]; then
 	outputdir=tempDirForNotePlots/
-
-	mkdir -p ${outputdir}
-
-
-	cp ${BASEDIR}plots/emu_evtflow.pdf                  ${outputdir}
-	cp ${BASEDIR}plots/emu_evtflow.C                  ${outputdir}
-	cp ${BASEDIR}plots/emu_met.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_mll.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_mtsum.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_nbjets.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_njets.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_nvertices.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_nverticesUnweighted.pdf      ${outputdir}
-	cp ${BASEDIR}plots/emu_pte.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet1eta.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet1pt.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet2eta.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet2pt.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptmin.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptmu.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_sumpt.pdf		       ${outputdir}
-	cp ${BASEDIR}plots/emu_evtflow.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_met.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_mll.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_mtsum.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_nbjets.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_njets.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_nvertices.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_nverticesUnweighted.png      ${outputdir}
-	cp ${BASEDIR}plots/emu_pte.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet1eta.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet1pt.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet2eta.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptjet2pt.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptmin.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_ptmu.png		       ${outputdir}
-	cp ${BASEDIR}plots/emu_sumpt.png                    ${outputdir}       
-	cp ${BASEDIR}plots/emu_geq2btagsmet.pdf            ${outputdir}
-	cp ${BASEDIR}plots/emu_geq2btagsnbjets.pdf	      ${outputdir}
-	cp ${BASEDIR}plots/emu_geq2btagsnbjets.C	      ${outputdir}
-	cp ${BASEDIR}plots/emu_geq2btagsptlep.pdf 	      ${outputdir}
-	cp ${BASEDIR}plots/emu_geq2btagssumpt.pdf          ${outputdir}
 	
+	mkdir -p ${outputdir}
+	
+	for plotList in evtflow met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt 
+	  do
+	  for chanList in emu ee mumu
+	    do
+	    for formatList in pdf png C
+	      do
+	      if [ "${plotList}" != "evtflow" ]; then
+		  if [ "${formatList}" == "C" ]; then
+		      continue
+		  fi
+	      fi
+	    done
+	  done
+	done
+	cp ${BASEDIR}plots/${chanList}_${plotList}.${formatList} ${outputdir}
 	
 	scp -r ${outputdir} lnlip02.lip.pt:~/
 	
 	rm -rf ${outputdir} 
-
-
+	
     fi
 
-
-
 fi
+
+exit 0

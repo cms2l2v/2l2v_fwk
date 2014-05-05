@@ -145,6 +145,32 @@ TString convertNameForDataCard(TString title)
   if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [180 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [200 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [220 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [240 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [250 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [260 GeV]")    {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [280 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [300 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [350 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [400 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [500 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [600 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 5 [700 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [180 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [200 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [220 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [240 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [250 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [260 GeV]")    {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [280 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [300 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [350 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [400 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [500 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [600 GeV]")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="tanb 30 [700 GeV]")     {signalTag = "HTB" ; return "HTB";}   
   return title;
 }
 // 
