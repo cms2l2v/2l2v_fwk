@@ -24,6 +24,8 @@
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
+#include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
+#include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 
 #include "TROOT.h"
@@ -38,6 +40,7 @@
 #include "TEventList.h"
 #include "TROOT.h"
 #include "TNtuple.h"
+#include "TGraphErrors.h"
 
 #include <iostream>
 #include <fstream>
@@ -81,7 +84,7 @@ int main(int argc, char* argv[])
   bool Cut_tautau_MVA_iso(true); // Specific to ZHTauTau?
   bool examineThisEvent(false); // ?
   double minTauPt     = 20;
-  double maxTauEta    = 2.3;
+  double maxTauEta    =  2.3;
   double minJetPt     = 30;
   double maxJetEta    =  2.5;
   double minTauJetPt  = 20;
@@ -89,6 +92,32 @@ int main(int argc, char* argv[])
 
   // Lepton Efficiencies
   LeptonEfficiencySF lepEff;
+
+  std::vector<std::string>  weightsFile = runProcess.getParameter<std::vector<std::string> >("weightsFile");
+  TString wFile("");
+  if(weightsFile.size())
+    wFile = TString(gSystem->ExpandPathName(weightsFile[0].c_str()));
+
+  // B-tag efficiencies
+  std::map<std::pair<TString,TString>, std::pair<TGraphErrors*,TGraphErrors*> > btagEffCorr;
+  if(weightsFile.size() && isMC)
+  {
+    TString btagEffCorrUrl(wFile); btagEffCorrUrl += "/btagEff.root";
+    gSystem->ExpandPathName(btagEffCorrUrl);
+    TFile *btagF=TFile::Open(btagEffCorrUrl);
+    if(btagF!=0 && !btagF->IsZombie())
+    {
+      TList *dirs=btagF->GetListOfKeys();
+      for(int itagger=0; itagger < dirs->GetEntries(); itagger++)
+      {
+        TString iDir(dirs->At(itagger)->GetName());
+        btagEffCorr[std::pair<TString,TString>(iDir,"b")]    = std::pair<TGraphErrors*,TGraphErrors*>((TGraphErrors*) btagF->Get(iDir+"/beff"),(TGraphErrors*) btagF->Get(iDir+"/sfb"));
+        btagEffCorr[std::pair<TString,TString>(iDir,"c")]    = std::pair<TGraphErrors*,TGraphErrors*>((TGraphErrors*) btagF->Get(iDir+"/ceff"),(TGraphErrors*) btagF->Get(iDir+"/sfc"));
+        btagEffCorr[std::pair<TString,TString>(iDir,"udsg")] = std::pair<TGraphErrors*,TGraphErrors*>((TGraphErrors*) btagF->Get(iDir+"/udsgeff"),(TGraphErrors*) btagF->Get(iDir+"/sfudsg"));
+      }
+      std::cout << btagEffCorr.size() << " b-tag correction factors have been read" << std::endl;
+    }
+  }
 
 
   // Setting Up
@@ -114,12 +143,14 @@ int main(int argc, char* argv[])
   cutFlow->GetXaxis()->SetBinLabel(1, "All");
   cutFlow->GetXaxis()->SetBinLabel(2, "HLT");
   cutFlow->GetXaxis()->SetBinLabel(3, "> 1l");
-  cutFlow->GetXaxis()->SetBinLabel(4, "> 1#tau");
+  cutFlow->GetXaxis()->SetBinLabel(4, "B-veto");
+  cutFlow->GetXaxis()->SetBinLabel(5, "> 1#tau");
   TH1F *fractions = (TH1F*)mon.addHistogram(new TH1F("fractions", ";;Events", 20, 0, 20));
   fractions->GetXaxis()->SetBinLabel(1, "All");
   fractions->GetXaxis()->SetBinLabel(2, "HLT");
   fractions->GetXaxis()->SetBinLabel(3, "> 1l");
-  fractions->GetXaxis()->SetBinLabel(4, "> 1#tau");
+  fractions->GetXaxis()->SetBinLabel(4, "B-veto");
+  fractions->GetXaxis()->SetBinLabel(5, "> 1#tau");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
@@ -184,6 +215,10 @@ int main(int argc, char* argv[])
 
   // Jets
   mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
+  mon.addHistogram(new TH1F("nbjets", ";njets;Events", 6, 0, 6));
+  mon.addHistogram(new TH1F("jetleadpt", ";p_{T}^{jet};Events", 50, 0, 500));
+  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 50, -2.6, 2.6));
+  mon.addHistogram(new TH1F("jetcsv", ";csv;jets", 50, 0, 1));
   TH1F *jetCutFlow   = (TH1F*)mon.addHistogram(new TH1F("jetCutFlow",   ";;jets", 6, 0, 6));
   TH1F *jetFractions = (TH1F*)mon.addHistogram(new TH1F("jetFractions", ";;jets", 6, 0, 6));
   jetCutFlow->GetXaxis()->SetBinLabel(1, "All");
@@ -435,12 +470,6 @@ int main(int argc, char* argv[])
       weight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
     }
 
-    // Fill the all events bin in the cutflow:
-    mon.fillHisto("cutFlow", chTags, 0, weight);
-
-    if(!triggeredOn)
-      continue;
-    mon.fillHisto("cutFlow", chTags, 1, weight);
 
     // Get Leading Lepton
     llvvLeptonCollection selLeptons;
@@ -523,10 +552,7 @@ int main(int argc, char* argv[])
       if(passIso)
         mon.fillHisto("leptonFractions", "all", 3, weight);
     }
-    if(selLeptons.size() == 0)
-      continue;
     std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
-    mon.fillHisto("cutFlow", chTags, 2, weight);
 
     // Get Jets
     llvvJetExtCollection selJets, selJetsNoId, selBJets;
@@ -587,6 +613,45 @@ int main(int argc, char* argv[])
         passKin = false;
       bool isTauJet = (jets[i].pt() > minTauJetPt) && (abs(jets[i].eta()) < maxTauJetEta);
 
+      // B-jets
+      bool hasCSVV1L = jets[i].csv > 0.405;
+      bool hasBtagCorr = hasCSVV1L;
+      if(isMC)
+      {
+        // Get a "unique" seed
+        double bseed_sin_phi = sin(jets[i].phi()*1000000);
+        double bseed = abs(static_cast<int>(bseed_sin_phi*100000));
+
+        // Get Jet Flavour
+        int bflavid = jets[i].genflav;
+
+        // Init
+        BTagSFUtil btsfutil(bseed);
+
+        TString flavKey("udsg");
+        if(abs(bflavid) == 4)
+          flavKey = "c";
+        if(abs(bflavid) == 5)
+          flavKey = "b";
+        std::pair<TString,TString> btagKey("csvL", flavKey);
+        if(btagEffCorr.find(btagKey) != btagEffCorr.end())
+        {
+          TGraphErrors* mceffGr = btagEffCorr[btagKey].first;
+          TGraphErrors* sfGr    = btagEffCorr[btagKey].second;
+          if(mceffGr && sfGr)
+          {
+            double jetpt = jets[i].pt();
+            double eff = mceffGr->Eval(jetpt);
+            double sf  = sfGr->Eval(jetpt);
+            // Systematics: btagup, btagdown, ...
+            //if(var == "btagup" || var == "btagdown" || var == "unbtagup" || var == "unbtagdown")
+            //{
+            //}
+            btsfutil.modifyBTagsWithSF(hasBtagCorr, sf, eff);
+          }
+        }
+      }
+
       // Compute scale and resolution uncertainties
       if(isMC)
       {
@@ -613,7 +678,12 @@ int main(int argc, char* argv[])
       if(passPreSel && passIso && passPFLoose && passLoosePuID && isTauJet)
         ++nTauJets;
       if(passPreSel && passIso && passPFLoose && passID && passKin)
+      {
         selJets.push_back(jets[i]);
+        mon.fillHisto("jetcsv", chTags, jets[i].origcsv, weight);
+      }
+      if(passPreSel && passIso && passPFLoose && passID && passKin && hasBtagCorr)
+        selBJets.push_back(jets[i]);
 
       // Fill Jet control histograms
       mon.fillHisto("jetCutFlow", chTags, 0, weight);
@@ -646,6 +716,8 @@ int main(int argc, char* argv[])
       if(passKin)
         mon.fillHisto("jetFractions", chTags, 5, weight);
     }
+    std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
+    std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
 
     // Get taus
     llvvTauCollection selTaus;
@@ -725,28 +797,53 @@ int main(int argc, char* argv[])
       if(passID)
         mon.fillHisto("tauFractions", chTags, 2, weight);
     }
-    if(selTaus.size() == 0)
-      continue;
     std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
-    mon.fillHisto("cutFlow", chTags, 3, weight);
 
 
-    mon.fillHisto("nvtx", chTags, nvtx, weight);
-    mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
-    mon.fillHisto("nup", "", genEv.nup, 1);
+    mon.fillHisto("fractions", chTags, 0, weight);
+    if(triggeredOn)
+      mon.fillHisto("fractions", chTags, 1, weight);
+    if(selLeptons.size() > 0)
+      mon.fillHisto("fractions", chTags, 2, weight);
+    if(selBJets.size() == 0)
+      mon.fillHisto("fractions", chTags, 3, weight);
+    if(selTaus.size() > 0)
+      mon.fillHisto("fractions", chTags, 4, weight);
 
-    mon.fillHisto("rho", chTags, rho, weight);
-    mon.fillHisto("rho25", chTags, rho25, weight);
+    mon.fillHisto("cutFlow", chTags, 0, weight);
+    if(triggeredOn)
+    {
+      mon.fillHisto("cutFlow", chTags, 1, weight);
+      if(selLeptons.size() > 0)
+      {
+        mon.fillHisto("cutFlow", chTags, 2, weight);
+        if(selBJets.size() == 0)
+        {
+          mon.fillHisto("cutFlow", chTags, 3, weight);
+          if(selTaus.size() > 0)
+          {
+            mon.fillHisto("cutFlow", chTags, 4, weight);
 
-    mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
-    mon.fillHisto("leadeta", chTags, selLeptons[0].eta(), weight);
-    mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
-    mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
+            mon.fillHisto("nvtx", chTags, nvtx, weight);
+            mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
+            mon.fillHisto("nup", "", genEv.nup, 1);
 
-    mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
-    mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
-    mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
-    mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
+            mon.fillHisto("rho", chTags, rho, weight);
+            mon.fillHisto("rho25", chTags, rho25, weight);
+
+            mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
+            mon.fillHisto("leadeta", chTags, selLeptons[0].eta(), weight);
+            mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
+            mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
+
+            mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
+            mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
+            mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
+            mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
+          }
+        }
+      }
+    }
 
 //    break;
   }
