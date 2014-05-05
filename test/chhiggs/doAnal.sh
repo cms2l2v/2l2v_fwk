@@ -203,11 +203,12 @@ elif [ "${1}" = "current" ]; then
 	  for chanList in emu ee mumu
 	    do
 	    for formatList in pdf png C
-	    if [ "${plotList}" != "evtflow" ]; then
-		if [ "${formatList}" == "C" ]; then
-		    continue
-		fi
-	    fi
+	      do
+	      if [ "${plotList}" != "evtflow" ]; then
+		  if [ "${formatList}" == "C" ]; then
+		      continue
+		  fi
+	      fi
 	    done
 	  done
 	done
