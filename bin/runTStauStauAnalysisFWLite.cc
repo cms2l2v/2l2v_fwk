@@ -188,8 +188,8 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events", 100,  0,  100));
   mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   50, -2.6,  2.6));
   mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events",       5, -2,    2));
-  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,   10));
-  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,   10));
+  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,    2));
+  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,    2));
   mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events",    50,  0,    5));
   TH1F *tauCutFlow   = (TH1F*)mon.addHistogram(new TH1F("tauCutFlow",   ";;#tau", 6, 0, 6));
   TH1F *tauFractions = (TH1F*)mon.addHistogram(new TH1F("tauFractions", ";;#tau", 6, 0, 6));
@@ -552,7 +552,8 @@ int main(int argc, char* argv[])
       if(passIso)
         mon.fillHisto("leptonFractions", "all", 3, weight);
     }
-    std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
+    if(selLeptons.size() != 0)
+      std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
 
     // Get Jets
     llvvJetExtCollection selJets, selJetsNoId, selBJets;
@@ -716,8 +717,10 @@ int main(int argc, char* argv[])
       if(passKin)
         mon.fillHisto("jetFractions", chTags, 5, weight);
     }
-    std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
-    std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
+    if(selJets.size() != 0)
+      std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
+    if(selBJets.size() != 0)
+      std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
 
     // Get taus
     llvvTauCollection selTaus;
@@ -797,7 +800,8 @@ int main(int argc, char* argv[])
       if(passID)
         mon.fillHisto("tauFractions", chTags, 2, weight);
     }
-    std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
+    if(selTaus.size() != 0)
+      std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
 
 
     mon.fillHisto("fractions", chTags, 0, weight);
@@ -817,6 +821,7 @@ int main(int argc, char* argv[])
       if(selLeptons.size() > 0)
       {
         mon.fillHisto("cutFlow", chTags, 2, weight);
+        mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
         if(selBJets.size() == 0)
         {
           mon.fillHisto("cutFlow", chTags, 3, weight);
@@ -836,10 +841,19 @@ int main(int argc, char* argv[])
             mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
             mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
 
+            mon.fillHisto("njets", chTags, selJets.size(), weight);
+            if(selJets.size() != 0)
+            {
+              mon.fillHisto("jetleadpt", chTags, selJets[0].pt(), weight);
+              mon.fillHisto("jetleadeta", chTags, selJets[0].eta(), weight);
+            }
+
             mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
             mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
             mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
             mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
+            mon.fillHisto("tauleademfrac", chTags, selTaus[0].emfraction, weight);
+            mon.fillHisto("taudz", chTags, selTaus[0].dZ, weight);
           }
         }
       }
