@@ -148,31 +148,31 @@
       ]
     },
     {
-      "tag":"Data8Tev_TauPlusX2012A",
+      "tag":"Data8TeV_TauPlusX2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8Tev_TauPlusX2012A"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012A-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012A"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012A-22Jan2013-v1/AOD"}
       ]
     },
     {
-      "tag":"Data8Tev_TauPlusX2012B",
+      "tag":"Data8TeV_TauPlusX2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8Tev_TauPlusX2012B"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012B-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012B"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012B-22Jan2013-v1/AOD"}
       ]
     },
     {
-      "tag":"Data8Tev_TauPlusX2012C",
+      "tag":"Data8TeV_TauPlusX2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8Tev_TauPlusX2012C"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012C-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012C"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012C-22Jan2013-v1/AOD"}
       ]
     },
     {
-      "tag":"Data8Tev_TauPlusX2012D",
+      "tag":"Data8TeV_TauPlusX2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8Tev_TauPlusX2012D"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012D-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012D"                  , "split":10, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012D-22Jan2013-v1/AOD"}
       ]
     },
     {
