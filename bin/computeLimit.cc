@@ -39,7 +39,7 @@
 
 
 using namespace std;
-double NonResonnantSyst = 0.25;
+double NonResonnantSyst = 0.15;
 double GammaJetSyst = 0.25;
 
 
@@ -78,6 +78,8 @@ double shapeMaxVBF = 9999;
 bool doInterf = false;
 double minSignalYield = 0;
 float statBinByBin = -1;
+
+bool doInclusive=false;
 
 bool dirtyFix1 = false;
 bool dirtyFix2 = false;
@@ -126,6 +128,7 @@ class ShapeData_t
         int BIN=0;
         for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
            if(h->GetBinContent(ibin)<=0 || h->GetBinContent(ibin)/h->Integral()<0.01 || h->GetBinError(ibin)/h->GetBinContent(ibin)<statBinByBin)continue;
+//           if(h->GetBinContent(ibin)<=0)continue;
            char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
            TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
            TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
@@ -207,6 +210,9 @@ class AllInfo_t
         void sortProc();
 
         // Sum up all background processes and add this as a total process
+        void addChannel(ChannelInfo_t& dest, ChannelInfo_t& src);
+
+        // Sum up all background processes and add this as a total process
         void addProc(ProcessInfo_t& dest, ProcessInfo_t& src);
 
         // Sum up all background processes and add this as a total process
@@ -253,6 +259,10 @@ class AllInfo_t
 
         // Rescale signal sample for the effect of the interference and propagate the uncertainty 
         void RescaleForInterference(string histoName);
+
+        // Merge Bins to make an inclusive analysis 
+        void TurnToInclusiveAnalysis();
+
 };
 
 
@@ -298,6 +308,7 @@ void printHelp()
   printf("--signalSufix --> use this flag to specify a suffix string that should be added to the signal 'histo' histogram\n");
   printf("--rebin         --> rebin the histogram\n");
   printf("--statBinByBin --> make bin by bin statistical uncertainty\n");
+  printf("--inclusive  --> merge bins to make the analysis inclusive\n");
 }
 
 //
@@ -344,6 +355,7 @@ int main(int argc, char* argv[])
     else if(arg.find("--indexL")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexcutL); i++; printf("indexL = %i\n", indexcutL);}
     else if(arg.find("--indexR")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexcutR); i++; printf("indexR = %i\n", indexcutR);}
     else if(arg.find("--index")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexcut); i++; printf("index = %i\n", indexcut);}
+    else if(arg.find("--inclusive") !=string::npos) { doInclusive=true; printf("doInclusive = True\n");}
     else if(arg.find("--in")       !=string::npos && i+1<argc)  { inFileUrl = argv[i+1];  i++;  printf("in = %s\n", inFileUrl.Data());  }
     else if(arg.find("--json")     !=string::npos && i+1<argc)  { jsonFile  = argv[i+1];  i++;  printf("json = %s\n", jsonFile.Data()); }
     else if(arg.find("--histoVBF") !=string::npos && i+1<argc)  { histoVBF  = argv[i+1];  i++;  printf("histoVBF = %s\n", histoVBF.Data()); }
@@ -456,6 +468,10 @@ int main(int argc, char* argv[])
 
   //drop control channels
   allInfo.dropCtrlChannels(selCh);
+
+  //merge bins
+  if(doInclusive)allInfo.TurnToInclusiveAnalysis();
+
 
   //print event yields from the mt shapes
   pFile = fopen("Yields.tex","w");
@@ -612,6 +628,44 @@ void initializeTGraph(){
 
 
         //
+        // Sum up all shapes from one src channel to a total shapes in the dest channel
+        //
+        void AllInfo_t::addChannel(ChannelInfo_t& dest, ChannelInfo_t& src){
+              std::map<string, ShapeData_t>& shapesInfoDest = dest.shapes;
+              std::map<string, ShapeData_t>& shapesInfoSrc  = src.shapes;
+              for(std::map<string, ShapeData_t>::iterator sh = shapesInfoSrc.begin(); sh!=shapesInfoSrc.end(); sh++){
+                 if(shapesInfoDest.find(sh->first)==shapesInfoDest.end())shapesInfoDest[sh->first] = ShapeData_t();
+
+                 //only care about central histogram regarding the shape... for now               
+//               if(!shapesInfoDest[sh->first].histo()){ shapesInfoDest[sh->first].uncShape[""] = (TH1*) sh->second.histo()->Clone(TString(sh->second.histo()->GetName() + dest.channel + dest.bin ) );
+//               }else{                                  shapesInfoDest[sh->first].histo()->Add(sh->second.histo());
+//               }
+
+                 //Loop on all shape systematics (including also the central value shape)
+                 for(std::map<string, TH1*>::iterator uncS = sh->second.uncShape.begin();uncS!= sh->second.uncShape.end();uncS++){
+                     if(shapesInfoDest[sh->first].uncShape.find(uncS->first)==shapesInfoDest[sh->first].uncShape.end()){
+                        shapesInfoDest[sh->first].uncShape[uncS->first] = (TH1*) uncS->second->Clone(TString(uncS->second->GetName() + dest.channel + dest.bin ) );
+                     }else{
+                        shapesInfoDest[sh->first].uncShape[uncS->first]->Add(uncS->second);
+                     }
+                 }
+
+
+
+                 //take care of the scale uncertainty 
+                 for(std::map<string, double>::iterator unc = sh->second.uncScale.begin();unc!= sh->second.uncScale.end();unc++){
+                    if(shapesInfoDest[sh->first].uncScale.find(unc->first)==shapesInfoDest[sh->first].uncScale.end()){
+                       shapesInfoDest[sh->first].uncScale[unc->first] = unc->second;
+                    }else{
+                       shapesInfoDest[sh->first].uncScale[unc->first] = sqrt( pow(shapesInfoDest[sh->first].uncScale[unc->first],2) + pow(unc->second,2) );
+                    }
+                 }
+              }           
+        }
+
+
+
+        //
         // Sum up all background processes and add this as a total process
         //
         void AllInfo_t::addProc(ProcessInfo_t& dest, ProcessInfo_t& src){
@@ -622,28 +676,9 @@ void initializeTGraph(){
                  dest.channels[ch->first].bin     = ch->second.bin;
                  dest.channels[ch->first].channel = ch->second.channel;
               }
-              std::map<string, ShapeData_t>& shapesInfoDest = dest.channels[ch->first].shapes;
-              std::map<string, ShapeData_t>& shapesInfoSrc  = ch->second.shapes;
-              for(std::map<string, ShapeData_t>::iterator sh = shapesInfoSrc.begin(); sh!=shapesInfoSrc.end(); sh++){
-                 if(shapesInfoDest.find(sh->first)==shapesInfoDest.end())shapesInfoDest[sh->first] = ShapeData_t();
-
-                 //only care about central histogram regarding the shape... for now               
-                 if(!shapesInfoDest[sh->first].histo()){ shapesInfoDest[sh->first].uncShape[""] = (TH1*) sh->second.histo()->Clone(TString(sh->second.histo()->GetName() + dest.shortName ) );
-                 }else{                                  shapesInfoDest[sh->first].histo()->Add(sh->second.histo());                                                        
-                 }
-                 
-                 //take care of the scale uncertainty 
-                 for(std::map<string, double>::iterator unc = sh->second.uncScale.begin();unc!= sh->second.uncScale.end();unc++){
-                    if(shapesInfoDest[sh->first].uncScale.find(unc->first)==shapesInfoDest[sh->first].uncScale.end()){
-                       shapesInfoDest[sh->first].uncScale[unc->first] = unc->second;
-                    }else{
-                       shapesInfoDest[sh->first].uncScale[unc->first] = sqrt( pow(shapesInfoDest[sh->first].uncScale[unc->first],2) + pow(unc->second,2) );
-                    }
-                 }
-              }             
+              addChannel(dest.channels[ch->first], ch->second);
            }
         }
-
 
 
         //
@@ -1001,7 +1036,7 @@ void initializeTGraph(){
                         }
                       }else if(runSystematics && proc!="data" && (syst.Contains("Up") || syst.Contains("Down"))){
                         //if empty histogram --> no variation is applied except for stat
-                        if(!syst.Contains("stat") && hshape->Integral()<h->Integral()*0.01 || isnan((float)hshape->Integral())){hshape->Reset(); hshape->Add(h,1); }
+                        if(!syst.Contains("stat") && (hshape->Integral()<h->Integral()*0.01 || isnan((float)hshape->Integral()))){hshape->Reset(); hshape->Add(h,1); }
 
                         //write variation to file
                         hshape->SetName(proc+syst);
@@ -1336,7 +1371,7 @@ void initializeTGraph(){
                   //special treatment for side mass points
                   int cutBinUsed = cutBin;
                   if(shapeName == histo && !ch.Contains("vbf") && procMass==massL)cutBinUsed = indexcutL;
-                  if(shapeName == histo && !ch.Contains("vbf") && procMass==massR)cutBinUsed = indexcutL;
+                  if(shapeName == histo && !ch.Contains("vbf") && procMass==massR)cutBinUsed = indexcutR;
 
                   
                   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
@@ -1592,7 +1627,7 @@ void initializeTGraph(){
               if(hDD->GetXaxis()->GetXmin()!=hMC->GetXaxis()->GetXmin()){printf("Gamma+Jet templates have a different XAxis range\nStop the script here\n"); exit(0);}
               if(hDD->GetXaxis()->GetBinWidth(1)!=hMC->GetXaxis()->GetBinWidth(1)){
                  double dywidth = hDD->GetXaxis()->GetBinWidth(1);
-                 printf("Gamma+Jet templates have a different bin width:");
+                 printf("Gamma+Jet templates have a different bin width in %s channel:", chMC->first.c_str());
                  double mcwidth = hMC->GetXaxis()->GetBinWidth(1);
                  if(dywidth>mcwidth){
                     printf("bin width in Gamma+Jet templates is larger than in MC samples (%f vs %f) --> can not rebin!\nStop the script here\n", dywidth,mcwidth); 
@@ -1665,7 +1700,7 @@ void initializeTGraph(){
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                      TH1* histo = unc->second;
                      double* xbins = NULL;  int nbins=0;
-                     if(ch->first.find("vbf")!=string::npos){
+                     if(ch->first.find("vbf")!=string::npos && histoVBF!="" ){
                         nbins = 3;
                         xbins = new double[nbins+1];
                         xbins[0] =  0;
@@ -1734,6 +1769,11 @@ void initializeTGraph(){
               proc.xsec      = TG_xsec->Eval(proc.mass,NULL,"S");
               proc.br        = procL.br + (Ratio * (procR.br - procL.br));
 
+              printf("XSEC L : %f vs %f", procL.xsec, TG_xsec->Eval(massL,NULL,"S"));
+              printf("XSEC R : %f vs %f", procR.xsec, TG_xsec->Eval(massR,NULL,"S"));
+              printf("XSEC   : %f      ", proc.xsec);
+
+
               for(std::map<string, ChannelInfo_t>::iterator ch  = proc .channels.begin(); ch !=proc.channels.end(); ch++){                 
                   std::map<string, ChannelInfo_t>::iterator chL = procL.channels.find(ch->first);
                   std::map<string, ChannelInfo_t>::iterator chR = procR.channels.find(ch->first);
@@ -1756,6 +1796,7 @@ void initializeTGraph(){
                     h->Reset();
                     if(hL->Integral()>0 && hR->Integral()>0)//interpolate only if the histograms are not null
                     h->Add(th1fmorph(signProcName+ch->first+unc->first,signProcName+ch->first+unc->first, hL, hR, procL.mass, procR.mass, proc.mass, (1-Ratio)*hL->Integral() + Ratio*hR->Integral(), 0), 1);
+                    if(unc->first=="")printf("EFF : %f - %f -%f\n", hL->Integral(), h->Integral(), hR->Integral());
                     h->Scale(proc.xsec*proc.br);
                  }
               }
@@ -1785,23 +1826,31 @@ void initializeTGraph(){
               double sFDn = 1.0;
               double sFUp = 1.0;
 
+              double cprime=1.0; double  brnew=0.0;
+              if(signalSufix!="")sscanf(signalSufix.Data(), "_cp%lf_brn%lf", &cprime, &brnew);
+
               if(doInterf && it->second.mass>400 && it->first.find("ggH")!=string::npos){
                  sF   = 0.897-0.000152*it->second.mass+7.69e-07*pow(it->second.mass,2);
                  sFDn = 0.907-2.08e-05*it->second.mass+4.63e-07*pow(it->second.mass,2);
                  sFUp = 0.889-0.000357*it->second.mass+1.21e-06*pow(it->second.mass,2);
 
                  if(it->second.mass>=400 && signalSufix!=""){ //scale factor for Narrow Resonnance
-                    double cprime=1.0; double  brnew=0.0;
-                    sscanf(signalSufix.Data(), "_cp%lf_brn%lf", &cprime, &brnew);
                     sF=1 + (sF-1)/pow(cprime,2);   sFDn = 1.0;  sFUp = 1 + (sF-1)*2;        //100% Uncertainty
                     if(sF<1){sF=1.0;  sFUp = 1 + (sF-1)*2;}
-                    printf("Scale Factor for Narrow Resonnance : %f [%f,%f] applied on %s\n", sF, sFDn, sFUp, it->first.c_str());
+                    printf("Scale Factor for Narrow Resonnance : %f [%f,%f] applied on %s\n", sF, sFDn, sFUp, it->first.c_str());                  
                  }else{
                     printf("Scale Factor for Interference : %f [%f,%f] applied on %s\n",sF, sFDn, sFUp, it->first.c_str());
                  }
                  if(sFDn>sFUp){double tmp = sFUp; sFUp = sFDn; sFDn = tmp;}
               }
               printf("Total Scale Factor : %f [%f,%f] applied on %s\n",sF, sFDn, sFUp, it->first.c_str());
+
+              //rescale xsection for Narrow Resonnances
+              if(signalSufix!=""){
+                 double xsecScale = pow(cprime,2) * (1-brnew);
+                 printf("Scale Factor to the narrow resonnance xsection is : %f\n", xsecScale);
+                 sF *= xsecScale;  sFUp *= xsecScale;  sFDn *= xsecScale;
+              }
               it->second.xsec *= sF;
    
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
@@ -1814,6 +1863,29 @@ void initializeTGraph(){
                  TH1* tmp;
                  tmp = (TH1*)histo->Clone(TString("interf_ggH_") + histo->GetName() + "Down"); tmp->Scale(sFDn/sF); shapeInfo.uncShape[string("_CMS_hzz2l2v_interf_") + it->second.shortName+"Down"] = tmp;
                  tmp = (TH1*)histo->Clone(TString("interf_ggH_") + histo->GetName() + "Up"  ); tmp->Scale(sFUp/sF); shapeInfo.uncShape[string("_CMS_hzz2l2v_interf_") + it->second.shortName+"Up"  ] = tmp;
+              }
+           }
+         }
+
+         //
+         // merge histograms from different bins together... but keep the channel separated 
+         //
+         void AllInfo_t::TurnToInclusiveAnalysis(){
+           printf("Merge all bins of the same channel together\n");
+           for(unsigned int p=0;p<sorted_procs.size();p++){
+              string procName = sorted_procs[p];
+              std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+              if(it==procs.end())continue;
+              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 for(std::map<string, ChannelInfo_t>::iterator ch2 = ch; ch2!=it->second.channels.end(); ch2++){
+                    if(ch->second.channel != ch2->second.channel)continue; //make sure we merge bin in the same channel
+                    if(ch->second.bin     == ch2->second.bin    )continue; //make sure we do not merge with itself
+                    addChannel(ch->second, ch2->second);
+                    it->second.channels.erase(ch2);  
+                    ch2=ch;
+                 }
+//                 ch->first      = ch->second.channel;
+                 ch->second.bin = "Inc";
               }
            }
          }

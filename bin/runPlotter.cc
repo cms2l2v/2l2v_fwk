@@ -1012,6 +1012,27 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 }
 
 
+void clean_json(JSONWrapper::Object& Root, std::vector<string>& dtagstokeep){
+   if(dtagstokeep.size()<=0)return;
+
+  //loop on the json list of dtags and remove the one that are not in the list
+   std::vector<JSONWrapper::Object>& Process = Root["proc"].daughters();
+   for(size_t ip=0; ip<Process.size(); ip++){
+       string tag = Process[ip].getString("tag");
+       //search if this tag is in the vector of object to keep
+       bool drop=true;
+       for(unsigned int s=0;s<dtagstokeep.size();s++){ if(tag.find(dtagstokeep[s])!=std::string::npos){drop=false; break;} }
+       if(drop){
+          Root["proc"].obj.erase(Root["proc"].obj.begin()+ip); 
+          Root["proc"].key.erase(Root["proc"].key.begin()+ip);
+          ip--;
+       }else{
+          printf("Keep the sample %s\n", tag.c_str());
+       }
+   }
+}
+
+
 int main(int argc, char* argv[]){
    setTDRStyle();  
    gStyle->SetPadTopMargin   (0.06);
@@ -1026,6 +1047,7 @@ int main(int argc, char* argv[]){
 
    std::vector<string> histoNameMask;
    std::vector<string> histoNameMaskStart;
+   std::vector<string> dtagstokeep;
 
    for(int i=1;i<argc;i++){
      string arg(argv[i]);
@@ -1064,6 +1086,7 @@ int main(int argc, char* argv[]){
 	return 0;
      }
 
+     if(arg.find("--tag"   )!=string::npos && i+1<argc){ dtagstokeep.push_back(argv[i+1]); i++; printf("Tags containing '%s' will be kept but not the others\n", argv[i]);    }
      if(arg.find("--iLumi"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iLumi); i++; printf("Lumi = %f\n", iLumi); }
      if(arg.find("--iEcm"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iEcm); i++; printf("Ecm = %f TeV\n", iEcm); }
 
@@ -1115,6 +1138,7 @@ int main(int argc, char* argv[]){
    GetListOfObject(Root,inDir,histlist);
    histlist.sort();
    histlist.unique();   
+   clean_json(Root, dtagstokeep);
 
    TFile* OutputFile = NULL;
    if(StoreInFile) OutputFile = new TFile(outFile.c_str(),"RECREATE");
@@ -1148,5 +1172,6 @@ int main(int argc, char* argv[]){
    system(("rm " + csvFile).c_str());
    //system(("cp ${CMSSW_BASE}/src/CMGTools/HtoZZ2l2nu/data/html/index.html " + outDir).c_str());
    //printf("You can browse the results using %s/index.html\n",outDir.c_str());
+   printf("runPlotter : All done\n");
 }
 
