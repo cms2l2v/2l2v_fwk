@@ -95,7 +95,7 @@ for proc in procList :
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'rfcp '+mergedFileName+' ' + mergedFilePath]
                 # lustre condition must be before /store/ condition (/lustre/ path contains /store/ string) 
                 elif(mergedFilePath.find('/lustre/ncg.ingrid.pt/')==0):
-                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'cp '+mergedFileName+' ' + mergedFilePath]
+                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'mv '+mergedFileName+' ' + mergedFilePath]
                 elif(mergedFilePath.find('/store/')==0):
                    LaunchOnCondor.Jobs_FinalCmds = ['pwd', 'ls -lth', 'cmsStageOut '+mergedFileName+' ' + mergedFilePath]
                 elif(mergedFilePath.find('srm://')==0):
