@@ -147,13 +147,19 @@ clean up for duplicats in the storage area
 def removeDuplicates(dir):
     duplicatedFiles=checkStoreForDuplicates(dir)
     print 'Removing ' + str(len(duplicatedFiles)) + ' duplicated files in ' + dir
+    isNCG=False
     isEOS=False
     isCastor=False
+    if(dir.find('/lustre/ncg.ingrid.pt/')==0) : isNCG=True
     if(dir.find('/store/')==0) : isEOS=True
     if(dir.find('castor')>=0) : isCastor=True
+    print "removing duplicatessssssssssssssssssssss"
     for f in duplicatedFiles :
         print f
-        if(isEOS) : commands.getstatusoutput('cmsRm ' + f)
+        if(isNCG) :
+            
+            commands.getstatusoutput('') # REPLACE
+        elif(isEOS) : commands.getstatusoutput('cmsRm ' + f)
         elif(isCastor) : commands.getstatusoutput('rfrm ' +dir + '/' + f)
         else : commands.getstatusoutput('rm ' +dir + '/' + f)
 
