@@ -165,9 +165,11 @@ int main(int argc, char* argv[])
     NRparams.push_back(std::make_pair<double,double>(30,0));
   }
  else if(suffix==""){ //consider the other points only when no suffix is being used    
-    for(double cp=0.1;cp<=1.0;cp+=0.1)
-       for(double brn=0.0; brn<=0.5;brn+=0.1)
+    for(double cp=0.1;cp<=1.0;cp+=0.1){
+       for(double brn=0.0; brn<=0.5;brn+=0.1){
+//          if(brn!=0.0)continue;
           NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
+    }}
   }
 
 
@@ -206,7 +208,7 @@ int main(int argc, char* argv[])
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       }
       else if(useGenLineShapeForNR){
-	TString nrLineShapesFileUrl(weightsDir+"/NR_weights.root");
+	TString nrLineShapesFileUrl(weightsDir+"/NR_weightsFromLoic.root");
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       }
@@ -316,10 +318,14 @@ int main(int argc, char* argv[])
                       if(!nrWgtUpGr)  nrWgtUpGr   = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");          
                       if(!nrWgtDownGr)nrWgtDownGr = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down"); 
 
-		      Double_t cpsWgt=cpsGr->Eval(hmass);
-		      shapeWgt       = cpsWgt * std::max(0.0, nrWgtGr    ->Eval(hmass));
-		      shapeWgtUp     = cpsWgt * std::max(0.0, nrWgtUpGr  ->Eval(hmass));
-		      shapeWgtDown   = cpsWgt * std::max(0.0, nrWgtDownGr->Eval(hmass));
+                    shapeWgt       = nrWgtGr    ->Eval(hmass);
+                    shapeWgtUp     = nrWgtUpGr  ->Eval(hmass);
+                    shapeWgtDown   = nrWgtDownGr->Eval(hmass);
+
+//		      Double_t cpsWgt=cpsGr->Eval(hmass);
+//		      shapeWgt       = cpsWgt * std::max(0.0, nrWgtGr    ->Eval(hmass));
+//		      shapeWgtUp     = cpsWgt * std::max(0.0, nrWgtUpGr  ->Eval(hmass));
+//		      shapeWgtDown   = cpsWgt * std::max(0.0, nrWgtDownGr->Eval(hmass));
 		    }
 		  
 		  shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
