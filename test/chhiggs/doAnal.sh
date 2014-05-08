@@ -56,7 +56,6 @@ elif [ "${1}" = "current" ]; then
 	    done
 	  done
 	done
-
     elif [ "${2}" = "tables" ]; then
 	# Tables
 	for chanList in emu ee mumu
@@ -67,7 +66,29 @@ elif [ "${1}" = "current" ]; then
 	  mv ${BASEDIR}plotsee* ${BASEDIR}tables/
 	  mv ${BASEDIR}plotsmumu* ${BASEDIR}tables/
 	done
-	
+    elif [ "${2}" = "display" ]; then	
+	PLOTSDIR=~/www/HIG-13-026/plots/
+	mkdir -p ${PLOTSDIR}
+	mkdir -p ${PLOTSDIR}emu
+	mkdir -p ${PLOTSDIR}ee
+	mkdir -p ${PLOTSDIR}mumu
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}emu
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}ee
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}mumu
+	cp ${BASEDIR}plots/ee_*       ${PLOTSDIR}ee/
+	cp ${BASEDIR}plots/emu_*      ${PLOTSDIR}emu/
+	cp ${BASEDIR}plots/mumu_*     ${PLOTSDIR}mumu/
+	cp ${BASEDIR}tables/plotsemu_evtflow.tex  ${PLOTSDIR}emu/   
+	cp ${BASEDIR}tables/plotsee_evtflow.tex   ${PLOTSDIR}ee/
+	cp ${BASEDIR}tables/plotsmumu_evtflow.tex ${PLOTSDIR}mumu/ 
+
+    elif [ "${2}" = "cleanDisplay" ]; then
+	PLOTSDIR=~/www/HIG-13-026/plots/	
+	rm ${PLOTSDIR}ee/*
+	rm ${PLOTSDIR}emu/*
+	rm ${PLOTSDIR}mumu/*
+
     elif [ "${2}" = "datacards" ]; then
 	
 	for chanList in emu ee mumu
