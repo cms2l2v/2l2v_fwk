@@ -586,37 +586,56 @@
     {
       "tag":"MC8TeV_TBH_M-180_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-180_8TeV-pythia6"           , "split":7, "xsec":45.395      , "br":[ 0.831852 ]            , "dset":"/HplusTB_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-180_8TeV-pythia6"           , "split":7, "xsec":1.0      , "br":[ 1.0 ]            , "dset":"/HplusTB_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-190_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-190_8TeV-pythia6"           , "split":7, "xsec":40.8176     , "br":[ 0.407966 ]            , "dset":"/HplusTB_M-190_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-190_8TeV-pythia6"           , "split":7, "xsec":1.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-190_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-200_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-200_8TeV-pythia6"           , "split":8, "xsec":36.9622     , "br":[ 0.228564 ]            , "dset":"/HplusTB_M-200_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-200_8TeV-pythia6"           , "split":8, "xsec":1.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-200_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-220_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-220_8TeV-pythia6"           , "split":7, "xsec":30.8054     , "br":[ 0.106446 ]            , "dset":"/HplusTB_M-220_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-220_8TeV-pythia6"           , "split":7, "xsec":1.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-220_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-250_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":7, "xsec":23.8826     , "br":[ 0.04129783 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":7, "xsec":1.0     , "br":[ 1.0 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-300_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-300_8TeV-pythia6"           , "split":7, "xsec":15.83804    , "br":[ 0.02514242 ]          , "dset":"/HplusTB_M-300_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-300_8TeV-pythia6"           , "split":7, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-300_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_TBH_M-400_8TeV-pythia6",
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6"           , "split":9, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+    {
+      "tag":"MC8TeV_TBH_M-500_8TeV-pythia6",
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6"           , "split":8, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+
+    {
+      "tag":"MC8TeV_TBH_M-600_8TeV-pythia6",
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-600_8TeV-pythia6"           , "split":10, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
     {

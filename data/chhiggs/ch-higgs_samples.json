@@ -241,6 +241,21 @@
       ]
     },
     {
+      "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[400 GeV]}",
+      "label":"#splitline{100#times H^{+}#rightarrow#tau#nu}{[400 GeV]}",
+      "isdata":false,
+      "issignal":true,	 
+      "spimpose":true,
+      "color":"001",
+      "lwidth":2,
+      "lstyle":7,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6"           , "split":9, "xsec":2.0     , "br":[ 1.0 ]           ,        "dset":"/HplusTB_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]	
+    },
+    {
       "tag":"#splitline{H^{+}#rightarrow tb}{[500 GeV]}",
       "label":"#splitline{100#times H^{+}#rightarrow tb}{[500 GeV]}",
       "isdata":false,
@@ -255,7 +270,22 @@
         { "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6"           , "split":11, "xsec":3.75644     , "br":[ 0.993732 ]            , "dset":"/HplusToTBbar_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
-    {
+   {
+      "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[500 GeV]}",
+      "label":"#splitline{100#times H^{+}#rightarrow#tau#nu}{[500 GeV]}",
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"001",
+      "lwidth":2,
+      "lstyle":7,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6"           , "split":8, "xsec":2.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+     {
       "tag":"#splitline{H^{+}#rightarrow tb}{[600 GeV]}",
       "label":"#splitline{100#times H^{+}#rightarrow tb}{[600 GeV]}",
       "isdata":false,
@@ -271,6 +301,21 @@
       ]
     },
     {
+      "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[600 GeV]}",
+      "label":"#splitline{100#times H^{+}#rightarrow#tau#nu}{[600 GeV]}",	
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"001",
+      "lwidth":2,
+      "lstyle":7,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-600_8TeV-pythia6"           , "split":10, "xsec":2.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+     {
       "tag":"#splitline{H^{+}#rightarrow tb}{[700 GeV]}",
       "label":"#splitline{100#times H^{+}#rightarrow tb}{[700 GeV]}",
       "isdata":false,

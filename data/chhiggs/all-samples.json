@@ -298,7 +298,20 @@
         { "dtag":"MC8TeV_HTB_M-350_8TeV-pythia6"           , "split":11, "xsec":10.73242    , "br":[ 0.981614 ]            , "dset":"/HplusToTBbar_M-350_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
-    {
+   {
+      "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[400 GeV]}",
+      "isdata":false,
+      "spimpose":true,
+      "color":001,
+      "lwidth":2,
+      "lstyle":7,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6"           , "split":9, "xsec":2.     , "br":[ 1. ]            , "dset":"/HplusTB_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+     {
       "tag":"#splitline{H^{+}#rightarrow tb}{[400 GeV]}",
       "isdata":false,
       "spimpose":true,
@@ -312,6 +325,19 @@
       ]
     },
     {
+      "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[500 GeV]}",
+      "isdata":false,
+      "spimpose":true,
+      "color":001,
+      "lwidth":2,
+      "lstyle":7,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6"           , "split":8, "xsec":2.     , "br":[ 1. ]            , "dset":"/HplusTB_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+    {
       "tag":"#splitline{H^{+}#rightarrow tb}{[500 GeV]}",
       "isdata":false,
       "spimpose":true,
@@ -322,6 +348,19 @@
       "marker":1,
       "data":[
         { "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6"           , "split":11, "xsec":3.75644     , "br":[ 0.993732 ]            , "dset":"/HplusToTBbar_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+      ]
+    },
+    {
+      "tag":"#splitline{H^{+}#rightarrow#tau#nu}{[600 GeV]}",
+      "isdata":false,
+      "spimpose":true,
+      "color":001,
+      "lwidth":2,
+      "lstyle":7,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC8TeV_TBH_M-600_8TeV-pythia6"           , "split":10, "xsec":2.     , "br":[ 1. ]            , "dset":"/HplusTB_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
       ]
     },
     {
