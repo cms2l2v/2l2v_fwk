@@ -219,7 +219,7 @@ elif [ "${1}" = "current" ]; then
 	  for i in 180 200 220 250 300 400 500 600 
 	    do
 	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_{chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
 	 
 	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb30/
 	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
