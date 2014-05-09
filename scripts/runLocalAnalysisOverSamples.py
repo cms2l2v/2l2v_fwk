@@ -29,7 +29,7 @@ parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='pr
 parser.add_option('-n', '--n'          ,    dest='fperjob'            , help='input files per job'                   , default=-1,  type=int)
 parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
 parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'      , default='')
-parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, type=bool)
+parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, action="store_true")
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
 
