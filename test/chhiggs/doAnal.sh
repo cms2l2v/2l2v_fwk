@@ -44,7 +44,7 @@ elif [ "${1}" = "current" ]; then
 
     elif [ "${2}" = "plots" ]; then
 	# Plots
-	JSONFILE=data/chhiggs/plot-ch-higgs_tanb30_samples.json
+	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
 	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
 	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt
 	  do
@@ -52,7 +52,7 @@ elif [ "${1}" = "current" ]; then
 	    do
 	    for formatList in pdf png C
 	      do
-	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILE} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --onlyStartWith ${chanList}_${plotList}                                 &
+	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --onlyStartWith ${chanList}_${plotList}                                 &
 	    done
 	  done
 	done
@@ -62,9 +62,9 @@ elif [ "${1}" = "current" ]; then
 	for chanList in emu ee mumu
 	  do
 	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}/outputs/tables/plotter_${chanList}_forTables_1pb.root --showUnc --noPlots --noPowers --onlyStartWith ${chanList}_evtflow
-	  mv ${BASEDIR}plotsemu*  ${BASEDIR}outputs/tables/
-	  mv ${BASEDIR}plotsee*   ${BASEDIR}outputs/tables/
-	  mv ${BASEDIR}plotsmumu* ${BASEDIR}outputs/tables/
+	  mv ${BASEDIR}outputs/plotsemu*  ${BASEDIR}outputs/tables/
+	  mv ${BASEDIR}outputs/plotsee*   ${BASEDIR}outputs/tables/
+	  mv ${BASEDIR}outputs/plotsmumu* ${BASEDIR}outputs/tables/
 	done
     elif [ "${2}" = "display" ]; then	
 	PLOTSDIR=~/www/HIG-13-026/plots/
@@ -107,7 +107,9 @@ elif [ "${1}" = "current" ]; then
 	  
 	done
 	
-	mv ${BASEDIR}outputs/datacardsByDecayMode ${BASEDIR}outputs/datacardsByDecayMode_bak
+	mv ${BASEDIR}outputs/datacardsByDecayMode    ${BASEDIR}outputs/datacardsByDecayMode_bak
+	mv ${BASEDIR}outputs/datacardsByDecaySyst    ${BASEDIR}outputs/datacardsByDecaySyst_bak
+	mv ${BASEDIR}outputs/datacardsByDecaySystPAS ${BASEDIR}outputs/datacardsByDecaySystPAS_bak
 	
 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/180
 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/200 
@@ -195,24 +197,30 @@ elif [ "${1}" = "current" ]; then
 	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb30_fy_x10.json --outFile ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow_tanb30.root --noPlot --noPowers  --onlyStartWith ${chanList}_evtflow
 	  mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb30/ 
 	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --noPlot --noPowers  --onlyStartWith ${chanList}_finalevtflow2btags
-	## # 
-	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
-	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
-	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/220 
-	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/250 
-	## # mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/300
-	## # 
+	
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/220 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/250 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/300
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/400
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/500
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/600
+	  
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/180
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/200 
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/220 
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/250 
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/300
-	## # 
-	  for i in 180 200 220 250 300
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/400
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/500
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/600
+ 
+	  for i in 180 200 220 250 300 400 500 600 
 	    do
-	## #   JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
-	## #   prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_{chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
-	## # 
+	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_{chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
+	 
 	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb30/
 	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
 	  done
