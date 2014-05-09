@@ -48714,7 +48714,7 @@ process.reconstruction_fromRECO_noTracking = cms.Sequence(process.clusterSummary
 process.reconstruction_HcalNZS = cms.Sequence(process.localreco_HcalNZS+process.globalreco+process.highlevelreco+process.logErrorHarvester)
 
 
-process.p = cms.Path(process.startCounter+process.noscraping+process.scrapCounter+process.goodOfflinePrimaryVertices+process.goodVertexFilter+process.vtxCounter+process.metFilteringTaggers+process.metCounter+process.eidMVASequence+process.produceAndDiscriminateBoostedHPSPFTaus+process.PFTauBoost+process.patPF2PATSequencePFlow+process.patPFTauIsolationBoost+process.patTausBoost+process.btvSequence+process.kt6PFJetsCentral+process.qgSequence+process.type0PFMEtCorrection+process.producePFMETCorrections+process.pfMEtMVAsequence+process.selectedPatElectronsWithTrigger+process.selectedPatMuonsTriggerMatch+process.llvvObjectProducersUsed+process.endCounter)
+process.p = cms.Path(process.startCounter+process.noscraping+process.scrapCounter+process.goodOfflinePrimaryVertices+process.goodVertexFilter+process.vtxCounter+process.metFilteringTaggers+process.metCounter+process.eidMVASequence+process.produceAndDiscriminateBoostedHPSPFTaus+process.PFTauBoost+process.patPF2PATSequencePFlow+process.makePatTausBoost+process.btvSequence+process.kt6PFJetsCentral+process.qgSequence+process.type0PFMEtCorrection+process.producePFMETCorrections+process.pfMEtMVAsequence+process.selectedPatElectronsWithTrigger+process.selectedPatMuonsTriggerMatch+process.llvvObjectProducersUsed+process.endCounter)
 
 
 process.endPath = cms.EndPath(process.out)
