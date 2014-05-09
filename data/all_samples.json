@@ -478,37 +478,37 @@
     {
       "tag":"MC8TeV_HZAtoBB_350_15",
       "data":[
-        { "dtag":"MC8TeV_HZAtoBB_350_15"                   , "split":1, "xsec":"0.74328E-03", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_15_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoBB_350_15"                   , "split":1, "xsec":"0.00074328", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_15_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoBB_350_30",
       "data":[
-        { "dtag":"MC8TeV_HZAtoBB_350_30"                   , "split":1, "xsec":"0.78903E-03", "br":[ 1 ]                   ,  "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_30_RECO/" ]        }    
+        { "dtag":"MC8TeV_HZAtoBB_350_30"                   , "split":1, "xsec":"0.00078903", "br":[ 1 ]                   ,  "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_30_RECO/" ]        }    
        ]
     },
     {
       "tag":"MC8TeV_HZAtoBB_350_70",
       "data":[
-        { "dtag":"MC8TeV_HZAtoBB_350_70"                   , "split":1, "xsec":"0.81211E-03", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_70_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoBB_350_70"                   , "split":1, "xsec":"0.00081211", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_70_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoTauTau_350_15",
       "data":[
-        { "dtag":"MC8TeV_HZAtoTauTau_350_15"               , "split":1, "xsec":"0.36009E-04", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_15_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoTauTau_350_15"               , "split":1, "xsec":"0.000036009", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_15_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoTauTau_350_30",
       "data":[
-        { "dtag":"MC8TeV_HZAtoTauTau_350_30"               , "split":1, "xsec":"0.31267E-04", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_30_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoTauTau_350_30"               , "split":1, "xsec":"0.000031267", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_30_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoTauTau_350_70",
       "data":[
-        { "dtag":"MC8TeV_HZAtoTauTau_350_70"               , "split":1, "xsec":"0.33050E-04", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_70_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoTauTau_350_70"               , "split":1, "xsec":"0.000033050", "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_70_RECO/" ]        }
       ]
     },
     {
