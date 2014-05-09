@@ -19,6 +19,7 @@ Path_Cmd          = ''
 Path_Shell        = ''
 Path_Log          = ''
 Path_Cfg          = ''
+Path_Out          = ''
 Jobs_Count        = 0
 Jobs_Name         = ''
 Jobs_Index        = ''
@@ -30,6 +31,7 @@ Jobs_LSFRequirement = '"type==SLC5_64&&pool>30000"'
 Jobs_Inputs	  = []
 Jobs_FinalCmds    = []
 Jobs_RunHere      = 0
+Jobs_EmailReport = False
 
 useLSF = True
 useLIP = True
@@ -205,14 +207,24 @@ def AddJobToCmdFile():
         global useLSF
 	global Path_Shell
         global Path_Cmd
+        global Path_Out
 	global Path_Log
         global absoluteShellPath
+        global Jobs_EmailReport
         Path_Log   = Farm_Directories[2]+Jobs_Index+Jobs_Name
+        Path_Out   = Farm_Directories[3] + Jobs_Index + Jobs_Name
         cmd_file=open(Path_Cmd,'a')
 	if useLSF:
                absoluteShellPath = Path_Shell;
                if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/"+absoluteShellPath
-	       cmd_file.write("bsub -q " + Jobs_Queue + " -R " + Jobs_LSFRequirement + " -J " + Jobs_Name+Jobs_Index + " '" + absoluteShellPath + " 0 ele'\n")
+	       temp = "bsub -q " + Jobs_Queue + " -R " + Jobs_LSFRequirement + " -J " + Jobs_Name+Jobs_Index
+	       if(not Jobs_EmailReport):
+	         absoluteOutPath = Path_Out
+	         if(not os.path.isabs(absoluteOutPath)):
+	           absoluteOutPath = os.getcwd() + "/" + Path_Out
+	         temp = temp + " -oo " + absoluteOutPath + ".cout"
+	       temp = temp + " '" + absoluteShellPath + "'\n"
+	       cmd_file.write(temp)
 #               cmd_file.write("bsub -q " + Jobs_Queue + " -J " + Jobs_Name+Jobs_Index + " '" + os.getcwd() + "/"+Path_Shell + " 0 ele'\n")
 	else:
             if(not useLIP):
