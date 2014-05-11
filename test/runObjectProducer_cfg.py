@@ -274,8 +274,9 @@ process.p            = cms.Path(
                       *process.produceAndDiscriminateBoostedHPSPFTaus
                       *getattr(process,"PFTau"+boostedtaupostfix) # run boosted tau producer
                       *getattr(process,"patPF2PATSequence"+postfix)
-                      *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
-                      *getattr(process,"patTaus"+boostedtaupostfix)
+#                      *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
+#                      *getattr(process,"patTaus"+boostedtaupostfix)
+                      *getattr(process,"makePatTaus"+boostedtaupostfix)
                       *process.btvSequence
                       *process.kt6PFJetsCentral
                       *process.qgSequence 

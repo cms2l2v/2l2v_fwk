@@ -41,6 +41,8 @@ for input in inputFiles:
                         summaryTotalJob=0
                         summaryRetrieved=0
                         summaryError=0
+                        summaryRunning=0
+                        summarySubmitted=0
                         summaryOther=0
                         continue
 
@@ -49,7 +51,7 @@ for input in inputFiles:
                  if(line.find('Log file')==0):
                     if(summaryTotalJob>0): 
                        RatioRetrieve = float(100 * summaryRetrieved) / float (summaryTotalJob)
-                       os.system(('echo "%40s'% workingDir) + ('%7.2f%% Retrieved'%RatioRetrieve) + (' of %i Jobs --> ' % summaryTotalJob) + (' %i (Retrieved)   %i (Other)   %i (Error)'%(summaryRetrieved,summaryOther,summaryError)) + '" >> CrabResubmit.summary')
+                       os.system(('echo "%40s'% workingDir) + ('%7.2f%% Retrieved'%RatioRetrieve) + (' of %5i Jobs --> ' % summaryTotalJob) + (' %5i (Error)   %5i (Retrieved)   %5i (Running)  %5i (Submitted)   %5i (Other)'%(summaryError, summaryRetrieved,summaryRunning,summarySubmitted,summaryOther)) + '" >> CrabResubmit.summary')
                     else:
                        os.system(('echo "%40s'% workingDir) + 'ERROR (0Jobs)" >> CrabResubmit.summary')
 
@@ -103,9 +105,25 @@ for input in inputFiles:
                     summaryRetrieved = summaryRetrieved+1
                  elif(linesplits[1].find('Y')>=0 and linesplits[2].find('Retrieved')==0):
                     summaryError = summaryError+1;
+                 elif(linesplits[1].find('N')>=0 and linesplits[2].find('Running')==0):
+                    summaryRunning = summaryRunning+1;
+                 elif(linesplits[1].find('N')>=0 and linesplits[2].find('Submitted')==0):
+                    summarySubmitted = summarySubmitted+1;
                  else:
                     summaryOther = summaryOther+1
                  #END THE PART USED FOR THE SUMMARY
+
+
+                 #resubmit all jobs cancelled
+                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Cancelled')>=0) ):
+                        if len(JobsToKill)>0: JobsToKill+=','
+                        JobsToKill += str((int(linesplits[0])))
+                        NJobsToKill+=1;
+                        if len(JobsToResubmit)>0: JobsToResubmit+=','
+                        JobsToResubmit += str((int(linesplits[0])))
+                        NJobsToResubmit+=1;
+                        continue;
+
       
                  #resubmit all aborted jobs or CannotSubmit jobs
                  if(linesplits[1].find('Y')>=0 and (linesplits[2].find('Aborted')>=0 or linesplits[2].find('CannotSubmit')>=0) ):
@@ -115,7 +133,7 @@ for input in inputFiles:
 			continue;
 
                  #submit jobs in Created State
-                 if(linesplits[2].find('Created')>=0):
+                 if(linesplits[2].find('Created')>=0 or linesplits[2].find('None')>=0):
                         if len(JobsToSubmit)>0: JobsToSubmit+=','
                         JobsToSubmit += str((int(linesplits[0])))
                         NJobsToSubmit+=1
@@ -137,13 +155,14 @@ for input in inputFiles:
 
 
                  #resubmit all jobs in ready or scheduled or submited state (for too long) 
-                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0 or linesplits[2].find('Submitted')>=0)):
-                        if len(JobsToResubmit)>0: JobsToResubmit+=','
-                        JobsToResubmit += str((int(linesplits[0])))
-                        NJobsToResubmit+=1;
-                        if len(JobsToKill)>0: JobsToKill+=','
-                        JobsToKill += str((int(linesplits[0])))
-                        NJobsToKill+=1;
+#                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0 or linesplits[2].find('Submitted')>=0)):
+#                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0)):
+#                        if len(JobsToResubmit)>0: JobsToResubmit+=','
+#                        JobsToResubmit += str((int(linesplits[0])))
+#                        NJobsToResubmit+=1;
+#                        if len(JobsToKill)>0: JobsToKill+=','
+#                        JobsToKill += str((int(linesplits[0])))
+#                        NJobsToKill+=1;
                         continue;
 
 	f.close()
