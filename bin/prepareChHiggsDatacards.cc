@@ -674,9 +674,10 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	  fprintf(pFile,"%30s_%dTeV %10s","dy_additional",int(iEcm),"lnN");
 	  fprintf(pFile,"%6s ","-");
 	  for(size_t j=0; j<shape.bckg.size(); ++j) {
-	    if(convertNameForDataCard(shape.bckg[j]->GetTitle()) == "dy" ) fprintf(pFile,"%6s ","-");
-	    else                                                           fprintf(pFile,"%6.3f ", 1.30);
+	    if(convertNameForDataCard(shape.bckg[j]->GetTitle()) == "dy" ) fprintf(pFile,"%6.3f ", 1.30);
+	    else                                                           fprintf(pFile,"%6s ","-");
 	  }
+	  fprintf(pFile,"\n");
 	}
 	//sel eff
 	fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
