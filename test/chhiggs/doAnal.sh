@@ -225,6 +225,44 @@ elif [ "${1}" = "current" ]; then
 	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ${chanList} & 
 	  done
 	done
+
+    elif [ "${2}" = "mhmodptest" ]; then
+	mkdir -p ${BASEDIR}outputs/
+	mkdir -p ${BASEDIR}outputs/tables_tanb5/
+	mkdir -p ${BASEDIR}outputs/tables_tanb30/
+	
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb5_fy_x10.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow_tanb5.root --noPlot --noPowers  --onlyStartWith emu_evtflow,ee_evtflow,mumu_evtflow
+	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb5/ 
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb30_fy_x10.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow_tanb30.root --noPlot --noPowers   --onlyStartWith emu_evtflow,ee_evtflow,mumu_evtflow
+	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb30/ 
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow.root --noPlot --noPowers    --onlyStartWith emu_finalevtflow2btags,ee_finalevtflow2btags,mumu_finalevtflow2btags 
+	
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/220 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/250 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/300
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/400
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/500
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/600
+	  
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/180
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/200 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/220 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/250 
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/300
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/400
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/500
+	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/600
+ 
+	  for i in 180 200 220 250 300 400 500 600 
+	    do
+	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb5/${i}/ --suffix mhmodp_tanb5 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ee,emu,mumu & 
+	 
+	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb30/
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_${chanList}_all-samples_mhmodp_finalevtflow.root --out ${BASEDIR}outputs/datacardsMhmodp_tanb30/${i}/ --suffix mhmodp_tanb30 --json ${JSONDIR}${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch ee,emu,mumu & 
+	  done
 	
     elif [ "${2}" = "put" ]; then
 	outputdir=tempDirForNotePlots/
