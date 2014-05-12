@@ -655,7 +655,6 @@ int main(int argc, char* argv[])
       for(size_t itau=0; itau<taus.size(); itau++){
          llvvTau& tau = taus[itau];
 	 if(examineThisEvent) cout << "tau n: " << itau << " pt/eta" << tau.pt() << "/" << fabs(tau.eta()) << endl;
-	 if(examineThisEvent) cout << "muonLoose " << tau.passId(llvvTAUID::againstMuonLoose2)  << " DM " << tau.passId(llvvTAUID::decayModeFinding) << endl;
          if(tau.pt()<15.0 || fabs(tau.eta()) > 2.3) continue; 
 
          bool overalWithLepton=false;
@@ -665,8 +664,10 @@ int main(int argc, char* argv[])
          if(overalWithLepton) continue;
 	 if(examineThisEvent) cout << "No overlap tau-leptons...GOOD! " << overalWithLepton << endl;
 
-         if(!tau.passId(llvvTAUID::againstMuonLoose2)) continue; 
          if(!tau.passId(llvvTAUID::decayModeFinding)) continue;
+//         printf("Bits: "); for(uint64_t b=0;b<llvvTAUID::againstMuonTightMVA;b++){printf("%i", tau.passId(b)); if(b==llvvTAUID::againstMuonLoose)printf("<%i>", (int)b);  if(b%10==9)printf("  ");} printf("\n");
+//	 cout << "muonLoose " << tau.passId(llvvTAUID::againstMuonLoose)  << " muonLooseMVA " << tau.passId(llvvTAUID::againstMuonLooseMVA) << endl;
+         if(!tau.passId(llvvTAUID::againstMuonLoose2))continue;
 
          selTaus.push_back(tau);         
       }
@@ -760,8 +761,8 @@ int main(int argc, char* argv[])
       for(int t1=0   ;dilLep2>=0 && !higgsCandId && t1<(int)selTaus   .size();t1++){
          for(int t2=t1+1;dilLep2>=0 && !higgsCandId && t2<(int)selTaus   .size();t2++){
 
-         if(examineThisEvent) cout << "TAU 1 --> pt: " << selTaus[t1].pt() << " eta: " << fabs(selTaus[t1].eta()) << " ID: " << selTaus[t1].id << " DM: " << (int)selTaus[t1].passId(llvvTAUID::decayModeFinding) << " eleLoose: " << (int)selTaus[t1].passId(llvvTAUID::againstElectronLoose) << " muonLoose2: " << (int) selTaus[t1].passId(llvvTAUID::againstMuonLoose2) << " 3Hits: " << (int) selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << endl;
-         if(examineThisEvent) cout << "TAU 2 --> pt: " << selTaus[t2].pt() << " eta: " << fabs(selTaus[t2].eta()) << " ID: " << selTaus[t2].id << " DM: " << (int)selTaus[t2].passId(llvvTAUID::decayModeFinding) << " eleLoose: " << (int)selTaus[t2].passId(llvvTAUID::againstElectronLoose) << " muonLoose2: " << (int) selTaus[t2].passId(llvvTAUID::againstMuonLoose2) << " 3Hits: " << (int) selTaus[t2].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << endl;
+         if(examineThisEvent) cout << "TAU 1 --> pt: " << selTaus[t1].pt() << " eta: " << fabs(selTaus[t1].eta()) << " ID: " << selTaus[t1].id << " DM: " << (int)selTaus[t1].passId(llvvTAUID::decayModeFinding) << " eleLoose: " << (int)selTaus[t1].passId(llvvTAUID::againstElectronLoose) << " muonLoose2: " << (int) selTaus[t1].passId(llvvTAUID::againstMuonLoose3) << " 3Hits: " << (int) selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << endl;
+         if(examineThisEvent) cout << "TAU 2 --> pt: " << selTaus[t2].pt() << " eta: " << fabs(selTaus[t2].eta()) << " ID: " << selTaus[t2].id << " DM: " << (int)selTaus[t2].passId(llvvTAUID::decayModeFinding) << " eleLoose: " << (int)selTaus[t2].passId(llvvTAUID::againstElectronLoose) << " muonLoose2: " << (int) selTaus[t2].passId(llvvTAUID::againstMuonLoose3) << " 3Hits: " << (int) selTaus[t2].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << endl;
 
          if(selTaus[t1].pt()<15 || fabs(selTaus[t1].eta())>2.3) continue;
          if(selTaus[t2].pt()<15 || fabs(selTaus[t2].eta())>2.3) continue;
@@ -814,7 +815,7 @@ int main(int argc, char* argv[])
       for(int t1=0;passLepVeto && t1<(int)selTaus   .size();t1++){         
          if(t1==higgsCandT1 || t1==higgsCandT2) continue; //lepton already used in the dilepton pair or higgs candidate
          if(selTaus[t1].pt()<20) continue;
-         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose2) || !selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)  ) continue;
+         if(!selTaus[t1].passId(llvvTAUID::againstElectronLoose) || !selTaus[t1].passId(llvvTAUID::againstMuonLoose3) || !selTaus[t1].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)  ) continue;
          passLepVeto = false; break;          
       } 
 
@@ -877,6 +878,9 @@ int main(int argc, char* argv[])
       //
 
 
+      mon.fillHisto("ntaus"        ,  chTags, selTaus.size(), weight);
+
+
       if(selLeptons.size()>=2){
          mon.fillHisto("nlep"           ,   chTags, selLeptons.size(), weight);
          mon.fillHisto("eventflow"      ,   chTags,                 0, weight);
@@ -904,7 +908,7 @@ int main(int argc, char* argv[])
             if(passZpt && passZeta){
                mon.fillHisto("eventflow",   chTags,                 2, weight);
 
-               mon.fillHisto("ntaus"        ,  chTags, selTaus.size(), weight);
+//               mon.fillHisto("ntaus"        ,  chTags, selTaus.size(), weight);
                mon.fillHisto("tauleadpt"    ,  chTags, selTaus.size()>0?selTaus[0].pt():-1,  weight);
                mon.fillHisto("tauleadeta"   ,  chTags, selTaus.size()>0?selTaus[0].eta():-10, weight);
 
