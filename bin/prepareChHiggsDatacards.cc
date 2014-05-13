@@ -142,8 +142,11 @@ TString convertNameForDataCard(TString title)
   if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[350 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[400 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[400 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[500 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[600 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="tanb 5 [180 GeV]")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="tanb 5 [200 GeV]")     {signalTag = "HTB" ; return "HTB";}   
