@@ -67,8 +67,9 @@ class SVFitBooster{
             if(higgsCandT2!=255)measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kHadDecay, svFitStandalone::LorentzVector(selTaus   [higgsCandT2].px(), selTaus   [higgsCandT2].py(), selTaus   [higgsCandT2].pz(), selTaus   [higgsCandT2].E()) ));
             SVfitStandaloneAlgorithm algo(measuredTauLeptons, svFitStandalone::Vector(met.px(), met.py(), 0) , covMET, 0);
             algo.addLogM(false);
-            algo.integrateMarkovChain();
+//            algo.integrateMarkovChain();
             //algo.integrateVEGAS(); ////Use this instead for VEGAS integration
+            algo.fit();
             if(algo.isValidSolution()){
                //double diTauMassErr = algo.massUncert();
                precomputed[key] = algo.getMass();
