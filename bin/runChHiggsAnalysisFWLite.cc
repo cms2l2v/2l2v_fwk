@@ -1328,7 +1328,7 @@ int main(int argc, char* argv[])
 	  
 	  
 	  if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))continue;
-	  if(!tau.passId(llvvTAUID::againstMuonTight2))continue; 
+	  if(!tau.passId(llvvTAUID::againstMuonTight3))continue; 
 	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
 	  if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))continue;
 	  
