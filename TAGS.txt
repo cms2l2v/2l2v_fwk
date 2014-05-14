@@ -26,6 +26,7 @@ cp ~jez/public/forLoic/140313/tauTools.py PhysicsTools/PatAlgos/python/tools/tau
 cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit.
 # Needs to set up cvsroot as in the readme file or to copy the dir from
 # cp -r /afs/cern.ch/user/v/vischia/public/TauAnalysis_forSVfit/ TauAnalysis
+git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
 
 #checkout the 2l2v framework
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
