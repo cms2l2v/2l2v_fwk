@@ -90,13 +90,16 @@ class SVFitBooster{
                                       vector<float>& isoLep, vector<float>& sumPt, float& charge, 
                                       int dilLep1, int dilLep2, double rho, float weight, bool isMC, LeptonEfficiencySF lepEff){
 
-//               cout << "you want to find an " << charge << " charge pair" << endl;
 
 	       LorentzVector higgsCand(0,0,0,0);
                HiggsShortId=0;
                higgsCandId=0;  higgsCandMu=-1; higgsCandEl=-1; higgsCandT1=-1; higgsCandT2=-1;
                llvvTAUID hpsIsoTau;
 
+               passHiggs    = false;
+               passBJetVeto = true;
+               passLepVeto  = true;
+               NCleanedJet  = 0;
                //**************************************
                // e - mu final state
                //**************************************
@@ -106,6 +109,9 @@ class SVFitBooster{
                        if( relIso1 > isoLep.at(0) ) continue;
                        for(int l2=l1+1; l2<(int)leptons.size() && !higgsCandId; l2++){
                                float relIso2 = utils::cmssw::relIso(leptons[l2], rho);
+                               cout << "lepton 1 id " << leptons[l1].id << " lepton 2 id: " << leptons[l2].id << endl;
+                               cout << "iso 1 cut " << isoLep.at(0) << " iso lepton 1: " << relIso1 << endl;
+                               cout << "iso 2 cut " << isoLep.at(0) << " iso lepton 2: " << relIso2 << endl;
                                if( relIso2 > isoLep.at(0) ) continue;
                                if(l1==dilLep1 || l1==dilLep2 || l2==dilLep1 || l2==dilLep2) continue; //lepton already used in the dilepton pair
 			       if(leptons[l1].id*leptons[l2].id!=(charge*143)) continue;//Only consider opposite OR same sign objects, depending on your needs
@@ -121,7 +127,7 @@ class SVFitBooster{
                                if(abs(leptons[l1].id)==13){muId=l1; elId=l2;}else{muId=l2; elId=l1;}
 
                                higgsCandId=leptons[muId].id*leptons[elId].id;  higgsCandMu=muId; higgsCandEl=elId;
-//                               cout << "FOUND EM CANDIDATE of charge: " << higgsCandId << endl;
+                               cout << "FOUND EM CANDIDATE of charge: " << higgsCandId << endl;
                                higgsCand = LorentzVector(leptons[muId]+leptons[elId]);
                                break;
                        }
@@ -137,6 +143,13 @@ class SVFitBooster{
                                if(deltaR(taus[t1]   , leptons[dilLep2])<0.1) continue;
                                if(deltaR(leptons[l1], taus[t1        ])<0.1) continue;
                                float relIso1 = utils::cmssw::relIso(leptons[l1], rho);
+                               cout << "lepton 1 id " << leptons[l1].id << " tau id: " << taus[t1].id << endl;
+                               cout << "iso ET cut " << isoLep.at(1) << " iso lepton : " << relIso1 << endl;
+                               cout << "iso MT cut " << isoLep.at(2) << " iso lepton : " << relIso1 << endl;
+                               cout << "tau iso loose? " << taus[t1].passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits) << endl;
+                               cout << "tau against ele MVA5? " << taus[t1].passId(llvvTAUID::againstElectronTightMVA5) << endl;
+                               cout << "tau against ele loose? " << taus[t1].passId(llvvTAUID::againstElectronLoose) << endl;
+                               cout << "tau against muon tight2? " << taus[t1].passId(llvvTAUID::againstMuonTight2) << endl;
 
                                //e-tau
                                if(abs(leptons[l1].id)==11 &&
@@ -152,7 +165,7 @@ class SVFitBooster{
 						(taus[t1].pt()+leptons[l1].pt()) < sumPt.at(2))) continue;
 
                                higgsCandId=leptons[l1].id*taus[t1].id;  if(abs(leptons[l1].id)==11){higgsCandEl=l1;}else{higgsCandMu=l1;} higgsCandT1=t1;
-//                               cout << "FOUND LT CANDIDATE of charge " << higgsCandId << endl;
+                               cout << "FOUND LT CANDIDATE of charge " << higgsCandId << endl;
                                higgsCand = LorentzVector(leptons[l1]+taus[t1]);
                                break;
                        }
@@ -170,6 +183,8 @@ class SVFitBooster{
                                if(deltaR(taus[t2]   , leptons[dilLep1])<0.1) continue;
                                if(deltaR(taus[t2]   , leptons[dilLep2])<0.1) continue;
                                if(deltaR(taus[t1]   , taus[t2        ])<0.1) continue;
+                               cout << "iso TT cut " << isoLep.at(3) << " iso tau 1: " << taus[t1].passId((float)isoLep.at(3)) << " iso tau 2: " << taus[t2].passId((float)isoLep.at(3)) << endl;
+                               cout << "tau against ele loose? " << taus[t1].passId(llvvTAUID::againstElectronLoose) <<  " - " << taus[t2].passId(llvvTAUID::againstElectronLoose) << endl;
 
                                if(!taus[t1].passId(llvvTAUID::againstElectronLoose) || !taus[t1].passId((float)isoLep.at(3)) ) continue;
                                if(!taus[t2].passId(llvvTAUID::againstElectronLoose) || !taus[t2].passId((float)isoLep.at(3)) ) continue;
@@ -177,7 +192,7 @@ class SVFitBooster{
                                //if(!taus[t2].passId(llvvTAUID::againstElectronLoose) || !taus[t2].passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) ) continue;
 
                                higgsCandId=taus[t1].id*taus[t2].id;  higgsCandT1=t1; higgsCandT2=t2;
-//                               cout << "FOUND TT CANDIDATE of charge " << higgsCandId << endl;
+                               cout << "FOUND TT CANDIDATE of charge " << higgsCandId << endl;
                                higgsCand = LorentzVector(taus[t1]+taus[t2]);
                                break;
                        }
@@ -947,18 +962,14 @@ int main(int argc, char* argv[])
 
 		LorentzVector higgsCand;
 		LorentzVector higgsCandH;
-		int higgsCandId=0,  higgsCandMu=-1, higgsCandEl=-1, higgsCandT1=-1, higgsCandT2=-1;
-		int HiggsShortId=0;
-                bool passHiggs=false;
-                bool passLepVeto=true;
-                bool passBJetVeto=true;
-                int  NCleanedJet=0;
                 std::vector<float> sumPt;
                 std::vector<float> isoLep;
                 float charge = -1;
-                //bool oppositeSign = true;
                 sumPt.push_back(25); sumPt.push_back(30); sumPt.push_back(45); sumPt.push_back(70);
                 isoLep.push_back(0.3); isoLep.push_back(0.3); isoLep.push_back(0.3); isoLep.push_back(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits);
+                int higgsCandId, higgsCandMu, higgsCandEl, higgsCandT1, higgsCandT2, HiggsShortId;
+                int NCleanedJet;
+                bool passHiggs, passLepVeto, passBJetVeto;
 
                 higgsCand = buildCandidates( selLeptons, selTaus,
                                              selJets, selBJets,      
@@ -1062,8 +1073,12 @@ int main(int argc, char* argv[])
 										isoLepCut, sumPtCut, charge_OS_SS,
 										dilLep1, dilLep2, rho, weight, isMC, lepEff);  
 								//
-								if(passHiggs && passLepVeto && passBJetVeto)
-									mon.fillHisto(TString("svfit_shapes")+varNames[ivar],locTags,index,higgsCandOpt.mass(),iweight);		    
+								if(passHiggs && passLepVeto && passBJetVeto){
+									SVFitBooster svfitboosterOpt; 
+									double diTauMassOpt = -1;
+									diTauMassOpt = svfitboosterOpt.getSVFit(met, selLeptons, selTaus, higgsCandMu, higgsCandEl, higgsCandT1, higgsCandT2);  
+									if(diTauMassOpt<0) diTauMassOpt = higgsCandOpt.mass();
+									mon.fillHisto(TString("svfit_shapes")+varNames[ivar],locTags,index,diTauMassOpt,iweight);}		    
 							}
 						}
 						if(passHiggs){
