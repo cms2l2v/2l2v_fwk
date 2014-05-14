@@ -581,7 +581,7 @@
            ]
         },
 	{
-        "tag":"tanb 30 [350 GeV]}",
+        "tag":"tanb 30 [350 GeV]",
         "isdata":false,
         "issignal":true,
 	"spimpose":true,
@@ -618,13 +618,13 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_HTB_M-400_8TeV-pythia6",
-                "split":10,
+                "split":9,
                 "xsec":2.,
 	        "br":[0.722967]
              },
 	    {
                 "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6",
-                "split":10,
+                "split":9,
                 "xsec":2.,
 	        "br":[0.151062]
              }
