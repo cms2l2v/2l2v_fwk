@@ -565,6 +565,8 @@ int main(int argc, char* argv[])
       // Keep desired leptons
       if(passKin && passID && passIso)
         selLeptons.push_back(leptons[i]);
+      if(!triggeredOn)
+        continue;
 
       // Fill lepton control plots
       mon.fillHisto("leptonCutFlow", "all", 0, weight);
@@ -725,6 +727,8 @@ int main(int argc, char* argv[])
       }
       if(passPreSel && passIso && passPFLoose && passID && passKin && hasBtagCorr)
         selBJets.push_back(jets[i]);
+      if(!triggeredOn)
+        continue;
 
       // Fill Jet control histograms
       mon.fillHisto("jetCutFlow", chTags, 0, weight);
@@ -809,6 +813,8 @@ int main(int argc, char* argv[])
       // Keep selected taus
       if(passID && passKin && passIso && passQual && tau.isPF)
         selTaus.push_back(tau);
+      if(!triggeredOn)
+        continue;
 
       // Fill control histograms
       mon.fillHisto("tauCutFlow", chTags, 0, weight);
