@@ -500,10 +500,13 @@ int main(int argc, char* argv[])
     {
       int lepId = leptons[i].id;
 
-      if(abs(lepId) == 13)
-        mon.fillHisto("isomu", "all", utils::cmssw::relIso(leptons[i], rho), weight);
-      else if(abs(lepId) == 11)
-        mon.fillHisto("isoele", "all", utils::cmssw::relIso(leptons[i], rho), weight);
+      if(triggeredOn)
+      {
+        if(abs(lepId) == 13)
+          mon.fillHisto("isomu", "all", utils::cmssw::relIso(leptons[i], rho), weight);
+        else if(abs(lepId) == 11)
+          mon.fillHisto("isoele", "all", utils::cmssw::relIso(leptons[i], rho), weight);
+      }
 
       if(lepId == 13 && muCor)
       {
