@@ -83,12 +83,18 @@ int main(int argc, char* argv[])
   bool runLoosePhotonSelection(false); // Specific to ZHTauTau?
   bool Cut_tautau_MVA_iso(true); // Specific to ZHTauTau?
   bool examineThisEvent(false); // ?
-  double minTauPt     = 20;
-  double maxTauEta    =  2.3;
-  double minJetPt     = 30;
-  double maxJetEta    =  2.5;
-  double minTauJetPt  = 20;
-  double maxTauJetEta =  2.5;
+  double minElPt        = 35;
+  double maxElEta       = 2.5;
+  double ECALGap_MinEta = 1.4442;
+  double ECALGap_MaxEta = 1.5660;
+  double minMuPt        = 30;
+  double maxMuEta       = 2.4;
+  double minTauPt       = 20;
+  double maxTauEta      =  2.3;
+  double minJetPt       = 30;
+  double maxJetEta      =  2.5;
+  double minTauJetPt    = 20;
+  double maxTauJetEta   =  2.5;
 
   // Lepton Efficiencies
   LeptonEfficiencySF lepEff;
@@ -496,12 +502,22 @@ int main(int argc, char* argv[])
       // Lepton Kinematics
       bool passKin = true;
       double eta = (lepId == 11)?(leptons[i].electronInfoRef->sceta):(leptons[i].eta());
-      if(leptons[i].pt() < ((lepId == 11)?(35):(30)))  // Remove low Pt leptons
-        passKin = false;
-      if(abs(eta) > ((lepId == 11)?(2.5):(2.4))) // Only keep leptons inside detector acceptance (different for el and mu)
-        passKin = false;
-      if(lepId == 11 && (eta > 1.4442 && eta < 1.5660)) // Remove electrons that fall in ECAL "hole"
-        passKin = false;
+      if(lepId == 11) // If Electron
+      {
+        if(leptons[i].pt() < minElPt)
+          passKin = false;
+        if(abs(eta) > maxElEta)
+          passKin = false;
+        if(abs(eta) > ECALGap_MinEta && abs(eta) < ECALGap_MaxEta)  // Remove electrons that fall in ECAL Gap
+          passKin = false;
+      }
+      else            // If Muon
+      {
+        if(leptons[i].pt() < minMuPt)
+          passKin = false;
+        if(abs(eta) > maxMuEta)
+          passKin = false;
+      }
 
       // Lepton ID
       bool passID = true;
@@ -756,9 +772,10 @@ int main(int argc, char* argv[])
       bool passID = true;
       mon.fillHisto("tauID", chTags, 0, weight);
       //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
-      //else mon.fillHisto("tauID", chTags, 1, weight);
-      //if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
-      //else mon.fillHisto("tauID", chTags, 2, weight);
+      if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
+      else mon.fillHisto("tauID", chTags, 1, weight);
+      if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
+      else mon.fillHisto("tauID", chTags, 2, weight);
       if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
       else mon.fillHisto("tauID", chTags, 3, weight);
       if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
@@ -837,9 +854,12 @@ int main(int argc, char* argv[])
             mon.fillHisto("rho25", chTags, rho25, weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
-            mon.fillHisto("leadeta", chTags, selLeptons[0].eta(), weight);
-            mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
-            mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
+            if(selLeptons.size() != 0)
+            {
+              mon.fillHisto("leadeta", chTags, selLeptons[0].eta(), weight);
+              mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
+              mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
+            }
 
             mon.fillHisto("njets", chTags, selJets.size(), weight);
             if(selJets.size() != 0)
@@ -849,11 +869,14 @@ int main(int argc, char* argv[])
             }
 
             mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
-            mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
-            mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
-            mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
-            mon.fillHisto("tauleademfrac", chTags, selTaus[0].emfraction, weight);
-            mon.fillHisto("taudz", chTags, selTaus[0].dZ, weight);
+            if(selTaus.size() != 0)
+            {
+              mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
+              mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
+              mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
+              mon.fillHisto("tauleademfrac", chTags, selTaus[0].emfraction, weight);
+              mon.fillHisto("taudz", chTags, selTaus[0].dZ, weight);
+            }
           }
         }
       }
@@ -867,6 +890,8 @@ int main(int argc, char* argv[])
   std::cerr.rdbuf(cerrbuf);
   std::cout << std::endl;
   std::cout << buffer.str();
+
+  std::cout << "totalEntries: " << totalEntries << "; vs nInitEvent: " << nInitEvent << ";" << std::endl;
 
 
   /***************************************************************************/
