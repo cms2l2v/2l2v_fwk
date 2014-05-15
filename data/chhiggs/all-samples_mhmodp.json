@@ -581,7 +581,7 @@
            ]
         },
 	{
-        "tag":"tanb 30 [350 GeV]}",
+        "tag":"tanb 30 [350 GeV]",
         "isdata":false,
         "issignal":true,
 	"spimpose":true,
@@ -618,15 +618,41 @@
         "data":[
 	    {
                 "dtag":"MC8TeV_HTB_M-400_8TeV-pythia6",
-                "split":10,
+                "split":9,
                 "xsec":2.,
 	        "br":[0.722967]
              },
 	    {
                 "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6",
-                "split":10,
+                "split":9,
                 "xsec":2.,
 	        "br":[0.151062]
+             }
+           ]
+        },
+	{
+        "tag":"tanb 30 [500 GeV]",
+        "isdata":false,
+        "issignal":true,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6",
+                "split":11,
+                "xsec":2.,
+	        "br":[0.562418]
+             },
+	    {
+
+                "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6",
+                "split"89,
+                "xsec":2.,
+	        "br":[0.110689]
              }
            ]
         },

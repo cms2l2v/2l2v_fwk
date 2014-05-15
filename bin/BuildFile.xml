@@ -3,7 +3,7 @@
 <use name="roofit"/>
 <use name="roostats"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
-<use name="TauAnalysis/CandidateTools"/>
+<use name="TauAnalysis/SVfitStandalone"/>
 <use name="PhysicsTools/FWLite"/>
 <use name="UserCode/llvv_fwk"/>
 <environment>

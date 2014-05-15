@@ -155,7 +155,7 @@ for input in inputFiles:
 
 
                  #resubmit all jobs in ready or scheduled or submited state (for too long) 
-                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0 or linesplits[2].find('Submitted')>=0)):
+                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0 or linesplits[2].find('Submitted')>=0 )):
 #                 if(linesplits[1].find('N')>=0 and (linesplits[2].find('Ready')>=0 or linesplits[2].find('Scheduled')>=0)):
                         if len(JobsToResubmit)>0: JobsToResubmit+=','
                         JobsToResubmit += str((int(linesplits[0])))
