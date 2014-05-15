@@ -139,6 +139,8 @@ int main(int argc, char* argv[])
   }
   std::string outUrl = outdir;
 
+  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));
+
 
 
   /***************************************************************************/
@@ -458,7 +460,11 @@ int main(int argc, char* argv[])
     }
     bool triggeredOn = singleETrigger || singleMuTrigger;
     if(singleETrigger)
+    {
+      if(isSingleMuPD)
+        continue;
       chTags.push_back("singleE");
+    }
     if(singleMuTrigger)
       chTags.push_back("singleMu");
 
