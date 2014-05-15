@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
   }
   std::string outUrl = outdir;
 
-  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));
+  bool isSingleMuPD(!isMC && TString(url).Contains("SingleMu"));
 
 
 
@@ -576,6 +576,11 @@ int main(int argc, char* argv[])
     }
     if(selLeptons.size() != 0)
       std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
+    
+    if(abs(selLeptons[0].id) == 11)
+      chTags.push_back("leadingE");
+    else
+      chTags.push_back("leadingMu");
 
     // Get Jets
     llvvJetExtCollection selJets, selJetsNoId, selBJets;
