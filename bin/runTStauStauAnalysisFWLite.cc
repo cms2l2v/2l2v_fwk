@@ -83,6 +83,8 @@ int main(int argc, char* argv[])
   bool runLoosePhotonSelection(false); // Specific to ZHTauTau?
   bool Cut_tautau_MVA_iso(true); // Specific to ZHTauTau?
   bool examineThisEvent(false); // ?
+  bool exclusiveRun = false;
+  
   double minElPt        = 35;
   double maxElEta       = 2.5;
   double ECALGap_MinEta = 1.4442;
@@ -95,6 +97,7 @@ int main(int argc, char* argv[])
   double maxJetEta      =  2.5;
   double minTauJetPt    = 20;
   double maxTauJetEta   =  2.5;
+
 
   // Lepton Efficiencies
   LeptonEfficiencySF lepEff;
@@ -139,7 +142,9 @@ int main(int argc, char* argv[])
   }
   std::string outUrl = outdir;
 
-  bool isSingleMuPD(!isMC && TString(url).Contains("SingleMu"));
+  TString turl(url);
+  bool isSingleMuPD(!isMC && turl.Contains("SingleMu"));
+  bool isV0JetsMC(isMC && (turl.Contains("DYJetsToLL_50toInf") || turl.Contains("WJets")));
 
 
 
@@ -339,7 +344,39 @@ int main(int argc, char* argv[])
       continue;
     }
     llvvGenEvent genEv = *genEventHandle;
+    /**** Remove double counting if running on exclusive samples ****/
+    if(exclusiveRun && isV0JetsMC)
+    {
+      if(genEv.nup > 5) // Drop V+{1,2,3,4}Jets from VJets samples to avoid double counting
+        continue;
+    }
 
+    // Trigger Bits
+    fwlite::Handle<std::vector<bool> > triggerBitsHandle;
+    triggerBitsHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerBits");
+    if(!triggerBitsHandle.isValid())
+    {
+      std::cout << "triggerBits Object NotFound" << std::endl;
+      continue;
+    }
+    std::vector<bool> triggerBits = *triggerBitsHandle;
+    /****          Sort events acording to HLT Path          ****/
+    bool singleETrigger  = triggerBits[13]; // HLT_Ele27_WP80_v*
+    bool singleMuTrigger = triggerBits[15]; // HLT_IsoMu24_v*
+    if(triggerBits.size() > 16)
+    { // Add here my trigger bits for TauPlusX
+    }
+    bool triggeredOn = singleETrigger || singleMuTrigger;
+    if(singleETrigger)
+    {
+      if(isSingleMuPD)  // Remove double counting between SingleE and SingleMu
+        continue;
+      chTags.push_back("singleE");
+    }
+    if(singleMuTrigger)
+      chTags.push_back("singleMu");
+
+    // Rest of Gen Particles
     fwlite::Handle<llvvGenParticleCollection> genPartCollHandle;
     genPartCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
     if(!genPartCollHandle.isValid())
@@ -411,16 +448,6 @@ int main(int argc, char* argv[])
     }
     llvvMet met = *metHandle;
 
-    // Trigger Bits
-    fwlite::Handle<std::vector<bool> > triggerBitsHandle;
-    triggerBitsHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerBits");
-    if(!triggerBitsHandle.isValid())
-    {
-      std::cout << "triggerBits Object NotFound" << std::endl;
-      continue;
-    }
-    std::vector<bool> triggerBits = *triggerBitsHandle;
-
     // Trigger Prescales
     fwlite::Handle<std::vector<int> > triggerPrescalesHandle;
     triggerPrescalesHandle.getByLabel(ev, "llvvObjectProducersUsed", "triggerPrescales");
@@ -451,22 +478,6 @@ int main(int argc, char* argv[])
     }
     double rho25 = *rho25Handle;
 
-
-    /****          Sort events acording to HLT Path          ****/
-    bool singleETrigger  = triggerBits[13]; // HLT_Ele27_WP80_v*
-    bool singleMuTrigger = triggerBits[15]; // HLT_IsoMu24_v*
-    if(triggerBits.size() > 16)
-    { // Add here my trigger bits for TauPlusX
-    }
-    bool triggeredOn = singleETrigger || singleMuTrigger;
-    if(singleETrigger)
-    {
-      if(isSingleMuPD)
-        continue;
-      chTags.push_back("singleE");
-    }
-    if(singleMuTrigger)
-      chTags.push_back("singleMu");
 
 
     // Pileup Weight
@@ -575,12 +586,14 @@ int main(int argc, char* argv[])
         mon.fillHisto("leptonFractions", "all", 3, weight);
     }
     if(selLeptons.size() != 0)
+    {
       std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
-    
-    if(abs(selLeptons[0].id) == 11)
-      chTags.push_back("leadingE");
-    else
-      chTags.push_back("leadingMu");
+
+      if(abs(selLeptons[0].id) == 11)
+        chTags.push_back("leadingE");
+      else
+        chTags.push_back("leadingMu");
+    }
 
     // Get Jets
     llvvJetExtCollection selJets, selJetsNoId, selBJets;
