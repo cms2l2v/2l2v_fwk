@@ -78,17 +78,13 @@ int main(int argc, char* argv[])
   std::string jecDir = runProcess.getParameter<std::string>("jecDir");
   bool runSystematics = runProcess.getParameter<bool>("runSystematics");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
+  bool exclusiveRun = runProcess.getParameter<bool>("exclusiveRun");
 
   // Hardcoded configs
-  bool runLoosePhotonSelection(false); // Specific to ZHTauTau?
-  bool Cut_tautau_MVA_iso(true); // Specific to ZHTauTau?
-  bool examineThisEvent(false); // ?
-  bool exclusiveRun = false;
-  
   double minElPt        = 35;
-  double maxElEta       = 2.5;
-  double ECALGap_MinEta = 1.4442;
-  double ECALGap_MaxEta = 1.5660;
+  double maxElEta       =  2.5;
+  double ECALGap_MinEta =  1.4442;
+  double ECALGap_MaxEta =  1.5660;
   double minMuPt        = 30;
   double maxMuEta       = 2.4;
   double minTauPt       = 20;
@@ -158,12 +154,9 @@ int main(int argc, char* argv[])
   cutFlow->GetXaxis()->SetBinLabel(3, "> 1l");
   cutFlow->GetXaxis()->SetBinLabel(4, "B-veto");
   cutFlow->GetXaxis()->SetBinLabel(5, "> 1#tau");
-  TH1F *fractions = (TH1F*)mon.addHistogram(new TH1F("fractions", ";;Events", 20, 0, 20));
-  fractions->GetXaxis()->SetBinLabel(1, "All");
-  fractions->GetXaxis()->SetBinLabel(2, "HLT");
-  fractions->GetXaxis()->SetBinLabel(3, "> 1l");
-  fractions->GetXaxis()->SetBinLabel(4, "B-veto");
-  fractions->GetXaxis()->SetBinLabel(5, "> 1#tau");
+  cutFlow->GetXaxis()->SetBinLabel(6, "OS");
+  //cutFLow->GetXaxis()->SetBinLabel(7, "Mass");
+  //cutFlow->GetXaxis()->SetBinLabel(8, "MT");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
@@ -171,81 +164,63 @@ int main(int argc, char* argv[])
   //mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
 
   // PU
-  mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("rho",     ";#rho;Events",           50,  0,   25));
-  mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 50,  0,   25));
+  mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       40, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       40, -0.5, 49.5));
+  mon.addHistogram(new TH1F("rho",     ";#rho;Events",           40,  0,   25));
+  mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 40,  0,   25));
 
   // Leptons
   mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
-  mon.addHistogram(new TH1F("leadpt",     ";p_{T}^{l};Events", 100,  0,  100));
-  mon.addHistogram(new TH1F("leadeta",    ";#eta^{l};Events",   50, -2.6,  2.6));
+  mon.addHistogram(new TH1F("leadpt",     ";p_{T}^{l};Events",  50,  0,  100));
+  mon.addHistogram(new TH1F("leadeta",    ";#eta^{l};Events",   25, -2.6,  2.6));
   mon.addHistogram(new TH1F("leadcharge", ";q^{l};Events",       5, -2,    2));
   TH1F *leptonCutFlow   = (TH1F*)mon.addHistogram(new TH1F("leptonCutFlow",   ";;Leptons", 4, 0, 4));
-  TH1F *leptonFractions = (TH1F*)mon.addHistogram(new TH1F("leptonFractions", ";;Leptons", 4, 0, 4));
   leptonCutFlow->GetXaxis()->SetBinLabel(1, "All");
-  leptonFractions->GetXaxis()->SetBinLabel(1, "All");
   leptonCutFlow->GetXaxis()->SetBinLabel(2, "ID");
-  leptonFractions->GetXaxis()->SetBinLabel(2, "ID");
   leptonCutFlow->GetXaxis()->SetBinLabel(3, "Kin");
-  leptonFractions->GetXaxis()->SetBinLabel(3, "Kin");
   leptonCutFlow->GetXaxis()->SetBinLabel(4, "Iso");
-  leptonFractions->GetXaxis()->SetBinLabel(4, "Iso");
 
   // Lepton Isolation
   mon.addHistogram(new TH1F("isomu",  "RelIso(#mu);;Leptons", 100, -0.5, 9.5));
   mon.addHistogram(new TH1F("isoele", "RelIso(ele);;Leptons", 100, -0.5, 9.5));
 
   // Taus
-  mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10, -0.5,  9.5));
-  mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events", 100,  0,  100));
-  mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   50, -2.6,  2.6));
+  mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10,  0, 10));
+  mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events",  50,  0,  100));
+  mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   25, -2.6,  2.6));
   mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events",       5, -2,    2));
-  mon.addHistogram(new TH1F("taudz",         ";dz^{#tau};Events",     50,  0,    2));
-  mon.addHistogram(new TH1F("tauvz",         ";vz^{#tau};Events",     50,  0,    2));
-  mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events",    50,  0,    5));
+  mon.addHistogram(new TH1F("tauleaddz",     ";dz^{#tau};Events",     25,  0,    2));
+  mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events",    25,  0,    5));
   TH1F *tauCutFlow   = (TH1F*)mon.addHistogram(new TH1F("tauCutFlow",   ";;#tau", 6, 0, 6));
-  TH1F *tauFractions = (TH1F*)mon.addHistogram(new TH1F("tauFractions", ";;#tau", 6, 0, 6));
   tauCutFlow->GetXaxis()->SetBinLabel(1, "All");
-  tauFractions->GetXaxis()->SetBinLabel(1, "All");
   tauCutFlow->GetXaxis()->SetBinLabel(2, "PF");
-  tauFractions->GetXaxis()->SetBinLabel(2, "PF");
   tauCutFlow->GetXaxis()->SetBinLabel(3, "ID");
-  tauFractions->GetXaxis()->SetBinLabel(3, "ID");
   tauCutFlow->GetXaxis()->SetBinLabel(4, "Quality");
-  tauFractions->GetXaxis()->SetBinLabel(4, "Quality");
   tauCutFlow->GetXaxis()->SetBinLabel(5, "Kin");
-  tauFractions->GetXaxis()->SetBinLabel(5, "Kin");
   tauCutFlow->GetXaxis()->SetBinLabel(6, "Iso");
-  tauFractions->GetXaxis()->SetBinLabel(6, "Iso");
-  TH1F *tauID = (TH1F*)mon.addHistogram(new TH1F("tauID", ";;#tau", 6, 0, 6));
+  TH1F *tauID = (TH1F*)mon.addHistogram(new TH1F("tauID", ";;#tau", 5, 0, 5));
   tauID->GetXaxis()->SetBinLabel(1, "All");
   tauID->GetXaxis()->SetBinLabel(2, "Not e");
   tauID->GetXaxis()->SetBinLabel(3, "Not #mu");
   tauID->GetXaxis()->SetBinLabel(4, "Not decay mode");
   tauID->GetXaxis()->SetBinLabel(5, "Not medium comb iso");
-  tauID->GetXaxis()->SetBinLabel(6, "Overall ID");
 
   // Jets
   mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
   mon.addHistogram(new TH1F("nbjets", ";njets;Events", 6, 0, 6));
-  mon.addHistogram(new TH1F("jetleadpt", ";p_{T}^{jet};Events", 50, 0, 500));
-  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 50, -2.6, 2.6));
-  mon.addHistogram(new TH1F("jetcsv", ";csv;jets", 50, 0, 1));
+  mon.addHistogram(new TH1F("jetleadpt", ";p_{T}^{jet};Events", 25, 0, 500));
+  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1F("jetcsv", ";csv;jets", 25, 0, 1));
   TH1F *jetCutFlow   = (TH1F*)mon.addHistogram(new TH1F("jetCutFlow",   ";;jets", 6, 0, 6));
-  TH1F *jetFractions = (TH1F*)mon.addHistogram(new TH1F("jetFractions", ";;jets", 6, 0, 6));
   jetCutFlow->GetXaxis()->SetBinLabel(1, "All");
-  jetFractions->GetXaxis()->SetBinLabel(1, "All");
   jetCutFlow->GetXaxis()->SetBinLabel(2, "PF Loose");
-  jetFractions->GetXaxis()->SetBinLabel(2, "PF Loose");
   jetCutFlow->GetXaxis()->SetBinLabel(3, "Pre-Selection");
-  jetFractions->GetXaxis()->SetBinLabel(3, "Pre-Selection");
   jetCutFlow->GetXaxis()->SetBinLabel(4, "ID");
-  jetFractions->GetXaxis()->SetBinLabel(4, "ID");
   jetCutFlow->GetXaxis()->SetBinLabel(5, "Iso");
-  jetFractions->GetXaxis()->SetBinLabel(5, "Iso");
   jetCutFlow->GetXaxis()->SetBinLabel(6, "Kin");
-  jetFractions->GetXaxis()->SetBinLabel(6, "Kin");
+
+  // MET
+  mon.addHistogram(new TH1F("MET", ";MET [GeV];Events", 25, 0, 200));
 
 
 
@@ -277,7 +252,10 @@ int main(int argc, char* argv[])
   double PUNorm[] = {1, 1, 1};
   if(isMC)
   {
-    std::vector<double> dataPileupDistributionDouble = runProcess.getParameter<std::vector<double> >("datapileup");
+    // Double lepton PU distribution
+    //std::vector<double> dataPileupDistributionDouble = runProcess.getParameter<std::vector<double> >("datapileup");
+    // Single lepton PU distribution
+    std::vector<double> dataPileupDistributionDouble = runProcess.getParameter<std::vector<double> >("datapileupSingleLep");
     std::vector<float> dataPileupDistribution;
       for(unsigned int i = 0; i < dataPileupDistributionDouble.size(); ++i)
         dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);
@@ -500,14 +478,6 @@ int main(int argc, char* argv[])
     {
       int lepId = leptons[i].id;
 
-      if(triggeredOn)
-      {
-        if(abs(lepId) == 13)
-          mon.fillHisto("isomu", "all", utils::cmssw::relIso(leptons[i], rho), weight);
-        else if(abs(lepId) == 11)
-          mon.fillHisto("isoele", "all", utils::cmssw::relIso(leptons[i], rho), weight);
-      }
-
       if(lepId == 13 && muCor)
       {
         TLorentzVector p4(leptons[i].px(), leptons[i].py(), leptons[i].pz(), leptons[i].energy());
@@ -572,23 +542,17 @@ int main(int argc, char* argv[])
         continue;
 
       // Fill lepton control plots
-      mon.fillHisto("leptonCutFlow", "all", 0, weight);
-      mon.fillHisto("leptonFractions", "all", 0, weight);
+      mon.fillHisto("leptonCutFlow", chTags, 0, weight);
       if(passID)
       {
-        mon.fillHisto("leptonCutFlow", "all", 1, weight);
-        mon.fillHisto("leptonFractions", "all", 1, weight);
+        mon.fillHisto("leptonCutFlow", chTags, 1, weight);
         if(passKin)
         {
-          mon.fillHisto("leptonCutFlow", "all", 2, weight);
+          mon.fillHisto("leptonCutFlow", chTags, 2, weight);
           if(passIso)
-            mon.fillHisto("leptonCutFlow", "all", 3, weight);
+            mon.fillHisto("leptonCutFlow", chTags, 3, weight);
         }
       }
-      if(passKin)
-        mon.fillHisto("leptonFractions", "all", 2, weight);
-      if(passIso)
-        mon.fillHisto("leptonFractions", "all", 3, weight);
     }
     if(selLeptons.size() != 0)
     {
@@ -726,7 +690,6 @@ int main(int argc, char* argv[])
       if(passPreSel && passIso && passPFLoose && passID && passKin)
       {
         selJets.push_back(jets[i]);
-        mon.fillHisto("jetcsv", chTags, jets[i].origcsv, weight);
       }
       if(passPreSel && passIso && passPFLoose && passID && passKin && hasBtagCorr)
         selBJets.push_back(jets[i]);
@@ -735,11 +698,9 @@ int main(int argc, char* argv[])
 
       // Fill Jet control histograms
       mon.fillHisto("jetCutFlow", chTags, 0, weight);
-      mon.fillHisto("jetFractions", chTags, 0, weight);
       if(passPFLoose)
       {
         mon.fillHisto("jetCutFlow", chTags, 1, weight);
-        mon.fillHisto("jetFractions", chTags, 1, weight);
         if(passPreSel)
         {
           mon.fillHisto("jetCutFlow", chTags, 2, weight);
@@ -755,14 +716,6 @@ int main(int argc, char* argv[])
           }
         }
       }
-      if(passPreSel)
-        mon.fillHisto("jetFractions", chTags, 2, weight);
-      if(passID)
-        mon.fillHisto("jetFractions", chTags, 3, weight);
-      if(passIso)
-        mon.fillHisto("jetFractions", chTags, 4, weight);
-      if(passKin)
-        mon.fillHisto("jetFractions", chTags, 5, weight);
     }
     if(selJets.size() != 0)
       std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
@@ -801,17 +754,11 @@ int main(int argc, char* argv[])
 
       // Tau ID
       bool passID = true;
-      mon.fillHisto("tauID", chTags, 0, weight);
       //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
       if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
-      else mon.fillHisto("tauID", chTags, 1, weight);
       if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
-      else mon.fillHisto("tauID", chTags, 2, weight);
       if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
-      else mon.fillHisto("tauID", chTags, 3, weight);
       if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
-      else mon.fillHisto("tauID", chTags, 4, weight);
-      if(passID) mon.fillHisto("tauID", chTags, 5, weight);
 
       // Keep selected taus
       if(passID && passKin && passIso && passQual && tau.isPF)
@@ -819,13 +766,29 @@ int main(int argc, char* argv[])
       if(!triggeredOn)
         continue;
 
+
       // Fill control histograms
       mon.fillHisto("tauCutFlow", chTags, 0, weight);
-      mon.fillHisto("tauFractions", chTags, 0, weight);
       if(tau.isPF)
       {
         mon.fillHisto("tauCutFlow", chTags, 1, weight);
-        mon.fillHisto("tauFractions", chTags, 1, weight);
+        mon.fillHisto("tauID", chTags, 0, weight);
+        if(tau.passId(llvvTAUID::againstElectronMediumMVA5))
+        {
+          mon.fillHisto("tauID", chTags, 1, weight);
+          if(tau.passId(llvvTAUID::againstMuonTight3))
+          {
+            mon.fillHisto("tauID", chTags, 2, weight);
+            if(tau.passId(llvvTAUID::decayModeFinding))
+            {
+              mon.fillHisto("tauID", chTags, 3, weight);
+              if(tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))
+              {
+                mon.fillHisto("tauID", chTags, 4, weight);
+              }
+            }
+          }
+        }
         if(passID)
         {
           mon.fillHisto("tauCutFlow", chTags, 2, weight);
@@ -841,28 +804,40 @@ int main(int argc, char* argv[])
           }
         }
       }
-      if(passIso)
-        mon.fillHisto("tauFractions", chTags, 5, weight);
-      if(passKin)
-        mon.fillHisto("tauFractions", chTags, 4, weight);
-      if(passQual)
-        mon.fillHisto("tauFractions", chTags, 3, weight);
-      if(passID)
-        mon.fillHisto("tauFractions", chTags, 2, weight);
     }
     if(selTaus.size() != 0)
       std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
 
+    // Opposite Sign requirements
+    double maxPtSum = 0;
+    int tauIndex = -1, leptonIndex = -1;
+    bool isOS = false;
+    for(size_t i = 0; i < selLeptons.size(); ++i)
+    {
+      for(size_t j = 0; j < selTaus.size(); ++j)
+      {
+        if(selLeptons[i].id * selTaus[j].id < 0)
+        {
+          double PtSum = selLeptons[i].pt() + selTaus[j].pt();
+          if(PtSum > maxPtSum)
+          {
+            maxPtSum = PtSum;
+            tauIndex = j;
+            leptonIndex = i;
+            isOS = true;
+          }
+        }
+      }
+    }
 
-    mon.fillHisto("fractions", chTags, 0, weight);
-    if(triggeredOn)
-      mon.fillHisto("fractions", chTags, 1, weight);
-    if(selLeptons.size() > 0)
-      mon.fillHisto("fractions", chTags, 2, weight);
-    if(selBJets.size() == 0)
-      mon.fillHisto("fractions", chTags, 3, weight);
-    if(selTaus.size() > 0)
-      mon.fillHisto("fractions", chTags, 4, weight);
+    if(isOS)
+    {
+      if(abs(selLeptons[leptonIndex].id) == 11)
+        chTags.push_back("etau");
+      else
+        chTags.push_back("mutau");
+    }
+
 
     mon.fillHisto("cutFlow", chTags, 0, weight);
     if(triggeredOn)
@@ -879,12 +854,18 @@ int main(int argc, char* argv[])
           {
             mon.fillHisto("cutFlow", chTags, 4, weight);
 
+            if(isOS)
+            {
+              mon.fillHisto("cutFlow", chTags, 5, weight);
+
             mon.fillHisto("nvtx", chTags, nvtx, weight);
             mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
             mon.fillHisto("nup", "", genEv.nup, 1);
 
             mon.fillHisto("rho", chTags, rho, weight);
             mon.fillHisto("rho25", chTags, rho25, weight);
+
+            mon.fillHisto("MET", chTags, met.pt(), weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
@@ -908,7 +889,22 @@ int main(int argc, char* argv[])
               mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
               mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
               mon.fillHisto("tauleademfrac", chTags, selTaus[0].emfraction, weight);
-              mon.fillHisto("taudz", chTags, selTaus[0].dZ, weight);
+              mon.fillHisto("tauleaddz", chTags, selTaus[0].dZ, weight);
+            }
+
+            for(auto i = selLeptons.begin(); i != selLeptons.end(); ++i)
+            {
+              int lepId = abs(i->id);
+              if(lepId == 13)
+                mon.fillHisto("isomu", chTags, utils::cmssw::relIso(*i, rho), weight);
+              else if(lepId == 11)
+                mon.fillHisto("isoele", chTags, utils::cmssw::relIso(*i, rho), weight);
+            }
+
+            for(auto i = selJets.begin(); i != selJets.end(); ++i)
+            {
+              mon.fillHisto("jetcsv", chTags, i->origcsv, weight);
+            }
             }
           }
         }
