@@ -1,17 +1,6 @@
 {
   "proc":[
     {
-      "tag":"data",
-      "isdata":true,
-      "color":1,
-      "fill":0,
-      "marker":20,
-      "data":[
-        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012B-22Jan2013-v1/AOD"        },
-        { "dtag":"Data8TeV_SingleElectron2012B"            , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleElectron/Run2012B-22Jan2013-v1/AOD"        }
-      ]
-    },
-    {
       "tag":"VVV",
       "isdata":false,
       "color":596,
@@ -120,6 +109,17 @@
         { "dtag":"MC8TeV_DYJetsToLL_10to50"                , "split":10, "xsec":860.5       , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
         { "dtag":"MC8TeV_DYJetsToLL_50toInf"               , "split":10, "xsec":3503.71     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
         { "dtag":"MC8TeV_ZG"                               , "split":1, "xsec":123.9       , "br":[ 1.0 ]                 , "dset":"/ZG_Inclusive_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+      ]
+    },
+    {
+      "tag":"data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "marker":20,
+      "data":[
+        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012B-22Jan2013-v1/AOD"        },
+        { "dtag":"Data8TeV_SingleElectron2012B"            , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleElectron/Run2012B-22Jan2013-v1/AOD"        }
       ]
     }
   ]
