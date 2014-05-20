@@ -53,7 +53,7 @@ bool onlyCutIndex = false;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
-string plotExt = ".png";
+std::vector<std::string> plotExt;
 string outFile = "plotter.root";
 string cutflowhisto = "all_cutflow";
 
@@ -317,7 +317,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
       ObjectToDelete.push_back(leg);
 
       T->Draw("same");
-      string SavePath = SaveName + "_" + (Process[i])["tag"].toString() + plotExt;
+      string SavePath = SaveName + "_" + (Process[i])["tag"].toString();
       while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
       while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
       while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
@@ -327,8 +327,11 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
       while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
       while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
       if(outDir.size()) SavePath = outDir +"/"+ SavePath;
-      system(string(("rm -f ") + SavePath).c_str());
-      c1->SaveAs(SavePath.c_str());
+      for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
+      {
+        system(string(("rm -f ") + SavePath + *ext).c_str());
+        c1->SaveAs((SavePath + *ext).c_str());
+      }
       delete c1;
    }
 
@@ -417,7 +420,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    }
    c1->cd(0);
    //T->Draw("same");
-   string SavePath = SaveName + plotExt;
+   string SavePath = SaveName;
    while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
    while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
    while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
@@ -427,8 +430,11 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
    while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
    if(outDir.size()) SavePath = outDir +"/"+ SavePath; 
-   system(string(("rm -f ") + SavePath).c_str());
-   c1->SaveAs(SavePath.c_str());
+   for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
+   {
+     system(string(("rm -f ") + SavePath + *ext).c_str());
+     c1->SaveAs((SavePath + *ext).c_str());
+   }
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete c1;
    delete T;
@@ -715,7 +721,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    c1->Modified();
    c1->Update();
    c1->cd();
-   string SavePath = SaveName + plotExt;
+   string SavePath = SaveName;
    while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
    while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
    while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
@@ -725,8 +731,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
    while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
    if(outDir.size()) SavePath = outDir +"/"+ SavePath;
-   system(string(("rm -f ") + SavePath).c_str());
-   c1->SaveAs(SavePath.c_str());
+   for(auto i = plotExt.begin(); i != plotExt.end(); ++i)
+   {
+     system(string(("rm -f ") + SavePath + *i).c_str());
+     c1->SaveAs((SavePath + *i).c_str());
+   }
    delete c1;
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete legA;
@@ -900,7 +909,7 @@ int main(int argc, char* argv[]){
         printf("--noPowers --> Do not use powers of 10 for numbers in tables\n");
         printf("--noRoot --> Do not make a summary .root file\n");
         printf("--noPlot --> Do not creates plot files (useful to speedup processing)\n");
-	printf("--plotExt --> extension to save\n");
+	printf("--plotExt --> extension to save, you can specify multiple extensions by repeating this option\n");
 	printf("--cutflow --> name of the histogram with the original number of events (cutflow by default)\n");
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
 
@@ -939,11 +948,13 @@ int main(int argc, char* argv[]){
      if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
-     if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt   = argv[i+1];  i++;  printf("saving plots as = %s\n", plotExt.c_str());  }
+     if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", argv[i]);  }
      if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
    } 
    system( (string("mkdir -p ") + outDir).c_str());
+   if(plotExt.size() == 0)
+     plotExt.push_back(".png");
 
    char buf[255];
    sprintf(buf, "_Index%d", cutIndex);
