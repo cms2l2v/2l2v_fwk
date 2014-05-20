@@ -146,7 +146,7 @@ class llvvTau  : public LorentzVectorF {
    float mva_e_pi, mva_pi_mu, mva_e_mu;
  
    //functions
-   bool passId(unsigned int IdBit){return ((idbits&(1<<IdBit))>0);}
+   bool passId(uint64_t IdBit){return ((idbits&((uint64_t)1<<IdBit))>0);}
 };
 typedef  std::vector<llvvTau> llvvTauCollection;
 typedef  edm::Ref<llvvTauCollection> llvvTauRef;

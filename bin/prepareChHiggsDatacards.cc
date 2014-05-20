@@ -142,8 +142,11 @@ TString convertNameForDataCard(TString title)
   if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[300 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[350 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[400 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[400 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[500 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[500 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[600 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
+  if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[600 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[700 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="tanb 5 [180 GeV]")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="tanb 5 [200 GeV]")     {signalTag = "HTB" ; return "HTB";}   
@@ -669,6 +672,16 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	}
 	fprintf(pFile,"\n");
 	
+	// dy 30 percent conservative uncertainty (from looking at the first bin of nbtags) 
+	if(ch == "ee" || ch == "mumu" ){
+	  fprintf(pFile,"%30s_%dTeV %10s","dy_additional",int(iEcm),"lnN");
+	  fprintf(pFile,"%6s ","-");
+	  for(size_t j=0; j<shape.bckg.size(); ++j) {
+	    if(convertNameForDataCard(shape.bckg[j]->GetTitle()) == "dy" ) fprintf(pFile,"%6.3f ", 1.30);
+	    else                                                           fprintf(pFile,"%6s ","-");
+	  }
+	  fprintf(pFile,"\n");
+	}
 	//sel eff
 	fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
 	fprintf(pFile,"%6.3f ",1+selEffUnc);
