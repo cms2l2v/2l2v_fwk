@@ -148,15 +148,15 @@ int main(int argc, char* argv[])
   /*                         Initializing Histograms                         */
   /***************************************************************************/
   SmartSelectionMonitor mon;
-  TH1F *cutFlow = (TH1F*)mon.addHistogram(new TH1F("cutFlow", ";;Events", 20, 0, 20));
-  cutFlow->GetXaxis()->SetBinLabel(1, "All");
-  cutFlow->GetXaxis()->SetBinLabel(2, "HLT");
-  cutFlow->GetXaxis()->SetBinLabel(3, "> 1l");
-  cutFlow->GetXaxis()->SetBinLabel(4, "B-veto");
-  cutFlow->GetXaxis()->SetBinLabel(5, "> 1#tau");
-  cutFlow->GetXaxis()->SetBinLabel(6, "OS");
-  //cutFLow->GetXaxis()->SetBinLabel(7, "Mass");
-  //cutFlow->GetXaxis()->SetBinLabel(8, "MT");
+  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 6, 0, 6));
+  eventflow->GetXaxis()->SetBinLabel(1, "All");
+  eventflow->GetXaxis()->SetBinLabel(2, "HLT");
+  eventflow->GetXaxis()->SetBinLabel(3, "> 1l");
+  eventflow->GetXaxis()->SetBinLabel(4, "B-veto");
+  eventflow->GetXaxis()->SetBinLabel(5, "> 1#tau");
+  eventflow->GetXaxis()->SetBinLabel(6, "OS");
+  //eventfLow->GetXaxis()->SetBinLabel(7, "Mass");
+  //eventflow->GetXaxis()->SetBinLabel(8, "MT");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
@@ -839,24 +839,30 @@ int main(int argc, char* argv[])
     }
 
 
-    mon.fillHisto("cutFlow", chTags, 0, weight);
+    mon.fillHisto("eventflow", chTags, 0, weight);
+    mon.fillHisto("eventflow", "", 0, weight);
     if(triggeredOn)
     {
-      mon.fillHisto("cutFlow", chTags, 1, weight);
+      mon.fillHisto("eventflow", chTags, 1, weight);
+      mon.fillHisto("eventflow", "", 1, weight);
       if(selLeptons.size() > 0)
       {
-        mon.fillHisto("cutFlow", chTags, 2, weight);
+        mon.fillHisto("eventflow", chTags, 2, weight);
+        mon.fillHisto("eventflow", "", 2, weight);
         mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
         if(selBJets.size() == 0)
         {
-          mon.fillHisto("cutFlow", chTags, 3, weight);
+          mon.fillHisto("eventflow", chTags, 3, weight);
+          mon.fillHisto("eventflow", "", 3, weight);
           if(selTaus.size() > 0)
           {
-            mon.fillHisto("cutFlow", chTags, 4, weight);
+            mon.fillHisto("eventflow", chTags, 4, weight);
+            mon.fillHisto("eventflow", "", 4, weight);
 
             if(isOS)
             {
-              mon.fillHisto("cutFlow", chTags, 5, weight);
+              mon.fillHisto("eventflow", chTags, 5, weight);
+              mon.fillHisto("eventflow", "", 5, weight);
 
             mon.fillHisto("nvtx", chTags, nvtx, weight);
             mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
