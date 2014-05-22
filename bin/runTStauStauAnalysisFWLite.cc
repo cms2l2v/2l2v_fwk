@@ -12,7 +12,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
-#include "TauAnalysis/CandidateTools/interface/NSVfitStandaloneAlgorithm.h" //for svfit
+#include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneAlgorithm.h" //for SVfit
 
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
@@ -48,6 +48,11 @@
 #include <boost/shared_ptr.hpp>
 #include <Math/VectorUtil.h>
 
+// Include MT2 library, do not forget o quote:
+// http://particle.physics.ucdavis.edu/hefti/projects/doku.php?id=wimpmass    ** Code from here
+// http://www.hep.phy.cam.ac.uk/~lester/mt2/    ** Other libraries
+#include "UserCode/llvv_fwk/interface/mt2_bisect.h"
+
 /*****************************************************************************/
 /* Return Codes:                                                             */
 /*   0 - Everything OK                                                       */
@@ -62,6 +67,16 @@ int main(int argc, char* argv[])
   // Check arguments:
   if(argc<2)
     std::cout << "Usage: " << argv[0] << " parameters_cfg.py" << std::endl, exit(1);
+
+  mt2_bisect::mt2 mt2_event;
+  // Format: M, px, py
+  double pa[3] = { 0.106, 39.0, 12.0 };
+  double pb[3] = { 0.106, 119.0, -33.0 };
+  double pmiss[3] = { 0, -29.9, 35.9 };
+  double mn    = 50.; mn = 0; // Using same neutralino mass as IPM
+  //mt2_event.set_momenta(pa,pb,pmiss);
+  //mt2_event.set_mn(mn);
+  //std::cout << std::endl << " mt2 = " << mt2_event.get_mt2() << std::endl;
 
   // Load FWLite:
   gSystem->Load("libFWCoreFWLite");
@@ -148,15 +163,15 @@ int main(int argc, char* argv[])
   /*                         Initializing Histograms                         */
   /***************************************************************************/
   SmartSelectionMonitor mon;
-  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 6, 0, 6));
+  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 8, 0, 8));
   eventflow->GetXaxis()->SetBinLabel(1, "All");
   eventflow->GetXaxis()->SetBinLabel(2, "HLT");
   eventflow->GetXaxis()->SetBinLabel(3, "> 1l");
   eventflow->GetXaxis()->SetBinLabel(4, "B-veto");
   eventflow->GetXaxis()->SetBinLabel(5, "> 1#tau");
   eventflow->GetXaxis()->SetBinLabel(6, "OS");
-  //eventfLow->GetXaxis()->SetBinLabel(7, "Mass");
-  //eventflow->GetXaxis()->SetBinLabel(8, "MT");
+  eventflow->GetXaxis()->SetBinLabel(7, "Mass");
+  eventflow->GetXaxis()->SetBinLabel(8, "MT");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
@@ -164,10 +179,10 @@ int main(int argc, char* argv[])
   //mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
 
   // PU
-  mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       40, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       40, -0.5, 49.5));
-  mon.addHistogram(new TH1F("rho",     ";#rho;Events",           40,  0,   25));
-  mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 40,  0,   25));
+  mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("rho",     ";#rho;Events",           25,  0,   25));
+  mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 25,  0,   25));
 
   // Leptons
   mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
@@ -221,6 +236,12 @@ int main(int argc, char* argv[])
 
   // MET
   mon.addHistogram(new TH1F("MET", ";MET [GeV];Events", 25, 0, 200));
+
+  // MT2
+  mon.addHistogram(new TH1F("MT2", ";M_{T2} [GeV];Events", 25, 0, 500));
+
+  // SVFit Mass
+  mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 800));
 
 
 
@@ -829,7 +850,6 @@ int main(int argc, char* argv[])
         }
       }
     }
-
     if(isOS)
     {
       if(abs(selLeptons[leptonIndex].id) == 11)
@@ -838,31 +858,75 @@ int main(int argc, char* argv[])
         chTags.push_back("mutau");
     }
 
+    // Tau-Lepton pair mass calculation
+    double mass = -1;
+    if(isOS)
+    {
+      TMatrixD covMET(2, 2);
+      std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
+      auto selLepton = selLeptons[leptonIndex];
+      auto selTau    = selTaus[tauIndex];
+      svFitStandalone::Vector measuredMET(met.px(), met.py(), 0);
+
+      covMET[0][0] = met.sigx2;
+      covMET[0][1] = met.sigxy;
+      covMET[1][0] = met.sigxy;
+      covMET[1][1] = met.sigy2;
+
+      measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kLepDecay, svFitStandalone::LorentzVector(selLepton.px(), selLepton.py(), selLepton.pz(), selLepton.E())));
+      measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kHadDecay, svFitStandalone::LorentzVector(selTau.px(), selTau.py(), selTau.pz(), selTau.E())));
+
+      SVfitStandaloneAlgorithm SVfit_algo(measuredTauLeptons, measuredMET, covMET, 0);
+      //SVfit_algo.maxObjFunctionCalls(10000) // To change the max number of iterations before minimization is terminated, default 5000
+      //SVfit_algo.addLogM(false); // To not use the LogM penalty, it is used by default
+      //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
+      SVfit_algo.fit();
+      if(SVfit_algo.isValidSolution())
+        mass = SVfit_algo.mass();
+      //SVfit_algo.integrate();
+      //mass = SVfit_algo.mass();
+    }
+
+    // MT2 calculation
+    double mt2 = -1;
+    if(mass >= 0)
+    {
+      auto selLepton = selLeptons[leptonIndex];
+      auto selTau    = selTaus[tauIndex];
+      pa[0] = selLepton.M();
+      pa[1] = selLepton.px();
+      pa[2] = selLepton.py();
+      pb[0] = selTau.M();
+      pb[1] = selTau.px();
+      pb[2] = selTau.py();
+      pmiss[1] = met.px();
+      pmiss[2] = met.py();
+      mt2_event.set_momenta(pa,pb,pmiss);
+      mt2_event.set_mn(mn);
+      mt2 = mt2_event.get_mt2();
+    }
+
 
     mon.fillHisto("eventflow", chTags, 0, weight);
-    mon.fillHisto("eventflow", "", 0, weight);
     if(triggeredOn)
     {
       mon.fillHisto("eventflow", chTags, 1, weight);
-      mon.fillHisto("eventflow", "", 1, weight);
       if(selLeptons.size() > 0)
       {
         mon.fillHisto("eventflow", chTags, 2, weight);
-        mon.fillHisto("eventflow", "", 2, weight);
         mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
         if(selBJets.size() == 0)
         {
           mon.fillHisto("eventflow", chTags, 3, weight);
-          mon.fillHisto("eventflow", "", 3, weight);
           if(selTaus.size() > 0)
           {
             mon.fillHisto("eventflow", chTags, 4, weight);
-            mon.fillHisto("eventflow", "", 4, weight);
-
             if(isOS)
             {
               mon.fillHisto("eventflow", chTags, 5, weight);
-              mon.fillHisto("eventflow", "", 5, weight);
+              if(mass >= 0)
+              {
+                mon.fillHisto("eventflow", chTags, 6, weight);
 
             mon.fillHisto("nvtx", chTags, nvtx, weight);
             mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
@@ -872,6 +936,9 @@ int main(int argc, char* argv[])
             mon.fillHisto("rho25", chTags, rho25, weight);
 
             mon.fillHisto("MET", chTags, met.pt(), weight);
+
+            mon.fillHisto("MT2", chTags, mt2, weight);
+            mon.fillHisto("SVFitMass", chTags, mass, weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
@@ -911,6 +978,7 @@ int main(int argc, char* argv[])
             {
               mon.fillHisto("jetcsv", chTags, i->origcsv, weight);
             }
+              }
             }
           }
         }
