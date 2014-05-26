@@ -3,38 +3,38 @@ This directory holds the scripts and other ancillary information for the TStauSt
 
 Last Update: 26/05/2014 - By Cristóvão
 
- ###  How-to run  ###  (Work in progress)
+How-to run  (Work in progress)
+==========
 This framework, like many others, runs on it's own nTuples, which should be produced in a first step.
 In a second step, the analysis itself is run on all the desired nTuples, producing plots and whatever else is desired.
 In a next step, the desired plots are combined to produce the final plots/histograms/tables.
 
-  * nTuple production
-  The nTuples are produced using the GRID infrastructure, submitting jobs with crab via multicrab or directly with crab.
-  The subdirectories "grid_data" and "grid_mc" hold the necessary scripts to perform this step, "grid_data" for the data datasets and "grid_mc" for the MC datasets.
+nTuple production
+-----------------
+The nTuples are produced using the GRID infrastructure, submitting jobs with crab via multicrab or directly with crab.
+The subdirectories "grid_data" and "grid_mc" hold the necessary scripts to perform this step, "grid_data" for the data datasets and "grid_mc" for the MC datasets.
 
-  Inside each subdirectory there is a "crab.cfg" file, this file holds the basic crab configurations to submit the jobs, such as the output storage element, how many events each job should process and so on.
-  The "multicrab.cfg" file, holds the configurations for multicrab, the first section configures the common properties for all sets of jobs (one set of jobs will be created for each dataset) it starts by referencing the "crab.cfg" file, and then sets whatever properties are needed to be different from the ones defined in the "crab.cfg" file, such as the output directory and for data, the luminosity mask to use (Golden JSON for instance).
-  Then, several sections are defined in "multicrab.cfg", one for each dataset, specifying which dataset is to be processed and any other dataset specific options desired.
+Inside each subdirectory there is a "crab.cfg" file, this file holds the basic crab configurations to submit the jobs, such as the output storage element, how many events each job should process and so on.
+The "multicrab.cfg" file, holds the configurations for multicrab, the first section configures the common properties for all sets of jobs (one set of jobs will be created for each dataset) it starts by referencing the "crab.cfg" file, and then sets whatever properties are needed to be different from the ones defined in the "crab.cfg" file, such as the output directory and for data, the luminosity mask to use (Golden JSON for instance).
+Then, several sections are defined in "multicrab.cfg", one for each dataset, specifying which dataset is to be processed and any other dataset specific options desired.
 
-  In a first step, the jobs should be created, using the command "multicrab -create" inside each subdirectory can achieve this.
-  In order to start running the jobs, they must be submitted to the GRID, this can be done either with the command "multicrab -submit", which will submit all jobs of all datasets in one go, or it can be done with the command "crab -submit -c [DIR]", where DIR is the directory created for one of the datasets, this will only submit the jobs for that dataset. (Notice that if a certain dataset has more than 500 jobs, the jobs should be split in groups of 500  and each group submitted independently, either for the "multicrab" or the "crab" command, ie: "crab -submit 1-500 -c [DIR]" for the first 500 jobs)
-  The jobs should be monitored regularly to insure everything is running fine, use the commands "multicrab -status" or "crab -status -c [DIR]" (depending on if you want to check on all or just one of the datasets) to get the status of the jobs. Jobs that have terminated successfully will have a status of 0, other statuses, generally indicate an error and can normally be recovered by resubmitting.
-  Other useful commands for job management are:
-    * "crab -kill [jobs] -c [DIR]" - This command will kill the listed jobs of the given dataset, the jobs option is optional for this command and all the following ones and when it is not present, the operation is applied to all jobs. Jobs that have been cancelled, must be killed before resubmitting.
-    * "crab -getoutput [jobs] -c [DIR]" - This command retrieves the output of the listed jobs for the given dataset, the output is the std::cout and std::err as well as any other reports from the jobs, not necessarily the root files, this depends on the options given to crab. Sometimes it is necessary to run this command on some jobs before resubmitting them.
-    * "crab -resubmit [jobs] -c [DIR]" - This command resubmits the listed jobs for the given dataset.
-    * "crab -report -c [DIR]" - This command generates a report on the processed jobs. This is important to generate the pileup distribution for data datasets.
-  (There should be versions of all these commands for multicrab, but for these fine-grained controls, I find it more usefull to control on which dataset I am running it on, so I use these versions much more often.)
+In a first step, the jobs should be created, using the command "multicrab -create" inside each subdirectory can achieve this.
+In order to start running the jobs, they must be submitted to the GRID, this can be done either with the command "multicrab -submit", which will submit all jobs of all datasets in one go, or it can be done with the command "crab -submit -c [DIR]", where DIR is the directory created for one of the datasets, this will only submit the jobs for that dataset. (Notice that if a certain dataset has more than 500 jobs, the jobs should be split in groups of 500  and each group submitted independently, either for the "multicrab" or the "crab" command, ie: "crab -submit 1-500 -c [DIR]" for the first 500 jobs)
+The jobs should be monitored regularly to insure everything is running fine, use the commands "multicrab -status" or "crab -status -c [DIR]" (depending on if you want to check on all or just one of the datasets) to get the status of the jobs. Jobs that have terminated successfully will have a status of 0, other statuses, generally indicate an error and can normally be recovered by resubmitting.
+Other useful commands for job management are:
+- "crab -kill [jobs] -c [DIR]" - This command will kill the listed jobs of the given dataset, the jobs option is optional for this command and all the following ones and when it is not present, the operation is applied to all jobs. Jobs that have been cancelled, must be killed before resubmitting.
+- "crab -getoutput [jobs] -c [DIR]" - This command retrieves the output of the listed jobs for the given dataset, the output is the std::cout and std::err as well as any other reports from the jobs, not necessarily the root files, this depends on the options given to crab. Sometimes it is necessary to run this command on some jobs before resubmitting them.
+- "crab -resubmit [jobs] -c [DIR]" - This command resubmits the listed jobs for the given dataset.
+- "crab -report -c [DIR]" - This command generates a report on the processed jobs. This is important to generate the pileup distribution for data datasets.
+(There should be versions of all these commands for multicrab, but for these fine-grained controls, I find it more usefull to control on which dataset I am running it on, so I use these versions much more often.)
 
-  The jobs can fail due to too much "Wall time clock", this means that the jobs have been runnning for too long. If the number of events the jobs are running on has been optimized, you might just have been unlucky and resubmitting the job should solve the problem. However, sometimes the job really does have too many events to be processed in the given time. In this case, no matter how many times you resubmit, the jobs will fail. If the fraction of jobs in this status is significant, it is probably a better idea to change the "crab.cfg" file, reducing the number of events per job (for data this is defined as the lumis per job) and resubmitting the whole dataset. If the fraction of jobs in this situation is small, you could consider accepting the already processed jobs and using the "task_missingLumiSummary.json" generated by the report crab command as the lumifilter for a new set of jobs on that dataset, in order to fill in the missing lumisections.
-  (*ToDo: More details on how to do this*)
+The jobs can fail due to too much "Wall time clock", this means that the jobs have been runnning for too long. If the number of events the jobs are running on has been optimized, you might just have been unlucky and resubmitting the job should solve the problem. However, sometimes the job really does have too many events to be processed in the given time. In this case, no matter how many times you resubmit, the jobs will fail. If the fraction of jobs in this status is significant, it is probably a better idea to change the "crab.cfg" file, reducing the number of events per job (for data this is defined as the lumis per job) and resubmitting the whole dataset. If the fraction of jobs in this situation is small, you could consider accepting the already processed jobs and using the "task_missingLumiSummary.json" generated by the report crab command as the lumifilter for a new set of jobs on that dataset, in order to fill in the missing lumisections.
+(*ToDo: More details on how to do this*)
 
-  Once all jobs and events have been processed, the resulting output must be merged (so we have a more reasonable number of files). The merged nTuples must also be small enough so that when running our analysis on each file, it does not take too much time (lxbatch has several queues, we want to use the 8nh queue, which has a limit of 8 "normalised" hours).
-  However, before merging, we will create the pileup distributions for data, these should be used later in order to perform the pileup reweighting of the MC. For this, make sure you have ran the report crab command on each of the data datasets, this should create three files inside the directory "[DIR]/res/":
-    * inputLumiSummaryOfTask.json   - This one holds the lumis that were requested to be run on (ie: the lumi mask given to crab)
-    * task_missingLumiSummary.json  - This one, which was already mentioned, holds the missing lumisections, there shouldn't be any
-    * lumiSummary.json              - This one holds all the lumis that are present, this is the one we will be using.
+Once all jobs and events have been processed, the resulting output must be merged (so we have a more reasonable number of files). The merged nTuples must also be small enough so that when running our analysis on each file, it does not take too much time (lxbatch has several queues, we want to use the 8nh queue, which has a limit of 8 "normalised" hours).
+However, before merging, we will create the pileup distributions for data, these should be used later in order to perform the pileup reweighting of the MC. For this, make sure you have ran the report crab command on each of the data datasets, this should create three files inside the directory "[DIR]/res/":
+- inputLumiSummaryOfTask.json   - This one holds the lumis that were requested to be run on (ie: the lumi mask given to crab)
+- task_missingLumiSummary.json  - This one, which was already mentioned, holds the missing lumisections, there shouldn't be any
+- lumiSummary.json              - This one holds all the lumis that are present, this is the one we will be using.
 
-  (*Instructions to produce PU distribution: https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData#Calculating_Your_Pileup_Distribu*)
-
-  *
+(*Instructions to produce PU distribution: https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData#Calculating_Your_Pileup_Distribu*)
