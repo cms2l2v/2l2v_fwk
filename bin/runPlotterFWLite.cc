@@ -258,7 +258,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
          double Weight = 1.0;
-         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() &&  !HistoProperties.name.find("optim_") )Weight*= iLumi;
+         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() && HistoProperties.name.find("optim_")==std::string::npos )Weight*= iLumi;
 	 string filtExt("");
 	 if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }	 
 
@@ -280,7 +280,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
            delete File;
          }
          if(!tmphist)continue;
-         if(!Process[i]["isdata"].toBool() && !HistoProperties.name.find("optim_"))tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool() && HistoProperties.name.find("optim_")==std::string::npos)tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
@@ -1043,7 +1043,7 @@ int main(int argc, char* argv[]){
       
        if(StoreInFile && do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,*it, OutputFile); }
        if(StoreInFile && do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,*it, OutputFile); }
-       if(StoreInFile && it->isTree()){                                         SavingTreeToFile(Root,inDir,*it, OutputFile); }
+//       if(StoreInFile && it->isTree()){                                         SavingTreeToFile(Root,inDir,*it, OutputFile); }
      }printf("\n");
    if(StoreInFile) OutputFile->Close();
    
