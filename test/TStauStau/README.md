@@ -17,7 +17,7 @@ Inside each subdirectory there is a "crab.cfg" file, this file holds the basic c
 The "multicrab.cfg" file, holds the configurations for multicrab, the first section configures the common properties for all sets of jobs (one set of jobs will be created for each dataset) it starts by referencing the "crab.cfg" file, and then sets whatever properties are needed to be different from the ones defined in the "crab.cfg" file, such as the output directory and for data, the luminosity mask to use (Golden JSON for instance).
 Then, several sections are defined in "multicrab.cfg", one for each dataset, specifying which dataset is to be processed and any other dataset specific options desired.
 
-In a first step, the jobs should be created, using the command "multicrab -create" inside each subdirectory can achieve this.
+In a first step, the jobs should be created, using the command `multicrab -create` inside each subdirectory can achieve this.
 In order to start running the jobs, they must be submitted to the GRID, this can be done either with the command "multicrab -submit", which will submit all jobs of all datasets in one go, or it can be done with the command "crab -submit -c [DIR]", where DIR is the directory created for one of the datasets, this will only submit the jobs for that dataset. (Notice that if a certain dataset has more than 500 jobs, the jobs should be split in groups of 500  and each group submitted independently, either for the "multicrab" or the "crab" command, ie: "crab -submit 1-500 -c [DIR]" for the first 500 jobs)
 The jobs should be monitored regularly to insure everything is running fine, use the commands "multicrab -status" or "crab -status -c [DIR]" (depending on if you want to check on all or just one of the datasets) to get the status of the jobs. Jobs that have terminated successfully will have a status of 0, other statuses, generally indicate an error and can normally be recovered by resubmitting.
 Other useful commands for job management are:
@@ -32,8 +32,9 @@ The jobs can fail due to too much "Wall time clock", this means that the jobs ha
 
 Once all jobs and events have been processed, the resulting output must be merged (so we have a more reasonable number of files). The merged nTuples must also be small enough so that when running our analysis on each file, it does not take too much time (lxbatch has several queues, we want to use the 8nh queue, which has a limit of 8 "normalised" hours).
 However, before merging, we will create the pileup distributions for data, these should be used later in order to perform the pileup reweighting of the MC. For this, make sure you have ran the report crab command on each of the data datasets, this should create three files inside the directory "[DIR]/res/":
-- inputLumiSummaryOfTask.json   - This one holds the lumis that were requested to be run on (ie: the lumi mask given to crab)
-- task_missingLumiSummary.json  - This one, which was already mentioned, holds the missing lumisections, there shouldn't be any
-- lumiSummary.json              - This one holds all the lumis that are present, this is the one we will be using.
+- inputLumiSummaryOfTask.json   - This one holds the lumis that were requested to be run on (ie: the lumi mask given to crab).
+- task_missingLumiSummary.json  - This one, which was already mentioned, holds the missing lumisections, there shouldn't be any missing lumisections.
+- lumiSummary.json              - This one holds all the lumis that are present, it is the one we will be using.
 
-(*Instructions to produce PU distribution:* https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData#Calculating_Your_Pileup_Distribu)
+(*Instructions to produce PU distribution:* [TWiki](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData#Calculating_Your_Pileup_Distribu))
+
