@@ -47,6 +47,7 @@ TString signalSufix="";
 TString histo(""), histoVBF("");
 int rebinVal = 1;
 double MCRescale = 1.0;
+double SignalRescale = 1.0;
 int mass;
 bool shape = false;
 TString postfix="";
@@ -302,7 +303,8 @@ void printHelp()
   printf("--fast      --> use this flag to only do assymptotic prediction (very fast but inaccurate))\n");
   printf("--postfix    --> use this to specify a postfix that will be added to the process names)\n");
   printf("--systpostfix    --> use this to specify a syst postfix that will be added to the process names)\n");
-  printf("--MCRescale    --> use this to specify a syst postfix that will be added to the process names)\n");
+  printf("--MCRescale    --> use this to rescale the cross-section of all MC processes by a given factor)\n");
+  printf("--signalRescale    --> use this to rescale signal cross-section by a given factor)\n");
   printf("--interf     --> use this to rescale xsection according to WW interferences)\n");
   printf("--minSignalYield   --> use this to specify the minimum Signal yield you want in each channel)\n");
   printf("--signalSufix --> use this flag to specify a suffix string that should be added to the signal 'histo' histogram\n");
@@ -340,6 +342,7 @@ int main(int argc, char* argv[])
     else if(arg.find("--subWZ")    !=string::npos) { subWZ=true; printf("WZ will be estimated from 3rd lepton SB\n");}
     else if(arg.find("--DDRescale")!=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&DDRescale); i++;}
     else if(arg.find("--MCRescale")!=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&MCRescale); i++;}
+    else if(arg.find("--signalRescale")!=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&SignalRescale); i++;}
     else if(arg.find("--HWW")      !=string::npos) { skipWW=false; printf("HWW = True\n");}
     else if(arg.find("--skipGGH")  !=string::npos) { skipGGH=true; printf("skipGGH = True\n");}
     else if(arg.find("--skipQQH")  !=string::npos) { skipQQH=true; printf("skipQQH = True\n");}
@@ -1281,8 +1284,10 @@ void initializeTGraph(){
                int marker = Process[i].getInt("marker", 20);
 
                double procMass=0;  char procMassStr[128] = "";
-               if(isSignal &&  mass>0 && proc.Contains("H(")){
-                  sscanf(proc.Data()+proc.First("H(")+2,"%lf",&procMass);
+               if(isSignal &&  mass>0 && (proc.Contains("H(") || proc.Contains("A("))){
+                  if(proc.Contains("A(")){sscanf(proc.Data()+proc.First("A(")+2,"%lf",&procMass);
+                  }else{                  sscanf(proc.Data()+proc.First("H(")+2,"%lf",&procMass);
+                  }
                   if(!(procMass==mass || procMass==massL || procMass==massR))continue; //skip signal sample not concerned 
                   sprintf(procMassStr,"%i",(int)procMass);
                }
@@ -1400,6 +1405,7 @@ void initializeTGraph(){
 
                   }
                   hshape->Scale(MCRescale);
+                  if(isSignal)hshape->Scale(SignalRescale);
 
                    //Do Renaming and cleaning
                    varName.ReplaceAll("down","Down");

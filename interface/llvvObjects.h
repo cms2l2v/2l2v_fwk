@@ -341,4 +341,25 @@ enum llvvTAUID {
 };
 
 
+
+
+
+class llvvTauLepton  : public llvvLepton {
+   public:
+   // constructor
+   ~llvvTauLepton(){};
+   llvvTauLepton(llvvLepton lep_){lep = lep_;  SetPxPyPzE(lep_.px(), lep_.py(), lep_.pz(), lep_.energy()); id=lep_.id; };
+   llvvTauLepton(llvvTau    tau_){tau = tau_;  SetPxPyPzE(tau_.px(), tau_.py(), tau_.pz(), tau_.energy()); id=tau_.id; };
+   llvvLepton lep;
+   llvvTau tau;
+};
+typedef  std::vector<llvvTauLepton> llvvTauLeptonCollection;
+typedef  edm::Ref<llvvTauLeptonCollection> llvvTauLeptonRef;
+typedef  edm::RefProd<llvvTauLeptonCollection> llvvTauLeptonRefProd;
+typedef  edm::RefVector<llvvTauLeptonCollection> llvvTauLeptonRefVector;
+
+
+
+
+
 #endif
