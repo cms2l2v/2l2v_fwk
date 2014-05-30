@@ -267,6 +267,44 @@
            ]
         },
 	{
+        "tag":"tanb 30 tb [500 GeV]",
+        "isdata":false,
+        "issignal":true,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6",
+                "split":10,
+                "xsec":2.,
+	        "br":[0.563428]
+             }
+           ]
+        },
+	{
+        "tag":"tanb 30 taunu [500 GeV]",
+        "isdata":false,
+        "issignal":true,
+	"spimpose":true,
+        "color":"002",
+	"lwidth":2,
+	"lstyle":7,	
+        "fill":0,
+        "marker":1,
+        "data":[
+	    {
+                "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6",
+                "split":10,
+                "xsec":2.,
+	        "br":[0.110921]
+             }
+           ]
+        },
+	{
         "tag":"tanb 30 tb [600 GeV]",
         "isdata":false,
         "issignal":true,
