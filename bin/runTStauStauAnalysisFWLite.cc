@@ -86,7 +86,6 @@ int main(int argc, char* argv[])
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
-  int mctruthmode = runProcess.getParameter<int>("mctruthmode"); // What is this one for?
   std::vector<std::string> urls = runProcess.getParameter<std::vector<std::string> >("input");
   std::string baseDir = runProcess.getParameter<std::string>("dirName");
   std::string outdir = runProcess.getParameter<std::string>("outdir");
@@ -146,11 +145,6 @@ int main(int argc, char* argv[])
   std::string outFileUrl(gSystem->BaseName(url.c_str()));
   while(outFileUrl.find(".root", 0) != std::string::npos)
     outFileUrl.replace(outFileUrl.find(".root", 0), 5, "");
-  if(mctruthmode != 0)
-  {
-    outFileUrl += "_filt";
-    outFileUrl += mctruthmode;
-  }
   std::string outUrl = outdir;
 
   TString turl(url);
@@ -217,8 +211,8 @@ int main(int argc, char* argv[])
   tauID->GetXaxis()->SetBinLabel(1, "All");
   tauID->GetXaxis()->SetBinLabel(2, "Not e");
   tauID->GetXaxis()->SetBinLabel(3, "Not #mu");
-  tauID->GetXaxis()->SetBinLabel(4, "Not decay mode");
-  tauID->GetXaxis()->SetBinLabel(5, "Not medium comb iso");
+  tauID->GetXaxis()->SetBinLabel(4, "Decay mode");
+  tauID->GetXaxis()->SetBinLabel(5, "Medium comb iso");
 
   // Jets
   mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
@@ -346,7 +340,7 @@ int main(int argc, char* argv[])
     /**** Remove double counting if running on exclusive samples ****/
     if(exclusiveRun && isV0JetsMC)
     {
-      if(genEv.nup > 5) // Drop V+{1,2,3,4}Jets from VJets samples to avoid double counting
+      if(genEv.nup > 5) // Drop V+{1,2,3,4}Jets from VJets samples to avoid double counting (but keep V+0Jets)
         continue;
     }
 
@@ -878,13 +872,14 @@ int main(int argc, char* argv[])
 
       SVfitStandaloneAlgorithm SVfit_algo(measuredTauLeptons, measuredMET, covMET, 0);
       //SVfit_algo.maxObjFunctionCalls(10000) // To change the max number of iterations before minimization is terminated, default 5000
-      //SVfit_algo.addLogM(false); // To not use the LogM penalty, it is used by default
+      SVfit_algo.addLogM(false); // To not use the LogM penalty, it is used by default
       //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
-      SVfit_algo.fit();
+      //SVfit_algo.fit();
+      //SVfit_algo.integrate();
+      SVfit_algo.integrateVEGAS();
+      //SVfit_algo.integrateMarkovChain();
       if(SVfit_algo.isValidSolution())
         mass = SVfit_algo.mass();
-      //SVfit_algo.integrate();
-      //mass = SVfit_algo.mass();
     }
 
     // MT2 calculation
