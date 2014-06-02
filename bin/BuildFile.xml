@@ -36,6 +36,7 @@
   <bin name="runBNVAnalysisFWLite"       file="runBNVAnalysisFWLite.cc"></bin>
   <bin name="runZHTauTauAnalysisFWLite"  file="runZHTauTauAnalysisFWLite.cc"></bin> 
   <bin name="runTStauStauAnalysisFWLite" file="runTStauStauAnalysisFWLite.cc"></bin>
+  <bin name="runCutOptimizer"            file="runCutOptimizer.cc"></bin>
 </environment>
 
 <!-- 
