@@ -23,7 +23,7 @@
 // IT MIGHT BE OK TO USE THE DATA IF USING A METHOD WITH A DATA DRIVEN BACKGROUND ESTIMATION (CONFIRM THIS BEFORE USING IT HERE)
 
 void printHelp();
-std::vector<std::pair<std::string,TChain*>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG");
+std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG");
 
 
 std::unordered_map<std::string,bool> FileExists;
@@ -119,19 +119,34 @@ int main(int argc, char** argv)
   std::cout << "Done Loading" << std::endl;
 
   // Eventually change this to get the tree name from the config, like that it will not necessarily have to be named events
-  std::vector<std::pair<std::string,TChain*>> BG_samples  = getChainsFromJSON(json, inDir, "BG");
-  std::vector<std::pair<std::string,TChain*>> SIG_samples = getChainsFromJSON(json, inDir, "SIG");
+  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> BG_samples  = getChainsFromJSON(json, inDir, "BG");
+  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> SIG_samples = getChainsFromJSON(json, inDir, "SIG");
 
   std::cout << "Found " << BG_samples.size()  << " background processes:" << std::endl;
   for(auto process = BG_samples.begin(); process != BG_samples.end(); ++process)
   {
-    std::cout << "\t" << process->first << " with " << process->second->GetEntries() << " entries." << std::endl;
+    std::cout << "  " << process->first << ":" << std::endl;
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      std::cout << "    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
+    }
   }
   std::cout << "Found " << SIG_samples.size() << " signal processes:"     << std::endl;
   for(auto process = SIG_samples.begin(); process != SIG_samples.end(); ++process)
   {
-    std::cout << "\t" << process->first << std::endl;
+    std::cout << "  " << process->first << ":" << std::endl;
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      std::cout << "    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
+    }
   }
+
+  if(SIG_samples.size() != 0 && BG_samples.size() != 0)
+  {
+    getCutsFromJSON(json);
+  }
+  else
+    std::cout << "Either there were no signal processes or background processes defined, it is impossible to optimize cuts without either. PLease verify your JSON file." << std::endl;
 
   std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
   for(auto key = FileExists.begin(); key != FileExists.end(); ++key)
@@ -141,11 +156,12 @@ int main(int argc, char** argv)
   }
 }
 
-std::vector<std::pair<std::string,TChain*>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type)
+std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type)
 {
-  std::vector<std::pair<std::string,TChain*>> retVal;
-  std::pair<std::string,TChain*> tempVal;
-  std::vector<std::string> missingFiles;
+  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> retVal;
+  std::pair<std::string,std::vector<std::pair<int,TChain*>>> tempProcess;
+  std::vector<std::pair<int,TChain*>> tempSamples;
+  std::pair<int,TChain*> tempSample;
 
   std::string treename = "Events"; // Change this to get the name from the json
   std::string customExtension = "_summary"; // Change this to get from the json
@@ -171,8 +187,7 @@ std::vector<std::pair<std::string,TChain*>> getChainsFromJSON(JSONWrapper::Objec
     if(type == "BG" && isSig)
       continue;
 
-    tempVal.first = (*process).getString("tag", "Sample");
-    tempVal.second = new TChain(treename.c_str(), tempVal.first.c_str());
+    tempProcess.first = (*process).getString("tag", "Sample");
 
     std::string filtExt;
     if((*process).isTag("mctruthmode"))
@@ -183,9 +198,12 @@ std::vector<std::pair<std::string,TChain*>> getChainsFromJSON(JSONWrapper::Objec
     }
 
     std::vector<JSONWrapper::Object> samples = (*process)["data"].daughters();
+    tempSamples.clear();
     for(auto sample = samples.begin(); sample != samples.end(); ++sample)
     {
       int nFiles = (*sample).getInt("split", 1);
+      tempSample.first = 0;
+      tempSample.second = new TChain(treename.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
       for(int file = 0; file < nFiles; ++file)
       {
         std::string segmentExt;
@@ -215,10 +233,13 @@ std::vector<std::pair<std::string,TChain*>> getChainsFromJSON(JSONWrapper::Objec
         }
 
         // Chain the valid files together
-        tempVal.second->Add(fileName.c_str());
+        tempSample.second->Add(fileName.c_str());
+        ++tempSample.first;
       }
+      tempSamples.push_back(tempSample);
     }
-    retVal.push_back(tempVal);
+    tempProcess.second = tempSamples;
+    retVal.push_back(tempProcess);
   }
 
   return retVal;

@@ -326,6 +326,7 @@ int main(int argc, char* argv[])
   llvvJetExtCollection selJets, selJetsNoId, selBJets;
   llvvTauCollection selTaus;
   bool selected = false;
+  int tauIndex = -1, leptonIndex = -1;
   bool isOS = false;
   double mass = -1;
   double mt2 = -1;
@@ -362,6 +363,8 @@ int main(int argc, char* argv[])
     summaryTree->Branch("MT2", &mt2);
     summaryTree->Branch("MT2_50", &mt2_50);
     summaryTree->Branch("MT2_150", &mt2_150);
+    summaryTree->Branch("tauIndex", &tauIndex);
+    summaryTree->Branch("leptonIndex", &leptonIndex);
   }
 
   myCout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
@@ -888,7 +891,7 @@ int main(int argc, char* argv[])
 
     // Opposite Sign requirements
     double maxPtSum = 0;
-    int tauIndex = -1, leptonIndex = -1;
+    tauIndex = -1, leptonIndex = -1;
     isOS = false;
     for(size_t i = 0; i < selLeptons.size(); ++i)
     {
