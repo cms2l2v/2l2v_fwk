@@ -151,6 +151,10 @@ int main(int argc, char* argv[])
   bool isSingleMuPD(!isMC && turl.Contains("SingleMu"));
   bool isV0JetsMC(isMC && (turl.Contains("DYJetsToLL_50toInf") || turl.Contains("WJets")));
 
+  TTree* summaryTree = NULL;
+  if(saveSummaryTree)
+    summaryTree = new TTree("Events", "Events");
+
 
 
   /***************************************************************************/
@@ -232,7 +236,9 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("MET", ";MET [GeV];Events", 25, 0, 200));
 
   // MT2
-  mon.addHistogram(new TH1F("MT2", ";M_{T2} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1F("MT2",     ";M_{T2} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1F("MT2_50",  ";M_{T2(50)} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1F("MT2_150", ";M_{T2(150)} [GeV];Events", 25, 0, 500));
 
   // SVFit Mass
   mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 800));
@@ -292,9 +298,6 @@ int main(int argc, char* argv[])
   /***************************************************************************/
   /*                               Event Loop                                */
   /***************************************************************************/
-  std::cout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
-  std::cout << "Scanning the ntuple:";
-
   DuplicatesChecker duplicatesChecker;
   int nDuplicates(0);
   int step(totalEntries/50);
@@ -307,6 +310,64 @@ int main(int argc, char* argv[])
   std::cout.rdbuf(buffer.rdbuf());
   std::cerr.rdbuf(buffer.rdbuf());
 
+  // Variables used in loop
+  int nvtx = 0;
+  std::vector<TString> chTags;
+  std::vector<bool> triggerBits;
+  bool triggeredOn = false;
+  llvvMet met;
+  double rho = 0;
+  double rho25 = 0;
+  double weight       = 1.;
+  double weight_plus  = 1.;
+  double weight_minus = 1.;
+  double puWeight     = 1.;
+  llvvLeptonCollection selLeptons;
+  llvvJetExtCollection selJets, selJetsNoId, selBJets;
+  llvvTauCollection selTaus;
+  bool selected = false;
+  bool isOS = false;
+  double mass = -1;
+  double mt2 = -1;
+  double mt2_50 = -1;
+  double mt2_150 = -1;
+
+  // Prepare summary tree
+  if(saveSummaryTree)
+  {
+    // Dataset specific variables
+    summaryTree->Branch("isMC", &isMC);
+    summaryTree->Branch("xSecWeight", &xsecWeight);
+
+    // Event specific variables
+    summaryTree->Branch("selected", &selected);
+    summaryTree->Branch("chTags", &chTags);
+    summaryTree->Branch("nvtx", &nvtx);
+    summaryTree->Branch("triggerBits", &triggerBits);
+    summaryTree->Branch("triggeredOn", &triggeredOn);
+    summaryTree->Branch("rho", &rho);
+    summaryTree->Branch("rho25", &rho25);
+    summaryTree->Branch("met", &met);
+    summaryTree->Branch("weight", &weight);
+    summaryTree->Branch("weight_plus", &weight_plus);
+    summaryTree->Branch("weight_minus", &weight_minus);
+    summaryTree->Branch("puWeight", &puWeight);
+    summaryTree->Branch("selLeptons", &selLeptons);
+    summaryTree->Branch("selJets", &selJets);
+//    summaryTree->Branch("selJetsNoId", &selJetsNoId);
+    summaryTree->Branch("selBJets", &selBJets);
+    summaryTree->Branch("selTaus", &selTaus);
+    summaryTree->Branch("isOS", &isOS);
+    summaryTree->Branch("SVFitMass", &mass);
+    summaryTree->Branch("MT2", &mt2);
+    summaryTree->Branch("MT2_50", &mt2_50);
+    summaryTree->Branch("MT2_150", &mt2_150);
+  }
+
+  myCout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
+  myCout << "Scanning the ntuple:";
+
+
   // Loop on events
   for(int iev = 0; iev < totalEntries; ++iev)
   {
@@ -314,7 +375,7 @@ int main(int argc, char* argv[])
       myCout << "_" << std::flush;
 
     // Prepare tags to fill the histograms
-    std::vector<TString> chTags;
+    chTags.clear();
     chTags.push_back("all");
 
     // Load the event content from tree
@@ -323,7 +384,7 @@ int main(int argc, char* argv[])
 
     /****     Get information/collections from the event     ****/
     // Number of vertexes
-    int nvtx = 0;
+    nvtx = 0;
     fwlite::Handle<int> nvtxHandle;
     nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
     if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
@@ -352,14 +413,14 @@ int main(int argc, char* argv[])
       std::cout << "triggerBits Object NotFound" << std::endl;
       continue;
     }
-    std::vector<bool> triggerBits = *triggerBitsHandle;
+    triggerBits = *triggerBitsHandle;
     /****          Sort events acording to HLT Path          ****/
     bool singleETrigger  = triggerBits[13]; // HLT_Ele27_WP80_v*
     bool singleMuTrigger = triggerBits[15]; // HLT_IsoMu24_v*
     if(triggerBits.size() > 16)
     { // Add here my trigger bits for TauPlusX
     }
-    bool triggeredOn = singleETrigger || singleMuTrigger;
+    triggeredOn = singleETrigger || singleMuTrigger;
     if(singleETrigger)
     {
       if(isSingleMuPD)  // Remove double counting between SingleE and SingleMu
@@ -439,7 +500,7 @@ int main(int argc, char* argv[])
       std::cout << "llvvMet Object NotFound" << std::endl;
       continue;
     }
-    llvvMet met = *metHandle;
+    met = *metHandle;
 
     // Trigger Prescales
     fwlite::Handle<std::vector<int> > triggerPrescalesHandle;
@@ -459,7 +520,7 @@ int main(int argc, char* argv[])
       std::cout << "rho Object NotFound" << std::endl;
       continue;
     }
-    double rho = *rhoHandle;
+    rho = *rhoHandle;
 
     // Rho25
     fwlite::Handle<double> rho25Handle;
@@ -469,15 +530,17 @@ int main(int argc, char* argv[])
       std::cout << "rho25 Object NotFound" << std::endl;
       continue;
     }
-    double rho25 = *rho25Handle;
+    rho25 = *rho25Handle;
+
+    selected = false;
 
 
 
     // Pileup Weight
-    double weight       = 1.;
-    double weight_plus  = 1.;
-    double weight_minus = 1.;
-    double puWeight     = 1.;
+    weight       = 1.;
+    weight_plus  = 1.;
+    weight_minus = 1.;
+    puWeight     = 1.;
     if(isMC)
     {
       puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
@@ -488,7 +551,7 @@ int main(int argc, char* argv[])
 
 
     // Get Leading Lepton
-    llvvLeptonCollection selLeptons;
+    selLeptons.clear();
     for(size_t i = 0; i < leptons.size(); ++i)
     {
       int lepId = leptons[i].id;
@@ -580,7 +643,7 @@ int main(int argc, char* argv[])
     }
 
     // Get Jets
-    llvvJetExtCollection selJets, selJetsNoId, selBJets;
+    selJets.clear(), selJetsNoId.clear(), selBJets.clear();
     int nTauJets = 0;
     for(size_t i = 0; i < jets.size(); ++i)
     {
@@ -738,7 +801,7 @@ int main(int argc, char* argv[])
       std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
 
     // Get taus
-    llvvTauCollection selTaus;
+    selTaus.clear();
     for(size_t i = 0; i < taus.size(); ++i)
     {
       llvvTau& tau = taus[i];
@@ -826,7 +889,7 @@ int main(int argc, char* argv[])
     // Opposite Sign requirements
     double maxPtSum = 0;
     int tauIndex = -1, leptonIndex = -1;
-    bool isOS = false;
+    isOS = false;
     for(size_t i = 0; i < selLeptons.size(); ++i)
     {
       for(size_t j = 0; j < selTaus.size(); ++j)
@@ -853,7 +916,7 @@ int main(int argc, char* argv[])
     }
 
     // Tau-Lepton pair mass calculation
-    double mass = -1;
+    mass = -1;
     if(isOS)
     {
       TMatrixD covMET(2, 2);
@@ -883,7 +946,7 @@ int main(int argc, char* argv[])
     }
 
     // MT2 calculation
-    double mt2 = -1;
+    mt2 = -1;
     if(mass >= 0)
     {
       auto selLepton = selLeptons[leptonIndex];
@@ -896,9 +959,21 @@ int main(int argc, char* argv[])
       pb[2] = selTau.py();
       pmiss[1] = met.px();
       pmiss[2] = met.py();
+
+      mn = 0;
       mt2_event.set_momenta(pa,pb,pmiss);
       mt2_event.set_mn(mn);
       mt2 = mt2_event.get_mt2();
+
+      mn = 50;
+      mt2_event.set_momenta(pa,pb,pmiss);
+      mt2_event.set_mn(mn);
+      mt2_50 = mt2_event.get_mt2();
+
+      mn = 150;
+      mt2_event.set_momenta(pa,pb,pmiss);
+      mt2_event.set_mn(mn);
+      mt2_150 = mt2_event.get_mt2();
     }
 
 
@@ -923,6 +998,8 @@ int main(int argc, char* argv[])
               {
                 mon.fillHisto("eventflow", chTags, 6, weight);
 
+            selected = false;
+
             mon.fillHisto("nvtx", chTags, nvtx, weight);
             mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
             mon.fillHisto("nup", "", genEv.nup, 1);
@@ -933,6 +1010,8 @@ int main(int argc, char* argv[])
             mon.fillHisto("MET", chTags, met.pt(), weight);
 
             mon.fillHisto("MT2", chTags, mt2, weight);
+            mon.fillHisto("MT2_50", chTags, mt2_50, weight);
+            mon.fillHisto("MT2_150", chTags, mt2_150, weight);
             mon.fillHisto("SVFitMass", chTags, mass, weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
@@ -980,6 +1059,9 @@ int main(int argc, char* argv[])
       }
     }
 
+    if(saveSummaryTree)
+      summaryTree->Fill();
+
 //    break;
   }
 
@@ -1009,8 +1091,8 @@ int main(int argc, char* argv[])
     std::cout << "Saving summary results in " << outUrl << std::endl;
     outfile = new TFile(outUrl.c_str(), "RECREATE");
     // Write Tuple/Tree
-    //summaryTuple->SetDirectory(ofile);
-    //summaryTuple->Write();
+    summaryTree->SetDirectory(outfile);
+    summaryTree->Write();
     outfile->Close();
     delete outfile;
   }
