@@ -22,8 +22,53 @@
 // REMEMBER TO IGNORE ANY DATA DEFINED IN THE JSON, YOU SHOULD NEVER OPTIMIZE CUTS ON DATA
 // IT MIGHT BE OK TO USE THE DATA IF USING A METHOD WITH A DATA DRIVEN BACKGROUND ESTIMATION (CONFIRM THIS BEFORE USING IT HERE)
 
+class OptimizationRound;
+
 void printHelp();
 std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG");
+std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+
+class OptimizationVariable
+{
+public:
+  OptimizationVariable();
+  ~OptimizationVariable();
+
+  // If using pointers the following lines should be uncommented and the respective functions defined
+  // More info: http://www.cplusplus.com/articles/y8hv0pDG/
+  //OptimizationVariable(const OptimizationVariable& other);
+  //OptimizationVariable& operator=(const OptimizationVariable& rhs);
+
+private:
+protected:
+};
+
+class OptimizationRound
+{
+public:
+  OptimizationRound();
+  ~OptimizationRound();
+
+  // If using pointers the following lines should be uncommented and the respective functions defined
+  // More info: http://www.cplusplus.com/articles/y8hv0pDG/
+  //OptimizationRound(const OptimizationRound& other);
+  //OptimizationRound& operator=(const OptimizationRound& rhs);
+
+  friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+
+private:
+  std::string name;
+  std::string ttree;
+  std::string customExtension;
+  std::string baseSelection;
+  std::string channel;
+  std::vector<OptimizationVariable> variables;
+  double iLumi;
+  std::string inDir;
+  std::string jsonFile;
+
+protected:
+};
 
 
 std::unordered_map<std::string,bool> FileExists;
@@ -63,31 +108,31 @@ int main(int argc, char** argv)
       ++i;
     }
 
-    if(arg.find("--iLumi") != std::string::npos)
-    {
-      std::stringstream converter(argv[i+1]);
-      converter >> iLumi;
-      if(converter.fail())
-      {
-        std::cout << "The integrated luminosity should be a number." << std::endl;
-        std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
-        return 2;
-      }
-      if(iLumi <= 0)
-      {
-        std::cout << "You should give a positive, non-zero, integrated luminosity." << std::endl;
-        std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
-        return 1;
-      }
-      ++i;
-    }
+//    if(arg.find("--iLumi") != std::string::npos)
+//    {
+//      std::stringstream converter(argv[i+1]);
+//      converter >> iLumi;
+//      if(converter.fail())
+//      {
+//        std::cout << "The integrated luminosity should be a number." << std::endl;
+//        std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
+//        return 2;
+//      }
+//      if(iLumi <= 0)
+//      {
+//        std::cout << "You should give a positive, non-zero, integrated luminosity." << std::endl;
+//        std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
+//        return 1;
+//      }
+//      ++i;
+//    }
 
-    if(arg.find("--inDir") != std::string::npos)
-    {
-      inDir = argv[i+1];
-      // TODO: Check if input directory exists
-      ++i;
-    }
+//    if(arg.find("--inDir") != std::string::npos)
+//    {
+//      inDir = argv[i+1];
+//      // TODO: Check if input directory exists
+//      ++i;
+//    }
 
     if(arg.find("--outDir") != std::string::npos)
     {
@@ -103,23 +148,21 @@ int main(int argc, char** argv)
     }*/
   }
 
-  if(iLumi == 0 || jsonFile == "" || inDir == "")// || cutVars == "")
+  if(jsonFile == "")// || cutVars == "")
   {
-    std::cout << "You should define at least the following arguments: iLumi, json, inDir" << std::endl;//, cutVars" << std::endl;
+    std::cout << "You should define at least the following arguments: json" << std::endl; //iLumi, json, inDir" << std::endl;//, cutVars" << std::endl;
     std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
     return 2;
   }
 
-  std::cout << "Running for an inntegrated luminosity of " << iLumi << ", using the samples defined in " << jsonFile << " from " << inDir << " directory" << std::endl;
+//  std::cout << "Running for an inntegrated luminosity of " << iLumi << ", using the samples defined in " << jsonFile << " from " << inDir << " directory" << std::endl;
 
   system(("mkdir -p " + outDir).c_str());
 
-  std::cout << "Loading JSON" << std::endl;
   JSONWrapper::Object json(jsonFile, true);
-  std::cout << "Done Loading" << std::endl;
 
   // Eventually change this to get the tree name from the config, like that it will not necessarily have to be named events
-  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> BG_samples  = getChainsFromJSON(json, inDir, "BG");
+/*  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> BG_samples  = getChainsFromJSON(json, inDir, "BG");
   std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> SIG_samples = getChainsFromJSON(json, inDir, "SIG");
 
   std::cout << "Found " << BG_samples.size()  << " background processes:" << std::endl;
@@ -143,17 +186,40 @@ int main(int argc, char** argv)
 
   if(SIG_samples.size() != 0 && BG_samples.size() != 0)
   {
-    getCutsFromJSON(json);
+    getRoundsFromJSON(json);
   }
   else
     std::cout << "Either there were no signal processes or background processes defined, it is impossible to optimize cuts without either. PLease verify your JSON file." << std::endl;
-
+*/
   std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
   for(auto key = FileExists.begin(); key != FileExists.end(); ++key)
   {
     if(!key->second)
       std::cout << "  " << key->first << std::endl;
   }
+}
+
+OptimizationRound::OptimizationRound()
+{
+}
+
+OptimizationRound::~OptimizationRound()
+{
+}
+
+OptimizationVariable::OptimizationVariable()
+{
+}
+
+OptimizationVariable::~OptimizationVariable()
+{
+}
+
+std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
+{
+  std::vector<OptimizationRound> retVal;
+
+  return retVal;
 }
 
 std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type)
@@ -251,13 +317,13 @@ void printHelp()
 
   std::cout << "--help    -->  Print this help message" << std::endl;
   std::cout << "--json    -->  File with list of processes to include, follows the same conventions as other jsons in this framework" << std::endl;
-  std::cout << "--iLumi   -->  Integrated luminosity to be used for the MC rescale, given in pb-1" << std::endl;
-  std::cout << "--inDir   -->  Path to the directory containing the summary trees" << std::endl;
+//  std::cout << "--iLumi   -->  Integrated luminosity to be used for the MC rescale, given in pb-1" << std::endl;
+//  std::cout << "--inDir   -->  Path to the directory containing the summary trees" << std::endl;
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
 //  std::cout << "--cutVars -->  File with list of variables with which to perform cut optimization. Check ... for an example syntax" << std::endl; // TODO, place her my example syntax
 // Moved cutVars to the json :D
 
-  std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json analysis_samples.json --iLumi 8000 --cutVars variables.json --inDir /path/to/summary/trees --outDir ./OUT/" << std::endl;
+  std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
 }
 
