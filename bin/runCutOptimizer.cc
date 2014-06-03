@@ -26,7 +26,7 @@
 class OptimizationRound;
 
 void printHelp();
-std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG");
+std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
 std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
 
 class OptimizationVariable
@@ -169,21 +169,41 @@ int main(int argc, char** argv)
       std::cout << " and performing cut optimization on the channel " << round->channel();
     std::cout << "." << std::endl;
     std::cout << "\tThere are " << round->nVars() << " variables to perform cut optimization on." << std::endl;
-  }
 
-  // Eventually change this to get the tree name from the config, like that it will not necessarily have to be named events
-/*  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> BG_samples  = getChainsFromJSON(json, inDir, "BG");
-  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> SIG_samples = getChainsFromJSON(json, inDir, "SIG");
 
-  std::cout << "Found " << BG_samples.size()  << " background processes:" << std::endl;
-  for(auto process = BG_samples.begin(); process != BG_samples.end(); ++process)
-  {
-    std::cout << "  " << process->first << ":" << std::endl;
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    JSONWrapper::Object json(round->jsonFile(), true);
+    auto BG_samples  = getChainsFromJSON(json, round->inDir(),  "BG", round->ttree(), round->customExtension());
+    auto SIG_samples = getChainsFromJSON(json, round->inDir(), "SIG", round->ttree(), round->customExtension());
+
+    std::cout << "\tFound " << BG_samples.size()  << " background processes:" << std::endl;
+    for(auto process = BG_samples.begin(); process != BG_samples.end(); ++process)
     {
-      std::cout << "    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
+      std::cout << "\t  " << process->first << ":" << std::endl;
+      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+        std::cout << "\t    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
     }
-  }*/
+    std::cout << "\tFound " << SIG_samples.size()  << " background processes:" << std::endl;
+    for(auto process = SIG_samples.begin(); process != SIG_samples.end(); ++process)
+    {
+      std::cout << "\t  " << process->first << ":" << std::endl;
+      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+        std::cout << "\t    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
+    }
+
+
+    // Cut Optimization performed here ----------------------------------------------------------------------------------------------------------------------
+    if(BG_samples.size() == 0)
+    {
+      std::cout << "\tIt doesn't make sense to perform cut optimization without any background samples. Skipping this round of optimization, please check the file " << round->jsonFile() << "." << std::endl;
+      continue;
+    }
+    if(SIG_samples.size() == 0)
+    {
+      std::cout << "\tIt doesn't make sense to perform cut optimization without any signal samples. Skipping this round of optimization, please check the file " << round->jsonFile() << "." << std::endl;
+      continue;
+    }
+    // ------------------------------------------------------------------------------------------------------------------------------------------------------
+  }
 
   std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
   for(auto key = FileExists.begin(); key != FileExists.end(); ++key)
@@ -310,15 +330,12 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
   return retVal;
 }
 
-std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type)
+std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
 {
   std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> retVal;
   std::pair<std::string,std::vector<std::pair<int,TChain*>>> tempProcess;
   std::vector<std::pair<int,TChain*>> tempSamples;
   std::pair<int,TChain*> tempSample;
-
-  std::string treename = "Events"; // Change this to get the name from the json
-  std::string customExtension = "_summary"; // Change this to get from the json
 
   if(type != "BG" && type != "SIG")
   {

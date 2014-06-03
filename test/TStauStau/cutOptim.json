@@ -14,7 +14,7 @@
       "comment":"the jsonFile field should contain the json file describing the processes and samples to use. It should be the same file given to runPlotter for instance",
       "ttree":"Events",
       "comment":"the ttree field should contain the name of the ttree where the variables are kept",
-      "customExtension":"summary",
+      "customExtension":"_summary",
       "comment":"the customExtension field should contain any additional extension to the name of the file where the ttree is located",
       "baseSelection":"selected",
       "comment":"the baseSelection field should contain the base selection of the events in the tree, this must be a valid expression in ROOT",
