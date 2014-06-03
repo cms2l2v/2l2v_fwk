@@ -10,6 +10,7 @@
 #include <utility>
 #include <cassert>
 #include <unordered_map>
+#include <algorithm>
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -39,7 +40,21 @@ public:
   //OptimizationVariable(const OptimizationVariable& other);
   //OptimizationVariable& operator=(const OptimizationVariable& rhs);
 
+  inline std::string& name(){return _name;};
+  inline std::string& expression(){return _expression;};
+  inline double& minVal(){return _minVal;};
+  inline double& maxVal(){return _maxVal;};
+  inline double& step(){return _step;};
+  inline std::string& cutDir(){return _cutDir;};
+
+  friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+
 private:
+  std::string _name;
+  std::string _expression;
+  double _minVal, _maxVal, _step;
+  std::string _cutDir;
+
 protected:
 };
 
@@ -54,21 +69,33 @@ public:
   //OptimizationRound(const OptimizationRound& other);
   //OptimizationRound& operator=(const OptimizationRound& rhs);
 
+  inline std::string& name(){return _name;};
+  inline std::string& ttree(){return _ttree;};
+  inline std::string& customExtension(){return _customExtension;};
+  inline std::string& baseSelection(){return _baseSelection;};
+  inline std::string& channel(){return _channel;};
+  inline double& iLumi(){return _iLumi;};
+  inline std::string& inDir(){return _inDir;};
+  inline std::string& jsonFile(){return _jsonFile;};
+  inline size_t nVars(){return _variables.size();};
+
   friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
 
 private:
-  std::string name;
-  std::string ttree;
-  std::string customExtension;
-  std::string baseSelection;
-  std::string channel;
-  std::vector<OptimizationVariable> variables;
-  double iLumi;
-  std::string inDir;
-  std::string jsonFile;
+  static size_t _counter;
+  std::string _name;
+  std::string _ttree;
+  std::string _customExtension;
+  std::string _baseSelection;
+  std::string _channel;
+  std::vector<OptimizationVariable> _variables;
+  double      _iLumi;
+  std::string _inDir;
+  std::string _jsonFile;
 
 protected:
 };
+size_t OptimizationRound::_counter = 0;
 
 
 std::unordered_map<std::string,bool> FileExists;
@@ -83,11 +110,8 @@ std::unordered_map<std::string,bool> FileExists;
 
 int main(int argc, char** argv)
 {
-  double iLumi = 0;
   std::string jsonFile;
-  std::string inDir;
   std::string outDir = "./OUT/";
-//  std::string cutVars;
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
@@ -108,58 +132,44 @@ int main(int argc, char** argv)
       ++i;
     }
 
-//    if(arg.find("--iLumi") != std::string::npos)
-//    {
-//      std::stringstream converter(argv[i+1]);
-//      converter >> iLumi;
-//      if(converter.fail())
-//      {
-//        std::cout << "The integrated luminosity should be a number." << std::endl;
-//        std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
-//        return 2;
-//      }
-//      if(iLumi <= 0)
-//      {
-//        std::cout << "You should give a positive, non-zero, integrated luminosity." << std::endl;
-//        std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
-//        return 1;
-//      }
-//      ++i;
-//    }
-
-//    if(arg.find("--inDir") != std::string::npos)
-//    {
-//      inDir = argv[i+1];
-//      // TODO: Check if input directory exists
-//      ++i;
-//    }
-
     if(arg.find("--outDir") != std::string::npos)
     {
       outDir = argv[i+1];
       ++i;
     }
-
-/*    if(arg.find("--cutVars") != std::string::npos)
-    {
-      cutVars = argv[i+1];
-      // TODO: Check if file exists
-      ++i;
-    }*/
   }
 
-  if(jsonFile == "")// || cutVars == "")
+  if(jsonFile == "")
   {
-    std::cout << "You should define at least the following arguments: json" << std::endl; //iLumi, json, inDir" << std::endl;//, cutVars" << std::endl;
+    std::cout << "You should define at least the following arguments: json" << std::endl;
     std::cout << "For more information, consult the help (\"runCutOptimizer --help\")" << std::endl;
     return 2;
   }
 
-//  std::cout << "Running for an inntegrated luminosity of " << iLumi << ", using the samples defined in " << jsonFile << " from " << inDir << " directory" << std::endl;
-
   system(("mkdir -p " + outDir).c_str());
 
   JSONWrapper::Object json(jsonFile, true);
+
+  std::vector<OptimizationRound> rounds = getRoundsFromJSON(json);
+
+  for(auto round = rounds.begin(); round != rounds.end(); ++round)
+  {
+    if(round->nVars() == 0)
+    {
+      std::cout << "There are no variables to optimize cuts on, continuing." << std::endl;
+      continue;
+    }
+    std::cout << "Processing round: " << round->name() << std::endl;
+    std::cout << "\tReading from " << round->jsonFile() << " and taking samples from " << round->inDir() << " directory." << std::endl;
+    std::cout << "\tUsing an integrated luminosity of " << round->iLumi() << "." << std::endl;
+    std::cout << "\tReading from ttree: " << round->ttree();
+    if(round->baseSelection() != "")
+      std::cout << ", with a base selection of \"" << round->baseSelection() << "\"";
+    if(round->channel() != "")
+      std::cout << " and performing cut optimization on the channel " << round->channel();
+    std::cout << "." << std::endl;
+    std::cout << "\tThere are " << round->nVars() << " variables to perform cut optimization on." << std::endl;
+  }
 
   // Eventually change this to get the tree name from the config, like that it will not necessarily have to be named events
 /*  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> BG_samples  = getChainsFromJSON(json, inDir, "BG");
@@ -173,24 +183,8 @@ int main(int argc, char** argv)
     {
       std::cout << "    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
     }
-  }
-  std::cout << "Found " << SIG_samples.size() << " signal processes:"     << std::endl;
-  for(auto process = SIG_samples.begin(); process != SIG_samples.end(); ++process)
-  {
-    std::cout << "  " << process->first << ":" << std::endl;
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      std::cout << "    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
-    }
-  }
+  }*/
 
-  if(SIG_samples.size() != 0 && BG_samples.size() != 0)
-  {
-    getRoundsFromJSON(json);
-  }
-  else
-    std::cout << "Either there were no signal processes or background processes defined, it is impossible to optimize cuts without either. PLease verify your JSON file." << std::endl;
-*/
   std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
   for(auto key = FileExists.begin(); key != FileExists.end(); ++key)
   {
@@ -201,14 +195,32 @@ int main(int argc, char** argv)
 
 OptimizationRound::OptimizationRound()
 {
+  std::stringstream buf;
+  buf << "Round_" << _counter;
+  buf >> _name;
+  _ttree           = "Events";
+  _customExtension = "";
+  _baseSelection   = "selected";
+  _channel         = "";
+  _iLumi           = 1;
+  _inDir           = "";
+  _jsonFile        = "";
+  ++_counter;
 }
 
 OptimizationRound::~OptimizationRound()
 {
+  _variables.clear();
 }
 
 OptimizationVariable::OptimizationVariable()
 {
+  _name = "";
+  _expression = "";
+  _minVal = 0;
+  _maxVal = 0;
+  _step = 0;
+  _cutDir = "below";
 }
 
 OptimizationVariable::~OptimizationVariable()
@@ -218,6 +230,82 @@ OptimizationVariable::~OptimizationVariable()
 std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
 {
   std::vector<OptimizationRound> retVal;
+
+  std::vector<JSONWrapper::Object> rounds = json["optim"].daughters();
+  for(auto round = rounds.begin(); round != rounds.end(); ++round)
+  {
+    OptimizationRound roundInfo;
+
+    std::string name = round->getString("name", "");
+    if(name != "")
+      roundInfo._name = name;
+    roundInfo._iLumi = round->getDouble("iLumi", 0);
+    if(roundInfo._iLumi <= 0)
+    {
+      std::cout << roundInfo._name << ": Integrated luminosity should be positive and non-zero. Continuing..." << std::endl;
+      continue;
+    }
+    roundInfo._inDir = round->getString("inDir", "");
+    if(roundInfo._inDir == "")
+    {
+      std::cout << roundInfo._name << ": Input directory should be defined in the json for the optimization round. Continuing..." << std::endl;
+      continue;
+    }
+    roundInfo._jsonFile = round->getString("jsonFile", "");
+    if(roundInfo._jsonFile == "")
+    {
+      std::cout << roundInfo._name << ": JSON file must be specified for optimization round in cut optimization JSON. Continuing..." << std::endl;
+      continue;
+    }
+
+    roundInfo._ttree = round->getString("ttree", roundInfo._ttree);
+    roundInfo._customExtension = round->getString("customExtension", roundInfo._customExtension);
+    roundInfo._baseSelection = round->getString("baseSelection", roundInfo._baseSelection);
+    roundInfo._channel = round->getString("channel", roundInfo._channel);
+
+    auto variables = (*round)["variables"].daughters();
+    for(auto variable = variables.begin(); variable != variables.end(); ++variable)
+    {
+      OptimizationVariable variableInfo;
+
+      variableInfo._name = variable->getString("name", "");
+      if(variableInfo._name == "")
+      {
+        std::cout << roundInfo._name << ": All variables must have names. Continuing..." << std::endl;
+        continue;
+      }
+      variableInfo._expression = variable->getString("expression", "");
+      if(variableInfo._expression == "")
+      {
+        std::cout << roundInfo._name << "::" << variableInfo._name << ": This variable must have an expression, it must be a valid root expression. Continuing..." << std::endl;
+        continue;
+      }
+      variableInfo._minVal = variable->getDouble("minVal", 0);
+      variableInfo._maxVal = variable->getDouble("maxVal", 0);
+      if(variableInfo._maxVal - variableInfo._minVal <= 0)
+      {
+        std::cout << roundInfo._name << "::" << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
+        continue;
+      }
+      variableInfo._step = variable->getDouble("step", 0);
+      if(variableInfo._step <= 0 || variableInfo._step > variableInfo._maxVal - variableInfo._minVal)
+      {
+        std::cout << roundInfo._name << "::" << variableInfo._name << ": step must be a resonable and valid value. Continuing..." << std::endl;
+        continue;
+      }
+      variableInfo._cutDir = variable->getString("cutDir", "below");
+      std::transform(variableInfo._cutDir.begin(), variableInfo._cutDir.end(), variableInfo._cutDir.begin(), ::tolower);
+      if(variableInfo._cutDir != "below" && variableInfo._cutDir != "above")
+      {
+        std::cout << roundInfo._name << "::" << variableInfo._name << ": the cut direction (cutDir) must be either below or above. Continuing..." << std::endl;
+        continue;
+      }
+
+      roundInfo._variables.push_back(variableInfo);
+    }
+
+    retVal.push_back(roundInfo);
+  }
 
   return retVal;
 }
@@ -316,12 +404,8 @@ void printHelp()
   std::cout << "runCutOptimizer help - There are the following options:" << std::endl << std::endl;
 
   std::cout << "--help    -->  Print this help message" << std::endl;
-  std::cout << "--json    -->  File with list of processes to include, follows the same conventions as other jsons in this framework" << std::endl;
-//  std::cout << "--iLumi   -->  Integrated luminosity to be used for the MC rescale, given in pb-1" << std::endl;
-//  std::cout << "--inDir   -->  Path to the directory containing the summary trees" << std::endl;
+  std::cout << "--json    -->  Configuration file for cut optimization, should define which files to run on, where they are located, the integrated luminosity and the variables to optimize the cuts on" << std::endl;
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
-//  std::cout << "--cutVars -->  File with list of variables with which to perform cut optimization. Check ... for an example syntax" << std::endl; // TODO, place her my example syntax
-// Moved cutVars to the json :D
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
