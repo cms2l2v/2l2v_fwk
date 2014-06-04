@@ -1001,7 +1001,7 @@ int main(int argc, char* argv[])
               {
                 mon.fillHisto("eventflow", chTags, 6, weight);
 
-            selected = false;
+            selected = true;
 
             mon.fillHisto("nvtx", chTags, nvtx, weight);
             mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
