@@ -97,7 +97,8 @@ process.noscraping = cms.EDFilter("FilterOutScraping",
 # optional MET filters
 # cf.https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters
 process.load('RecoMET.METFilters.metFilters_cff')
-process.hcalLaserEventFilter.taggingMode   = cms.bool(True)
+process.CSCTightHaloFilter.taggingMode      = cms.bool(True)
+process.hcalLaserEventFilter.taggingMode    = cms.bool(True)
 process.EcalDeadCellTriggerPrimitiveFilter.taggingMode=cms.bool(True)
 process.eeBadScFilter.taggingMode           = cms.bool(True)
 process.ecalLaserCorrFilter.taggingMode     = cms.bool(True)
@@ -110,13 +111,23 @@ process.toomanystripclus53X.forcedValue     = cms.untracked.bool(False)
 process.logErrorTooManyClusters.taggedMode  = cms.untracked.bool(True)
 process.logErrorTooManyClusters.forcedValue = cms.untracked.bool(False)  
 
-process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter*
+if(isFastSim):
+  process.metFilteringTaggers = cms.Sequence(process.CSCTightHaloFilter *
+                                           process.EcalDeadCellTriggerPrimitiveFilter *
+                                           process.eeBadScFilter *
+                                           process.ecalLaserCorrFilter *
+                                           process.goodVertices * process.trackingFailureFilter *
+                                           process.trkPOGFilters)
+else:
+  process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter *
+                                           process.CSCTightHaloFilter *
                                            process.hcalLaserEventFilter *
                                            process.EcalDeadCellTriggerPrimitiveFilter *
                                            process.eeBadScFilter *
                                            process.ecalLaserCorrFilter *
-                                           process.trackingFailureFilter *
+                                           process.goodVertices * process.trackingFailureFilter *
                                            process.trkPOGFilters)
+  
 
 
 
@@ -292,7 +303,22 @@ process.p            = cms.Path(
 
 
 process.out.fileName = cms.untracked.string("Events.root")
-process.out.outputCommands = cms.untracked.vstring('drop *', 
+if(isFastSim):
+  process.out.outputCommands = cms.untracked.vstring('drop *', 
+                                                   'keep *_llvv*_*_*', 
+                                                   'keep edmMergeableCounter_*_*_*', 
+                                                   'keep bool_*Filter_*_*',
+                                                   'keep double_kt6PFJets_rho_*',
+                                                   'keep double_kt6PFJetsCentral_rho_*',
+                                                   'keep *_lumiProducer_*_*',
+#                                                  'keep edmTriggerResults_TriggerResults_*_HLT',
+#                                                  'keep edmTriggerResults_TriggerResults_*_DataAna',
+#                                                  'keep GenEventInfoProduct_*_*_*',
+                                                   'keep LHEEventProduct_*_*_*',
+#                                                  'keep PileupSummaryInfos_*_*_*'                                                    
+                                                  )
+else:
+  process.out.outputCommands = cms.untracked.vstring('drop *', 
                                                    'keep *_llvv*_*_*', 
                                                    'keep edmMergeableCounter_*_*_*', 
                                                    'keep bool_*Filter_*_*',
