@@ -25,11 +25,13 @@
           "expression":"met.Et()",
           "comment":"the expression field should contain how the variable is calculated (once again, it must be a valid ROOT expression), at the moment, this is the only way of defining variables, thus it restricts us to either direct variables in the tree or variables with simple expressions obtained from those in the tree",
           "minVal":0,
-          "maxVal":500,
+          "maxVal":300,
           "step":5,
           "comment":"the fields minVal, maxVal and step, as their names imply, control how the scan itself is performed, they also control the ranges for the plots",
           "cutDir":"below",
-          "comment":"the cutDir field, controls the cut direction. ie if the cut is performed on values below or above the cut value"
+          "comment":"the cutDir field, controls the cut direction. ie if the cut is performed on values below or above the cut value",
+          "label":"MET",
+          "comment":"the label field holds the value that will be printed on the plots, ie it can contain valid LaTeX commands in root for nicer output"
         },
         {
           "name":"MT2",
@@ -37,7 +39,8 @@
           "minVal":0,
           "maxVal":500,
           "step":5,
-          "cutDir":"below"
+          "cutDir":"below",
+          "label":"M_{T2}"
         }
       ],
       "comment":"the variables field should contain the list of variables on which to perform optimization",
