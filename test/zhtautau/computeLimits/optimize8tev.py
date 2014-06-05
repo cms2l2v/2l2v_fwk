@@ -10,7 +10,7 @@ sys.path.append('../../../scripts/')
 import LaunchOnCondor
 
 #default values
-shapeName='svfit_shapes'
+shapeName='svfit_shapes '
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/plotter.root'
 CWD=os.getcwd()
 phase=-1
@@ -18,42 +18,39 @@ jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/jsonForLucia.json'
 CMSSW_BASE=os.environ.get('CMSSW_BASE')
 
 
-MASS = [90,100,110,120,125,130,140,150,160]
-SUBMASS = [90,100,110,120,125,130,140,150,160]
+MASS = [15,30,70]
+SUBMASS = [15,30,70]
 
-LandSArgCommonOptions=" "
+LandSArgCommonOptions=" --signalRescale 1000 "
 signalSuffixVec = []
 OUTName         = []
 LandSArgOptions = []
 
-signalSuffixVec += [""];
-OUTName         += ["SB8TeV_comb"]
-LandSArgOptions += [" --bins _elmu,_elha,_muha,_haha       --systpostfix _8TeV --shape "]
+#signalSuffixVec += [""];
+#OUTName         += ["SB8TeV_comb"]
+#LandSArgOptions += [" --bins _elmu,_elha,_muha,_haha       --systpostfix _8TeV"]# --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_elmu"]
-LandSArgOptions += [" --bins _elmu       --systpostfix _8TeV --shape "]
+LandSArgOptions += [" --bins _OSelmu       --systpostfix _8TeV"]# --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_elha"]
-LandSArgOptions += [" --bins _elha       --systpostfix _8TeV --shape "]
+LandSArgOptions += [" --bins _OSelha       --systpostfix _8TeV"]# --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_muha"]
-LandSArgOptions += [" --bins _muha       --systpostfix _8TeV --shape "]
+LandSArgOptions += [" --bins _OSmuha       --systpostfix _8TeV"]# --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_haha"]
-LandSArgOptions += [" --bins _haha       --systpostfix _8TeV --shape "]
-
-
+LandSArgOptions += [" --bins _OShaha       --systpostfix _8TeV"]# --shape "]
 
 FarmDirectory                      = "FARM"
 JobName                            = "computeLimits"
 LaunchOnCondor.Jobs_RunHere        = 1
 #LaunchOnCondor.Jobs_Queue          = opt.queue
 #LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
-LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
 
 
@@ -105,13 +102,12 @@ if(phase<0 or len(CMSSW_BASE)==0):
 
 
 #auxiliary function
-def findCutIndex(cutsH, cut1, cut2, cut3):
-   for i in range(1, cutsH.GetXaxis().GetNbins()):
-      if(cutsH.GetBinContent(i,1)<cut1-1):continue;
-#      if(cutsH.GetBinContent(i,2)<cut2-5):continue;
-#      if(cutsH.GetBinContent(i,3)<cut3-5):continue;
+def findCutIndex(cutsH, Gcut, m):
+   for i in range(1, cutsH.GetXaxis().GetNbins()+1):
+      for y in range(1, cutsH.GetYaxis().GetNbins()+1):
+         if(cutsH.GetBinContent(i,y)<Gcut[y-1].Eval(m,0,"")-0.000001):continue;
       return i;   
-   return cutsH.GetXaxis().GetNbins();
+   return cutsH.GetXaxis().GetNbins()+1;
 
 def findSideMassPoint(mass):
    global MASS
@@ -140,43 +136,43 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('VV/optim_cut') 
+   cutsH = file.Get('data/optim_cut') 
 
    ######################################################################
 
    if( phase == 1 ):
       print '# RUN LIMITS FOR ALL POSSIBLE CUTS  for ' + DataCardsDir + '#\n'
-      commandToRun = []
+      LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+OUTName[iConf])
 
       FILE = open(OUT+"/LIST.txt","w")
-      for i in range(1, cutsH.GetXaxis().GetNbins()):
-#         FILE.writelines("index="+str(i).rjust(5) + " --> cut>" + str(cuts1.GetBinContent(i)).rjust(5) + " " + str(mtmin_).rjust(5) + '<mt<'+str(mtmax_).rjust(5) + "\n")
-          #create wrappper script for each set of cuts ans submit it
-          mtmin_ = 0
-          mtmax_ = 9999
-          SCRIPT = open(OUT+'script_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.sh',"w")
-          SCRIPT.writelines('echo "TESTING SELECTION : ' + str(i).rjust(5) + ' --> met>' + str(cutsH.GetBinContent(i,1)).rjust(5) + ' ' + str(mtmin_) + '<mt<'+str(mtmax_)+'";\n')
+      i = 1
+      while (i<cutsH.GetXaxis().GetNbins()+1):                   
+#            FILE.writelines("index="+str(i).rjust(5) + " --> cut>" + str(cuts1.GetBinContent(i)).rjust(5) + " " + str(svfitmin_).rjust(5) + '<mt<'+str(svfitmax_).rjust(5) + "\n")
+             #create wrappper script for each set of cuts ans submit it
+          svfitmin_ = 0
+          svfitmax_ = 9999
+          SCRIPT = open(OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.sh',"w")
+          SCRIPT.writelines('echo "TESTING SELECTION : ' + str(i).rjust(5) + ' --> met>' + str(cutsH.GetBinContent(i,1)).rjust(5) + ' ' + str(svfitmin_) + '<mt<'+str(svfitmax_)+'";\n')
           SCRIPT.writelines('cd ' + CMSSW_BASE + '/src;\n')
           SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
           SCRIPT.writelines("eval `scram r -sh`;\n")
           SCRIPT.writelines('cd /tmp/;\n')
-          for m in MASS:
-             if(m!=125):continue
-             shapeBasedOpt=''
-             cardsdir = 'H'+ str(m);
-             SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
-             SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --rebin 2 --shapeMin " + str(mtmin_) + " --shapeMax " + str(mtmax_) + " " + LandSArg + " ;\n")
-             SCRIPT.writelines("sh combineCards.sh;\n")
-             SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > COMB.log;\n")
-             SCRIPT.writelines('tail -n 100 COMB.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+'.log;\n')
-             SCRIPT.writelines('cd ..;\n\n')
-             SCRIPT.close()
-             commandToRun.append("bsub -o /dev/null -G u_zh -q 8nh -J optim"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_) + " 'sh " + OUT+"script_"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+".sh &> "+OUT+"script_"+str(i)+'_'+str(mtmin_)+'_'+str(mtmax_)+".log'")
+          for j in range(0, 10): #always run 100points per jobs
+             #if(not i%100==0):continue         #just run 1 job over 100 for debugging
+             for m in MASS:
+                shapeBasedOpt=''
+                cardsdir = 'H'+ str(m);
+                SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
+                SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --shapeMin " + str(svfitmin_) + " --shapeMax " + str(svfitmax_) + " " + LandSArg + " ;\n")
+                SCRIPT.writelines("sh combineCards.sh;\n")
+                SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > COMB.log;\n")
+                SCRIPT.writelines('tail -n 100 COMB.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.log;\n')
+                SCRIPT.writelines('cd ..;\n\n')
+             i = i+1#increment the cut index
+          SCRIPT.close()
+          LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.sh &> '+OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.log'])
       FILE.close()
-
-      for c in commandToRun:
-         print(c)
-         os.system(c);
+      LaunchOnCondor.SendCluster_Submit()
 
          
    ######################################################################
@@ -186,7 +182,6 @@ for signalSuffix in signalSuffixVec :
       fileName = OUT + "/OPTIM" + signalSuffix
       FILE = open(fileName+".txt","w")
       for m in MASS:
-         if(m!=125):continue
          print 'Starting mass ' + str(m)
          FILE.writelines("------------------------------------------------------------------------------------\n")
          BestLimit = []
@@ -195,12 +190,17 @@ for signalSuffix in signalSuffixVec :
             exp = commands.getstatusoutput("cat " + f + " | grep \"Expected 50.0%\"")[1];
             if(len(exp)<=0):continue
             median = exp.split()[4]
+#            print 'median is ' + median
+	    if(median=='matches'):continue
             if(float(median)<=0.0):continue
             f = f.replace(".log","")
             fields = f.split('_')
             N = len(fields)
             index = fields[N-3] 
-            BestLimit.append("mH="+str(m)+ " --> " + ('%07.3f' % float(median)) + " " + str(index) + "  " + str(cutsH.GetBinContent(int(index),1)).rjust(5) + " " + str(cutsH.GetBinContent(int(index),2)).rjust(5) + "  " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
+            Cuts = ''
+            for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
+               Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
+            BestLimit.append("mH="+str(m)+ " --> Limit=" + ('%010.6f' % float(median)) + "  Cuts: " + Cuts + "   CutsOnShape: " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
 
          #sort the limits for this mass
          BestLimit.sort()
@@ -214,12 +214,12 @@ for signalSuffix in signalSuffixVec :
    ######################################################################
 
    elif(phase == 3 ):
-
       print '# FINAL LIMITS  for ' + DataCardsDir + '#\n'
-      Gmet  = ROOT.TGraph(len(SUBMASS));
-      Gtmin = ROOT.TGraph(len(SUBMASS));
-      Gtmax = ROOT.TGraph(len(SUBMASS));
-
+      Gcut  = []
+      for c in range(1, cutsH.GetYaxis().GetNbins()+1):
+         Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #add a graph for each cut
+      Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMin
+      Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax
 
       if(cutList=='') :
          fileName = OUT+"/OPTIM"+signalSuffix
@@ -229,62 +229,49 @@ for signalSuffix in signalSuffixVec :
          for m in MASS:
             #if you want to display more than 3 options edit -m3 field
             cut_lines=commands.getstatusoutput("cat " + fileName + " | grep 'mH="+str(m)+"' -m20")[1].split('\n')
-            print 'mH='+str(m)+'\tOption \tR \tmin MET\tMT range' 
+            print 'mH='+str(m)+'\tOption \tR \tLimits and Cuts' 
             ictr=1
-            for c in cut_lines:
-               print '\t #'+ str(ictr) + '\t' + c.split()[2] + '\t' + c.split()[4] + '\t(' + c.split()[5] + '-' + c.split()[6]+ ')'
+            for c in cut_lines: 
+               cplit = c.split()
+               #print '\t #'+ str(ictr) + '\t' + c
+               print '\t #'+ str(ictr) + '\t' + cplit[2] + '\t' + str(cplit[4:len(cplit)])
                ictr+=1
             print "Which option you want to keep?"
             opt = int(raw_input(">"))-1
 
             #save cut chosen
-            metCut=float(cut_lines[opt].split()[4])
-            mtMinCut=float(cut_lines[opt].split()[5])
-            mtMaxCut=float(cut_lines[opt].split()[6])
-            Gmet .SetPoint(mi, m, metCut);
-            Gtmin.SetPoint(mi, m, mtMinCut);
-            Gtmax.SetPoint(mi, m, mtMaxCut);
+            cutString = ''
+            for c in range(1, cutsH.GetYaxis().GetNbins()+1):
+               cutString += str(cutsH.GetYaxis().GetBinLabel(c)) + cut_lines[opt].split()[4+(c-1)*2] + '\t'
+               Gcut[c-1].SetPoint(mi, m, float(cut_lines[opt].split()[4+(c-1)*2]) );
+            cutString += cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 3 ] + '<shape<' + cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 4] 
+            print cutString
+            Gcut[cutsH.GetYaxis().GetNbins()+0].SetPoint(mi, m, float(cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 3 ]) );
+            Gcut[cutsH.GetYaxis().GetNbins()+1].SetPoint(mi, m, float(cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 4 ]) );
             mi+=1
 
          #display cuts chosen
-         c1 = ROOT.TCanvas("c1", "c1",900,300);
-         ROOT.gROOT.SetStyle('Plain')
-         ROOT.gStyle.SetOptStat(False);
-
-         c1 = ROOT.TCanvas("c1", "c1",900,300);
-         c1.Divide(3);
-         c1.cd(1);
-         Gmet.SetMarkerStyle(20);
-         Gmet.SetTitle("MET");
-         Gmet.Draw("APC");
-         Gmet.GetXaxis().SetTitle("m_{H} (GeV/c^{2})");
-         Gmet.GetYaxis().SetTitle("met cut");
-
-         c1.cd(2);
-         Gtmin.SetMarkerStyle(20);
-         Gtmin.SetTitle("MT min");
-         Gtmin.Draw("APC");
-         Gtmin.GetXaxis().SetTitle("m_{H} (GeV/c^{2})");
-         Gtmin.GetYaxis().SetTitle("mt_{min} cut");
-
-         c1.cd(3);
-         Gtmax.SetMarkerStyle(20);
-         Gtmax.SetTitle("MT max");
-         Gtmax.Draw("APC");
-         Gtmax.GetXaxis().SetTitle("m_{H} (GeV/c^{2})");
-         Gtmax.GetYaxis().SetTitle("mt_{max} cut");
-         c1.cd(0);
-         c1.Update();
-         c1.SaveAs("OptimizedCuts.png")
-
-         Gmet.Set(mi);
-         Gtmin.Set(mi);
-         Gtmax.Set(mi);
+#         c1 = ROOT.TCanvas("c1", "c1",300*(cutsH.GetYaxis().GetNbins()+2),300);
+#         ROOT.gROOT.SetStyle('Plain')
+#         ROOT.gStyle.SetOptStat(False);
+#         c1.Divide(cutsH.GetYaxis().GetNbins()+2);
+         for c in range(1, cutsH.GetYaxis().GetNbins()+3):
+#            c1.cd(c);
+            Gcut[c-1].SetMarkerStyle(20);
+#            Gcut[c-1].Draw("APC");
+            Gcut[c-1].GetXaxis().SetTitle("m_{A} (GeV/c^{2})");
+            if(c<=cutsH.GetYaxis().GetNbins()+1):
+               Gcut[c-1].GetYaxis().SetTitle(str(cutsH.GetYaxis().GetBinLabel(c)));
+               Gcut[c-1].Set(mi);
+            else:
+               Gcut[c-1].GetYaxis().SetTitle("Shape");
+#         c1.cd(0);
+#         c1.Update();
+#         c1.SaveAs("OptimizedCuts.png")
 
          #run limits for the cuts chosen (for intermediate masses use spline interpolation)
          for m in SUBMASS:
-              index = findCutIndex(cutsH, Gmet.Eval(m,0,""), Gtmin.Eval(m,0,""),  Gtmax.Eval(m,0,""));
-      #        print("mH="+str(m).rjust(3)+ " met>"+str(cutsH.GetBinContent(index)).rjust(5) + " " + str(cuts2.GetBinContent(index)).rjust(5) + "<mt<"+str(cuts3.GetBinContent(index)).rjust(5) )
+              index = findCutIndex(cutsH, Gcut, m);
 
          while True:
               ans = raw_input('Use this fit and compute final limits? (y or n)\n')
@@ -297,21 +284,17 @@ for signalSuffix in signalSuffixVec :
          f= open(cutList,'r')
          for line in f :
             vals=line.split(' ')
-            Gmet .SetPoint(mi, float(vals[0]), float(vals[1]));
-            Gtmin.SetPoint(mi, float(vals[0]), float(vals[2]));
-            Gtmax.SetPoint(mi, float(vals[0]), 0);#float(vals[3]));
+            for c in range(1, cutsH.GetYaxis().GetNbins()+3):
+               Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c]));
             mi+=1
          f.close()
-         Gmet.Set(mi);
-         Gtmin.Set(mi);
-         Gtmax.Set(mi);
-
-
+         for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
 
       list = open(OUT+'list.txt',"w")
       listcuts = open(OUT+'cuts.txt',"w")
+      LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+OUTName[iConf])
       for m in SUBMASS:
-           index = 1;#findCutIndex(cutsH, Gmet.Eval(m,0,""), Gtmin.Eval(m,0,""), Gtmax.Eval(m,0,""));
+           index = findCutIndex(cutsH, Gcut, m);
            SCRIPT = open(OUT+'/script_mass_'+str(m)+'.sh',"w")
            SCRIPT.writelines('cd ' + CMSSW_BASE + ';\n')
            SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
@@ -323,13 +306,11 @@ for signalSuffix in signalSuffixVec :
            SideMasses = findSideMassPoint(m)
            if(not (SideMasses[0]==SideMasses[1])):
               #print "Side Mass for mass " + str(m) + " are " + str(SideMasses[0]) + " and " + str(SideMasses[1])
-              Lindex = findCutIndex(cutsH, Gmet.Eval(SideMasses[0],0,""), Gtmin.Eval(SideMasses[0],0,""),  Gtmax.Eval(SideMasses[0],0,""));
-              Rindex = findCutIndex(cutsH, Gmet.Eval(SideMasses[1],0,""), Gtmin.Eval(SideMasses[1],0,""),  Gtmax.Eval(SideMasses[1],0,""));
-              #print "cutIndex for sideBand are " + str(Lindex) + " and " + str(Rindex) 
+              Lindex = findCutIndex(cutsH, Gcut, SideMasses[0]);
+              Rindex = findCutIndex(cutsH, Gcut, SideMasses[1]);
               SideMassesArgs += "--mL " + str(SideMasses[0]) + " --mR " + str(SideMasses[1]) + " --indexL " + str(Lindex) +  " --indexR " + str(Rindex) + " "
 
-
-           cutStr = " --rebin 2 --shapeMin " + str(Gtmin.Eval(m,0,"")) +" --shapeMax " + str(Gtmax.Eval(m,0,""));
+           cutStr = " --rebin 2 --shapeMin " + str(Gcut[cutsH.GetYaxis().GetNbins()].Eval(m,0,"")) +" --shapeMax " + str(Gcut[cutsH.GetYaxis().GetNbins()+1].Eval(m,0,""));
            if(OUTName[iConf].find("SB")>=0):cutStr = " --rebin 8 "; #not cuts on the shape itself
            cutStr = " "
 
@@ -345,11 +326,14 @@ for signalSuffix in signalSuffixVec :
 
 	   LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_mass_'+str(m)+'.sh'])
 
-#           os.system("bsub -o /dev/null -G u_zh -q 8nh 'sh " + OUT+"script_mass_"+str(m)+".sh'")
            list.writelines('H'+str(m)+'_'+str(index)+'\n');
-           listcuts.writelines(str(m)+' ' + str(Gmet.Eval(m,0,"")) + ' ' + str(Gtmin.Eval(m,0,""))+' '+ str(Gtmax.Eval(m,0,"")) +'\n');
+           listcuts.writelines(str(m)+' ');
+           for c in range(1, cutsH.GetYaxis().GetNbins()+3):
+              listcuts.writelines(str(Gcut[c-1].Eval(m,0,""))+' ');
+           listcuts.writelines('\n');
       list.close();
       listcuts.close();
+      LaunchOnCondor.SendCluster_Submit()
 
    ######################################################################
 
@@ -368,5 +352,4 @@ for signalSuffix in signalSuffixVec :
    else:
       help()
 
-LaunchOnCondor.SendCluster_Submit()
 

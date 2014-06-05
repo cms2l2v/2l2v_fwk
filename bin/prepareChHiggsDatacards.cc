@@ -291,7 +291,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  TString histoName = ch;  if(!ch.IsNull()) histoName += "_"; histoName += histo+varName ;
 	  TH1F* hshape = (TH1F*) pdir->Get( histoName );
 	  if(hshape==0) continue;
-	  cout << "Hshape nbins: " << hshape->GetXaxis()->GetNbins() << endl;
+	  cout << "Process: " << proc << ", hshape nbins: " << hshape->GetXaxis()->GetNbins() << " for syst " << varName << endl;
 	  //project out required bins (set the others to 0)
 	  if(binsToProject.size()) {
 	    for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
@@ -784,6 +784,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
 		}
 	    }
+	    cout << "I arrive here" << endl;
 	    if(systIsValid) fprintf(pFile,"%s \n",systLine.Data());
 	  }
 	
