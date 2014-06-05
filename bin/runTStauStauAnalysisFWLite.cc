@@ -38,7 +38,6 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TEventList.h"
-#include "TROOT.h"
 #include "TNtuple.h"
 #include "TGraphErrors.h"
 
