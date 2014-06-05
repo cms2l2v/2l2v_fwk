@@ -3,6 +3,8 @@
 // <date>2014-06-02</date>
 // <summary>Script that runs an iterative cut optimization procedure. Cut values are scanned and the value with the maximum FOM is used.</summary>
 
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -11,23 +13,38 @@
 #include <cassert>
 #include <unordered_map>
 #include <algorithm>
+#include <cmath>
 
 #include "TROOT.h"
 #include "TFile.h"
 #include "TDirectory.h"
 #include "TChain.h"
 #include "TTree.h"
+#include "TCut.h"
+#include "TEventList.h"
+#include "TInterpreter.h"
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
+#include "UserCode/llvv_fwk/interface/llvvObjects.h"
+
+// Black magic code to get root to be able to read our custom classes
+//#pragma link C++ class llvvMet;
 
 // REMEMBER TO IGNORE ANY DATA DEFINED IN THE JSON, YOU SHOULD NEVER OPTIMIZE CUTS ON DATA
 // IT MIGHT BE OK TO USE THE DATA IF USING A METHOD WITH A DATA DRIVEN BACKGROUND ESTIMATION (CONFIRM THIS BEFORE USING IT HERE)
 
 class OptimizationRound;
 
+typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> fileChains;
+
 void printHelp();
-std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
+fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
 std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+double applyCut(fileChains files,  TCut cut, bool normalize = false);
 
 class OptimizationVariable
 {
@@ -46,6 +63,7 @@ public:
   inline double& maxVal(){return _maxVal;};
   inline double& step(){return _step;};
   inline std::string& cutDir(){return _cutDir;};
+  inline std::string& label(){return _label;};
 
   friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
 
@@ -54,6 +72,7 @@ private:
   std::string _expression;
   double _minVal, _maxVal, _step;
   std::string _cutDir;
+  std::string _label;
 
 protected:
 };
@@ -79,6 +98,11 @@ public:
   inline std::string& jsonFile(){return _jsonFile;};
   inline size_t nVars(){return _variables.size();};
 
+  std::vector<std::string> getListOfVariables();
+  std::unordered_map<std::string,std::string> getVariableExpressions();
+  std::unordered_map<std::string,std::unordered_map<std::string,double>> getVariableParameterMap();
+  std::unordered_map<std::string,std::string> getVariableLabels();
+
   friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
 
 private:
@@ -97,6 +121,14 @@ protected:
 };
 size_t OptimizationRound::_counter = 0;
 
+struct FOMInfo
+{
+  double FOM;
+  double err;
+  std::string var;
+  double cutVal;
+};
+
 
 std::unordered_map<std::string,bool> FileExists;
 
@@ -110,8 +142,14 @@ std::unordered_map<std::string,bool> FileExists;
 
 int main(int argc, char** argv)
 {
+  AutoLibraryLoader::enable();
+
   std::string jsonFile;
   std::string outDir = "./OUT/";
+  std::vector<std::string> plotExt;
+
+//  gInterpreter->GenerateDictionary("llvvMet", "");
+//  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
@@ -137,7 +175,15 @@ int main(int argc, char** argv)
       outDir = argv[i+1];
       ++i;
     }
+
+    if(arg.find("--plotExt") != std::string::npos)
+    {
+      plotExt.push_back(argv[i+1]);
+      ++i;
+    }
   }
+  if(plotExt.size() == 0)
+    plotExt.push_back(".png");
 
   if(jsonFile == "")
   {
@@ -202,6 +248,150 @@ int main(int argc, char** argv)
       std::cout << "\tIt doesn't make sense to perform cut optimization without any signal samples. Skipping this round of optimization, please check the file " << round->jsonFile() << "." << std::endl;
       continue;
     }
+
+    std::vector<std::pair<std::string,double>> cutValues;
+    FOMInfo highestFOM, previousFOM;
+    std::pair<std::string,double> highestCut;
+
+    highestFOM.FOM = 0;
+    highestFOM.err = 0;
+    highestFOM.var = "";
+    highestFOM.cutVal = 0;
+    previousFOM.FOM = 0;
+    previousFOM.err = 0;
+    previousFOM.var = "";
+    previousFOM.cutVal = 0;
+
+    std::vector<std::string> variables = round->getListOfVariables();
+    std::unordered_map<std::string,std::string> variableExpressions = round->getVariableExpressions();
+    std::unordered_map<std::string,std::unordered_map<std::string,double>> variableParameterMap = round->getVariableParameterMap();
+    std::unordered_map<std::string,std::string> variableLabels = round->getVariableLabels();
+
+    TCut baseSelection = round->baseSelection().c_str();
+    TCut cumulativeSelection = "";
+
+    TCanvas c1("c1", "c1", 800, 600);
+
+    bool improve = true;
+    int nPass = -1;
+    while(improve)
+    {
+      ++nPass;
+      highestFOM.FOM = 0;
+      std::cout << round->name() << ": Starting pass " << nPass << ", with " << variables.size() << " variables to optimize cuts on." << std::endl;
+
+      for(auto variableName = variables.begin(); variableName != variables.end(); ++variableName)
+      {
+        double minVal = variableParameterMap[*variableName]["minVal"];
+        double maxVal = variableParameterMap[*variableName]["maxVal"];
+        double step   = variableParameterMap[*variableName]["step"];
+        double cutDir = variableParameterMap[*variableName]["cutDir"];
+        std::cout << round->name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
+
+        std::vector<double> xVals, yVals, xValsErr, yValsErr;
+
+        for(double cutVal = minVal; cutVal <= maxVal; cutVal+=step)
+        {
+          std::string thisCutStr;
+          std::stringstream buf;
+          buf << variableExpressions[*variableName];
+          if(cutDir > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
+            buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
+          else
+            buf << ">";
+          buf << cutVal;
+          buf >> thisCutStr;
+          TCut thisCut = thisCutStr.c_str();
+
+          double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
+          double nSIG = applyCut(SIG_samples, (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
+          double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
+
+          if(nBG == 0)
+            continue;
+          double nBGErr = std::sqrt(nBG);
+          double nSIGErr = std::sqrt(nSIG);
+          double dividend = std::sqrt(nBG + (systErr*nBG)*(systErr*nBG));
+
+          double FOM    = nSIG/dividend;
+          double FOMErr = 0;
+          {
+            double SIGContrib = nSIGErr/dividend;
+            double BGContrib = nBGErr*nSIG*(1+2*systErr*systErr*nBG)/(2*dividend*dividend*dividend);
+            FOMErr = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
+          }
+
+          xVals.push_back(cutVal);
+          xValsErr.push_back(0);
+          yVals.push_back(FOM);
+          yValsErr.push_back(FOMErr);
+
+          if(FOM > highestFOM.FOM)
+          {
+            highestFOM.FOM = FOM;
+            highestFOM.err = FOMErr;
+            highestFOM.var = *variableName;
+            highestFOM.cutVal = cutVal;
+          }
+        }
+
+        TGraphErrors FOMGraph(xVals.size(), xVals.data(), yVals.data(), xValsErr.data(), yValsErr.data());
+        // http://root.cern.ch/root/html/TAttMarker.html
+        //FOMGraph.SetLineColor(2);
+        //FOMGraph.SetLineWidth(2);
+        //FOMGraph.SetMarkerColor(4);
+        //FOMGraph.SetMarkerStyle(21);
+        //http://root.cern.ch/root/html/TAttFill.html
+        //http://root.cern.ch/root/html/TColor.html
+        FOMGraph.SetFillColor(kBlue-9);
+        FOMGraph.SetFillStyle(3354);
+        FOMGraph.Draw("3A");
+        FOMGraph.Draw("same LP");
+        FOMGraph.GetXaxis()->SetTitle(variableLabels[*variableName].c_str());
+        FOMGraph.GetXaxis()->CenterTitle();
+        FOMGraph.GetYaxis()->SetTitle("FOM");
+
+        std::stringstream buf;
+        std::string plotName;
+        buf << outDir << "/";
+        buf << round->name() << "_Pass" << nPass << "_" << *variableName;
+        buf >> plotName;
+
+        for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
+          c1.SaveAs((plotName + *ext).c_str());
+      }
+
+      if(highestFOM.FOM == 0)
+        improve = false;
+      else
+      {
+        if(highestFOM.FOM - previousFOM.FOM > previousFOM.err)
+        {
+          //Add cut to list of selected cuts
+          previousFOM.FOM = highestFOM.FOM;
+          previousFOM.err = highestFOM.err;
+
+          std::stringstream buf;
+          std::string tempStr;
+          buf << variableExpressions[highestFOM.var];
+          if(variableParameterMap[highestFOM.var]["cutDir"] > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
+            buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
+          else
+            buf << ">";
+          buf << highestFOM.cutVal;
+          buf >> tempStr;
+          std::cout << "Adding cut: " << tempStr << std::endl;
+          TCut tempCut = tempStr.c_str();
+          cumulativeSelection = cumulativeSelection && tempCut;
+
+          auto newEnd = std::remove(variables.begin(), variables.end(), highestFOM.var);
+          variables.erase(newEnd, variables.end());
+        }
+        else
+          improve = false;
+      }
+    }
+    std::cout << round->name() << ": Chose the cuts - " << cumulativeSelection << std::endl;
     // ------------------------------------------------------------------------------------------------------------------------------------------------------
   }
 
@@ -233,6 +423,61 @@ OptimizationRound::~OptimizationRound()
   _variables.clear();
 }
 
+std::vector<std::string> OptimizationRound::getListOfVariables()
+{
+  std::vector<std::string> retVal;
+
+  for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
+    retVal.push_back(variable->name());
+
+  return retVal;
+}
+
+std::unordered_map<std::string,std::string> OptimizationRound::getVariableLabels()
+{
+  std::unordered_map<std::string,std::string> retVal;
+
+  for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
+  {
+    retVal[variable->name()] = variable->label();
+    if(retVal[variable->name()] == "")
+      retVal[variable->name()] = variable->name();
+  }
+
+  return retVal;
+}
+
+std::unordered_map<std::string,std::unordered_map<std::string,double>> OptimizationRound::getVariableParameterMap()
+{
+  std::unordered_map<std::string,std::unordered_map<std::string,double>> retVal;
+
+  for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
+  {
+    std::unordered_map<std::string,double> tempVal;
+
+    tempVal["minVal"] = variable->minVal();
+    tempVal["maxVal"] = variable->maxVal();
+    tempVal["step"]   = variable->step();
+    tempVal["cutDir"] = (variable->cutDir()=="below")?-1:1;
+
+    retVal[variable->name()] = tempVal;
+  }
+
+  return retVal;
+}
+
+std::unordered_map<std::string,std::string> OptimizationRound::getVariableExpressions()
+{
+  std::unordered_map<std::string,std::string> retVal;
+
+  for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
+  {
+    retVal[variable->name()] = variable->expression();
+  }
+
+  return retVal;
+}
+
 OptimizationVariable::OptimizationVariable()
 {
   _name = "";
@@ -245,6 +490,40 @@ OptimizationVariable::OptimizationVariable()
 
 OptimizationVariable::~OptimizationVariable()
 {
+}
+
+double applyCut(fileChains files,  TCut cut, bool normalize)
+{
+  gROOT->cd();
+  double retVal = 0;
+
+  for(auto process = files.begin(); process != files.end(); ++process)
+  {
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      if(sample->first == 0)
+        continue;
+      TEventList selectedEvents("selectedList");
+      sample->second->Draw(">>selectedList", cut, "goff");
+
+      double weight = 0;
+      double count = 0;
+      sample->second->SetBranchAddress("weight", &weight);
+
+      for(auto index = selectedEvents.GetN()-1; index >= 0; --index)
+      {
+        Long64_t entry = selectedEvents.GetEntry(index);
+        sample->second->GetEntry(entry);
+        count += weight;
+      }
+      sample->second->ResetBranchAddresses();
+
+      count = count/sample->first;
+      retVal += count;
+    }
+  }
+
+  return retVal;
 }
 
 std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
@@ -320,6 +599,7 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
         std::cout << roundInfo._name << "::" << variableInfo._name << ": the cut direction (cutDir) must be either below or above. Continuing..." << std::endl;
         continue;
       }
+      variableInfo._label = variable->getString("label", "");
 
       roundInfo._variables.push_back(variableInfo);
     }
@@ -330,7 +610,7 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
   return retVal;
 }
 
-std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
+fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
 {
   std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> retVal;
   std::pair<std::string,std::vector<std::pair<int,TChain*>>> tempProcess;
@@ -423,6 +703,7 @@ void printHelp()
   std::cout << "--help    -->  Print this help message" << std::endl;
   std::cout << "--json    -->  Configuration file for cut optimization, should define which files to run on, where they are located, the integrated luminosity and the variables to optimize the cuts on" << std::endl;
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
+  std::cout << "--plotExt -->  Extension format with which to save the plots, repeat this command if multiple formats are desired" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
