@@ -1,9 +1,9 @@
 import os,sys
 
-isMC=False
-isFastSim=False
+isMC=True
+isFastSim=True
 isTauEmbed=False
-gtag="FT_53_V21_AN4::All"
+gtag="START53_V23::All"
 
 from UserCode.llvv_fwk.storeTools_cff import configureSourceFromCommandLine
 outFile, inputList = configureSourceFromCommandLine()
