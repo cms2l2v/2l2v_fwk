@@ -25,7 +25,9 @@ source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh
 ```
 
 ##### Job creation and submission
-In a first step, the jobs should be created, using the command `multicrab -create` inside each subdirectory can achieve this.
+In a first step, the cmssw config files should be created and placed in their respective places. In the parent directory to this one, there should be a set of files named runObjectProducer_*_cfg.py. For each of these files, the following command should be run `edmDumpConfig runObjectProducer_*_cfg.py >> grid_*/runObjectProducer_*_cfg.py`. Nb: The data object producer should be placed in the "grid_data" folder, the mc object producer should be placed in the "grid_mc" folder and the "grid_signal" folder and the fastsim object producer should be placed in the "grid_signal" folder.
+
+Next, the jobs should be created, using the command `multicrab -create` inside each subdirectory can achieve this.
 In order to start running the jobs, they must be submitted to the GRID, this can be done either with the command `multicrab -submit`, which will submit all jobs of all datasets in one go, or it can be done with the command `crab -submit -c [DIR]`, where DIR is the directory created for one of the datasets, this will only submit the jobs for that dataset. (Notice that if a certain dataset has more than 500 jobs, the jobs should be split in groups of 500  and each group submitted independently, either for the `multicrab` or the `crab` command, ie: `crab -submit 1-500 -c [DIR]` for the first 500 jobs)
 The jobs should be monitored regularly to insure everything is running fine, use the commands `multicrab -status` or `crab -status -c [DIR]` (depending on if you want to check on all or just one of the datasets) to get the status of the jobs.
 Jobs that have terminated successfully will have a status of 0, other statuses, generally indicate an error and can normally be recovered by resubmitting.
