@@ -377,7 +377,8 @@ int main(int argc, char* argv[])
 	for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
 	{
 		Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-		mon.addHistogram( new TH2F (TString("svfit_shapes")+varNames[ivar],";cut index;|M_{A}|;Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),25,0,250) );
+		mon.addHistogram( new TH2F (TString("svfit_shapes")+varNames[ivar],";cut index;|M_{A}|;Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),30,0,150) );
+		mon.addHistogram( new TH2F (TString("Hsvfit_shapes")+varNames[ivar],";cut index;|M_{A}|;Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),50,0,500) );
 		mon.addHistogram( new TH2F (TString("FR_closestJetPt")+varNames[ivar],";cut index;jet p_{T} (GeV);Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),15,0,150) );
 	}
 
@@ -1100,7 +1101,8 @@ int main(int argc, char* argv[])
                           bool passHiggs = passHiggsCuts(selLeptons, rho, higgsCandId, higgsCandL1, higgsCandL2, optim_Cuts_elIso[index], optim_Cuts_muIso[index], (float)optim_Cuts_taIso[index], optim_Cuts_sumPt[index]);
 		          if(passHiggs){
                                 treeCutIndex = index;
-				mon.fillHisto(TString("svfit_shapes")+varNames[ivar],locTags,index,higgsCandH_SVFit.mass(),iweight);
+				mon.fillHisto(TString("svfit_shapes")+varNames[ivar],locTags,index,higgsCand_SVFit.mass(),iweight);
+				mon.fillHisto(TString("Hsvfit_shapes")+varNames[ivar],locTags,index,higgsCandH_SVFit.mass(),iweight);
 				mon.fillHisto(TString("FR_closestJetPt")+varNames[ivar],locTags,index,pTL1,iweight);
                                 mon.fillHisto(TString("FR_closestJetPt")+varNames[ivar],locTags,index,pTL2,iweight);
                                 if(ivar==0 && tree)tree->Fill();
