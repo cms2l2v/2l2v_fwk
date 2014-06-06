@@ -903,8 +903,8 @@ int main(int argc, char* argv[])
    	      chTagsMain.push_back(chTagsMain[chTagsMain.size()-1] + signName + ChannelName); 
 
               //reweight the event to account for lept eff.
-              if(isMC && abs(selLeptons[higgsCandL1].id)<15)weight *= lepEff.getLeptonEfficiency( selLeptons[higgsCandL1].pt(), selLeptons[higgsCandL1].eta(), abs(selLeptons[higgsCandL1].id), abs(selLeptons[higgsCandL1].id) ==11 ? "loose" : "loose" ).first;
-              if(isMC && abs(selLeptons[higgsCandL2].id)<15)weight *= lepEff.getLeptonEfficiency( selLeptons[higgsCandL2].pt(), selLeptons[higgsCandL2].eta(), abs(selLeptons[higgsCandL2].id), abs(selLeptons[higgsCandL2].id) ==11 ? "loose" : "loose" ).first;
+              if(isMC && higgsCandL1>=0 && abs(selLeptons[higgsCandL1].id)<15)weight *= lepEff.getLeptonEfficiency( selLeptons[higgsCandL1].pt(), selLeptons[higgsCandL1].eta(), abs(selLeptons[higgsCandL1].id), abs(selLeptons[higgsCandL1].id) ==11 ? "loose" : "loose" ).first;
+              if(isMC && higgsCandL2>=0 && abs(selLeptons[higgsCandL2].id)<15)weight *= lepEff.getLeptonEfficiency( selLeptons[higgsCandL2].pt(), selLeptons[higgsCandL2].eta(), abs(selLeptons[higgsCandL2].id), abs(selLeptons[higgsCandL2].id) ==11 ? "loose" : "loose" ).first;
 
               //check if the pair pass Lepton Veto
               bool passLepVetoMain = true;
