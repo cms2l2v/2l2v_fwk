@@ -282,7 +282,8 @@ process.p            = cms.Path(
                       *process.metFilteringTaggers
 		      *process.metCounter
                       *process.eidMVASequence
-                      *process.produceAndDiscriminateBoostedHPSPFTaus
+                      *process.boostedTauPreSequence
+#                      *process.produceAndDiscriminateBoostedHPSPFTaus
                       *getattr(process,"PFTau"+boostedtaupostfix) # run boosted tau producer
                       *getattr(process,"patPF2PATSequence"+postfix)
 #                      *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
