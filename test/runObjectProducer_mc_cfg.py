@@ -1,6 +1,7 @@
 import os,sys
 
 isMC=True
+isFastSim=False
 isTauEmbed=False
 gtag="START53_V23::All"
 

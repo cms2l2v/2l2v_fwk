@@ -260,6 +260,7 @@ elif [ "${1}" = "current" ]; then
 #	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb5/ 
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb30_fy_x10.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow_tanb30.root --noPlot --noPowers   --only evtflow
 	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb30/ 
+	
 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow.root --noPlot --noPowers --only finalevtflow2btags
 	
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
@@ -279,7 +280,7 @@ elif [ "${1}" = "current" ]; then
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/400
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/500
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/600
- 
+ 	
 	  for i in 180 200 220 250 300 400 500 600 
 	    do
 #	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
