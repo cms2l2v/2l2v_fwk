@@ -112,12 +112,10 @@ process.logErrorTooManyClusters.taggedMode  = cms.untracked.bool(True)
 process.logErrorTooManyClusters.forcedValue = cms.untracked.bool(False)  
 
 if(isFastSim):
-  process.metFilteringTaggers = cms.Sequence(process.CSCTightHaloFilter *
-                                           process.EcalDeadCellTriggerPrimitiveFilter *
+  process.metFilteringTaggers = cms.Sequence(process.EcalDeadCellTriggerPrimitiveFilter *
                                            process.eeBadScFilter *
                                            process.ecalLaserCorrFilter *
-                                           process.goodVertices * process.trackingFailureFilter *
-                                           process.trkPOGFilters)
+                                           process.goodVertices * process.trackingFailureFilter)
 else:
   process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter *
                                            process.CSCTightHaloFilter *
