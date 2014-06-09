@@ -1079,7 +1079,7 @@
     {
       "tag":"MC8TeV_TStauStau",
       "data":[
-        { "dtag":"MC8TeV_TStauStau"                        , "split":4, "xsec":1        , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM" }
+        { "dtag":"MC8TeV_TStauStau"                        , "isfastsim":1 , "split":4, "xsec":1        , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM" }
       ]
     }
   ]

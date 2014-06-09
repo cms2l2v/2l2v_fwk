@@ -22,9 +22,10 @@ struct datasetinfo{std::map<string, string> prop;
       if(prop["xsec" ]=="")prop["xsec" ]="1.0";
       if(prop["br"   ]=="")prop["br"   ]="[1.0]";
       if(prop["split"]=="")prop["split"]="1";
-      if(isdata) prop["isdata"] = "true";         
+      if(prop["isfastsim"]=="")prop["isfastsim"]="0";
+      if(isdata) prop["isdata"] = "true";
    };
-}; 
+};
 
 
 JSONWrapper::Object merge_json(std::vector<std::string> jsonFiles){
@@ -121,6 +122,9 @@ void make_multicrab_cfg(JSONWrapper::Object& Root, bool forData){
 
           fprintf(pFile, "[%s]\n",Samples[id].getString("dtag").c_str());
           fprintf(pFile, "CMSSW.datasetpath     = %s\n", Samples[id].getString("dset", "").c_str());
+          if(Samples[id].isTag("isfastsim"))
+            if(Samples[id].getInt("isfastsim") != 0)
+              fprintf(pFile, "CMSSW.pset            = runObjectProducer_fastsim_cfg.py\n");
           if(Samples[id].isTag("dbsurl"))
           fprintf(pFile, "CMSSW.dbs_url         = %s\n", Samples[id].getString("dbsurl", "").c_str());
           fprintf(pFile, "\n");
