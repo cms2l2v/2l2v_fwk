@@ -83,63 +83,112 @@ void plotPerCategory(){
    TLegend* LEG, *LEGTH;
    TGraph* Ref;
 
-   string Directories[]={"cards_CCComb", "cards_SBComb"};
-   for(unsigned int D=0;D<sizeof(Directories)/sizeof(string);D++){
-      string Dir = Directories[D];
+   if(true){ 
+      string Dir1 = "cards_SB8TeV_comb/";
+      string Dir2 = "../computeLimitsOLD/cards_SB8TeV_comb/";
+//      string Dir2 = "cards_CC8TeV_comb/";
+
 
       c1 = new TCanvas("c", "c",600,600);
       c1->SetLogy(true);
-      framework = new TH1F("Graph","Graph",1,150,1050);
+      framework = new TH1F("Graph","Graph",1,15,70);
       framework->SetStats(false);
       framework->SetTitle("");
-      framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
+      framework->GetXaxis()->SetTitle("A boson mass [GeV]");
       framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-      framework->GetYaxis()->SetTitleOffset(1.40);
-      framework->GetYaxis()->SetRangeUser(1E-1,100);
+      framework->GetYaxis()->SetTitleOffset(.40);
+      framework->GetYaxis()->SetRangeUser(9E-2,5E1);
       framework->Draw();
 
       LEG = new TLegend(0.70,0.70,0.95,0.94);
       LEG->SetFillStyle(0);
       LEG->SetBorderSize(0);
-//      LEG->SetHeader("Expected @95% C.L.");
 
       LEGTH = new TLegend(0.45,0.70,0.70,0.94);
       LEGTH->SetFillStyle(0);
       LEGTH->SetBorderSize(0);
       LEGTH->SetHeader("Theoretical");
 
-      getGraph("Combined"                     , 1, 2, 2, NULL  , NULL, 1, Dir+     "/Stength_LimitSummary")->Draw("C same");
-      getGraph("=0 Jet"                       , 2, 1, 2, NULL  , NULL, 1, Dir+"_CAT1/Stength_LimitSummary")->Draw("C same");
-      getGraph("#geq1 Jets"                   , 4, 1, 2, NULL  , NULL, 1, Dir+"_CAT2/Stength_LimitSummary")->Draw("C same");
-      getGraph("VBF"                          , 6, 1, 2, NULL  , NULL, 1, Dir+"_CAT3/Stength_LimitSummary")->Draw("C same");
-
-      getGraph("Combined"                     , 1, 3, 1, LEG  , NULL, 2, Dir+     "/Stength_LimitSummary")->Draw("C same");
-      getGraph("=0 Jet"                       , 2, 2, 1, LEG  , NULL, 2, Dir+"_CAT1/Stength_LimitSummary")->Draw("C same");
-      getGraph("#geq1 Jets"                   , 4, 2, 1, LEG  , NULL, 2, Dir+"_CAT2/Stength_LimitSummary")->Draw("C same");
-      getGraph("VBF"                          , 6, 2, 1, LEG  , NULL, 2, Dir+"_CAT3/Stength_LimitSummary")->Draw("C same");
+      getGraph("w/  boosted taus"  , 1, 3, 1, LEG  , NULL, 1, Dir1+"/Stength_LimitSummary")->Draw("C same");
+      getGraph("w/o boosted taus"  , 2, 2, 1, LEG  , NULL, 1, Dir2+"/Stength_LimitSummary")->Draw("C same");
 
    //   LEGTH->Draw("same");
       LEG  ->Draw("same");
 
-      char LumiLabel[1024];
-      sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}, #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}",7.0,5.0,8.0,19.7);
-      TPaveText *pave = new TPaveText(0.1,0.96,0.94,0.99,"NDC");
-      pave->SetBorderSize(0);
-      pave->SetFillStyle(0);
-      pave->SetTextAlign(32);
-      pave->SetTextFont(42);
-      pave->AddText(LumiLabel);
-      pave->Draw("same");
+//      char LumiLabel[1024];
+//      sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}, #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}",7.0,5.0,8.0,19.7);
+//      TPaveText *pave = new TPaveText(0.1,0.96,0.94,0.99,"NDC");
+//      pave->SetBorderSize(0);
+//      pave->SetFillStyle(0);
+//      pave->SetTextAlign(32);
+//      pave->SetTextFont(42);
+//      pave->AddText(LumiLabel);
+//      pave->Draw("same");
 
       TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
       SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      
       SMLine->Draw("same C");
 
 
-      c1->SaveAs((Dir+"/perCat_FinalPlot.png").c_str());
-      c1->SaveAs((Dir+"/perCat_FinalPlot.pdf").c_str());
-      c1->SaveAs((Dir+"/perCat_FinalPlot.C"  ).c_str());
+      c1->SaveAs((Dir1+"/compa_FinalPlot.png").c_str());
+//      c1->SaveAs((Dir1+"/perCat_FinalPlot.pdf").c_str());
+//      c1->SaveAs((Dir1+"/perCat_FinalPlot.C"  ).c_str());
    }
+
+
+
+   if(true){ 
+      string Dir1 = "cards_SB8TeV_";
+
+      c1 = new TCanvas("c", "c",600,600);
+      c1->SetLogy(true);
+      framework = new TH1F("Graph","Graph",1,15,70);
+      framework->SetStats(false);
+      framework->SetTitle("");
+      framework->GetXaxis()->SetTitle("A boson mass [GeV]");
+      framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
+      framework->GetYaxis()->SetTitleOffset(.40);
+      framework->GetYaxis()->SetRangeUser(9E-2,5E1);
+      framework->Draw();
+
+      LEG = new TLegend(0.70,0.70,0.95,0.94);
+      LEG->SetFillStyle(0);
+      LEG->SetBorderSize(0);
+
+      LEGTH = new TLegend(0.45,0.70,0.70,0.94);
+      LEGTH->SetFillStyle(0);
+      LEGTH->SetBorderSize(0);
+      LEGTH->SetHeader("Theoretical");
+
+      getGraph("Combined"                  , 1, 3, 1, LEG  , NULL, 1, Dir1+"comb/Stength_LimitSummary")->Draw("L same");
+      getGraph("e #mu"                     , 4, 2, 1, LEG  , NULL, 1, Dir1+"elmu/Stength_LimitSummary")->Draw("L same");
+      getGraph("e #tau"                    , 2, 2, 1, LEG  , NULL, 1, Dir1+"elha/Stength_LimitSummary")->Draw("L same");
+      getGraph("#mu #tau"                  , 8, 2, 1, LEG  , NULL, 1, Dir1+"muha/Stength_LimitSummary")->Draw("L same");
+      getGraph("#tau #tau"                 , 6, 2, 1, LEG  , NULL, 1, Dir1+"haha/Stength_LimitSummary")->Draw("L same");
+
+   //   LEGTH->Draw("same");
+      LEG  ->Draw("same");
+
+//      char LumiLabel[1024];
+//      sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}, #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}",7.0,5.0,8.0,19.7);
+//      TPaveText *pave = new TPaveText(0.1,0.96,0.94,0.99,"NDC");
+//      pave->SetBorderSize(0);
+//      pave->SetFillStyle(0);
+//      pave->SetTextAlign(32);
+//      pave->SetTextFont(42);
+//      pave->AddText(LumiLabel);
+//      pave->Draw("same");
+
+      TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
+      SMLine->SetLineWidth(2); SMLine->SetLineStyle(2); SMLine->SetLineColor(1);      
+      SMLine->Draw("same C");
+
+
+      c1->SaveAs((Dir1+"comb/perCat_FinalPlot.png").c_str());
+//      c1->SaveAs((Dir1+"comb/perCat_FinalPlot.pdf").c_str());
+//      c1->SaveAs((Dir1+"comb/perCat_FinalPlot.C"  ).c_str());
+   }
+
 }
 
 

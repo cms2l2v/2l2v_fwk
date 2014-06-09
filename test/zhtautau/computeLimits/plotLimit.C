@@ -200,14 +200,14 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
     
   //limits in terms of signal strength
   TCanvas* c = new TCanvas("c", "c",600,600);
-  TH1F* framework = new TH1F("Graph","Graph",1,90,160);
+  TH1F* framework = new TH1F("Graph","Graph",1,15,70);
   framework->SetStats(false);
   framework->SetTitle("");
-  framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
+  framework->GetXaxis()->SetTitle("A boson mass [GeV]");
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-  framework->GetYaxis()->SetRangeUser(9E-1,1E3);
+  framework->GetYaxis()->SetRangeUser(5E-2,5E1);
   c->SetLogy(true);
   }else{
   framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
@@ -257,12 +257,12 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
 
 
   TLegend* LEG = new TLegend(0.55,0.75,0.85,0.95);
-  LEG->SetHeader("");
+  LEG->SetHeader("Signal XSec x 1000");
   LEG->SetFillColor(0);
   LEG->SetFillStyle(0);
   LEG->SetTextFont(42);
   LEG->SetBorderSize(0);
-  LEG->AddEntry(THXSec  , "SM prediction"  ,"L");
+  LEG->AddEntry(THXSec  , "TH prediction"  ,"L");
   LEG->AddEntry(TGExpLimit  , "median expected"  ,"L");
   LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
   LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");

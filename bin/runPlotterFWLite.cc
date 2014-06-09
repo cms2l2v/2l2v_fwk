@@ -1043,7 +1043,7 @@ int main(int argc, char* argv[]){
       
        if(StoreInFile && do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,*it, OutputFile); }
        if(StoreInFile && do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,*it, OutputFile); }
-//       if(StoreInFile && it->isTree()){                                         SavingTreeToFile(Root,inDir,*it, OutputFile); }
+       if(StoreInFile && it->isTree()){                                         SavingTreeToFile(Root,inDir,*it, OutputFile); }
      }printf("\n");
    if(StoreInFile) OutputFile->Close();
    

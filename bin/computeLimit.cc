@@ -54,7 +54,7 @@ TString postfix="";
 TString systpostfix="";
 bool runSystematics = false; 
 std::vector<TString> Channels;
-std::vector<TString> AnalysisBins;
+std::vector<string> AnalysisBins;
 double DDRescale = 1.0;
 TString DYFile ="";
 
@@ -85,8 +85,16 @@ bool doInclusive=false;
 bool dirtyFix1 = false;
 bool dirtyFix2 = false;
 
+std::vector<int> indexcutV;
+std::vector<int> indexcutVL;
+std::vector<int> indexcutVR;
+
+std::map<string, int> indexcutM;
+std::map<string, int> indexcutML;
+std::map<string, int> indexcutMR;
+
+
 int indexvbf = -1;
-int indexcut   = -1, indexcutL=-1, indexcutR=-1;
 int massL=-1, massR=-1;
 
 void setTGraph(TString proc, TString suffix);
@@ -100,6 +108,7 @@ TGraph *    TG_xsec=NULL, *    TG_errp=NULL, *    TG_errm=NULL, *    TG_scap=NUL
 TGraph* TG_QCDScaleK0ggH0=NULL, *TG_QCDScaleK0ggH1=NULL, *TG_QCDScaleK1ggH1=NULL, *TG_QCDScaleK1ggH2=NULL, *TG_QCDScaleK2ggH2=NULL;
 TGraph* TG_UEPSf0=NULL, *TG_UEPSf1=NULL, *TG_UEPSf2=NULL;
 
+double dropBckgBelow=0.01;
 
 
 //wrapper for a projected shape for a given proc
@@ -280,9 +289,9 @@ void printHelp()
   printf("--shapeMinVBF  --> left cut to apply on the shape histogram for Vbf bin\n");
   printf("--shapeMaxVBF  --> right cut to apply on the shape histogram for Vbf bin\n");
   printf("--indexvbf  --> index of selection to be used for the vbf bin (if unspecified same as --index)\n");
-  printf("--index     --> index of selection to be used (Xbin in histogram to be used)\n");
-  printf("--indexL    --> index of selection to be used (Xbin in histogram to be used) used for interpolation\n");
-  printf("--indexR    --> index of selection to be used (Xbin in histogram to be used) used for interpolation\n");
+  printf("--index     --> index of selection to be used (Xbin in histogram to be used); different comma separated values can be given for each analysis bin\n");
+  printf("--indexL    --> index of selection to be used (Xbin in histogram to be used) used for interpolation;  different comma separated values can be given for each analysis bin\n");
+  printf("--indexR    --> index of selection to be used (Xbin in histogram to be used) used for interpolation;  different comma separated values can be given for each analysis bin\n");
   printf("--m         --> higgs mass to be considered\n");
   printf("--mL        --> higgs mass on the left  of the mass to be considered (used for interpollation\n");
   printf("--mR        --> higgs mass on the right of the mass to be considered (used for interpollation\n");
@@ -311,6 +320,7 @@ void printHelp()
   printf("--rebin         --> rebin the histogram\n");
   printf("--statBinByBin --> make bin by bin statistical uncertainty\n");
   printf("--inclusive  --> merge bins to make the analysis inclusive\n");
+  printf("--dropBckgBelow --> drop all background processes that contributes for less than a threshold to the total background yields\n");
 }
 
 //
@@ -354,10 +364,11 @@ int main(int argc, char* argv[])
     else if(arg.find("--shapeMin") !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&shapeMin); i++; printf("Min cut on shape = %f\n", shapeMin);}
     else if(arg.find("--shapeMax") !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%lf",&shapeMax); i++; printf("Max cut on shape = %f\n", shapeMax);}
     else if(arg.find("--interf")    !=string::npos) { doInterf=true; printf("doInterf = True\n");}
+    else if(arg.find("--bins")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins are : ");while (pch!=NULL){printf(" %s ",pch); AnalysisBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
+    else if(arg.find("--index" )   !=string::npos && i+1<argc)   { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutV .push_back(C);  pch = strtok(NULL,",");} i++; printf("index  = "); for(unsigned int i=0;i<indexcutV .size();i++)printf(" %i ", indexcutV [i]);printf("\n");}
+    else if(arg.find("--indexL")    !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutVL.push_back(C);  pch = strtok(NULL,",");} i++; printf("indexL = "); for(unsigned int i=0;i<indexcutVL.size();i++)printf(" %i ", indexcutVL[i]);printf("\n");}
+    else if(arg.find("--indexR")    !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutVR.push_back(C);  pch = strtok(NULL,",");} i++; printf("indexR = "); for(unsigned int i=0;i<indexcutVR.size();i++)printf(" %i ", indexcutVR[i]);printf("\n");}
     else if(arg.find("--indexvbf") !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexvbf); i++; printf("indexVBF = %i\n", indexvbf);}
-    else if(arg.find("--indexL")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexcutL); i++; printf("indexL = %i\n", indexcutL);}
-    else if(arg.find("--indexR")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexcutR); i++; printf("indexR = %i\n", indexcutR);}
-    else if(arg.find("--index")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&indexcut); i++; printf("index = %i\n", indexcut);}
     else if(arg.find("--inclusive") !=string::npos) { doInclusive=true; printf("doInclusive = True\n");}
     else if(arg.find("--in")       !=string::npos && i+1<argc)  { inFileUrl = argv[i+1];  i++;  printf("in = %s\n", inFileUrl.Data());  }
     else if(arg.find("--json")     !=string::npos && i+1<argc)  { jsonFile  = argv[i+1];  i++;  printf("json = %s\n", jsonFile.Data()); }
@@ -366,7 +377,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--mL")       !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&massL ); i++; printf("massL = %i\n", massL);}
     else if(arg.find("--mR")       !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&massR ); i++; printf("massR = %i\n", massR);}
     else if(arg.find("--m")        !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&mass ); i++; printf("mass = %i\n", mass);}
-    else if(arg.find("--bins")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins are : ");while (pch!=NULL){printf(" %s ",pch); AnalysisBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--channels") !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("channels are : ");while (pch!=NULL){printf(" %s ",pch); Channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--fast")     !=string::npos) { fast=true; printf("fast = True\n");}
     else if(arg.find("--postfix")   !=string::npos && i+1<argc)  { postfix = argv[i+1]; systpostfix = argv[i+1]; i++;  printf("postfix '%s' will be used\n", postfix.Data());  }
@@ -379,10 +389,22 @@ int main(int argc, char* argv[])
     else if(arg.find("--rebin")    !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&rebinVal); i++; printf("rebin = %i\n", rebinVal);}
     else if(arg.find("--BackExtrapol")    !=string::npos) { BackExtrapol=true; printf("BackExtrapol = True\n");}
     else if(arg.find("--statBinByBin")    !=string::npos) { sscanf(argv[i+1],"%f",&statBinByBin); i++; printf("statBinByBin = %f\n", statBinByBin);}
+    else if(arg.find("--dropBckgBelow")   !=string::npos) { sscanf(argv[i+1],"%lf",&dropBckgBelow); i++; printf("dropBckgBelow = %f\n", dropBckgBelow);}
   }
-  if(jsonFile.IsNull() || inFileUrl.IsNull() || histo.IsNull() || indexcut == -1 || mass==-1) { printHelp(); return -1; }
+  if(jsonFile.IsNull() || inFileUrl.IsNull() || histo.IsNull() || mass==-1) { printHelp(); return -1; }
+  if(indexcutV.size()<=0){printf("INDEX CUT SIZE IS NULL\n"); printHelp(); return -1; }
   if(AnalysisBins.size()==0)AnalysisBins.push_back("");
   if(Channels.size()==0){Channels.push_back("ee");Channels.push_back("mumu");}
+
+  //make sure that the index vector are well filled
+  if(indexcutVL.size()==0) indexcutVL.push_back(indexcutV [0]);
+  if(indexcutVR.size()==0) indexcutVR.push_back(indexcutV [0]);
+  while(indexcutV .size()<AnalysisBins.size()){indexcutV .push_back(indexcutV [0]);}
+  while(indexcutVL.size()<AnalysisBins.size()){indexcutVL.push_back(indexcutVL[0]);}
+  while(indexcutVR.size()<AnalysisBins.size()){indexcutVR.push_back(indexcutVR[0]);}
+  if(indexvbf>=0){for(unsigned int i=0;i<AnalysisBins.size();i++){if(AnalysisBins[i].find("vbf")!=string::npos){indexcutV[i]=indexvbf; indexcutVL[i]=indexvbf; indexcutVR[i]=indexvbf;} }}
+  //fill the index map
+  for(unsigned int i=0;i<AnalysisBins.size();i++){indexcutM[AnalysisBins[i]] = indexcutV[i]; indexcutML[AnalysisBins[i]] = indexcutVL[i]; indexcutMR[AnalysisBins[i]] = indexcutVR[i];}
 
 
 ///////////////////////////////////////////////
@@ -403,22 +425,6 @@ int main(int argc, char* argv[])
   if(subNRB)sh.push_back(histo+"_NRBctrl");
   if(subWZ)sh.push_back(histo+"_3rdLepton");
 
-  std::vector<string> channelsAndShapes;
-  std::vector<string> vbfchannelsAndShapes;
-
-  const size_t nsh=sh.size();
-  for(size_t i=0; i<nch; i++){
-     for(size_t b=0; b<AnalysisBins.size(); b++){
-       int indexcut_ = indexcut; double cutMin=shapeMin; double cutMax=shapeMax;
-        for(size_t j=0; j<nsh; j++){
-           if(indexvbf>=0 && AnalysisBins[b].Contains("vbf")){
-              vbfchannelsAndShapes.push_back((ch[i]+TString(";")+AnalysisBins[b]+TString(";")+sh[j]).Data());
-           }else{
-              channelsAndShapes.push_back((ch[i]+TString(";")+AnalysisBins[b]+TString(";")+sh[j]).Data());
-           }
-        }
-     }
-  }
 
   AllInfo_t allInfo;
 
@@ -426,8 +432,22 @@ int main(int argc, char* argv[])
   TFile* inF = TFile::Open(inFileUrl);
   if( !inF || inF->IsZombie() ){ printf("Invalid file name : %s\n", inFileUrl.Data());}
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-  allInfo.getShapeFromFile(inF,    channelsAndShapes, indexcut, Root, shapeMin   , shapeMax   );
-  allInfo.getShapeFromFile(inF, vbfchannelsAndShapes, indexvbf, Root, shapeMinVBF, shapeMaxVBF);
+
+  //LOAD shapes
+  const size_t nsh=sh.size();
+  for(size_t b=0; b<AnalysisBins.size(); b++){
+     std::vector<string> channelsAndShapes;
+     for(size_t i=0; i<nch; i++){
+        for(size_t j=0; j<nsh; j++){
+           channelsAndShapes.push_back((ch[i]+TString(";")+AnalysisBins[b]+TString(";")+sh[j]).Data());
+        }
+     }
+     double cutMin=shapeMin; double cutMax=shapeMax;
+     if((shapeMinVBF!=shapeMin || shapeMaxVBF!=shapeMax) && AnalysisBins[b].find("vbf")!=string::npos){cutMin=shapeMinVBF; cutMax=shapeMaxVBF;}
+     allInfo.getShapeFromFile(inF,    channelsAndShapes, indexcutM[AnalysisBins[b]], Root, cutMin, cutMax   );     
+  }
+
+
   inF->Close();
   printf("Loading all shapes... Done\n");
 
@@ -467,7 +487,7 @@ int main(int argc, char* argv[])
   if(shape && BackExtrapol)allInfo.rebinMainHisto(histo.Data());
 
   //drop backgrounds with rate<1%
-  allInfo.dropSmallBckgProc(selCh, histo.Data(), 0.01);
+  allInfo.dropSmallBckgProc(selCh, histo.Data(), dropBckgBelow);
 
   //drop control channels
   allInfo.dropCtrlChannels(selCh);
@@ -767,7 +787,7 @@ void initializeTGraph(){
            //All Channels
            fprintf(pFile,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
            fprintf(pFile, "%s}\\\\\n", rows_header.c_str());
-           fprintf(pFile, "%s\\\\\n", rows_title .c_str());
+           fprintf(pFile, "\\hline\n%s\\\\\\hline\n", rows_title .c_str());
            for(std::map<string, string>::iterator row = rows.begin(); row!= rows.end(); row++){
               fprintf(pFile, "%s\\\\\n", row->second.c_str());
            }
@@ -778,7 +798,7 @@ void initializeTGraph(){
            //All Bins
            fprintf(pFile,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
            fprintf(pFile, "%s}\\\\\n", rows_header.c_str());
-           fprintf(pFile, "%s\\\\\n", rows_title .c_str());
+           fprintf(pFile, "\\hline\n%s\\\\\\hline\n", rows_title .c_str());
            for(std::map<string, string>::iterator row = rowsBin.begin(); row!= rowsBin.end(); row++){
               fprintf(pFile, "%s\\\\\n", row->second.c_str());
            }
@@ -1375,8 +1395,8 @@ void initializeTGraph(){
 
                   //special treatment for side mass points
                   int cutBinUsed = cutBin;
-                  if(shapeName == histo && !ch.Contains("vbf") && procMass==massL)cutBinUsed = indexcutL;
-                  if(shapeName == histo && !ch.Contains("vbf") && procMass==massR)cutBinUsed = indexcutR;
+                  if(shapeName == histo && procMass==massL)cutBinUsed = indexcutML[channelInfo.bin];
+                  if(shapeName == histo && procMass==massR)cutBinUsed = indexcutMR[channelInfo.bin];
 
                   
                   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
@@ -1609,8 +1629,12 @@ void initializeTGraph(){
               }
 
               //load G+Jets data
-              int indexcut_ = indexcut; double cutMin=shapeMin; double cutMax=shapeMax;
-              if(indexvbf>=0 && chMC->second.bin.find("vbf")!=string::npos){indexcut_ = indexvbf; cutMin=shapeMinVBF; cutMax=shapeMaxVBF;}
+              double cutMin=shapeMin; double cutMax=shapeMax;
+              if((shapeMinVBF!=shapeMin || shapeMaxVBF!=shapeMax) && chMC->second.bin.find("vbf")!=string::npos){cutMin=shapeMinVBF; cutMax=shapeMaxVBF;}
+
+//              int indexcut_ = indexcut;
+//              if(indexvbf>=0 && chMC->second.bin.find("vbf")!=string::npos){indexcut_ = indexvbf;}
+              int indexcut_ = indexcutM[chMC->second.bin];
 
               TH2* gjets2Dshape = NULL;
               if(mainHisto==histo && histoVBF!="" && chMC->second.bin.find("vbf")!=string::npos){
