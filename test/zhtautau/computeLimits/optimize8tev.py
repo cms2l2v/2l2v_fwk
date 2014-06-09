@@ -32,19 +32,19 @@ LandSArgOptions = []
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_elmu"]
-LandSArgOptions += [" --bins _OSelmu       --systpostfix _8TeV"]# --shape "]
+LandSArgOptions += [" --bins _OSelmu       --systpostfix _8TeV --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_elha"]
-LandSArgOptions += [" --bins _OSelha       --systpostfix _8TeV"]# --shape "]
+LandSArgOptions += [" --bins _OSelha       --systpostfix _8TeV --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_muha"]
-LandSArgOptions += [" --bins _OSmuha       --systpostfix _8TeV"]# --shape "]
+LandSArgOptions += [" --bins _OSmuha       --systpostfix _8TeV --shape "]
 
 signalSuffixVec += [""];
 OUTName         += ["SB8TeV_haha"]
-LandSArgOptions += [" --bins _OShaha       --systpostfix _8TeV"]# --shape "]
+LandSArgOptions += [" --bins _OShaha       --systpostfix _8TeV --shape "]
 
 FarmDirectory                      = "FARM"
 JobName                            = "computeLimits"
@@ -104,9 +104,12 @@ if(phase<0 or len(CMSSW_BASE)==0):
 #auxiliary function
 def findCutIndex(cutsH, Gcut, m):
    for i in range(1, cutsH.GetXaxis().GetNbins()+1):
+      passAllCuts=True
       for y in range(1, cutsH.GetYaxis().GetNbins()+1):
-         if(cutsH.GetBinContent(i,y)<Gcut[y-1].Eval(m,0,"")-0.000001):continue;
-      return i;   
+         if( (cutsH.GetYaxis().GetBinLabel(y).find("<") and cutsH.GetBinContent(i,y)>Gcut[y-1].Eval(m,0,"")+0.000001) or (cutsH.GetBinContent(i,y)<Gcut[y-1].Eval(m,0,"")-0.000001)):
+            passAllCuts=False;
+            break;
+      if(passAllCuts==True): return i;   
    return cutsH.GetXaxis().GetNbins()+1;
 
 def findSideMassPoint(mass):
@@ -156,21 +159,26 @@ for signalSuffix in signalSuffixVec :
           SCRIPT.writelines('cd ' + CMSSW_BASE + '/src;\n')
           SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
           SCRIPT.writelines("eval `scram r -sh`;\n")
-          SCRIPT.writelines('cd /tmp/;\n')
-          for j in range(0, 10): #always run 100points per jobs
+#          SCRIPT.writelines('cd /tmp/;\n')
+          SCRIPT.writelines('cd -;\n')
+          for j in range(0, 1): #always run 100points per jobs
              #if(not i%100==0):continue         #just run 1 job over 100 for debugging
              for m in MASS:
                 shapeBasedOpt=''
-                cardsdir = 'H'+ str(m);
+                cardsdir = 'H'+ str(m) + '_' + OUTName[iConf] + '_' + str(i);
                 SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
                 SCRIPT.writelines("computeLimit --m " + str(m) + " --histo " + shapeName + " --in " + inUrl + " --syst " + shapeBasedOpt + " --index " + str(i)     + " --json " + jsonUrl +" --fast " + " --shapeMin " + str(svfitmin_) + " --shapeMax " + str(svfitmax_) + " " + LandSArg + " ;\n")
                 SCRIPT.writelines("sh combineCards.sh;\n")
                 SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > COMB.log;\n")
                 SCRIPT.writelines('tail -n 100 COMB.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.log;\n')
-                SCRIPT.writelines('cd ..;\n\n')
+                SCRIPT.writelines('cat COMB.log;\n')
+                SCRIPT.writelines('cd ..;\n')
+#                SCRIPT.writelines('mv ' + cardsdir + ' ' + OUT + '/.\n')
+                SCRIPT.writelines('rm -rd ' + cardsdir+';\n')            
              i = i+1#increment the cut index
           SCRIPT.close()
-          LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.sh &> '+OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.log'])
+#          LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.sh &> '+OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.log'])
+          LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_'+str(i)+'_'+str(svfitmin_)+'_'+str(svfitmax_)+'.sh'])
       FILE.close()
       LaunchOnCondor.SendCluster_Submit()
 
@@ -185,22 +193,25 @@ for signalSuffix in signalSuffixVec :
          print 'Starting mass ' + str(m)
          FILE.writelines("------------------------------------------------------------------------------------\n")
          BestLimit = []
-         fileList = commands.getstatusoutput("ls " + OUT + str(m)+"_*.log")[1].split();           
+         fileList = commands.getstatusoutput("find " + OUT +" -name " + str(m)+"_*.log")[1].split();           
          for f in fileList:
-            exp = commands.getstatusoutput("cat " + f + " | grep \"Expected 50.0%\"")[1];
-            if(len(exp)<=0):continue
-            median = exp.split()[4]
-#            print 'median is ' + median
-	    if(median=='matches'):continue
-            if(float(median)<=0.0):continue
-            f = f.replace(".log","")
-            fields = f.split('_')
-            N = len(fields)
-            index = fields[N-3] 
-            Cuts = ''
-            for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
-               Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
-            BestLimit.append("mH="+str(m)+ " --> Limit=" + ('%010.6f' % float(median)) + "  Cuts: " + Cuts + "   CutsOnShape: " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
+            try:
+               exp = commands.getstatusoutput("cat " + f + " | grep \"Expected 50.0%\"")[1];
+               if(len(exp)<=0):continue
+               median = exp.split()[4]
+     	       if(median=='matches'):continue             
+               if(float(median)<=0.0):continue
+               f = f.replace(".log","")
+               fields = f.split('_')
+               N = len(fields)
+               index = fields[N-3] 
+               Cuts = ''
+               for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
+                  Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
+               BestLimit.append("mH="+str(m)+ " --> Limit=" + ('%010.6f' % float(median)) + "  Index: " + str(index)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
+            except:
+               print "File %s does not contain a valid limit" % f
+
 
          #sort the limits for this mass
          BestLimit.sort()
@@ -234,7 +245,7 @@ for signalSuffix in signalSuffixVec :
             for c in cut_lines: 
                cplit = c.split()
                #print '\t #'+ str(ictr) + '\t' + c
-               print '\t #'+ str(ictr) + '\t' + cplit[2] + '\t' + str(cplit[4:len(cplit)])
+               print '\t #'+ str(ictr) + '\t' + cplit[2] + '\tIndex=' +  cplit[4] + '\t' + str(cplit[6:len(cplit)])
                ictr+=1
             print "Which option you want to keep?"
             opt = int(raw_input(">"))-1
@@ -242,18 +253,18 @@ for signalSuffix in signalSuffixVec :
             #save cut chosen
             cutString = ''
             for c in range(1, cutsH.GetYaxis().GetNbins()+1):
-               cutString += str(cutsH.GetYaxis().GetBinLabel(c)) + cut_lines[opt].split()[4+(c-1)*2] + '\t'
-               Gcut[c-1].SetPoint(mi, m, float(cut_lines[opt].split()[4+(c-1)*2]) );
-            cutString += cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 3 ] + '<shape<' + cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 4] 
+               cutString += str(cutsH.GetYaxis().GetBinLabel(c)) + cut_lines[opt].split()[6+(c-1)*2] + '\t'
+               Gcut[c-1].SetPoint(mi, m, float(cut_lines[opt].split()[6+(c-1)*2]) );
+            cutString += cut_lines[opt].split()[6+(cutsH.GetYaxis().GetNbins()-1)*2 + 3 ] + '<shape<' + cut_lines[opt].split()[6+(cutsH.GetYaxis().GetNbins()-1)*2 + 4] 
             print cutString
-            Gcut[cutsH.GetYaxis().GetNbins()+0].SetPoint(mi, m, float(cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 3 ]) );
-            Gcut[cutsH.GetYaxis().GetNbins()+1].SetPoint(mi, m, float(cut_lines[opt].split()[4+(cutsH.GetYaxis().GetNbins()-1)*2 + 4 ]) );
+            Gcut[cutsH.GetYaxis().GetNbins()+0].SetPoint(mi, m, float(cut_lines[opt].split()[6+(cutsH.GetYaxis().GetNbins()-1)*2 + 3 ]) );
+            Gcut[cutsH.GetYaxis().GetNbins()+1].SetPoint(mi, m, float(cut_lines[opt].split()[6+(cutsH.GetYaxis().GetNbins()-1)*2 + 4 ]) );
             mi+=1
 
          #display cuts chosen
 #         c1 = ROOT.TCanvas("c1", "c1",300*(cutsH.GetYaxis().GetNbins()+2),300);
-#         ROOT.gROOT.SetStyle('Plain')
-#         ROOT.gStyle.SetOptStat(False);
+         ROOT.gROOT.SetStyle('Plain')
+         ROOT.gStyle.SetOptStat(False);
 #         c1.Divide(cutsH.GetYaxis().GetNbins()+2);
          for c in range(1, cutsH.GetYaxis().GetNbins()+3):
 #            c1.cd(c);
@@ -270,8 +281,13 @@ for signalSuffix in signalSuffixVec :
 #         c1.SaveAs("OptimizedCuts.png")
 
          #run limits for the cuts chosen (for intermediate masses use spline interpolation)
+         print("carefully check that the cuts you have choosen are well listed below:\n")
          for m in SUBMASS:
               index = findCutIndex(cutsH, Gcut, m);
+              Cuts = ''
+              for c in range(1, cutsH.GetYaxis().GetNbins()+1):
+                 Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
+              print "M=%04i : Index=% 5i --> Cuts: %s"  % (m, index, Cuts)
 
          while True:
               ans = raw_input('Use this fit and compute final limits? (y or n)\n')
@@ -341,7 +357,7 @@ for signalSuffix in signalSuffixVec :
       print '# FINAL PLOT for ' + DataCardsDir + '#\n'
       os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*.root > /dev/null")
       if(LandSArg.find('skip')<0):
-         os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 8 , 19.7 )'")
+         os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, true, 8 , 19.7 )'")
       else:
          os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
          os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 8 , 19.7 )'")
