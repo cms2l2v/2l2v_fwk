@@ -43,10 +43,10 @@ The jobs can fail due to too much "Wall clock time", this means that the jobs ha
 (**ToDo: More details on how to do this**)
 
 Once all jobs and events have been processed, the resulting output must be merged (so we have a more reasonable number of files). The merged nTuples must also be small enough so that when running our analysis on each file, it does not take too much time (lxbatch has several queues, we want to use the 8nh queue, which has a limit of 8 "normalised" hours).
-However, before merging, we will create the pileup distributions for data, these should be used later in order to perform the pileup reweighting of the MC. For this, make sure you have ran the report crab command on each of the data datasets, this should create three files inside the directory "[DIR]/res/":
+However, before merging, we will create the pileup distributions and get the integrated luminosity for data, these should be used later in order to perform the pileup reweighting of the MC. For this, make sure you have ran the report crab command on each of the data datasets, which should create three files inside the directory "[DIR]/res/":
 - inputLumiSummaryOfTask.json   - This one holds the lumis that were requested to be run on (ie: the lumi mask given to crab).
 - task_missingLumiSummary.json  - This one, which was already mentioned, holds the missing lumisections, there shouldn't be any missing lumisections.
-- lumiSummary.json              - This one holds all the lumis that are present, it is the one we will be using.
+- lumiSummary.json              - This one holds all the lumis that are present, it is the one we will be using, either for obtaining the PU distribution or the integrated luminosity.
 
 ##### PU distribution calculation
 (*Instructions to produce PU distribution:* [TWiki](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData#Calculating_Your_Pileup_Distribu))
@@ -57,6 +57,20 @@ The following actions have to be repeated for each data dataset, where DIR is th
   3. Calculate the pileup distribution with `pileupCalc.py`. In my case I used the command `pileupCalc.py -i [DIR]/res/lumiSummary.json --inputLumiJSON pileup_JSON_DCSONLY_190389-208686_All_2012_pixelcorr.txt --calcMode observed --minBiasXsec 69400 --maxPileupBin 100 --numPileupBins 100 DataPileupHistogram.root` - nb: for minBiasXsec you should use 68000 or 69400 depending if you are using 2011 or 2012 data, respectively. Also, the number of bins can and should be customized, from my experience, 100 bins has been adequate, also note that the number of bins corresponds to the max number of bins, we want one bin for each number of vertexes, since this value is an integer, however the script should be able to handle a non integer bin size.
   4. **ToDo: Convert the histogram to a list to be placed in config file for analysis**
 
+##### Integrated Luminosity calculation
+(*Instructions to get integrated luminosity:* [TWiki](https://twiki.cern.ch/twiki/bin/viewauth/CMS/LumiCalc))
+
+The CMSSW is probably not yet set up to produce the integrated luminosity information, so run the commands:
+```bash
+git clone https://github.com/cms-sw/RecoLuminosity-LumiDB.git $CMSSW_BASE/src/RecoLuminosity/LumiDB
+cd $CMSSW_BASE/src/RecoLuminosity/LumiDB
+git checkout V04-02-10
+scram b
+```
+  1. Calculate the integrated luminosity with `pixelLumiCalc.py`. In my case I used the command `pixelLumiCalc.py overview -i [DIR]/res/lumiSummary.json >> [DIR].lumi` (The output was saved in a file with the same name as the directory so there is an association between the two)
+
 ##### nTuple merging
 The merging of the nTuples should be done on a machine with direct access to the output of the jobs, in my case and with the default options in the crab and multicrab configuration files, this is on a NCG machine.
 A CMSSW environment with the framework will have to be replicated there as well, in case you didn't start working from there directly.
+
+In order to merge the nTuples, the json file with the list of processes will be used. There might not be enough space to directly process all the samples in one go, so please check if this is the case. If so, you will need to split the json into parts, processing one at a time, when doing this, pay attention to the json syntax, in particular the commas between elements, never leave a comma dangling at the end of a line if there is no next element.
