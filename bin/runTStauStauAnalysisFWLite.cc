@@ -106,6 +106,7 @@ int main(int argc, char* argv[])
   }
 
   // Hardcoded configs
+  double sqrtS          = 8;
   double minElPt        = 35;
   double maxElEta       =  2.5;
   double ECALGap_MinEta =  1.4442;
@@ -254,6 +255,10 @@ int main(int argc, char* argv[])
   // SVFit Mass
   mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 800));
 
+  // Angles
+  mon.addHistogram(new TH1F("deltaAlfaTauTau", ";#Delta#alfa_{#tau-#tau};Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}", 30, 0, TMath::Pi()));
+
 
 
   /***************************************************************************/
@@ -343,6 +348,8 @@ int main(int argc, char* argv[])
   double mt2 = -1;
   double mt2_50 = -1;
   double mt2_150 = -1;
+  double deltaAlfaTauTau = 0;
+  double deltaPhiTauTauMET = 0;
 
   // Prepare summary tree
   if(saveSummaryTree)
@@ -376,6 +383,8 @@ int main(int argc, char* argv[])
     summaryTree->Branch("MT2_150", &mt2_150);
     summaryTree->Branch("tauIndex", &tauIndex);
     summaryTree->Branch("leptonIndex", &leptonIndex);
+    summaryTree->Branch("deltaAlfaTauTau", deltaAlfaTauTau);
+    summaryTree->Branch("deltaPhiTauTauMET", deltaPhiTauTauMET);
   }
 
   myCout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
@@ -388,8 +397,25 @@ int main(int argc, char* argv[])
     if(iev%step == 0)
       myCout << "_" << std::flush;
 
-    // Prepare tags to fill the histograms
+    // Init variables
+    deltaAlfaTauTau = 0;
+    deltaPhiTauTauMET = 0;
+    nvtx = 0;
+    selected = false;
+    weight       = 1.;
+    weight_plus  = 1.;
+    weight_minus = 1.;
+    puWeight     = 1.;
     chTags.clear();
+    selLeptons.clear();
+    selJets.clear(), selJetsNoId.clear(), selBJets.clear();
+    selTaus.clear();
+    tauIndex = -1, leptonIndex = -1;
+    isOS = false;
+    mass = -1;
+    mt2 = -1;
+
+    // Prepare tags to fill the histograms
     chTags.push_back("all");
 
     // Load the event content from tree
@@ -398,7 +424,6 @@ int main(int argc, char* argv[])
 
     /****     Get information/collections from the event     ****/
     // Number of vertexes
-    nvtx = 0;
     fwlite::Handle<int> nvtxHandle;
     nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
     if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
@@ -573,15 +598,9 @@ int main(int argc, char* argv[])
     }
     rho25 = *rho25Handle;
 
-    selected = false;
-
 
 
     // Pileup Weight
-    weight       = 1.;
-    weight_plus  = 1.;
-    weight_minus = 1.;
-    puWeight     = 1.;
     if(isMC)
     {
       puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
@@ -592,7 +611,6 @@ int main(int argc, char* argv[])
 
 
     // Get Leading Lepton
-    selLeptons.clear();
     for(size_t i = 0; i < leptons.size(); ++i)
     {
       int lepId = leptons[i].id;
@@ -684,7 +702,6 @@ int main(int argc, char* argv[])
     }
 
     // Get Jets
-    selJets.clear(), selJetsNoId.clear(), selBJets.clear();
     int nTauJets = 0;
     for(size_t i = 0; i < jets.size(); ++i)
     {
@@ -842,7 +859,6 @@ int main(int argc, char* argv[])
       std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
 
     // Get taus
-    selTaus.clear();
     for(size_t i = 0; i < taus.size(); ++i)
     {
       llvvTau& tau = taus[i];
@@ -929,8 +945,6 @@ int main(int argc, char* argv[])
 
     // Opposite Sign requirements
     double maxPtSum = 0;
-    tauIndex = -1, leptonIndex = -1;
-    isOS = false;
     for(size_t i = 0; i < selLeptons.size(); ++i)
     {
       for(size_t j = 0; j < selTaus.size(); ++j)
@@ -956,8 +970,18 @@ int main(int argc, char* argv[])
         chTags.push_back("mutau");
     }
 
+    // Get angular variables
+    if(isOS)
+    {
+      TLorentzVector lep(selLeptons[leptonIndex].Px(), selLeptons[leptonIndex].Py(), selLeptons[leptonIndex].Pz(), selLeptons[leptonIndex].E());
+      TLorentzVector tau(selTaus[tauIndex].Px(), selTaus[tauIndex].Py(), selTaus[tauIndex].Pz(), selTaus[tauIndex].E());
+      TLorentzVector Tmet(met.Px(), met.Py(), met.Pz(), met.E());
+
+      deltaAlfaTauTau = lep.Angle(tau.Vect());
+      deltaPhiTauTauMET = Tmet.DeltaPhi(lep + tau);
+    }
+
     // Tau-Lepton pair mass calculation
-    mass = -1;
     if(isOS)
     {
       TMatrixD covMET(2, 2);
@@ -990,7 +1014,6 @@ int main(int argc, char* argv[])
     }
 
     // MT2 calculation
-    mt2 = -1;
     if(mass >= 0)
     {
       auto selLepton = selLeptons[leptonIndex];
@@ -1057,6 +1080,9 @@ int main(int argc, char* argv[])
             mon.fillHisto("MT2_50", chTags, mt2_50, weight);
             mon.fillHisto("MT2_150", chTags, mt2_150, weight);
             mon.fillHisto("SVFitMass", chTags, mass, weight);
+
+            mon.fillHisto("deltaAlfaTauTau", chTags, deltaAlfaTauTau, weight);
+            mon.fillHisto("deltaPhiTauTauMET", chTags, deltaPhiTauTauMET, weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
