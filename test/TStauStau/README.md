@@ -1,7 +1,7 @@
 This directory holds the scripts and other ancillary information for the TStauStau analysis.
 
 
-Last Update: 26/05/2014 - By Cristóvão
+Last Update: 11/06/2014 - By Cristóvão
 
 How-to run  (Work in progress)
 -------------
@@ -22,6 +22,11 @@ On a lxplus machine, in order to use the crab and multicrab executables, instead
 source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh 
 cmsenv
 source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.sh
+```
+Or, on an NCG machine, with the following commands:
+```bash
+cmsenv
+source /exper-sw/cmst3/cmssw/crab/crab.sh
 ```
 
 ##### Job creation and submission
