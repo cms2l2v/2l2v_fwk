@@ -47,7 +47,7 @@
 #include <boost/shared_ptr.hpp>
 #include <Math/VectorUtil.h>
 
-// Include MT2 library, do not forget o quote:
+// Include MT2 library (do not forget to quote):
 // http://particle.physics.ucdavis.edu/hefti/projects/doku.php?id=wimpmass    ** Code from here
 // http://www.hep.phy.cam.ac.uk/~lester/mt2/    ** Other libraries
 #include "UserCode/llvv_fwk/interface/mt2_bisect.h"
@@ -92,6 +92,18 @@ int main(int argc, char* argv[])
   bool runSystematics = runProcess.getParameter<bool>("runSystematics");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   bool exclusiveRun = runProcess.getParameter<bool>("exclusiveRun");
+  std::string periodHLT = "2012B";  // This variable should hold the period of the HLT triggers wished to be used,
+                                    //possible values are: 2012A, 2012B, 2012C, 2012D. 2012B and 2012C are equal.
+  if(runProcess.exists("periodHLT"))
+  {
+    periodHLT = runProcess.getParameter<std::string>("periodHLT");
+    if(periodHLT == "2012C")
+      periodHLT = "2012B";
+    if(periodHLT != "2012A" && periodHLT != "2012B" && periodHLT != "2012D")
+      periodHLT = "2012B";
+
+    std::cout << "Using the HLT from " << periodHLT << std::endl;
+  }
 
   // Hardcoded configs
   double minElPt        = 35;
@@ -403,7 +415,7 @@ int main(int argc, char* argv[])
     /**** Remove double counting if running on exclusive samples ****/
     if(exclusiveRun && isV0JetsMC)
     {
-      if(genEv.nup > 5) // Drop V+{1,2,3,4}Jets from VJets samples to avoid double counting (but keep V+0Jets)
+      if(genEv.nup > 5) // Drop V+{1,2,3,4}Jets from VJets samples to avoid double counting (but keep V+0Jets) [V = W,Z]
         continue;
     }
 
@@ -417,12 +429,39 @@ int main(int argc, char* argv[])
     }
     triggerBits = *triggerBitsHandle;
     /****          Sort events acording to HLT Path          ****/
-    bool singleETrigger  = triggerBits[13]; // HLT_Ele27_WP80_v*
-    bool singleMuTrigger = triggerBits[15]; // HLT_IsoMu24_v*
-    if(triggerBits.size() > 16)
-    { // Add here my trigger bits for TauPlusX
+    bool singleETrigger   = triggerBits[13]; // HLT_Ele27_WP80_v*
+    bool singleMuTrigger  = triggerBits[15]; // HLT_IsoMu24_v*
+    bool TauPlusE2012A    = triggerBits[18]; // HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*
+    bool TauPlusMu2012A   = triggerBits[22]; // HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*
+    //bool TauPlusE2012A    = triggerBits[19]; // HLT_Ele22_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v
+    //bool TauPlusMu2012A   = triggerBits[23]; // HLT_IsoMu20_eta2p1_LooseIsoPFTau20_v*
+    bool TauPlusE2012B    = triggerBits[17]; // HLT_Ele22_eta2p1_WP90Rho_LooseIsoPFTau20_v*
+    bool TauPlusMu2012B   = triggerBits[21]; // HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*
+    bool TauPlusE2012D    = triggerBits[16]; // HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_v*
+    bool TauPlusMu2012D   = triggerBits[20]; // HLT_IsoMu8_eta2p1_LooseIsoPFTau20_v*
+    bool TauPlusETrigger  = false;
+    bool TauPlusMuTrigger = false;
+    if(periodHLT == "2012A")
+    {
+      TauPlusETrigger  = TauPlusE2012A;
+      TauPlusMuTrigger = TauPlusMu2012A;
     }
-    triggeredOn = singleETrigger || singleMuTrigger;
+    if(periodHLT == "2012B")
+    {
+      TauPlusETrigger  = TauPlusE2012B;
+      TauPlusMuTrigger = TauPlusMu2012B;
+    }
+    if(periodHLT == "2012D")
+    {
+      TauPlusETrigger  = TauPlusE2012D;
+      TauPlusMuTrigger = TauPlusMu2012D;
+    }
+    triggeredOn = TauPlusETrigger || TauPlusMuTrigger;
+    if(TauPlusETrigger)
+      chTags.push_back("TauPlusE");
+    if(TauPlusMuTrigger)
+      chTags.push_back("TauPlusMu");
+    /*triggeredOn = singleETrigger || singleMuTrigger;
     if(singleETrigger)
     {
       if(isSingleMuPD)  // Remove double counting between SingleE and SingleMu
@@ -430,7 +469,7 @@ int main(int argc, char* argv[])
       chTags.push_back("singleE");
     }
     if(singleMuTrigger)
-      chTags.push_back("singleMu");
+      chTags.push_back("singleMu"); // */
 
     // Rest of Gen Particles
     fwlite::Handle<llvvGenParticleCollection> genPartCollHandle;
