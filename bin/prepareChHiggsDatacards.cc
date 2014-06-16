@@ -288,10 +288,12 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  TString varName = (syst==0? "" : syst->GetXaxis()->GetBinLabel(ivar));
 	  if(!varName.IsNull()) systVars.insert(varName);
 	  
+	  cout << "Process: " << proc << ", for syst " << varName << ", or " << syst->GetXaxis()->GetBinLabel(ivar) << endl;
+	  
 	  TString histoName = ch;  if(!ch.IsNull()) histoName += "_"; histoName += histo+varName ;
 	  TH1F* hshape = (TH1F*) pdir->Get( histoName );
 	  if(hshape==0) continue;
-	  cout << "Process: " << proc << ", hshape nbins: " << hshape->GetXaxis()->GetNbins() << " for syst " << varName << endl;
+	  
 	  //project out required bins (set the others to 0)
 	  if(binsToProject.size()) {
 	    for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
