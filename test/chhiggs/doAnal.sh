@@ -44,7 +44,8 @@ elif [ "${1}" = "current" ]; then
 
     elif [ "${2}" = "plots" ]; then
 	# Plots
-	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
+	#JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
+	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_1pb_samples.json
 	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
 	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt
 	  do
@@ -163,66 +164,57 @@ elif [ "${1}" = "current" ]; then
 	  done
 	done
     elif [ "${2}" = "datacardstest" ]; then
-### # 	mkdir -p ${BASEDIR}outputs/datacards/
-### # 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}plotter_forSystTable.root --showUnc --noPlots --noPowers --only evtflow
-### # 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}/outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter_all-samplesForDatacards_finalevtflow_norm.root --noPlot --noPowers  --only finalevtflow2btags
-### # 	
-### # 	
-### # 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}plotter_forSystTable_optim.root --showUnc --noPlots --noPowers --onlyStartWith all_optim
-### # 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}plotter_all-samplesForDatacards_finalevtflow_norm_optim.root --noPlot --noPowers  --onlyStartWith all_optim
-### # 	
-### # 	  # Merge syst components list 
-### # 	hadd -f ${BASEDIR}outputs/plotter_forSystTable_def.root		           ${BASEDIR}plotter_forSystTable.root			 	${BASEDIR}plotter_forSystTable_optim.root
-### # 	hadd -f ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm_def.root ${BASEDIR}plotter_all-samplesForDatacards_finalevtflow_norm.root	${BASEDIR}plotter_all-samplesForDatacards_finalevtflow_norm_optim.root
-### # 	
-### # 	mv ${BASEDIR}outputs/datacardsByDecayMode    ${BASEDIR}outputs/datacardsByDecayMode_bak
-### # 	mv ${BASEDIR}outputs/datacardsByDecaySyst    ${BASEDIR}outputs/datacardsByDecaySyst_bak
-### # 	mv ${BASEDIR}outputs/datacardsByDecaySystPAS ${BASEDIR}outputs/datacardsByDecaySystPAS_bak
-### # 	
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/180
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/200 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/220 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/250 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/300
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/350
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/400 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/500 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/600 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/700
-### # 	
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/180
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/200 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/220 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/250 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/300
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/350
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/400 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/500 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/600 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/700
-### # 	
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/180
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/200 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/220 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/250 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/300
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/350
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/400 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/500 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/600 
-### # 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/700
-### #
-#	for i in 180 200 220 250 300 350 400 500 600 700
-	for i in  500
+ 	mkdir -p ${BASEDIR}outputs/datacards/
+ 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}outputs/plotter_forSystTable.root --showUnc --noPlots --noPowers --only evtflow --only optim_systs
+ 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}/outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm.root --noPlot --noPowers  --only finalevtflow2btags --only optim_systs 	
+
+ 	mv ${BASEDIR}outputs/datacardsByDecayMode    ${BASEDIR}outputs/datacardsByDecayMode_bak
+ 	mv ${BASEDIR}outputs/datacardsByDecaySyst    ${BASEDIR}outputs/datacardsByDecaySyst_bak
+ 	mv ${BASEDIR}outputs/datacardsByDecaySystPAS ${BASEDIR}outputs/datacardsByDecaySystPAS_bak
+ 	
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/180
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/200 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/220 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/250 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/300
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/350
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/400 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/500 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/600 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/700
+ 	
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/180
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/200 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/220 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/250 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/300
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/350
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/400 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/500 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/600 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/700
+ 	
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/180
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/200 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/220 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/250 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/300
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/350
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/400 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/500 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/600 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/700
+
+	for i in 180 200 220 250 300 400 500 600
 	  do
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm_def.root --out ${BASEDIR}outputs/datacardsByDecayMode/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm_def.root --out ${BASEDIR}outputs/datacardsByDecayMode/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm.root --out ${BASEDIR}outputs/datacardsByDecayMode/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm.root --out ${BASEDIR}outputs/datacardsByDecayMode/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
 	    
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable_def.root --out ${BASEDIR}outputs/datacardsByDecaySyst/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable_def.root --out ${BASEDIR}outputs/datacardsByDecaySyst/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySyst/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySyst/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
 	    
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable_def.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable_def.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
 	done
 	
     elif [ "${2}" = "mhmax" ]; then
@@ -258,10 +250,10 @@ elif [ "${1}" = "current" ]; then
 	
 #	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb5_fy_x10.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow_tanb5.root --noPlot --noPowers  --only evtflow 
 #	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb5/ 
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb30_fy_x10.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow_tanb30.root --noPlot --noPowers   --only evtflow
-	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb30/ 
-	
-	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow.root --noPlot --noPowers --only finalevtflow2btags
+### #	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/signal_mhmodp_tanb30_fy_x10.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow_tanb30.root --noPlot --noPowers   --only evtflow
+### #	mv ${BASEDIR}outputs/*tex ${BASEDIR}outputs/tables_tanb30/ 
+### #	
+	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/ --json data/chhiggs/all-samples_mhmodp.json --outFile ${BASEDIR}outputs/plotter_all-samples_mhmodp_finalevtflow.root --noPlot --noPowers --only finalevtflow2btags --only optim_systs
 	
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/180
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb5/200 
@@ -280,7 +272,7 @@ elif [ "${1}" = "current" ]; then
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/400
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/500
 	  mkdir -p ${BASEDIR}outputs/datacardsMhmodp_tanb30/600
- 	
+	
 	  for i in 180 200 220 250 300 400 500 600 
 	    do
 #	    JSONDIR=/afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState_5315_tanb5/
