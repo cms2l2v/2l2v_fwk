@@ -266,7 +266,10 @@ int main(int argc, char* argv[])
 
   // Angles
   mon.addHistogram(new TH1F("deltaAlfaTauTau", ";#Delta#alfa_{#tau-#tau};Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET};Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau};Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("cosThetaTauH", ";cos#theta_{#tau};Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l};Events", 30, -1, 1));
 
 
 
@@ -357,10 +360,13 @@ int main(int argc, char* argv[])
   double mt2 = -1;
   double mt2_50 = -1;
   double mt2_150 = -1;
-  double deltaAlfaTauTau = 0;
-  double deltaPhiTauTauMET = 0;
   double stauMass = 0;
   double neutralinoMass = 0;
+  double deltaAlfaTauTau = 0;
+  double deltaPhiTauTauMET = 0;
+  double deltaPhiTauTau = 0;
+  double cosThetaTauH = 0;
+  double cosThetaTauL = 0;
 
   // Prepare summary tree
   if(saveSummaryTree)
@@ -394,10 +400,13 @@ int main(int argc, char* argv[])
     summaryTree->Branch("MT2_150", &mt2_150);
     summaryTree->Branch("tauIndex", &tauIndex);
     summaryTree->Branch("leptonIndex", &leptonIndex);
-    summaryTree->Branch("deltaAlfaTauTau", deltaAlfaTauTau);
-    summaryTree->Branch("deltaPhiTauTauMET", deltaPhiTauTauMET);
     summaryTree->Branch("stauMass", stauMass);
     summaryTree->Branch("neutralinoMass", neutralinoMass);
+    summaryTree->Branch("deltaAlfaTauTau", deltaAlfaTauTau);
+    summaryTree->Branch("deltaPhiTauTauMET", deltaPhiTauTauMET);
+    summaryTree->Branch("deltaPhiTauTau", deltaPhiTauTau);
+    summaryTree->Branch("cosThetaTauH", cosThetaTauH);
+    summaryTree->Branch("cosThetaTauL", cosThetaTauL);
   }
 
   myCout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
@@ -413,6 +422,9 @@ int main(int argc, char* argv[])
     // Init variables
     deltaAlfaTauTau = 0;
     deltaPhiTauTauMET = 0;
+    deltaPhiTauTau = 0;
+    cosThetaTauH = 0;
+    cosThetaTauL = 0;
     nvtx = 0;
     selected = false;
     weight       = 1.;
@@ -1023,12 +1035,27 @@ int main(int argc, char* argv[])
     // Get angular variables
     if(isOS)
     {
+      /**    LAB FRAME    **/
       TLorentzVector lep(selLeptons[leptonIndex].Px(), selLeptons[leptonIndex].Py(), selLeptons[leptonIndex].Pz(), selLeptons[leptonIndex].E());
       TLorentzVector tau(selTaus[tauIndex].Px(), selTaus[tauIndex].Py(), selTaus[tauIndex].Pz(), selTaus[tauIndex].E());
       TLorentzVector Tmet(met.Px(), met.Py(), met.Pz(), met.E());
 
       deltaAlfaTauTau = lep.Angle(tau.Vect());
       deltaPhiTauTauMET = Tmet.DeltaPhi(lep + tau);
+      deltaPhiTauTau = lep.DeltaPhi(tau);
+
+      double posSign = Tmet.CosTheta();
+      cosThetaTauH = tau.CosTheta();
+      cosThetaTauL = tau.CosTheta();
+      if(posSign < 0)
+      {
+        cosThetaTauH = -cosThetaTauH;
+        cosThetaTauL = -cosThetaTauL;
+      }
+
+      /**   PERPENDICULAR MET FRAME   **/
+
+      /**   CS FRAME   **/
     }
 
     // Tau-Lepton pair mass calculation
@@ -1139,6 +1166,9 @@ int main(int argc, char* argv[])
 
             mon.fillHisto("deltaAlfaTauTau", chTags, deltaAlfaTauTau, weight);
             mon.fillHisto("deltaPhiTauTauMET", chTags, deltaPhiTauTauMET, weight);
+            mon.fillHisto("deltaPhiTauTau", chTags, deltaPhiTauTau, weight);
+            mon.fillHisto("cosThetaTauH", chTags, cosThetaTauH, weight);
+            mon.fillHisto("cosThetaTauL", chTags, cosThetaTauL, weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
