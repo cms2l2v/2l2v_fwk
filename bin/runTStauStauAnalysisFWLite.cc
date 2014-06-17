@@ -54,12 +54,14 @@
 // http://www.hep.phy.cam.ac.uk/~lester/mt2/    ** Other libraries
 #include "UserCode/llvv_fwk/interface/mt2_bisect.h"
 
+
+double stauCrossSec(double stauM, double neutM);
+
 /*****************************************************************************/
 /* Return Codes:                                                             */
 /*   0 - Everything OK                                                       */
 /*   1 - Missing parameters_cfg.py configuration file                        */
 /*****************************************************************************/
-
 int main(int argc, char* argv[])
 {
   /***************************************************************************/
@@ -1255,4 +1257,10 @@ int main(int argc, char* argv[])
   }
 
   return 0;
+}
+
+double stauCrossSec(double stauM, double neutM)
+{
+  // TODO: Get cross section as a function of mass, for now use placeholder value of 1 pb
+  return 1;
 }
