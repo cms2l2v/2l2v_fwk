@@ -12,6 +12,8 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
 #include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneAlgorithm.h" //for SVfit
 
 
@@ -104,6 +106,12 @@ int main(int argc, char* argv[])
 
     std::cout << "Using the HLT from " << periodHLT << std::endl;
   }
+  double stauMtoPlot = 100;
+  double neutralinoMtoPlot = 90;  // TStauStau mass point to plot by default
+  if(runProcess.exists("stauMtoPlot"))
+    stauMtoPlot = runProcess.getParameter<double>("stauMtoPlot");
+  if(runProcess.exists("neutralinoMtoPlot"))
+    neutralinoMtoPlot = runProcess.getParameter<double>("neutralinoMtoPlot");
 
   // Hardcoded configs
   double sqrtS          = 8;
@@ -162,6 +170,7 @@ int main(int argc, char* argv[])
   TString turl(url);
   bool isSingleMuPD(!isMC && turl.Contains("SingleMu"));
   bool isV0JetsMC(isMC && (turl.Contains("DYJetsToLL_50toInf") || turl.Contains("WJets")));
+  bool isStauStau(isMC && turl.Contains("TStauStau"));
 
   TTree* summaryTree = NULL;
   if(saveSummaryTree)
@@ -350,6 +359,8 @@ int main(int argc, char* argv[])
   double mt2_150 = -1;
   double deltaAlfaTauTau = 0;
   double deltaPhiTauTauMET = 0;
+  double stauMass = 0;
+  double neutralinoMass = 0;
 
   // Prepare summary tree
   if(saveSummaryTree)
@@ -385,6 +396,8 @@ int main(int argc, char* argv[])
     summaryTree->Branch("leptonIndex", &leptonIndex);
     summaryTree->Branch("deltaAlfaTauTau", deltaAlfaTauTau);
     summaryTree->Branch("deltaPhiTauTauMET", deltaPhiTauTauMET);
+    summaryTree->Branch("stauMass", stauMass);
+    summaryTree->Branch("neutralinoMass", neutralinoMass);
   }
 
   myCout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
@@ -414,6 +427,8 @@ int main(int argc, char* argv[])
     isOS = false;
     mass = -1;
     mt2 = -1;
+    stauMass = -1;
+    neutralinoMass = -1;
 
     // Prepare tags to fill the histograms
     chTags.push_back("all");
@@ -442,6 +457,41 @@ int main(int argc, char* argv[])
     {
       if(genEv.nup > 5) // Drop V+{1,2,3,4}Jets from VJets samples to avoid double counting (but keep V+0Jets) [V = W,Z]
         continue;
+    }
+
+    /****           Get LHE comments with mass info          ****/
+    if(isStauStau)
+    {
+      fwlite::Handle<LHEEventProduct> LHEHandle;
+      LHEHandle.getByLabel(ev, "source");
+      if(!LHEHandle.isValid())
+      {
+        std::cout << "LHEEventProduct Object not Found" << std::endl;
+        continue;
+      }
+      if(LHEHandle->comments_size() == 0)
+        continue;
+
+      for(auto comment = LHEHandle->comments_begin(); comment != LHEHandle->comments_end(); ++comment)
+      {
+        auto modelPos = comment->find("# model TStauStau_");
+        if(modelPos != std::string::npos)
+        {
+          std::stringstream tmp;
+          auto numPos = comment->find_first_of("1234567890", modelPos);
+
+          tmp << comment->substr(numPos, comment->find("_", numPos)-numPos);
+          tmp >> stauMass;
+          tmp.clear();
+
+          numPos = comment->find("_", numPos);
+          numPos = comment->find_first_of("1234567890", numPos);
+          tmp << comment->substr(numPos, comment->find("\n", numPos)-numPos);
+          tmp >> neutralinoMass;
+
+          break;
+        }
+      }
     }
 
     // Trigger Bits
@@ -1007,7 +1057,7 @@ int main(int argc, char* argv[])
       //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
       //SVfit_algo.fit();
       //SVfit_algo.integrate();
-      SVfit_algo.integrateVEGAS();
+//      SVfit_algo.integrateVEGAS();
       //SVfit_algo.integrateMarkovChain();
       if(SVfit_algo.isValidSolution())
         mass = SVfit_algo.mass();
@@ -1043,30 +1093,36 @@ int main(int argc, char* argv[])
       mt2_150 = mt2_event.get_mt2();
     }
 
+    bool stauPlot = false;
+    if(stauMass == stauMtoPlot && neutralinoMass == neutralinoMtoPlot)
+      stauPlot = true;
 
-    mon.fillHisto("eventflow", chTags, 0, weight);
+
+    if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 0, weight);
     if(triggeredOn)
     {
-      mon.fillHisto("eventflow", chTags, 1, weight);
+      if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 1, weight);
       if(selLeptons.size() > 0)
       {
-        mon.fillHisto("eventflow", chTags, 2, weight);
-        mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
+        if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 2, weight);
+        if(!isStauStau || stauPlot) mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
         if(selBJets.size() == 0)
         {
-          mon.fillHisto("eventflow", chTags, 3, weight);
+          if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 3, weight);
           if(selTaus.size() > 0)
           {
-            mon.fillHisto("eventflow", chTags, 4, weight);
+            if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 4, weight);
             if(isOS)
             {
-              mon.fillHisto("eventflow", chTags, 5, weight);
+              if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 5, weight);
               if(mass >= 0)
               {
-                mon.fillHisto("eventflow", chTags, 6, weight);
+                if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 6, weight);
 
             selected = true;
 
+            if(!isStauStau || stauPlot)
+            {
             mon.fillHisto("nvtx", chTags, nvtx, weight);
             mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
             mon.fillHisto("nup", "", genEv.nup, 1);
@@ -1121,6 +1177,7 @@ int main(int argc, char* argv[])
             for(auto i = selJets.begin(); i != selJets.end(); ++i)
             {
               mon.fillHisto("jetcsv", chTags, i->origcsv, weight);
+            }
             }
               }
             }
