@@ -117,13 +117,13 @@ int main(int argc, char* argv[])
 
   // Hardcoded configs
   double sqrtS          = 8;
-  double minElPt        = 35;
+  double minElPt        = 25;
   double maxElEta       =  2.5;
   double ECALGap_MinEta =  1.4442;
   double ECALGap_MaxEta =  1.5660;
-  double minMuPt        = 30;
+  double minMuPt        = 20;
   double maxMuEta       = 2.4;
-  double minTauPt       = 20;
+  double minTauPt       = 25;
   double maxTauEta      =  2.3;
   double minJetPt       = 30;
   double maxJetEta      =  2.5;
@@ -667,6 +667,12 @@ int main(int argc, char* argv[])
     // Pileup Weight
     if(isMC)
     {
+      if(isStauStau)
+      {
+        int nEvents = 10000;
+        double xsec = 1;
+        xsecWeight = xsec/nEvents;
+      }
       puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
       weight       = xsecWeight*puWeight;
       weight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
