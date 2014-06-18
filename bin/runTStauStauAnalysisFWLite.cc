@@ -270,12 +270,12 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
 
   // Angles
-  mon.addHistogram(new TH1F("deltaAlfaTauTau", ";#Delta#alfa_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaAlphaTauTau", ";#Delta#alpha_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("cosThetaTauH", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#alfa_{#tau#tau-MET}(CS);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
 
 
@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
   double mt2_150 = -1;
   double stauMass = 0;
   double neutralinoMass = 0;
-  double deltaAlfaTauTau = 0;
+  double deltaAlphaTauTau = 0;
   double deltaPhiTauTauMET = 0;
   double deltaPhiTauTau = 0;
   double cosThetaTauH = 0;
@@ -413,7 +413,7 @@ int main(int argc, char* argv[])
     summaryTree->Branch("leptonIndex", &leptonIndex);
     summaryTree->Branch("stauMass", &stauMass);
     summaryTree->Branch("neutralinoMass", &neutralinoMass);
-    summaryTree->Branch("deltaAlfaTauTau", &deltaAlfaTauTau);
+    summaryTree->Branch("deltaAlphaTauTau", &deltaAlphaTauTau);
     summaryTree->Branch("deltaPhiTauTauMET", &deltaPhiTauTauMET);
     summaryTree->Branch("deltaPhiTauTau", &deltaPhiTauTau);
     summaryTree->Branch("cosThetaTauH", &cosThetaTauH);
@@ -435,7 +435,7 @@ int main(int argc, char* argv[])
       myCout << "_" << std::flush;
 
     // Init variables
-    deltaAlfaTauTau = 0;
+    deltaAlphaTauTau = 0;
     deltaPhiTauTauMET = 0;
     deltaPhiTauTau = 0;
     cosThetaTauH = 0;
@@ -1067,7 +1067,7 @@ int main(int argc, char* argv[])
       TLorentzVector tau(selTaus[tauIndex].Px(), selTaus[tauIndex].Py(), selTaus[tauIndex].Pz(), selTaus[tauIndex].E());
       TLorentzVector Tmet(met.Px(), met.Py(), met.Pz(), met.E());
 
-      deltaAlfaTauTau = lep.Angle(tau.Vect());
+      deltaAlphaTauTau = lep.Angle(tau.Vect());
       deltaPhiTauTauMET = Tmet.DeltaPhi(lep + tau);
       deltaPhiTauTau = lep.DeltaPhi(tau);
 
@@ -1232,7 +1232,7 @@ int main(int argc, char* argv[])
             mon.fillHisto("MT2_150", chTags, mt2_150, weight);
             mon.fillHisto("SVFitMass", chTags, mass, weight);
 
-            mon.fillHisto("deltaAlfaTauTau", chTags, deltaAlfaTauTau, weight);
+            mon.fillHisto("deltaAlphaTauTau", chTags, deltaAlphaTauTau, weight);
             mon.fillHisto("deltaPhiTauTauMET", chTags, deltaPhiTauTauMET, weight);
             mon.fillHisto("deltaPhiTauTau", chTags, deltaPhiTauTau, weight);
             mon.fillHisto("cosThetaTauH", chTags, cosThetaTauH, weight);
