@@ -42,6 +42,9 @@
 #include "TEventList.h"
 #include "TNtuple.h"
 #include "TGraphErrors.h"
+#include "TLorentzVector.h"
+#include "TVector3.h"
+#include "TRotation.h"
 
 #include <iostream>
 #include <fstream>
@@ -264,14 +267,16 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("MT2_150", ";M_{T2(150)} [GeV];Events", 25, 0, 500));
 
   // SVFit Mass
-  mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 800));
+  mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
 
   // Angles
-  mon.addHistogram(new TH1F("deltaAlfaTauTau", ";#Delta#alfa_{#tau-#tau};Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET};Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau};Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("cosThetaTauH", ";cos#theta_{#tau};Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l};Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("deltaAlfaTauTau", ";#Delta#alfa_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("cosThetaTauH", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#alfa_{#tau#tau-MET}(CS);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
 
 
 
@@ -369,6 +374,10 @@ int main(int argc, char* argv[])
   double deltaPhiTauTau = 0;
   double cosThetaTauH = 0;
   double cosThetaTauL = 0;
+  double deltaPhiLepMETCS = 0;
+  double cosThetaCS = 0;
+  double tauLeadPt = 0;
+  double lepLeadPt = 0;
 
   // Prepare summary tree
   if(saveSummaryTree)
@@ -402,13 +411,17 @@ int main(int argc, char* argv[])
     summaryTree->Branch("MT2_150", &mt2_150);
     summaryTree->Branch("tauIndex", &tauIndex);
     summaryTree->Branch("leptonIndex", &leptonIndex);
-    summaryTree->Branch("stauMass", stauMass);
-    summaryTree->Branch("neutralinoMass", neutralinoMass);
-    summaryTree->Branch("deltaAlfaTauTau", deltaAlfaTauTau);
-    summaryTree->Branch("deltaPhiTauTauMET", deltaPhiTauTauMET);
-    summaryTree->Branch("deltaPhiTauTau", deltaPhiTauTau);
-    summaryTree->Branch("cosThetaTauH", cosThetaTauH);
-    summaryTree->Branch("cosThetaTauL", cosThetaTauL);
+    summaryTree->Branch("stauMass", &stauMass);
+    summaryTree->Branch("neutralinoMass", &neutralinoMass);
+    summaryTree->Branch("deltaAlfaTauTau", &deltaAlfaTauTau);
+    summaryTree->Branch("deltaPhiTauTauMET", &deltaPhiTauTauMET);
+    summaryTree->Branch("deltaPhiTauTau", &deltaPhiTauTau);
+    summaryTree->Branch("cosThetaTauH", &cosThetaTauH);
+    summaryTree->Branch("cosThetaTauL", &cosThetaTauL);
+    summaryTree->Branch("deltaPhiLepMETCS", &deltaPhiLepMETCS);
+    summaryTree->Branch("cosThetaCS", &cosThetaCS);
+    summaryTree->Branch("tauLeadPt", &tauLeadPt);
+    summaryTree->Branch("lepLeadPt", &lepLeadPt);
   }
 
   myCout << "       Progress Bar:0%      20%       40%       60%       80%      100%" << std::endl;
@@ -427,6 +440,8 @@ int main(int argc, char* argv[])
     deltaPhiTauTau = 0;
     cosThetaTauH = 0;
     cosThetaTauL = 0;
+    deltaPhiLepMETCS = 0;
+    cosThetaCS = 0;
     nvtx = 0;
     selected = false;
     weight       = 1.;
@@ -443,6 +458,8 @@ int main(int argc, char* argv[])
     mt2 = -1;
     stauMass = -1;
     neutralinoMass = -1;
+    tauLeadPt = 0;
+    lepLeadPt = 0;
 
     // Prepare tags to fill the histograms
     chTags.push_back("all");
@@ -1028,6 +1045,8 @@ int main(int argc, char* argv[])
             tauIndex = j;
             leptonIndex = i;
             isOS = true;
+            tauLeadPt = selTaus[tauIndex].pt();
+            lepLeadPt = selLeptons[leptonIndex].pt();
           }
         }
       }
@@ -1054,16 +1073,57 @@ int main(int argc, char* argv[])
 
       double posSign = Tmet.CosTheta();
       cosThetaTauH = tau.CosTheta();
-      cosThetaTauL = tau.CosTheta();
+      cosThetaTauL = lep.CosTheta();
       if(posSign < 0)
       {
         cosThetaTauH = -cosThetaTauH;
         cosThetaTauL = -cosThetaTauL;
       }
 
-      /**   PERPENDICULAR MET FRAME   **/
-
       /**   CS FRAME   **/
+      TLorentzVector tauSystem = tau + lep;
+      TLorentzVector tauCS = tau, lepCS = lep, metCS = Tmet;
+      TLorentzVector beam1(0, 0, 0, 0);
+      TLorentzVector beam2(0, 0, 0, 0);
+      double energy = sqrtS * 500.; // sqrtS / 2 * 1000
+      double mom = sqrt(energy*energy + 0.938*0.938);
+      if(posSign > 0)
+      {
+        beam1.SetPxPyPzE(0, 0,  mom, energy);
+        beam2.SetPxPyPzE(0, 0, -mom, energy);
+      }
+      else
+      {
+        beam1.SetPxPyPzE(0, 0, -mom, energy);
+        beam2.SetPxPyPzE(0, 0,  mom, energy);
+      }
+
+      TVector3 boost = -tauSystem.BoostVector();
+      //tauSystem.Boost(boost); // By construction, this will be 0
+      tauCS.Boost(boost);
+      lepCS.Boost(boost);
+      metCS.Boost(boost);
+      beam1.Boost(boost);
+      beam2.Boost(boost);
+
+      TLorentzVector SQA = beam1 - beam2; // Spin quantization axis
+      TRotation rotation;
+
+      TVector3 newZAxis = SQA.Vect().Unit();
+      TVector3 targetZaxis(0, 0, 1);
+      TVector3 rotAxis = targetZaxis.Cross(newZAxis);
+      double rotAngle = targetZaxis.Angle(newZAxis);
+      rotation.Rotate(-rotAngle, rotAxis);
+
+      SQA.Transform(rotation);
+      tauCS.Transform(rotation);
+      lepCS.Transform(rotation);
+      metCS.Transform(rotation);
+      beam1.Transform(rotation);
+      beam2.Transform(rotation);
+
+      cosThetaCS = lepCS.CosTheta();
+      deltaPhiLepMETCS = metCS.DeltaPhi(lepCS);
     }
 
     // Tau-Lepton pair mass calculation
@@ -1177,6 +1237,8 @@ int main(int argc, char* argv[])
             mon.fillHisto("deltaPhiTauTau", chTags, deltaPhiTauTau, weight);
             mon.fillHisto("cosThetaTauH", chTags, cosThetaTauH, weight);
             mon.fillHisto("cosThetaTauL", chTags, cosThetaTauL, weight);
+            mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
+            mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
