@@ -111,8 +111,8 @@ int main(int argc, char* argv[])
 
     std::cout << "Using the HLT from " << periodHLT << std::endl;
   }
-  double stauMtoPlot = 100;
-  double neutralinoMtoPlot = 90;  // TStauStau mass point to plot by default
+  double stauMtoPlot = 120;
+  double neutralinoMtoPlot = 20;  // TStauStau mass point to plot by default
   if(runProcess.exists("stauMtoPlot"))
     stauMtoPlot = runProcess.getParameter<double>("stauMtoPlot");
   if(runProcess.exists("neutralinoMtoPlot"))
