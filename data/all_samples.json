@@ -1075,6 +1075,12 @@
       "data":[
         { "dtag":"MC8TeV_mmjj_powheg_pythia"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/PYTHIA" ]        }
       ]
+    },
+    {
+      "tag":"MC8TeV_TStauStau",
+      "data":[
+        { "dtag":"MC8TeV_TStauStau"                        , "isfastsim":1 , "split":4, "xsec":1        , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM" }
+      ]
     }
   ]
 }
