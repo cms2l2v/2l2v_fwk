@@ -65,7 +65,8 @@ The following actions have to be repeated for each data dataset, where DIR is th
   1. Make sure the file "[DIR]/res/lumiSummary.json" was created
   2. Get the file with the pileup per lumisection, it is made available centrally in the directory "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/PileUp/". I used the command `cp /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/PileUp/pileup_JSON_DCSONLY_190389-208686_All_2012_pixelcorr.txt ./` - This step only needs to be done once, not once for each dataset... :stuck_out_tongue:
   3. Calculate the pileup distribution with `pileupCalc.py`. In my case I used the command `pileupCalc.py -i [DIR]/res/lumiSummary.json --inputLumiJSON pileup_JSON_DCSONLY_190389-208686_All_2012_pixelcorr.txt --calcMode observed --minBiasXsec 69400 --maxPileupBin 100 --numPileupBins 100 DataPileupHistogram.root` - nb: for minBiasXsec you should use 68000 or 69400 depending if you are using 2011 or 2012 data, respectively. Also, the number of bins can and should be customized, from my experience, 100 bins has been adequate, also note that the number of bins corresponds to the max number of bins, we want one bin for each number of vertexes, since this value is an integer, however the script should be able to handle a non integer bin size.
-  4. **ToDo: Convert the histogram to a list to be placed in config file for analysis**
+  4. Depending on the analysis, it might be needed to merge the root files before proceeding to the next step. Since the root file is very simple and only contains a histogram, it is enough to `hadd` the files.
+  5. **ToDo: Convert the histogram to a list to be placed in config file for analysis**
 
 ##### Integrated Luminosity calculation
 (*Instructions to get integrated luminosity:* [TWiki](https://twiki.cern.ch/twiki/bin/viewauth/CMS/LumiCalc))
@@ -84,3 +85,13 @@ The merging of the nTuples should be done on a machine with direct access to the
 A CMSSW environment with the framework will have to be replicated there as well, in case you didn't start working from there directly.
 
 In order to merge the nTuples, the json file with the list of processes will be used. There might not be enough space to directly process all the samples in one go, so please check if this is the case. If so, you will need to split the json into parts, processing one at a time, when doing this, pay attention to the json syntax, in particular the commas between elements, never leave a comma dangling at the end of a line if there is no next element.
+
+Finally, to merge the nTuples, use the command
+
+```bash
+mergeEDMtuples.py -i /directory/of/unmerged/files -j /json/of/samples -o  /output/directory -D True
+```
+
+It will take some time initially, it is reading the files and collecting info as well as searching for duplicates. Once done, it will submit jobs to the batch system to merge the files.
+
+After merging, it is recommended to backup the files, on the NCG machines, we copy the files from the local storage to the T3, which is backed up and provides redundancy. After this copy, make sure the copy was successful, a good tool to perform this is the md5sum, which calculates the md5 sum of the file given to it. This will allow to check for most possible errors in copying the file.
