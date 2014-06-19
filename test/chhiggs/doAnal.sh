@@ -47,13 +47,13 @@ elif [ "${1}" = "current" ]; then
 	#JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
 	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_1pb_samples.json
 	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
-	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt
+	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt dilarccosine geq2btagsdilarccosine
 	  do
 	  for chanList in emu ee mumu
 	    do
 	    for formatList in pdf png C
 	      do
-	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --onlyStartWith ${chanList}_${plotList}                                 &
+	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --jodorStyle --onlyStartWith ${chanList}_${plotList}                                 &
 	    done
 	  done
 	done
@@ -83,12 +83,15 @@ elif [ "${1}" = "current" ]; then
 	cp ${BASEDIR}outputs/tables/plotsemu_evtflow.tex  ${PLOTSDIR}emu/   
 	cp ${BASEDIR}outputs/tables/plotsee_evtflow.tex   ${PLOTSDIR}ee/
 	cp ${BASEDIR}outputs/tables/plotsmumu_evtflow.tex ${PLOTSDIR}mumu/ 
-
+	
     elif [ "${2}" = "cleanDisplay" ]; then
 	PLOTSDIR=~/www/HIG-13-026/plots/	
 	rm ${PLOTSDIR}ee/*
 	rm ${PLOTSDIR}emu/*
 	rm ${PLOTSDIR}mumu/*
+	cp ~/www/HIG-13-026/index.php ${PLOTSDIR}ee/
+	cp ~/www/HIG-13-026/index.php ${PLOTSDIR}emu/
+	cp ~/www/HIG-13-026/index.php ${PLOTSDIR}mumu/
 
     elif [ "${2}" = "datacards" ]; then
 	mkdir -p ${BASEDIR}outputs/datacards/
@@ -287,7 +290,7 @@ elif [ "${1}" = "current" ]; then
 	
 	mkdir -p ${outputdir}
 	
-	for plotList in evtflow met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt 
+	for plotList in evtflow met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt dilarccosine geq2btagsdilarccosine
 	  do
 	  for chanList in emu ee mumu
 	    do
@@ -297,7 +300,7 @@ elif [ "${1}" = "current" ]; then
 		  if [ "${formatList}" == "C" ]; then
 		      continue
 		  fi
-		  cp ${BASEDIR}plots/${chanList}_${plotList}.${formatList} ${outputdir}
+		  cp ${BASEDIR}outputs/plots/${chanList}_${plotList}.${formatList} ${outputdir}
 	      fi
 	    done
 	  done
