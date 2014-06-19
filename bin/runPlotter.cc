@@ -842,7 +842,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        //denRelUncH->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.10);
        if(jodorStyle){
 	 denRelUncH->GetXaxis()->SetTitleOffset(1.3);
-	 denRelUncH->GetXaxis()->SetLabelOffset(0.01);
+	 denRelUncH->GetXaxis()->SetLabelOffset(0.05);
 	 denRelUncH->GetXaxis()->SetLabelSize(0.050*yscale);
 	 denRelUncH->GetXaxis()->SetTitleSize(0.042*yscale);
 	 denRelUncH->GetXaxis()->SetTickLength(0.03*yscale);
