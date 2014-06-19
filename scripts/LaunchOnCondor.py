@@ -205,6 +205,7 @@ def CreateTheCmdFile():
 
 def AddJobToCmdFile():
         global useLSF
+        global useLIP
 	global Path_Shell
         global Path_Cmd
         global Path_Out
@@ -238,7 +239,7 @@ def AddJobToCmdFile():
             else:
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
-                cmd_file.write("sh " + absoluteShellPath)
+                cmd_file.write("qsub " + absoluteShellPath + "\n")
         cmd_file.close()
 
 def CreateDirectoryStructure(FarmDirectory):
@@ -320,7 +321,7 @@ def SendCluster_Submit():
 	if useLSF:
 		os.system("sh " + Path_Cmd)
         elif useLIP:
-                os.system("qsub " + Path_Cmd)
+                os.system("sh " + Path_Cmd)
 	else:
 		os.system("condor_submit " + Path_Cmd)  
 
