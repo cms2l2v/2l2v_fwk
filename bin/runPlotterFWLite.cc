@@ -513,44 +513,93 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    std::string SaveName = "";
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    double SignalMin = 5E-2;
-   for(unsigned int i=0;i<Process.size();i++){
-      if(Process[i]["isinvisible"].toBool())continue;
+   for(unsigned int i=0;i<Process.size();i++)
+   {
+      if(Process[i]["isinvisible"].toBool())
+         continue;
       TH1* hist = NULL;
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
-      for(unsigned int j=0;j<Samples.size();j++){
+      for(unsigned int j=0;j<Samples.size();j++)
+      {
          double Weight = 1.0;
-         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() )Weight*= iLumi;
-	  string filtExt("");
-	  if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
+         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() )
+           Weight*= iLumi;
+         string filtExt("");
+         if(Process[i].isTag("mctruthmode") )
+         {
+            char buf[255];
+            sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt());
+            filtExt += buf;
+         }
+
+         bool isStauStau = false;
+         if(Samples[j].getString("dtag").find("TStauStau") != std::string::npos)
+           isStauStau = true;
 
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
-         for(int s=0;s<split;s++){
-           string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+         for(int s=0;s<split;s++)
+         {
+            string segmentExt;
+            if(split>1)
+            { 
+               char buf[255];
+               sprintf(buf,"_%i",s);
+               segmentExt += buf;
+            }
 
-	    string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
-            if(!FileExist[FileName]){continue;}
+            string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
+            if(!FileExist[FileName])
+               continue;
             TFile* File = new TFile(FileName.c_str());
-            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){continue;}
+            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )
+               continue;
             TH1* tmptmphist = NULL; 
-            if(HistoProperties.isIndexPlot && cutIndex>=0){
+            if(HistoProperties.isIndexPlot && cutIndex>=0)
+            {
                TH2* tmp2D = (TH2*) GetObjectFromPath(File,HistoProperties.name);
-               if(tmp2D){tmptmphist = tmp2D->ProjectionY((string(tmp2D->GetName())+cutIndexStr).c_str(),cutIndex,cutIndex); delete tmp2D;}
-            }else if(!HistoProperties.isIndexPlot){
-               tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name);
-	    }
-	    if(!tmptmphist){delete File;  continue;}
+               if(tmp2D)
+               {
+                  tmptmphist = tmp2D->ProjectionY((string(tmp2D->GetName())+cutIndexStr).c_str(),cutIndex,cutIndex);
+                  delete tmp2D;
+               }
+            }
+            else
+               if(!HistoProperties.isIndexPlot)
+                  tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name);
+            if(!tmptmphist)
+            {
+               delete File;
+               continue;
+            }
 
             NFiles++;
-            if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
+            if(!tmphist)
+            {
+               gROOT->cd();
+               tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);
+            }
+            else
+              tmphist->Add(tmptmphist);
+
             delete tmptmphist;
             delete File;
          }
-         if(!tmphist)continue;
-         if(!Process[i]["isdata"].toBool()){tmphist->Scale(1.0/NFiles); }
-         if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
+         if(!tmphist)
+            continue;
+         if(!Process[i]["isdata"].toBool() && !isStauStau)
+            tmphist->Scale(1.0/NFiles);
+         if(!hist)
+         {
+            gROOT->cd();
+            hist = (TH1*)tmphist->Clone(tmphist->GetName());
+            checkSumw2(hist);
+            hist->Scale(Weight);
+         }
+         else
+            hist->Add(tmphist,Weight);
          delete tmphist;
-      }   
+      }
       if(!hist)continue;
 
       SaveName = hist->GetName();
