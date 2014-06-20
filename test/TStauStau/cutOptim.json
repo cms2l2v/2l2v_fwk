@@ -36,15 +36,6 @@
           "comment":"the label field holds the value that will be printed on the plots, ie it can contain valid LaTeX commands in root for nicer output"
         },
         {
-          "name":"MT2",
-          "expression":"MT2",
-          "minVal":0,
-          "maxVal":500,
-          "step":10,
-          "cutDir":"below",
-          "label":"M_{T2}"
-        },
-        {
           "name":"deltaAlphaTauTau",
           "expression":"deltaAlphaTauTau",
           "minVal":0,
@@ -77,7 +68,7 @@
           "minVal":-1,
           "maxVal":1,
           "step":0.1,
-          "cutDir":"below",
+          "cutDir":"above",
           "label":"cos#theta_{#tau}(Lab)"
         },
         {
@@ -95,16 +86,35 @@
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
-          "cutDir":"below",
+          "cutDir":"above",
           "label":"#Delta#phi_{l-MET}(CS)"
         },
         {
           "name":"cosThetaCS",
-          "expression":"cosThetaCS",
-          "minVal":-1,
+          "expression":"abs(cosThetaCS)",
+          "minVal":0,
           "maxVal":1,
-          "step":0.1,
+          "step":0.05,
+          "cutDir":"above",
+          "label":"|cos#theta_{CS}|"
+        },
+        {
+          "name":"lepLeadPt",
+          "expression":"lepLeadPt",
+          "minVal":0,
+          "maxVal":200,
+          "step":10,
           "cutDir":"below",
+          "label":"p_{T}(l)"
+        },
+        {
+          "name":"tauLeadPt",
+          "expression":"tauLeadPt",
+          "minVal":0,
+          "maxVal":200,
+          "step":10,
+          "cutDir":"below",
+          "label":"p_{T}(#tau)"
         }
       ],
       "comment":"the variables field should contain the list of variables on which to perform optimization",
