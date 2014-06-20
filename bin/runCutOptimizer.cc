@@ -92,6 +92,7 @@ public:
   inline std::string& ttree(){return _ttree;};
   inline std::string& customExtension(){return _customExtension;};
   inline std::string& baseSelection(){return _baseSelection;};
+  inline std::string& signalSelection(){return _signalSelection;};
   inline std::string& channel(){return _channel;};
   inline double& iLumi(){return _iLumi;};
   inline std::string& inDir(){return _inDir;};
@@ -111,6 +112,7 @@ private:
   std::string _ttree;
   std::string _customExtension;
   std::string _baseSelection;
+  std::string _signalSelection;
   std::string _channel;
   std::vector<OptimizationVariable> _variables;
   double      _iLumi;
@@ -228,10 +230,13 @@ int main(int argc, char** argv)
       for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
         std::cout << "\t    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
     }
-    std::cout << "\tFound " << SIG_samples.size()  << " background processes:" << std::endl;
+    std::cout << "\tFound " << SIG_samples.size()  << " signal processes:" << std::endl;
+    bool isStauStau = false;
     for(auto process = SIG_samples.begin(); process != SIG_samples.end(); ++process)
     {
       std::cout << "\t  " << process->first << ":" << std::endl;
+      if(process->first.find("TStauStau") != std::string::npos)
+        isStauStau = true;
       for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
         std::cout << "\t    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
     }
@@ -268,6 +273,7 @@ int main(int argc, char** argv)
     std::unordered_map<std::string,std::string> variableLabels = round->getVariableLabels();
 
     TCut baseSelection = round->baseSelection().c_str();
+    TCut signalSelection = round->signalSelection().c_str();
     TCut cumulativeSelection = "";
 
     TCanvas c1("c1", "c1", 800, 600);
@@ -304,7 +310,7 @@ int main(int argc, char** argv)
           TCut thisCut = thisCutStr.c_str();
 
           double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
-          double nSIG = applyCut(SIG_samples, (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
+          double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
           double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
 
           if(nBG == 0)
@@ -411,6 +417,7 @@ OptimizationRound::OptimizationRound()
   _ttree           = "Events";
   _customExtension = "";
   _baseSelection   = "selected";
+  _signalSelection = "";
   _channel         = "";
   _iLumi           = 1;
   _inDir           = "";
@@ -560,6 +567,7 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
     roundInfo._ttree = round->getString("ttree", roundInfo._ttree);
     roundInfo._customExtension = round->getString("customExtension", roundInfo._customExtension);
     roundInfo._baseSelection = round->getString("baseSelection", roundInfo._baseSelection);
+    roundInfo._signalSelection = round->getString("signalSelection", roundInfo._signalSelection);
     roundInfo._channel = round->getString("channel", roundInfo._channel);
 
     auto variables = (*round)["variables"].daughters();

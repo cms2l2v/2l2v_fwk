@@ -18,6 +18,8 @@
       "comment":"the customExtension field should contain any additional extension to the name of the file where the ttree is located",
       "baseSelection":"selected",
       "comment":"the baseSelection field should contain the base selection of the events in the tree, this must be a valid expression in ROOT",
+      "signalSelection":"(stauMass==120)&&(neutralinoMass==20)",
+      "comment":"the signalSelection field should contain any other selection that should be made only on the signal samples, in addition to the base selection",
       "variables":[
         {
           "name":"MET",
