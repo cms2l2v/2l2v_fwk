@@ -277,6 +277,8 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
+  mon.addHistogram(new TH2F("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2F("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
 
 
 
@@ -1239,6 +1241,9 @@ int main(int argc, char* argv[])
             mon.fillHisto("cosThetaTauL", chTags, cosThetaTauL, weight);
             mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
             mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
+
+            mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
+            mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
