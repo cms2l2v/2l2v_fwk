@@ -25,6 +25,7 @@
 #include "TInterpreter.h"
 #include "TCanvas.h"
 #include "TH1F.h"
+#include "TH1D.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
 
@@ -44,7 +45,7 @@ typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> 
 void printHelp();
 fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
 std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
-double applyCut(fileChains files,  TCut cut, bool normalize = false);
+double applyCut(fileChains files,  TCut cut, bool correctFiles = true, bool normalize = false);
 
 class OptimizationVariable
 {
@@ -310,7 +311,7 @@ int main(int argc, char** argv)
           TCut thisCut = thisCutStr.c_str();
 
           double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
-          double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
+          double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), !isStauStau) * round->iLumi(); // Very compute intensive
           double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
 
           if(nBG == 0)
@@ -499,7 +500,7 @@ OptimizationVariable::~OptimizationVariable()
 {
 }
 
-double applyCut(fileChains files,  TCut cut, bool normalize)
+double applyCut(fileChains files,  TCut cut, bool correctFiles, bool normalize)
 {
   gROOT->cd();
   double retVal = 0;
@@ -510,10 +511,14 @@ double applyCut(fileChains files,  TCut cut, bool normalize)
     {
       if(sample->first == 0)
         continue;
-      TEventList selectedEvents("selectedList");
-      sample->second->Draw(">>selectedList", cut, "goff");
+//      TEventList selectedEvents("selectedList");
+//      sample->second->Draw(">>selectedList", cut, "goff");
+      TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
+      sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
 
-      double weight = 0;
+      double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
+
+      /*double weight = 0;
       double count = 0;
       sample->second->SetBranchAddress("weight", &weight);
 
@@ -523,9 +528,10 @@ double applyCut(fileChains files,  TCut cut, bool normalize)
         sample->second->GetEntry(entry);
         count += weight;
       }
-      sample->second->ResetBranchAddresses();
+      sample->second->ResetBranchAddresses();// */
 
-      count = count/sample->first;
+      if(correctFiles)
+        count = count/sample->first;
       retVal += count;
     }
   }
