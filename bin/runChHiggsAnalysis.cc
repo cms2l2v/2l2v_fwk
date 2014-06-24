@@ -269,7 +269,7 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+var,";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
 
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dphill"+var, ";D#phi(l,l');Events",100,0,4) );
-	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"drll"+var  , ";DR(l,l');Events",100,0,10)   );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"drll"+var  , ";DR(l,l');Events",100,0,6)   );
 
 	// for DY estimation
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dilarccosine"+var,";#theta(l,l') [rad];Events",50,0,3.2) );
@@ -721,7 +721,7 @@ int main(int argc, char* argv[])
 	    // index 0 and 1
 	    double dphi( deltaPhi(selLeptons[0].phi(), selLeptons[1].phi()) );
 	    double dR( deltaR(selLeptons[0].eta(),selLeptons[0].phi(),selLeptons[1].eta(),selLeptons[1].phi()) );	    
-	    controlHistos.fillHisto( ctrlCategs[icat]+"dphill"+var, ch, dphi, weight);
+	    controlHistos.fillHisto( ctrlCategs[icat]+"dphill"+var, ch, abs(dphi), weight);
 	    controlHistos.fillHisto( ctrlCategs[icat]+"drll"+var  , ch, dR  , weight);
 
 
