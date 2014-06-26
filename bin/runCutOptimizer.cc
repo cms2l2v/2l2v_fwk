@@ -296,25 +296,30 @@ int main(int argc, char** argv)
         std::cout << round->name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
 
         std::vector<double> xVals, yVals, xValsErr, yValsErr;
+        std::vector<double> signalYield, backgroundYield;
 
         for(double cutVal = minVal; cutVal <= maxVal; cutVal+=step)
         {
           std::string thisCutStr;
           std::stringstream buf;
-          buf << variableExpressions[*variableName];
+          //buf << variableExpressions[*variableName];
           if(cutDir > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
             buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
           else
             buf << ">";
           buf << cutVal;
           buf >> thisCutStr;
+          thisCutStr = variableExpressions[*variableName] + thisCutStr;
+          std::cout << "  The Cut: " << thisCutStr << std::endl;
           TCut thisCut = thisCutStr.c_str();
 
           double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
           double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), !isStauStau) * round->iLumi(); // Very compute intensive
           double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
+          std::cout << "    n(Sig): " << nSIG << std::endl;
+          std::cout << "    n(Bkg): " << nBG  << std::endl;
 
-          if(nBG == 0)
+          if(nBG == 0 || nSIG == 0)
             continue;
           double nBGErr = std::sqrt(nBG);
           double nSIGErr = std::sqrt(nSIG);
@@ -327,11 +332,14 @@ int main(int argc, char** argv)
             double BGContrib = nBGErr*nSIG*(1+2*systErr*systErr*nBG)/(2*dividend*dividend*dividend);
             FOMErr = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
           }
+          std::cout << "    FOM: " << FOM << " +- " << FOMErr << std::endl;
 
           xVals.push_back(cutVal);
           xValsErr.push_back(0);
           yVals.push_back(FOM);
           yValsErr.push_back(FOMErr);
+          signalYield.push_back(nSIG);
+          backgroundYield.push_back(nBG);
 
           if(FOM > highestFOM.FOM)
           {
@@ -342,6 +350,11 @@ int main(int argc, char** argv)
           }
         }
 
+        if(xVals.size() == 0)
+        {
+          std::cout << "  No points processed" << std::endl;
+          continue;
+        }
         TGraphErrors FOMGraph(xVals.size(), xVals.data(), yVals.data(), xValsErr.data(), yValsErr.data());
         // http://root.cern.ch/root/html/TAttMarker.html
         //FOMGraph.SetLineColor(2);
@@ -362,6 +375,42 @@ int main(int argc, char** argv)
         std::string plotName;
         buf << outDir << "/";
         buf << round->name() << "_Pass" << nPass << "_" << *variableName;
+        buf >> plotName;
+
+        for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
+          c1.SaveAs((plotName + *ext).c_str());
+
+
+        TGraph signalYieldGraph(xVals.size(), xVals.data(), signalYield.data());
+        signalYieldGraph.SetFillColor(kBlue-9);
+        signalYieldGraph.SetFillStyle(3354);
+        signalYieldGraph.SetMarkerStyle(21);
+        signalYieldGraph.Draw("ALP");
+        signalYieldGraph.GetXaxis()->SetTitle(variableLabels[*variableName].c_str());
+        signalYieldGraph.GetXaxis()->CenterTitle();
+
+        buf.clear();
+        plotName = "";
+        buf << outDir << "/";
+        buf << round->name() << "_Pass" << nPass << "_" << *variableName << "_signalYield";
+        buf >> plotName;
+
+        for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
+          c1.SaveAs((plotName + *ext).c_str());
+
+
+        TGraph backgroundYieldGraph(xVals.size(), xVals.data(), backgroundYield.data());
+        backgroundYieldGraph.SetFillColor(kBlue-9);
+        backgroundYieldGraph.SetFillStyle(3354);
+        backgroundYieldGraph.SetMarkerStyle(21);
+        backgroundYieldGraph.Draw("ALP");
+        backgroundYieldGraph.GetXaxis()->SetTitle(variableLabels[*variableName].c_str());
+        backgroundYieldGraph.GetXaxis()->CenterTitle();
+
+        buf.clear();
+        plotName = "";
+        buf << outDir << "/";
+        buf << round->name() << "_Pass" << nPass << "_" << *variableName << "_backgroundYield";
         buf >> plotName;
 
         for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
