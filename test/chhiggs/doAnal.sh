@@ -33,27 +33,26 @@ if [ "${1}" = "fwlite" ]; then
     fi
 elif [ "${1}" = "current" ]; then
 # Fixed run 
-    #    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_e/
-#    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_dio/
-    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/
+### base:   BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/
+    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_angular/
 # run in 5315
     if [ "${2}" = "anal_sus" ]; then
-	runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=True @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_sm" ]; then
-       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=True @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
 
     elif [ "${2}" = "plots" ]; then
 	# Plots
 	#JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
 	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_1pb_samples.json
 	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
-	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt
+	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt dilarccosine geq2btagsdilarccosine geq2btagsdphill geq2btagsdrll
 	  do
 	  for chanList in emu ee mumu
 	    do
 	    for formatList in pdf png C
 	      do
-	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --onlyStartWith ${chanList}_${plotList}                                 &
+	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --jodorStyle --onlyStartWith ${chanList}_${plotList}                                 &
 	    done
 	  done
 	done
@@ -83,12 +82,15 @@ elif [ "${1}" = "current" ]; then
 	cp ${BASEDIR}outputs/tables/plotsemu_evtflow.tex  ${PLOTSDIR}emu/   
 	cp ${BASEDIR}outputs/tables/plotsee_evtflow.tex   ${PLOTSDIR}ee/
 	cp ${BASEDIR}outputs/tables/plotsmumu_evtflow.tex ${PLOTSDIR}mumu/ 
-
+	
     elif [ "${2}" = "cleanDisplay" ]; then
 	PLOTSDIR=~/www/HIG-13-026/plots/	
 	rm ${PLOTSDIR}ee/*
 	rm ${PLOTSDIR}emu/*
 	rm ${PLOTSDIR}mumu/*
+	cp ~/www/HIG-13-026/index.php ${PLOTSDIR}ee/
+	cp ~/www/HIG-13-026/index.php ${PLOTSDIR}emu/
+	cp ~/www/HIG-13-026/index.php ${PLOTSDIR}mumu/
 
     elif [ "${2}" = "datacards" ]; then
 	mkdir -p ${BASEDIR}outputs/datacards/
@@ -287,7 +289,7 @@ elif [ "${1}" = "current" ]; then
 	
 	mkdir -p ${outputdir}
 	
-	for plotList in evtflow met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt 
+	for plotList in evtflow met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt dilarccosine geq2btagsdilarccosine  geq2btagsdphill geq2btagsdrll
 	  do
 	  for chanList in emu ee mumu
 	    do
@@ -297,7 +299,7 @@ elif [ "${1}" = "current" ]; then
 		  if [ "${formatList}" == "C" ]; then
 		      continue
 		  fi
-		  cp ${BASEDIR}plots/${chanList}_${plotList}.${formatList} ${outputdir}
+		  cp ${BASEDIR}outputs/plots/${chanList}_${plotList}.${formatList} ${outputdir}
 	      fi
 	    done
 	  done

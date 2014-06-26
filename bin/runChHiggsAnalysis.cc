@@ -268,6 +268,9 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"sumpt"+var,";Sum of lepton transverse momenta [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+var,";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
 
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dphill"+var, ";D#phi(l,l');Events",100,0,4) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"drll"+var  , ";DR(l,l');Events",100,0,6)   );
+
 	// for DY estimation
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"dilarccosine"+var,";#theta(l,l') [rad];Events",50,0,3.2) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mtsum"+var,";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
@@ -714,6 +717,13 @@ int main(int argc, char* argv[])
 		}
 	      }
 	    controlHistos.fillHisto(ctrlCategs[icat]+"sumpt"+var, ch, sumpt, weight);
+
+	    // index 0 and 1
+	    double dphi( deltaPhi(selLeptons[0].phi(), selLeptons[1].phi()) );
+	    double dR( deltaR(selLeptons[0].eta(),selLeptons[0].phi(),selLeptons[1].eta(),selLeptons[1].phi()) );	    
+	    controlHistos.fillHisto( ctrlCategs[icat]+"dphill"+var, ch, abs(dphi), weight);
+	    controlHistos.fillHisto( ctrlCategs[icat]+"drll"+var  , ch, dR  , weight);
+
 
 	    for(size_t ijet=0; ijet<selJets.size(); ++ijet) // FIXME: am I sure that for HT I want to use only jets with pt>30, eta<2.5?
 	      {

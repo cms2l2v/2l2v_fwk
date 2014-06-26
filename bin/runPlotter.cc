@@ -60,6 +60,7 @@ string outFile = "plotter.root";
 string cutflowhisto = "all_cutflow";
 bool forceMerge=false;
 bool useMerged=false;
+bool jodorStyle=false;
 
 struct stSampleInfo{ double PURescale_up; double PURescale_down; double initialNumberOfEvents;};
 std::unordered_map<string, stSampleInfo> sampleInfoMap;
@@ -658,7 +659,13 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       fixExtremities(hist,true,true);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
-      hist->SetMinimum(5e-2);
+      if( jodorStyle){
+	//hist->SetMinimum(5e-2);
+	//if(!Process[i]["isdata"].toBool()) hist->SetMinimum(hist->GetBinContent(hist->GetMinimumBin())*0.9);
+	hist->SetMinimum(hist->GetBinContent(hist->GetMinimumBin())*0.90> 5e-2 ? hist->GetBinContent(hist->GetMinimumBin())*0.90 : 5e-2 );
+      }
+      else
+	hist->SetMinimum(5e-2);      
       //hist->SetMaximum(1E6);
       hist->SetMaximum(hist->GetBinContent(hist->GetMaximumBin())*1.10);
       ObjectToDelete.push_back(hist);
@@ -833,10 +840,19 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        denRelUncH->GetXaxis()->SetTitle("");
        //denRelUncH->SetMinimum(0);
        //denRelUncH->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.10);
-       denRelUncH->GetXaxis()->SetTitleOffset(1.3);
-       denRelUncH->GetXaxis()->SetLabelSize(0.033*yscale);
-       denRelUncH->GetXaxis()->SetTitleSize(0.036*yscale);
-       denRelUncH->GetXaxis()->SetTickLength(0.03*yscale);
+       if(jodorStyle){
+	 denRelUncH->GetXaxis()->SetTitleOffset(1.3);
+	 denRelUncH->GetXaxis()->SetLabelOffset(0.05);
+	 denRelUncH->GetXaxis()->SetLabelSize(0.050*yscale);
+	 denRelUncH->GetXaxis()->SetTitleSize(0.042*yscale);
+	 denRelUncH->GetXaxis()->SetTickLength(0.03*yscale);
+       }
+       else{
+	 denRelUncH->GetXaxis()->SetTitleOffset(1.3);
+	 denRelUncH->GetXaxis()->SetLabelSize(0.033*yscale);
+	 denRelUncH->GetXaxis()->SetTitleSize(0.036*yscale);
+	 denRelUncH->GetXaxis()->SetTickLength(0.03*yscale);
+       }
        denRelUncH->GetYaxis()->SetTitleOffset(0.3);
        denRelUncH->GetYaxis()->SetNdivisions(5);
        denRelUncH->GetYaxis()->SetLabelSize(0.033*yscale);
@@ -1081,6 +1097,7 @@ int main(int argc, char* argv[]){
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
         printf("--forceMerge --> merge splitted samples\n");
 	printf("--useMerged --> use merged splitted samples\n");
+	printf("--jodorStyle --> use plotting style requested from Jodor");
 
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;
@@ -1113,6 +1130,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
      if(arg.find("--forceMerge")!=string::npos){ forceMerge = true;  useMerged=true;  }
      if(arg.find("--useMerged")!=string::npos){ useMerged = true;    }
+     if(arg.find("--jodorStyle")!=string::npos){ jodorStyle = true;  }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
      if(arg.find("--logX")!=string::npos){ logX = true;    }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
