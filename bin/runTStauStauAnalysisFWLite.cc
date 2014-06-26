@@ -1154,10 +1154,11 @@ int main(int argc, char* argv[])
       //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
       //SVfit_algo.fit();
       //SVfit_algo.integrate();
-//      SVfit_algo.integrateVEGAS();
+      SVfit_algo.integrateVEGAS();
       //SVfit_algo.integrateMarkovChain();
       if(SVfit_algo.isValidSolution())
         mass = SVfit_algo.mass();
+      //mass = (selLepton+selTau).M(); // Temporary hold
     }
 
     // MT2 calculation
