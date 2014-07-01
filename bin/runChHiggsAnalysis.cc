@@ -12,6 +12,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/TopPtWeighter.h"
+#include "UserCode/llvv_fwk/interface/PDFInfo.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -75,6 +76,7 @@ int main(int argc, char* argv[])
   double xsec        = runProcess.getParameter<double>("xsec");
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
   bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_") ));
+  bool isSignal(isMC && (url.Contains("TBH") || url.Contains("HTB") ));
   TString out        = runProcess.getParameter<std::string>("outdir");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
@@ -90,7 +92,31 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
 
-  // FIXME: add dy reweighting for data driven DY estimation. 
+  
+  //pdf info
+  PDFInfo *mPDFInfo=0;
+  if(isMC)
+    {
+      TString pdfUrl(url);
+      pdfUrl.ReplaceAll(".root","_pdf.root");
+      pdfUrl.ReplaceAll("/MC","/pdf/MC");
+      mPDFInfo=new PDFInfo(pdfUrl,"cteq66.LHgrid");
+      /// no need ///      for(int i=0; i<mPDFInfo->numberPDFs(); i++)
+      /// no need ///	{
+      /// no need ///	  TString var("_"); var+=i;
+      /// no need ///	  mon.addHistogram( new TH1F("vbfcandjetdeta"+var    , ";|#Delta #eta|;Jets",                             50,0,10) );
+      /// no need ///	  mon.addHistogram( new TH1F("vbfcandjet1eta"+var    , ";#eta;Jets",                                      50,0,5) );
+      /// no need ///	  mon.addHistogram( new TH1F("vbfcandjet1pt"+var     , ";p_{T} [GeV];Jets",                               50,0,1000) ); //nptBins,jetptaxis) );
+      /// no need ///	  mon.addHistogram( new TH1F("vbfcandjet2eta"+var    , ";#eta;Jets",                                      50,0,5) );
+      /// no need ///	  mon.addHistogram( new TH1F("vbfcandjet2pt"+var     , ";p_{T} [GeV];Jets",                               50,0,500) ); //nptBins,jetptaxis) );
+      /// no need ///	  mon.addHistogram( new TH1F("vbfspt"+var            , ";Relative balance (#Delta^{rel}_{p_{T}});Events", 50,0,1) );
+      /// no need ///	}
+      cout << "Readout " << mPDFInfo->numberPDFs() << " pdf variations" << endl;
+    }
+
+
+  // FIXME: add dy reweighting for data driven DY estimation. NOT NEEDED for now: use enhanced nuisance parameter from 0-jets control region. 
+
 
    //b-tag efficiencies read b-tag efficiency map
   std::map<std::pair<TString,TString>, std::pair<TGraphErrors *,TGraphErrors *> > btagEffCorr;
@@ -186,6 +212,8 @@ int main(int argc, char* argv[])
       systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
       if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
       //      systVars.push_back(); systVars.push_back();
+
+      if(isTTbarMC || isSignal) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
       cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
     }
   
@@ -450,6 +478,28 @@ int main(int argc, char* argv[])
       Hcutflow->Fill(2,weightNom);
       Hcutflow->Fill(3,weightUp);
       Hcutflow->Fill(4,weightDown);
+
+      float Q2Weight_plus(1.0), Q2Weight_down(1.0);
+      float PDFWeight_plus(1.0), PDFWeight_down(1.0);
+      if(isTTbarMC || isSignal)
+	{
+	  if(mPDFInfo)
+	    {
+	      std::vector<float> wgts=mPDFInfo->getWeights(inum);
+	      for(size_t ipw=0; ipw<wgts.size(); ipw++)
+		{
+		  PDFWeight_plus = TMath::Max(PDFWeight_plus,wgts[ipw]);
+		  PDFWeight_down = TMath::Min(PDFWeight_down,wgts[ipw]);
+		}
+	    }
+	  ///if(Q2weightsGr.size()==2)
+	  ///  {
+	  ///    Q2Weight_plus = Q2weightsGr[0]->Eval(genll.pt());
+	  ///    Q2Weight_down = Q2weightsGr[1]->Eval(genll.pt());
+	  ///  }
+	}
+      
+
       
       for(size_t ivar=0; ivar<systVars.size(); ++ivar){
 	TString var=systVars[ivar];
@@ -557,7 +607,10 @@ int main(int argc, char* argv[])
 
 	if(var=="topptuncup")   weight *= wgtTopPtUp;
 	if(var=="topptuncdown") weight *= wgtTopPtDown;
-
+	
+	if(var=="pdfup")    weight *= PDFWeight_plus;
+        if(var=="pdfdown")  weight *= PDFWeight_down;
+	
 	//the met
 	data::PhysicsObjectCollection_t recoMet=evSummary.getPhysicsObject(DataEventSummaryHandler::MET);
 	//select the jets
