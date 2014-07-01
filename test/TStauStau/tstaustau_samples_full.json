@@ -91,7 +91,7 @@
       "color":614,
       "lcolor":1,
       "data":[
-        { "dtag":"MC8TeV_TTJetsFullLeptMGDecays"           , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM"        }
+        { "dtag":"MC8TeV_TTJetsFullLeptMGDecays"           , "split":10, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM"        }
       ]
     },
     {
