@@ -45,6 +45,7 @@ typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> 
 void printHelp();
 fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
 std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+int getNumberOfPoints(fileChains files, std::string variable, TCut cut);
 double applyCut(fileChains files,  TCut cut, bool correctFiles = true, bool normalize = false);
 
 class OptimizationVariable
@@ -99,6 +100,7 @@ public:
   inline std::string& inDir(){return _inDir;};
   inline std::string& jsonFile(){return _jsonFile;};
   inline size_t nVars(){return _variables.size();};
+  inline std::string pointVariable(){return _pointVariable;};
 
   std::vector<std::string> getListOfVariables();
   std::unordered_map<std::string,std::string> getVariableExpressions();
@@ -119,6 +121,7 @@ private:
   double      _iLumi;
   std::string _inDir;
   std::string _jsonFile;
+  std::string _pointVariable;
 
 protected:
 };
@@ -276,6 +279,10 @@ int main(int argc, char** argv)
     TCut baseSelection = round->baseSelection().c_str();
     TCut signalSelection = round->signalSelection().c_str();
     TCut cumulativeSelection = "";
+    std::string pointVariable = round->pointVariable();
+
+    int nSigPoints = getNumberOfPoints(SIG_samples, pointVariable, baseSelection&&signalSelection);
+    std::cout << "Running on " << nSigPoints << " signal points." << std::endl;
 
     TCanvas c1("c1", "c1", 800, 600);
 
@@ -315,6 +322,7 @@ int main(int argc, char** argv)
 
           double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
           double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), !isStauStau) * round->iLumi(); // Very compute intensive
+          nSIG = nSIG / nSigPoints;
           double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
           std::cout << "    n(Sig): " << nSIG << std::endl;
           std::cout << "    n(Bkg): " << nBG  << std::endl;
@@ -549,6 +557,38 @@ OptimizationVariable::~OptimizationVariable()
 {
 }
 
+int getNumberOfPoints(fileChains files, std::string variable, TCut cut)
+{
+  gROOT->cd();
+  int retVal = 0;
+  int maxVal = 501*1000+1;
+  TH1D finalHist("finalHist", "finalHist", maxVal, 0, maxVal);
+
+  for(auto process = files.begin(); process != files.end(); ++process)
+  {
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      if(sample->first == 0)
+        continue;
+
+      TH1D* temp_hist = new TH1D("temp_hist", "temp_hist", maxVal, 0, maxVal);
+      sample->second->Draw((variable+">>temp_hist").c_str(), cut*"weight", "goff");
+      finalHist.Add(temp_hist);
+
+      delete temp_hist;
+    }
+  }
+
+  int nBins = finalHist.GetNbinsX();
+  for(int i = 1; i <= nBins; ++i)
+  {
+    if(finalHist.GetBinContent(i) != 0)
+      retVal++;
+  }
+
+  return retVal;
+}
+
 double applyCut(fileChains files,  TCut cut, bool correctFiles, bool normalize)
 {
   gROOT->cd();
@@ -596,6 +636,7 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
   for(auto round = rounds.begin(); round != rounds.end(); ++round)
   {
     OptimizationRound roundInfo;
+    //roundInfo._pointVariable = "stauMass*1000+neutralinoMass";
 
     std::string name = round->getString("name", "");
     if(name != "")
@@ -624,6 +665,7 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
     roundInfo._baseSelection = round->getString("baseSelection", roundInfo._baseSelection);
     roundInfo._signalSelection = round->getString("signalSelection", roundInfo._signalSelection);
     roundInfo._channel = round->getString("channel", roundInfo._channel);
+    roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
 
     auto variables = (*round)["variables"].daughters();
     for(auto variable = variables.begin(); variable != variables.end(); ++variable)
