@@ -689,7 +689,7 @@ int main(int argc, char* argv[])
       if(isStauStau)
       {
         int nEvents = 10000;
-        double xsec = 1;
+        double xsec = stauCrossSec(stauMass, neutralinoMass);
         xsecWeight = xsec/nEvents;
       }
       puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
@@ -1336,5 +1336,19 @@ int main(int argc, char* argv[])
 double stauCrossSec(double stauM, double neutM)
 {
   // TODO: Get cross section as a function of mass, for now use placeholder value of 1 pb
-  return 1;
+  //Points taken from  http://arxiv.org/abs/1204.2379
+  //Mstau == 100 => 0.1
+  //Mstau == 125 => 0.05
+  //Mstau == 145 => 0.03
+  //Mstau == 195 => 0.01
+  //Mstau == 240 => 0.005
+  //Mstau == 275 => 0.003
+  //Mstau == 300 => 0.002
+  //Mstau == 360 => 0.001
+  //Mstau == 425 => 0.0005
+  double a = 0.2979;
+  double b = 17.626;
+  double c = 67.632;
+  double d = 3.463;
+  return a / (1 + std::pow((stauM - b) / c, d));
 }
