@@ -8,7 +8,7 @@
       "comment":"the name field is self explanatory, ie the name of the round",
       "iLumi":18893,
       "comment":"the iLumi field should contain the integrated luminosity, this should not affect the result unless a data driven background is being used",
-      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results2/",
+      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
       "comment":"the inDir field should contain the directory where the summary trees may be found",
       "jsonFile":"tstaustau_samples_inclusive_2012BCD.json",
       "comment":"the jsonFile field should contain the json file describing the processes and samples to use. It should be the same file given to runPlotter for instance",
@@ -18,8 +18,9 @@
       "comment":"the customExtension field should contain any additional extension to the name of the file where the ttree is located",
       "baseSelection":"selected",
       "comment":"the baseSelection field should contain the base selection of the events in the tree, this must be a valid expression in ROOT",
-      "signalSelection":"(stauMass==120)&&(neutralinoMass==20)",
+      "signalSelection":"(stauMass-neutralinoMass)==100",
       "comment":"the signalSelection field should contain any other selection that should be made only on the signal samples, in addition to the base selection",
+      "pointVariable":"stauMass*1000+neutralinoMass",
       "variables":[
         {
           "name":"MET",

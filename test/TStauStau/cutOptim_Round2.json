@@ -16,7 +16,7 @@
       "comment":"the ttree field should contain the name of the ttree where the variables are kept",
       "customExtension":"_summary",
       "comment":"the customExtension field should contain any additional extension to the name of the file where the ttree is located",
-      "baseSelection":"selected&&met.Et()+lepLeadPt>230&&met.Et()+tauLeadPt>230",
+      "baseSelection":"selected&&met.Et()+lepLeadPt>230&&met.Et()+tauLeadPt>230&&abs(deltaAlphaTauTau)>1",
       "comment":"the baseSelection field should contain the base selection of the events in the tree, this must be a valid expression in ROOT",
       "signalSelection":"(stauMass-neutralinoMass)==100",
       "comment":"the signalSelection field should contain any other selection that should be made only on the signal samples, in addition to the base selection",
@@ -30,15 +30,6 @@
           "step":10,
           "cutDir":"below",
           "label":"M_{SVFit}"
-        },
-        {
-          "name":"deltaAlphaTauTau",
-          "expression":"abs(deltaAlphaTauTau)",
-          "minVal":0,
-          "maxVal":3.14,
-          "step":0.1,
-          "cutDir":"below",
-          "label":"#Delta#alpha_{#tau-#tau}(Lab)"
         },
         {
           "name":"deltaPhiTauTauMET",
