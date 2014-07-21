@@ -21,6 +21,13 @@
       "signalSelection":"(stauMass-neutralinoMass)==100",
       "comment":"the signalSelection field should contain any other selection that should be made only on the signal samples, in addition to the base selection",
       "pointVariable":"stauMass*1000+neutralinoMass",
+      "signalPoint":"stauMass==110&&neutralinoMass==10",
+      "sigCrossSection":0.0755,
+      "selected":[
+        {
+          "selection":"MT2>90"
+        }
+      ],
       "variables":[
         {
           "name":"MET",
@@ -58,8 +65,8 @@
           "name":"SVFit",
           "expression":"abs(SVFitMass-95)",
           "minVal":0,
-          "maxVal":100,
-          "step":5,
+          "maxVal":300,
+          "step":10,
           "cutDir":"below",
           "label":"M_{SVFit}"
         },
@@ -89,6 +96,51 @@
           "step":5,
           "cutDir":"below",
           "label":"M_{T2}"
+        },
+        {
+          "name":"deltaAlphaTauLep",
+          "expression":"abs(deltaAlphaTauTau)",
+          "minVal":0,
+          "maxVal":3.14,
+          "step":0.1,
+          "cutDir":"below",
+          "label":"#Delta#alpha_{#tau-l}(Lab)"
+        },
+        {
+          "name":"deltaPhiTauLepMET",
+          "expression":"abs(deltaPhiTauTauMET)",
+          "minVal":0,
+          "maxVal":3.14,
+          "step":0.1,
+          "cutDir":"below",
+          "label":"#Delta#phi_{#taul-MET}(Lab)"
+        },
+        {
+          "name":"deltaPhiTauLep",
+          "expression":"abs(deltaPhiTauTau)",
+          "minVal":0,
+          "maxVal":3.14,
+          "step":0.1,
+          "cutDir":"above",
+          "label":"#Delta#phi_{#tau-l}(Lab)"
+        },
+        {
+          "name":"cosThetaLep",
+          "expression":"abs(cosThetaTauL)",
+          "minVal":0,
+          "maxVal":1,
+          "step":0.05,
+          "cutDir":"above",
+          "label":"cos#theta_{l}"
+        },
+        {
+          "name":"cosThetaTau",
+          "expression":"abs(cosThetaTauH)",
+          "minVal":0,
+          "maxVal":1,
+          "step":0.05,
+          "cutDir":"above",
+          "label":"cos#theta_{#tau}"
         }
       ],
       "comment":"the variables field should contain the list of variables on which to perform optimization",
