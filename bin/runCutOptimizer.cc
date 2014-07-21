@@ -38,26 +38,42 @@
 // REMEMBER TO IGNORE ANY DATA DEFINED IN THE JSON, YOU SHOULD NEVER OPTIMIZE CUTS ON DATA
 // IT MIGHT BE OK TO USE THE DATA IF USING A METHOD WITH A DATA DRIVEN BACKGROUND ESTIMATION (CONFIRM THIS BEFORE USING IT HERE)
 
-class OptimizationRound;
+class OptimizationRoundInfo;
 
 typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> fileChains;
 
 void printHelp();
 fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
-std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
 int getNumberOfPoints(fileChains files, std::string variable, TCut cut);
-double applyCut(fileChains files,  TCut cut, bool correctFiles = true, bool normalize = false);
+double applyCut(fileChains files,  TCut cut, bool isSig = false, bool correctFiles = true, bool normalize = false);
+double getSignalScale(fileChains files,  TCut cut, bool correctFiles = true);
 
-class OptimizationVariable
+bool gDoneScale = false;
+double gScale = 0;
+bool gDoneSignalScale = false;
+double gSignalScale = 0;
+
+class CutOptimizer
 {
 public:
-  OptimizationVariable();
-  ~OptimizationVariable();
+private:
+  std::string jsonFile_;
+  std::vector<OptimizationRoundInfo> roundInfo_;
+
+protected:
+};
+
+class OptimizationVariableInfo
+{
+public:
+  OptimizationVariableInfo();
+  ~OptimizationVariableInfo();
 
   // If using pointers the following lines should be uncommented and the respective functions defined
   // More info: http://www.cplusplus.com/articles/y8hv0pDG/
-  //OptimizationVariable(const OptimizationVariable& other);
-  //OptimizationVariable& operator=(const OptimizationVariable& rhs);
+  //OptimizationVariableInfo(const OptimizationVariableInfo& other);
+  //OptimizationVariableInfo& operator=(const OptimizationVariableInfo& rhs);
 
   inline std::string& name(){return _name;};
   inline std::string& expression(){return _expression;};
@@ -67,7 +83,7 @@ public:
   inline std::string& cutDir(){return _cutDir;};
   inline std::string& label(){return _label;};
 
-  friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+  friend std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
 
 private:
   std::string _name;
@@ -79,16 +95,16 @@ private:
 protected:
 };
 
-class OptimizationRound
+class OptimizationRoundInfo
 {
 public:
-  OptimizationRound();
-  ~OptimizationRound();
+  OptimizationRoundInfo();
+  ~OptimizationRoundInfo();
 
   // If using pointers the following lines should be uncommented and the respective functions defined
   // More info: http://www.cplusplus.com/articles/y8hv0pDG/
-  //OptimizationRound(const OptimizationRound& other);
-  //OptimizationRound& operator=(const OptimizationRound& rhs);
+  //OptimizationRoundInfo(const OptimizationRoundInfo& other);
+  //OptimizationRoundInfo& operator=(const OptimizationRoundInfo& rhs);
 
   inline std::string& name(){return _name;};
   inline std::string& ttree(){return _ttree;};
@@ -101,13 +117,17 @@ public:
   inline std::string& jsonFile(){return _jsonFile;};
   inline size_t nVars(){return _variables.size();};
   inline std::string pointVariable(){return _pointVariable;};
+  inline bool isSelected(int pass){return (static_cast<size_t>(pass) < _selected.size());};
+  inline std::string getSelection(int pass){if(isSelected(pass)) return selection(pass); else return "";};
+  inline std::string signalPoint(){return _signalPoint;};
+  inline double sigCrossSection(){return _sigCrossSection;};
 
   std::vector<std::string> getListOfVariables();
   std::unordered_map<std::string,std::string> getVariableExpressions();
   std::unordered_map<std::string,std::unordered_map<std::string,double>> getVariableParameterMap();
   std::unordered_map<std::string,std::string> getVariableLabels();
 
-  friend std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json);
+  friend std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
 
 private:
   static size_t _counter;
@@ -116,16 +136,21 @@ private:
   std::string _customExtension;
   std::string _baseSelection;
   std::string _signalSelection;
+  std::string _signalPoint;
   std::string _channel;
-  std::vector<OptimizationVariable> _variables;
+  std::vector<OptimizationVariableInfo> _variables;
   double      _iLumi;
   std::string _inDir;
   std::string _jsonFile;
   std::string _pointVariable;
+  std::vector<std::string> _selected;
+  double      _sigCrossSection;
+
+  inline std::string selection(int pass){return _selected[pass];};
 
 protected:
 };
-size_t OptimizationRound::_counter = 0;
+size_t OptimizationRoundInfo::_counter = 0;
 
 struct FOMInfo
 {
@@ -202,7 +227,7 @@ int main(int argc, char** argv)
 
   JSONWrapper::Object json(jsonFile, true);
 
-  std::vector<OptimizationRound> rounds = getRoundsFromJSON(json);
+  std::vector<OptimizationRoundInfo> rounds = getRoundsFromJSON(json);
 
   for(auto round = rounds.begin(); round != rounds.end(); ++round)
   {
@@ -226,6 +251,8 @@ int main(int argc, char** argv)
     JSONWrapper::Object json(round->jsonFile(), true);
     auto BG_samples  = getChainsFromJSON(json, round->inDir(),  "BG", round->ttree(), round->customExtension());
     auto SIG_samples = getChainsFromJSON(json, round->inDir(), "SIG", round->ttree(), round->customExtension());
+    gDoneScale = false;
+    gDoneSignalScale = false;
 
     std::cout << "\tFound " << BG_samples.size()  << " background processes:" << std::endl;
     for(auto process = BG_samples.begin(); process != BG_samples.end(); ++process)
@@ -288,11 +315,17 @@ int main(int argc, char** argv)
 
     bool improve = true;
     int nPass = -1;
-    while(improve)
+    while(improve && nSigPoints!=0)
     {
       ++nPass;
       highestFOM.FOM = 0;
       std::cout << round->name() << ": Starting pass " << nPass << ", with " << variables.size() << " variables to optimize cuts on." << std::endl;
+      bool isSelected = false;
+      if(round->isSelected(nPass))
+      {
+        std::cout << "  Found a selection for this pass: " << round->getSelection(nPass) << std::endl;
+        isSelected = true;
+      }
 
       for(auto variableName = variables.begin(); variableName != variables.end(); ++variableName)
       {
@@ -320,9 +353,14 @@ int main(int argc, char** argv)
           std::cout << "  The Cut: " << thisCutStr << std::endl;
           TCut thisCut = thisCutStr.c_str();
 
+          double sigScale = getSignalScale(SIG_samples, round->signalPoint().c_str(), !isStauStau) * round->iLumi();
+          double xSection = round->sigCrossSection();
+          double nInitEvents = 10000;
+          double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), true, !isStauStau); // Very compute intensive
           double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
-          double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), !isStauStau) * round->iLumi(); // Very compute intensive
           nSIG = nSIG / nSigPoints;
+          double unweightedYield = nSIG;
+          nSIG = nSIG * round->iLumi() * xSection / nInitEvents;
           double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
           std::cout << "    n(Sig): " << nSIG << std::endl;
           std::cout << "    n(Bkg): " << nBG  << std::endl;
@@ -331,6 +369,10 @@ int main(int argc, char** argv)
             continue;
           double nBGErr = std::sqrt(nBG);
           double nSIGErr = std::sqrt(nSIG);
+          if(1/std::sqrt(unweightedYield + nInitEvents) > 1/unweightedYield + 1/nInitEvents)
+            nSIGErr = nSIG*std::sqrt(1/unweightedYield + 1/nInitEvents);
+          else
+            nSIGErr = nSIG*std::sqrt(1/unweightedYield + 1/nInitEvents - 1/std::sqrt(unweightedYield + nInitEvents));
           double dividend = std::sqrt(nBG + (systErr*nBG)*(systErr*nBG));
 
           double FOM    = nSIG/dividend;
@@ -425,34 +467,43 @@ int main(int argc, char** argv)
           c1.SaveAs((plotName + *ext).c_str());
       }
 
-      if(highestFOM.FOM == 0)
-        improve = false;
+      if(isSelected)
+      {
+        improve = true;
+        TCut tempCut = round->getSelection(nPass).c_str();
+        cumulativeSelection = cumulativeSelection && tempCut;
+      }
       else
       {
-        if(highestFOM.FOM - previousFOM.FOM > previousFOM.err)
-        {
-          //Add cut to list of selected cuts
-          previousFOM.FOM = highestFOM.FOM;
-          previousFOM.err = highestFOM.err;
-
-          std::stringstream buf;
-          std::string tempStr;
-          buf << variableExpressions[highestFOM.var];
-          if(variableParameterMap[highestFOM.var]["cutDir"] > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
-            buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
-          else
-            buf << ">";
-          buf << highestFOM.cutVal;
-          buf >> tempStr;
-          std::cout << "Adding cut: " << tempStr << std::endl;
-          TCut tempCut = tempStr.c_str();
-          cumulativeSelection = cumulativeSelection && tempCut;
-
-          auto newEnd = std::remove(variables.begin(), variables.end(), highestFOM.var);
-          variables.erase(newEnd, variables.end());
-        }
-        else
+        if(highestFOM.FOM == 0)
           improve = false;
+        else
+        {
+          if(highestFOM.FOM - previousFOM.FOM > previousFOM.err)
+          {
+            //Add cut to list of selected cuts
+            previousFOM.FOM = highestFOM.FOM;
+            previousFOM.err = highestFOM.err;
+
+            std::stringstream buf;
+            std::string tempStr;
+            if(variableParameterMap[highestFOM.var]["cutDir"] > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
+              buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
+            else
+              buf << ">";
+            buf << highestFOM.cutVal;
+            buf >> tempStr;
+            tempStr = variableExpressions[highestFOM.var] + tempStr;
+            std::cout << "Adding cut: " << tempStr << std::endl;
+            TCut tempCut = tempStr.c_str();
+            cumulativeSelection = cumulativeSelection && tempCut;
+
+            auto newEnd = std::remove(variables.begin(), variables.end(), highestFOM.var);
+            variables.erase(newEnd, variables.end());
+          }
+          else
+            improve = false;
+        }
       }
     }
     std::cout << round->name() << ": Chose the cuts - " << cumulativeSelection << std::endl;
@@ -467,7 +518,7 @@ int main(int argc, char** argv)
   }
 }
 
-OptimizationRound::OptimizationRound()
+OptimizationRoundInfo::OptimizationRoundInfo()
 {
   std::stringstream buf;
   buf << "Round_" << _counter;
@@ -483,12 +534,12 @@ OptimizationRound::OptimizationRound()
   ++_counter;
 }
 
-OptimizationRound::~OptimizationRound()
+OptimizationRoundInfo::~OptimizationRoundInfo()
 {
   _variables.clear();
 }
 
-std::vector<std::string> OptimizationRound::getListOfVariables()
+std::vector<std::string> OptimizationRoundInfo::getListOfVariables()
 {
   std::vector<std::string> retVal;
 
@@ -498,7 +549,7 @@ std::vector<std::string> OptimizationRound::getListOfVariables()
   return retVal;
 }
 
-std::unordered_map<std::string,std::string> OptimizationRound::getVariableLabels()
+std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableLabels()
 {
   std::unordered_map<std::string,std::string> retVal;
 
@@ -512,7 +563,7 @@ std::unordered_map<std::string,std::string> OptimizationRound::getVariableLabels
   return retVal;
 }
 
-std::unordered_map<std::string,std::unordered_map<std::string,double>> OptimizationRound::getVariableParameterMap()
+std::unordered_map<std::string,std::unordered_map<std::string,double>> OptimizationRoundInfo::getVariableParameterMap()
 {
   std::unordered_map<std::string,std::unordered_map<std::string,double>> retVal;
 
@@ -531,7 +582,7 @@ std::unordered_map<std::string,std::unordered_map<std::string,double>> Optimizat
   return retVal;
 }
 
-std::unordered_map<std::string,std::string> OptimizationRound::getVariableExpressions()
+std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableExpressions()
 {
   std::unordered_map<std::string,std::string> retVal;
 
@@ -543,7 +594,7 @@ std::unordered_map<std::string,std::string> OptimizationRound::getVariableExpres
   return retVal;
 }
 
-OptimizationVariable::OptimizationVariable()
+OptimizationVariableInfo::OptimizationVariableInfo()
 {
   _name = "";
   _expression = "";
@@ -553,7 +604,7 @@ OptimizationVariable::OptimizationVariable()
   _cutDir = "below";
 }
 
-OptimizationVariable::~OptimizationVariable()
+OptimizationVariableInfo::~OptimizationVariableInfo()
 {
 }
 
@@ -589,10 +640,65 @@ int getNumberOfPoints(fileChains files, std::string variable, TCut cut)
   return retVal;
 }
 
-double applyCut(fileChains files,  TCut cut, bool correctFiles, bool normalize)
+double getSignalScale(fileChains files,  TCut cut, bool correctFiles)
+{
+  double retVal = 0;
+
+  if(!gDoneSignalScale)
+  {
+    for(auto process = files.begin(); process != files.end(); ++process)
+    {
+      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+      {
+        if(sample->first == 0)
+          continue;
+        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
+        sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
+
+        double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
+
+        if(correctFiles)
+          count = count/sample->first;
+        retVal += count;
+      }
+    }
+  }
+  else
+    retVal = gSignalScale;
+
+  gSignalScale = retVal;
+  gDoneSignalScale = true;
+  return retVal;
+}
+
+double applyCut(fileChains files,  TCut cut, bool isSig, bool correctFiles, bool normalize)
 {
   gROOT->cd();
   double retVal = 0;
+
+  if(!gDoneScale && isSig)
+  {
+    gScale = 0;
+    for(auto process = files.begin(); process != files.end(); ++process)
+    {
+      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+      {
+        if(sample->first == 0)
+          continue;
+        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
+        sample->second->Draw("puWeight>>temp_histo", "puWeight", "goff");
+
+        double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
+
+        if(correctFiles)
+          count = count/sample->first;
+        gScale += count;
+      }
+    }
+
+    gScale = 1/gScale;
+    gDoneScale = true;
+  }
 
   for(auto process = files.begin(); process != files.end(); ++process)
   {
@@ -603,7 +709,10 @@ double applyCut(fileChains files,  TCut cut, bool correctFiles, bool normalize)
 //      TEventList selectedEvents("selectedList");
 //      sample->second->Draw(">>selectedList", cut, "goff");
       TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-      sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
+      if(isSig)
+        sample->second->Draw("puWeight>>temp_histo", cut*"puWeight", "goff");
+      else
+        sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
 
       double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
 
@@ -628,14 +737,14 @@ double applyCut(fileChains files,  TCut cut, bool correctFiles, bool normalize)
   return retVal;
 }
 
-std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
+std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json)
 {
-  std::vector<OptimizationRound> retVal;
+  std::vector<OptimizationRoundInfo> retVal;
 
   std::vector<JSONWrapper::Object> rounds = json["optim"].daughters();
   for(auto round = rounds.begin(); round != rounds.end(); ++round)
   {
-    OptimizationRound roundInfo;
+    OptimizationRoundInfo roundInfo;
     //roundInfo._pointVariable = "stauMass*1000+neutralinoMass";
 
     std::string name = round->getString("name", "");
@@ -645,6 +754,12 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
     if(roundInfo._iLumi <= 0)
     {
       std::cout << roundInfo._name << ": Integrated luminosity should be positive and non-zero. Continuing..." << std::endl;
+      continue;
+    }
+    roundInfo._sigCrossSection = round->getDouble("sigCrossSection", 0);
+    if(roundInfo._sigCrossSection <= 0)
+    {
+      std::cout << roundInfo._name << ": Signal cross section should be positive and non-zero. Continuing..." << std::endl;
       continue;
     }
     roundInfo._inDir = round->getString("inDir", "");
@@ -664,13 +779,22 @@ std::vector<OptimizationRound> getRoundsFromJSON(JSONWrapper::Object& json)
     roundInfo._customExtension = round->getString("customExtension", roundInfo._customExtension);
     roundInfo._baseSelection = round->getString("baseSelection", roundInfo._baseSelection);
     roundInfo._signalSelection = round->getString("signalSelection", roundInfo._signalSelection);
+    roundInfo._signalPoint = round->getString("signalPoint", roundInfo._signalPoint);
     roundInfo._channel = round->getString("channel", roundInfo._channel);
     roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
+
+    auto selected = (*round)["selected"].daughters();
+    for(auto selection = selected.begin(); selection != selected.end(); ++selection)
+    {
+      std::string temp = selection->getString("selection", "");
+      if(temp != "")
+        roundInfo._selected.push_back(temp);
+    }
 
     auto variables = (*round)["variables"].daughters();
     for(auto variable = variables.begin(); variable != variables.end(); ++variable)
     {
-      OptimizationVariable variableInfo;
+      OptimizationVariableInfo variableInfo;
 
       variableInfo._name = variable->getString("name", "");
       if(variableInfo._name == "")
