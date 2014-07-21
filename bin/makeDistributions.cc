@@ -27,6 +27,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "THStack.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -45,6 +46,7 @@ std::vector<MyVariable> getVariables(JSONWrapper::Object& json);
 fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension);
 TH1D* getHist(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
 THStack* getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
+void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, MyVariable xVar, MyVariable yVar, bool correctFiles = true);
 
 
 class MyStyle
@@ -120,7 +122,8 @@ int main(int argc, char** argv)
   std::string inDir;
   std::vector<std::string> plotExt;
   std::string baseSelection = "selected";
-  std::string signalSelection;
+  std::string signalSelection = "";
+  std::string extraSignal = "";
   std::string ttree_name = "Events";
   std::string customExtension = "_summary";
 
@@ -180,6 +183,12 @@ int main(int argc, char** argv)
       ++i;
     }
 
+    if(arg.find("--extraSignal") != std::string::npos)
+    {
+      extraSignal = argv[i+1];
+      ++i;
+    }
+
     if(arg.find("--ttree") != std::string::npos)
     {
       ttree_name = argv[i+1];
@@ -236,8 +245,25 @@ int main(int argc, char** argv)
     double max = final_sig->GetMaximum();
     if(final_bg->GetMaximum() > max)
       max = final_bg->GetMaximum();
-    final_bg->SetMaximum(max);
-    final_sig->Draw("same");
+
+    if(extraSignal != "")
+    {
+      TCut SIG2Cut = BGCut && extraSignal.c_str();
+      TH1D* sig_2 = getHist(SIG_samples,  SIG2Cut, *variable, false);
+      sig_2->SetNameTitle("ExtraSignal", ("ExtraSignal;"+label+";% Events").c_str());
+      sig_2->Scale(1/sig_2->Integral());
+      sig_2->SetLineColor(kBlue);
+      if(sig_2->GetMaximum() > max)
+        max = sig_2->GetMaximum();
+      final_bg->SetMaximum(max);
+      final_sig->Draw("same");
+      sig_2->Draw("same");
+    }
+    else
+    {
+      final_bg->SetMaximum(max);
+      final_sig->Draw("same");
+    }
 
     c1.BuildLegend(0.88, 0.67, 1, 1);
 
@@ -248,6 +274,25 @@ int main(int argc, char** argv)
     delete final_sig;
   }
 
+  {
+    MyVariable met;
+    met.name() = "MET";
+    met.expression() = "met.Et()";
+    met.bins() = 30;
+    met.minVal() = 0;
+    met.maxVal() = 300;
+    MyVariable tauLeadPt;
+    tauLeadPt.name() = "tauLeadPt";
+    tauLeadPt.expression() = "tauLeadPt";
+    tauLeadPt.bins() = 30;
+    tauLeadPt.minVal() = 0;
+    tauLeadPt.maxVal() = 300;
+    tauLeadPt.label() = "p_{T}(#tau)";
+
+    make2D(outDir, plotExt, BG_samples, BGCut, met, tauLeadPt);
+    make2D(outDir, plotExt, SIG_samples, SIGCut, met, tauLeadPt, false);
+  }
+
   std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
   for(auto key = FileExists.begin(); key != FileExists.end(); ++key)
   {
@@ -256,6 +301,46 @@ int main(int argc, char** argv)
   }
 
   return 0;
+}
+
+void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, MyVariable xVar, MyVariable yVar, bool correctFiles)
+{
+  std::string xName = xVar.name();
+  std::string xExpression = xVar.expression();
+  std::string xLabel = xVar.label();
+  if(xLabel == "")
+    xLabel = xName;
+  std::string yName = yVar.name();
+  std::string yExpression = yVar.expression();
+  std::string yLabel = yVar.label();
+  if(yLabel == "")
+    yLabel = yName;
+
+  TCanvas c1("c1", "c1", 800, 800);
+  for(auto process = files.begin(); process != files.end(); ++process)
+  {
+    TH2D* processHist = new TH2D((xName+yName+process->first).c_str(), (process->first+";"+xLabel+";"+yLabel).c_str(), xVar.bins(), xVar.minVal(), xVar.maxVal(), yVar.bins(), yVar.minVal(), yVar.maxVal());
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      if(sample->first == 0)
+        continue;
+
+      TH2D tempHisto("temp", (";"+xLabel+";"+yLabel).c_str(), xVar.bins(), xVar.minVal(), xVar.maxVal(), yVar.bins(), yVar.minVal(), yVar.maxVal());
+      sample->second->Draw((yExpression+":"+xExpression+">>temp").c_str(), cut*"weight", "goff");
+      if(correctFiles)
+        tempHisto.Scale(1./sample->first);
+      processHist->Add(&tempHisto);
+    }
+
+    processHist->Draw("colz");
+
+    for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
+      c1.SaveAs((outDir + process->first + "_" + xName + "_" + yName + *ext).c_str());
+
+    delete processHist;
+  }
+
+  return;
 }
 
 THStack* getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles)
@@ -508,6 +593,7 @@ void printHelp()
   std::cout << "--customExtension  -->  Custom extension on the files with the ttrees (default: _summary)" << std::endl;
   std::cout << "--plotExt          -->  Extension format with which to save the plots, repeat this command if multiple formats are desired (default: png)" << std::endl;
   std::cout << "--variables        -->  JSON file with the variables which will be plotted" << std::endl;
+  std::cout << "--extraSignal      -->  A second extra selection to apply only to signal" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\tmakeDistributions --json samples.json --outDir ./OUT/ --variables variables.json --inDir /directory" << std::endl;
   return;
