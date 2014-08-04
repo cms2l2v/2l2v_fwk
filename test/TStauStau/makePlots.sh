@@ -22,8 +22,11 @@
 
 # Runs 2012{B,C,D}
 # Inclusive
-runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir /lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/ --outDir ./Inclusive_Plots/ --outFile plotter_Inclusive_2012BCD.root --json tstaustau_samples_inclusive_DY_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
+#runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir /lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/ --outDir ./Inclusive_Plots/ --outFile plotter_Inclusive_2012BCD.root --json tstaustau_samples_inclusive_DY_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
 #runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir Processed_Inclusive/ --outDir ~/www/TStauStau/MCvsData/2012BCD/inclusive/ --outFile plotter_2012BCD_Inclusive.root --json tstaustau_samples_inclusive_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
 #runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir Processed_Inclusive/ --outDir ~/www/TStauStau/MCvsData/2012BCD/inclusive/DY/ --outFile plotter_2012BCD_Inclusive_DY.root --json tstaustau_samples_inclusive_DY_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
 # Exclusive
-#runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir Processed_Exclusive/ --outDir ~/www/TStauStau/MCvsData/2012BCD/exclusive/ --outFile plotter_2012BCD_Exclusive.root --json tstaustau_samples_exclusive_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
+## LIP
+runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir /lustre/ncg.ingrid.pt/cmslocal/cbeiraod/LIP_selection/ --outDir ./LIP_Selection/ --outFile plotter_2012BCD_Exclusive_LIP.root --json tstaustau_samples_exclusive_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
+## IPM
+runPlotterFWLite --iEcm 8 --iLumi 18893 --inDir /lustre/ncg.ingrid.pt/cmslocal/cbeiraod/IPM_selection/ --outDir ./IPM_Selection/ --outFile plotter_2012BCD_Exclusive_IPM.root --json tstaustau_samples_exclusive_2012BCD.json --plotExt .png --plotExt .pdf --plotExt .C --plotExt .root
