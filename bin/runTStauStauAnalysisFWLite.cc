@@ -667,7 +667,7 @@ int main(int argc, char* argv[])
     // MET Collection
     fwlite::Handle<llvvMet> metHandle;
     if(selection == "IPM")
-      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMEtMVA");
+      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMet");
     else
       metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow");
     if(!metHandle.isValid())
@@ -1194,7 +1194,7 @@ int main(int argc, char* argv[])
           passID = false;
         if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))
           passID = false;
-        if(!tau.passId(llvvTAUID::againstElectronLooseMVA5))
+        if(!tau.passId(llvvTAUID::againstElectronLoose))
           passID = false;
         if(!tau.passId(llvvTAUID::againstMuonTight3))
           passID = false;
