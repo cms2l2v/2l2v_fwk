@@ -653,10 +653,24 @@ int main(int argc, char* argv[])
     tauCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
     if(!tauCollHandle.isValid())
     {
-      std::cout << "llvvLeptonCollection Object NotFound" << std::endl;
+      std::cout << "llvvTauCollection Object NotFound" << std::endl;
       continue;
     }
     llvvTauCollection taus = *tauCollHandle;
+
+    // Boosted tau Collection
+    fwlite::Handle<llvvTauCollection> boostedTauCollHandle;
+    boostedTauCollHandle->getByLabel(ev, "llvvObjectProducersUsed", "boosted");
+    if(!boostedTauCollHandle.isValid())
+    {
+      std::cout << "llvvTauCollection Boosted Object NotFound" << std:endl;
+      continue;
+    }
+    llvvTauCollection boostedTaus = *boostedTauCollHandle;
+    if(boostedTaus.size() > 0)
+      continue;
+    //for(size_t i = 0; i < boostedTaus.size(); ++i)
+    //  taus.push_back(boostedTaus[i]);
 
     // Jet Collection
     fwlite::Handle<llvvJetCollection> jetCollHandle;
