@@ -225,10 +225,18 @@ int main(int argc, char* argv[])
   //mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
 
   // PU
+  mon.addHistogram(new TH1F("nvtxAll",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxHLT",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtx1l",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxBveto",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtx1tau",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxOS",    ";Vertices;Events",       50, -0.5, 49.5));
+
   mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
   mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
   mon.addHistogram(new TH1F("rho",     ";#rho;Events",           25,  0,   25));
   mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 25,  0,   25));
+
 
   // Leptons
   mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
@@ -1503,24 +1511,47 @@ int main(int argc, char* argv[])
     if(stauMass == stauMtoPlot && neutralinoMass == neutralinoMtoPlot)
       stauPlot = true;
 
-
-    if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 0, weight);
+    if(!isStauStau || stauPlot)
+    {
+      mon.fillHisto("eventflow", chTags, 0, weight);
+      mon.fillHisto("nvtxAll", chTags, nvtx, weight);
+    }
     if(triggeredOn)
     {
-      if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 1, weight);
+      if(!isStauStau || stauPlot)
+      {
+        mon.fillHisto("eventflow", chTags, 1, weight);
+        mon.fillHisto("nvtxHLT", chTags, nvtx, weight);
+      }
       if(selLeptons.size() > 0)
       {
-        if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 2, weight);
-        if(!isStauStau || stauPlot) mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
+        if(!isStauStau || stauPlot)
+        {
+          mon.fillHisto("eventflow", chTags, 2, weight);
+          mon.fillHisto("nvtx1l", chTags, nvtx, weight);
+          mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
+        }
         if(selBJets.size() == 0)
         {
-          if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 3, weight);
+          if(!isStauStau || stauPlot)
+          {
+            mon.fillHisto("eventflow", chTags, 3, weight);
+            mon.fillHisto("nvtxBveto", chTags, nvtx, weight);
+          }
           if(selTaus.size() > 0)
           {
-            if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 4, weight);
+            if(!isStauStau || stauPlot)
+            {
+              mon.fillHisto("eventflow", chTags, 4, weight);
+              mon.fillHisto("nvtx1tau", chTags, nvtx, weight);
+            }
             if(isOS)
             {
-              if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 5, weight);
+              if(!isStauStau || stauPlot)
+              {
+                mon.fillHisto("eventflow", chTags, 5, weight);
+                mon.fillHisto("nvtxOS", chTags, nvtx, weight);
+              }
               if(mass >= 0)
               {
                 if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 6, weight);
