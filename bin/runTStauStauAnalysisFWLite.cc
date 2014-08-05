@@ -660,10 +660,10 @@ int main(int argc, char* argv[])
 
     // Boosted tau Collection
     fwlite::Handle<llvvTauCollection> boostedTauCollHandle;
-    boostedTauCollHandle->getByLabel(ev, "llvvObjectProducersUsed", "boosted");
+    boostedTauCollHandle.getByLabel(ev, "llvvObjectProducersUsed", "boosted");
     if(!boostedTauCollHandle.isValid())
     {
-      std::cout << "llvvTauCollection Boosted Object NotFound" << std:endl;
+      std::cout << "llvvTauCollection Boosted Object NotFound" << std::endl;
       continue;
     }
     llvvTauCollection boostedTaus = *boostedTauCollHandle;
