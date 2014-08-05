@@ -410,6 +410,8 @@ int main(int argc, char* argv[])
   double cosThetaCS = 0;
   double tauLeadPt = 0;
   double lepLeadPt = 0;
+  double maxPtSum = 0;
+  int nTauJets = 0;
 
   // Prepare summary tree
   if(saveSummaryTree)
@@ -493,6 +495,8 @@ int main(int argc, char* argv[])
     neutralinoMass = -1;
     tauLeadPt = 0;
     lepLeadPt = 0;
+    maxPtSum = 0;
+    nTauJets = 0;
 
     // Prepare tags to fill the histograms
     chTags.push_back("all");
@@ -730,7 +734,6 @@ int main(int argc, char* argv[])
     rho25 = *rho25Handle;
 
 
-
     // Pileup Weight
     if(isMC)
     {
@@ -746,6 +749,7 @@ int main(int argc, char* argv[])
       weight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
     }
 
+    goto BoostedTausQuickFix;
 
     // Get Leading Lepton
     for(size_t i = 0; i < leptons.size(); ++i)
@@ -962,7 +966,7 @@ int main(int argc, char* argv[])
     }
 
     // Get Jets
-    int nTauJets = 0;
+    nTauJets = 0;
     for(size_t i = 0; i < jets.size(); ++i)
     {
       // Apply jet corrections
@@ -1279,7 +1283,7 @@ int main(int argc, char* argv[])
       std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
 
     // Opposite Sign requirements
-    double maxPtSum = 0;
+    maxPtSum = 0;
     tauIndex = -1;
     leptonIndex = -1;
     for(size_t i = 0; i < selLeptons.size(); ++i)
@@ -1521,6 +1525,7 @@ int main(int argc, char* argv[])
       mt2_150 = mt2_event.get_mt2();
     }
 
+    BoostedTausQuickFix:
     bool stauPlot = false;
     if(stauMass == stauMtoPlot && neutralinoMass == neutralinoMtoPlot)
       stauPlot = true;
