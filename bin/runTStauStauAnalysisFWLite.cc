@@ -749,7 +749,7 @@ int main(int argc, char* argv[])
       weight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
     }
 
-    goto BoostedTausQuickFix;
+    //goto BoostedTausQuickFix;
 
     // Get Leading Lepton
     for(size_t i = 0; i < leptons.size(); ++i)
