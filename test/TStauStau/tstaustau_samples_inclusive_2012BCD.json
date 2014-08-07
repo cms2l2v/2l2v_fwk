@@ -12,7 +12,7 @@
       "fill":0,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_TStauStau"                        , "isfastsim":1 , "split":4, "xsec":1        , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM" }
+        { "dtag":"MC8TeV_TStauStau"                        , "isfastsim":1 , "split":20, "xsec":1        , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM" }
       ]
     },
     {
@@ -70,7 +70,7 @@
       "color":614,
       "lcolor":1,
       "data":[
-        { "dtag":"MC8TeV_TTJetsFullLeptMGDecays"           , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM"        }
+        { "dtag":"MC8TeV_TTJetsFullLeptMGDecays"           , "split":10, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM"        }
       ]
     },
     {
