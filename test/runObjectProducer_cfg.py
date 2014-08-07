@@ -270,6 +270,11 @@ process.vtxCounter   = process.startCounter.clone()
 process.metCounter   = process.startCounter.clone() 
 process.endCounter   = process.startCounter.clone()
 
+if(isMC or isFastSim):
+  boostedTauConfigCraziness=getattr(process,"makePatTaus"+boostedtaupostfix)
+else:
+  boostedTauConfigCraziness=getattr(process,"patPFTauIsolation"+boostedtaupostfix)*getattr(process,"patTaus"+boostedtaupostfix)
+
 process.p            = cms.Path(
                        process.startCounter
                       *process.noscraping
@@ -284,9 +289,10 @@ process.p            = cms.Path(
 #                      *process.produceAndDiscriminateBoostedHPSPFTaus
                       *getattr(process,"PFTau"+boostedtaupostfix) # run boosted tau producer
                       *getattr(process,"patPF2PATSequence"+postfix)
+                      *boostedTauConfigCraziness
 #                      *getattr(process,"patPFTauIsolation"+boostedtaupostfix)
 #                      *getattr(process,"patTaus"+boostedtaupostfix)
-                      *getattr(process,"makePatTaus"+boostedtaupostfix)
+#                      *getattr(process,"makePatTaus"+boostedtaupostfix)
                       *process.btvSequence
                       *process.kt6PFJetsCentral
                       *process.qgSequence 
