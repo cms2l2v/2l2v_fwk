@@ -510,6 +510,8 @@ int main(int argc, char* argv[])
     fwlite::Handle<int> nvtxHandle;
     nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
     if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
+    if(nvtx > 20)
+      continue;
 
     // Collection of generated particles
     fwlite::Handle<llvvGenEvent> genEventHandle;
@@ -671,8 +673,8 @@ int main(int argc, char* argv[])
       continue;
     }
     llvvTauCollection boostedTaus = *boostedTauCollHandle;
-    if(boostedTaus.size() > 0)
-      continue;
+    //if(boostedTaus.size() > 0)
+    //  continue;
     //for(size_t i = 0; i < boostedTaus.size(); ++i)
     //  taus.push_back(boostedTaus[i]);
 
