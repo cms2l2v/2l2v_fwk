@@ -126,6 +126,9 @@ int main(int argc, char* argv[])
     if(selection != "IPM")
       selection = "LIP";
   }
+  bool doQuickFix = false;
+  if(runProcess.exists("doQuickFix"))
+    doQuickFix = runProcess.getParameter<bool>("doQuickFix");
 
   // Hardcoded configs
   double sqrtS          =  8;
@@ -510,7 +513,7 @@ int main(int argc, char* argv[])
     fwlite::Handle<int> nvtxHandle;
     nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
     if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
-    if(nvtx > 20)
+    if(nvtx > 20 && doQuickFix)
       continue;
 
     // Collection of generated particles
