@@ -16,6 +16,17 @@
       ]
     },
     {
+      "tag":"Higgs",
+      "isdata":false,
+      "color":2,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC8TeV_XH125toTauTau"                    , "split":1, "xsec":1.2492      , "br":[ 0.0632 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
+        { "dtag":"MC8TeV_XH125toWW"                        , "split":1, "xsec":0.0065034022, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-125_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        },
+        { "dtag":"MC8TeV_ZH125toTauTau"                    , "split":1, "xsec":0.0026506805, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+      ]
+    },
+    {
       "tag":"VVV",
       "isdata":false,
       "color":596,
