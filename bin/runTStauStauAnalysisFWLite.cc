@@ -117,21 +117,46 @@ int main(int argc, char* argv[])
     stauMtoPlot = runProcess.getParameter<double>("stauMtoPlot");
   if(runProcess.exists("neutralinoMtoPlot"))
     neutralinoMtoPlot = runProcess.getParameter<double>("neutralinoMtoPlot");
+  std::string selection = "LIP";
+  if(runProcess.exists("selection"))
+    selection = runProcess.getParameter<std::string>("selection");
+  if(selection != "LIP")
+  {
+    // All recognised selection schemes should be added here so thay are valid options later in the code
+    if(selection != "IPM")
+      selection = "LIP";
+  }
+  bool doQuickFix = false;
+  if(runProcess.exists("doQuickFix"))
+    doQuickFix = runProcess.getParameter<bool>("doQuickFix");
 
   // Hardcoded configs
-  double sqrtS          = 8;
+  double sqrtS          =  8;
   double minElPt        = 25;
   double maxElEta       =  2.5;
   double ECALGap_MinEta =  1.4442;
   double ECALGap_MaxEta =  1.5660;
   double minMuPt        = 20;
-  double maxMuEta       = 2.4;
+  double maxMuEta       =  2.4;
   double minTauPt       = 25;
   double maxTauEta      =  2.3;
   double minJetPt       = 30;
   double maxJetEta      =  2.5;
   double minTauJetPt    = 20;
   double maxTauJetEta   =  2.5;
+  if(selection == "IPM")
+  {
+    minElPt      = 20;
+    maxElEta     =  2.1;
+    minMuPt      = 20;
+    maxMuEta     =  2.1;
+    minTauPt     = 20;
+    maxTauEta    =  2.3;
+    //minJetPt     = ;
+    maxJetEta    =  4.7;
+    //minTauJetPt  = ;
+    //maxTauJetEta = ;
+  }
 
 
   // Lepton Efficiencies
@@ -203,10 +228,18 @@ int main(int argc, char* argv[])
   //mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
 
   // PU
+  mon.addHistogram(new TH1F("nvtxAll",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxHLT",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtx1l",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxBveto",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtx1tau",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1F("nvtxOS",    ";Vertices;Events",       50, -0.5, 49.5));
+
   mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
   mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
   mon.addHistogram(new TH1F("rho",     ";#rho;Events",           25,  0,   25));
   mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 25,  0,   25));
+
 
   // Leptons
   mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
@@ -277,6 +310,8 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
+  mon.addHistogram(new TH2F("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2F("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
 
 
 
@@ -378,6 +413,8 @@ int main(int argc, char* argv[])
   double cosThetaCS = 0;
   double tauLeadPt = 0;
   double lepLeadPt = 0;
+  double maxPtSum = 0;
+  int nTauJets = 0;
 
   // Prepare summary tree
   if(saveSummaryTree)
@@ -449,6 +486,7 @@ int main(int argc, char* argv[])
     weight_minus = 1.;
     puWeight     = 1.;
     chTags.clear();
+    llvvLeptonCollection selLowLeptons;
     selLeptons.clear();
     selJets.clear(), selJetsNoId.clear(), selBJets.clear();
     selTaus.clear();
@@ -460,6 +498,8 @@ int main(int argc, char* argv[])
     neutralinoMass = -1;
     tauLeadPt = 0;
     lepLeadPt = 0;
+    maxPtSum = 0;
+    nTauJets = 0;
 
     // Prepare tags to fill the histograms
     chTags.push_back("all");
@@ -473,6 +513,8 @@ int main(int argc, char* argv[])
     fwlite::Handle<int> nvtxHandle;
     nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
     if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
+    if(nvtx > 20 && doQuickFix)
+      continue;
 
     // Collection of generated particles
     fwlite::Handle<llvvGenEvent> genEventHandle;
@@ -620,10 +662,24 @@ int main(int argc, char* argv[])
     tauCollHandle.getByLabel(ev, "llvvObjectProducersUsed");
     if(!tauCollHandle.isValid())
     {
-      std::cout << "llvvLeptonCollection Object NotFound" << std::endl;
+      std::cout << "llvvTauCollection Object NotFound" << std::endl;
       continue;
     }
     llvvTauCollection taus = *tauCollHandle;
+
+    // Boosted tau Collection
+    fwlite::Handle<llvvTauCollection> boostedTauCollHandle;
+    boostedTauCollHandle.getByLabel(ev, "llvvObjectProducersUsed", "boosted");
+    if(!boostedTauCollHandle.isValid())
+    {
+      std::cout << "llvvTauCollection Boosted Object NotFound" << std::endl;
+      continue;
+    }
+    llvvTauCollection boostedTaus = *boostedTauCollHandle;
+    //if(boostedTaus.size() > 0)
+    //  continue;
+    //for(size_t i = 0; i < boostedTaus.size(); ++i)
+    //  taus.push_back(boostedTaus[i]);
 
     // Jet Collection
     fwlite::Handle<llvvJetCollection> jetCollHandle;
@@ -641,7 +697,10 @@ int main(int argc, char* argv[])
 
     // MET Collection
     fwlite::Handle<llvvMet> metHandle;
-    metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow");
+    if(selection == "IPM")
+      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMet");
+    else
+      metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow");
     if(!metHandle.isValid())
     {
       std::cout << "llvvMet Object NotFound" << std::endl;
@@ -680,14 +739,13 @@ int main(int argc, char* argv[])
     rho25 = *rho25Handle;
 
 
-
     // Pileup Weight
     if(isMC)
     {
       if(isStauStau)
       {
         int nEvents = 10000;
-        double xsec = 1;
+        double xsec = stauCrossSec(stauMass, neutralinoMass);
         xsecWeight = xsec/nEvents;
       }
       puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
@@ -696,6 +754,7 @@ int main(int argc, char* argv[])
       weight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
     }
 
+    //goto BoostedTausQuickFix;
 
     // Get Leading Lepton
     for(size_t i = 0; i < leptons.size(); ++i)
@@ -718,46 +777,169 @@ int main(int argc, char* argv[])
       double eta = (lepId == 11)?(leptons[i].electronInfoRef->sceta):(leptons[i].eta());
       if(lepId == 11) // If Electron
       {
-        if(leptons[i].pt() < minElPt)
-          passKin = false;
-        if(abs(eta) > maxElEta)
-          passKin = false;
+        if(selection == "IPM")
+        {
+          if(leptons[i].pt() < 10)
+            passKin = false;
+          if(abs(eta) > 2.4)
+            passKin = false;
+        }
+        else
+        {
+          if(leptons[i].pt() < minElPt)
+            passKin = false;
+          if(abs(eta) > maxElEta)
+            passKin = false;
+        }
         if(abs(eta) > ECALGap_MinEta && abs(eta) < ECALGap_MaxEta)  // Remove electrons that fall in ECAL Gap
           passKin = false;
       }
       else            // If Muon
       {
-        if(leptons[i].pt() < minMuPt)
-          passKin = false;
-        if(abs(eta) > maxMuEta)
-          passKin = false;
+        if(selection == "IPM")
+        {
+          if(leptons[i].pt() < 15)
+            passKin = false;
+          if(abs(eta) > 2.4)
+            passKin = false;
+        }
+        else
+        {
+          if(leptons[i].pt() < minMuPt)
+            passKin = false;
+          if(abs(eta) > maxMuEta)
+            passKin = false;
+        }
       }
 
       // Lepton ID
       bool passID = true;
+      bool isLoose = false;
+      bool isTight = false;
       Int_t idbits = leptons[i].idbits;
       if(lepId == 11)
       {
-        if(leptons[i].electronInfoRef->isConv)
-          passID = false;
+        if(selection == "IPM")
+        {
+          if(leptons[i].pt() < 20)
+          {
+            if(abs(eta) < 0.8)
+            {
+              if(leptons[i].electronInfoRef->mvanontrigv0 > 0.925)
+                isLoose = true;
+            }
+            else
+            {
+              if(abs(eta) < 1.479)
+              {
+                if(leptons[i].electronInfoRef->mvanontrigv0 > 0.915)
+                  isLoose = true;
+              }
+              else
+              {
+                if(leptons[i].electronInfoRef->mvanontrigv0 > 0.965)
+                  isLoose = true;
+              }
+            }
+          }
+          else
+          {
+            if(abs(eta) < 0.8)
+            {
+              if(leptons[i].electronInfoRef->mvanontrigv0 > 0.905)
+                isLoose = true;
+              if(leptons[i].electronInfoRef->mvanontrigv0 > 0.925)
+                isTight = true;
+            }
+            else
+            {
+              if(abs(eta) < 1.479)
+              {
+                if(leptons[i].electronInfoRef->mvanontrigv0 > 0.955)
+                  isLoose = true;
+                if(leptons[i].electronInfoRef->mvanontrigv0 > 0.975)
+                  isTight = true;
+              }
+              else
+              {
+                if(leptons[i].electronInfoRef->mvanontrigv0 > 0.975)
+                  isLoose = true;
+                if(leptons[i].electronInfoRef->mvanontrigv0 > 0.985)
+                  isTight = true;
+              }
+            }
+          }
 
-        bool isLoose = ((idbits >> 4) & 0x1);
-        if(!isLoose)
-          passID = false;
+          passID = isLoose;
+          if(leptons[i].d0 > 0.045)
+            passID = false;
+          if(leptons[i].dZ > 0.2)
+            passID = false;
+          if(leptons[i].electronInfoRef->isConv)
+            passID = false;
+          if(leptons[i].trkLostInnerHits > 0)
+            passID = false;
+        }
+        else
+        {
+          if(leptons[i].electronInfoRef->isConv)
+            passID = false;
+
+          isLoose = ((idbits >> 4) & 0x1);
+          isTight = ((idbits >> 6) & 0x1);
+          if(!isLoose)
+            passID = false;
+        }
       }
-      else
+      else  // Muon
       {
-        bool isLoose = ((idbits >> 8) & 0x1);
-        bool isTight = ((idbits >> 10) & 0x1);
-        if(!isLoose)
-          passID = false;
+        isLoose = ((idbits >> 8) & 0x1);
+        isTight = ((idbits >> 10) & 0x1);
+        if(selection == "IPM")
+        {
+          if(!isLoose)
+            passID = false;
+          if(leptons[i].d0 > 0.045)
+            passID = false;
+          if(leptons[i].dZ > 0.2)
+            passID = false;
+        }
+        else
+        {
+          if(!isLoose)
+            passID = false;
+        }
       }
 
       // Lepton Isolation
       bool passIso = true;
       double relIso = utils::cmssw::relIso(leptons[i], rho);
-      if((lepId == 11 && relIso > 0.15) || (lepId == 13 && relIso > 0.12))
-        passIso = false;
+      if(lepId == 11)
+      {
+        if(selection == "IPM")
+        {
+          if(relIso > 0.3)
+            passIso = false;
+        }
+        else
+        {
+          if(relIso > 0.15)
+            passIso = false;
+        }
+      }
+      else
+      {
+        if(selection == "IPM")
+        {
+          if(relIso > 0.3)
+            passIso = false;
+        }
+        else
+        {
+          if(relIso > 0.12)
+            passIso = false;
+        }
+      }
 
       // Keep desired leptons
       if(passKin && passID && passIso)
@@ -789,7 +971,7 @@ int main(int argc, char* argv[])
     }
 
     // Get Jets
-    int nTauJets = 0;
+    nTauJets = 0;
     for(size_t i = 0; i < jets.size(); ++i)
     {
       // Apply jet corrections
@@ -805,50 +987,99 @@ int main(int argc, char* argv[])
       jets[i] *= newJECSF;
       jets[i].torawsf = 1./newJECSF;
 
+
       // Jet Pre-Selection
       bool passPreSel = true;
-      if(jets[i].pt() < 15)
-        passPreSel = false;
-      if(abs(jets[i].eta()) > 4.7)
-        passPreSel = false;
+      if(selection == "IPM")
+      {
+      }
+      else
+      {
+        if(jets[i].pt() < 15)
+          passPreSel = false;
+        if(abs(jets[i].eta()) > 4.7)
+          passPreSel = false;
+      }
 
       // Cross clean with selected leptons and taus
       bool passIso = true;
-      double minDRlj = 9999.9;
-      double minDRlg = 9999.9;
-      double minDRtj = 9999.9;
-      for(size_t j = 0; j < selLeptons.size(); ++j)
-        minDRlj = TMath::Min(minDRlj, deltaR(jets[i], selLeptons[j]));
-      for(size_t j = 0; j < taus.size(); ++j)
+      if(selection == "IPM")
       {
-        if(taus[j].pt() < minTauPt || abs(taus[j].eta()) > maxTauEta)
-          continue;
-        minDRtj = TMath::Min(minDRtj, deltaR(jets[i], taus[j]));
       }
-      if(minDRlj < 0.4 || minDRlg < 0.4 || minDRtj < 0.4)
-        passIso = false;
+      else
+      {
+        double minDRlj = 9999.9;
+        double minDRlg = 9999.9;
+        double minDRtj = 9999.9;
+        for(size_t j = 0; j < selLeptons.size(); ++j)
+          minDRlj = TMath::Min(minDRlj, deltaR(jets[i], selLeptons[j]));
+        for(size_t j = 0; j < taus.size(); ++j)
+        {
+          if(taus[j].pt() < minTauPt || abs(taus[j].eta()) > maxTauEta)
+            continue;
+          minDRtj = TMath::Min(minDRtj, deltaR(jets[i], taus[j]));
+        }
+        if(minDRlj < 0.4 || minDRlg < 0.4 || minDRtj < 0.4)
+          passIso = false;
+      }
 
       // Jet ID
+      bool passID = true;
       Int_t idbits = jets[i].idbits;
       bool passPFLoose = (idbits & 0x01);
-      int puID = (idbits >> 3) & 0x0f;
-      bool passLoosePuID = ((puID >> 2) & 0x01);
-      int simplePuID = (idbits >> 7) & 0x0f;
-      bool passLooseSimplePuID = ((simplePuID >> 2) & 0x01);
-      std::string jetType = ((jets[i].genj.pt() > 0)?("truejetsid"):("pujetsid"));
-      bool passID = passLoosePuID;
+      if(selection == "IPM")
+      {
+        int fullPuId = (idbits >> 3) & 0x0f;
+        bool passLooseFullPuId = ((fullPuId >> 2) & 0x01);
+        passID = passLooseFullPuId;
+      }
+      else
+      {
+        int puID = (idbits >> 3) & 0x0f;
+        bool passLoosePuID = ((puID >> 2) & 0x01);
+        int simplePuID = (idbits >> 7) & 0x0f;
+        bool passLooseSimplePuID = ((simplePuID >> 2) & 0x01);
+        std::string jetType = ((jets[i].genj.pt() > 0)?("truejetsid"):("pujetsid"));
+        passID = passLoosePuID;
+      }
 
       // Jet Kinematics
       bool passKin = true;
-      if(jets[i].pt() < minJetPt)
-        passKin = false;
-      if(abs(jets[i].eta()) > maxJetEta)
-        passKin = false;
-      bool isTauJet = (jets[i].pt() > minTauJetPt) && (abs(jets[i].eta()) < maxTauJetEta);
+      bool isTauJet = false;
+      if(selection == "IPM")
+      {
+        if(abs(jets[i].eta()) > maxJetEta)
+          passKin = false;
+      }
+      else
+      {
+        if(jets[i].pt() < minJetPt)
+          passKin = false;
+        if(abs(jets[i].eta()) > maxJetEta)
+          passKin = false;
+        isTauJet = (jets[i].pt() > minTauJetPt) && (abs(jets[i].eta()) < maxTauJetEta);
+      }
 
       // B-jets
-      bool hasCSVV1L = jets[i].csv > 0.405;
-      bool hasBtagCorr = hasCSVV1L;
+      bool isBJet = false;
+      bool hasBtagCorr = false;
+      if(selection == "IPM")
+      {
+        if(jets[i].csv > 0.679)
+        {
+          isBJet = true;
+          hasBtagCorr = true;
+        }
+      }
+      else
+      {
+        if(jets[i].csv > 0.405)
+        {
+          isBJet = true;
+          hasBtagCorr = true;
+        }
+      }
+
       if(isMC)
       {
         // Get a "unique" seed
@@ -908,13 +1139,13 @@ int main(int argc, char* argv[])
       // Save selected jets/counters
       if(passPreSel && passIso)
         selJetsNoId.push_back(jets[i]);
-      if(passPreSel && passIso && passPFLoose && passLoosePuID && isTauJet)
+      if(passPreSel && passIso && passPFLoose && passID && isTauJet)
         ++nTauJets;
       if(passPreSel && passIso && passPFLoose && passID && passKin)
       {
         selJets.push_back(jets[i]);
       }
-      if(passPreSel && passIso && passPFLoose && passID && passKin && hasBtagCorr)
+      if(passPreSel && passIso && passPFLoose && passID && passKin && isBJet)
         selBJets.push_back(jets[i]);
       if(!triggeredOn)
         continue;
@@ -959,28 +1190,54 @@ int main(int argc, char* argv[])
 
       // Tau overlap with leptons
       bool passIso = true;
-      for(size_t lep = 0; lep < selLeptons.size(); ++lep)
+      if(selection == "IPM")
       {
-        if(deltaR(tau, selLeptons[lep]) < 0.1)
+      }
+      else
+      {
+        for(size_t lep = 0; lep < selLeptons.size(); ++lep)
         {
-          passIso = false;
-          break;
+          if(deltaR(tau, selLeptons[lep]) < 0.1)
+          {
+            passIso = false;
+            break;
+          }
         }
       }
 
       bool passQual = true;
-      if(abs(tau.dZ) > 0.5)
-        passQual = false;
-      if(tau.emfraction >= 2.0)
-        passQual = false;
+      if(selection == "IPM")
+      {
+      }
+      else
+      {
+        if(abs(tau.dZ) > 0.5)
+          passQual = false;
+        if(tau.emfraction >= 2.0)
+          passQual = false;
+      }
 
       // Tau ID
       bool passID = true;
-      //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
-      if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
-      if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
-      if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
-      if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      if(selection == "IPM")
+      {
+        if(!tau.passId(llvvTAUID::decayModeFinding))
+          passID = false;
+        if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))
+          passID = false;
+        if(!tau.passId(llvvTAUID::againstElectronLoose))
+          passID = false;
+        if(!tau.passId(llvvTAUID::againstMuonTight3))
+          passID = false;
+      }
+      else
+      {
+        //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
+        if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
+        if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
+        if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
+        if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      }
 
       // Keep selected taus
       if(passID && passKin && passIso && passQual && tau.isPF)
@@ -1031,9 +1288,62 @@ int main(int argc, char* argv[])
       std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
 
     // Opposite Sign requirements
-    double maxPtSum = 0;
+    maxPtSum = 0;
+    tauIndex = -1;
+    leptonIndex = -1;
     for(size_t i = 0; i < selLeptons.size(); ++i)
     {
+      if(abs(selLeptons[i].id) == 11) // Electron
+      {
+        if(abs(selLeptons[i].dZ) > 0.1)
+          continue;
+        if(selLeptons[i].pt() < 20)
+          continue;
+        double eta = selLeptons[i].electronInfoRef->sceta;
+        if(abs(eta) > 2.1)
+          continue;
+        double relIso = utils::cmssw::relIso(selLeptons[i], rho);
+        if(relIso > 0.1)
+          continue;
+        bool isTight = false;
+        if(selLeptons[i].pt() >= 20)
+        {
+          if(abs(eta) < 0.8)
+          {
+            if(selLeptons[i].electronInfoRef->mvanontrigv0 > 0.925)
+              isTight = true;
+          }
+          else
+          {
+            if(abs(eta) < 1.479)
+            {
+              if(selLeptons[i].electronInfoRef->mvanontrigv0 > 0.975)
+                isTight = true;
+            }
+            else
+            {
+              if(selLeptons[i].electronInfoRef->mvanontrigv0 > 0.985)
+                isTight = true;
+            }
+          }
+        }
+        if(!isTight)
+          continue;
+      }
+      else // Muon
+      {
+        if(selLeptons[i].pt() < 20)
+          continue;
+        if(selLeptons[i].eta() > 2.1)
+          continue;
+        double relIso = utils::cmssw::relIso(selLeptons[i], rho);
+        if(relIso > 0.1)
+          continue;
+        Int_t idbits = selLeptons[i].idbits;
+        bool isTight = ((idbits >> 10) & 0x1);
+        if(!isTight)
+          continue;
+      }
       for(size_t j = 0; j < selTaus.size(); ++j)
       {
         if(selLeptons[i].id * selTaus[j].id < 0)
@@ -1048,6 +1358,37 @@ int main(int argc, char* argv[])
             tauLeadPt = selTaus[tauIndex].pt();
             lepLeadPt = selLeptons[leptonIndex].pt();
           }
+          else  // This allows us to jump a few loops if there are many taus/leptons
+            break;
+        }
+      }
+    }
+    if(isOS && selection == "IPM") // Reject events with more leptons
+    {
+      if(abs(selLeptons[leptonIndex].id) == 11) //Electron tau channel
+      {
+        for(size_t i  = 0; i < selLeptons.size(); ++i)
+        {
+          if(i == (size_t)leptonIndex)
+            continue;
+          if(abs(selLeptons[i].id) != 11)
+            continue;
+          if(selLeptons[i].pt() < 20)
+            continue;
+          if(selLeptons[i].electronInfoRef->sceta > 2.1)
+            continue;
+          isOS = false;
+          break;
+        }
+      }
+      else // Muon tau channel
+      {
+        for(size_t i = 0; i < selLeptons.size(); ++i)
+        {
+          if(i == (size_t)leptonIndex)
+            continue;
+          isOS = false;
+          break;
         }
       }
     }
@@ -1152,10 +1493,11 @@ int main(int argc, char* argv[])
       //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
       //SVfit_algo.fit();
       //SVfit_algo.integrate();
-//      SVfit_algo.integrateVEGAS();
+      SVfit_algo.integrateVEGAS();
       //SVfit_algo.integrateMarkovChain();
       if(SVfit_algo.isValidSolution())
         mass = SVfit_algo.mass();
+      //mass = (selLepton+selTau).M(); // Temporary hold
     }
 
     // MT2 calculation
@@ -1188,28 +1530,52 @@ int main(int argc, char* argv[])
       mt2_150 = mt2_event.get_mt2();
     }
 
+    BoostedTausQuickFix:
     bool stauPlot = false;
     if(stauMass == stauMtoPlot && neutralinoMass == neutralinoMtoPlot)
       stauPlot = true;
 
-
-    if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 0, weight);
+    if(!isStauStau || stauPlot)
+    {
+      mon.fillHisto("eventflow", chTags, 0, weight);
+      mon.fillHisto("nvtxAll", chTags, nvtx, weight);
+    }
     if(triggeredOn)
     {
-      if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 1, weight);
+      if(!isStauStau || stauPlot)
+      {
+        mon.fillHisto("eventflow", chTags, 1, weight);
+        mon.fillHisto("nvtxHLT", chTags, nvtx, weight);
+      }
       if(selLeptons.size() > 0)
       {
-        if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 2, weight);
-        if(!isStauStau || stauPlot) mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
+        if(!isStauStau || stauPlot)
+        {
+          mon.fillHisto("eventflow", chTags, 2, weight);
+          mon.fillHisto("nvtx1l", chTags, nvtx, weight);
+          mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
+        }
         if(selBJets.size() == 0)
         {
-          if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 3, weight);
+          if(!isStauStau || stauPlot)
+          {
+            mon.fillHisto("eventflow", chTags, 3, weight);
+            mon.fillHisto("nvtxBveto", chTags, nvtx, weight);
+          }
           if(selTaus.size() > 0)
           {
-            if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 4, weight);
+            if(!isStauStau || stauPlot)
+            {
+              mon.fillHisto("eventflow", chTags, 4, weight);
+              mon.fillHisto("nvtx1tau", chTags, nvtx, weight);
+            }
             if(isOS)
             {
-              if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 5, weight);
+              if(!isStauStau || stauPlot)
+              {
+                mon.fillHisto("eventflow", chTags, 5, weight);
+                mon.fillHisto("nvtxOS", chTags, nvtx, weight);
+              }
               if(mass >= 0)
               {
                 if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 6, weight);
@@ -1239,6 +1605,9 @@ int main(int argc, char* argv[])
             mon.fillHisto("cosThetaTauL", chTags, cosThetaTauL, weight);
             mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
             mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
+
+            mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
+            mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
@@ -1330,5 +1699,19 @@ int main(int argc, char* argv[])
 double stauCrossSec(double stauM, double neutM)
 {
   // TODO: Get cross section as a function of mass, for now use placeholder value of 1 pb
-  return 1;
+  //Points taken from  http://arxiv.org/abs/1204.2379
+  //Mstau == 100 => 0.1
+  //Mstau == 125 => 0.05
+  //Mstau == 145 => 0.03
+  //Mstau == 195 => 0.01
+  //Mstau == 240 => 0.005
+  //Mstau == 275 => 0.003
+  //Mstau == 300 => 0.002
+  //Mstau == 360 => 0.001
+  //Mstau == 425 => 0.0005
+  double a = 0.2979;
+  double b = 17.626;
+  double c = 67.632;
+  double d = 3.463;
+  return a / (1 + std::pow((stauM - b) / c, d));
 }
