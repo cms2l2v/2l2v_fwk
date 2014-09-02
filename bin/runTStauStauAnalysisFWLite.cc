@@ -126,9 +126,9 @@ int main(int argc, char* argv[])
     if(selection != "IPM")
       selection = "LIP";
   }
-  bool doQuickFix = false;
-  if(runProcess.exists("doQuickFix"))
-    doQuickFix = runProcess.getParameter<bool>("doQuickFix");
+  //bool doQuickFix = false;
+  //if(runProcess.exists("doQuickFix"))
+  //  doQuickFix = runProcess.getParameter<bool>("doQuickFix");
 
   // Hardcoded configs
   double sqrtS          =  8;
@@ -513,8 +513,8 @@ int main(int argc, char* argv[])
     fwlite::Handle<int> nvtxHandle;
     nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
     if(nvtxHandle.isValid()) nvtx = *nvtxHandle;
-    if(nvtx > 20 && doQuickFix)
-      continue;
+    //if(nvtx > 19 && doQuickFix)
+    //  continue;
 
     // Collection of generated particles
     fwlite::Handle<llvvGenEvent> genEventHandle;
@@ -1493,7 +1493,7 @@ int main(int argc, char* argv[])
       //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
       //SVfit_algo.fit();
       //SVfit_algo.integrate();
-      SVfit_algo.integrateVEGAS();
+//here      SVfit_algo.integrateVEGAS();
       //SVfit_algo.integrateMarkovChain();
       if(SVfit_algo.isValidSolution())
         mass = SVfit_algo.mass();
