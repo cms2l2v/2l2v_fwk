@@ -5,6 +5,7 @@
 #include "DataFormats/Common/interface/AssociationMap.h"
 #include "Math/LorentzVector.h"
 #include <vector>
+#include <boost/cstdint.hpp>
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > LorentzVectorF;

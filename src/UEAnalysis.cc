@@ -370,8 +370,9 @@ void UEAnalysis::analyze(data::PhysicsObjectCollection_t &leptons,
   for(size_t ireg=0; ireg<4; ireg++)
     {
       float cts( chCount[ireg] ), gencts( genChCount[ireg] );
-      float flux( chFlux[ireg] ), genflux( genChFlux[ireg] );
-      float normFlux(cts>0?flux/cts:0), genNormFlux( gencts>0 ? genflux/gencts : 0);
+      float flux( chFlux[ireg] );//, genflux( genChFlux[ireg] );
+      float normFlux =cts>0?flux/cts:0;
+//      float genNormFlux = gencts>0 ? genflux/gencts : 0;
       
       if(ireg==0){
 	TString pf("lt15");

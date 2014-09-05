@@ -7,39 +7,8 @@
 <use name="PhysicsTools/FWLite"/>
 <use name="UserCode/llvv_fwk"/>
 <environment>
-  <bin name="extractLumiJSON"             file="extractLumiJSON.cc"></bin>
-  <bin name="FitSecVtxDistributions"      file="FitSecVtxDistributions.cxx"></bin>
-  <bin name="runTopAnalysis"              file="runTopAnalysis.cc"></bin> 
-  <bin name="runTopMassAnalysis"          file="runTopMassAnalysis.cc"></bin>
-  <bin name="runHZZ2l2nuAnalysis"         file="runHZZ2l2nuAnalysis.cc"></bin>
-  <bin name="prepareChHiggsDatacards"     file="prepareChHiggsDatacards.cc"></bin>
-  <bin name="runVBFZAnalysis"             file="runVBFZAnalysis.cc"></bin> 
-  <bin name="runVBFZAnalysisFWLite"       file="runVBFZAnalysisFWLite.cc"></bin>
-  <bin name="runEWKVjjAnalysis"           file="runEWKVjjAnalysis.cc"></bin> 
-  <bin name="runPlotter"                  file="runPlotter.cc"></bin> 
   <bin name="runPlotterFWLite"            file="runPlotterFWLite.cc"></bin>
-  <bin name="computePDFvariations"        file="computePDFvariations.cc"></bin> 
-  <bin name="computePDFvariationsFWLite"  file="computePDFvariationsFWLite.cc"></bin>
-  <bin name="fitDYforTop"                 file="fitDYforTop.cc"></bin> 
-  <bin name="fitTTbarCrossSection"        file="fitTTbarCrossSection.cc"></bin> 
-  <bin name="fitMljSpectrum"              file="fitMljSpectrum.cc"></bin>
-  <bin name="fitHeavyFlavorContent"       file="fitHeavyFlavorContent.cc"></bin>
-  <bin name="runPLRanalysis"              file="runPLRanalysis.cc"></bin> 
-  <bin name="jsonTools"                   file="jsonTools.cc"></bin>
-  <bin name="computeLimit"                file="computeLimit.cc"></bin>
-  <bin name="runBTVdijetAnalysis"         file="runBTVdijetAnalysis.cc"></bin>
-  <bin name="runEWKVJJunfolding"          file="runEWKVJJunfolding.cc"></bin>
-  <bin name="rundFtM"                     file="rundFtM.cc"></bin>
-  <bin name="runLjetsAnalysis"            file="runLjetsAnalysis.cc"></bin>
-  <bin name="runChHiggsAnalysis"          file="runChHiggsAnalysis.cc"></bin>
-  <bin name="runSingleTopChHiggsAnalysis" file="runSingleTopChHiggsAnalysis.cc"></bin>
-  <bin name="runChHiggsAnalysisFWLite"    file="runChHiggsAnalysisFWLite.cc"></bin> 
-  <bin name="runBNVAnalysisFWLite"        file="runBNVAnalysisFWLite.cc"></bin>
-  <bin name="runZHTauTauAnalysisFWLite"   file="runZHTauTauAnalysisFWLite.cc"></bin> 
-  <bin name="runTStauStauAnalysisFWLite"  file="runTStauStauAnalysisFWLite.cc"></bin>
-  <bin name="runCutOptimizer"             file="runCutOptimizer.cc"></bin>
-  <bin name="makeDistributions"          file="makeDistributions.cc"></bin>
-  <bin namr="checkNTuples"               file="checkNTuples.cc"></bin>
+  <bin name="runMiniAODExample"           file="runMiniAODExample.cc"></bin> 
 </environment>
 
 <!-- 

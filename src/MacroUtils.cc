@@ -325,6 +325,28 @@ namespace utils
 	   return Total;
 	}
 
+
+
+  void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
+  {
+    mcpileup.clear();
+    mcpileup.resize(Npu);
+    for(Long64_t ientry=0;ientry<ev.size();ientry++){
+      ev.to(ientry);
+      
+      fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+      puInfoH.getByLabel(ev, "addPileupInfo");
+      if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
+      unsigned int ngenITpu = 0;
+      for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+         if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
+      }
+      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+      mcpileup[ngenITpu]++;
+    }
+  }
+
+
   void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
   {
     mcpileup.clear();
