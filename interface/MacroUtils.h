@@ -32,6 +32,8 @@
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
+#include "DataFormats/Math/interface/deltaPhi.h"
+
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
 #include <vector>
@@ -82,7 +84,7 @@ namespace utils
 	mt-=TMath::Power(sum.pt(),2);
 	mt=TMath::Sqrt(mt);
       }else{
-	double dphi=fabs(deltaPhi(invisible.phi(),visible.phi()));
+	double dphi=fabs((double)deltaPhi((double)invisible.phi(),(double)visible.phi()));
 	mt=TMath::Sqrt(2*invisible.pt()*visible.pt()*(1-TMath::Cos(dphi)));
       }
       return mt;
@@ -98,7 +100,7 @@ namespace utils
 	mt-=TMath::Power(sum.pt(),2);
 	mt=TMath::Sqrt(mt);
       }else{
-	double dphi=fabs(deltaPhi(invisible.phi(),visible.phi()));
+	double dphi=fabs(deltaPhi((double)invisible.phi(),(double)visible.phi()));
 	mt=TMath::Sqrt(2*invisible.pt()*visible.pt()*(1-TMath::Cos(dphi)));
       }
       return mt;
