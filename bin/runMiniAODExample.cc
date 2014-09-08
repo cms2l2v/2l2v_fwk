@@ -120,11 +120,13 @@ int main(int argc, char* argv[])
 		utils::getMCPileupDistributionFromMiniAOD(ev,dataPileupDistribution.size(), mcPileupDistribution);
 		while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
 		while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
-		LumiWeights= new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution);
+                printf("MCPU:");for(unsigned int i=0;i<  mcPileupDistribution.size();i++){printf("%6.2E ",  mcPileupDistribution[i]);}printf("\n");
+                printf("MCPU:");for(unsigned int i=0;i<dataPileupDistribution.size();i++){printf("%6.2E ",dataPileupDistribution[i]);}printf("\n");
+       	        gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
+		LumiWeights = new edm::LumiReWeighting(mcPileupDistribution,dataPileupDistribution);
 		PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
 		utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
 	}
-	gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
 
 	//##############################################
 	//########           EVENT LOOP         ########
@@ -159,7 +161,8 @@ int main(int argc, char* argv[])
 		//double TotalWeight_minus = 1.0;
 		float puWeight(1.0);
 
-		if(isMC){
+		if(isMC){          
+                        //std::cout << ngenITpu << std::endl;     
 			puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
 			weight            = xsecWeight*puWeight;
 			//TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
@@ -194,5 +197,8 @@ int main(int argc, char* argv[])
 }  
 
 
+
+
+//TEST
 
 

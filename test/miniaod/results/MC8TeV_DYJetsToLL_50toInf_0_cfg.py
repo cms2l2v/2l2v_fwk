@@ -10,7 +10,7 @@ datapileup_70300_2012abcd_singleMu=cms.vdouble( 1.74887e-05, 8.41971e-05, 0.0002
  
 
 runProcess = cms.PSet(
-    input = cms.vstring("root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/029EA4C3-A007-E411-BE0B-D4AE529D9537.root"),
+    input = cms.vstring("root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/0A097C5B-9607-E411-A2A0-0026181D291E.root","root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/0C4273AF-A107-E411-9289-D4AE52AAF583.root","root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/0CD3EB1A-A007-E411-B601-D4AE52AAF583.root","root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/1AF5235F-8F07-E411-9342-90B11C04FE0C.root","root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/1AFA578D-A007-E411-BA93-90B11C06954E.root","root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/1E2A638F-A007-E411-BA19-001E675A6AB3.root","root://eoscms//eos/cms/store/mc/Spring14miniaod/DYJetsToLL_M-50_13TeV-madgraph-pythia8/MINIAODSIM/PU20bx25_POSTLS170_V5-v1/00000/2A0F865F-8F07-E411-BB92-0026181D28BB.root",),
     outdir = cms.string("/afs/cern.ch/work/q/querten/public/14_09_05_2l2vfwk_MiniAOD/CMSSW_7_0_8/src/UserCode/llvv_fwk/test/miniaod/results"),
     isMC = cms.bool(True),
     xsec = cms.double(3503.71),

@@ -4,6 +4,7 @@ import json
 import optparse
 import commands
 import LaunchOnCondor
+import UserCode.llvv_fwk.storeTools_cff as storeTools
 
 """
 Gets the value of a given item
@@ -66,22 +67,42 @@ for proc in procList :
             br = getByLabel(d,'br',[])
             suffix = str(getByLabel(d,'suffix' ,""))
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
-            if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)
+            if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
                                 
             if(xsec>0 and not isdata) :
                 for ibr in br :  xsec = xsec*ibr
             split=getByLabel(d,'split',1)
 
-	    for segment in range(0,split) :
-                if(split==1): 
-                    eventsFile=opt.indir + '/' + origdtag + '.root'
-                else:
-                    eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
+            FileList = [];
+            miniAODSamples = getByLabel(d,'miniAOD','')
+            if(len(miniAODSamples)>0):
+               list = storeTools.fillFromStore(miniAODSamples,0,-1,True);
+               ngroup = len(list)/split
+               groupList = ''
+               i=0;
+               while(i <len(list) ):
+                  groupList += '"'+list[i]+'",';
+                  if(i>0 and i%ngroup==0):
+                     FileList.append(groupList)
+                     groupList=''
+                  i = i+1;
+                                      
+            else:
+ 	       for segment in range(0,split) :
+                  if(split==1): 
+                     eventsFile=opt.indir + '/' + origdtag + '.root'
+                  else:
+                     eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
 
-                if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
+                  if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
+                  FileList.append('"'+eventsFile+'"')
 
+            for s in range(0,len(FileList)):
                 #create the cfg file
-            	sedcmd = 'sed \"s%@input%' + eventsFile +'%;s%@outdir%' + opt.outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
+                eventsFile = FileList[s]
+                eventsFile = eventsFile.replace('?svcClass=default', '')
+            	sedcmd = 'sed \'s%"@input"%' + eventsFile +'%;s%@outdir%' + opt.outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
+                print sedcmd
                 sedcmd += 's%@cprime%'+str(getByLabel(d,'cprime',-1))+'%;'
                 sedcmd += 's%@brnew%' +str(getByLabel(d,'brnew' ,-1))+'%;'
                 sedcmd += 's%@suffix%' +suffix+'%;'
@@ -99,11 +120,11 @@ for proc in procList :
                         varopt=icfg.split('=')
                         if(len(varopt)<2) : continue
                         sedcmd += 's%' + varopt[0] + '%' + varopt[1] + '%;'
-            	sedcmd += '\"'
-		if(split==1): 
+            	sedcmd += '\''
+		if(len(FileList)==1): 
                     cfgfile=opt.outdir +'/'+ dtag + suffix + '_cfg.py'
 		else:
-                    cfgfile=opt.outdir +'/'+ dtag + suffix + '_' + str(segment) + '_cfg.py'
+                    cfgfile=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + '_cfg.py'
                 os.system('cat ' + opt.cfg_file + ' | ' + sedcmd + ' > ' + cfgfile)
 
                 #run the job
