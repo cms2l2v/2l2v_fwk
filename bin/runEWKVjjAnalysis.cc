@@ -267,7 +267,7 @@ int main(int argc, char* argv[])
   gSystem->Exec("mkdir -p " + outUrl);
 
   bool isMC = runProcess.getParameter<bool>("isMC");
-  double xsec = runProcess.getParameter<double>("xsec");
+  //double xsec = runProcess.getParameter<double>("xsec");
   bool isPhotonPD(!isMC && url.Contains("Photon"));
   bool isDoubleElePD(!isMC && url.Contains("DoubleEle"));
   bool isDoubleMuPD(!isMC && url.Contains("DoubleMu"));

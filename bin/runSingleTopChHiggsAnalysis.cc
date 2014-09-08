@@ -480,7 +480,7 @@ int main(int argc, char* argv[])
       Hcutflow->Fill(3,weightUp);
       Hcutflow->Fill(4,weightDown);
 
-      float Q2Weight_plus(1.0), Q2Weight_down(1.0);
+      //float Q2Weight_plus(1.0), Q2Weight_down(1.0);
       float PDFWeight_plus(1.0), PDFWeight_down(1.0);
       if(isTTbarMC || isSignal)
 	{
@@ -587,7 +587,7 @@ int main(int argc, char* argv[])
 	
 	//set the channel
 	TString chName;
-	bool isOS(ev.cat<0);
+	//bool isOS(ev.cat<0);
 	bool isSameFlavor(false);
 	if     (abs(ev.cat)==11*11 && eeTrigger)   { chName="ee";  isSameFlavor=true;  if(ngenLeptonsStatus3>=2) llScaleFactor*=0.972; }
 	else if(abs(ev.cat)==11*13 && emuTrigger)  { chName="emu";                     if(ngenLeptonsStatus3>=2) llScaleFactor*=0.968; }

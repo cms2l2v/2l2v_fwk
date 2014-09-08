@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
   std::string baseDir = runProcess.getParameter<std::string>("dirName");
   std::string outdir = runProcess.getParameter<std::string>("outdir");
   std::string jecDir = runProcess.getParameter<std::string>("jecDir");
-  bool runSystematics = runProcess.getParameter<bool>("runSystematics");
+  //bool runSystematics = runProcess.getParameter<bool>("runSystematics");
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   bool exclusiveRun = runProcess.getParameter<bool>("exclusiveRun");
   std::string periodHLT = "2012B";  // This variable should hold the period of the HLT triggers wished to be used,
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
   std::string outUrl = outdir;
 
   TString turl(url);
-  bool isSingleMuPD(!isMC && turl.Contains("SingleMu"));
+  //bool isSingleMuPD(!isMC && turl.Contains("SingleMu"));
   bool isV0JetsMC(isMC && (turl.Contains("DYJetsToLL_50toInf") || turl.Contains("WJets")));
   bool isStauStau(isMC && turl.Contains("TStauStau"));
 
@@ -369,7 +369,7 @@ int main(int argc, char* argv[])
   /*                               Event Loop                                */
   /***************************************************************************/
   DuplicatesChecker duplicatesChecker;
-  int nDuplicates(0);
+  //int nDuplicates(0);
   int step(totalEntries/50);
 
   // Redirect stdout and stderr to a temporary buffer, then output buffer after event loop
@@ -577,8 +577,8 @@ int main(int argc, char* argv[])
     }
     triggerBits = *triggerBitsHandle;
     /****          Sort events acording to HLT Path          ****/
-    bool singleETrigger   = triggerBits[13]; // HLT_Ele27_WP80_v*
-    bool singleMuTrigger  = triggerBits[15]; // HLT_IsoMu24_v*
+    //bool singleETrigger   = triggerBits[13]; // HLT_Ele27_WP80_v*
+    //bool singleMuTrigger  = triggerBits[15]; // HLT_IsoMu24_v*
     bool TauPlusE2012A    = triggerBits[18]; // HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v*
     bool TauPlusMu2012A   = triggerBits[22]; // HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v*
     //bool TauPlusE2012A    = triggerBits[19]; // HLT_Ele22_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v
@@ -870,6 +870,7 @@ int main(int argc, char* argv[])
             }
           }
 
+          passID = isTight;
           passID = isLoose;
           if(leptons[i].d0 > 0.045)
             passID = false;
@@ -1012,12 +1013,12 @@ int main(int argc, char* argv[])
         double minDRlg = 9999.9;
         double minDRtj = 9999.9;
         for(size_t j = 0; j < selLeptons.size(); ++j)
-          minDRlj = TMath::Min(minDRlj, deltaR(jets[i], selLeptons[j]));
+          minDRlj = TMath::Min((double)minDRlj, (double)deltaR(jets[i], selLeptons[j]));
         for(size_t j = 0; j < taus.size(); ++j)
         {
           if(taus[j].pt() < minTauPt || abs(taus[j].eta()) > maxTauEta)
             continue;
-          minDRtj = TMath::Min(minDRtj, deltaR(jets[i], taus[j]));
+          minDRtj = TMath::Min((double)minDRtj, (double)deltaR(jets[i], taus[j]));
         }
         if(minDRlj < 0.4 || minDRlg < 0.4 || minDRtj < 0.4)
           passIso = false;
@@ -1037,8 +1038,8 @@ int main(int argc, char* argv[])
       {
         int puID = (idbits >> 3) & 0x0f;
         bool passLoosePuID = ((puID >> 2) & 0x01);
-        int simplePuID = (idbits >> 7) & 0x0f;
-        bool passLooseSimplePuID = ((simplePuID >> 2) & 0x01);
+        //int simplePuID = (idbits >> 7) & 0x0f;
+        //bool passLooseSimplePuID = ((simplePuID >> 2) & 0x01);
         std::string jetType = ((jets[i].genj.pt() > 0)?("truejetsid"):("pujetsid"));
         passID = passLoosePuID;
       }
@@ -1530,7 +1531,7 @@ int main(int argc, char* argv[])
       mt2_150 = mt2_event.get_mt2();
     }
 
-    BoostedTausQuickFix:
+    //BoostedTausQuickFix:
     bool stauPlot = false;
     if(stauMass == stauMtoPlot && neutralinoMass == neutralinoMtoPlot)
       stauPlot = true;

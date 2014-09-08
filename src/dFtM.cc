@@ -653,7 +653,7 @@ dFtM::FitResult_t dFtM::fit()
 
   ProfileLikelihoodCalculator pl(*data,*mc_); 
   pl.SetConfidenceLevel(0.68);
-  LikelihoodInterval* interval = pl.GetInterval();  
+  //LikelihoodInterval* interval = pl.GetInterval();  
   
   RooArgSet *postFitParams = (RooArgSet *)ws_->allVars().snapshot();
   ws_->saveSnapshot("postfit",*postFitParams,kTRUE);

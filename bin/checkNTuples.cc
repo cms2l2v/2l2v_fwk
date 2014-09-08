@@ -136,28 +136,28 @@ int main(int argc, char** argv)
 
         TFile* file = new TFile(fileName.c_str());
 
-        bool fileDoesntExist = false;
-        bool fileIsZombie = false;
-        bool fileIsRecovered = false;
-        bool fileIsEmpty = false;
+        //bool fileDoesntExist = false;
+        //bool fileIsZombie = false;
+        //bool fileIsRecovered = false;
+        //bool fileIsEmpty = false;
 
         if(!file || !file->IsOpen())
         {
-          fileDoesntExist = true;
+//          fileDoesntExist = true;
           mySummary.Lost.push_back(fileName);
         }
         else
         {
           if(file->IsZombie())
           {
-            fileIsZombie = true;
+//            fileIsZombie = true;
             mySummary.Zombie.push_back(fileName);
           }
           else
           {
             if(file->TestBit(TFile::kRecovered))
             {
-              fileIsRecovered = true;
+//              fileIsRecovered = true;
               mySummary.Recovered.push_back(fileName);
             }
             else
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
               TTree* events = (TTree*)file->Get("Events");
               if(events == NULL)
               {
-                fileIsEmpty = true;
+//                fileIsEmpty = true;
                 mySummary.Empty.push_back(fileName);
               }
               else

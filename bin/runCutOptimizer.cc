@@ -353,7 +353,7 @@ int main(int argc, char** argv)
           std::cout << "  The Cut: " << thisCutStr << std::endl;
           TCut thisCut = thisCutStr.c_str();
 
-          double sigScale = getSignalScale(SIG_samples, round->signalPoint().c_str(), !isStauStau) * round->iLumi();
+          //double sigScale = getSignalScale(SIG_samples, round->signalPoint().c_str(), !isStauStau) * round->iLumi();
           double xSection = round->sigCrossSection();
           double nInitEvents = 10000;
           double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), true, !isStauStau); // Very compute intensive
@@ -884,13 +884,13 @@ fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std
       int nFiles = (*sample).getInt("split", 1);
       tempSample.first = 0;
       tempSample.second = new TChain(treename.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
-      for(int file = 0; file < nFiles; ++file)
+      for(int f = 0; f < nFiles; ++f)
       {
         std::string segmentExt;
         if(nFiles != 1)
         {
           std::stringstream buf;
-          buf << "_" << file;
+          buf << "_" << f;
           buf >> segmentExt;
         }
 

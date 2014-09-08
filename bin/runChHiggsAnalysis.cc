@@ -479,7 +479,7 @@ int main(int argc, char* argv[])
       Hcutflow->Fill(3,weightUp);
       Hcutflow->Fill(4,weightDown);
 
-      float Q2Weight_plus(1.0), Q2Weight_down(1.0);
+      //float Q2Weight_plus(1.0), Q2Weight_down(1.0);
       float PDFWeight_plus(1.0), PDFWeight_down(1.0);
       if(isTTbarMC || isSignal)
 	{

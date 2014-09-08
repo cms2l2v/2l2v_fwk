@@ -8,7 +8,7 @@
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
-#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+//#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -1825,7 +1825,9 @@ void initializeTGraph(){
                     hR->Scale(1.0/(procR.xsec*procR.br));
                     h->Reset();
                     if(hL->Integral()>0 && hR->Integral()>0)//interpolate only if the histograms are not null
-                    h->Add(th1fmorph(signProcName+ch->first+unc->first,signProcName+ch->first+unc->first, hL, hR, procL.mass, procR.mass, proc.mass, (1-Ratio)*hL->Integral() + Ratio*hR->Integral(), 0), 1);
+                    h->Add(hL, 1);
+                    #warning "th1fmorph is currently disabled, This must be fixed!"
+//                    h->Add(th1fmorph(signProcName+ch->first+unc->first,signProcName+ch->first+unc->first, hL, hR, procL.mass, procR.mass, proc.mass, (1-Ratio)*hL->Integral() + Ratio*hR->Integral(), 0), 1);
                     if(unc->first=="")printf("EFF : %f - %f -%f\n", hL->Integral(), h->Integral(), hR->Integral());
                     h->Scale(proc.xsec*proc.br);
                  }

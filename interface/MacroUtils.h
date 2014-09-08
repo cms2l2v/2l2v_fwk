@@ -7,6 +7,12 @@
 #include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
+
+//Load here all the dataformat that we will need
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+
+
+
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -25,6 +31,8 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+
+#include "DataFormats/Math/interface/deltaPhi.h"
 
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
@@ -76,7 +84,7 @@ namespace utils
 	mt-=TMath::Power(sum.pt(),2);
 	mt=TMath::Sqrt(mt);
       }else{
-	double dphi=fabs(deltaPhi(invisible.phi(),visible.phi()));
+	double dphi=fabs((double)deltaPhi((double)invisible.phi(),(double)visible.phi()));
 	mt=TMath::Sqrt(2*invisible.pt()*visible.pt()*(1-TMath::Cos(dphi)));
       }
       return mt;
@@ -92,7 +100,7 @@ namespace utils
 	mt-=TMath::Power(sum.pt(),2);
 	mt=TMath::Sqrt(mt);
       }else{
-	double dphi=fabs(deltaPhi(invisible.phi(),visible.phi()));
+	double dphi=fabs(deltaPhi((double)invisible.phi(),(double)visible.phi()));
 	mt=TMath::Sqrt(2*invisible.pt()*visible.pt()*(1-TMath::Cos(dphi)));
       }
       return mt;
@@ -129,6 +137,7 @@ namespace utils
   // loop on all the lumi blocks for an EDM file in order to count the number of events that are in a sample
   // this is useful to determine how to normalize the events (compute weight)
   unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
+  void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);
   void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup);
   void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters);
 }
