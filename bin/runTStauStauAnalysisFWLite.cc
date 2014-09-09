@@ -1293,6 +1293,8 @@ int main(int argc, char* argv[])
     leptonIndex = -1;
     for(size_t i = 0; i < selLeptons.size(); ++i)
     {
+      if(selection == "IPM")
+      {
       if(abs(selLeptons[i].id) == 11) // Electron
       {
         if(abs(selLeptons[i].dZ) > 0.1)
@@ -1343,6 +1345,7 @@ int main(int argc, char* argv[])
         bool isTight = ((idbits >> 10) & 0x1);
         if(!isTight)
           continue;
+      }
       }
       for(size_t j = 0; j < selTaus.size(); ++j)
       {
