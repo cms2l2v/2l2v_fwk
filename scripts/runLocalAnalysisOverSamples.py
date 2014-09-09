@@ -75,18 +75,24 @@ for proc in procList :
 
             FileList = [];
             miniAODSamples = getByLabel(d,'miniAOD','')
-            if(len(miniAODSamples)>0):
-               list = storeTools.fillFromStore(miniAODSamples,0,-1,True);
+            if(("/MINIAODSIM" in getByLabel(d,'dset','')) or len(getByLabel(d,'miniAOD',''))>0):
+               list = []
+               if("/MINIAODSIM" in getByLabel(d,'dset','')):
+                  print("Use das_client.py to list files from : " + getByLabel(d,'dset','') )
+                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i]
+               else:
+                  list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);
+
                ngroup = len(list)/split
                groupList = ''
                i=0;
                while(i <len(list) ):
-                  groupList += '"'+list[i]+'",';
+                  groupList += '"'+list[i]+'",\\n';
                   if(i>0 and i%ngroup==0):
                      FileList.append(groupList)
                      groupList=''
-                  i = i+1;
-                                      
+                  i = i+1;                                      
             else:
  	       for segment in range(0,split) :
                   if(split==1): 
@@ -102,7 +108,6 @@ for proc in procList :
                 eventsFile = FileList[s]
                 eventsFile = eventsFile.replace('?svcClass=default', '')
             	sedcmd = 'sed \'s%"@input"%' + eventsFile +'%;s%@outdir%' + opt.outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
-                print sedcmd
                 sedcmd += 's%@cprime%'+str(getByLabel(d,'cprime',-1))+'%;'
                 sedcmd += 's%@brnew%' +str(getByLabel(d,'brnew' ,-1))+'%;'
                 sedcmd += 's%@suffix%' +suffix+'%;'
