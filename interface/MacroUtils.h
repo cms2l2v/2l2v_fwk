@@ -37,6 +37,10 @@
 
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
+
+#include "DataFormats/PatCandidates/interface/GenericParticle.h"
+
+
 #include <vector>
 #include "TVector3.h"
 #include "TMath.h"
@@ -146,6 +150,8 @@ namespace utils
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::string pattern);
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::string pattern1, std::string pattern2, std::string pattern3="", std::string pattern4="");
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::vector<std::string>& patterns);
+
+  inline bool sort_CandidatesByPt(const pat::GenericParticle &a, const pat::GenericParticle &b)  { return a.pt()>b.pt(); }
 }
 
 // CODE FOR DUPLICATE EVENTS CHECKING

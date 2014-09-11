@@ -16,6 +16,7 @@
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
+#include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -51,6 +52,10 @@
 #include <Math/VectorUtil.h>
 
 using namespace std;
+
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
+//typedef math::XYZTLorentzVector LorentzVector;
 
 TString getJetRegion(float eta)
 {
@@ -160,36 +165,35 @@ int main(int argc, char* argv[])
 
   //HIGGS weights and uncertainties
   
-  //narrow resonance
+  //narrow resonance    
   double cprime = runProcess.getParameter<double>("cprime");
   double brnew  = runProcess.getParameter<double>("brnew");
   std::vector<std::pair<double, double> > NRparams;
-  NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
-  if(mctruthmode==125){
-    NRparams.push_back(std::make_pair<double,double>(5, 0));
-    NRparams.push_back(std::make_pair<double,double>(8, 0));
-    NRparams.push_back(std::make_pair<double,double>(10,0));
-    NRparams.push_back(std::make_pair<double,double>(11,0));
-    NRparams.push_back(std::make_pair<double,double>(12,0));
-    NRparams.push_back(std::make_pair<double,double>(13,0));
-    NRparams.push_back(std::make_pair<double,double>(14,0));
-    NRparams.push_back(std::make_pair<double,double>(15,0));
-    NRparams.push_back(std::make_pair<double,double>(16,0));
-    NRparams.push_back(std::make_pair<double,double>(17,0));
-    NRparams.push_back(std::make_pair<double,double>(18,0));
-    NRparams.push_back(std::make_pair<double,double>(19,0));
-    NRparams.push_back(std::make_pair<double,double>(20,0));
-    NRparams.push_back(std::make_pair<double,double>(22,0));
-    NRparams.push_back(std::make_pair<double,double>(25,0));
-    NRparams.push_back(std::make_pair<double,double>(30,0));
-  }
- else if(suffix==""){ //consider the other points only when no suffix is being used    
-    for(double cp=0.1;cp<=1.0;cp+=0.1){
-       for(double brn=0.0; brn<=0.5;brn+=0.1){
-//          if(brn!=0.0)continue;
-          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
-    }}
-  }
+  NRparams.push_back(std::make_pair<double,double>(1.0, 0));
+//  NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
+//  if(mctruthmode==125){
+//    NRparams.push_back(std::make_pair<double,double>(5, 0));
+//    NRparams.push_back(std::make_pair<double,double>(8, 0));
+//    NRparams.push_back(std::make_pair<double,double>(10,0));
+//    NRparams.push_back(std::make_pair<double,double>(11,0));
+//    NRparams.push_back(std::make_pair<double,double>(12,0));
+//    NRparams.push_back(std::make_pair<double,double>(13,0));
+//    NRparams.push_back(std::make_pair<double,double>(14,0));
+//    NRparams.push_back(std::make_pair<double,double>(15,0));
+//    NRparams.push_back(std::make_pair<double,double>(16,0));
+//    NRparams.push_back(std::make_pair<double,double>(17,0));
+//    NRparams.push_back(std::make_pair<double,double>(18,0));
+//    NRparams.push_back(std::make_pair<double,double>(19,0));
+//    NRparams.push_back(std::make_pair<double,double>(20,0));
+//    NRparams.push_back(std::make_pair<double,double>(22,0));
+//    NRparams.push_back(std::make_pair<double,double>(25,0));
+//    NRparams.push_back(std::make_pair<double,double>(30,0));
+//  }else if(suffix==""){ //consider the other points only when no suffix is being used    
+//    for(double cp=0.1;cp<=1.0;cp+=0.1){
+//       for(double brn=0.0; brn<=0.5;brn+=0.1){
+//          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
+//    }}
+//  }
 
 
   std::vector<TGraph *> NRweightsGr;
@@ -851,19 +855,24 @@ int main(int argc, char* argv[])
 	}
 */
 
-
-/* //FIXME: To be updated for 7XY version using miniAOD objects
       //
       // LEPTON ANALYSIS
       //
+      
+      //start by merging electrons and muons
+      pat::GenericParticleCollection leptons;
+      leptons.insert(leptons.begin(), electrons.begin(), electrons.end());
+      leptons.insert(leptons.begin(), muons.begin(), muons.end());
+      std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
+
       LorentzVector muDiff(0,0,0,0);
-      data::PhysicsObjectCollection_t selLeptons, extraLeptons;
+      pat::GenericParticleCollection selLeptons, extraLeptons;
       for(size_t ilep=0; ilep<leptons.size(); ilep++)
 	{
 	  bool passKin(true),passId(true),passIso(true);
 	  bool passLooseLepton(true), passSoftMuon(true);
 
-	  int lid=leptons[ilep].get("id");
+	  int lid=leptons[ilep].pdgId();
 
 	  //apply muon corrections
 	  if(abs(lid)==13)
@@ -873,9 +882,9 @@ int main(int argc, char* argv[])
 		TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
 		muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
 		if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
-		muDiff -= leptons[ilep];
-		leptons[ilep].SetPxPyPzE(p4.Px(),p4.Py(),p4.Pz(),p4.E());
-		muDiff += leptons[ilep];
+		muDiff -= leptons[ilep].p4();
+                leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
+		muDiff += leptons[ilep].p4();
 	      }
 	    }
 
@@ -883,12 +892,15 @@ int main(int argc, char* argv[])
 	  lid=abs(lid);
 	  TString lepStr( lid==13 ? "mu" : "e");
 
-	  //veto nearby photon (loose electrons are many times photons...)
-	  double minDRlg(9999.);
-	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep],selPhotons[ipho]));
-	  if(minDRlg<0.1) continue;
-	  
+//FIXME: To be updated for 7XY version using miniAOD objects        
+//	  //veto nearby photon (loose electrons are many times photons...)
+//	  double minDRlg(9999.);
+//	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+//	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep],selPhotons[ipho]));
+//	  if(minDRlg<0.1) continue;
+
+/*
+ //FIXME: To be updated for 7XY version using miniAOD objects	  
 	  //kinematics
 	  float leta = lid==11 ? leptons[ilep].getVal("sceta") : leptons[ilep].eta();
 	  if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
@@ -945,11 +957,11 @@ int main(int argc, char* argv[])
 	  
 	  if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
 	  else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
-	}
-      std::sort(selLeptons.begin(),   selLeptons.end(), data::PhysicsObject_t::sortByPt);
-      std::sort(extraLeptons.begin(), extraLeptons.end(), data::PhysicsObject_t::sortByPt);
-      recoMet[0] -= muDiff;
 */
+	}
+      std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
+      std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
+      //recoMet[0] -= muDiff;  FIXME
 
 /* //FIXME: To be updated for 7XY version using miniAOD objects
       //
