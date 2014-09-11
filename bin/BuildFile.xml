@@ -41,5 +41,5 @@
   <bin name="runMiniAODExample"           file="runMiniAODExample.cc"></bin>
 </environment>
 
-<flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Os"/>
+<flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable  -Os"/>
 

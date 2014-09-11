@@ -8,14 +8,14 @@
 
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-
-
+#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
@@ -93,17 +93,17 @@ int main(int argc, char* argv[])
   gSystem->Exec("mkdir -p " + outUrl);
 
 
-//  bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
-//  if(!isMC)
-//    {
-//      if(url.Contains("DoubleEle")) filterOnlyEE=true;
-//      if(url.Contains("DoubleMu"))  filterOnlyMUMU=true;
-//      if(url.Contains("MuEG"))      filterOnlyEMU=true;
-//    }
-//  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
-//  bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
-//  bool isWGmc(isMC && url.Contains("WG"));
-//  bool isZGmc(isMC && url.Contains("ZG"));
+  bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
+  if(!isMC)
+    {
+      if(url.Contains("DoubleEle")) filterOnlyEE=true;
+      if(url.Contains("DoubleMu"))  filterOnlyMUMU=true;
+      if(url.Contains("MuEG"))      filterOnlyEMU=true;
+    }
+  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
+  bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
+  bool isWGmc(isMC && url.Contains("WG"));
+  bool isZGmc(isMC && url.Contains("ZG"));
   bool isMC_GG  = isMC && ( string(url.Data()).find("GG" )  != string::npos);
   bool isMC_VBF = isMC && ( string(url.Data()).find("VBF")  != string::npos);
   bool isMC_125OnShell = isMC && (mctruthmode==521);
@@ -138,9 +138,9 @@ int main(int argc, char* argv[])
   std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
   std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
 
-//  GammaWeightsHandler *gammaWgtHandler=0;
-//  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,"",true);
-//  //if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,false);
+  GammaWeightsHandler *gammaWgtHandler=0;
+  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,"",true);
+  //if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,false);
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
@@ -543,11 +543,11 @@ int main(int argc, char* argv[])
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
-//  FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
-//  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
+  FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
   
   //muon energy scale and uncertainties
-//  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
+  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -556,8 +556,8 @@ int main(int argc, char* argv[])
   //the scale factors are taken as average numbers from the pT dependent curves see:
   //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
   BTagSFUtil btsfutil;
-//  float beff(0.68), sfb(0.99), sfbunc(0.015);
-//  float leff(0.13), sfl(1.05), sflunc(0.12);
+  float beff(0.68), sfb(0.99), sfbunc(0.015);
+  float leff(0.13), sfl(1.05), sflunc(0.12);
 
   //pileup weighting
   edm::LumiReWeighting* LumiWeights = NULL;
@@ -598,13 +598,53 @@ int main(int argc, char* argv[])
        ev.to(iev); //load the event content from the EDM file
        //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
 
+       //apply trigger and require compatibilitiy of the event with the PD
+       edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+       if(!tr.isValid())return false;
+
+      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+      bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
+      bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
+      bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+      if(filterOnlyEE)   { mumuTrigger=false; emuTrigger=false;  }
+      if(filterOnlyMUMU) { eeTrigger=false;   emuTrigger=false;  }
+      if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
+      if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
+
+      bool hasPhotonTrigger(false);
+      float triggerPrescale(1.0),triggerThreshold(0);
+      bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
+      if(runPhotonSelection){
+	  eeTrigger=false; mumuTrigger=false;
+
+          std::string successfulPath="";
+          if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_v*")){ hasPhotonTrigger=true; triggerThreshold=92; }
+          else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_v*")){ hasPhotonTrigger=true; triggerThreshold=77; }
+          else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_v*")){ hasPhotonTrigger=true; triggerThreshold=50; }
+          else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_v*")){ hasPhotonTrigger=true; triggerThreshold=36; }
+          
+          if(successfulPath!=""){ //get the prescale associated to it
+             fwlite::Handle< pat::PackedTriggerPrescales > prescalesHandle;
+             prescalesHandle.getByLabel(ev, "patTrigger");
+             triggerPrescale = prescalesHandle->getPrescaleForName(successfulPath);
+          }
+      }
+      if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+
+       //##############################################   EVENT PASSED THE TRIGGER   #######################################
+
+
+       //load all the objects we will need to access
        reco::VertexCollection vtx;
        fwlite::Handle< reco::VertexCollection > vtxHandle;
        vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
        if(vtxHandle.isValid()){ vtx = *vtxHandle;}
 
-       fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-       puInfoH.getByLabel(ev, "addPileupInfo");
+
+       reco::GenParticleCollection gen;
+       fwlite::Handle< reco::GenParticleCollection > genHandle;
+       genHandle.getByLabel(ev, "prunedGenParticles");
+       if(genHandle.isValid()){ gen = *genHandle;}
 
        pat::MuonCollection muons;
        fwlite::Handle< pat::MuonCollection > muonsHandle;
@@ -631,52 +671,24 @@ int main(int argc, char* argv[])
        metsHandle.getByLabel(ev, "slimmedMets");
        if(metsHandle.isValid()){ mets = *metsHandle;}
 
-/* //FIXME: To be updated for 7XY version using miniAOD objects
- *
- 
       if(isV0JetsMC){
-	mon.fillHisto("nup","",ev.nup,1);
-	if(ev.nup>5) continue;
-	mon.fillHisto("nupfilt","",ev.nup,1);
+         fwlite::Handle< LHEEventProduct > lheEPHandle;
+         lheEPHandle.getByLabel(ev, "externalLHEProducer");
+
+ 	 mon.fillHisto("nup","",lheEPHandle->hepeup().NUP,1);
+ 	 if(lheEPHandle->hepeup().NUP>5) continue;
+	 mon.fillHisto("nupfilt","",lheEPHandle->hepeup().NUP,1);
       }
-    
-      //require compatibilitiy of the event with the PD
-      bool eeTrigger          = ev.t_bits[0];
-      bool muTrigger          = ev.t_bits[6];
-      bool mumuTrigger        = ev.t_bits[2] || ev.t_bits[3]; 
-      bool emuTrigger         = ev.t_bits[4] || ev.t_bits[5];
-      if(filterOnlyEE)   { mumuTrigger=false; emuTrigger=false;  }
-      if(filterOnlyMUMU) { eeTrigger=false;   emuTrigger=false;  }
-      if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
-      if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
-
-      bool hasPhotonTrigger(false);
-      float triggerPrescale(1.0),triggerThreshold(0);
-      bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
-      if(runPhotonSelection)
-	{
-	  eeTrigger=false; mumuTrigger=false;
-	  for(size_t itrig=10; itrig>=7; itrig--)
-	    {
-	      if(!ev.t_bits[itrig]) continue;
-	      hasPhotonTrigger=true;
-	      triggerPrescale=ev.t_prescale[itrig];
-	      if(itrig==10) triggerThreshold=92; //90
-	      if(itrig==9)  triggerThreshold=77; //75
-	      if(itrig==8)  triggerThreshold=50;
-	      if(itrig==7)  triggerThreshold=36;
-	      break;
-	    }
-	}
 
 
+
+      //MC crap for photon studies
       if(hasPhotonTrigger && (isWGmc || isZGmc)){
 	int nge(0), ngm(0), ngt(0), ngj(0), ngnu(0);
 	bool zFound(false), wFound(false);
 	for(size_t ig=0; ig<gen.size(); ig++){
-	  int status=gen[ig].get("status");
-	  if(status!=3) continue;
-	  int id(gen[ig].get("id"));
+	  if(gen[ig].status()!=3) continue;
+	  int id(abs(gen[ig].pdgId()));
 	  if(id==23) zFound=true;
 	  if(id==24) wFound=true;
 	  if(id==11) nge++;
@@ -703,7 +715,7 @@ int main(int argc, char* argv[])
 	  mon.fillHisto("wdecays","",decBin,1);
 	}
       }
-*/
+
 
       //
       // DERIVE WEIGHTS TO APPLY TO SAMPLE
@@ -711,25 +723,25 @@ int main(int argc, char* argv[])
 
        //pileup weight
        float weight = 1.0;
-       //double TotalWeight_plus = 1.0;
-       //double TotalWeight_minus = 1.0;
+       double TotalWeight_plus = 1.0;
+       double TotalWeight_minus = 1.0;
        float puWeight(1.0);
 
        if(isMC){          
           int ngenITpu = 0;
+
+          fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+          puInfoH.getByLabel(ev, "addPileupInfo");
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
              if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
           }
 
-          //std::cout << ngenITpu << std::endl;     
           puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
           weight            = xsecWeight*puWeight;
-          //TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
-          //TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
-       }
-       weight = weight*=1; //added to avoid unused variable
+          TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
+          TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
+      }
 
-/* //FIXME: To be updated for 7XY version using miniAOD objects
 
       //Higgs specific weights
       float lShapeWeights[3]={1.0,1.0,1.0};
@@ -739,9 +751,9 @@ int main(int argc, char* argv[])
 	LorentzVector higgs(0,0,0,0);
 	LorentzVector totLeptons(0,0,0,0);
 	for(size_t igen=0; igen<gen.size(); igen++){
-	  if(gen[igen].get("status")!=3) continue;
-	  if(abs(gen[igen].get("id"))>=11 && abs(gen[igen].get("id"))<=16) totLeptons += gen[igen];
-	  if(gen[igen].get("id")==25)                                      higgs=gen[igen];
+	  if(gen[igen].status()!=3) continue;
+	  if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
+	  if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
 	}
 	if(mctruthmode==125) {
 	  higgs=totLeptons;
@@ -781,7 +793,7 @@ int main(int argc, char* argv[])
 	//final event weight
 	weight = puWeight * shapeWeight;
       }
-*/
+
       //
       //
       // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
