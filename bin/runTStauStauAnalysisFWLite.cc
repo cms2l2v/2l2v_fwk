@@ -65,6 +65,11 @@ double stauCrossSec(double stauM, double neutM);
 /*   0 - Everything OK                                                       */
 /*   1 - Missing parameters_cfg.py configuration file                        */
 /*****************************************************************************/
+int old_main(int argc, char* argv[])
+{
+  return 0;
+}
+
 int main(int argc, char* argv[])
 {
   /***************************************************************************/
@@ -90,6 +95,14 @@ int main(int argc, char* argv[])
 
   // Configure the process (aka "Load parameters from configuration file")
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
+  bool doOldAnalysis = false;
+  if(runProcess.exists("doOldAnalysis"))
+    doOldAnalysis = runProcess.getParameter<bool>("doOldAnalysis");
+  if(doOldAnalysis)
+  {
+    return old_main(argc, argv);
+  }
+
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   std::vector<std::string> urls = runProcess.getParameter<std::vector<std::string> >("input");
@@ -126,6 +139,15 @@ int main(int argc, char* argv[])
     if(selection != "IPM")
       selection = "LIP";
   }
+  bool doSVfit = false;
+  if(runProcess.exists("doSVfit"))
+    doSVfit = runProcess.getParameter<bool>("doSVfit");
+  bool doLIPTauID = false;
+  if(runProcess.exists("doLIPTauID"))
+    doLIPTauID = runProcess.getParameter<bool>("doLIPTauID");
+  bool doLIPBVeto = false;
+  if(runProcess.exists("doLIPBVeto"))
+    doLIPBVeto = runProcess.getParameter<bool>("doLIPBVeto");
   //bool doQuickFix = false;
   //if(runProcess.exists("doQuickFix"))
   //  doQuickFix = runProcess.getParameter<bool>("doQuickFix");
@@ -301,6 +323,8 @@ int main(int argc, char* argv[])
 
   // SVFit Mass
   mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
+  // Invariant Mass
+  mon.addHistogram(new TH1F("InvMass", ";M_{l-#tau};Events", 50, 0, 500));
 
   // Angles
   mon.addHistogram(new TH1F("deltaAlphaTauTau", ";#Delta#alpha_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
@@ -399,6 +423,7 @@ int main(int argc, char* argv[])
   int tauIndex = -1, leptonIndex = -1;
   bool isOS = false;
   double mass = -1;
+  double invMass = -1;
   double mt2 = -1;
   double mt2_50 = -1;
   double mt2_150 = -1;
@@ -443,6 +468,7 @@ int main(int argc, char* argv[])
     summaryTree->Branch("selTaus", &selTaus);
     summaryTree->Branch("isOS", &isOS);
     summaryTree->Branch("SVFitMass", &mass);
+    summaryTree->Branch("InvariantMass", &invMass);
     summaryTree->Branch("MT2", &mt2);
     summaryTree->Branch("MT2_50", &mt2_50);
     summaryTree->Branch("MT2_150", &mt2_150);
@@ -493,6 +519,7 @@ int main(int argc, char* argv[])
     tauIndex = -1, leptonIndex = -1;
     isOS = false;
     mass = -1;
+    invMass = -1;
     mt2 = -1;
     stauMass = -1;
     neutralinoMass = -1;
@@ -668,14 +695,14 @@ int main(int argc, char* argv[])
     llvvTauCollection taus = *tauCollHandle;
 
     // Boosted tau Collection
-    fwlite::Handle<llvvTauCollection> boostedTauCollHandle;
-    boostedTauCollHandle.getByLabel(ev, "llvvObjectProducersUsed", "boosted");
-    if(!boostedTauCollHandle.isValid())
-    {
-      std::cout << "llvvTauCollection Boosted Object NotFound" << std::endl;
-      continue;
-    }
-    llvvTauCollection boostedTaus = *boostedTauCollHandle;
+//    fwlite::Handle<llvvTauCollection> boostedTauCollHandle;
+//    boostedTauCollHandle.getByLabel(ev, "llvvObjectProducersUsed", "boosted");
+//    if(!boostedTauCollHandle.isValid())
+//    {
+//      std::cout << "llvvTauCollection Boosted Object NotFound" << std::endl;
+//      continue;
+//    }
+//    llvvTauCollection boostedTaus = *boostedTauCollHandle;
     //if(boostedTaus.size() > 0)
     //  continue;
     //for(size_t i = 0; i < boostedTaus.size(); ++i)
@@ -1065,7 +1092,7 @@ int main(int argc, char* argv[])
       bool hasBtagCorr = false;
       if(selection == "IPM")
       {
-        if(jets[i].csv > 0.679)
+        if((jets[i].csv > 0.679 && !doLIPBVeto) || (doLIPBVeto && jets[i].csv > 0.405))
         {
           isBJet = true;
           hasBtagCorr = true;
@@ -1190,7 +1217,7 @@ int main(int argc, char* argv[])
 
       // Tau overlap with leptons
       bool passIso = true;
-      if(selection == "IPM")
+      if(selection == "IPM" && !doLIPTauID)
       {
       }
       else
@@ -1206,7 +1233,7 @@ int main(int argc, char* argv[])
       }
 
       bool passQual = true;
-      if(selection == "IPM")
+      if(selection == "IPM" && !doLIPTauID)
       {
       }
       else
@@ -1219,7 +1246,7 @@ int main(int argc, char* argv[])
 
       // Tau ID
       bool passID = true;
-      if(selection == "IPM")
+      if(selection == "IPM" && !doLIPTauID)
       {
         if(!tau.passId(llvvTAUID::decayModeFinding))
           passID = false;
@@ -1306,30 +1333,6 @@ int main(int argc, char* argv[])
           continue;
         double relIso = utils::cmssw::relIso(selLeptons[i], rho);
         if(relIso > 0.1)
-          continue;
-        bool isTight = false;
-        if(selLeptons[i].pt() >= 20)
-        {
-          if(abs(eta) < 0.8)
-          {
-            if(selLeptons[i].electronInfoRef->mvanontrigv0 > 0.925)
-              isTight = true;
-          }
-          else
-          {
-            if(abs(eta) < 1.479)
-            {
-              if(selLeptons[i].electronInfoRef->mvanontrigv0 > 0.975)
-                isTight = true;
-            }
-            else
-            {
-              if(selLeptons[i].electronInfoRef->mvanontrigv0 > 0.985)
-                isTight = true;
-            }
-          }
-        }
-        if(!isTight)
           continue;
       }
       else // Muon
@@ -1473,38 +1476,42 @@ int main(int argc, char* argv[])
     // Tau-Lepton pair mass calculation
     if(isOS)
     {
-      TMatrixD covMET(2, 2);
-      std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
       auto selLepton = selLeptons[leptonIndex];
       auto selTau    = selTaus[tauIndex];
-      svFitStandalone::Vector measuredMET(met.px(), met.py(), 0);
 
-      covMET[0][0] = met.sigx2;
-      covMET[0][1] = met.sigxy;
-      covMET[1][0] = met.sigxy;
-      covMET[1][1] = met.sigy2;
+      invMass = (selLepton+selTau).M(); // Invariant mass
+      if(doSVfit)
+      {
+        TMatrixD covMET(2, 2);
+        std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
+        svFitStandalone::Vector measuredMET(met.px(), met.py(), 0);
 
-      if(abs(selLepton.id) == 11)
-        measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, svFitStandalone::LorentzVector(selLepton.px(), selLepton.py(), selLepton.pz(), selLepton.E())));
-      else
-        measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToMuDecay, svFitStandalone::LorentzVector(selLepton.px(), selLepton.py(), selLepton.pz(), selLepton.E())));
-      measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay, svFitStandalone::LorentzVector(selTau.px(), selTau.py(), selTau.pz(), selTau.E())));
+        covMET[0][0] = met.sigx2;
+        covMET[0][1] = met.sigxy;
+        covMET[1][0] = met.sigxy;
+        covMET[1][1] = met.sigy2;
 
-      SVfitStandaloneAlgorithm SVfit_algo(measuredTauLeptons, measuredMET, covMET, 0);
-      //SVfit_algo.maxObjFunctionCalls(10000) // To change the max number of iterations before minimization is terminated, default 5000
-      SVfit_algo.addLogM(false); // To not use the LogM penalty, it is used by default
-      //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
-      //SVfit_algo.fit();
-      //SVfit_algo.integrate();
-//here      SVfit_algo.integrateVEGAS();
-      //SVfit_algo.integrateMarkovChain();
-      if(SVfit_algo.isValidSolution())
-        mass = SVfit_algo.mass();
-      //mass = (selLepton+selTau).M(); // Temporary hold
+        if(abs(selLepton.id) == 11)
+          measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToElecDecay, svFitStandalone::LorentzVector(selLepton.px(), selLepton.py(), selLepton.pz(), selLepton.E())));
+        else
+          measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToMuDecay, svFitStandalone::LorentzVector(selLepton.px(), selLepton.py(), selLepton.pz(), selLepton.E())));
+        measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(svFitStandalone::kTauToHadDecay, svFitStandalone::LorentzVector(selTau.px(), selTau.py(), selTau.pz(), selTau.E())));
+
+        SVfitStandaloneAlgorithm SVfit_algo(measuredTauLeptons, measuredMET, covMET, 0);
+        //SVfit_algo.maxObjFunctionCalls(10000) // To change the max number of iterations before minimization is terminated, default 5000
+        SVfit_algo.addLogM(false); // To not use the LogM penalty, it is used by default
+        //SVfit_algo.metPower(0.5); // Additional power to enhance MET likelihood, default is 1.
+        //SVfit_algo.fit();
+        //SVfit_algo.integrate();
+        SVfit_algo.integrateVEGAS();
+        //SVfit_algo.integrateMarkovChain();
+        if(SVfit_algo.isValidSolution())
+          mass = SVfit_algo.mass();
+      }
     }
 
     // MT2 calculation
-    if(mass >= 0)
+    if(mass >= 0 || (!doSVfit && isOS))
     {
       auto selLepton = selLeptons[leptonIndex];
       auto selTau    = selTaus[tauIndex];
@@ -1579,7 +1586,7 @@ int main(int argc, char* argv[])
                 mon.fillHisto("eventflow", chTags, 5, weight);
                 mon.fillHisto("nvtxOS", chTags, nvtx, weight);
               }
-              if(mass >= 0)
+              if(mass >= 0 || !doSVfit)
               {
                 if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 6, weight);
 
@@ -1600,6 +1607,7 @@ int main(int argc, char* argv[])
             mon.fillHisto("MT2_50", chTags, mt2_50, weight);
             mon.fillHisto("MT2_150", chTags, mt2_150, weight);
             mon.fillHisto("SVFitMass", chTags, mass, weight);
+            mon.fillHisto("InvMass", chTags, invMass, weight);
 
             mon.fillHisto("deltaAlphaTauTau", chTags, deltaAlphaTauTau, weight);
             mon.fillHisto("deltaPhiTauTauMET", chTags, deltaPhiTauTauMET, weight);
@@ -1701,7 +1709,6 @@ int main(int argc, char* argv[])
 
 double stauCrossSec(double stauM, double neutM)
 {
-  // TODO: Get cross section as a function of mass, for now use placeholder value of 1 pb
   //Points taken from  http://arxiv.org/abs/1204.2379
   //Mstau == 100 => 0.1
   //Mstau == 125 => 0.05
