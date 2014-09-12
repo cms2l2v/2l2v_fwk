@@ -34,6 +34,8 @@ runProcess = cms.PSet(
 #    datapileupSingleLep = datapileup_70300_2012abcd,   	
     exclusiveRun = cms.bool(@exclusiveRun),
     selection = cms.string("@selection"),
+    doLIPBVeto = cms.bool(@doLIPBVeto),
+    doLIPTauID = cms.bool(@doLIPTauID),
 #    doQuickFix = cms.bool(@doQuickFix),
     debug = cms.bool(True)	
 )
