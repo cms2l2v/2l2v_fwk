@@ -57,6 +57,19 @@ using namespace std;
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 //typedef math::XYZTLorentzVector LorentzVector;
 
+
+//define a generic container to hold information related to pat electrons, muons, taus
+class GenericLepton  : public pat::GenericParticle {
+   public:
+   // constructor
+     ~GenericLepton(){};
+      GenericLepton(pat::Electron el_) : pat::GenericParticle(el_){el = el_; };
+      GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_){mu = mu_; };
+         pat::Electron el;
+         pat::Muon     mu;
+};
+
+
 TString getJetRegion(float eta)
 {
   TString reg("TK");
@@ -91,7 +104,7 @@ int main(int argc, char* argv[])
   TString baseDir    = runProcess.getParameter<std::string>("dirName");
   TString url = TString(argv[1]);
   TString outFileUrl(gSystem->BaseName(url));
-  outFileUrl.ReplaceAll(".py","");
+  outFileUrl.ReplaceAll("_cfg.py","");
   if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
   TString outdir=runProcess.getParameter<std::string>("outdir");
   TString outUrl( outdir );
@@ -645,6 +658,11 @@ int main(int argc, char* argv[])
        if(vtxHandle.isValid()){ vtx = *vtxHandle;}
 
 
+       double rho = 0;
+       fwlite::Handle< double > rhoHandle;
+       rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
+       if(rhoHandle.isValid()){ rho = *rhoHandle;}
+
        reco::GenParticleCollection gen;
        fwlite::Handle< reco::GenParticleCollection > genHandle;
        genHandle.getByLabel(ev, "prunedGenParticles");
@@ -670,10 +688,10 @@ int main(int argc, char* argv[])
        photonsHandle.getByLabel(ev, "slimmedPhotons");
        if(photonsHandle.isValid()){ photons = *photonsHandle;}
 
-       pat::METCollection mets;
+       pat::METCollection met;
        fwlite::Handle< pat::METCollection > metsHandle;
-       metsHandle.getByLabel(ev, "slimmedMets");
-       if(metsHandle.isValid()){ mets = *metsHandle;}
+       metsHandle.getByLabel(ev, "slimmedMETs");
+       if(metsHandle.isValid()){ met = *metsHandle;}
 
       if(isV0JetsMC){
          fwlite::Handle< LHEEventProduct > lheEPHandle;
@@ -804,11 +822,10 @@ int main(int argc, char* argv[])
       //
       //
 
-/* //FIXME: To be updated for 7XY version using miniAOD objects      
       //
       // photon selection
       //
-      data::PhysicsObjectCollection_t selPhotons;
+      pat::PhotonCollection selPhotons;
       if(runPhotonSelection)
 	{
 	  //filter out number of prompt photons to avoid double counting
@@ -827,46 +844,48 @@ int main(int argc, char* argv[])
 	  for(size_t ipho=0; ipho<photons.size(); ipho++)
 	    {
 	      double pt=photons[ipho].pt();
-	      double eta=photons[ipho].getVal("sceta");
+	      double eta=photons[ipho].superCluster()->eta();
 
 	      //if systematics are active loosen the selection to the medium working point
-	      Int_t idbits( photons[ipho].get("id") );
-	      bool hasTightPhotonId( (idbits >> 2 ) & 0x1 );
-	      double gIso    = photons[ipho].getVal("gIso03");
-	      double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
-	      double chIso   = photons[ipho].getVal("chIso03");
-	      double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
-	      double nhIso   = photons[ipho].getVal("nhIso03");
-	      double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
-	      
+              std::vector<std::pair<std::string, bool> > phid =  photons[ipho].photonIDs() ;   for(size_t PHIDI = 0 ; PHIDI<phid.size(); PHIDI++){ printf("%i   %s  %i\n", (int)PHIDI, phid[PHIDI].first.c_str(), phid[PHIDI].second?1:0);  }  //print available photon ID
+              bool hasTightPhotonId = true;// photons[ipho].photonID("pidTight")>1.0;//FIXME not sure what the cut should be
+	      bool passId = (photons[ipho].r9()>=0.9 && hasTightPhotonId); 
+
+  	      //isolation 
+	      //FIXME: Currently using straight the iso from PAT, not sure it's equivalent to what we were doing (just below)
+	      bool passIso(true);    
+	      float relIso = photons[ipho].particleIso() / photons[ipho].pt();  
+              if(relIso<0.4)passIso = true;
+//	      double gIso    = photons[ipho].getVal("gIso03");
+//	      double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
+//	      double chIso   = photons[ipho].getVal("chIso03");
+//	      double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
+//	      double nhIso   = photons[ipho].getVal("nhIso03");
+//	      double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+//	      passIso &= (TMath::Max(chIso-chArea*rho,0.0) < 0.7); 
+//	      passIso &= (TMath::Max(nhIso-nhArea*rho,0.0) < 0.4+0.04*pt); 
+//	      passIso &= (TMath::Max(gIso-gArea*rho,  0.0) < 0.5+0.005*pt); 
+      
 	      //select the photon
 	      if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
-	      bool passId(true);
-	      if( photons[ipho].getVal("r9")<0.9 ) passId=false;
-	      if(!hasTightPhotonId) passId=false;
 	      if(!passId) continue;
-	      bool passIso(true);
-	      passIso &= (TMath::Max(chIso-chArea*ev.rho,0.0) < 0.7); 
-	      passIso &= (TMath::Max(nhIso-nhArea*ev.rho,0.0) < 0.4+0.04*pt); 
-	      passIso &= (TMath::Max(gIso-gArea*ev.rho,  0.0) < 0.5+0.005*pt); 
 	      if(!passIso) continue; 
 	      selPhotons.push_back(photons[ipho]);
 	    }
 	}
-*/
 
       //
       // LEPTON ANALYSIS
       //
       
       //start by merging electrons and muons
-      pat::GenericParticleCollection leptons;
-      leptons.insert(leptons.begin(), electrons.begin(), electrons.end());
-      leptons.insert(leptons.begin(), muons.begin(), muons.end());
+      std::vector<GenericLepton> leptons;
+      for(size_t l=0;l<electrons.size();l++){leptons.push_back(GenericLepton(electrons[l]));}      
+      for(size_t l=0;l<muons    .size();l++){leptons.push_back(GenericLepton(muons    [l]));}      
       std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
 
       LorentzVector muDiff(0,0,0,0);
-      pat::GenericParticleCollection selLeptons, extraLeptons;
+      std::vector<GenericLepton> selLeptons, extraLeptons;
       for(size_t ilep=0; ilep<leptons.size(); ilep++)
 	{
 	  bool passKin(true),passId(true),passIso(true);
@@ -899,10 +918,9 @@ int main(int argc, char* argv[])
 //	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep],selPhotons[ipho]));
 //	  if(minDRlg<0.1) continue;
 
-/*
- //FIXME: To be updated for 7XY version using miniAOD objects	  
+
 	  //kinematics
-	  float leta = lid==11 ? leptons[ilep].getVal("sceta") : leptons[ilep].eta();
+	  float leta = fabs(lid==11 ?  leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta());
 	  if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
 	  if(lid==11 && (leta>1.4442 && leta<1.5660)) passKin=false;
 	  passLooseLepton &= passKin;
@@ -918,32 +936,33 @@ int main(int argc, char* argv[])
 
 
 	  //id
-	  Int_t idbits = leptons[ilep].get("idbits");
+	  Int_t idbits=0;// = leptons[ilep].get("idbits");
 	  if(lid==11){
-	    if(leptons[ilep].getFlag("isconv"))            { passLooseLepton=false; passId=false; }
-	    bool isLoose = ((idbits >> 4) & 0x1);
+            //std::vector<std::pair<std::string, float> > elid =  leptons[ilep].el.electronIDs() ;   for(size_t ELIDI = 0 ; ELIDI<elid.size(); ELIDI++){ printf("%i   %s  %f\n", (int)ELIDI, elid[ELIDI].first.c_str(), elid[ELIDI].second);  }  //print available elec ID
+	    if(!leptons[ilep].el.passConversionVeto())            { passLooseLepton=false; passId=false; }   //FIXME To be updated for 7XY version using miniAOD objects
+	    bool isLoose =  leptons[ilep].el.electronID("eidLoose")>1.0;//FIXME not sure what the cut should be
 	    if(!isLoose)                                   passId=false; 
-	    bool isVeto = ((idbits >> 4) & 0x1);
-	    if(!isVeto)                                    passLooseLepton=false;
- 	  }
-	  else{
-	    bool isTight    = ((idbits >> 10) & 0x1);
-	    if(!isTight)                                   passId=false;
-	    bool isLoose    = ((idbits >> 8) & 0x1);
+ 	  }else{
+	    bool isLoose    = (leptons[ilep].mu.isPFMuon() && (leptons[ilep].mu.isGlobalMuon() || leptons[ilep].mu.isTrackerMuon()) );
 	    if(!isLoose)                                   passLooseLepton=false;
-	    bool isSoft  = ((idbits >> 9) & 0x1);
+	    bool isSoft     =  leptons[ilep].mu.isPFMuon() && leptons[ilep].mu.isTrackerMuon() && leptons[ilep].mu.muonID("TMOneStationTight") && leptons[ilep].mu.track()->hitPattern().trackerLayersWithMeasurement()>5 && leptons[ilep].mu.innerTrack()->hitPattern().pixelLayersWithMeasurement()>1  && leptons[ilep].mu.innerTrack()->normalizedChi2()<1.8;//FIXME: Add back DXYZ requiremenets: && fabs(lep.d0)<3.  && fabs(lep.dZ)<30.;
 	    if(!isSoft)                                    passSoftMuon=false;
+	    bool isTight    =  leptons[ilep].mu.isPFMuon() && leptons[ilep].mu.isGlobalMuon()  &&                                    leptons[ilep].mu.track()->hitPattern().trackerLayersWithMeasurement()>5 && leptons[ilep].mu.innerTrack()->hitPattern().pixelLayersWithMeasurement()>0 && leptons[ilep].mu.innerTrack()->normalizedChi2()<10.  && leptons[ilep].mu.globalTrack()->hitPattern().numberOfValidMuonHits()>0. && leptons[ilep].mu.numberOfMatchedStations()>1; //FIXME: Add back DXYZ requiremenets: && fabs(lep.d0)<0.2   && fabs(lep.dZ)<0.5
+	    if(!isTight)                                   passId=false;
 	  }
 
-	  //isolation
-	  Float_t gIso    = leptons[ilep].getVal("gIso04");
-	  Float_t chIso   = leptons[ilep].getVal("chIso04");
-	  Float_t puchIso = leptons[ilep].getVal("puchIso04");
-	  Float_t nhIso   = leptons[ilep].getVal("nhIso04");
-	  float relIso= lid==11 ?
-	    (TMath::Max(nhIso+gIso-ev.rho*utils::cmssw::getEffectiveArea(11,leptons[ilep].getVal("sceta")),Float_t(0.))+chIso)/leptons[ilep].pt() :
-	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
-	    ;
+	  //isolation 
+	  //FIXME: Currently using straight the iso from PAT, not sure it's equivalent to what we were doing (just below)
+	  float relIso = (lid==11?leptons[ilep].el.particleIso():leptons[ilep].mu.particleIso()) / leptons[ilep].pt();  
+//	  Float_t gIso    = leptons[ilep].getVal("gIso04");
+//	  Float_t chIso   = leptons[ilep].getVal("chIso04");
+//	  Float_t puchIso = leptons[ilep].getVal("puchIso04");
+//	  Float_t nhIso   = leptons[ilep].getVal("nhIso04");
+//	  float relIso= lid==11 ?
+//	    (TMath::Max(nhIso+gIso-rho*utils::cmssw::getEffectiveArea(11,leptons[ilep].el.superCluster()->eta()),Float_t(0.))+chIso)/leptons[ilep].pt() :
+//	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
+//	    ;
+	   
 	  if(lid==11){
 	    if(relIso>0.15) { 
 	      passIso=false;
@@ -957,34 +976,33 @@ int main(int argc, char* argv[])
 	  
 	  if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
 	  else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
-*/
-	}
-      std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
-      std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
-      //recoMet[0] -= muDiff;  FIXME
 
-/* //FIXME: To be updated for 7XY version using miniAOD objects
+	}
+        std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
+        std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
+        //recoMet[0] -= muDiff;  FIXME
+
       //
       //JET/MET ANALYSIS
       //
-      //add scale/resolution uncertainties and propagate to the MET
-      utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,ev.rho,ev.nvtx,isMC);
-      std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet[0],jets,selLeptons,isMC);
+      //FIXME: To be updated for 7XY version using miniAOD objects
+      //add scale/resolution uncertainties and propagate to the MET      
+      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);
+      //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet[0],jets,selLeptons,isMC);
 
       //select the jets
-      data::PhysicsObjectCollection_t selJets;
+      pat::JetCollection selJets;
       int njets(0),nbtags(0),nbtagsJP(0);
       float mindphijmet(9999.);
-      for(size_t ijet=0; ijet<jets.size(); ijet++) 
-	{
+      for(size_t ijet=0; ijet<jets.size(); ijet++){
 	  if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
 
 	  //mc truth for this jet
-	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-	  TString jetType( genJet.pt()>0 ? "truejetsid" : "pujetsid" );
+	  const reco::GenJet* genJet=jets[ijet].genJet();
+	  TString jetType( genJet && genJet->pt()>0 ? "truejetsid" : "pujetsid" );
 	  
 	  //cross-clean with selected leptons and photons
-	  double minDRlj(9999.),minDRlg(9999.);
+	  float minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
             minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
 	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
@@ -992,44 +1010,45 @@ int main(int argc, char* argv[])
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  Int_t idbits=jets[ijet].get("idbits");
-	  bool passPFloose( ((idbits>>0) & 0x1));
-	  int simplePuId( ( idbits >>7 ) & 0xf );
-	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
-	  if(jets[ijet].pt()>30)
-	    {
+	  //FIXME: To be updated for 7XY version using miniAOD objects
+//	  Int_t idbits=jets[ijet].get("idbits");
+//	  bool passPFloose( ((idbits>>0) & 0x1));
+//	  int simplePuId( ( idbits >>7 ) & 0xf );
+//	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
+	  bool passPFloose=true;
+          bool passLooseSimplePuId=true;
+	  if(jets[ijet].pt()>30){
 	      mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
 	      if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
 	      if(passLooseSimplePuId)                mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),2);
 	      if(passPFloose && passLooseSimplePuId) mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),3);
-	    }
+	  }
 	  if(!passPFloose || !passLooseSimplePuId) continue;
 	  selJets.push_back(jets[ijet]);
 	  if(jets[ijet].pt()>30) {
 	    njets++;
-	    float dphijmet=fabs(deltaPhi(jets[ijet].phi(),met[0].phi()));
+	    float dphijmet=fabs(deltaPhi(met[0].phi(), jets[ijet].phi()));
 	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
 	    if(fabs(jets[ijet].eta())<2.5){
-	      nbtagsJP += (jets[ijet].getVal("jp")>0.264);
+//FIXME: To be updated for 7XY version using miniAOD objects
+//	      nbtagsJP += (jets[ijet].getVal("jp")>0.264);
 
-	      bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
+//	      bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
 	      //update according to the SF measured by BTV
-	      if(isMC)
-		{
-		  int flavId=genJet.info.find("id")->second;
-		  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
-		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
-		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
-		}
-	      nbtags   += hasCSVtag;
+//	      if(isMC)
+//		{
+//		  int flavId=genJet.info.find("id")->second;
+//		  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
+//		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
+//		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
+//		}
+//	      nbtags   += hasCSVtag;
 	    }
 	  }
 	}
-      std::sort(selJets.begin(), selJets.end(), data::PhysicsObject_t::sortByPt);
-*/
+      std::sort(selJets.begin(), selJets.end(), utils::sort_CandidatesByPt);
 
 
-/* //FIXME: To be updated for 7XY version using miniAOD objects
       //
       // ASSIGN CHANNEL
       //
@@ -1040,10 +1059,10 @@ int main(int argc, char* argv[])
 	{
  	  for(size_t ilep=0; ilep<2; ilep++)
 	    {
-	      dilId *= selLeptons[ilep].get("id");
-	      int id(abs(selLeptons[ilep].get("id")));
+	      dilId *= selLeptons[ilep].pdgId();
+	      int id(abs(selLeptons[ilep].pdgId()));
 	      weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
-	      boson += selLeptons[ilep];
+	      boson += selLeptons[ilep].p4();
 	    }
      
 	  //check the channel
@@ -1056,7 +1075,7 @@ int main(int argc, char* argv[])
 	  dilId=22;
 	  chTags.push_back("ee");
 	  chTags.push_back("mumu");
-	  boson = selPhotons[0];
+	  boson = selPhotons[0].p4();
 	  weight *= triggerPrescale;
 	}
       }
@@ -1068,10 +1087,7 @@ int main(int argc, char* argv[])
 	tags.push_back( chTags[ich] );
 	tags.push_back( chTags[ich]+evCat );
       }
-*/
 
-
-/* //FIXME: To be updated for 7XY version using miniAOD objects
       //
       // BASELINE SELECTION
       //
@@ -1087,9 +1103,9 @@ int main(int argc, char* argv[])
 	}
 
       mon.fillHisto("eventflow",  tags,0,weight);
-      mon.fillHisto("nvtxraw",  tags,ev.nvtx,weight/puWeight);
-      mon.fillHisto("nvtx",  tags,ev.nvtx,weight);
-      mon.fillHisto("rho",  tags,ev.rho,weight);
+      mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
+      mon.fillHisto("nvtx",  tags,vtx.size(),weight);
+      mon.fillHisto("rho",  tags,rho,weight);
       if(!runPhotonSelection){
 	mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
 	mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
@@ -1109,36 +1125,34 @@ int main(int argc, char* argv[])
 	mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
 
 	if(passQt){
-
 	  mon.fillHisto("eventflow",tags,2,weight);
 	  int nExtraLeptons((selLeptons.size()-2)+extraLeptons.size());
 	  mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
 	  if(nExtraLeptons>0){
-	    LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1] : extraLeptons[0]);
+	    LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1].p4() : extraLeptons[0].p4());
 	    double dphi=fabs(deltaPhi(thirdLepton.phi(),met[0].phi()));
 	    double mt=TMath::Sqrt(2*thirdLepton.pt()*met[0].pt()*(1-TMath::Cos(dphi)));
 	    mon.fillHisto("thirdleptonpt",tags,thirdLepton.pt(),weight);
 	    mon.fillHisto("thirdleptoneta",tags,fabs(thirdLepton.eta()),weight);
 	    mon.fillHisto("thirdleptonmt",tags,mt,weight);
 	  }
-
 	  if(passThirdLeptonVeto){
 	    
 	    mon.fillHisto("eventflow",tags,3,weight);
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
-	      float jp(selJets[ijet].getVal("jp"));
-	      float csv(selJets[ijet].getVal("csv"));
-	      mon.fillHisto( "csv",tags,csv,weight);
-
-	      if(!isMC) continue;
-	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-	      int flavId=genJet.info.find("id")->second;
-	      TString jetFlav("others");
-	      if(abs(flavId)==5)      jetFlav="b";
-	      else if(abs(flavId)==4) jetFlav="c";
-	      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
-	      mon.fillHisto( "jp"+jetFlav,tags,jp,weight);
+//FIXME
+//	      float jp(selJets[ijet].getVal("jp"));
+//	      float csv(selJets[ijet].getVal("csv"));
+//	      mon.fillHisto( "csv",tags,csv,weight);
+//	      if(!isMC) continue;
+//	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
+//	      int flavId=genJet.info.find("id")->second;
+//	      TString jetFlav("others");
+//	      if(abs(flavId)==5)      jetFlav="b";
+//	      else if(abs(flavId)==4) jetFlav="c";
+//	      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
+//	      mon.fillHisto( "jp"+jetFlav,tags,jp,weight);
 	    }
 	    mon.fillHisto( "nbtags",tags,nbtags,weight);
 	    mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
@@ -1152,6 +1166,7 @@ int main(int argc, char* argv[])
 	      //so that the ch will be assigned the weight of its subtag and all will be the summ of all ch+subtag weights
 	      std::vector<LorentzVector> massiveBoson(tags.size(),boson);
 	      std::vector<float> photonWeights(tags.size(),1.0);
+
 	      if(gammaWgtHandler!=0) {
 		float lastPhotonWeight(1.0), totalPhotonWeight(0.0);
 		LorentzVector lastMassiveBoson(boson);
@@ -1178,8 +1193,8 @@ int main(int argc, char* argv[])
 		}
 	      }
 
-	      for(size_t itag=0; itag<tags.size(); itag++){
-		
+
+	      for(size_t itag=0; itag<tags.size(); itag++){		
 		//update the weight
 		TString icat=tags[itag];
 		float iweight(weight*photonWeights[itag]);
@@ -1201,7 +1216,8 @@ int main(int argc, char* argv[])
 		  TVector2 boson2(iboson.px(), iboson.py());
 		  double axialMet(boson2*met2); axialMet/=-iboson.pt();
 		  mon.fillHisto( "axialmet",icat,axialMet,iweight);
-		  double mt=higgs::utils::transverseMass(iboson,met[0],true);
+                  LorentzVector metInst = met[0].p4();
+		  double mt=higgs::utils::transverseMass(iboson,metInst,true);
 		  mon.fillHisto( "mt",icat,mt,iweight,true);
 		  
 		  if(met[0].pt()>optim_Cuts1_met[0]) 
@@ -1222,7 +1238,7 @@ int main(int argc, char* argv[])
 
 		  //pre-VBF control
 		  if(njets>=2){
-		    LorentzVector dijet=selJets[0]+selJets[1];
+		    LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
 		    float deta=fabs(selJets[0].eta()-selJets[1].eta());
 		    float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
 		    float pt1(selJets[0].pt()),pt2(selJets[1].pt());
@@ -1247,9 +1263,9 @@ int main(int argc, char* argv[])
 	      }
 	    }
 	  }
-	}
+	}        
       }
-*/
+
 
 /* //FIXME: To be updated for 7XY version using miniAOD objects            
       //

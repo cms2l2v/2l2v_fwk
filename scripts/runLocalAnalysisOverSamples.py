@@ -49,6 +49,9 @@ LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.Jobs_EmailReport    = opt.report
 LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
+
+kInitDone = False;
+initialCommand = '';
 #run over sample
 for proc in procList :
 
@@ -78,6 +81,13 @@ for proc in procList :
             if(("/MINIAODSIM" in getByLabel(d,'dset','')) or len(getByLabel(d,'miniAOD',''))>0):
                list = []
                if("/MINIAODSIM" in getByLabel(d,'dset','')):
+                  if(not kInitDone):
+                     print "You are going to run on a sample over grid using the AAA protocol, it is therefore needed to initialize your grid certificate"
+                     os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
+                     initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/proxy;voms-proxy-init --noregen;'
+                     kInitDone = True
+
+
                   print("Use das_client.py to list files from : " + getByLabel(d,'dset','') )
                   list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
                   for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i]
@@ -140,6 +150,6 @@ for proc in procList :
                     #localParams='-exe=%s -cfg=%s'%(opt.theExecutable,cfgfile)
                     #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],segment,scriptFile,localParams)
                     #os.system(batchCommand)
-                    LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
+                    LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
 LaunchOnCondor.SendCluster_Submit()
