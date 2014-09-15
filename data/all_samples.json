@@ -172,7 +172,7 @@
       "tag":"Data8TeV_TauPlusX2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_TauPlusX2012D"                  , "split":75, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012D-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012D"                  , "split":100, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012D-22Jan2013-v1/AOD"}
       ]
     },
     {
