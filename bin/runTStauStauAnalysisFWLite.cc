@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
   double maxJetEta      =  2.5;
   double minTauJetPt    = 20;
   double maxTauJetEta   =  2.5;
-  if(periodHLT != "2012D")
+  if(periodHLT == "2012D")
   {
     minMuPt = 12;
     minElPt = 17;
