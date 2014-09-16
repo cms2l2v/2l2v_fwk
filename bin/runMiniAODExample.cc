@@ -468,9 +468,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
-  mon.addHistogram( new TH1F("jpb",      ";Jet probability;Jets",50,0.,3.) );
-  mon.addHistogram( new TH1F("jpc",      ";Jet probability;Jets",50,0.,3.) );
-  mon.addHistogram( new TH1F("jpothers", ";Jet probability;Jets",50,0.,3.) );
   TH1 *hbtags=mon.addHistogram( new TH1F("nbtags",   ";b-tag multiplicity;Events",5,0,5) );
   TH1 *hbtagsJP=mon.addHistogram( new TH1F("nbtagsJP",   ";b-tag multiplicity;Events",5,0,5) );
   mon.addHistogram( new TH1F("leadjetpt",    ";Transverse momentum [GeV];Events",50,0,1000) );
@@ -687,11 +684,12 @@ int main(int argc, char* argv[])
        fwlite::Handle< pat::PhotonCollection > photonsHandle;
        photonsHandle.getByLabel(ev, "slimmedPhotons");
        if(photonsHandle.isValid()){ photons = *photonsHandle;}
-
-       pat::METCollection met;
+       
+       pat::METCollection mets;
        fwlite::Handle< pat::METCollection > metsHandle;
        metsHandle.getByLabel(ev, "slimmedMETs");
-       if(metsHandle.isValid()){ met = *metsHandle;}
+       if(metsHandle.isValid()){ mets = *metsHandle;}
+       LorentzVector met = mets[0].p4(); 
 
       if(isV0JetsMC){
          fwlite::Handle< LHEEventProduct > lheEPHandle;
@@ -911,12 +909,11 @@ int main(int argc, char* argv[])
 	  lid=abs(lid);
 	  TString lepStr( lid==13 ? "mu" : "e");
 
-//FIXME: To be updated for 7XY version using miniAOD objects        
-//	  //veto nearby photon (loose electrons are many times photons...)
-//	  double minDRlg(9999.);
-//	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-//	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep],selPhotons[ipho]));
-//	  if(minDRlg<0.1) continue;
+	  //veto nearby photon (loose electrons are many times photons...)
+	  double minDRlg(9999.);
+	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
+	  if(minDRlg<0.1) continue;
 
 
 	  //kinematics
@@ -980,15 +977,14 @@ int main(int argc, char* argv[])
 	}
         std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
         std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
-        //recoMet[0] -= muDiff;  FIXME
+        LorentzVector recoMET = met - muDiff;
 
       //
       //JET/MET ANALYSIS
       //
-      //FIXME: To be updated for 7XY version using miniAOD objects
       //add scale/resolution uncertainties and propagate to the MET      
-      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);
-      //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet[0],jets,selLeptons,isMC);
+      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);  //FIXME if still needed
+      //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
 
       //select the jets
       pat::JetCollection selJets;
@@ -1010,13 +1006,9 @@ int main(int argc, char* argv[])
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  //FIXME: To be updated for 7XY version using miniAOD objects
-//	  Int_t idbits=jets[ijet].get("idbits");
-//	  bool passPFloose( ((idbits>>0) & 0x1));
-//	  int simplePuId( ( idbits >>7 ) & 0xf );
-//	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
-	  bool passPFloose=true;
-          bool passLooseSimplePuId=true;
+	  bool passPFloose = true; //FIXME --> Need to be updated according to te latest recipe;
+	  float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
+	  bool passLooseSimplePuId = true; //FIXME --> Need to be updated according to the latest recipe
 	  if(jets[ijet].pt()>30){
 	      mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
 	      if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
@@ -1027,22 +1019,18 @@ int main(int argc, char* argv[])
 	  selJets.push_back(jets[ijet]);
 	  if(jets[ijet].pt()>30) {
 	    njets++;
-	    float dphijmet=fabs(deltaPhi(met[0].phi(), jets[ijet].phi()));
+	    float dphijmet=fabs(deltaPhi(met.phi(), jets[ijet].phi()));
 	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
 	    if(fabs(jets[ijet].eta())<2.5){
-//FIXME: To be updated for 7XY version using miniAOD objects
-//	      nbtagsJP += (jets[ijet].getVal("jp")>0.264);
-
-//	      bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
+	      bool hasCSVtag(jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
 	      //update according to the SF measured by BTV
-//	      if(isMC)
-//		{
-//		  int flavId=genJet.info.find("id")->second;
-//		  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
-//		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
-//		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
-//		}
-//	      nbtags   += hasCSVtag;
+	      if(isMC){
+		  int flavId=jets[ijet].partonFlavour();
+		  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
+		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
+		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
+              }
+	      nbtags   += hasCSVtag;
 	    }
 	  }
 	}
@@ -1130,8 +1118,8 @@ int main(int argc, char* argv[])
 	  mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
 	  if(nExtraLeptons>0){
 	    LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1].p4() : extraLeptons[0].p4());
-	    double dphi=fabs(deltaPhi(thirdLepton.phi(),met[0].phi()));
-	    double mt=TMath::Sqrt(2*thirdLepton.pt()*met[0].pt()*(1-TMath::Cos(dphi)));
+	    double dphi=fabs(deltaPhi(thirdLepton.phi(),met.phi()));
+	    double mt=TMath::Sqrt(2*thirdLepton.pt()*met.pt()*(1-TMath::Cos(dphi)));
 	    mon.fillHisto("thirdleptonpt",tags,thirdLepton.pt(),weight);
 	    mon.fillHisto("thirdleptoneta",tags,fabs(thirdLepton.eta()),weight);
 	    mon.fillHisto("thirdleptonmt",tags,mt,weight);
@@ -1141,18 +1129,15 @@ int main(int argc, char* argv[])
 	    mon.fillHisto("eventflow",tags,3,weight);
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
-//FIXME
-//	      float jp(selJets[ijet].getVal("jp"));
-//	      float csv(selJets[ijet].getVal("csv"));
-//	      mon.fillHisto( "csv",tags,csv,weight);
-//	      if(!isMC) continue;
-//	      const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-//	      int flavId=genJet.info.find("id")->second;
-//	      TString jetFlav("others");
-//	      if(abs(flavId)==5)      jetFlav="b";
-//	      else if(abs(flavId)==4) jetFlav="c";
-//	      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
-//	      mon.fillHisto( "jp"+jetFlav,tags,jp,weight);
+
+	      float csv(selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+	      mon.fillHisto( "csv",tags,csv,weight);
+	      if(!isMC) continue;
+	      int flavId=selJets[ijet].partonFlavour();
+	      TString jetFlav("others");
+	      if(abs(flavId)==5)      jetFlav="b";
+	      else if(abs(flavId)==4) jetFlav="c";
+	      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
 	    }
 	    mon.fillHisto( "nbtags",tags,nbtags,weight);
 	    mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
@@ -1174,7 +1159,7 @@ int main(int argc, char* argv[])
 		  size_t idx(tags.size()-itag-1);
 		  std::vector<Float_t> photonVars;
 		  photonVars.push_back(boson.pt());
-		  //photonVars.push_back(met[0].pt()/boson.pt());
+		  //photonVars.push_back(met.pt()/boson.pt());
 		  float photonWeight=gammaWgtHandler->getWeightFor(photonVars,tags[idx]);
 		  if(tags[idx]=="all")       { 
 		    photonWeights[idx]=(totalPhotonWeight==0? 1.0:totalPhotonWeight); 
@@ -1202,7 +1187,7 @@ int main(int argc, char* argv[])
 		LorentzVector iboson=massiveBoson[itag];
 
 		mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
-		if(met[0].pt()>80) mon.fillHisto( "mindphijmetNM1",icat,mindphijmet,iweight);
+		if(met.pt()>80) mon.fillHisto( "mindphijmetNM1",icat,mindphijmet,iweight);
 		if(passMinDphijmet){
 		  mon.fillHisto("eventflow",icat,5,iweight);
 		  
@@ -1210,30 +1195,29 @@ int main(int argc, char* argv[])
 		  mon.fillHisto("qmass",       tags, boson.mass(),weight); 
 
 		  mon.fillHisto( "njets",icat,njets,iweight);
-		  mon.fillHisto( "met",icat,met[0].pt(),iweight,true);
-		  mon.fillHisto( "balance",icat,met[0].pt()/iboson.pt(),iweight);
-		  TVector2 met2(met[0].px(),met[0].py());
+		  mon.fillHisto( "met",icat,met.pt(),iweight,true);
+		  mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
+		  TVector2 met2(met.px(),met.py());
 		  TVector2 boson2(iboson.px(), iboson.py());
 		  double axialMet(boson2*met2); axialMet/=-iboson.pt();
 		  mon.fillHisto( "axialmet",icat,axialMet,iweight);
-                  LorentzVector metInst = met[0].p4();
-		  double mt=higgs::utils::transverseMass(iboson,metInst,true);
+		  double mt=higgs::utils::transverseMass(iboson,met,true);
 		  mon.fillHisto( "mt",icat,mt,iweight,true);
 		  
-		  if(met[0].pt()>optim_Cuts1_met[0]) 
+		  if(met.pt()>optim_Cuts1_met[0]) 
 		    {
-		      mon.fillHisto( "mtcheckpoint",  icat, mt,          iweight, true);
-		      mon.fillHisto( "metcheckpoint", icat, met[0].pt(), iweight, true);
+		      mon.fillHisto( "mtcheckpoint",  icat, mt,       iweight, true);
+		      mon.fillHisto( "metcheckpoint", icat, met.pt(), iweight, true);
 		    }
 
-		  if(met[0].pt()>80){
+		  if(met.pt()>80){
 		    mon.fillHisto("eventflow",icat,6,iweight);
 		    mon.fillHisto( "mtNM1",icat,mt,iweight,true);
-		    mon.fillHisto( "balanceNM1",icat,met[0].pt()/iboson.pt(),iweight);
+		    mon.fillHisto( "balanceNM1",icat,met.pt()/iboson.pt(),iweight);
 		    mon.fillHisto( "axialmetNM1",icat,axialMet,iweight);
 		  }
 		  if(mt>500){
-		    mon.fillHisto( "metNM1",icat,met[0].pt(),iweight,true);
+		    mon.fillHisto( "metNM1",icat,met.pt(),iweight,true);
 		  }
 
 		  //pre-VBF control
@@ -1267,7 +1251,6 @@ int main(int argc, char* argv[])
       }
 
 
-/* //FIXME: To be updated for 7XY version using miniAOD objects            
       //
       // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
       //
@@ -1294,8 +1277,7 @@ int main(int argc, char* argv[])
 	bool varyBtagDown( varNames[ivar]=="_btagdown" );
 	
 	//Q^2 variations on VV pT spectum
-	if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) )
-	    && vvShapeUnc.size()==2 )
+	if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 )
 	  {
 	    size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
 	    TGraph *varGr=vvShapeUnc[idx];
@@ -1303,11 +1285,11 @@ int main(int argc, char* argv[])
 	    std::vector<LorentzVector> vs;
 	    for(size_t ipart=0; ipart<gen.size(); ipart++)
 	      {
-		int status=gen[ipart].get("status");
+		int status=gen[ipart].status();
 		if(status!=3) continue;
-		int pid=gen[ipart].get("id");
+		int pid=gen[ipart].pdgId();
 		if(abs(pid)!=23 && abs(pid)!=24) continue;
-		vs.push_back( gen[ipart] );
+		vs.push_back( gen[ipart].p4() );
 	      }
 	    if(vs.size()==2)
 	      {
@@ -1325,44 +1307,44 @@ int main(int argc, char* argv[])
 	    else                    shapeReWeight /= lShapeWeights[0];
 	    iweight                 *= shapeReWeight;
 	  }	 
-	
+
 	//recompute MET/MT if JES/JER was varied
-	LorentzVector    zvv = met[utils::cmssw::NOMINAL];
-	if(varyJesUp)    zvv = met[utils::cmssw::JESUP];
-	if(varyJesDown)  zvv = met[utils::cmssw::JESDOWN];
-	if(varyJerUp)    zvv = met[utils::cmssw::JERUP];
-	if(varyJerDown)  zvv = met[utils::cmssw::JERDOWN];
-	if(varyUmetUp)   zvv = met[utils::cmssw::UMETUP];
-	if(varyUmetDown) zvv = met[utils::cmssw::UMETDOWN];
-	if(varyLesUp)    zvv = met[utils::cmssw::LESUP];
-	if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
-	
-	data::PhysicsObjectCollection_t tightVarJets;
+	LorentzVector    zvv = mets[0].p4();
+	if(varyJesUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+	if(varyJesDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
+	if(varyJerUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
+	if(varyJerDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
+	if(varyUmetUp)   zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
+	if(varyUmetDown) zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
+//	if(varyLesUp)    zvv = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
+//	if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
+
+        pat::JetCollection tightVarJets;
 	bool passLocalBveto(passBtags);
  	for(size_t ijet=0; ijet<jets.size(); ijet++){
 
 	  float eta=jets[ijet].eta();
 	  if( fabs(eta)>4.7 ) continue;
 	  float pt=jets[ijet].pt();
-	  if(varyJesUp)    pt=jets[ijet].getVal("jesup");
-	  if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
-	  if(varyJerUp)    pt=jets[ijet].getVal("jerup");
-	  if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
+          //FIXME
+//	  if(varyJesUp)    pt=jets[ijet].getVal("jesup");
+//	  if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
+//	  if(varyJerUp)    pt=jets[ijet].getVal("jerup");
+//	  if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
 	  if(pt<30) continue;
 
 	  //cross-clean with selected leptons and photons
 	  double minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet].p4(),selLeptons[ilep].p4()) );
 	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-	    minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
+	    minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  Int_t idbits=jets[ijet].get("idbits");
-	  bool passPFloose( (idbits>>0) & 0x1 );
-	  int simplePuId( (idbits >>7) & 0xf );
-	  bool passLooseSimplePuId(  ( simplePuId >> 2) & 0x1);
+	  bool passPFloose = true;//FIXME
+	  int simplePuId = true;//FIXME
+	  bool passLooseSimplePuId = true;//FIXME
 	  if(!passPFloose || !passLooseSimplePuId) continue;
 	 
 	  //jet is selected
@@ -1372,18 +1354,17 @@ int main(int argc, char* argv[])
 	  if(pt<30 || fabs(eta)>2.5) continue;
 	  if(!isMC) continue;
 	  if(!varyBtagUp && !varyBtagDown) continue;
-	  const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-	  int flavId=genJet.info.find("id")->second;
-	  bool hasCSVtag(jets[ijet].getVal("csv")>0.405);
+	  int flavId=jets[ijet].partonFlavour();
+	  bool hasCSVtag (jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
  	  if(varyBtagUp) {
 	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
 	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
-	    else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl+sflunc,leff);
+	    else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl+sflunc,leff);
 	  }
  	  else if(varyBtagDown) {
 	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb-sfbunc,beff);
 	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5-2*sfbunc,beff);
-	    else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl-sflunc,leff);
+	    else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl-sflunc,leff);
  	  }
 	  passLocalBveto |= hasCSVtag;
  	}
@@ -1443,8 +1424,6 @@ int main(int argc, char* argv[])
 	  }
 	}
       }
-*/
-
   }
   printf("\n"); 
   

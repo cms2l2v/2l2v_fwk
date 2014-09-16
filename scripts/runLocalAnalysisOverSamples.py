@@ -80,7 +80,9 @@ for proc in procList :
             miniAODSamples = getByLabel(d,'miniAOD','')
             if(("/MINIAODSIM" in getByLabel(d,'dset','')) or len(getByLabel(d,'miniAOD',''))>0):
                list = []
-               if("/MINIAODSIM" in getByLabel(d,'dset','')):
+               if(len(getByLabel(d,'miniAOD',''))>0):
+                  list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);
+               elif("/MINIAODSIM" in getByLabel(d,'dset','')):
                   if(not kInitDone):
                      print "You are going to run on a sample over grid using the AAA protocol, it is therefore needed to initialize your grid certificate"
                      os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
