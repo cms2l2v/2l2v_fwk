@@ -37,14 +37,6 @@ class OptimizationRoundInfo;
 
 void printHelp();
 
-struct FOMInfo
-{
-  double FOM;
-  double err;
-  std::string var;
-  double cutVal;
-};
-
 struct doubleUnc
 {
   double value;
@@ -194,7 +186,6 @@ public:
   inline size_t nVars(){return _variables.size();};
   inline std::string pointVariable(){return _pointVariable;};
   inline bool isSelected(int pass){return (static_cast<size_t>(pass) < _UserCuts.size());};
-  inline std::string getSelection(int pass){return getUserCut(pass);}; // Deprecated
   std::string getUserCut(int pass);
   inline std::string getUserCutVar(int pass){if(isSelected(pass)) return _UserCuts[pass].variable; else return "";};
   inline std::string getUserCutDir(int pass){if(isSelected(pass)) return _UserCuts[pass].direction; else return "";};
@@ -225,12 +216,9 @@ private:
   std::string _inDir;
   std::string _jsonFile;
   std::string _pointVariable;
-  std::vector<std::string> _selected;
   std::vector<UserCutInfo> _UserCuts;
   double      _sigCrossSection;
   int         _nInitEvents;
-
-  inline std::string selection(int pass){return _selected[pass];};
 
 protected:
 };
