@@ -35,19 +35,7 @@
 
 class OptimizationRoundInfo;
 
-typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> fileChains;
-
 void printHelp();
-fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
-std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
-int getNumberOfPoints(fileChains files, std::string variable, TCut cut);
-double applyCut(fileChains files,  TCut cut, bool isSig = false, bool correctFiles = true, bool normalize = false);
-double getSignalScale(fileChains files,  TCut cut, bool correctFiles = true);
-
-bool gDoneScale = false;
-double gScale = 0;
-bool gDoneSignalScale = false;
-double gSignalScale = 0;
 
 struct FOMInfo
 {
@@ -171,7 +159,6 @@ public:
   inline std::string& cutDir(){return _cutDir;};
   inline std::string& label(){return _label;};
 
-  friend std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
   friend bool CutOptimizer::LoadJson();
 
 private:
@@ -222,7 +209,6 @@ public:
   std::unordered_map<std::string,std::unordered_map<std::string,double>> getVariableParameterMap();
   std::unordered_map<std::string,std::string> getVariableLabels();
 
-  friend std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
   friend bool CutOptimizer::LoadJson();
 
 private:
@@ -250,8 +236,6 @@ protected:
 };
 size_t OptimizationRoundInfo::_counter = 0;
 
-std::unordered_map<std::string,bool> FileExists;
-
 
 //
 // Output codes:
@@ -259,7 +243,6 @@ std::unordered_map<std::string,bool> FileExists;
 // 1 - Invalid arguments
 // 2 - Problem parsing the arguments
 //
-
 int main(int argc, char** argv)
 {
   AutoLibraryLoader::enable();
@@ -451,323 +434,6 @@ OptimizationVariableInfo::~OptimizationVariableInfo()
 {
 }
 
-int getNumberOfPoints(fileChains files, std::string variable, TCut cut)
-{
-  gROOT->cd();
-  int retVal = 0;
-  int maxVal = 501*1000+1;
-  TH1D finalHist("finalHist", "finalHist", maxVal, 0, maxVal);
-
-  for(auto process = files.begin(); process != files.end(); ++process)
-  {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      if(sample->first == 0)
-        continue;
-
-      TH1D* temp_hist = new TH1D("temp_hist", "temp_hist", maxVal, 0, maxVal);
-      sample->second->Draw((variable+">>temp_hist").c_str(), cut*"weight", "goff");
-      finalHist.Add(temp_hist);
-
-      delete temp_hist;
-    }
-  }
-
-  int nBins = finalHist.GetNbinsX();
-  for(int i = 1; i <= nBins; ++i)
-  {
-    if(finalHist.GetBinContent(i) != 0)
-      retVal++;
-  }
-
-  return retVal;
-}
-
-double getSignalScale(fileChains files,  TCut cut, bool correctFiles)
-{
-  double retVal = 0;
-
-  if(!gDoneSignalScale)
-  {
-    for(auto process = files.begin(); process != files.end(); ++process)
-    {
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-      {
-        if(sample->first == 0)
-          continue;
-        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-        sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
-
-        double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
-
-        if(correctFiles)
-          count = count/sample->first;
-        retVal += count;
-      }
-    }
-  }
-  else
-    retVal = gSignalScale;
-
-  gSignalScale = retVal;
-  gDoneSignalScale = true;
-  return retVal;
-}
-
-double applyCut(fileChains files,  TCut cut, bool isSig, bool correctFiles, bool normalize)
-{
-  gROOT->cd();
-  double retVal = 0;
-
-  if(!gDoneScale && isSig)
-  {
-    gScale = 0;
-    for(auto process = files.begin(); process != files.end(); ++process)
-    {
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-      {
-        if(sample->first == 0)
-          continue;
-        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-        sample->second->Draw("puWeight>>temp_histo", "puWeight", "goff");
-
-        double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
-
-        if(correctFiles)
-          count = count/sample->first;
-        gScale += count;
-      }
-    }
-
-    gScale = 1/gScale;
-    gDoneScale = true;
-  }
-
-  for(auto process = files.begin(); process != files.end(); ++process)
-  {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      if(sample->first == 0)
-        continue;
-//      TEventList selectedEvents("selectedList");
-//      sample->second->Draw(">>selectedList", cut, "goff");
-      TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-      if(isSig)
-        sample->second->Draw("puWeight>>temp_histo", cut*"puWeight", "goff");
-      else
-        sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
-
-      double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
-
-      /*double weight = 0;
-      double count = 0;
-      sample->second->SetBranchAddress("weight", &weight);
-
-      for(auto index = selectedEvents.GetN()-1; index >= 0; --index)
-      {
-        Long64_t entry = selectedEvents.GetEntry(index);
-        sample->second->GetEntry(entry);
-        count += weight;
-      }
-      sample->second->ResetBranchAddresses();// */
-
-      if(correctFiles)
-        count = count/sample->first;
-      retVal += count;
-    }
-  }
-
-  return retVal;
-}
-
-std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json)
-{
-  std::vector<OptimizationRoundInfo> retVal;
-
-  std::vector<JSONWrapper::Object> rounds = json["optim"].daughters();
-  for(auto round = rounds.begin(); round != rounds.end(); ++round)
-  {
-    OptimizationRoundInfo roundInfo;
-    //roundInfo._pointVariable = "stauMass*1000+neutralinoMass";
-
-    std::string name = round->getString("name", "");
-    if(name != "")
-      roundInfo._name = name;
-    roundInfo._iLumi = round->getDouble("iLumi", 0);
-    if(roundInfo._iLumi <= 0)
-    {
-      std::cout << roundInfo._name << ": Integrated luminosity should be positive and non-zero. Continuing..." << std::endl;
-      continue;
-    }
-    roundInfo._sigCrossSection = round->getDouble("sigCrossSection", 0);
-    if(roundInfo._sigCrossSection <= 0)
-    {
-      std::cout << roundInfo._name << ": Signal cross section should be positive and non-zero. Continuing..." << std::endl;
-      continue;
-    }
-    roundInfo._inDir = round->getString("inDir", "");
-    if(roundInfo._inDir == "")
-    {
-      std::cout << roundInfo._name << ": Input directory should be defined in the json for the optimization round. Continuing..." << std::endl;
-      continue;
-    }
-    roundInfo._jsonFile = round->getString("jsonFile", "");
-    if(roundInfo._jsonFile == "")
-    {
-      std::cout << roundInfo._name << ": JSON file must be specified for optimization round in cut optimization JSON. Continuing..." << std::endl;
-      continue;
-    }
-
-    roundInfo._ttree = round->getString("ttree", roundInfo._ttree);
-    roundInfo._customExtension = round->getString("customExtension", roundInfo._customExtension);
-    roundInfo._baseSelection = round->getString("baseSelection", roundInfo._baseSelection);
-    roundInfo._signalSelection = round->getString("signalSelection", roundInfo._signalSelection);
-    roundInfo._signalPoint = round->getString("signalPoint", roundInfo._signalPoint);
-    roundInfo._channel = round->getString("channel", roundInfo._channel);
-    roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
-
-    auto selected = (*round)["selected"].daughters();
-    for(auto selection = selected.begin(); selection != selected.end(); ++selection)
-    {
-      std::string temp = selection->getString("selection", "");
-      if(temp != "")
-        roundInfo._selected.push_back(temp);
-    }
-
-    auto variables = (*round)["variables"].daughters();
-    for(auto variable = variables.begin(); variable != variables.end(); ++variable)
-    {
-      OptimizationVariableInfo variableInfo;
-
-      variableInfo._name = variable->getString("name", "");
-      if(variableInfo._name == "")
-      {
-        std::cout << roundInfo._name << ": All variables must have names. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._expression = variable->getString("expression", "");
-      if(variableInfo._expression == "")
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": This variable must have an expression, it must be a valid root expression. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._minVal = variable->getDouble("minVal", 0);
-      variableInfo._maxVal = variable->getDouble("maxVal", 0);
-      if(variableInfo._maxVal - variableInfo._minVal <= 0)
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._step = variable->getDouble("step", 0);
-      if(variableInfo._step <= 0 || variableInfo._step > variableInfo._maxVal - variableInfo._minVal)
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": step must be a resonable and valid value. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._cutDir = variable->getString("cutDir", "below");
-      std::transform(variableInfo._cutDir.begin(), variableInfo._cutDir.end(), variableInfo._cutDir.begin(), ::tolower);
-      if(variableInfo._cutDir != "below" && variableInfo._cutDir != "above")
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": the cut direction (cutDir) must be either below or above. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._label = variable->getString("label", "");
-
-      roundInfo._variables.push_back(variableInfo);
-    }
-
-    retVal.push_back(roundInfo);
-  }
-
-  return retVal;
-}
-
-fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
-{
-  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> retVal;
-  std::pair<std::string,std::vector<std::pair<int,TChain*>>> tempProcess;
-  std::vector<std::pair<int,TChain*>> tempSamples;
-  std::pair<int,TChain*> tempSample;
-
-  if(type != "BG" && type != "SIG")
-  {
-    std::cout << "Unknown sample type requested." << std::endl;
-    assert(type == "BG" || type == "SIG");
-  }
-
-  std::vector<JSONWrapper::Object> processes = json["proc"].daughters();
-  for(auto process = processes.begin(); process != processes.end(); ++process)
-  {
-    bool isData = (*process)["isdata"].toBool();
-    bool isSig  = !isData && (*process).isTag("spimpose") && (*process)["spimpose"].toBool();
-    bool isMC   = !isData && !isSig;
-
-    if(isData) // Here we are enforcing for the data samples to not even be present, might not make sense for a data-driven background estimation
-      continue;
-
-    if(type == "SIG" && isMC) // Here we make sure we are only processing the requested processes
-      continue;
-    if(type == "BG" && isSig)
-      continue;
-
-    tempProcess.first = (*process).getString("tag", "Sample");
-
-    std::string filtExt;
-    if((*process).isTag("mctruthmode"))
-    {
-      std::stringstream buf;
-      buf << "_filt" << (*process)["mctruthmode"].toInt();
-      buf >> filtExt;
-    }
-
-    std::vector<JSONWrapper::Object> samples = (*process)["data"].daughters();
-    tempSamples.clear();
-    for(auto sample = samples.begin(); sample != samples.end(); ++sample)
-    {
-      int nFiles = (*sample).getInt("split", 1);
-      tempSample.first = 0;
-      tempSample.second = new TChain(treename.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
-      for(int file = 0; file < nFiles; ++file)
-      {
-        std::string segmentExt;
-        if(nFiles != 1)
-        {
-          std::stringstream buf;
-          buf << "_" << file;
-          buf >> segmentExt;
-        }
-
-        std::string fileName = RootDir + "/" + (*sample).getString("dtag", "") + (*sample).getString("suffix", "") + segmentExt + filtExt + customExtension + ".root";
-        TFile* file = new TFile(fileName.c_str());
-        bool& fileExists = FileExists[fileName];
-
-        if(!file || file->IsZombie() || !file->IsOpen() || file->TestBit(TFile::kRecovered))
-        {
-          fileExists = false;
-          file->Close();
-          delete file;
-          continue;
-        }
-        else
-        {
-          fileExists = true;
-          file->Close();
-          delete file;
-        }
-
-        // Chain the valid files together
-        tempSample.second->Add(fileName.c_str());
-        ++tempSample.first;
-      }
-      tempSamples.push_back(tempSample);
-    }
-    tempProcess.second = tempSamples;
-    retVal.push_back(tempProcess);
-  }
-
-  return retVal;
-}
-
 CutOptimizer::CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt):
   jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false)
 {
@@ -789,10 +455,15 @@ bool CutOptimizer::LoadJson()
   if(jsonLoaded)
     return true;
 
+  if(verbose_)
+    std::cout << "Loading JSON" << std::endl;
+
   roundInfo_.clear();
   JSONWrapper::Object json(jsonFile_, true);
 
   std::vector<JSONWrapper::Object> rounds = json["optim"].daughters();
+  if(verbose_)
+    std::cout << "  Found " << rounds.size() << " rounds of optimization to perform." << std::endl;
   for(auto round = rounds.begin(); round != rounds.end(); ++round)
   {
     OptimizationRoundInfo roundInfo;
@@ -800,6 +471,10 @@ bool CutOptimizer::LoadJson()
     std::string name = round->getString("name", "");
     if(name != "")
       roundInfo._name = name;
+
+    if(verbose_)
+      std::cout << "  Round: " << roundInfo._name << std::endl;
+
     roundInfo._iLumi = round->getDouble("iLumi", 0);
     if(roundInfo._iLumi <= 0)
     {
@@ -834,6 +509,9 @@ bool CutOptimizer::LoadJson()
     roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
     roundInfo._nInitEvents = round->getInt("nInitEvents", roundInfo._nInitEvents);
 
+    if(verbose_)
+      std::cout << "    Loaded round info, now trying to load user-defined cuts, if any." << std::endl;
+
     auto userCuts = (*round)["userCuts"].daughters();
     for(auto userCut = userCuts.begin(); userCut != userCuts.end(); ++userCut)
     {
@@ -843,6 +521,12 @@ bool CutOptimizer::LoadJson()
       temp.value = userCut->getDouble("value", -9999);
       if(temp.variable != "" && (temp.direction == "below" || temp.direction == "above"))
         roundInfo._UserCuts.push_back(temp);
+    }
+
+    if(verbose_)
+    {
+      std::cout << "    Loaded " << roundInfo._UserCuts.size() << " user-defined cuts." << std::endl;
+      std::cout << "    Loading variable information." << std::endl;
     }
 
     auto variables = (*round)["variables"].daughters();
@@ -887,8 +571,17 @@ bool CutOptimizer::LoadJson()
       roundInfo._variables.push_back(variableInfo);
     }
 
+    if(verbose_)
+    {
+      std::cout << "    Loaded " << roundInfo._variables.size() << " variables." << std::endl;
+      std::cout << "    Saving round informantion" << std::endl;
+    }
+
     roundInfo_.push_back(roundInfo);
   }
+
+  if(verbose_)
+    std::cout << "Finished loading information from JSON file" << std::endl;
 
   if(roundInfo_.size() != 0)
     jsonLoaded = true;
@@ -899,6 +592,9 @@ bool CutOptimizer::LoadJson()
 
 std::string& CutOptimizer::setJson(const std::string & jsonFile)
 {
+  if(verbose_)
+    std::cout << "Changing json file to: " << jsonFile << std::endl;
+
   if(jsonFile_ != jsonFile)
   {
     jsonLoaded = false;
@@ -910,6 +606,9 @@ std::string& CutOptimizer::setJson(const std::string & jsonFile)
 
 std::string& CutOptimizer::setOutDir(const std::string & outDir)
 {
+  if(verbose_)
+    std::cout << "Changing output directory to: " << outDir << std::endl;
+
   outDir_ = outDir;
   return outDir_;
 }
@@ -923,6 +622,9 @@ std::vector<std::string>& CutOptimizer::setPlotExt(const std::vector<std::string
 bool CutOptimizer::OptimizeAllRounds()
 {
   bool retVal = true;
+
+  if(verbose_)
+    std::cout << "Running optimizer on all rounds" << std::endl;
 
   if(!jsonLoaded)
   {
@@ -960,22 +662,36 @@ bool CutOptimizer::OptimizeRound(size_t n)
 bool CutOptimizer::OptimizeRound_(size_t n)
 {
   bool retVal = false;
+
+  if(verbose_)
+    std::cout << "Optimizing round " << roundInfo_[n].name() << std::endl;
+
   if(roundInfo_[n].nVars() == 0)
   {
-    std::cout << "There are no variables to optimize cuts on, skipping this round." << std::endl;
+    if(verbose_)
+      std::cout << "  There are no variables to optimize cuts on, skipping this round." << std::endl;
     return retVal;
   }
 
   system(("mkdir -p " + outDir_).c_str());
-  std::stringstream stream;
-  stream << "Round_" << n;
-  std::string roundName;
-  stream >> roundName;
+  std::string roundName = roundInfo_[n].name();
+  if(roundName == "")
+  {
+    std::stringstream stream;
+    stream << "Round_" << n;
+    stream >> roundName;
+  }
 
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::streambuf *cerrbuf = std::cerr.rdbuf();
+  if(verbose_)
+    std::cout << "Opening log file: " << outDir_+"/"+roundName << std::endl;
   ofstream out(outDir_+"/"+roundName+".log", std::ios::out | std::ios::trunc);
-  std::cout.rdbuf(out.rdbuf());
+  out << "This is the log file for round: " << roundName << std::endl;
+  out.flush();
+  if(verbose_)
+    std::cout << "Redirecting standard output and error output to log file (if you still want to see the output, enable the tee option)" << std::endl;
+  std::cout.rdbuf(out.rdbuf()); // Todo - enable tee
   std::cerr.rdbuf(out.rdbuf());
 
   std::cout << "Processing round: " << roundInfo_[n].name() << std::endl;
@@ -1069,6 +785,8 @@ bool CutOptimizer::OptimizeRound_(size_t n)
 
   std::cout.rdbuf(coutbuf);
   std::cerr.rdbuf(cerrbuf);
+  if(verbose_)
+    std::cout << "Finished optimization round, restored standard output and standard error" << std::endl;
   out.close();
 
   return retVal;
@@ -1325,35 +1043,6 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 
   return retVal;
 }
-
-/*struct CutInfo
-{
-  std::string variable;
-  std::string direction;
-  std::string value;
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield;
-  double FOM;
-  double FOMerr;
-};
-
-struct ReportInfo
-{
-  int round;
-  std::vector<CutInfo> cuts;
-}
-
-struct SampleFiles
-{
-  std::string name;
-  TChain* chain;
-  int nFiles;
-};
-
-struct ProcessFiles
-{
-  std::string name;
-  std::vector<SampleFiles> samples;
-};// */
 
 void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle)
 {
@@ -1613,4 +1302,3 @@ void printHelp()
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
 }
-
