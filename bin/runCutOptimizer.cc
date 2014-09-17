@@ -121,16 +121,19 @@ public:
   inline std::vector<std::string> getPlotExt() const {return plotExt_;};
   std::vector<std::string>& setPlotExt(const std::vector<std::string> & plotExt);
   inline size_t getNRounds() const {return roundInfo_.size();};
+  inline void setVerbose() {verbose_ = true; return;};
 
 private:
   std::string jsonFile_;
   std::string outDir_;
   std::vector<std::string> plotExt_;
 
+  bool jsonLoaded;
+  bool verbose_;
+
   bool isMultipointSignalSample_;
   int  nSignalPoints_;
 
-  bool jsonLoaded;
   std::map<std::string,bool> FileExists_;
   std::vector<ReportInfo> report_;
 //  JSONWrapper::Object* json;
@@ -264,6 +267,7 @@ int main(int argc, char** argv)
   std::string jsonFile;
   std::string outDir = "./OUT/";
   std::vector<std::string> plotExt;
+  bool verbose = false;
 
 //  gInterpreter->GenerateDictionary("llvvMet", "");
 //  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
@@ -298,6 +302,11 @@ int main(int argc, char** argv)
       plotExt.push_back(argv[i+1]);
       ++i;
     }
+
+    if(arg.find("--verbose") != std::string::npos)
+    {
+      verbose = true;
+    }
   }
   if(plotExt.size() == 0)
     plotExt.push_back(".png");
@@ -309,7 +318,11 @@ int main(int argc, char** argv)
     return 2;
   }
 
+  if(verbose)
+    std::cout << "Creating an object of the CutOptimizer class..." << std::endl;
   CutOptimizer myOptimizer(jsonFile, outDir, plotExt);
+  if(verbose)
+    myOptimizer.setVerbose();
   myOptimizer.LoadJson();
   myOptimizer.OptimizeAllRounds();
 //  myOptimizer.OptimizeRound(2);
@@ -756,7 +769,7 @@ fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std
 }
 
 CutOptimizer::CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt):
-  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false)
+  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false)
 {
 //  json = new JSONWrapper::Object(jsonFile_, true);
 }
@@ -1595,6 +1608,7 @@ void printHelp()
   std::cout << "--json    -->  Configuration file for cut optimization, should define which files to run on, where they are located, the integrated luminosity and the variables to optimize the cuts on" << std::endl;
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
   std::cout << "--plotExt -->  Extension format with which to save the plots, repeat this command if multiple formats are desired" << std::endl;
+  std::cout << "--verbose -->  Set to verbose mode, the current step will be printed out to screen" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
