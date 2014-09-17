@@ -148,7 +148,6 @@ public:
   inline double& minVal(){return _minVal;};
   inline double& maxVal(){return _maxVal;};
   inline double& step(){return _step;};
-  inline std::string& cutDir(){return _cutDir;};
   inline std::string& label(){return _label;};
 
   friend bool CutOptimizer::LoadJson();
@@ -157,7 +156,6 @@ private:
   std::string _name;
   std::string _expression;
   double _minVal, _maxVal, _step;
-  std::string _cutDir;
   std::string _label;
 
 protected:
@@ -388,7 +386,6 @@ std::unordered_map<std::string,std::unordered_map<std::string,double>> Optimizat
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
     tempVal["step"]   = variable->step();
-    tempVal["cutDir"] = (variable->cutDir()=="below")?-1:1;
 
     retVal[variable->name()] = tempVal;
   }
@@ -415,7 +412,6 @@ OptimizationVariableInfo::OptimizationVariableInfo()
   _minVal = 0;
   _maxVal = 0;
   _step = 0;
-  _cutDir = "below";
 }
 
 OptimizationVariableInfo::~OptimizationVariableInfo()
@@ -545,13 +541,6 @@ bool CutOptimizer::LoadJson()
       if(variableInfo._step <= 0 || variableInfo._step > variableInfo._maxVal - variableInfo._minVal)
       {
         std::cout << roundInfo._name << "::" << variableInfo._name << ": step must be a resonable and valid value. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._cutDir = variable->getString("cutDir", "below");
-      std::transform(variableInfo._cutDir.begin(), variableInfo._cutDir.end(), variableInfo._cutDir.begin(), ::tolower);
-      if(variableInfo._cutDir != "below" && variableInfo._cutDir != "above")
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": the cut direction (cutDir) must be either below or above. Continuing..." << std::endl;
         continue;
       }
       variableInfo._label = variable->getString("label", "");
@@ -825,7 +814,6 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     double minVal = variableParameterMap[*variableName]["minVal"];
     double maxVal = variableParameterMap[*variableName]["maxVal"];
     double step   = variableParameterMap[*variableName]["step"];
-    double cutDir = variableParameterMap[*variableName]["cutDir"]; // TODO - not being used, remove it, from everywhere
     std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
 
     std::vector<double> xVals, yVals, xValsUnc, yValsUnc;
