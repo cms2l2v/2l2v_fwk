@@ -8,9 +8,9 @@
       "comment":"the name field is self explanatory, ie the name of the round",
       "iLumi":18893,
       "comment":"the iLumi field should contain the integrated luminosity, this should not affect the result unless a data driven background is being used",
-      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
+      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/IPM_selection/",
       "comment":"the inDir field should contain the directory where the summary trees may be found",
-      "jsonFile":"tstaustau_samples_inclusive_2012BCD.json",
+      "jsonFile":"tstaustau_samples_exclusive_2012B.json",
       "comment":"the jsonFile field should contain the json file describing the processes and samples to use. It should be the same file given to runPlotter for instance",
       "ttree":"Events",
       "comment":"the ttree field should contain the name of the ttree where the variables are kept",
@@ -23,9 +23,14 @@
       "pointVariable":"stauMass*1000+neutralinoMass",
       "signalPoint":"stauMass==110&&neutralinoMass==10",
       "sigCrossSection":0.0755,
-      "selected":[
+      "nInitEvents":10000,
+      "comment":"For signal types where multiple signal points are within the same sample, other methods have to be used for normalization, define here the cross section and initial number of events per signal point. If you are using a different type of signal (a single sample per signal point for instance) place nInitEvents to a negative number and put some placeholder value in sigCrossSection",
+      "userCuts":[
         {
-          "selection":"MT2>90"
+          "variable":"MT2",
+          "direction":"above",
+          "value":90,
+          "comment":"The above definition means we have a user defined cut that uses the MT2 variable (which is defined in the variables section) and we will perform the following cut: MT2>90"
         }
       ],
       "variables":[
