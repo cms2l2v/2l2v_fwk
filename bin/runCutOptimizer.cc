@@ -1052,35 +1052,55 @@ void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std:
   gROOT->cd();
   TCanvas c1("c1", "c1", 800, 600);
 
-  TGraphErrors Graph(xVals.size(), xVals.data(), yVals.data(), xValsUnc.data(), yValsUnc.data());
-  // http://root.cern.ch/root/html/TAttMarker.html
-  //FOMGraph.SetLineColor(2);
-  //FOMGraph.SetLineWidth(2);
-  //FOMGraph.SetMarkerColor(4);
-  //FOMGraph.SetMarkerStyle(21);
-  //http://root.cern.ch/root/html/TAttFill.html
-  //http://root.cern.ch/root/html/TColor.html
-  Graph.SetFillColor(kBlue-9);
-  Graph.SetFillStyle(3354);
-
   if(yValsUnc.size() == 0)
   {
+    TGraph Graph(xVals.size(), xVals.data(), yVals.data());
+    // http://root.cern.ch/root/html/TAttMarker.html
+    //FOMGraph.SetLineColor(2);
+    //FOMGraph.SetLineWidth(2);
+    //FOMGraph.SetMarkerColor(4);
+    //FOMGraph.SetMarkerStyle(21);
+    //http://root.cern.ch/root/html/TAttFill.html
+    //http://root.cern.ch/root/html/TColor.html
+    Graph.SetFillColor(kBlue-9);
+    Graph.SetFillStyle(3354);
     Graph.SetMarkerStyle(21);
+
     Graph.Draw("ALP");
+
+    Graph.GetXaxis()->SetTitle(xTitle.c_str());
+    Graph.GetYaxis()->SetTitle(yTitle.c_str());
+    Graph.GetXaxis()->CenterTitle();
+
+    for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
+    {
+      c1.SaveAs((name + *ext).c_str());
+    }
   }
   else
   {
+    TGraphErrors Graph(xVals.size(), xVals.data(), yVals.data(), xValsUnc.data(), yValsUnc.data());
+    // http://root.cern.ch/root/html/TAttMarker.html
+    //FOMGraph.SetLineColor(2);
+    //FOMGraph.SetLineWidth(2);
+    //FOMGraph.SetMarkerColor(4);
+    //FOMGraph.SetMarkerStyle(21);
+    //http://root.cern.ch/root/html/TAttFill.html
+    //http://root.cern.ch/root/html/TColor.html
+    Graph.SetFillColor(kBlue-9);
+    Graph.SetFillStyle(3354);
+
     Graph.Draw("3A");
     Graph.Draw("same LP");
-  }
 
-  Graph.GetXaxis()->SetTitle(xTitle.c_str());
-  Graph.GetYaxis()->SetTitle(yTitle.c_str());
-  Graph.GetXaxis()->CenterTitle();
+    Graph.GetXaxis()->SetTitle(xTitle.c_str());
+    Graph.GetYaxis()->SetTitle(yTitle.c_str());
+    Graph.GetXaxis()->CenterTitle();
 
-  for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
-  {
-    c1.SaveAs((name + *ext).c_str());
+    for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
+    {
+      c1.SaveAs((name + *ext).c_str());
+    }
   }
 
   return;
