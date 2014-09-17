@@ -1,6 +1,59 @@
 #!/bin/bash
 
-if [ "${1}" = "fwlite" ]; then
+if [ "${1}" = "singletop" ]; then
+    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_singletop/
+    if [ "${2}" = "anal_sus" ]; then
+	runLocalAnalysisOverSamples.py -e runSingleTopChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "anal_sm" ]; then
+       runLocalAnalysisOverSamples.py -e runSingleTopChHiggsAnalysis -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=False @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "plots" ]; then
+	# Plots
+	#JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
+	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_1pb_samples.json
+	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
+	for plotList in evtflow 
+	  do
+	  for chanList in emu ee mumu slep
+	    do
+	    for formatList in pdf png C
+	      do
+	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --jodorStyle --onlyStartWith ${chanList}_${plotList}                                 &
+	    done
+	  done
+	done
+    elif [ "${2}" = "tables" ]; then
+	# Tables
+	mkdir -p ${BASEDIR}outputs/tables/
+	for chanList in emu ee mumu slep
+	  do
+	  runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}/outputs/tables/plotter_${chanList}_forTables_1pb.root --showUnc --noPlots --noPowers --onlyStartWith ${chanList}_evtflow
+	done
+	mv ${BASEDIR}outputs/plotsemu*  ${BASEDIR}outputs/tables/
+	mv ${BASEDIR}outputs/plotsee*   ${BASEDIR}outputs/tables/
+	mv ${BASEDIR}outputs/plotsmumu* ${BASEDIR}outputs/tables/
+	mv ${BASEDIR}outputs/plotsslep* ${BASEDIR}outputs/tables/
+    elif [ "${2}" = "display" ]; then	
+	PLOTSDIR=~/www/singleTopChHiggs/plots/
+	mkdir -p ${PLOTSDIR}
+	mkdir -p ${PLOTSDIR}emu
+	mkdir -p ${PLOTSDIR}ee
+	mkdir -p ${PLOTSDIR}mumu
+        mkdir -p ${PLOTSDIR}slep  
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}emu
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}ee
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}mumu
+        cp ${PLOTSDIR}../index.php ${PLOTSDIR}slep
+	cp ${BASEDIR}outputs/plots/ee_*       ${PLOTSDIR}ee/
+	cp ${BASEDIR}outputs/plots/emu_*      ${PLOTSDIR}emu/
+	cp ${BASEDIR}outputs/plots/mumu_*     ${PLOTSDIR}mumu/
+        cp ${BASEDIR}outputs/plots/slep*     ${PLOTSDIR}slep/
+	cp ${BASEDIR}outputs/tables/plotsemu_evtflow.tex  ${PLOTSDIR}emu/   
+	cp ${BASEDIR}outputs/tables/plotsee_evtflow.tex   ${PLOTSDIR}ee/
+	cp ${BASEDIR}outputs/tables/plotsmumu_evtflow.tex ${PLOTSDIR}mumu/ 
+        cp ${BASEDIR}outputs/tables/plotsslep_evtflow.tex ${PLOTSDIR}slep/
+    fi
+elif [ "${1}" = "fwlite" ]; then
     BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5315_fwlite/
     if [ "${2}" = "anal_sus" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ch-higgs_samples.json -o ${BASEDIR} -d   /store/group/phys_higgs/cmshzz2l2v/2014_04_20/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
@@ -46,6 +99,19 @@ elif [ "${1}" = "current" ]; then
     elif [ "${2}" = "dopdfweights_sm" ]; then
 	runLocalAnalysisOverSamples.py -e computePDFvariations -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/  -o ${BASEDIRPDF} -c test/runAnalysis_cfg.py.templ -s 1nd;
 
+    elif [ "${2}" = "plotspdfunc" ]; then
+#	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_1pb_samples.json
+	JSONFILEFORPLOTS=data/chhiggs/plot-pdfuncs.json
+	for plotList in geq2btagsnbjets geq2btagsnbjetspdfup geq2btagsnbjetspdfdown 
+	  do
+	  for chanList in emu ee mumu
+	    do
+	    for formatList in pdf png C
+	      do
+	      runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/plots --json ${JSONFILEFORPLOTS} --outFile ${BASEDIR}outputs/plotter-forPlotting_${chanList}_${plotList}_${formatList}.root             --showUnc --plotExt .${formatList} --noPowers --jodorStyle --onlyStartWith ${chanList}_${plotList}                                 &
+	    done
+	  done
+	done
     elif [ "${2}" = "plots" ]; then
 	# Plots
 	#JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_tanb30_samples.json
