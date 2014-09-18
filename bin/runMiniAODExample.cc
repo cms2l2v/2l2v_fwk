@@ -948,25 +948,55 @@ int main(int argc, char* argv[])
 	    if(!isTight)                                   passId=false;
 	  }
 
-	  //isolation 
-	  //FIXME: Currently using straight the iso from PAT, not sure it's equivalent to what we were doing (just below)
-	  float relIso = (lid==11?leptons[ilep].el.particleIso():leptons[ilep].mu.particleIso()) / leptons[ilep].pt();  
-//	  Float_t gIso    = leptons[ilep].getVal("gIso04");
-//	  Float_t chIso   = leptons[ilep].getVal("chIso04");
-//	  Float_t puchIso = leptons[ilep].getVal("puchIso04");
-//	  Float_t nhIso   = leptons[ilep].getVal("nhIso04");
-//	  float relIso= lid==11 ?
-//	    (TMath::Max(nhIso+gIso-rho*utils::cmssw::getEffectiveArea(11,leptons[ilep].el.superCluster()->eta()),Float_t(0.))+chIso)/leptons[ilep].pt() :
-//	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
-//	    ;
+	  //isolation
+	  float chIso;
+          float nhIso;
+          float gIso;
+          float puchIso;
+          float relIso;
+
+	  //Cut Based Isolation 
+	  if(lid == 11){
+            chIso   = leptons[ilep].el.pfIsolationVariables().sumChargedHadronPt;
+            nhIso   = leptons[ilep].el.pfIsolationVariables().sumNeutralHadronEt;
+            gIso    = leptons[ilep].el.pfIsolationVariables().sumPhotonEt;
+            puchIso = leptons[ilep].el.pfIsolationVariables().sumPUPt; 
+          } else {
+            chIso   = leptons[ilep].mu.pfIsolationR04().sumChargedHadronPt;
+            nhIso   = leptons[ilep].mu.pfIsolationR04().sumNeutralHadronEt;
+            gIso    = leptons[ilep].mu.pfIsolationR04().sumPhotonEt;
+            puchIso = leptons[ilep].mu.pfIsolationR04().sumPUPt;
+          } 
+   
+          relIso = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso))/leptons[ilep].pt();
+	  
+          //float relIso = (lid==11?leptons[ilep].el.particleIso():leptons[ilep].mu.particleIso()) / leptons[ilep].pt();  
+	  /*float_t gIso    = leptons[ilep].getVal("gIso04");
+	  Float_t chIso   = leptons[ilep].getVal("chIso04");
+	  Float_t puchIso = leptons[ilep].getVal("puchIso04");
+	  Float_t nhIso   = leptons[ilep].getVal("nhIso04");
+	  float relIso= lid==11 ?
+	    (TMath::Max(nhIso+gIso-rho*utils::cmssw::getEffectiveArea(11,leptons[ilep].el.superCluster()->eta()),Float_t(0.))+chIso)/leptons[ilep].pt() :
+	    (TMath::Max(nhIso+gIso-0.5*puchIso,0.)+chIso)/leptons[ilep].pt()
+	    ;*/
 	   
 	  if(lid==11){
-	    if(relIso>0.15) { 
-	      passIso=false;
-	      passLooseLepton=false;
-	    }
+            if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479){
+              //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
+              //Veto cut = 0.3313; Loose cut = 0.24; Medium cut = 0.2179; Tight cut = 0.1649
+	      if(relIso>0.1649)  passIso=false;
+	      if(relIso>0.24)    passLooseLepton=false;
+            }
+            else if(fabs(leptons[ilep].el.superCluster()->eta()) > 1.479 && fabs(leptons[ilep].el.superCluster()->eta()) < 2.5){
+              //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
+              //Veto cut = 0.3816; Loose cut = 0.3529; Medium cut = 0.254; Tight cut = 0.2075
+              if(relIso>0.2075)  passIso=false;
+              if(relIso>0.3529)  passLooseLepton=false;
+            } 
 	  }
 	  else{
+            //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
+            //Loose cut = 0.20; Tight cut = 0.12
 	    if(relIso>0.12) passIso=false;
 	    if(relIso>0.20) passLooseLepton=false;
 	  }
