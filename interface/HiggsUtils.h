@@ -11,6 +11,7 @@
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
 
 namespace higgs{
 
@@ -31,8 +32,10 @@ namespace higgs{
       inline int GetMode() { return mode_; }
 
       //classify event
-      TString GetCategory(data::PhysicsObjectCollection_t &jets, LorentzVector &boson);
-      
+
+      TString GetCategory(data::PhysicsObjectCollection_t& jets, LorentzVector &boson);
+      TString GetCategory(pat::JetCollection& jets, LorentzVector &boson);
+     
     private :
       int mode_;
     };

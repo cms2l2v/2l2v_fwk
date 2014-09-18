@@ -4,6 +4,7 @@ import json
 import optparse
 import commands
 import LaunchOnCondor
+import UserCode.llvv_fwk.storeTools_cff as storeTools
 
 """
 Gets the value of a given item
@@ -48,6 +49,16 @@ LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.Jobs_EmailReport    = opt.report
 LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
+
+#define local site
+hostname = os.getenv("HOSTNAME", "");
+localTier = ""
+if(hostname.find("cern.ch")>0) : localTier = "CERN"
+
+
+
+kInitDone = False;
+initialCommand = '';
 #run over sample
 for proc in procList :
 
@@ -66,22 +77,62 @@ for proc in procList :
             br = getByLabel(d,'br',[])
             suffix = str(getByLabel(d,'suffix' ,""))
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
-            if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)
+            if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
                                 
             if(xsec>0 and not isdata) :
                 for ibr in br :  xsec = xsec*ibr
             split=getByLabel(d,'split',1)
 
-	    for segment in range(0,split) :
-                if(split==1): 
-                    eventsFile=opt.indir + '/' + origdtag + '.root'
-                else:
-                    eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
+            FileList = [];
+            miniAODSamples = getByLabel(d,'miniAOD','')
+            if(("/MINIAOD" in getByLabel(d,'dset','')) or len(getByLabel(d,'miniAOD',''))>0):
+               listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(d,'dset','') + '" --limit=0')[1]
 
-                if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
+               list = []
+               if(localTier in listSites and "CERN" in localTier):
+                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  for i in range(0,len(list)): list[i] = "root://eoscms//eos/cms"+list[i]
+               elif(len(getByLabel(d,'miniAOD',''))>0):
+                  list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);                  
+               elif("/MINIAODSIM" in getByLabel(d,'dset','')):
 
+                  if(not kInitDone):
+                     print "You are going to run on a sample over grid using the AAA protocol, it is therefore needed to initialize your grid certificate"
+                     os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
+                     initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/proxy;voms-proxy-init --noregen;'
+                     kInitDone = True
+
+
+                  print("Use das_client.py to list files from : " + getByLabel(d,'dset','') )
+                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i]
+               else:
+                  list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);
+
+               ngroup = len(list)/split
+               groupList = ''
+               i=0;
+               while(i <len(list) ):
+                  groupList += '"'+list[i]+'",\\n';
+                  if(i>0 and i%ngroup==0):
+                     FileList.append(groupList)
+                     groupList=''
+                  i = i+1;                                      
+            else:
+ 	       for segment in range(0,split) :
+                  if(split==1): 
+                     eventsFile=opt.indir + '/' + origdtag + '.root'
+                  else:
+                     eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
+
+                  if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
+                  FileList.append('"'+eventsFile+'"')
+
+            for s in range(0,len(FileList)):
                 #create the cfg file
-            	sedcmd = 'sed \"s%@input%' + eventsFile +'%;s%@outdir%' + opt.outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
+                eventsFile = FileList[s]
+                eventsFile = eventsFile.replace('?svcClass=default', '')
+            	sedcmd = 'sed \'s%"@input"%' + eventsFile +'%;s%@outdir%' + opt.outdir +'%;s%@isMC%' + str(not isdata) + '%;s%@mctruthmode%'+str(mctruthmode)+'%;s%@xsec%'+str(xsec)+'%;'
                 sedcmd += 's%@cprime%'+str(getByLabel(d,'cprime',-1))+'%;'
                 sedcmd += 's%@brnew%' +str(getByLabel(d,'brnew' ,-1))+'%;'
                 sedcmd += 's%@suffix%' +suffix+'%;'
@@ -99,11 +150,11 @@ for proc in procList :
                         varopt=icfg.split('=')
                         if(len(varopt)<2) : continue
                         sedcmd += 's%' + varopt[0] + '%' + varopt[1] + '%;'
-            	sedcmd += '\"'
-		if(split==1): 
+            	sedcmd += '\''
+		if(len(FileList)==1): 
                     cfgfile=opt.outdir +'/'+ dtag + suffix + '_cfg.py'
 		else:
-                    cfgfile=opt.outdir +'/'+ dtag + suffix + '_' + str(segment) + '_cfg.py'
+                    cfgfile=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + '_cfg.py'
                 os.system('cat ' + opt.cfg_file + ' | ' + sedcmd + ' > ' + cfgfile)
 
                 #run the job
@@ -114,6 +165,6 @@ for proc in procList :
                     #localParams='-exe=%s -cfg=%s'%(opt.theExecutable,cfgfile)
                     #batchCommand='submit2batch.sh -q%s -R\"%s\" -J%s%d %s %s'%(opt.queue,opt.requirementtoBatch,d['dtag'],segment,scriptFile,localParams)
                     #os.system(batchCommand)
-                    LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
+                    LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
 LaunchOnCondor.SendCluster_Submit()
