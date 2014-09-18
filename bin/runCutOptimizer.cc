@@ -295,6 +295,7 @@ int main(int argc, char** argv)
   myOptimizer.LoadJson();
   myOptimizer.OptimizeAllRounds();
 //  myOptimizer.OptimizeRound(2);
+
   return 0;
 }
 
@@ -831,6 +832,9 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       TCut thisCut = thisCutStr.c_str();
       TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
 
+      if(verbose_)
+        std::cout << "    Applying cut: " << currentSelection << std::endl;
+
       std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
 
       double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
@@ -963,7 +967,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
   if(isSelected)
   {
     std::string thisCutStr = roundInfo_[n].getUserCut(report.cuts.size());
-    std::cout << "  Found a user-defined cut for this pass: " << thisCutStr;
+    std::cout << "  Found a user-defined cut for this pass: " << thisCutStr << std::endl;
 
     TCut thisCut = thisCutStr.c_str();
     TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
