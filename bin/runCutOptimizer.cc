@@ -72,7 +72,7 @@ struct CutInfo
 {
   std::string variable;
   std::string direction;
-  std::string value;
+  double value;
   std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield;
   double FOM;
   double FOMerr;
@@ -125,6 +125,7 @@ private:
   bool GetSamples(size_t n);
   int  GetSigPoints(size_t n);
   CutInfo GetBestCutAndMakePlots(size_t n, ReportInfo& report);
+  std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield);
   std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
   void SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle);
   bool ClearSamples();
@@ -824,7 +825,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     {
       std::string thisCutStr;
       std::stringstream buf;
-      buf << ">"; // TODO - scan for the opposite cut
+      buf << ">";
       buf << cutVal;
       buf >> thisCutStr;
       thisCutStr = variableExpressions[*variableName] + thisCutStr;
@@ -833,63 +834,35 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
 
       if(verbose_)
-        std::cout << "    Applying cut: " << currentSelection << std::endl;
+        std::cout << "    Full cut expression: " << currentSelection << std::endl;
 
       std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+      std::vector<doubleUnc> fomReport = GetFOM(yield);
+      doubleUnc fom  = fomReport[0];
+      doubleUnc nSig = fomReport[1];
+      doubleUnc nBg  = fomReport[2];
 
-      double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
-      // TODO - Add option to run with full systematic uncertainty (ie: calculate full analysis at each point) - is this feasible and reasonable?
-      double nSIG = 0, nSIGUnc = 0;
-      double nBG = 0, nBGUnc = 0;
+      std::cout << "    n(Sig): " << nSig << std::endl;
+      std::cout << "    n(Bkg): " << nBg << std::endl;
 
-      for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
-      {
-        for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-        {
-          nSIG += sample->second.value;
-          nSIGUnc += sample->second.uncertainty*sample->second.uncertainty;
-        }
-      }
-      nSIGUnc = std::sqrt(nSIGUnc);
-      for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
-      {
-        for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-        {
-          nBG += sample->second.value;
-          nBGUnc += sample->second.uncertainty*sample->second.uncertainty;
-        }
-      }
-      nBGUnc = std::sqrt(nBGUnc);
-
-      std::cout << "    n(Sig): " << nSIG << " +- " << nSIGUnc << std::endl;
-      std::cout << "    n(Bkg): " << nBG  << " +- " << nBGUnc << std::endl;
-
-      if(nBG == 0 || nSIG == 0)
+      if(nBg.value == 0 || nSig.value == 0)
         break;
 
-      double dividend = std::sqrt(nBG + (systUnc*nBG)*(systUnc*nBG));
-      double FOM = nSIG/dividend;
-      double FOMUnc = 0;
-      {
-        double SIGContrib = nSIGUnc/dividend;
-        double BGContrib = nBGUnc*nSIG*(1+2*systUnc*systUnc*nBG)/(2*dividend*dividend*dividend);
-        FOMUnc = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
-      }
-      std::cout << "    FOM: " << FOM << " +- " << FOMUnc << std::endl;
+      std::cout << "    FOM: " << fom << std::endl;
 
       xVals.push_back(cutVal);
       xValsUnc.push_back(0);
-      yVals.push_back(FOM);
-      yValsUnc.push_back(FOMUnc);
-      signalYield.push_back(nSIG);
-      signalYieldUnc.push_back(nSIGUnc);
-      backgroundYield.push_back(nBG);
-      backgroundYieldUnc.push_back(nBGUnc);
+      yVals.push_back(fom.value);
+      yValsUnc.push_back(fom.uncertainty);
+      signalYield.push_back(nSig.value);
+      signalYieldUnc.push_back(nSig.uncertainty);
+      backgroundYield.push_back(nBg.value);
+      backgroundYieldUnc.push_back(nBg.uncertainty);
 
-      if(retVal.FOM < FOM)
+      if(retVal.FOM < fom.value)
       {
-        retVal.FOM = FOM;
-        retVal.FOMerr = FOMUnc;
+        retVal.FOM = fom.value;
+        retVal.FOMerr = fom.uncertainty;
         retVal.variable = *variableName;
         retVal.direction = "above";
         retVal.value = cutVal;
@@ -936,6 +909,54 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 
     for(double cutVal = maxVal; cutVal >= minVal; cutVal -= step)
     {
+      std::string thisCutStr;
+      std::stringstream buf;
+      buf << "<";
+      buf << cutVal;
+      buf >> thisCutStr;
+      thisCutStr = variableExpressions[*variableName] + thisCutStr;
+      std::cout << "  The Cut: " << thisCutStr << std::endl;
+      TCut thisCut = thisCutStr.c_str();
+      TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
+
+      if(verbose_)
+        std::cout << "    Full cut expression: " << currentSelection << std::endl;
+
+      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+      std::vector<doubleUnc> fomReport = GetFOM(yield);
+      doubleUnc fom  = fomReport[0];
+      doubleUnc nSig = fomReport[1];
+      doubleUnc nBg  = fomReport[2];
+
+      std::cout << "    n(Sig): " << nSig << std::endl;
+      std::cout << "    n(Bkg): " << nBg << std::endl;
+
+      if(nBg.value == 0 || nSig.value == 0)
+        break;
+
+      std::cout << "    FOM: " << fom << std::endl;
+
+      xVals.push_back(cutVal);
+      xValsUnc.push_back(0);
+      yVals.push_back(fom.value);
+      yValsUnc.push_back(fom.uncertainty);
+      signalYield.push_back(nSig.value);
+      signalYieldUnc.push_back(nSig.uncertainty);
+      backgroundYield.push_back(nBg.value);
+      backgroundYieldUnc.push_back(nBg.uncertainty);
+
+      if(retVal.FOM < fom.value)
+      {
+        retVal.FOM = fom.value;
+        retVal.FOMerr = fom.uncertainty;
+        retVal.variable = *variableName;
+        retVal.direction = "above";
+        retVal.value = cutVal;
+        retVal.yield = yield;
+      }
+
+      //if(nSIG < 0.05)  // Minimum number of signal events: TODO - implement option in json to specify this value
+      //  break;
     }
 
     if(xVals.size() == 0)
@@ -973,53 +994,75 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
 
     std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+    std::vector<doubleUnc> fomReport = GetFOM(yield);
+    doubleUnc fom  = fomReport[0];
+    doubleUnc nSig = fomReport[1];
+    doubleUnc nBg  = fomReport[2];
 
-    double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
-    // TODO - Add option to run with full systematic uncertainty (ie: calculate full analysis at each point) - is this feasible and reasonable?
-    double nSIG = 0, nSIGUnc = 0;
-    double nBG = 0, nBGUnc = 0;
+    std::cout << "    n(Sig): " << nSig << std::endl;
+    std::cout << "    n(Bkg): " << nBg << std::endl;
+    std::cout << "    FOM: " << fom << std::endl;
 
-    for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
-    {
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-      {
-        nSIG += sample->second.value;
-        nSIGUnc += sample->second.uncertainty*sample->second.uncertainty;
-      }
-    }
-    nSIGUnc = std::sqrt(nSIGUnc);
-    for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
-    {
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-      {
-        nBG += sample->second.value;
-        nBGUnc += sample->second.uncertainty*sample->second.uncertainty;
-      }
-    }
-    nBGUnc = std::sqrt(nBGUnc);
-
-    std::cout << "    n(Sig): " << nSIG << " +- " << nSIGUnc << std::endl;
-    std::cout << "    n(Bkg): " << nBG  << " +- " << nBGUnc << std::endl;
-
-    double dividend = std::sqrt(nBG + (systUnc*nBG)*(systUnc*nBG));
-    double FOM = 0;
-    double FOMUnc = 0;
-    if(nBG != 0)
-    {
-      FOM = nSIG/dividend;
-      double SIGContrib = nSIGUnc/dividend;
-      double BGContrib = nBGUnc*nSIG*(1+2*systUnc*systUnc*nBG)/(2*dividend*dividend*dividend);
-      FOMUnc = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
-    }
-    std::cout << "    FOM: " << FOM << " +- " << FOMUnc << std::endl;
-
-    retVal.FOM = FOM;
-    retVal.FOMerr = FOMUnc;
+    retVal.FOM = fom.value;
+    retVal.FOMerr = fom.uncertainty;
     retVal.variable = roundInfo_[n].getUserCutVar(report.cuts.size());;
     retVal.direction = roundInfo_[n].getUserCutDir(report.cuts.size());;
     retVal.value = roundInfo_[n].getUserCutValue(report.cuts.size());;
     retVal.yield = yield;
   }
+
+  return retVal;
+}
+
+std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield)
+{
+  std::vector<doubleUnc> retVal;
+
+  double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
+  // TODO - Add option to run with full systematic uncertainty (ie: calculate full analysis at each point) - is this feasible and reasonable?
+  doubleUnc nSig{0,0};
+  doubleUnc nBg{0,0};
+  doubleUnc fom{0,0};
+
+  for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
+  {
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      nSig.value += sample->second.value;
+      nSig.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+    }
+  }
+  nSig.uncertainty = std::sqrt(nSig.uncertainty);
+
+  for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
+  {
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      nBg.value += sample->second.value;
+      nBg.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+    }
+  }
+  nBg.uncertainty = std::sqrt(nBg.uncertainty);
+
+  if(nBg.value == 0 || nSig.value == 0)
+  {
+    retVal.push_back(fom);
+    retVal.push_back(nSig);
+    retVal.push_back(nBg);
+    return retVal;
+  }
+
+  double dividend = std::sqrt(nBg.value + (systUnc*nBg.value)*(systUnc*nBg.value));
+  fom.value = nSig.value/dividend;
+  {
+    double SIGContrib = nSig.uncertainty/dividend;
+    double BGContrib = nBg.uncertainty*nSig.value*(1+2*systUnc*systUnc*nBg.value)/(2*dividend*dividend*dividend);
+    fom.uncertainty = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
+  }
+
+  retVal.push_back(fom);
+  retVal.push_back(nSig);
+  retVal.push_back(nBg);
 
   return retVal;
 }
