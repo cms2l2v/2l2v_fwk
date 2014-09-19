@@ -148,6 +148,12 @@ int main(int argc, char* argv[])
   bool doLIPBVeto = false;
   if(runProcess.exists("doLIPBVeto"))
     doLIPBVeto = runProcess.getParameter<bool>("doLIPBVeto");
+
+  bool doCombined = false;
+  if(runProcess.exists("doCombined"))
+    doCombined = runProcess.getParameter<bool>("doCombined");
+  if(doCombined)
+    doLIPTauID = true;
   //bool doQuickFix = false;
   //if(runProcess.exists("doQuickFix"))
   //  doQuickFix = runProcess.getParameter<bool>("doQuickFix");
@@ -239,15 +245,12 @@ int main(int argc, char* argv[])
   /*                         Initializing Histograms                         */
   /***************************************************************************/
   SmartSelectionMonitor mon;
-  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 8, 0, 8));
-  eventflow->GetXaxis()->SetBinLabel(1, "All");
-  eventflow->GetXaxis()->SetBinLabel(2, "HLT");
-  eventflow->GetXaxis()->SetBinLabel(3, "> 1l");
-  eventflow->GetXaxis()->SetBinLabel(4, "B-veto");
-  eventflow->GetXaxis()->SetBinLabel(5, "> 1#tau");
-  eventflow->GetXaxis()->SetBinLabel(6, "OS");
-  eventflow->GetXaxis()->SetBinLabel(7, "Mass");
-  eventflow->GetXaxis()->SetBinLabel(8, "MT");
+  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 5, 0, 5));
+  eventflow->GetXaxis()->SetBinLabel(1, "HLT");
+  eventflow->GetXaxis()->SetBinLabel(2, "> 1l");
+  eventflow->GetXaxis()->SetBinLabel(3, "B-veto");
+  eventflow->GetXaxis()->SetBinLabel(4, "> 1#tau");
+  eventflow->GetXaxis()->SetBinLabel(5, "OS");
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
@@ -1002,6 +1005,117 @@ int main(int argc, char* argv[])
         chTags.push_back("leadingMu");
     }
 
+    // Get taus
+    for(size_t i = 0; i < taus.size(); ++i)
+    {
+      llvvTau& tau = taus[i];
+
+      // Tau Kinematics
+      bool passKin = true;
+      if(tau.pt() < minTauPt)
+        passKin = false;
+      if(abs(tau.eta()) > maxTauEta)
+        passKin = false;
+
+      // Tau overlap with leptons
+      bool passIso = true;
+      if(selection == "IPM" && !doLIPTauID)
+      {
+      }
+      else
+      {
+        for(size_t lep = 0; lep < selLeptons.size(); ++lep)
+        {
+          if(deltaR(tau, selLeptons[lep]) < 0.1)
+          {
+            passIso = false;
+            break;
+          }
+        }
+      }
+
+      bool passQual = true;
+      if(selection == "IPM" && !doLIPTauID)
+      {
+      }
+      else
+      {
+        if(abs(tau.dZ) > 0.5)
+          passQual = false;
+        if(tau.emfraction >= 2.0)
+          passQual = false;
+      }
+
+      // Tau ID
+      bool passID = true;
+      if(selection == "IPM" && !doLIPTauID)
+      {
+        if(!tau.passId(llvvTAUID::decayModeFinding))
+          passID = false;
+        if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))
+          passID = false;
+        if(!tau.passId(llvvTAUID::againstElectronLoose))
+          passID = false;
+        if(!tau.passId(llvvTAUID::againstMuonTight3))
+          passID = false;
+      }
+      else
+      {
+        //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
+        if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
+        if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
+        if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
+        if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      }
+
+      // Keep selected taus
+      if(passID && passKin && passIso && passQual && tau.isPF)
+        selTaus.push_back(tau);
+      if(!triggeredOn)
+        continue;
+
+
+      // Fill control histograms
+      mon.fillHisto("tauCutFlow", chTags, 0, weight);
+      if(tau.isPF)
+      {
+        mon.fillHisto("tauCutFlow", chTags, 1, weight);
+        mon.fillHisto("tauID", chTags, 0, weight);
+        if(tau.passId(llvvTAUID::againstElectronMediumMVA5))
+        {
+          mon.fillHisto("tauID", chTags, 1, weight);
+          if(tau.passId(llvvTAUID::againstMuonTight3))
+          {
+            mon.fillHisto("tauID", chTags, 2, weight);
+            if(tau.passId(llvvTAUID::decayModeFinding))
+            {
+              mon.fillHisto("tauID", chTags, 3, weight);
+              if(tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))
+              {
+                mon.fillHisto("tauID", chTags, 4, weight);
+              }
+            }
+          }
+        }
+        if(passID)
+        {
+          mon.fillHisto("tauCutFlow", chTags, 2, weight);
+          if(passQual)
+          {
+            mon.fillHisto("tauCutFlow", chTags, 3, weight);
+            if(passKin)
+            {
+              mon.fillHisto("tauCutFlow", chTags, 4, weight);
+              if(passIso)
+                mon.fillHisto("tauCutFlow", chTags, 5, weight);
+            }
+          }
+        }
+      }
+    }
+    if(selTaus.size() != 0)
+      std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
+
     // Get Jets
     nTauJets = 0;
     for(size_t i = 0; i < jets.size(); ++i)
@@ -1035,7 +1149,7 @@ int main(int argc, char* argv[])
 
       // Cross clean with selected leptons and taus
       bool passIso = true;
-      if(selection == "IPM")
+      if(selection == "IPM" && !doCombined)
       {
       }
       else
@@ -1045,12 +1159,8 @@ int main(int argc, char* argv[])
         double minDRtj = 9999.9;
         for(size_t j = 0; j < selLeptons.size(); ++j)
           minDRlj = TMath::Min(minDRlj, deltaR(jets[i], selLeptons[j]));
-        for(size_t j = 0; j < taus.size(); ++j)
-        {
-          if(taus[j].pt() < minTauPt || abs(taus[j].eta()) > maxTauEta)
-            continue;
-          minDRtj = TMath::Min(minDRtj, deltaR(jets[i], taus[j]));
-        }
+        for(size_t j = 0; j < selTaus.size(); ++j)
+          minDRtj = TMath::Min(minDRtj, deltaR(jets[i], selTaus[j]));
         if(minDRlj < 0.4 || minDRlg < 0.4 || minDRtj < 0.4)
           passIso = false;
       }
@@ -1208,117 +1318,6 @@ int main(int argc, char* argv[])
     if(selBJets.size() != 0)
       std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
 
-    // Get taus
-    for(size_t i = 0; i < taus.size(); ++i)
-    {
-      llvvTau& tau = taus[i];
-
-      // Tau Kinematics
-      bool passKin = true;
-      if(tau.pt() < minTauPt)
-        passKin = false;
-      if(abs(tau.eta()) > maxTauEta)
-        passKin = false;
-
-      // Tau overlap with leptons
-      bool passIso = true;
-      if(selection == "IPM" && !doLIPTauID)
-      {
-      }
-      else
-      {
-        for(size_t lep = 0; lep < selLeptons.size(); ++lep)
-        {
-          if(deltaR(tau, selLeptons[lep]) < 0.1)
-          {
-            passIso = false;
-            break;
-          }
-        }
-      }
-
-      bool passQual = true;
-      if(selection == "IPM" && !doLIPTauID)
-      {
-      }
-      else
-      {
-        if(abs(tau.dZ) > 0.5)
-          passQual = false;
-        if(tau.emfraction >= 2.0)
-          passQual = false;
-      }
-
-      // Tau ID
-      bool passID = true;
-      if(selection == "IPM" && !doLIPTauID)
-      {
-        if(!tau.passId(llvvTAUID::decayModeFinding))
-          passID = false;
-        if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))
-          passID = false;
-        if(!tau.passId(llvvTAUID::againstElectronLoose))
-          passID = false;
-        if(!tau.passId(llvvTAUID::againstMuonTight3))
-          passID = false;
-      }
-      else
-      {
-        //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
-        if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
-        if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
-        if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
-        if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
-      }
-
-      // Keep selected taus
-      if(passID && passKin && passIso && passQual && tau.isPF)
-        selTaus.push_back(tau);
-      if(!triggeredOn)
-        continue;
-
-
-      // Fill control histograms
-      mon.fillHisto("tauCutFlow", chTags, 0, weight);
-      if(tau.isPF)
-      {
-        mon.fillHisto("tauCutFlow", chTags, 1, weight);
-        mon.fillHisto("tauID", chTags, 0, weight);
-        if(tau.passId(llvvTAUID::againstElectronMediumMVA5))
-        {
-          mon.fillHisto("tauID", chTags, 1, weight);
-          if(tau.passId(llvvTAUID::againstMuonTight3))
-          {
-            mon.fillHisto("tauID", chTags, 2, weight);
-            if(tau.passId(llvvTAUID::decayModeFinding))
-            {
-              mon.fillHisto("tauID", chTags, 3, weight);
-              if(tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))
-              {
-                mon.fillHisto("tauID", chTags, 4, weight);
-              }
-            }
-          }
-        }
-        if(passID)
-        {
-          mon.fillHisto("tauCutFlow", chTags, 2, weight);
-          if(passQual)
-          {
-            mon.fillHisto("tauCutFlow", chTags, 3, weight);
-            if(passKin)
-            {
-              mon.fillHisto("tauCutFlow", chTags, 4, weight);
-              if(passIso)
-                mon.fillHisto("tauCutFlow", chTags, 5, weight);
-            }
-          }
-        }
-      }
-    }
-    if(selTaus.size() != 0)
-      std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
-
     // Opposite Sign requirements
     maxPtSum = 0;
     tauIndex = -1;
@@ -1331,7 +1330,7 @@ int main(int argc, char* argv[])
       {
         if(abs(selLeptons[i].dZ) > 0.1)
           continue;
-        if(selLeptons[i].pt() < 20)
+        if((selLeptons[i].pt() < 20 && !doCombined) || (selLeptons[i].pt() < 25 && doCombined))
           continue;
         double eta = selLeptons[i].electronInfoRef->sceta;
         if(abs(eta) > 2.1)
@@ -1552,21 +1551,20 @@ int main(int argc, char* argv[])
 
     if(!isStauStau || stauPlot)
     {
-      mon.fillHisto("eventflow", chTags, 0, weight);
       mon.fillHisto("nvtxAll", chTags, nvtx, weight);
     }
     if(triggeredOn)
     {
       if(!isStauStau || stauPlot)
       {
-        mon.fillHisto("eventflow", chTags, 1, weight);
+        mon.fillHisto("eventflow", chTags, 0, weight);
         mon.fillHisto("nvtxHLT", chTags, nvtx, weight);
       }
       if(selLeptons.size() > 0)
       {
         if(!isStauStau || stauPlot)
         {
-          mon.fillHisto("eventflow", chTags, 2, weight);
+          mon.fillHisto("eventflow", chTags, 1, weight);
           mon.fillHisto("nvtx1l", chTags, nvtx, weight);
           mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
         }
@@ -1574,26 +1572,26 @@ int main(int argc, char* argv[])
         {
           if(!isStauStau || stauPlot)
           {
-            mon.fillHisto("eventflow", chTags, 3, weight);
+            mon.fillHisto("eventflow", chTags, 2, weight);
             mon.fillHisto("nvtxBveto", chTags, nvtx, weight);
           }
           if(selTaus.size() > 0)
           {
             if(!isStauStau || stauPlot)
             {
-              mon.fillHisto("eventflow", chTags, 4, weight);
+              mon.fillHisto("eventflow", chTags, 3, weight);
               mon.fillHisto("nvtx1tau", chTags, nvtx, weight);
             }
             if(isOS)
             {
               if(!isStauStau || stauPlot)
               {
-                mon.fillHisto("eventflow", chTags, 5, weight);
+                mon.fillHisto("eventflow", chTags, 4, weight);
                 mon.fillHisto("nvtxOS", chTags, nvtx, weight);
               }
               if(mass >= 0 || !doSVfit)
               {
-                if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 6, weight);
+                //if(!isStauStau || stauPlot) mon.fillHisto("eventflow", chTags, 5, weight);
 
             selected = true;
 
