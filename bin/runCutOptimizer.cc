@@ -743,8 +743,45 @@ bool CutOptimizer::OptimizeRound_(size_t n)
           previousCut = thisCut;
           myReport.cuts.push_back(thisCut);
           std::cout << "Added cut on " << thisCut.variable << " with values " << thisCut.direction << " " << thisCut.value << ".";
-          std::cout << "The cut has a Figure of Merit (FOM) of " << thisCut.FOM << " +- " << thisCut.FOMerr << "; with the following yields: To-Do"; //TODO
-//          std::cout << "\tBG:" << thisCut.yield["BG"]
+          std::cout << "The cut has a Figure of Merit (FOM) of " << thisCut.FOM << " +- " << thisCut.FOMerr << "; with the following yields:" << std::endl;
+
+          std::cout << "  Signal Processes:" << std::endl;
+          doubleUnc sigTot{0,0};
+          for(auto process = thisCut.yield["SIG"].begin(); process != thisCut.yield["SIG"].end(); ++process)
+          {
+            std::cout << "    " << process->first << ":" << std::endl;
+            doubleUnc processTot{0,0};
+            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+            {
+              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
+              processTot.value += sample->second.value;
+              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+            }
+            sigTot.value += processTot.value;
+            sigTot.uncertainty += processTot.uncertainty;
+            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            std::cout << "      Total: " << processTot << std::endl;
+          }
+          std::cout << "    Total: " << sigTot << std::endl;
+
+          std::cout << "  Background Processes:" << std::endl;
+          doubleUnc bgTot{0,0};
+          for(auto process = thisCut.yield["BG"].begin(); process != thisCut.yield["BG"].end(); ++process)
+          {
+            std::cout << "    " << process->first << ":" << std::endl;
+            doubleUnc processTot{0,0};
+            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+            {
+              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
+              processTot.value += sample->second.value;
+              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+            }
+            bgTot.value += processTot.value;
+            bgTot.uncertainty += processTot.uncertainty;
+            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            std::cout << "      Total: " << processTot << std::endl;
+          }
+          std::cout << "    Total: " << bgTot << std::endl;
         }
         else
           improve = false;
