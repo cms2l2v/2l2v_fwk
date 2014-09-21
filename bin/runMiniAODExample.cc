@@ -649,10 +649,8 @@ int main(int argc, char* argv[])
 
 
        //load all the objects we will need to access
-       //reco::VertexCollection vtx;
-       //fwlite::Handle< reco::VertexCollection > vtxHandle;
-       reco::Vertex vtx;
-       fwlite::Handle< reco::Vertex> vtxHandle;
+       reco::VertexCollection vtx;
+       fwlite::Handle< reco::VertexCollection > vtxHandle; 
        vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
        if(vtxHandle.isValid()){ vtx = *vtxHandle;}
 
@@ -1061,8 +1059,8 @@ int main(int argc, char* argv[])
                leptons[ilep].mu.muonID("TMOneStationTight") &&
                leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                leptons[ilep].mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
-               fabs(leptons[ilep].mu.innerTrack()->dxy(vtx.position())) < 0.3 &&
-               fabs(leptons[ilep].mu.innerTrack()->dz(vtx.position())) < 20. &&
+               fabs(leptons[ilep].mu.innerTrack()->dxy(vtx.front().position())) < 0.3 &&
+               fabs(leptons[ilep].mu.innerTrack()->dz(vtx.front().position())) < 20. &&
                leptons[ilep].mu.innerTrack()->normalizedChi2() < 1.8) isSoft = true;
 	    if(!isSoft) passSoftMuon = false;
             
@@ -1072,8 +1070,8 @@ int main(int argc, char* argv[])
                 leptons[ilep].mu.globalTrack()->normalizedChi2() < 10. &&
                 leptons[ilep].mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. &&
                 leptons[ilep].mu.numberOfMatchedStations() > 1 &&
-                fabs(leptons[ilep].mu.muonBestTrack()->dxy(vtx.position())) < 0.2 &&
-                fabs(leptons[ilep].mu.muonBestTrack()->dz(vtx.position())) < 0.5 &&
+                fabs(leptons[ilep].mu.muonBestTrack()->dxy(vtx.front().position())) < 0.2 &&
+                fabs(leptons[ilep].mu.muonBestTrack()->dz(vtx.front().position())) < 0.5 &&
                 leptons[ilep].mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
                 leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5) isTight = true;
 	    if(!isTight) passId = false;
@@ -1241,8 +1239,8 @@ int main(int argc, char* argv[])
 	}
 
       mon.fillHisto("eventflow",  tags,0,weight);
-      //mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
-      //mon.fillHisto("nvtx",  tags,vtx.size(),weight);
+      mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
+      mon.fillHisto("nvtx",  tags,vtx.size(),weight);
       mon.fillHisto("rho",  tags,rho,weight);
       if(!runPhotonSelection){
 	mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
