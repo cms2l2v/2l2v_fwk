@@ -37,7 +37,10 @@ runProcess = cms.PSet(
     doLIPBVeto = cms.bool(@doLIPBVeto),
     doLIPTauID = cms.bool(@doLIPTauID),
     doCombined = cms.bool(@doCombined),
+    doTauAgainstElectronLoose = cms.bool(@doTauAgainstElectronLoose),
+    noTauOverlap = cms.bool(@noTauOverlap),
     periodHLT = cms.string("@periodHLT"),
+    doSVfit = cms.bool(@doSVfit),
 #    doQuickFix = cms.bool(@doQuickFix),
     debug = cms.bool(True)	
 )
