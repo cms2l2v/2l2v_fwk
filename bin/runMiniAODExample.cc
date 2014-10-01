@@ -1059,8 +1059,8 @@ int main(int argc, char* argv[])
                leptons[ilep].mu.muonID("TMOneStationTight") &&
                leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
                leptons[ilep].mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
-               fabs(leptons[ilep].mu.innerTrack()->dxy(vtx.front().position())) < 0.3 &&
-               fabs(leptons[ilep].mu.innerTrack()->dz(vtx.front().position())) < 20. &&
+               fabs(leptons[ilep].mu.innerTrack()->dxy(vtx[0].position())) < 0.3 &&
+               fabs(leptons[ilep].mu.innerTrack()->dz(vtx[0].position())) < 20. &&
                leptons[ilep].mu.innerTrack()->normalizedChi2() < 1.8) isSoft = true;
 	    if(!isSoft) passSoftMuon = false;
             
@@ -1070,8 +1070,8 @@ int main(int argc, char* argv[])
                 leptons[ilep].mu.globalTrack()->normalizedChi2() < 10. &&
                 leptons[ilep].mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. &&
                 leptons[ilep].mu.numberOfMatchedStations() > 1 &&
-                fabs(leptons[ilep].mu.muonBestTrack()->dxy(vtx.front().position())) < 0.2 &&
-                fabs(leptons[ilep].mu.muonBestTrack()->dz(vtx.front().position())) < 0.5 &&
+                fabs(leptons[ilep].mu.muonBestTrack()->dxy(vtx[0].position())) < 0.2 &&
+                fabs(leptons[ilep].mu.muonBestTrack()->dz(vtx[0].position())) < 0.5 &&
                 leptons[ilep].mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
                 leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5) isTight = true;
 	    if(!isTight) passId = false;
