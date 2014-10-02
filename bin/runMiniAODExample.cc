@@ -38,6 +38,9 @@
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 
+#include "UserCode/llvv_fwk/interface/PatUtils.h"
+
+
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -53,31 +56,6 @@
 
 using namespace std;
 
-
-typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
-//typedef math::XYZTLorentzVector LorentzVector;
-
-
-//define a generic container to hold information related to pat electrons, muons, taus
-class GenericLepton  : public pat::GenericParticle {
-   public:
-   // constructor
-     ~GenericLepton(){};
-      GenericLepton(pat::Electron el_) : pat::GenericParticle(el_){el = el_; };
-      GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_){mu = mu_; };
-         pat::Electron el;
-         pat::Muon     mu;
-};
-
-
-TString getJetRegion(float eta)
-{
-  TString reg("TK");
-  if(fabs(eta)>2.5)  reg="HEin";
-  if(fabs(eta)>2.75) reg="HEout";
-  if(fabs(eta)>3)    reg="HF";
-  return reg;
-}
 
 int main(int argc, char* argv[])
 {
@@ -877,13 +855,13 @@ int main(int argc, char* argv[])
       //
       
       //start by merging electrons and muons
-      std::vector<GenericLepton> leptons;
-      for(size_t l=0;l<electrons.size();l++){leptons.push_back(GenericLepton(electrons[l]));}      
-      for(size_t l=0;l<muons    .size();l++){leptons.push_back(GenericLepton(muons    [l]));}      
+      std::vector<patUtils::GenericLepton> leptons;
+      for(size_t l=0;l<electrons.size();l++){leptons.push_back(patUtils::GenericLepton(electrons[l]));}      
+      for(size_t l=0;l<muons    .size();l++){leptons.push_back(patUtils::GenericLepton(muons    [l]));}      
       std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
 
       LorentzVector muDiff(0,0,0,0);
-      std::vector<GenericLepton> selLeptons, extraLeptons;
+      std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
       for(size_t ilep=0; ilep<leptons.size(); ilep++)
 	{
 	  bool passKin(true),passId(true),passIso(true);
@@ -915,7 +893,6 @@ int main(int argc, char* argv[])
 	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
 	  if(minDRlg<0.1) continue;
 
-
 	  //kinematics
 	  float leta = fabs(lid==11 ?  leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta());
 	  if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
@@ -931,193 +908,11 @@ int main(int argc, char* argv[])
 	  }
 	  if(leptons[ilep].pt()<20) passKin=false;
 
-
-	  //identification
-	  bool isVeto   = false;
-	  bool isLoose  = false;
-          bool isMedium = false;
-          bool isSoft   = false;
-          bool isTight  = false;
-
           //Cut based identification 
-	  if(lid==11){
-            //for electron Id look here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
-            //for the meaning of the different cuts here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaCutBasedIdentification
-            float dEtaln         = fabs(leptons[ilep].el.deltaEtaSuperClusterTrackAtVtx());
-            float dPhiln         = fabs(leptons[ilep].el.deltaPhiSuperClusterTrackAtVtx());
-            float sigmaletaleta  = leptons[ilep].el.sigmaIetaIeta();
-            float hem            = leptons[ilep].el.hadronicOverEm();
-            double resol         = fabs((1/leptons[ilep].el.ecalEnergy())-(leptons[ilep].el.eSuperClusterOverP()/leptons[ilep].el.ecalEnergy()));
-            double dxy     = fabs(leptons[ilep].el.gsfTrack()->dxy());
-            double dz      = fabs(leptons[ilep].el.gsfTrack()->dz()); 
-            double mHits   = leptons[ilep].el.gsfTrack()->trackerExpectedHitsInner().numberOfHits();                       
- 
-            if(fabs(leptons[ilep].el.superCluster()->eta()) <= 1.479){
-
-              //Veto selection
-              if(dEtaln < 0.02 &&
-                 dPhiln < 0.2579 &&
-                 sigmaletaleta < 0.0125 &&
-                 hem < 0.2564 &&
-                 dxy < 0.025 &&
-                 dz  < 0.5863 &&
-                 resol < 0.1508 &&
-                 mHits == 2) isVeto = true;
-              if(!isVeto) passVetoElectron = false;
-     
-              //Loose Selection
-              if(dEtaln < 0.0181 &&
-                 dPhiln < 0.0936 &&
-                 sigmaletaleta < 0.0123 && 
-                 hem < 0.141 &&
-                 dxy < 0.0166 &&
-                 dz < 0.54342 &&
-                 resol < 0.1043 &&
-                 mHits == 1) isLoose = true;
-              if(!isLoose) passLooseLepton = false;            
-
-              //Medium Selection
-              if(dEtaln < 0.0106 &&
-                 dPhiln < 0.0323 &&
-                 sigmaletaleta < 0.0107 &&
-                 hem < 0.067 &&
-                 dxy < 0.0131 &&
-                 dz < 0.22310 &&
-                 resol < 0.1043 &&
-                 mHits == 1) isMedium = true;
-              if(!isMedium) passSoftElectron = false;
-
-              //Tight Selection
-              if(dEtaln < 0.0091 &&
-                 dPhiln < 0.031 &&
-                 sigmaletaleta < 0.0106 &&
-                 hem < 0.0532 &&
-                 dxy < 0.0126 &&
-                 dz < 0.0116 &&
-                 resol < 0.0609 &&
-                 mHits == 1) isTight = true;
-              if(!isTight) passId = false;
-
-            } else if (fabs(leptons[ilep].el.superCluster()->eta()) > 1.479 && fabs(leptons[ilep].el.superCluster()->eta()) < 2.5){ 
-              
-              //Veto selection
-              if(dEtaln < 0.0141 &&
-                 dPhiln < 0.2591 &&
-                 sigmaletaleta < 0.0371 &&
-                 hem < 0.1335 &&
-                 dxy < 0.2232 &&
-                 dz < 0.9513 &&
-                 resol < 0.1542 &&
-                 mHits == 2) isVeto = true;
-              if(!isVeto) passVetoElectron = false;          
-
-              //Loose selection
-              if(dEtaln < 0.0124 &&   
-                 dPhiln < 0.0642 &&
-                 sigmaletaleta < 0.035 &&
-                 hem < 0.1115 &&
-                 dxy < 0.098 &&
-                 dz < 0.9187 &&
-                 resol < 0.1443 &&
-                 mHits == 1) isLoose = true;
-              if(!isLoose) passLooseLepton = false;
-
-              //Medium selection
-              if(dEtaln < 0.0108 &&
-                 dPhiln < 0.0455 &&
-                 sigmaletaleta < 0.0318 &&
-                 hem < 0.097 &&
-                 dxy < 0.0845 &&
-                 dz < 0.7523 &&
-                 resol < 0.1201 &&
-                 mHits == 1) isMedium = false;
-              if(!isMedium) passSoftElectron = false;
- 
-              //Tight selection
-              if(dEtaln < 0.0106 &&
-                 dPhiln < 0.0359 &&
-                 sigmaletaleta < 0.0305 &&
-                 hem < 0.0835 &&
-                 dxy < 0.0163 &&
-                 dz < 0.5999 &&
-                 resol < 0.1126 &&
-                 mHits == 1) isTight = false;
-              if(!isTight) passId = false;
-            }
-	    
-
-          } else {
-            //for muon Id look here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#LooseMuon
-	    //Loose selection
-	    if(leptons[ilep].mu.isPFMuon() &&
-               (leptons[ilep].mu.isGlobalMuon() || leptons[ilep].mu.isTrackerMuon())) isLoose = true;  
-	    if(!isLoose) passLooseLepton = false;
-            
-            //Soft selection
-            if(leptons[ilep].mu.isPFMuon() &&
-               leptons[ilep].mu.isTrackerMuon() &&
-               leptons[ilep].mu.muonID("TMOneStationTight") &&
-               leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 &&
-               leptons[ilep].mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
-               fabs(leptons[ilep].mu.innerTrack()->dxy(vtx[0].position())) < 0.3 &&
-               fabs(leptons[ilep].mu.innerTrack()->dz(vtx[0].position())) < 20. &&
-               leptons[ilep].mu.innerTrack()->normalizedChi2() < 1.8) isSoft = true;
-	    if(!isSoft) passSoftMuon = false;
-            
-            //Tight selection
-            if( leptons[ilep].mu.isPFMuon() &&
-                leptons[ilep].mu.isGlobalMuon() &&
-                leptons[ilep].mu.globalTrack()->normalizedChi2() < 10. &&
-                leptons[ilep].mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. &&
-                leptons[ilep].mu.numberOfMatchedStations() > 1 &&
-                fabs(leptons[ilep].mu.muonBestTrack()->dxy(vtx[0].position())) < 0.2 &&
-                fabs(leptons[ilep].mu.muonBestTrack()->dz(vtx[0].position())) < 0.5 &&
-                leptons[ilep].mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
-                leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5) isTight = true;
-	    if(!isTight) passId = false;
-	  }
+          passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
 
 	  //isolation
-	  float chIso;
-          float nhIso;
-          float gIso;
-          float puchIso;
-          float relIso;
-
-	  //Cut Based Isolation 
-	  if(lid == 11){
-            chIso   = leptons[ilep].el.pfIsolationVariables().sumChargedHadronPt;
-            nhIso   = leptons[ilep].el.pfIsolationVariables().sumNeutralHadronEt;
-            gIso    = leptons[ilep].el.pfIsolationVariables().sumPhotonEt;
-            puchIso = leptons[ilep].el.pfIsolationVariables().sumPUPt; 
-          } else {
-            chIso   = leptons[ilep].mu.pfIsolationR04().sumChargedHadronPt;
-            nhIso   = leptons[ilep].mu.pfIsolationR04().sumNeutralHadronEt;
-            gIso    = leptons[ilep].mu.pfIsolationR04().sumPhotonEt;
-            puchIso = leptons[ilep].mu.pfIsolationR04().sumPUPt;
-          } 
-   
-          relIso = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso))/leptons[ilep].pt();
-	  	   
-	  if(lid==11){
-            if(fabs(leptons[ilep].el.superCluster()->eta()) <= 1.479){
-              //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
-              //Veto cut = 0.3313; Loose cut = 0.24; Medium cut = 0.2179; Tight cut = 0.1649
-	      if(relIso>0.1649)  passIso=false;
-	      if(relIso>0.24)    passLooseLepton=false;
-            } else if(fabs(leptons[ilep].el.superCluster()->eta()) > 1.479 && fabs(leptons[ilep].el.superCluster()->eta()) < 2.5){
-              //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
-              //Veto cut = 0.3816; Loose cut = 0.3529; Medium cut = 0.254; Tight cut = 0.2075
-              if(relIso>0.2075)  passIso=false;
-              if(relIso>0.3529)  passLooseLepton=false;
-            } 
-	  }
-	  else{
-            //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
-            //Loose cut = 0.20; Tight cut = 0.12
-	    if(relIso>0.12) passIso=false;
-	    if(relIso>0.20) passLooseLepton=false;
-	  }
+	  passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
 	  
 	  if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
 	  else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
