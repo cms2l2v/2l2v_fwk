@@ -619,7 +619,10 @@ int main(int argc, char* argv[])
           if(successfulPath!=""){ //get the prescale associated to it
              fwlite::Handle< pat::PackedTriggerPrescales > prescalesHandle;
              prescalesHandle.getByLabel(ev, "patTrigger");
-             triggerPrescale = prescalesHandle->getPrescaleForName(successfulPath);
+             pat::PackedTriggerPrescales prescales = *prescalesHandle;
+             const edm::TriggerResults& trResults =  prescales.triggerResults();
+             prescales.setTriggerNames( ev.triggerNames(trResults) );
+             triggerPrescale = prescales.getPrescaleForName(successfulPath);
           }
       }
       if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
@@ -824,7 +827,7 @@ int main(int argc, char* argv[])
 	      double eta=photons[ipho].superCluster()->eta();
 
 	      //if systematics are active loosen the selection to the medium working point
-              std::vector<std::pair<std::string, bool> > phid =  photons[ipho].photonIDs() ;   for(size_t PHIDI = 0 ; PHIDI<phid.size(); PHIDI++){ printf("%i   %s  %i\n", (int)PHIDI, phid[PHIDI].first.c_str(), phid[PHIDI].second?1:0);  }  //print available photon ID
+              //std::vector<std::pair<std::string, bool> > phid =  photons[ipho].photonIDs() ;   for(size_t PHIDI = 0 ; PHIDI<phid.size(); PHIDI++){ printf("%i   %s  %i\n", (int)PHIDI, phid[PHIDI].first.c_str(), phid[PHIDI].second?1:0);  }  //print available photon ID
               bool hasTightPhotonId = true;// photons[ipho].photonID("pidTight")>1.0;//FIXME not sure what the cut should be
 	      bool passId = (photons[ipho].r9()>=0.9 && hasTightPhotonId); 
 
