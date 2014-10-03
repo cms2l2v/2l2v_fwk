@@ -409,14 +409,15 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
 
   //event selection
-  TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 8,0,8) );
-  h->GetXaxis()->SetBinLabel(1,"#geq 2 iso leptons");
-  h->GetXaxis()->SetBinLabel(2,"|M-91|<15");
-  h->GetXaxis()->SetBinLabel(3,"p_{T}>55");
-  h->GetXaxis()->SetBinLabel(4,"3^{rd}-lepton veto");
-  h->GetXaxis()->SetBinLabel(5,"b-veto"); 
-  h->GetXaxis()->SetBinLabel(6,"#Delta #phi(jet,E_{T}^{miss})>0.5");
-  h->GetXaxis()->SetBinLabel(7,"E_{T}^{miss}>80");
+  TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 9,0,9) );
+  h->GetXaxis()->SetBinLabel(1,"raw");
+  h->GetXaxis()->SetBinLabel(2,"#geq 2 iso leptons");
+  h->GetXaxis()->SetBinLabel(3,"|M-91|<15");
+  h->GetXaxis()->SetBinLabel(4,"p_{T}>55");
+  h->GetXaxis()->SetBinLabel(5,"3^{rd}-lepton veto");
+  h->GetXaxis()->SetBinLabel(6,"b-veto"); 
+  h->GetXaxis()->SetBinLabel(7,"#Delta #phi(jet,E_{T}^{miss})>0.5");
+  h->GetXaxis()->SetBinLabel(8,"E_{T}^{miss}>80");
 
   //pu control
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
@@ -1010,7 +1011,6 @@ int main(int argc, char* argv[])
 	  weight *= triggerPrescale;
 	}
       }
-      if(chTags.size()==0) continue;
 
       TString evCat=eventCategoryInst.GetCategory(selJets,boson);
       std::vector<TString> tags(1,"all");
@@ -1018,6 +1018,9 @@ int main(int argc, char* argv[])
 	tags.push_back( chTags[ich] );
 	tags.push_back( chTags[ich]+evCat );
       }
+
+      mon.fillHisto("eventflow",  tags,0,weight);
+      if(chTags.size()==0) continue;
 
       //
       // BASELINE SELECTION
@@ -1033,7 +1036,7 @@ int main(int argc, char* argv[])
 	  passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
 	}
 
-      mon.fillHisto("eventflow",  tags,0,weight);
+      mon.fillHisto("eventflow",  tags,1,weight);
       mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
       mon.fillHisto("nvtx",  tags,vtx.size(),weight);
       mon.fillHisto("rho",  tags,rho,weight);
@@ -1048,7 +1051,7 @@ int main(int argc, char* argv[])
 
       if(passMass){
 
-	mon.fillHisto("eventflow",tags, 1,weight);
+	mon.fillHisto("eventflow",tags, 2,weight);
 	mon.fillHisto("zpt",      tags, boson.pt(),weight);
 
 	//these two are used to reweight photon -> Z, the 3rd is a control
@@ -1056,7 +1059,7 @@ int main(int argc, char* argv[])
 	mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
 
 	if(passQt){
-	  mon.fillHisto("eventflow",tags,2,weight);
+	  mon.fillHisto("eventflow",tags,3,weight);
 	  int nExtraLeptons((selLeptons.size()-2)+extraLeptons.size());
 	  mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
 	  if(nExtraLeptons>0){
@@ -1069,7 +1072,7 @@ int main(int argc, char* argv[])
 	  }
 	  if(passThirdLeptonVeto){
 	    
-	    mon.fillHisto("eventflow",tags,3,weight);
+	    mon.fillHisto("eventflow",tags,4,weight);
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
 
@@ -1086,7 +1089,7 @@ int main(int argc, char* argv[])
 	    mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
 	    
 	    if(passBtags){
-	      mon.fillHisto("eventflow",tags,4,weight);
+	      mon.fillHisto("eventflow",tags,5,weight);
 
 	      //include photon prediction from this point forward
 	      //requires looping tag by tag as weights are category-specific
@@ -1132,7 +1135,7 @@ int main(int argc, char* argv[])
 		mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
 		if(met.pt()>80) mon.fillHisto( "mindphijmetNM1",icat,mindphijmet,iweight);
 		if(passMinDphijmet){
-		  mon.fillHisto("eventflow",icat,5,iweight);
+		  mon.fillHisto("eventflow",icat,6,iweight);
 		  
 		  //this one is used to sample the boson mass: cuts may shape Z lineshape
 		  mon.fillHisto("qmass",       tags, boson.mass(),weight); 
@@ -1154,7 +1157,7 @@ int main(int argc, char* argv[])
 		    }
 
 		  if(met.pt()>80){
-		    mon.fillHisto("eventflow",icat,6,iweight);
+		    mon.fillHisto("eventflow",icat,7,iweight);
 		    mon.fillHisto( "mtNM1",icat,mt,iweight,true);
 		    mon.fillHisto( "balanceNM1",icat,met.pt()/iboson.pt(),iweight);
 		    mon.fillHisto( "axialmetNM1",icat,axialMet,iweight);
