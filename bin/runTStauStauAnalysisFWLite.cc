@@ -52,7 +52,7 @@
 #include <boost/shared_ptr.hpp>
 #include <Math/VectorUtil.h>
 
-// Include MT2 library (do not forget to quote):
+// Include MT2 library:
 // http://particle.physics.ucdavis.edu/hefti/projects/doku.php?id=wimpmass    ** Code from here
 // http://www.hep.phy.cam.ac.uk/~lester/mt2/    ** Other libraries
 #include "UserCode/llvv_fwk/interface/mt2_bisect.h"
@@ -154,6 +154,12 @@ int main(int argc, char* argv[])
     doCombined = runProcess.getParameter<bool>("doCombined");
   if(doCombined)
     doLIPTauID = true;
+  bool doTauAgainstElectronLoose = false;
+  if(runProcess.exists("doTauAgainstElectronLoose"))
+    doTauAgainstElectronLoose = runProcess.getParameter<bool>("doTauAgainstElectronLoose");
+  bool noTauOverlap = false;
+  if(runProcess.exists("noTauOverlap"))
+    noTauOverlap = runProcess.getParameter<bool>("noTauOverlap");
   //bool doQuickFix = false;
   //if(runProcess.exists("doQuickFix"))
   //  doQuickFix = runProcess.getParameter<bool>("doQuickFix");
@@ -1019,53 +1025,53 @@ int main(int argc, char* argv[])
 
       // Tau overlap with leptons
       bool passIso = true;
-      if(selection == "IPM" && !doLIPTauID)
+      if(!noTauOverlap)
       {
-      }
-      else
-      {
-        for(size_t lep = 0; lep < selLeptons.size(); ++lep)
+        if(selection == "LIP" || doLIPTauID)
         {
-          if(deltaR(tau, selLeptons[lep]) < 0.1)
+          for(size_t lep = 0; lep < selLeptons.size(); ++lep)
           {
-            passIso = false;
-            break;
+            if(deltaR(tau, selLeptons[lep]) < 0.1)
+            {
+              passIso = false;
+              break;
+            }
           }
         }
       }
 
       bool passQual = true;
-      if(selection == "IPM" && !doLIPTauID)
-      {
-      }
-      else
+      if(selection == "LIP" || doLIPTauID)
       {
         if(abs(tau.dZ) > 0.5)
           passQual = false;
-        if(tau.emfraction >= 2.0)
-          passQual = false;
+//        if(tau.emfraction >= 2.0)
+//          passQual = false;
       }
 
       // Tau ID
       bool passID = true;
-      if(selection == "IPM" && !doLIPTauID)
+      if(!tau.passId(llvvTAUID::decayModeFinding))  passID = false;
+      if(!tau.passId(llvvTAUID::againstMuonTight3)) passID = false;
+      if(selection == "LIP" || doLIPTauID)
       {
-        if(!tau.passId(llvvTAUID::decayModeFinding))
-          passID = false;
+        if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+        //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
+        if(doTauAgainstElectronLoose)
+        {
+          if(!tau.passId(llvvTAUID::againstElectronLoose))                      passID = false;
+        }
+        else
+        {
+          if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                 passID = false;
+        }
+      }
+      else
+      {
         if(!tau.passId(llvvTAUID::byLooseCombinedIsolationDeltaBetaCorr3Hits))
           passID = false;
         if(!tau.passId(llvvTAUID::againstElectronLoose))
           passID = false;
-        if(!tau.passId(llvvTAUID::againstMuonTight3))
-          passID = false;
-      }
-      else
-      {
-        //if(!tau.passId(llvvTAUID::againstElectronMediumMVA3))                   passID = false;
-        if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))                   passID = false;
-        if(!tau.passId(llvvTAUID::againstMuonTight3))                           passID = false;
-        if(!tau.passId(llvvTAUID::decayModeFinding))                            passID = false;
-        if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
       }
 
       // Keep selected taus
