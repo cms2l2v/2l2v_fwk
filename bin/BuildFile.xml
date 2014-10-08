@@ -38,8 +38,9 @@
   <bin name="runZHTauTauAnalysisFWLite"   file="runZHTauTauAnalysisFWLite.cc"></bin> 
   <bin name="runTStauStauAnalysisFWLite"  file="runTStauStauAnalysisFWLite.cc"></bin>
   <bin name="runCutOptimizer"             file="runCutOptimizer.cc"></bin>
-  <bin name="makeDistributions"          file="makeDistributions.cc"></bin>
-  <bin namr="checkNTuples"               file="checkNTuples.cc"></bin>
+  <bin name="makeDistributions"           file="makeDistributions.cc"></bin>
+  <bin namr="checkNTuples"                file="checkNTuples.cc"></bin>
+  <bin namr="addSVfit"                    file="addSVfit.cc"></bin>
 </environment>
 
 <!-- 
