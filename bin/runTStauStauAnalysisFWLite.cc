@@ -65,12 +65,39 @@ double stauCrossSec(double stauM, double neutM);
 /*   0 - Everything OK                                                       */
 /*   1 - Missing parameters_cfg.py configuration file                        */
 /*****************************************************************************/
-int old_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
+  if(argc < 2)
+    std::cout << "Usage: " << argv[0] << " parameters_cfg.py" << std::endl, exit(1);
+
+  gSystem->Load("libFWCoreFWLite");
+  AutoLibraryLoader::enable();
+
+  // Read parameters from the configuration file
+  const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
+  // If we are supposed to run the old analysis, run the old analysis
+  bool doOldAnalysis = false;
+  if(runProcess.exists("doOldAnalysis"))
+    doOldAnalysis = runProcess.getParameter<bool>("doOldAnalysis");
+  if(doOldAnalysis)
+  {
+    return old_main(argc, argv);
+  }
+
+  bool isMC = runProcess.getParameter<bool>("isMC");
+  double xsec = runProcess.getParameter<double>("xsec");
+  std::vector<std::string> urls = runProcess.getParameter<std::vector<std::string> >("input");
+  std::string baseDir = runProcess.getParameter<std::string>("dirName");
+  std::string outdir = runProcess.getParameter<std::string>("outdir");
+  std::string jecDir = runProcess.getParameter<std::string>("jecDir");
+  bool runSystematics = runProcess.getParameter<bool>("runSystematics");
+  bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
+  bool exclusiveRun = runProcess.getParameter<bool>("exclusiveRun");
+
   return 0;
 }
 
-int main(int argc, char* argv[])
+int old_main(int argc, char* argv[])
 {
   /***************************************************************************/
   /*                          Global Initialization                          */
@@ -95,13 +122,6 @@ int main(int argc, char* argv[])
 
   // Configure the process (aka "Load parameters from configuration file")
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
-  bool doOldAnalysis = false;
-  if(runProcess.exists("doOldAnalysis"))
-    doOldAnalysis = runProcess.getParameter<bool>("doOldAnalysis");
-  if(doOldAnalysis)
-  {
-    return old_main(argc, argv);
-  }
 
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
