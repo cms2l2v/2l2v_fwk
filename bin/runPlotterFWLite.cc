@@ -208,16 +208,30 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 
 void SavingTreeToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties, TFile* OutputFile){
-   std::vector<TObject*> ObjectToDelete;
-
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
-      TList* list = new TList();
+
+      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      OutputFile->cd();
+      TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
+      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
+      subdir->cd();
+
+      // create the first root file with a tree  
+      float plotterWeight = 1.0;
+      TTree* weightTree = new TTree((HistoProperties.name+"_PWeight").c_str(),"plotterWeight");
+      weightTree->Branch("plotterWeight",&plotterWeight,"plotterWeight/F");
+      weightTree->SetDirectory(subdir);
+      
+      TTree* clonedTree = NULL;
+
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
          string filtExt("");
          if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
 
+         unsigned int NFiles = 0;
+         unsigned int NTreeEvents = 0;
          int split = Samples[j].getInt("split", 1);
          for(int s=0;s<split;s++){
            string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
@@ -226,25 +240,30 @@ void SavingTreeToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndTyp
            if(!FileExist[FileName])continue;
            TFile* File = new TFile(FileName.c_str());
            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
+           NFiles++;
 
            TTree* tmptree = (TTree*)GetObjectFromPath(File,HistoProperties.name);
            if(!tmptree){delete File;continue;}
-           list->Add(tmptree);
-           ObjectToDelete.push_back(File);
+
+           if(!clonedTree){
+              subdir->cd();
+              clonedTree =  tmptree->CloneTree(-1, "fast");
+              clonedTree->SetDirectory(subdir);
+           }else{
+              clonedTree->CopyEntries(tmptree, -1, "fast");
+           }
+           NTreeEvents += tmptree->GetEntries();
+           delete File;
          }
+         
+         //assign weight to each events in the tree
+         plotterWeight = iLumi/NFiles;
+         for(unsigned int i=0;i<NTreeEvents;i++){weightTree->Fill();}
       }
-      if(list->GetSize()<=0)continue; //No tree were found
-      gROOT->cd();
-      TTree* tree = TTree::MergeTrees(list);
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
-      OutputFile->cd();
-      TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
-      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
       subdir->cd();
-      tree->SetDirectory(subdir);
-      tree->Write(HistoProperties.name.c_str());      
-      delete tree;
-      for(unsigned int i=0;i<ObjectToDelete.size();i++){delete ObjectToDelete[i];} ObjectToDelete.clear();
+      clonedTree->Write(HistoProperties.name.c_str());      
+      weightTree->Write();
+      delete clonedTree; delete weightTree;
    }
 }
 
