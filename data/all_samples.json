@@ -645,6 +645,12 @@
       ]
     },
     {
+      "tag":"MC8TeV_TTJetsMassiveBinDecay",
+      "data":[
+        { "dtag":"MC8TeV_TTJetsMassiveBinDecay" , "split":15, "xsec":245.8 , "br":[ 1.0 ] , "dset":"/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM" }
+      ]
+    },
+    {
       "tag":"MC8TeV_TTWJets",
       "data":[
         { "dtag":"MC8TeV_TTWJets"                          , "split":1, "xsec":0.232       , "br":[ 1.0 ]                 , "dset":"/TTWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
