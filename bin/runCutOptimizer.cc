@@ -1305,13 +1305,13 @@ bool CutOptimizer::GetSamples(size_t n)
       tempSample.chain = new TChain(roundInfo_[n].ttree().c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
       int nFiles = (*sample).getInt("split", 1);
 
-      for(int file = 0; file < nFiles; ++file)
+      for(int filen = 0; filen < nFiles; ++filen)
       {
         std::string segmentExt;
         if(nFiles != 1)
         {
           std::stringstream buf;
-          buf << "_" << file;
+          buf << "_" << filen;
           buf >> segmentExt;
         }
 
