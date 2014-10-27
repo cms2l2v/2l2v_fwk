@@ -863,6 +863,10 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 	  string filtExt("");
 	  if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
 
+	  bool isStauStau = false;
+	  if(Samples[j].getString("dtag").find("TStauStau") != std::string::npos)
+	    isStauStau = true;
+
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
          for(int s=0;s<split;s++){
@@ -886,7 +890,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
             delete File;
          }
          if(!tmphist)continue;
-         if(!Process[i]["isdata"].toBool())tmphist->Scale(1.0/NFiles);
+         if(!Process[i]["isdata"].toBool() && !isStauStau)tmphist->Scale(1.0/NFiles);
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }
