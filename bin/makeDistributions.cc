@@ -403,11 +403,10 @@ TH1D* getHist(fileChains files,  TCut cut, MyVariable variable, bool correctFile
     label = name;
 
   TH1D* retVal = new TH1D(name.c_str(), (name+";"+label+";Events").c_str(), variable.bins(), variable.minVal(), variable.maxVal());
-  MyStyle style;
 
   for(auto process = files.begin(); process != files.end(); ++process)
   {
-    style = styles[process->first];
+    MyStyle style = styles[process->first];
     for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
     {
       if(sample->first == 0)
@@ -419,14 +418,16 @@ TH1D* getHist(fileChains files,  TCut cut, MyVariable variable, bool correctFile
         tempHisto.Scale(1./sample->first);
       retVal->Add(&tempHisto);
     }
+
+    retVal->SetLineColor  (style.lcolor());
+    retVal->SetMarkerColor(style.mcolor());
+    retVal->SetFillColor  (style.fcolor());
+    retVal->SetLineWidth  (style.lwidth());
+    retVal->SetLineStyle  (style.lstyle());
+    retVal->SetMarkerStyle(style.marker());
+
   }
 
-  retVal->SetLineColor  (style.lcolor());
-  retVal->SetMarkerColor(style.mcolor());
-  retVal->SetFillColor  (style.fcolor());
-  retVal->SetLineWidth  (style.lwidth());
-  retVal->SetLineStyle  (style.lstyle());
-  retVal->SetMarkerStyle(style.marker());
 
   return retVal;
 }

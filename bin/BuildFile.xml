@@ -2,7 +2,6 @@
 <use name="roottmva"/>
 <use name="roofit"/>
 <use name="roostats"/>
-<use name="HiggsAnalysis/CombinedLimit"/>
 <use name="TauAnalysis/SVfitStandalone"/>
 <use name="PhysicsTools/FWLite"/>
 <use name="UserCode/llvv_fwk"/>
@@ -30,7 +29,6 @@
   <bin name="runBTVdijetAnalysis"         file="runBTVdijetAnalysis.cc"></bin>
   <bin name="runEWKVJJunfolding"          file="runEWKVJJunfolding.cc"></bin>
   <bin name="rundFtM"                     file="rundFtM.cc"></bin>
-  <bin name="runLjetsAnalysis"            file="runLjetsAnalysis.cc"></bin>
   <bin name="runChHiggsAnalysis"          file="runChHiggsAnalysis.cc"></bin>
   <bin name="runSingleTopChHiggsAnalysis" file="runSingleTopChHiggsAnalysis.cc"></bin>
   <bin name="runChHiggsAnalysisFWLite"    file="runChHiggsAnalysisFWLite.cc"></bin> 
@@ -41,18 +39,8 @@
   <bin name="makeDistributions"           file="makeDistributions.cc"></bin>
   <bin namr="checkNTuples"                file="checkNTuples.cc"></bin>
   <bin namr="addSVfit"                    file="addSVfit.cc"></bin>
+  <bin name="runMiniAODExample"           file="runMiniAODExample.cc"></bin>
 </environment>
-
-<!-- 
-IF YOU HAVE AN ISSUE TO COMPILE runZHTauTauAnalysisFWLite, it means you miss the following package, just add it
-export CVSROOT=:ext:YOURUSERNAME@lxplus.cern.ch:/afs/cern.ch/user/c/cvscmssw/public/CMSSW
-cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit
-
-Or copy it from the web area:
-cp -r /afs/cern.ch/user/v/vischia/public/TauAnalysis_forSVfit/ TauAnalysis
-
--->
-
 
 
 <Flags CXXFLAGS="-g"/>

@@ -14,6 +14,8 @@
 #include "UserCode/llvv_fwk/interface/TopPtWeighter.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 
+#include "UserCode/llvv_fwk/interface/TMVAUtils.h"
+
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -81,6 +83,44 @@ int main(int argc, char* argv[])
   bool saveSummaryTree = runProcess.getParameter<bool>("saveSummaryTree");
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
 
+  // MVA summary ntuple
+  //TString summaryTupleVarNames("ch:weight:nInitEvent:nbjets:leadbjetpt:pt3rdbjet:njets:globalmt:detajj");
+  TString summaryTupleVarNames("ch:weight:nbjets:leadbjetpt:njets:globalmt:met:detajj:detall:dphill");
+  TNtuple* summaryTuple = new TNtuple("chHiggs","chHiggs",summaryTupleVarNames);
+  Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
+  summaryTuple->SetDirectory(0);
+
+  // MVA specifics
+  bool useMVA = runProcess.getParameter<bool>("useMVA");
+  TMVA::Reader* tmvaReader = NULL;
+  std::vector<string> tmvaMethods; tmvaMethods.clear();
+  std::vector<Float_t> tmvaDiscrVals(3,0); // Dummy value, gets resized below
+  std::vector<std::string> tmvaVarNames;
+  std::vector<Float_t> tmvaVars;
+  if(useMVA) // Get mva weights
+    {
+      edm::ParameterSet tmvaInput = runProcess.getParameter<edm::ParameterSet>("tmvaInput");
+      std::string weightsDir = tmvaInput.getParameter<std::string>("weightsDir"); // Hum.
+      tmvaMethods            = tmvaInput.getParameter<std::vector<std::string> >("methodList");
+      tmvaDiscrVals.resize(tmvaMethods.size(),0);
+      tmvaVarNames           = tmvaInput.getParameter<std::vector<std::string> >("varsList");
+      tmvaVars.resize(tmvaVarNames.size(),0);
+      
+      // Start the reader for the variables and methods
+      tmvaReader = new TMVA::Reader("!Silent"); // !Color
+      for(size_t ivar=0; ivar<tmvaVarNames.size(); ++ivar)
+	tmvaReader->AddVariable(tmvaVarNames[ivar], &tmvaVars[ivar]);
+      
+      // Open the file with the method description
+      for(size_t im=0; im<tmvaMethods.size(); ++im)
+	{
+	  TString tmvaWeightsFile(weightsDir + "/TMVAClassification_" + tmvaMethods[im] + TString(".weights.xml"));
+	  gSystem->ExpandPathName(tmvaWeightsFile);
+	  tmvaReader->BookMVA(tmvaMethods[im],tmvaWeightsFile);
+	}
+    }
+  
+  
   TString wFile("");
   if(weightsFile.size()) wFile = TString(gSystem->ExpandPathName(weightsFile[0].c_str()));
 
@@ -225,6 +265,12 @@ int main(int argc, char* argv[])
   TH1F* Hcutflow      = (TH1F*) controlHistos.addHistogram(new TH1F ("cutflow"    , "cutflow"    ,5,0,5) ) ;
   TH1F* Hoptim_systs = (TH1F*) controlHistos.addHistogram(new TH1F ("optim_systs" , ";syst;", systVars.size(),0,systVars.size()) );
 
+  // MVA histos.
+  std::vector<TH1*> tmvaH;
+  for(size_t im=0; im<tmvaMethods.size(); ++im)
+    tmvaH.push_back(controlHistos.addHistogram(tmva::getHistogramForDiscriminator(tmvaMethods[im])));
+  
+
 
 
   //vertex multiplicity
@@ -241,6 +287,15 @@ int main(int argc, char* argv[])
 
     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, var);
     
+//    // MVA histos
+//    if(tmvaH.size())
+//      for(size_t im=0; im<tmvaH.size(); ++im)
+//	{
+//	  TString hname(tmvaMethods[im].c_str());
+//	  controlHistos.addHistogram( new TH2F(hname+"_shapes"+varNames[ivar],";cut index;"+TString(tmvaH[im]->GetXaxis()->GetTitle())+";Events",optim_Cuts2_jet_pt1.size()m
+//
+
+
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+var,";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
    
@@ -349,8 +404,10 @@ int main(int argc, char* argv[])
 	  }
 	
       }
-
+    
   }
+
+  
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -479,7 +536,7 @@ int main(int argc, char* argv[])
       Hcutflow->Fill(3,weightUp);
       Hcutflow->Fill(4,weightDown);
 
-      float Q2Weight_plus(1.0), Q2Weight_down(1.0);
+      //float Q2Weight_plus(1.0), Q2Weight_down(1.0);
       float PDFWeight_plus(1.0), PDFWeight_down(1.0);
       if(isTTbarMC || isSignal)
 	{
@@ -717,6 +774,7 @@ int main(int argc, char* argv[])
 	
 	//select the event
 	if(selLeptons.size()<2) continue;
+
 	controlHistos.fillHisto("evtflow"+var, ch, 0, weight);
 	if(var==""){
 	  controlHistos.fillHisto("nvertices",  ch, ev.nvtx, weight);
@@ -885,6 +943,45 @@ int main(int argc, char* argv[])
 	
 	if(nbtags<2) continue;
 	controlHistos.fillHisto("evtflow"+var, ch, 5, weight);
+
+
+	// Set up the variables to be used in the MVA evaluation
+	LorentzVector globalmt( selLeptons[0] + selLeptons[1] + selbJets[0] + selbJets[1] + met );
+	for(size_t ivar=0; ivar<tmvaVarNames.size(); ++ivar)
+	  {
+	    std::string variable = tmvaVarNames[ivar];
+	    // Cat and weight are for bookkeeping, not needed here.
+	    if(variable=="nbjets") tmvaVars[ivar] = nbtags;
+	    else if(variable=="leadbjetpt"){ tmvaVars[ivar] = selbJets[0].pt();}
+	    else if(variable=="njets") tmvaVars[ivar] = selJets.size();
+	    else if(variable=="globalmt"){
+	      tmvaVars[ivar] = globalmt.Mt();
+      	    }
+	    else if(variable=="met")    tmvaVars[ivar] = met.pt();
+	    else if(variable=="detajj") tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
+	    else if(variable=="detall") tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
+	    else if(variable=="dphill") tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
+	  }
+	if(tmvaReader)
+	  for(size_t im=0; im<tmvaMethods.size(); ++im)
+	    {
+	      float iTmvaDiscrVal=tmvaReader->EvaluateMVA( tmvaMethods[im] );
+	      //	      controlHistos.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],local
+	    }
+	// Save for training
+	summaryTupleVars[0] = ev.cat;
+	summaryTupleVars[1] = weight;
+	summaryTupleVars[2] = nbtags;
+	summaryTupleVars[3] = selbJets[0].pt();
+	summaryTupleVars[4] = selJets.size();
+	summaryTupleVars[5] = globalmt.Mt();
+	summaryTupleVars[6] = met.pt();
+	summaryTupleVars[7] = fabs(selbJets[0].eta()-selbJets[1].eta());
+	summaryTupleVars[8] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
+	summaryTupleVars[9] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
+	summaryTuple->Fill(summaryTupleVars);
+	for(size_t im=0; im<tmvaMethods.size(); ++im)
+	  controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
 	
 	if(nbtags>5)
 	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, 5, weight);	
@@ -928,6 +1025,13 @@ int main(int argc, char* argv[])
   TFile *file=TFile::Open(outUrl, "recreate");
   controlHistos.Write();
   file->Close();
-  
+
+
+  // save summary tuple
+  outUrl.ReplaceAll(".root","_mvaTuple.root");
+  file=TFile::Open(outUrl,"recreate");
+  summaryTuple->SetDirectory(file);
+  summaryTuple->Write();
+  file->Close();
   //that's all folks!
 }  

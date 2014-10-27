@@ -49,6 +49,7 @@ float lumiUnc(0.027);
 float selEffUnc(0.02);
 float iEcm(8);
 bool doPowers = true;
+bool statBinByBin = false;
 
 //wrapper for a projected shape for a given set of cuts
 struct Shape_t
@@ -241,15 +242,16 @@ float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, s
 void printHelp()
 {
   printf("Options\n");
-  printf("--out       --> output director\n");
-  printf("--suffix    --> suffix to append to datacard filenames\n");
-  printf("--in        --> input file from plotter\n");
-  printf("--syst      --> input file with syst shapes\n");
-  printf("--json      --> json file with the sample descriptor\n");
-  printf("--histo     --> name of histogram to be used\n");
-  printf("--noPowers --> Do not use powers of 10 for numbers in tables\n");
-  printf("--bins      --> list of bins to be used (they must be comma separated without space)\n");
-  printf("--ch        --> list of channels to be used (they must be comma separated without space)\n");
+  printf("--out          --> output director\n");
+  printf("--suffix       --> suffix to append to datacard filenames\n");
+  printf("--in           --> input file from plotter\n");
+  printf("--syst         --> input file with syst shapes\n");
+  printf("--json         --> json file with the sample descriptor\n");
+  printf("--histo        --> name of histogram to be used\n");
+  printf("--noPowers     --> Do not use powers of 10 for numbers in tables\n");
+  printf("--bins         --> list of bins to be used (they must be comma separated without space)\n");
+  printf("--ch           --> list of channels to be used (they must be comma separated without space)\n");
+  printf("--statBinByBin --> statistical uncertainty shape is bin by bin (uncorrelated bins) ");
 }
 
 //
@@ -842,9 +844,10 @@ int main(int argc, char* argv[])
     else if(arg.find("--syst")   !=string::npos && i+1<argc)  { systFileUrl = argv[i+1];  i++;  printf("syst = %s\n", systFileUrl.Data());  }
     else if(arg.find("--json")   !=string::npos && i+1<argc)  { jsonFileUrl  = argv[i+1];  i++;  printf("json = %s\n", jsonFileUrl.Data()); }
     else if(arg.find("--histo")  !=string::npos && i+1<argc)  { histo     = argv[i+1];  i++;  printf("histo = %s\n", histo.Data()); }
-    else if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
+    else if(arg.find("--noPowers" )!=string::npos){ doPowers=false;    }
     else if(arg.find("--bins")   !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins to use are : ");while (pch!=NULL){int b; sscanf(pch,"%d",&b); printf(" %d ",b); binsToProject.push_back(b);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--ch")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("ch to use are : ");  while (pch!=NULL){printf(" %s ",pch); channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
+    else if(arg.find("--statBinByBin")  !=string::npos){ statBinByBin=true;}
   }
   if(jsonFileUrl.IsNull() || inFileUrl.IsNull() || histo.IsNull()) { printHelp(); return -1; }
   if(channels.size()==0) { channels.push_back("ee"); channels.push_back("mumu"); channels.push_back("emu"); channels.push_back(""); }

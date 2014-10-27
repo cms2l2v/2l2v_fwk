@@ -86,13 +86,16 @@ elif [ "${1}" = "fwlite" ]; then
     fi
 elif [ "${1}" = "current" ]; then
 ### base:   BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/
-    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_angular/
+    ###angular stuff: BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_angular/
+    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_mva/
     BASEDIRPDF=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_pdfweights/
 # run in 5315
     if [ "${2}" = "anal_sus" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIR} -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=True @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_sm" ]; then
        runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=True @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "anal_ttbar" ]; then
+       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ttbaronly.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=True @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
 
     elif [ "${2}" = "dopdfweights_sus" ]; then
 	runLocalAnalysisOverSamples.py -e computePDFvariations -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIRPDF} -c test/runAnalysis_cfg.py.templ  -s 1nd;

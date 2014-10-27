@@ -235,7 +235,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
     //pileup
     edm::Handle<std::vector<PileupSummaryInfo> > puInfoH;
-    iEvent.getByType(puInfoH);
+//    iEvent.getByType(puInfoH);
+    iEvent.getByLabel("addPileupInfo", puInfoH);
     genEv.ngenITpu    = 0;
     genEv.ngenOOTpu   = 0;
     genEv.ngenOOTpum1 = 0;
@@ -250,7 +251,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
     //pdf info
     edm::Handle<GenEventInfoProduct> genEventInfoProd;
-    iEvent.getByType( genEventInfoProd );
+//    iEvent.getByType( genEventInfoProd );
+    iEvent.getByLabel( "generator", genEventInfoProd);        
     if(genEventInfoProd.isValid())
       {
         genEv.genWeight = genEventInfoProd->weight();
@@ -267,7 +269,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
     //matrix element info
     Handle<LHEEventProduct> lheH;
-    iEvent.getByType(lheH);
+//    iEvent.getByType(lheH);
+    iEvent.getByLabel("externalLHEProducer", lheH);
     if(lheH.isValid()) genEv.nup=lheH->hepeup().NUP;
 
 

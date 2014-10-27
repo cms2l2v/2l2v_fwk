@@ -580,13 +580,14 @@ int main(int argc, char* argv[])
       // define control category and define DY weight: to be only applied to events passing the MET cut (it's an efficiency correction)
       // for events with 0 jets with the DY sf from the 1 jet bin
       std::vector<TString> ctrlCategs;
-      float dyWeight(1.0),ibtagdyWeight(1.0);
+      float dyWeight(1.0), ibtagdyWeight(1.0);
       if     (isOS && passDilSelection && passJetSelection  && passMetSelection)   { ctrlCategs.push_back("");                               if(dySFmap.find(chName)!=dySFmap.end()) dyWeight=dySFmap[chName]; }
       else if(isOS && passDilSelection                      && passMetSelection)   { if(selJets.size()==1) ctrlCategs.push_back("eq1jets");  if(dySFmap.find(chName+"eq1jets")!=dySFmap.end()) dyWeight=dySFmap[chName+"eq1jets"]; }
       else if(isOS && passDilSelection && passJetSelection  && !passMetSelection)  { ctrlCategs.push_back("lowmet"); }
       else if(isOS && passDilSelection && selJets.size()==1 && !passMetSelection)  { ctrlCategs.push_back("eq1jetslowmet"); }
       else if(isOS && passDilSelection && passJetSelection  && nbtags>=2)          { ctrlCategs.push_back("osbtag");                         if(dySFmap.find(chName+"osbtag")!=dySFmap.end())  ibtagdyWeight=dySFmap[chName+"osbtag"]; }
       else if(isOS && passDilSelection && passJetSelection  && nbtags==0)          { ctrlCategs.push_back("osbveto"); }
+      ibtagdyWeight *= 1.0;   
 
       //control distributions
       if(isOS && passDilSelection) {

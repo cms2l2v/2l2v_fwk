@@ -196,7 +196,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
     //pileup
     edm::Handle<std::vector<PileupSummaryInfo> > puInfoH;
-    event.getByType(puInfoH);
+//    event.getByType(puInfoH);
+    event.getByLabel("addPileupInfo", puInfoH);
     ev.ngenITpu    = 0;
     ev.ngenOOTpu   = 0;
     ev.ngenOOTpum1 = 0;
@@ -215,7 +216,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
     //pdf info
     edm::Handle<GenEventInfoProduct> genEventInfoProd;
-    event.getByType( genEventInfoProd );
+    //event.getByType( genEventInfoProd );
+    event.getByLabel( "generator", genEventInfoProd);
     if(genEventInfoProd.isValid())
       {
 	ev.genWeight = genEventInfoProd->weight();
@@ -233,7 +235,8 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
 
     //matrix element info
     Handle<LHEEventProduct> lheH;
-    event.getByType(lheH);
+    //event.getByType(lheH);
+    event.getByLabel("externalLHEProducer", lheH);
     if(lheH.isValid()) ev.nup=lheH->hepeup().NUP;
 
     //generator level event
@@ -502,7 +505,7 @@ void DataAnalyzer::analyze(const edm::Event &event, const edm::EventSetup &iSetu
       bool isSoft(isTracker && muon->muonID("TMOneStationTight")
 		  && fabs(ev.ln_d0[ev.ln])<3.  && fabs(ev.ln_dZ[ev.ln])<30.
 		  && ev.mn_trkLayersWithMeasurement[ev.mn]>5 && ev.mn_pixelLayersWithMeasurement[ev.mn]>1  && ev.mn_innerTrackChi2[ev.mn] < 1.8 );
-      bool isHighNew = muon::isHighPtMuon(dynamic_cast<const reco::Muon &>(*muon), dynamic_cast<const reco::Vertex &> (*primVtx), reco::improvedTuneP) ;
+      bool isHighNew = muon::isHighPtMuon(dynamic_cast<const reco::Muon &>(*muon), dynamic_cast<const reco::Vertex &> (*primVtx) );//, reco::improvedTuneP) ;  //FIXME BY LOIC
 
 
       //save id summary

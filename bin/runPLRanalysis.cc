@@ -260,9 +260,9 @@ int main(int argc, char *argv[])
 			finalPlotList.push_back( std::pair<TString,TGraph *>( chTag, gr) );
 			if(chTag.Contains("inclusive") || chTag.Contains("combined") || chTag.Contains("total"))
 			  {
-			    int n = gr->GetN();
-			    double* y = gr->GetY();
-			    int locmax = TMath::LocMax(n,y);
+			    //int n = gr->GetN();
+			    //double* y = gr->GetY();
+			    //int locmax = TMath::LocMax(n,y);
 			    finalRmin=irmin;
 			    finalRmax=irmax;
 			  }

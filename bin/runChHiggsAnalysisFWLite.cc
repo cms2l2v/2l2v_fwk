@@ -68,9 +68,9 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
-  bool runLoosePhotonSelection(false);
+  //bool runLoosePhotonSelection(false);
 
-  bool Cut_tautau_MVA_iso = true;//currently hardcoded
+  //bool Cut_tautau_MVA_iso = true;//currently hardcoded
 
   float minJetPtToApply(30);
 
@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
       if(url.Contains("MuEG"))      filterOnlyEMU=true;
       if(url.Contains("SingleMu"))  filterOnlySINGLEMU=true;
     }
-  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
+  //bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
   bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
   bool isSignal(isMC && (url.Contains("VBFNLO") || url.Contains("lljj")) );
 
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
   //summary ntuple
   TString summaryTupleVarNames("ch:weight:nInitEvent:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:fisher:llr:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15");
   TNtuple *summaryTuple = new TNtuple("ewkzp2j","ewkzp2j",summaryTupleVarNames);
-  Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
+  //Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
   summaryTuple->SetDirectory(0);
 
   //lepton efficiencies
@@ -561,7 +561,7 @@ int main(int argc, char* argv[])
       fwlite::Handle< double > rho25Handle;
       rho25Handle.getByLabel(ev, "kt6PFJetsCentral", "rho");
       if(!rho25Handle.isValid()){printf("rho25 Object NotFound\n");continue;}
-      double rho25(*rho25Handle);
+      //double rho25(*rho25Handle);
 
       fwlite::Handle< int > nvtxHandle;
       nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
@@ -585,8 +585,8 @@ int main(int argc, char* argv[])
       // PU weighting now follows channel selection, to take into account the different pileup distribution between singleMu and dileptons
       //pileup weight
       float weight(1.0);
-      double TotalWeight_plus(1.0);
-      double TotalWeight_minus(1.0);
+      //double TotalWeight_plus(1.0);
+      //double TotalWeight_minus(1.0);
       float puWeight(1.0);
       
 
@@ -778,8 +778,8 @@ int main(int argc, char* argv[])
 	if(isMC){
 	  puWeight          = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
 	  weight            = xsecWeight*puWeight;
-	  TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
-	  TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
+	  //TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
+	  //TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
 	}
 	
 	weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep1].pt(), selLeptons[dilLep1].eta(), abs(selLeptons[dilLep1].id),  abs(selLeptons[dilLep1].id) ==11 ? "loose" : "loose" ).first : 1.0;
@@ -817,7 +817,7 @@ int main(int argc, char* argv[])
 	    //cross-clean with selected leptons and photons
 	    double minDRlj(9999.),minDRlg(9999.);
 	    for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-	      minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+	      minDRlj = TMath::Min( minDRlj, (double)deltaR(jets[ijet],selLeptons[ilep]) );
 	    if(minDRlj<0.4 || minDRlg<0.4) continue;
 	    
 	    
@@ -1103,8 +1103,8 @@ int main(int argc, char* argv[])
 	if(isMC){
 	  puWeight          = singleLepLumiWeights->weight(genEv.ngenITpu) * singleLepPUNorm[0];
 	  weight            = xsecWeight*puWeight;
-	  TotalWeight_plus  = singleLepPuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (singleLepPUNorm[2]/singleLepPUNorm[0]);
-	  TotalWeight_minus = singleLepPuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (singleLepPUNorm[1]/singleLepPUNorm[0]);
+	  //TotalWeight_plus  = singleLepPuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (singleLepPUNorm[2]/singleLepPUNorm[0]);
+	  //TotalWeight_minus = singleLepPuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (singleLepPUNorm[1]/singleLepPUNorm[0]);
 	}
 	
 	// 
@@ -1185,10 +1185,10 @@ int main(int argc, char* argv[])
 	    //cross-clean with selected leptons, photons and taus
 	    double minDRlj(9999.),minDRlg(9999.), minDRtj(9999.);
 	    for(size_t ilep=0; ilep<selSingleLepLeptons.size(); ilep++)
-	      minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selSingleLepLeptons[ilep]) );
+	      minDRlj = TMath::Min( minDRlj, (double)deltaR(jets[ijet],selSingleLepLeptons[ilep]) );
 	    for(size_t itau=0; itau<taus.size(); ++itau){
 	      if( taus[itau].pt()<20.0 || fabs(taus[itau].eta()) > 2.3) continue;
-	      minDRtj = TMath::Min( minDRtj, deltaR(jets[ijet],taus[itau] ) );
+	      minDRtj = TMath::Min( minDRtj, (double)deltaR(jets[ijet],taus[itau] ) );
 	    }
 	    if(minDRlj<0.4 || minDRlg<0.4 || minDRtj<0.4) continue;
 	    
@@ -1343,7 +1343,7 @@ int main(int argc, char* argv[])
 	//	{
 	//	  std::vector<TString> tags(1,chTags[ich]);
 	
-	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  // No. emu and mumu trigger may fire but we select the event for mutau  
+	//bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  // No. emu and mumu trigger may fire but we select the event for mutau  
 	bool additionalLeptonsVeto( nVetoE>0 || nVetoMu>0 );
 	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 /*&& !otherTriggersVeto*/ && !additionalLeptonsVeto && nTrueJets>1 && nTauJets>2 );    
 	bool passMet(met.pt()>40.);
