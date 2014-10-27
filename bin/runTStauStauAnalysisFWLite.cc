@@ -59,9 +59,13 @@
 
 
 enum ID_Type {LooseID, MediumID, TightID};
+enum TAU_E_ID {antiELoose, antiEMedium, antiETight, antiEMva, antiEMva3Loose, antiEMva3Medium, antiEMva3Tight, antiEMva3VTight, antiEMva5Medium};
+
 double stauCrossSec(double stauM, double neutM);
 bool electronMVAID(double mva, llvvLepton& lepton, ID_Type id);
 int old_main(int argc, char* argv[]);
+double tauSF(llvvTau& tau, llvvGenParticleCollection& genPartColl, TAU_E_ID eId);
+double leptonIdAndIsoScaleFactor(llvvLepton& lepton);
 double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau);
 double efficiency(double m, double m0, double sigma, double alpha, double n, double norm);
 
@@ -306,6 +310,9 @@ int main(int argc, char* argv[])
   double weight_plus = 1.;
   double weight_minus = 1.;
   double puWeight = 1.;
+  double triggerSF = 1.;
+  double leptonIdIsoSF = 1.;
+  double tauSF = 1.;
   llvvLeptonCollection selLeptons;
   llvvJetCollection selBJets;
   llvvJetExtCollection selJets;
@@ -352,6 +359,9 @@ int main(int argc, char* argv[])
     summaryTree->Branch("weight_plus", &weight_plus);
     summaryTree->Branch("weight_minus", &weight_minus);
     summaryTree->Branch("puWeight", &puWeight);
+    summaryTree->Branch("triggerSF", &triggerSF);
+    summaryTree->Branch("leptonIdIsoSF", &leptonIdIsoSF);
+    summaryTree->Branch("tauSF", &tauSF);
     summaryTree->Branch("selLeptons", &selLeptons);
     summaryTree->Branch("selTaus", &selTaus);
     summaryTree->Branch("selJets", &selJets);
@@ -406,6 +416,9 @@ int main(int argc, char* argv[])
     weight_plus = 1.;
     weight_minus = 1.;
     puWeight = 1.;
+    triggerSF = 1.;
+    leptonIdIsoSF = 1.;
+    tauSF = 1.;
     chTags.clear();
     selLeptons.clear();
     selJets.clear();
@@ -1018,11 +1031,26 @@ int main(int argc, char* argv[])
             isOS = true;
             tauLeadPt = selTaus[tauIndex].pt();
             lepLeadPt = selLeptons[leptonIndex].pt();
+            triggerSF = leptonTauTriggerScaleFactor(selLeptons[leptonIndex], selTaus[tauIndex]);
+            leptonIdIsoSF = leptonIdAndIsoScaleFactor(selLeptons[leptonIndex]);
+            tauSF = ::tauSF(selTaus[tauIndex], gen, antiEMva5Medium);
           }
         }
         if(PtSum < maxPtSum) // Skip a few iterations if it is not expected that we will find a better candidate
           break;
       }
+    }
+    if(!isMC)
+    {
+      triggerSF = 1;
+      leptonIdIsoSF = 1;
+      tauSF = 1;
+    }
+    if(isOS)
+    {
+      weight *= triggerSF;
+      weight *= leptonIdIsoSF;
+      weight *= tauSF;
     }
 
     // Reject events with more leptons
@@ -3080,6 +3108,184 @@ bool electronMVAID(double mva, llvvLepton& lepton, ID_Type id)
   return pass;
 }
 
+double tauSF(llvvTau& tau, llvvGenParticleCollection& genPartColl, TAU_E_ID eId)
+{
+  double scaleFactor = 1;
+
+  // No correction necessary for tau ID
+  // No correction necessary for normalization of Jet->Tau fake (if doing shape analysis, should investigate pt dependence of this)
+  // No correction necessary for mu->Tau fake if using tight muon discriminator
+  // Hadronic tau energy scale, no correction necessary
+  // Tau charge misidentification rate, no correction necessary
+  // This leaves only e->Tau fake, which must be corrected according to the anti-e discriminator used
+
+  bool isElectronFakingTau = false;
+
+  for(auto genPart = genPartColl.begin(); genPart != genPartColl.end(); ++genPart)
+  {
+    if(abs(genPart->id) == 11 && genPart->status == 3) // If the gen particle is a stable electron
+    {
+      if(deltaR(tau, *genPart) < 0.3)
+      {
+        isElectronFakingTau = true;
+        break;
+      }
+    }
+  }
+
+  if(isElectronFakingTau)
+  {
+    double barrelSF = 1;
+    double endcapSF = 1;
+
+    switch(eId)
+    {
+    case antiELoose: // Both are 1, so no change
+      break;
+    case antiEMedium:
+      barrelSF = 0.95;
+      endcapSF = 0.75;
+      break;
+    case antiETight:
+      barrelSF = 0.90;
+      endcapSF = 0.70;
+      break;
+    case antiEMva:
+      barrelSF = 0.85;
+      endcapSF = 0.65;
+      break;
+    case antiEMva3Loose:
+      barrelSF = 1.4; // +- 0.3
+      endcapSF = 0.8; // +- 0.3
+      break;
+    case antiEMva3Medium:
+      barrelSF = 1.6; // +- 0.3
+      endcapSF = 0.8; // +- 0.3
+      break;
+    case antiEMva3Tight:
+      barrelSF = 2.0; // +- 0.4
+      endcapSF = 1.2; // +- 0.4
+      break;
+    case antiEMva3VTight:
+      barrelSF = 2.4; // +- 0.5
+      endcapSF = 1.2; // +- 0.5
+      break;
+    case antiEMva5Medium: // 1.6 +/- 0.3 for the barrel (abs(tauEta) < 1.5) and 1.1 +/- 0.3 for the endcap.
+    default:
+      barrelSF = 1.6;
+      endcapSF = 1.1;
+      break;
+    }
+
+    if(tau.eta() < 1.5)
+    {
+      scaleFactor = barrelSF;
+    }
+    else
+    {
+      scaleFactor = endcapSF;
+    }
+  }
+
+  return scaleFactor;
+}
+
+double leptonIdAndIsoScaleFactor(llvvLepton& lepton)
+{
+  double scaleFactor = 1;
+
+  if(abs(lepton.id) == 11) // If an electron
+  {
+    double isoSF = 0;
+    double idSF  = 0;
+
+    double pt = lepton.pt();
+    double eta = lepton.electronInfoRef->sceta;
+    if(abs(eta) < 1.479)  // Electron in barrel
+    {
+      if(pt < 30)
+      {
+        idSF  = 0.8999; // +- 0.0018
+        isoSF = 0.9417; // +- 0.0019
+      }
+      else
+      {
+        idSF  = 0.9486; // +- 0.0003
+        isoSF = 0.9804; // +- 0.0003
+      }
+    }
+    else // Electron in endcap
+    {
+      if(pt < 30)
+      {
+        idSF  = 0.7945; // +- 0.0055
+        isoSF = 0.9471; // +- 0.0037
+      }
+      else
+      {
+        idSF  = 0.8866; // +- 0.0001
+        isoSF = 0.9900; // +- 0.0002
+      }
+    }
+
+    scaleFactor = isoSF * idSF;
+  }
+  else // If a muon
+  {
+    double isoSF = 0;
+    double idSF  = 0;
+
+    double eta = lepton.eta();
+    double pt  = lepton.pt();
+    if(abs(eta) < 0.8) // Barrel muons
+    {
+      if(pt < 30)
+      {
+        idSF  = 0.9818; // +- 0.0005
+        isoSF = 0.9494; // +- 0.0015
+      }
+      else
+      {
+        idSF  = 0.9852; // +- 0.0001
+        isoSF = 0.9883; // +- 0.0003
+      }
+    }
+    else
+    {
+      if(abs(eta) < 1.2) // Transition muons
+      {
+        if(pt < 30)
+        {
+          idSF  = 0.9829; // +- 0.0009
+          isoSF = 0.9835; // +- 0.0020
+        }
+        else
+        {
+          idSF  = 0.9852; // +- 0.0002
+          isoSF = 0.9937; // +- 0.0004
+        }
+      }
+      else // Endcap muons
+      {
+        if(pt < 30)
+        {
+          idSF  = 0.9869; // +- 0.0007
+          isoSF = 0.9923; // +- 0.0013
+        }
+        else
+        {
+          idSF  = 0.9884; // +- 0.0001
+          isoSF = 0.9996; // +- 0.0005
+        }
+      }
+    }
+
+    scaleFactor = isoSF * idSF;
+  }
+
+  return scaleFactor;
+}
+
 double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
 {
   double scaleFactor = 1;
@@ -3125,8 +3331,38 @@ double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
     // Tau leg
     eta = tau.eta();
     pt  = tau.pt();
+    if(abs(eta) < 1.5) // In barrel
+    {
+      m0[0]    = 18.538229;
+      m0[1]    = 18.605055;
+      sigma[0] = 0.651562;
+      sigma[1] = 0.264062;
+      alpha[0] = 0.324869;
+      alpha[1] = 0.139561;
+      n[0]     = 13.099048;
+      n[1]     = 4.792849;
+      norm[0]  = 0.902365;
+      norm[1]  = 0.915035;
+    }
+    else // In endcap
+    {
+      m0[0]    = 18.756548;
+      m0[1]    = 18.557810;
+      sigma[0] = 0.230732;
+      sigma[1] = 0.280908;
+      alpha[0] = 0.142859;
+      alpha[1] = 0.119282;
+      n[0]     = 3.358497;
+      n[1]     = 17.749043;
+      norm[0]  = 0.851919;
+      norm[1]  = 0.865756;
+    }
 
-    scaleFactor = electronSF;
+    double tauDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
+    double tauMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
+    double tauSF = tauDataEff/tauMCEff;
+
+    scaleFactor = electronSF * tauSF;
   }
   else // muTau channel
   {
@@ -3257,7 +3493,7 @@ double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
 }
 
 // Following function from: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2012#ETau_MuTau_trigger_turn_on_Joshu
-// it parametrizes a trigger turn on curve. m is the pT of the object
+// it parametrizes a trigger efficiency turn on curve. m is the pT of the object
 double efficiency(double m, double m0, double sigma, double alpha, double n, double norm)
 {
   const double sqrtPiOver2 = 1.2533141373;
