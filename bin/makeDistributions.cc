@@ -52,6 +52,15 @@ void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains fil
 class MyStyle
 {
 public:
+  MyStyle()
+  {
+    marker_ = 1;
+    lcolor_ = kBlack;
+    mcolor_ = kBlack;
+    fcolor_ = kWhite;
+    lwidth_ = 1;
+    lstyle_ = 1;
+  };
 
   inline int marker(){return marker_;};
   inline int lcolor(){return lcolor_;};
@@ -496,13 +505,13 @@ fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std
       int nFiles = (*sample).getInt("split", 1);
       tempSample.first = 0;
       tempSample.second = new TChain(treename.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
-      for(int file = 0; file < nFiles; ++file)
+      for(int filen = 0; filen < nFiles; ++filen)
       {
         std::string segmentExt;
         if(nFiles != 1)
         {
           std::stringstream buf;
-          buf << "_" << file;
+          buf << "_" << filen;
           buf >> segmentExt;
         }
 
