@@ -287,15 +287,13 @@ int main(int argc, char* argv[])
 
     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, var);
     
-//    // MVA histos
-//    if(tmvaH.size())
-//      for(size_t im=0; im<tmvaH.size(); ++im)
-//	{
-//	  TString hname(tmvaMethods[im].c_str());
-//	  controlHistos.addHistogram( new TH2F(hname+"_shapes"+varNames[ivar],";cut index;"+TString(tmvaH[im]->GetXaxis()->GetTitle())+";Events",optim_Cuts2_jet_pt1.size()m
-//
-
-
+    // MVA histos
+    if(tmvaH.size())
+      for(size_t im=0; im<tmvaH.size(); ++im)
+	{
+	  TString hname(tmvaMethods[im].c_str());
+	  controlHistos.addHistogram( (TH1*) tmvaH[im]->Clone(hname+"_shape_"+var ));
+	}
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+var,";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
    
@@ -951,23 +949,19 @@ int main(int argc, char* argv[])
 	  {
 	    std::string variable = tmvaVarNames[ivar];
 	    // Cat and weight are for bookkeeping, not needed here.
-	    if(variable=="nbjets") tmvaVars[ivar] = nbtags;
-	    else if(variable=="leadbjetpt"){ tmvaVars[ivar] = selbJets[0].pt();}
-	    else if(variable=="njets") tmvaVars[ivar] = selJets.size();
-	    else if(variable=="globalmt"){
-	      tmvaVars[ivar] = globalmt.Mt();
-      	    }
-	    else if(variable=="met")    tmvaVars[ivar] = met.pt();
-	    else if(variable=="detajj") tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
-	    else if(variable=="detall") tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
-	    else if(variable=="dphill") tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
+	    if(variable=="nbjets")          tmvaVars[ivar] = nbtags;
+	    else if(variable=="leadbjetpt") tmvaVars[ivar] = selbJets[0].pt();
+	    else if(variable=="njets")      tmvaVars[ivar] = selJets.size();
+	    else if(variable=="globalmt")   tmvaVars[ivar] = globalmt.Mt();
+	    else if(variable=="met")        tmvaVars[ivar] = met.pt();
+	    else if(variable=="detajj")     tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
+	    else if(variable=="detall")     tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
+	    else if(variable=="dphill")     tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
 	  }
 	if(tmvaReader)
 	  for(size_t im=0; im<tmvaMethods.size(); ++im)
-	    {
-	      float iTmvaDiscrVal=tmvaReader->EvaluateMVA( tmvaMethods[im] );
-	      //	      controlHistos.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],local
-	    }
+	    tmvaDiscrVals[im]=tmvaReader->EvaluateMVA( tmvaMethods[im] );
+	
 	// Save for training
 	summaryTupleVars[0] = ev.cat;
 	summaryTupleVars[1] = weight;
