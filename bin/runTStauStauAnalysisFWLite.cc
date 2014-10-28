@@ -111,6 +111,12 @@ int main(int argc, char* argv[])
   bool doSVfit = false;
   if(runProcess.exists("doSVfit"))
     doSVfit = runProcess.getParameter<bool>("doSVfit");
+  bool debug = false;
+  if(runProcess.exists("debug"))
+    debug = runProcess.getParameter<bool>("debug");
+
+  if(debug)
+    std::cout << "Finished loading config file" << std::endl;
 
   // Hardcoded Values
   double sqrtS          =  8;      // Center of mass energy
@@ -125,6 +131,8 @@ int main(int argc, char* argv[])
   double maxJetEta      =  4.7;    // Selected jet eta
 
   // Setting up -------------------------------------------------------------------------
+  if(debug)
+    std::cout << "Setting up" << std::endl;
   gSystem->Exec(("mkdir -p " + outdir).c_str());
   std::string url = urls[0];
   std::string outFileUrl(gSystem->BaseName(url.c_str()));
@@ -145,6 +153,8 @@ int main(int argc, char* argv[])
   /***************************************************************************/
   /*                         Initializing Histograms                         */
   /***************************************************************************/
+  if(debug)
+    std::cout << "Initializing histograms" << std::endl;
   SmartSelectionMonitor mon;
   TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 7, 0, 7));
   eventflow->GetXaxis()->SetBinLabel(1, "HLT");
@@ -244,6 +254,8 @@ int main(int argc, char* argv[])
   /***************************************************************************/
   /*                          Prepare for Event Loop                         */
   /***************************************************************************/
+  if(debug)
+    std::cout << "Preparing for event loop" << std::endl;
   fwlite::ChainEvent ev(urls);
   const Int_t totalEntries = ev.size();
 
@@ -269,7 +281,7 @@ int main(int argc, char* argv[])
   double PUNorm[] = {1, 1, 1};
   if(isMC)
   {
-    std::vector<double> dataPileupDistributionDouble = runProcess.getParameter<std::vector<double> >("datapileupSingleLep");
+    std::vector<double> dataPileupDistributionDouble = runProcess.getParameter<std::vector<double> >("datapileup");
     std::vector<float> dataPileupDistribution;
     for(unsigned int i = 0; i < dataPileupDistributionDouble.size(); ++i)
       dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);
@@ -299,6 +311,8 @@ int main(int argc, char* argv[])
   std::cerr.rdbuf(buffer.rdbuf());
 
   // Variables used in loop
+  if(debug)
+    std::cout << "  Declaring all variables used in loop" << std::endl;
   int nvtx = 0;
   std::vector<TString> chTags;
   std::vector<bool> triggerBits;
@@ -342,6 +356,9 @@ int main(int argc, char* argv[])
   // Prepare summary tree
   if(saveSummaryTree)
   {
+    if(debug)
+      std::cout << "  Defining all branches in output root file" << std::endl;
+
     // Dataset specific variables
     summaryTree->Branch("isMC", &isMC);
     summaryTree->Branch("xSecWeight", &xsecWeight);
