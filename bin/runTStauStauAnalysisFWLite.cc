@@ -177,9 +177,9 @@ int main(int argc, char* argv[])
 
   // Leptons
   mon.addHistogram(new TH1F("nlep", ";nlep;Events", 10, 0, 10));
-  mon.addHistogram(new TH1F("leadpt", ";p_{T}^{l};Events", 50, 0, 100));
-  mon.addHistogram(new TH1F("leadeta", ";#eta^{l};Events", 25, -2.6, 2.6));
-  mon.addHistogram(new TH1F("leadcharge", ";q^{l};Events", 5, -2, 2));
+  mon.addHistogram(new TH1F("ptSelectedLep", ";p_{T}^{l};Events", 50, 0, 100));
+  mon.addHistogram(new TH1F("etaSelectedLep", ";#eta^{l};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1F("chargeSelectedLep", ";q^{l};Events", 5, -2, 2));
   TH1F *leptonCutFlow = (TH1F*)mon.addHistogram(new TH1F("leptonCutFlow", ";;Leptons", 4, 0, 4));
   leptonCutFlow->GetXaxis()->SetBinLabel(1, "All");
   leptonCutFlow->GetXaxis()->SetBinLabel(2, "ID");
@@ -192,11 +192,11 @@ int main(int argc, char* argv[])
 
   // Taus
   mon.addHistogram(new TH1F("ntaus", ";ntaus;Events", 10, 0, 10));
-  mon.addHistogram(new TH1F("tauleadpt", ";p_{T}^{#tau};Events", 50, 0, 100));
-  mon.addHistogram(new TH1F("tauleadeta", ";#eta^{#tau};Events", 25, -2.6, 2.6));
-  mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events", 5, -2, 2));
-  mon.addHistogram(new TH1F("tauleaddz", ";dz^{#tau};Events", 25, 0, 2));
-  mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events", 25, 0, 5));
+  mon.addHistogram(new TH1F("ptSelectedTau", ";p_{T}^{#tau};Events", 50, 0, 100));
+  mon.addHistogram(new TH1F("etaSelectedTau", ";#eta^{#tau};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1F("chargeSelectedTau", ";q^{#tau};Events", 5, -2, 2));
+  mon.addHistogram(new TH1F("dzSelectedTau", ";dz^{#tau};Events", 25, 0, 2));
+  mon.addHistogram(new TH1F("emfracSelectedTau", ";emf^{#tau};Events", 25, 0, 5));
   TH1F *tauCutFlow = (TH1F*)mon.addHistogram(new TH1F("tauCutFlow", ";;#tau", 6, 0, 6));
   tauCutFlow->GetXaxis()->SetBinLabel(1, "All");
   tauCutFlow->GetXaxis()->SetBinLabel(2, "PF");
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
   mon.addHistogram(new TH1F("nbjets", ";njets;Events", 6, 0, 6));
   mon.addHistogram(new TH1F("jetleadpt", ";p_{T}^{jet};Events", 25, 0, 500));
-  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 50, -5, 5));
   mon.addHistogram(new TH1F("jetcsv", ";csv;jets", 25, 0, 1));
   TH1F *jetCutFlow = (TH1F*)mon.addHistogram(new TH1F("jetCutFlow", ";;jets", 4, 0, 4));
   jetCutFlow->GetXaxis()->SetBinLabel(1, "All");
@@ -237,11 +237,11 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("InvMass", ";M_{l-#tau};Events", 50, 0, 500));
 
   // Angles
-  mon.addHistogram(new TH1F("deltaAlphaTauTau", ";#Delta#alpha_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("cosThetaTauH", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("deltaAlphaLepTau", ";#Delta#alpha_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiLepTauMET", ";#Delta#phi_{l#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("deltaPhiLepTau", ";#Delta#phi_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1F("cosThetaTau", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("cosThetaLep", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
 
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
 
   // Variables used in loop
   if(debug)
-    std::cout << "  Declaring all variables used in loop" << std::endl;
+    myCout << "  Declaring all variables used in loop" << std::endl;
   int nvtx = 0;
   std::vector<TString> chTags;
   std::vector<bool> triggerBits;
@@ -341,11 +341,11 @@ int main(int argc, char* argv[])
   double mt2 = -1;
   double stauMass = 0;
   double neutralinoMass = 0;
-  double deltaAlphaTauTau = 0;
-  double deltaPhiTauTauMET = 0;
-  double deltaPhiTauTau = 0;
-  double cosThetaTauH = 0;
-  double cosThetaTauL = 0;
+  double deltaAlphaLepTau = 0;
+  double deltaPhiLepTauMET = 0;
+  double deltaPhiLepTau = 0;
+  double cosThetaTau = 0;
+  double cosThetaLep = 0;
   double deltaPhiLepMETCS = 0;
   double cosThetaCS = 0;
   double tauLeadPt = 0;
@@ -394,11 +394,11 @@ int main(int argc, char* argv[])
     summaryTree->Branch("MT2", &mt2);
     summaryTree->Branch("stauMass", &stauMass);
     summaryTree->Branch("neutralinoMass", &neutralinoMass);
-    summaryTree->Branch("deltaAlphaTauTau", &deltaAlphaTauTau);
-    summaryTree->Branch("deltaPhiTauTauMET", &deltaPhiTauTauMET);
-    summaryTree->Branch("deltaPhiTauTau", &deltaPhiTauTau);
-    summaryTree->Branch("cosThetaTauH", &cosThetaTauH);
-    summaryTree->Branch("cosThetaTauL", &cosThetaTauL);
+    summaryTree->Branch("deltaAlphaLepTau", &deltaAlphaLepTau);
+    summaryTree->Branch("deltaPhiLepTauMET", &deltaPhiLepTauMET);
+    summaryTree->Branch("deltaPhiLepTau", &deltaPhiLepTau);
+    summaryTree->Branch("cosThetaTau", &cosThetaTau);
+    summaryTree->Branch("cosThetaLep", &cosThetaLep);
     summaryTree->Branch("deltaPhiLepMETCS", &deltaPhiLepMETCS);
     summaryTree->Branch("cosThetaCS", &cosThetaCS);
     summaryTree->Branch("tauLeadPt", &tauLeadPt);
@@ -420,11 +420,11 @@ int main(int argc, char* argv[])
       myCout << "_" << std::flush;
 
     // Init variables
-    deltaAlphaTauTau = 0;
-    deltaPhiTauTauMET = 0;
-    deltaPhiTauTau = 0;
-    cosThetaTauH = 0;
-    cosThetaTauL = 0;
+    deltaAlphaLepTau = 0;
+    deltaPhiLepTauMET = 0;
+    deltaPhiLepTau = 0;
+    cosThetaTau = 0;
+    cosThetaLep = 0;
     deltaPhiLepMETCS = 0;
     cosThetaCS = 0;
     nvtx = 0;
@@ -444,7 +444,7 @@ int main(int argc, char* argv[])
     tauIndex = -1, leptonIndex = -1;
     isOS = false;
     isMultilepton = false;
-    isSVfit = true;
+    isSVfit = false;
     mass = -1;
     invMass = -1;
     mt2 = -1;
@@ -854,8 +854,8 @@ int main(int argc, char* argv[])
       // Tau ID
       bool passID = true;
       if(!tau.passId(llvvTAUID::decayModeFinding)) passID = false;
-      if(!tau.passId(llvvTAUID::againstMuonTight3)) passID = false;
       if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      if(!tau.passId(llvvTAUID::againstMuonTight3)) passID = false;
       if(!tau.passId(llvvTAUID::againstElectronMediumMVA5)) passID = false;
 
       if(passID && passKin && passIso && passQual && tau.isPF)
@@ -1084,7 +1084,7 @@ int main(int argc, char* argv[])
             continue;
           if(selLeptons[i].pt() < 20)
             continue;
-          if(selLeptons[i].electronInfoRef->sceta > 2.1)
+          if(abs(selLeptons[i].electronInfoRef->sceta) > 2.1)
             continue;
           isMultilepton = true;
           break;
@@ -1116,17 +1116,17 @@ int main(int argc, char* argv[])
       TLorentzVector tau(selTaus[tauIndex].Px(), selTaus[tauIndex].Py(), selTaus[tauIndex].Pz(), selTaus[tauIndex].E());
       TLorentzVector Tmet(met.Px(), met.Py(), met.Pz(), met.E());
 
-      deltaAlphaTauTau = lep.Angle(tau.Vect());
-      deltaPhiTauTauMET = Tmet.DeltaPhi(lep + tau);
-      deltaPhiTauTau = lep.DeltaPhi(tau);
+      deltaAlphaLepTau = lep.Angle(tau.Vect());
+      deltaPhiLepTauMET = Tmet.DeltaPhi(lep + tau);
+      deltaPhiLepTau = lep.DeltaPhi(tau);
 
       double posSign = Tmet.CosTheta();
-      cosThetaTauH = tau.CosTheta();
-      cosThetaTauL = lep.CosTheta();
+      cosThetaTau = tau.CosTheta();
+      cosThetaLep = lep.CosTheta();
       if(posSign < 0)
       {
-        cosThetaTauH = -cosThetaTauH;
-        cosThetaTauL = -cosThetaTauL;
+        cosThetaTau = -cosThetaTau;
+        cosThetaLep = -cosThetaLep;
       }
 
       /**   CS FRAME   **/
@@ -1176,7 +1176,7 @@ int main(int argc, char* argv[])
     }
 
     // Tau-Lepton pair mass calculation
-    isSVfit = true;
+    isSVfit = doSVfit;
     if(isOS && !isMultilepton)
     {
       auto selLepton = selLeptons[leptonIndex];
@@ -1216,7 +1216,7 @@ int main(int argc, char* argv[])
     }
 
     // MT2 calculation
-    if(isOS && isMultilepton && (!doSVfit || isSVfit))
+    if(isOS && !isMultilepton && (!doSVfit || isSVfit))
     {
       auto selLepton = selLeptons[leptonIndex];
       auto selTau    = selTaus[tauIndex];
@@ -1297,11 +1297,11 @@ int main(int argc, char* argv[])
                       mon.fillHisto("SVFitMass", chTags, mass, weight);
                     mon.fillHisto("InvMass", chTags, invMass, weight);
 
-                    mon.fillHisto("deltaAlphaTauTau", chTags, deltaAlphaTauTau, weight);
-                    mon.fillHisto("deltaPhiTauTauMET", chTags, deltaPhiTauTauMET, weight);
-                    mon.fillHisto("deltaPhiTauTau", chTags, deltaPhiTauTau, weight);
-                    mon.fillHisto("cosThetaTauH", chTags, cosThetaTauH, weight);
-                    mon.fillHisto("cosThetaTauL", chTags, cosThetaTauL, weight);
+                    mon.fillHisto("deltaAlphaLepTau", chTags, deltaAlphaLepTau, weight);
+                    mon.fillHisto("deltaPhiLepTauMET", chTags, deltaPhiLepTauMET, weight);
+                    mon.fillHisto("deltaPhiLepTau", chTags, deltaPhiLepTau, weight);
+                    mon.fillHisto("cosThetaTau", chTags, cosThetaTau, weight);
+                    mon.fillHisto("cosThetaLep", chTags, cosThetaLep, weight);
                     mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
                     mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
 
@@ -1309,16 +1309,18 @@ int main(int argc, char* argv[])
                     mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
 
                     mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
-                    mon.fillHisto("leadeta", chTags, selLeptons[0].eta(), weight);
-                    mon.fillHisto("leadpt", chTags, selLeptons[0].pt(), weight);
-                    mon.fillHisto("leadcharge", chTags, ((selLeptons[0].id > 0)?(-1):(1)), weight);
+                    double eta = selLeptons[leptonIndex].eta();
+                    if(abs(selLeptons[leptonIndex].id) == 11) eta = selLeptons[leptonIndex].electronInfoRef->sceta;
+                    mon.fillHisto("etaSelectedLep", chTags, eta, weight);
+                    mon.fillHisto("ptSelectedLep", chTags, selLeptons[leptonIndex].pt(), weight);
+                    mon.fillHisto("chargeSelectedLep", chTags, (selLeptons[leptonIndex].id > 0)?(-1):(1), weight);
 
                     mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
-                    mon.fillHisto("tauleadpt", chTags, selTaus[0].pt(), weight);
-                    mon.fillHisto("tauleadeta", chTags, selTaus[0].eta(), weight);
-                    mon.fillHisto("tauleadcharge", chTags, ((selTaus[0].id > 0)?(-1):(1)), weight);
-                    mon.fillHisto("tauleademfrac", chTags, selTaus[0].emfraction, weight);
-                    mon.fillHisto("tauleaddz", chTags, selTaus[0].dZ, weight);
+                    mon.fillHisto("ptSelectedTau", chTags, selTaus[tauIndex].pt(), weight);
+                    mon.fillHisto("etaSelectedTau", chTags, selTaus[tauIndex].eta(), weight);
+                    mon.fillHisto("chargeSelectedTau", chTags, (selTaus[tauIndex].id > 0)?(-1):(1), weight);
+                    mon.fillHisto("emfracSelectedTau", chTags, selTaus[tauIndex].emfraction, weight);
+                    mon.fillHisto("dzSelectedTau", chTags, selTaus[tauIndex].dZ, weight);
 
                     mon.fillHisto("njets", chTags, selJets.size(), weight);
                     if(selJets.size() != 0)
@@ -1345,6 +1347,8 @@ int main(int argc, char* argv[])
 
     if(saveSummaryTree)
       summaryTree->Fill();
+
+//    break;
   }
 
   // Output temporary buffer and restore cout and cerr behaviour
