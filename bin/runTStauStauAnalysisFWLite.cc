@@ -111,6 +111,9 @@ int main(int argc, char* argv[])
   bool doSVfit = false;
   if(runProcess.exists("doSVfit"))
     doSVfit = runProcess.getParameter<bool>("doSVfit");
+  bool applyScaleFactors = false;
+  if(runProcess.exists("applyScaleFactors"))
+    applyScaleFactors = runProcess.getParameter<bool>("applyScaleFactors");
   bool debug = false;
   if(runProcess.exists("debug"))
     debug = runProcess.getParameter<bool>("debug");
@@ -1063,7 +1066,7 @@ int main(int argc, char* argv[])
       leptonIdIsoSF = 1;
       tauSF = 1;
     }
-    if(isOS)
+    if(isOS && applyScaleFactors)
     {
       weight *= triggerSF;
       weight *= leptonIdIsoSF;
