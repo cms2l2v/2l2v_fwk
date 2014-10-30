@@ -287,13 +287,6 @@ int main(int argc, char* argv[])
 
     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, var);
     
-    // MVA histos
-    if(tmvaH.size())
-      for(size_t im=0; im<tmvaH.size(); ++im)
-	{
-	  TString hname(tmvaMethods[im].c_str());
-	  controlHistos.addHistogram( (TH1*) tmvaH[im]->Clone(hname+"_shape_"+var ));
-	}
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+var,";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
    
@@ -331,6 +324,16 @@ int main(int argc, char* argv[])
     TH1D *finalCutflowH_5 = new TH1D("finalevtflow5"+var,";Category;Events",1,0,1); 
     finalCutflowH_5->GetXaxis()->SetBinLabel(1,"#geq5 jets");
     controlHistos.addHistogram( finalCutflowH_5 );
+
+
+    // Final cutflow MVA histos
+    if(tmvaH.size())
+      for(size_t im=0; im<tmvaH.size(); ++im)
+	{
+	  TString hname(tmvaMethods[im].c_str());
+	  controlHistos.addHistogram( (TH1*) tmvaH[im]->Clone(hname+"_finalshape"+var ));
+	}
+    
     
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
     TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"//, // through the base cutflow
@@ -340,6 +343,15 @@ int main(int argc, char* argv[])
       {
 
 	if(var!="") continue; // Do not create unneeded syst histograms
+	
+	// MVA histos
+	if(tmvaH.size())
+	  for(size_t im=0; im<tmvaH.size(); ++im)
+	    {
+	      TString hname(tmvaMethods[im].c_str());
+	      controlHistos.addHistogram( (TH1*) tmvaH[im]->Clone(ctrlCats[k]+hname+"_shape"+var ));
+	    }
+	
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll"+var,";Dilepton invariant mass [GeV];Events",50,0,250) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll"+var,";Dilepton transverse momentum [GeV];Events",50,0,250) );
@@ -974,9 +986,11 @@ int main(int argc, char* argv[])
 	summaryTupleVars[8] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
 	summaryTupleVars[9] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
 	summaryTuple->Fill(summaryTupleVars);
-	for(size_t im=0; im<tmvaMethods.size(); ++im)
-	  controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
-	
+	for(size_t im=0; im<tmvaMethods.size(); ++im){
+	  if(var=="") controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
+	  controlHistos.fillHisto(tmvaMethods[im]+"_finalshape"+var, ch, tmvaDiscrVals[im], weight);
+	}
+
 	if(nbtags>5)
 	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, 5, weight);	
 	else
