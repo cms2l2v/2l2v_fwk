@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -32,34 +33,102 @@
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
-// Black magic code to get root to be able to read our custom classes
-//#pragma link C++ class llvvMet;
-
-// REMEMBER TO IGNORE ANY DATA DEFINED IN THE JSON, YOU SHOULD NEVER OPTIMIZE CUTS ON DATA
-// IT MIGHT BE OK TO USE THE DATA IF USING A METHOD WITH A DATA DRIVEN BACKGROUND ESTIMATION (CONFIRM THIS BEFORE USING IT HERE)
-
 class OptimizationRoundInfo;
 
-typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> fileChains;
-
 void printHelp();
-fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type="BG", std::string treename="Events", std::string customExtension="_selected");
-std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
-int getNumberOfPoints(fileChains files, std::string variable, TCut cut);
-double applyCut(fileChains files,  TCut cut, bool isSig = false, bool correctFiles = true, bool normalize = false);
-double getSignalScale(fileChains files,  TCut cut, bool correctFiles = true);
 
-bool gDoneScale = false;
-double gScale = 0;
-bool gDoneSignalScale = false;
-double gSignalScale = 0;
+struct doubleUnc
+{
+  double value;
+  double uncertainty;
+};
+
+std::ostream& operator << (std::ostream &o, doubleUnc& val)
+{
+  return o << val.value << " +- " << val.uncertainty;
+}
+
+struct SampleFiles
+{
+  std::string name;
+  TChain* chain;
+  int nFiles;
+};
+
+struct ProcessFiles
+{
+  std::string name;
+  std::vector<SampleFiles> samples;
+};
+
+struct UserCutInfo
+{
+  std::string variable;
+  std::string direction;
+  double value;
+};
+
+struct CutInfo
+{
+  std::string variable;
+  std::string direction;
+  double value;
+  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield;
+  double FOM;
+  double FOMerr;
+};
+
+struct ReportInfo
+{
+  int round;
+  std::vector<CutInfo> cuts;
+};
 
 class CutOptimizer
 {
 public:
+  CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt);
+  ~CutOptimizer();
+
+  bool LoadJson();
+  bool OptimizeAllRounds();
+  bool OptimizeRound(size_t n);
+
+  inline std::string getJson() const {return jsonFile_;};
+  std::string& setJson(const std::string & jsonFile);
+  inline std::string getOutDir() const {return outDir_;};
+  std::string& setOutDir(const std::string & outDir);
+  inline std::vector<std::string> getPlotExt() const {return plotExt_;};
+  std::vector<std::string>& setPlotExt(const std::vector<std::string> & plotExt);
+  inline size_t getNRounds() const {return roundInfo_.size();};
+  inline void setVerbose() {verbose_ = true; return;};
+
 private:
   std::string jsonFile_;
+  std::string outDir_;
+  std::vector<std::string> plotExt_;
+
+  bool jsonLoaded;
+  bool verbose_;
+
+  bool isMultipointSignalSample_;
+  int  nSignalPoints_;
+
+  std::map<std::string,bool> FileExists_;
+  std::vector<ReportInfo> report_;
+//  JSONWrapper::Object* json;
+
   std::vector<OptimizationRoundInfo> roundInfo_;
+  std::map<std::string,std::vector<ProcessFiles>> processes_;
+
+  bool OptimizeRound_(size_t n);
+  bool GetSamples(size_t n);
+  int  GetSigPoints(size_t n);
+  CutInfo GetBestCutAndMakePlots(size_t n, ReportInfo& report);
+  std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield);
+  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
+  void SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle);
+  bool ClearSamples();
 
 protected:
 };
@@ -80,16 +149,14 @@ public:
   inline double& minVal(){return _minVal;};
   inline double& maxVal(){return _maxVal;};
   inline double& step(){return _step;};
-  inline std::string& cutDir(){return _cutDir;};
   inline std::string& label(){return _label;};
 
-  friend std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
+  friend bool CutOptimizer::LoadJson();
 
 private:
   std::string _name;
   std::string _expression;
   double _minVal, _maxVal, _step;
-  std::string _cutDir;
   std::string _label;
 
 protected:
@@ -117,17 +184,22 @@ public:
   inline std::string& jsonFile(){return _jsonFile;};
   inline size_t nVars(){return _variables.size();};
   inline std::string pointVariable(){return _pointVariable;};
-  inline bool isSelected(int pass){return (static_cast<size_t>(pass) < _selected.size());};
-  inline std::string getSelection(int pass){if(isSelected(pass)) return selection(pass); else return "";};
+  inline bool isSelected(int pass){return (static_cast<size_t>(pass) < _UserCuts.size());};
+  std::string getUserCut(int pass);
+  inline std::string getUserCutVar(int pass){if(isSelected(pass)) return _UserCuts[pass].variable; else return "";};
+  inline std::string getUserCutDir(int pass){if(isSelected(pass)) return _UserCuts[pass].direction; else return "";};
+  inline double getUserCutValue(int pass){if(isSelected(pass)) return _UserCuts[pass].value; else return -9999;};
+  inline UserCutInfo getUserCutInfo(int pass){if(isSelected(pass)) return _UserCuts[pass]; else return UserCutInfo{"","",-9999}; };
   inline std::string signalPoint(){return _signalPoint;};
   inline double sigCrossSection(){return _sigCrossSection;};
+  inline int nInitEvents(){return _nInitEvents;};
 
   std::vector<std::string> getListOfVariables();
   std::unordered_map<std::string,std::string> getVariableExpressions();
   std::unordered_map<std::string,std::unordered_map<std::string,double>> getVariableParameterMap();
   std::unordered_map<std::string,std::string> getVariableLabels();
 
-  friend std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json);
+  friend bool CutOptimizer::LoadJson();
 
 private:
   static size_t _counter;
@@ -143,25 +215,13 @@ private:
   std::string _inDir;
   std::string _jsonFile;
   std::string _pointVariable;
-  std::vector<std::string> _selected;
+  std::vector<UserCutInfo> _UserCuts;
   double      _sigCrossSection;
-
-  inline std::string selection(int pass){return _selected[pass];};
+  int         _nInitEvents;
 
 protected:
 };
 size_t OptimizationRoundInfo::_counter = 0;
-
-struct FOMInfo
-{
-  double FOM;
-  double err;
-  std::string var;
-  double cutVal;
-};
-
-
-std::unordered_map<std::string,bool> FileExists;
 
 
 //
@@ -170,7 +230,6 @@ std::unordered_map<std::string,bool> FileExists;
 // 1 - Invalid arguments
 // 2 - Problem parsing the arguments
 //
-
 int main(int argc, char** argv)
 {
   AutoLibraryLoader::enable();
@@ -178,6 +237,7 @@ int main(int argc, char** argv)
   std::string jsonFile;
   std::string outDir = "./OUT/";
   std::vector<std::string> plotExt;
+  bool verbose = false;
 
 //  gInterpreter->GenerateDictionary("llvvMet", "");
 //  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
@@ -212,6 +272,11 @@ int main(int argc, char** argv)
       plotExt.push_back(argv[i+1]);
       ++i;
     }
+
+    if(arg.find("--verbose") != std::string::npos)
+    {
+      verbose = true;
+    }
   }
   if(plotExt.size() == 0)
     plotExt.push_back(".png");
@@ -223,299 +288,16 @@ int main(int argc, char** argv)
     return 2;
   }
 
-  system(("mkdir -p " + outDir).c_str());
+  if(verbose)
+    std::cout << "Creating an object of the CutOptimizer class..." << std::endl;
+  CutOptimizer myOptimizer(jsonFile, outDir, plotExt);
+  if(verbose)
+    myOptimizer.setVerbose();
+  myOptimizer.LoadJson();
+  myOptimizer.OptimizeAllRounds();
+//  myOptimizer.OptimizeRound(2);
 
-  JSONWrapper::Object json(jsonFile, true);
-
-  std::vector<OptimizationRoundInfo> rounds = getRoundsFromJSON(json);
-
-  for(auto round = rounds.begin(); round != rounds.end(); ++round)
-  {
-    if(round->nVars() == 0)
-    {
-      std::cout << "There are no variables to optimize cuts on, continuing." << std::endl;
-      continue;
-    }
-    std::cout << "Processing round: " << round->name() << std::endl;
-    std::cout << "\tReading from " << round->jsonFile() << " and taking samples from " << round->inDir() << " directory." << std::endl;
-    std::cout << "\tUsing an integrated luminosity of " << round->iLumi() << "." << std::endl;
-    std::cout << "\tReading from ttree: " << round->ttree();
-    if(round->baseSelection() != "")
-      std::cout << ", with a base selection of \"" << round->baseSelection() << "\"";
-    if(round->channel() != "")
-      std::cout << " and performing cut optimization on the channel " << round->channel();
-    std::cout << "." << std::endl;
-    std::cout << "\tThere are " << round->nVars() << " variables to perform cut optimization on." << std::endl;
-
-
-    JSONWrapper::Object json(round->jsonFile(), true);
-    auto BG_samples  = getChainsFromJSON(json, round->inDir(),  "BG", round->ttree(), round->customExtension());
-    auto SIG_samples = getChainsFromJSON(json, round->inDir(), "SIG", round->ttree(), round->customExtension());
-    gDoneScale = false;
-    gDoneSignalScale = false;
-
-    std::cout << "\tFound " << BG_samples.size()  << " background processes:" << std::endl;
-    for(auto process = BG_samples.begin(); process != BG_samples.end(); ++process)
-    {
-      std::cout << "\t  " << process->first << ":" << std::endl;
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-        std::cout << "\t    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
-    }
-    std::cout << "\tFound " << SIG_samples.size()  << " signal processes:" << std::endl;
-    bool isStauStau = false;
-    for(auto process = SIG_samples.begin(); process != SIG_samples.end(); ++process)
-    {
-      std::cout << "\t  " << process->first << ":" << std::endl;
-      if(process->first.find("TStauStau") != std::string::npos)
-        isStauStau = true;
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-        std::cout << "\t    " << sample->second->GetTitle() << " with " << sample->second->GetEntries() << " entries in " << sample->first << " files" << std::endl;
-    }
-
-
-    // Cut Optimization performed here ----------------------------------------------------------------------------------------------------------------------
-    if(BG_samples.size() == 0)
-    {
-      std::cout << "\tIt doesn't make sense to perform cut optimization without any background samples. Skipping this round of optimization, please check the file " << round->jsonFile() << "." << std::endl;
-      continue;
-    }
-    if(SIG_samples.size() == 0)
-    {
-      std::cout << "\tIt doesn't make sense to perform cut optimization without any signal samples. Skipping this round of optimization, please check the file " << round->jsonFile() << "." << std::endl;
-      continue;
-    }
-
-    std::vector<std::pair<std::string,double>> cutValues;
-    FOMInfo highestFOM, previousFOM;
-    std::pair<std::string,double> highestCut;
-
-    highestFOM.FOM = 0;
-    highestFOM.err = 0;
-    highestFOM.var = "";
-    highestFOM.cutVal = 0;
-    previousFOM.FOM = 0;
-    previousFOM.err = 0;
-    previousFOM.var = "";
-    previousFOM.cutVal = 0;
-
-    std::vector<std::string> variables = round->getListOfVariables();
-    std::unordered_map<std::string,std::string> variableExpressions = round->getVariableExpressions();
-    std::unordered_map<std::string,std::unordered_map<std::string,double>> variableParameterMap = round->getVariableParameterMap();
-    std::unordered_map<std::string,std::string> variableLabels = round->getVariableLabels();
-
-    TCut baseSelection = round->baseSelection().c_str();
-    TCut signalSelection = round->signalSelection().c_str();
-    TCut cumulativeSelection = "";
-    std::string pointVariable = round->pointVariable();
-
-    int nSigPoints = getNumberOfPoints(SIG_samples, pointVariable, baseSelection&&signalSelection);
-    std::cout << "Running on " << nSigPoints << " signal points." << std::endl;
-
-    TCanvas c1("c1", "c1", 800, 600);
-
-    bool improve = true;
-    int nPass = -1;
-    while(improve && nSigPoints!=0)
-    {
-      ++nPass;
-      highestFOM.FOM = 0;
-      std::cout << round->name() << ": Starting pass " << nPass << ", with " << variables.size() << " variables to optimize cuts on." << std::endl;
-      bool isSelected = false;
-      if(round->isSelected(nPass))
-      {
-        std::cout << "  Found a selection for this pass: " << round->getSelection(nPass) << std::endl;
-        isSelected = true;
-      }
-
-      for(auto variableName = variables.begin(); variableName != variables.end(); ++variableName)
-      {
-        double minVal = variableParameterMap[*variableName]["minVal"];
-        double maxVal = variableParameterMap[*variableName]["maxVal"];
-        double step   = variableParameterMap[*variableName]["step"];
-        double cutDir = variableParameterMap[*variableName]["cutDir"];
-        std::cout << round->name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
-
-        std::vector<double> xVals, yVals, xValsErr, yValsErr;
-        std::vector<double> signalYield, backgroundYield;
-
-        for(double cutVal = minVal; cutVal <= maxVal; cutVal+=step)
-        {
-          std::string thisCutStr;
-          std::stringstream buf;
-          //buf << variableExpressions[*variableName];
-          if(cutDir > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
-            buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
-          else
-            buf << ">";
-          buf << cutVal;
-          buf >> thisCutStr;
-          thisCutStr = variableExpressions[*variableName] + thisCutStr;
-          std::cout << "  The Cut: " << thisCutStr << std::endl;
-          TCut thisCut = thisCutStr.c_str();
-
-          //double sigScale = getSignalScale(SIG_samples, round->signalPoint().c_str(), !isStauStau) * round->iLumi();
-          double xSection = round->sigCrossSection();
-          double nInitEvents = 10000;
-          double nSIG = applyCut(SIG_samples, (baseSelection && signalSelection && cumulativeSelection && thisCut), true, !isStauStau); // Very compute intensive
-          double nBG  = applyCut(BG_samples,  (baseSelection && cumulativeSelection && thisCut)) * round->iLumi(); // Very compute intensive
-          nSIG = nSIG / nSigPoints;
-          double unweightedYield = nSIG;
-          nSIG = nSIG * round->iLumi() * xSection / nInitEvents;
-          double systErr = 0.15;  // Hard coded systematic error /////////////////////////////////////////////////////////////////////////////////////
-          std::cout << "    n(Sig): " << nSIG << std::endl;
-          std::cout << "    n(Bkg): " << nBG  << std::endl;
-
-          if(nBG == 0 || nSIG == 0)
-            continue;
-          double nBGErr = std::sqrt(nBG);
-          double nSIGErr = std::sqrt(nSIG);
-          if(1/std::sqrt(unweightedYield + nInitEvents) > 1/unweightedYield + 1/nInitEvents)
-            nSIGErr = nSIG*std::sqrt(1/unweightedYield + 1/nInitEvents);
-          else
-            nSIGErr = nSIG*std::sqrt(1/unweightedYield + 1/nInitEvents - 1/std::sqrt(unweightedYield + nInitEvents));
-          double dividend = std::sqrt(nBG + (systErr*nBG)*(systErr*nBG));
-
-          double FOM    = nSIG/dividend;
-          double FOMErr = 0;
-          {
-            double SIGContrib = nSIGErr/dividend;
-            double BGContrib = nBGErr*nSIG*(1+2*systErr*systErr*nBG)/(2*dividend*dividend*dividend);
-            FOMErr = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
-          }
-          std::cout << "    FOM: " << FOM << " +- " << FOMErr << std::endl;
-
-          xVals.push_back(cutVal);
-          xValsErr.push_back(0);
-          yVals.push_back(FOM);
-          yValsErr.push_back(FOMErr);
-          signalYield.push_back(nSIG);
-          backgroundYield.push_back(nBG);
-
-          if(FOM > highestFOM.FOM)
-          {
-            highestFOM.FOM = FOM;
-            highestFOM.err = FOMErr;
-            highestFOM.var = *variableName;
-            highestFOM.cutVal = cutVal;
-          }
-        }
-
-        if(xVals.size() == 0)
-        {
-          std::cout << "  No points processed" << std::endl;
-          continue;
-        }
-        TGraphErrors FOMGraph(xVals.size(), xVals.data(), yVals.data(), xValsErr.data(), yValsErr.data());
-        // http://root.cern.ch/root/html/TAttMarker.html
-        //FOMGraph.SetLineColor(2);
-        //FOMGraph.SetLineWidth(2);
-        //FOMGraph.SetMarkerColor(4);
-        //FOMGraph.SetMarkerStyle(21);
-        //http://root.cern.ch/root/html/TAttFill.html
-        //http://root.cern.ch/root/html/TColor.html
-        FOMGraph.SetFillColor(kBlue-9);
-        FOMGraph.SetFillStyle(3354);
-        FOMGraph.Draw("3A");
-        FOMGraph.Draw("same LP");
-        FOMGraph.GetXaxis()->SetTitle(variableLabels[*variableName].c_str());
-        FOMGraph.GetXaxis()->CenterTitle();
-        FOMGraph.GetYaxis()->SetTitle("FOM");
-
-        std::stringstream buf;
-        std::string plotName;
-        buf << outDir << "/";
-        buf << round->name() << "_Pass" << nPass << "_" << *variableName;
-        buf >> plotName;
-
-        for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
-          c1.SaveAs((plotName + *ext).c_str());
-
-
-        TGraph signalYieldGraph(xVals.size(), xVals.data(), signalYield.data());
-        signalYieldGraph.SetFillColor(kBlue-9);
-        signalYieldGraph.SetFillStyle(3354);
-        signalYieldGraph.SetMarkerStyle(21);
-        signalYieldGraph.Draw("ALP");
-        signalYieldGraph.GetXaxis()->SetTitle(variableLabels[*variableName].c_str());
-        signalYieldGraph.GetXaxis()->CenterTitle();
-
-        buf.clear();
-        plotName = "";
-        buf << outDir << "/";
-        buf << round->name() << "_Pass" << nPass << "_" << *variableName << "_signalYield";
-        buf >> plotName;
-
-        for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
-          c1.SaveAs((plotName + *ext).c_str());
-
-
-        TGraph backgroundYieldGraph(xVals.size(), xVals.data(), backgroundYield.data());
-        backgroundYieldGraph.SetFillColor(kBlue-9);
-        backgroundYieldGraph.SetFillStyle(3354);
-        backgroundYieldGraph.SetMarkerStyle(21);
-        backgroundYieldGraph.Draw("ALP");
-        backgroundYieldGraph.GetXaxis()->SetTitle(variableLabels[*variableName].c_str());
-        backgroundYieldGraph.GetXaxis()->CenterTitle();
-
-        buf.clear();
-        plotName = "";
-        buf << outDir << "/";
-        buf << round->name() << "_Pass" << nPass << "_" << *variableName << "_backgroundYield";
-        buf >> plotName;
-
-        for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
-          c1.SaveAs((plotName + *ext).c_str());
-      }
-
-      if(isSelected)
-      {
-        improve = true;
-        TCut tempCut = round->getSelection(nPass).c_str();
-        cumulativeSelection = cumulativeSelection && tempCut;
-      }
-      else
-      {
-        if(highestFOM.FOM == 0)
-          improve = false;
-        else
-        {
-          if(highestFOM.FOM - previousFOM.FOM > previousFOM.err)
-          {
-            //Add cut to list of selected cuts
-            previousFOM.FOM = highestFOM.FOM;
-            previousFOM.err = highestFOM.err;
-
-            std::stringstream buf;
-            std::string tempStr;
-            if(variableParameterMap[highestFOM.var]["cutDir"] > 0) // Positive values of cut dir means we want to remove events where the variable has a value above the cut
-              buf << "<";  // since the cut expression is for the events we want to keep, the expression "seems" inverted.
-            else
-              buf << ">";
-            buf << highestFOM.cutVal;
-            buf >> tempStr;
-            tempStr = variableExpressions[highestFOM.var] + tempStr;
-            std::cout << "Adding cut: " << tempStr << std::endl;
-            TCut tempCut = tempStr.c_str();
-            cumulativeSelection = cumulativeSelection && tempCut;
-
-            auto newEnd = std::remove(variables.begin(), variables.end(), highestFOM.var);
-            variables.erase(newEnd, variables.end());
-          }
-          else
-            improve = false;
-        }
-      }
-    }
-    std::cout << round->name() << ": Chose the cuts - " << cumulativeSelection << std::endl;
-    // ------------------------------------------------------------------------------------------------------------------------------------------------------
-  }
-
-  std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
-  for(auto key = FileExists.begin(); key != FileExists.end(); ++key)
-  {
-    if(!key->second)
-      std::cout << "  " << key->first << std::endl;
-  }
+  return 0;
 }
 
 OptimizationRoundInfo::OptimizationRoundInfo()
@@ -537,6 +319,38 @@ OptimizationRoundInfo::OptimizationRoundInfo()
 OptimizationRoundInfo::~OptimizationRoundInfo()
 {
   _variables.clear();
+}
+
+std::string OptimizationRoundInfo::getUserCut(int pass)
+{
+  if(!isSelected(pass))
+    return "";
+
+  std::string retVal;
+  bool found = false;
+
+  for(auto var = _variables.begin(); var != _variables.end(); ++var)
+  {
+    if(var->name() == _UserCuts[pass].variable)
+    {
+      found = true;
+      if(_UserCuts[pass].direction != "above" && _UserCuts[pass].direction != "below")
+        break;
+      std::stringstream buf;
+      buf << _UserCuts[pass].value;
+      buf >> retVal;
+      if(_UserCuts[pass].direction == "above")
+        retVal = ">" + retVal;
+      else
+        retVal = "<" + retVal;
+      retVal = var->expression() + retVal;
+      break;
+    }
+  }
+
+  if(!found)
+    return "";
+  return retVal;
 }
 
 std::vector<std::string> OptimizationRoundInfo::getListOfVariables()
@@ -574,7 +388,6 @@ std::unordered_map<std::string,std::unordered_map<std::string,double>> Optimizat
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
     tempVal["step"]   = variable->step();
-    tempVal["cutDir"] = (variable->cutDir()=="below")?-1:1;
 
     retVal[variable->name()] = tempVal;
   }
@@ -601,155 +414,53 @@ OptimizationVariableInfo::OptimizationVariableInfo()
   _minVal = 0;
   _maxVal = 0;
   _step = 0;
-  _cutDir = "below";
 }
 
 OptimizationVariableInfo::~OptimizationVariableInfo()
 {
 }
 
-int getNumberOfPoints(fileChains files, std::string variable, TCut cut)
+CutOptimizer::CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt):
+  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false)
 {
-  gROOT->cd();
-  int retVal = 0;
-  int maxVal = 501*1000+1;
-  TH1D finalHist("finalHist", "finalHist", maxVal, 0, maxVal);
-
-  for(auto process = files.begin(); process != files.end(); ++process)
-  {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      if(sample->first == 0)
-        continue;
-
-      TH1D* temp_hist = new TH1D("temp_hist", "temp_hist", maxVal, 0, maxVal);
-      sample->second->Draw((variable+">>temp_hist").c_str(), cut*"weight", "goff");
-      finalHist.Add(temp_hist);
-
-      delete temp_hist;
-    }
-  }
-
-  int nBins = finalHist.GetNbinsX();
-  for(int i = 1; i <= nBins; ++i)
-  {
-    if(finalHist.GetBinContent(i) != 0)
-      retVal++;
-  }
-
-  return retVal;
+//  json = new JSONWrapper::Object(jsonFile_, true);
 }
 
-double getSignalScale(fileChains files,  TCut cut, bool correctFiles)
+CutOptimizer::~CutOptimizer()
 {
-  double retVal = 0;
-
-  if(!gDoneSignalScale)
+  std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
+  for(auto key = FileExists_.begin(); key != FileExists_.end(); ++key)
   {
-    for(auto process = files.begin(); process != files.end(); ++process)
-    {
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-      {
-        if(sample->first == 0)
-          continue;
-        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-        sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
-
-        double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
-
-        if(correctFiles)
-          count = count/sample->first;
-        retVal += count;
-      }
-    }
+    if(!key->second)
+      std::cout << "  " << key->first << std::endl;
   }
-  else
-    retVal = gSignalScale;
-
-  gSignalScale = retVal;
-  gDoneSignalScale = true;
-  return retVal;
 }
 
-double applyCut(fileChains files,  TCut cut, bool isSig, bool correctFiles, bool normalize)
+bool CutOptimizer::LoadJson()
 {
-  gROOT->cd();
-  double retVal = 0;
+  if(jsonLoaded)
+    return true;
 
-  if(!gDoneScale && isSig)
-  {
-    gScale = 0;
-    for(auto process = files.begin(); process != files.end(); ++process)
-    {
-      for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-      {
-        if(sample->first == 0)
-          continue;
-        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-        sample->second->Draw("puWeight>>temp_histo", "puWeight", "goff");
+  if(verbose_)
+    std::cout << "Loading JSON" << std::endl;
 
-        double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
-
-        if(correctFiles)
-          count = count/sample->first;
-        gScale += count;
-      }
-    }
-
-    gScale = 1/gScale;
-    gDoneScale = true;
-  }
-
-  for(auto process = files.begin(); process != files.end(); ++process)
-  {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      if(sample->first == 0)
-        continue;
-//      TEventList selectedEvents("selectedList");
-//      sample->second->Draw(">>selectedList", cut, "goff");
-      TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
-      if(isSig)
-        sample->second->Draw("puWeight>>temp_histo", cut*"puWeight", "goff");
-      else
-        sample->second->Draw("weight>>temp_histo", cut*"weight", "goff");
-
-      double count = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
-
-      /*double weight = 0;
-      double count = 0;
-      sample->second->SetBranchAddress("weight", &weight);
-
-      for(auto index = selectedEvents.GetN()-1; index >= 0; --index)
-      {
-        Long64_t entry = selectedEvents.GetEntry(index);
-        sample->second->GetEntry(entry);
-        count += weight;
-      }
-      sample->second->ResetBranchAddresses();// */
-
-      if(correctFiles)
-        count = count/sample->first;
-      retVal += count;
-    }
-  }
-
-  return retVal;
-}
-
-std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json)
-{
-  std::vector<OptimizationRoundInfo> retVal;
+  roundInfo_.clear();
+  JSONWrapper::Object json(jsonFile_, true);
 
   std::vector<JSONWrapper::Object> rounds = json["optim"].daughters();
+  if(verbose_)
+    std::cout << "  Found " << rounds.size() << " rounds of optimization to perform." << std::endl;
   for(auto round = rounds.begin(); round != rounds.end(); ++round)
   {
     OptimizationRoundInfo roundInfo;
-    //roundInfo._pointVariable = "stauMass*1000+neutralinoMass";
 
     std::string name = round->getString("name", "");
     if(name != "")
       roundInfo._name = name;
+
+    if(verbose_)
+      std::cout << "  Round: " << roundInfo._name << std::endl;
+
     roundInfo._iLumi = round->getDouble("iLumi", 0);
     if(roundInfo._iLumi <= 0)
     {
@@ -782,13 +493,26 @@ std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json)
     roundInfo._signalPoint = round->getString("signalPoint", roundInfo._signalPoint);
     roundInfo._channel = round->getString("channel", roundInfo._channel);
     roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
+    roundInfo._nInitEvents = round->getInt("nInitEvents", roundInfo._nInitEvents);
 
-    auto selected = (*round)["selected"].daughters();
-    for(auto selection = selected.begin(); selection != selected.end(); ++selection)
+    if(verbose_)
+      std::cout << "    Loaded round info, now trying to load user-defined cuts, if any." << std::endl;
+
+    auto userCuts = (*round)["userCuts"].daughters();
+    for(auto userCut = userCuts.begin(); userCut != userCuts.end(); ++userCut)
     {
-      std::string temp = selection->getString("selection", "");
-      if(temp != "")
-        roundInfo._selected.push_back(temp);
+      UserCutInfo temp;
+      temp.variable = userCut->getString("variable", "");
+      temp.direction = userCut->getString("direction", "");
+      temp.value = userCut->getDouble("value", -9999);
+      if(temp.variable != "" && (temp.direction == "below" || temp.direction == "above"))
+        roundInfo._UserCuts.push_back(temp);
+    }
+
+    if(verbose_)
+    {
+      std::cout << "    Loaded " << roundInfo._UserCuts.size() << " user-defined cuts." << std::endl;
+      std::cout << "    Loading variable information." << std::endl;
     }
 
     auto variables = (*round)["variables"].daughters();
@@ -821,53 +545,748 @@ std::vector<OptimizationRoundInfo> getRoundsFromJSON(JSONWrapper::Object& json)
         std::cout << roundInfo._name << "::" << variableInfo._name << ": step must be a resonable and valid value. Continuing..." << std::endl;
         continue;
       }
-      variableInfo._cutDir = variable->getString("cutDir", "below");
-      std::transform(variableInfo._cutDir.begin(), variableInfo._cutDir.end(), variableInfo._cutDir.begin(), ::tolower);
-      if(variableInfo._cutDir != "below" && variableInfo._cutDir != "above")
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": the cut direction (cutDir) must be either below or above. Continuing..." << std::endl;
-        continue;
-      }
       variableInfo._label = variable->getString("label", "");
 
       roundInfo._variables.push_back(variableInfo);
     }
 
-    retVal.push_back(roundInfo);
+    if(verbose_)
+    {
+      std::cout << "    Loaded " << roundInfo._variables.size() << " variables." << std::endl;
+      std::cout << "    Saving round informantion" << std::endl;
+    }
+
+    roundInfo_.push_back(roundInfo);
+  }
+
+  if(verbose_)
+    std::cout << "Finished loading information from JSON file" << std::endl;
+
+  if(roundInfo_.size() != 0)
+    jsonLoaded = true;
+  else
+    std::cout << "Unable to load JSON, it might be empty/malformed or not present. Please check and try again." << std::endl;
+  return jsonLoaded;
+}
+
+std::string& CutOptimizer::setJson(const std::string & jsonFile)
+{
+  if(verbose_)
+    std::cout << "Changing json file to: " << jsonFile << std::endl;
+
+  if(jsonFile_ != jsonFile)
+  {
+    jsonLoaded = false;
+    ClearSamples();
+  }
+  jsonFile_ = jsonFile;
+  return jsonFile_;
+}
+
+std::string& CutOptimizer::setOutDir(const std::string & outDir)
+{
+  if(verbose_)
+    std::cout << "Changing output directory to: " << outDir << std::endl;
+
+  outDir_ = outDir;
+  return outDir_;
+}
+
+std::vector<std::string>& CutOptimizer::setPlotExt(const std::vector<std::string> & plotExt)
+{
+  plotExt_ = plotExt;
+  return plotExt_;
+}
+
+bool CutOptimizer::OptimizeAllRounds()
+{
+  bool retVal = true;
+
+  if(verbose_)
+    std::cout << "Running optimizer on all rounds" << std::endl;
+
+  if(!jsonLoaded)
+  {
+    std::cout << "The JSON file has not yet been loaded, attempting to load it" << std::endl;
+    LoadJson();
+    if(!jsonLoaded)
+      return false;
+  }
+
+  for(size_t i = 0; i < roundInfo_.size(); ++i)
+  {
+    if(!OptimizeRound_(i))
+      retVal = false;
   }
 
   return retVal;
 }
 
-fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
+bool CutOptimizer::OptimizeRound(size_t n)
 {
-  std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> retVal;
-  std::pair<std::string,std::vector<std::pair<int,TChain*>>> tempProcess;
-  std::vector<std::pair<int,TChain*>> tempSamples;
-  std::pair<int,TChain*> tempSample;
-
-  if(type != "BG" && type != "SIG")
+  if(!jsonLoaded)
   {
-    std::cout << "Unknown sample type requested." << std::endl;
-    assert(type == "BG" || type == "SIG");
+    std::cout << "The JSON file has not yet been loaded, attempting to load it" << std::endl;
+    LoadJson();
+    if(!jsonLoaded)
+      return false;
   }
 
+  if(n > roundInfo_.size())
+    return false;
+
+  return OptimizeRound_(n);
+}
+
+bool CutOptimizer::OptimizeRound_(size_t n)
+{
+  bool retVal = false;
+
+  if(verbose_)
+    std::cout << "Optimizing round " << roundInfo_[n].name() << std::endl;
+
+  if(roundInfo_[n].nVars() == 0)
+  {
+    if(verbose_)
+      std::cout << "  There are no variables to optimize cuts on, skipping this round." << std::endl;
+    return retVal;
+  }
+
+  system(("mkdir -p " + outDir_).c_str());
+  std::string roundName = roundInfo_[n].name();
+  if(roundName == "")
+  {
+    std::stringstream stream;
+    stream << "Round_" << n;
+    stream >> roundName;
+  }
+
+  std::streambuf *coutbuf = std::cout.rdbuf();
+  std::streambuf *cerrbuf = std::cerr.rdbuf();
+  if(verbose_)
+    std::cout << "Opening log file: " << outDir_+"/"+roundName << std::endl;
+  ofstream out(outDir_+"/"+roundName+".log", std::ios::out | std::ios::trunc);
+  out << "This is the log file for round: " << roundName << std::endl;
+  out.flush();
+  if(verbose_)
+    std::cout << "Redirecting standard output and error output to log file (if you still want to see the output, enable the tee option)" << std::endl;
+  std::cout.rdbuf(out.rdbuf()); // Todo - enable tee
+  std::cerr.rdbuf(out.rdbuf());
+
+  std::cout << "Processing round: " << roundInfo_[n].name() << std::endl;
+  std::cout << "\tReading from " << roundInfo_[n].jsonFile() << " and taking samples from " << roundInfo_[n].inDir() << " directory." << std::endl;
+  std::cout << "\tUsing an integrated luminosity of " << roundInfo_[n].iLumi() << "." << std::endl;
+  std::cout << "\tReading from ttree: " << roundInfo_[n].ttree();
+  if(roundInfo_[n].baseSelection() != "")
+    std::cout << ", with a base selection of \"" << roundInfo_[n].baseSelection() << "\"";
+  if(roundInfo_[n].channel() != "")
+    std::cout << " and performing cut optimization on the channel " << roundInfo_[n].channel();
+  std::cout << "." << std::endl;
+  std::cout << "\tThere are " << roundInfo_[n].nVars() << " variables to perform cut optimization on." << std::endl;
+
+  GetSamples(n);
+
+  std::cout << "\tFound " << processes_["BG"].size()  << " background processes:" << std::endl;
+  for(auto process = processes_["BG"].begin(); process != processes_["BG"].end(); ++process)
+  {
+    std::cout << "\t  " << process->name << ":" << std::endl;
+    for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      std::cout << "\t    " << sample->chain->GetTitle() << " with " << sample->chain->GetEntries() << " entries in " << sample->nFiles << " files" << std::endl;
+  }
+  std::cout << "\tFound " << processes_["SIG"].size()  << " signal processes:" << std::endl;
+  isMultipointSignalSample_ = false;
+  for(auto process = processes_["SIG"].begin(); process != processes_["SIG"].end(); ++process)
+  {
+    std::cout << "\t  " << process->name << ":" << std::endl;
+    if(process->name.find("TStauStau") != std::string::npos)
+      isMultipointSignalSample_ = true;
+    for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      std::cout << "\t    " << sample->chain->GetTitle() << " with " << sample->chain->GetEntries() << " entries in " << sample->nFiles << " files" << std::endl;
+  }
+
+  if(processes_["BG"].size() != 0 && processes_["SIG"].size() != 0)
+  {
+    if(isMultipointSignalSample_)
+    {
+      nSignalPoints_ = GetSigPoints(n);
+      std::cout << "Running on " << nSignalPoints_ << " signal points." << std::endl;
+    }
+    else
+    {
+      nSignalPoints_ = 1;
+    }
+    bool improve = true;
+
+    ReportInfo myReport;
+    myReport.round = n;
+
+    CutInfo previousCut;
+    previousCut.FOM = 0;
+    previousCut.FOMerr = 0;
+
+    while(improve && nSignalPoints_ != 0)
+    {
+      std::cout << roundInfo_[n].name() << ": Starting pass " << myReport.cuts.size() << std::endl;
+
+      CutInfo thisCut = GetBestCutAndMakePlots(n, myReport);
+
+      bool isSelected = roundInfo_[n].isSelected(myReport.cuts.size());
+
+      if(thisCut.FOM == 0 && !isSelected)
+      {
+        improve = false;
+      }
+      else
+      {
+        if(thisCut.FOM - previousCut.FOM > previousCut.FOMerr || isSelected)
+        {
+          previousCut = thisCut;
+          myReport.cuts.push_back(thisCut);
+          std::cout << "Added cut on " << thisCut.variable << " with values " << thisCut.direction << " " << thisCut.value << ".";
+          std::cout << "The cut has a Figure of Merit (FOM) of " << thisCut.FOM << " +- " << thisCut.FOMerr << "; with the following yields:" << std::endl;
+
+          std::cout << "  Signal Processes:" << std::endl;
+          doubleUnc sigTot{0,0};
+          for(auto process = thisCut.yield["SIG"].begin(); process != thisCut.yield["SIG"].end(); ++process)
+          {
+            std::cout << "    " << process->first << ":" << std::endl;
+            doubleUnc processTot{0,0};
+            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+            {
+              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
+              processTot.value += sample->second.value;
+              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+            }
+            sigTot.value += processTot.value;
+            sigTot.uncertainty += processTot.uncertainty;
+            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            std::cout << "      Total: " << processTot << std::endl;
+          }
+          std::cout << "    Total: " << sigTot << std::endl;
+
+          std::cout << "  Background Processes:" << std::endl;
+          doubleUnc bgTot{0,0};
+          for(auto process = thisCut.yield["BG"].begin(); process != thisCut.yield["BG"].end(); ++process)
+          {
+            std::cout << "    " << process->first << ":" << std::endl;
+            doubleUnc processTot{0,0};
+            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+            {
+              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
+              processTot.value += sample->second.value;
+              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+            }
+            bgTot.value += processTot.value;
+            bgTot.uncertainty += processTot.uncertainty;
+            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            std::cout << "      Total: " << processTot << std::endl;
+          }
+          std::cout << "    Total: " << bgTot << std::endl;
+        }
+        else
+          improve = false;
+      }
+    }
+
+    // TODO - Print the final selection info
+    // TODO - Make the report (including the tex table with the yields)
+  }
+  else
+  {
+    if(processes_["BG"].size() == 0)
+      std::cout << "\tIt doesn't make sense to perform cut optimization without any background samples. Skipping this round of optimization, please check the file " << roundInfo_[n].jsonFile() << "." << std::endl;
+    if(processes_["SIG"].size() == 0)
+      std::cout << "\tIt doesn't make sense to perform cut optimization without any signal samples. Skipping this round of optimization, please check the file " << roundInfo_[n].jsonFile() << "." << std::endl;
+  }
+
+  std::cout.rdbuf(coutbuf);
+  std::cerr.rdbuf(cerrbuf);
+  if(verbose_)
+    std::cout << "Finished optimization round, restored standard output and standard error" << std::endl;
+  out.close();
+
+  return retVal;
+}
+
+CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
+{
+  CutInfo retVal;
+  std::vector<std::string> variables = roundInfo_[n].getListOfVariables(); // TODO - buffer this stuff
+  std::unordered_map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
+  std::unordered_map<std::string,std::unordered_map<std::string,double>> variableParameterMap = roundInfo_[n].getVariableParameterMap();
+  std::unordered_map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
+
+  TCut baseSelection = roundInfo_[n].baseSelection().c_str();
+  TCut signalSelection = roundInfo_[n].signalSelection().c_str();
+  TCut cumulativeSelection = "";
+
+  // Clean looping vector of variables already cut on and get the cumulative selection
+  for(auto pass = report.cuts.begin(); pass != report.cuts.end(); ++pass)
+  {
+    auto newEnd = std::remove(variables.begin(), variables.end(), pass->variable);
+    variables.erase(newEnd, variables.end());
+
+    std::string tmpStr;
+    std::stringstream buf;
+    buf << pass->value;
+    buf >> tmpStr;
+    if(pass->direction == "below")
+    {
+      tmpStr = "<" + tmpStr;
+    }
+    else
+    {
+      if(pass->direction == "above")
+        tmpStr = ">" + tmpStr;
+      else
+        assert(pass->direction == "below" || pass->direction == "above");
+    }
+    tmpStr = variableExpressions[pass->variable] + tmpStr;
+    cumulativeSelection = cumulativeSelection && tmpStr.c_str();
+  }
+
+  bool isSelected = roundInfo_[n].isSelected(report.cuts.size());
+
+  // Loop on variables
+  for(auto variableName = variables.begin(); variableName != variables.end(); ++variableName)
+  {
+    double minVal = variableParameterMap[*variableName]["minVal"];
+    double maxVal = variableParameterMap[*variableName]["maxVal"];
+    double step   = variableParameterMap[*variableName]["step"];
+    std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
+
+    std::vector<double> xVals, yVals, xValsUnc, yValsUnc;
+    std::vector<double> signalYield, backgroundYield, signalYieldUnc, backgroundYieldUnc;
+
+    for(double cutVal = minVal; cutVal <= maxVal; cutVal += step)
+    {
+      std::string thisCutStr;
+      std::stringstream buf;
+      buf << ">";
+      buf << cutVal;
+      buf >> thisCutStr;
+      thisCutStr = variableExpressions[*variableName] + thisCutStr;
+      std::cout << "  The Cut: " << thisCutStr << std::endl;
+      TCut thisCut = thisCutStr.c_str();
+      TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
+
+      if(verbose_)
+        std::cout << "    Full cut expression: " << currentSelection << std::endl;
+
+      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+      std::vector<doubleUnc> fomReport = GetFOM(yield);
+      doubleUnc fom  = fomReport[0];
+      doubleUnc nSig = fomReport[1];
+      doubleUnc nBg  = fomReport[2];
+
+      std::cout << "    n(Sig): " << nSig << std::endl;
+      std::cout << "    n(Bkg): " << nBg << std::endl;
+
+      if(nBg.value == 0 || nSig.value == 0)
+        break;
+
+      std::cout << "    FOM: " << fom << std::endl;
+
+      xVals.push_back(cutVal);
+      xValsUnc.push_back(0);
+      yVals.push_back(fom.value);
+      yValsUnc.push_back(fom.uncertainty);
+      signalYield.push_back(nSig.value);
+      signalYieldUnc.push_back(nSig.uncertainty);
+      backgroundYield.push_back(nBg.value);
+      backgroundYieldUnc.push_back(nBg.uncertainty);
+
+      if(retVal.FOM < fom.value)
+      {
+        retVal.FOM = fom.value;
+        retVal.FOMerr = fom.uncertainty;
+        retVal.variable = *variableName;
+        retVal.direction = "above";
+        retVal.value = cutVal;
+        retVal.yield = yield;
+      }
+
+      //if(nSIG < 0.05)  // Minimum number of signal events: TODO - implement option in json to specify this value
+      //  break;
+    }
+
+    if(xVals.size() == 0)
+    {
+      std::cout << "  No points processed for \"above\"" << std::endl;
+    }
+    else
+    {
+      std::string xTitle = variableLabels[*variableName];
+      std::string yTitle = "FOM";
+      std::string name;
+      std::stringstream buf;
+      buf << outDir_ << "/";
+      buf << roundInfo_[n].name() << "_Pass" << report.cuts.size() << "_" << *variableName;
+      buf >> name;
+
+      name = name + "_above";
+
+      SaveGraph(name, xVals, xValsUnc, xTitle, yVals, yValsUnc, yTitle);
+      yTitle = "SignalYield";
+      std::string tmp = name+"_signalYield";
+      SaveGraph(tmp, xVals, xValsUnc, xTitle, signalYield, signalYieldUnc, yTitle);
+      yTitle = "BackgroundYield";
+      tmp = name+"_backgroundYield";
+      SaveGraph(tmp, xVals, xValsUnc, xTitle, backgroundYield, backgroundYieldUnc, yTitle);
+    }
+
+    xVals.clear();
+    yVals.clear();
+    xValsUnc.clear();
+    xValsUnc.clear();
+    signalYield.clear();
+    backgroundYield.clear();
+    signalYieldUnc.clear();
+    backgroundYieldUnc.clear();
+
+    for(double cutVal = maxVal; cutVal >= minVal; cutVal -= step)
+    {
+      std::string thisCutStr;
+      std::stringstream buf;
+      buf << "<";
+      buf << cutVal;
+      buf >> thisCutStr;
+      thisCutStr = variableExpressions[*variableName] + thisCutStr;
+      std::cout << "  The Cut: " << thisCutStr << std::endl;
+      TCut thisCut = thisCutStr.c_str();
+      TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
+
+      if(verbose_)
+        std::cout << "    Full cut expression: " << currentSelection << std::endl;
+
+      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+      std::vector<doubleUnc> fomReport = GetFOM(yield);
+      doubleUnc fom  = fomReport[0];
+      doubleUnc nSig = fomReport[1];
+      doubleUnc nBg  = fomReport[2];
+
+      std::cout << "    n(Sig): " << nSig << std::endl;
+      std::cout << "    n(Bkg): " << nBg << std::endl;
+
+      if(nBg.value == 0 || nSig.value == 0)
+        break;
+
+      std::cout << "    FOM: " << fom << std::endl;
+
+      xVals.push_back(cutVal);
+      xValsUnc.push_back(0);
+      yVals.push_back(fom.value);
+      yValsUnc.push_back(fom.uncertainty);
+      signalYield.push_back(nSig.value);
+      signalYieldUnc.push_back(nSig.uncertainty);
+      backgroundYield.push_back(nBg.value);
+      backgroundYieldUnc.push_back(nBg.uncertainty);
+
+      if(retVal.FOM < fom.value)
+      {
+        retVal.FOM = fom.value;
+        retVal.FOMerr = fom.uncertainty;
+        retVal.variable = *variableName;
+        retVal.direction = "above";
+        retVal.value = cutVal;
+        retVal.yield = yield;
+      }
+
+      //if(nSIG < 0.05)  // Minimum number of signal events: TODO - implement option in json to specify this value
+      //  break;
+    }
+
+    if(xVals.size() == 0)
+    {
+      std::cout << "  No points processed for \"below\"" << std::endl;
+    }
+    else
+    {
+      std::string xTitle = variableLabels[*variableName];
+      std::string yTitle = "FOM";
+      std::string name;
+      std::stringstream buf;
+      buf << outDir_ << "/";
+      buf << roundInfo_[n].name() << "_Pass" << report.cuts.size() << "_" << *variableName;
+      buf >> name;
+
+      name = name + "_below";
+
+      SaveGraph(name, xVals, xValsUnc, xTitle, yVals, yValsUnc, yTitle);
+      yTitle = "SignalYield";
+      std::string tmp = name+"_signalYield";
+      SaveGraph(tmp, xVals, xValsUnc, xTitle, signalYield, signalYieldUnc, yTitle);
+      yTitle = "BackgroundYield";
+      tmp = name+"_backgroundYield";
+      SaveGraph(tmp, xVals, xValsUnc, xTitle, backgroundYield, backgroundYieldUnc, yTitle);
+    }
+  }
+
+  if(isSelected)
+  {
+    std::string thisCutStr = roundInfo_[n].getUserCut(report.cuts.size());
+    std::cout << "  Found a user-defined cut for this pass: " << thisCutStr << std::endl;
+
+    TCut thisCut = thisCutStr.c_str();
+    TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
+
+    std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+    std::vector<doubleUnc> fomReport = GetFOM(yield);
+    doubleUnc fom  = fomReport[0];
+    doubleUnc nSig = fomReport[1];
+    doubleUnc nBg  = fomReport[2];
+
+    std::cout << "    n(Sig): " << nSig << std::endl;
+    std::cout << "    n(Bkg): " << nBg << std::endl;
+    std::cout << "    FOM: " << fom << std::endl;
+
+    retVal.FOM = fom.value;
+    retVal.FOMerr = fom.uncertainty;
+    retVal.variable = roundInfo_[n].getUserCutVar(report.cuts.size());;
+    retVal.direction = roundInfo_[n].getUserCutDir(report.cuts.size());;
+    retVal.value = roundInfo_[n].getUserCutValue(report.cuts.size());;
+    retVal.yield = yield;
+  }
+
+  return retVal;
+}
+
+std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield)
+{
+  std::vector<doubleUnc> retVal;
+
+  double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
+  // TODO - Add option to run with full systematic uncertainty (ie: calculate full analysis at each point) - is this feasible and reasonable?
+  doubleUnc nSig{0,0};
+  doubleUnc nBg{0,0};
+  doubleUnc fom{0,0};
+
+  for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
+  {
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      nSig.value += sample->second.value;
+      nSig.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+    }
+  }
+  nSig.uncertainty = std::sqrt(nSig.uncertainty);
+
+  for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
+  {
+    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
+    {
+      nBg.value += sample->second.value;
+      nBg.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
+    }
+  }
+  nBg.uncertainty = std::sqrt(nBg.uncertainty);
+
+  if(nBg.value == 0 || nSig.value == 0)
+  {
+    retVal.push_back(fom);
+    retVal.push_back(nSig);
+    retVal.push_back(nBg);
+    return retVal;
+  }
+
+  double dividend = std::sqrt(nBg.value + (systUnc*nBg.value)*(systUnc*nBg.value));
+  fom.value = nSig.value/dividend;
+  {
+    double SIGContrib = nSig.uncertainty/dividend;
+    double BGContrib = nBg.uncertainty*nSig.value*(1+2*systUnc*systUnc*nBg.value)/(2*dividend*dividend*dividend);
+    fom.uncertainty = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
+  }
+
+  retVal.push_back(fom);
+  retVal.push_back(nSig);
+  retVal.push_back(nBg);
+
+  return retVal;
+}
+
+void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle)
+{
+  if(xVals.size() == 0 || yVals.size() == 0)
+    return;
+
+  gROOT->cd();
+  TCanvas c1("c1", "c1", 800, 600);
+
+  if(yValsUnc.size() == 0)
+  {
+    TGraph Graph(xVals.size(), xVals.data(), yVals.data());
+    // http://root.cern.ch/root/html/TAttMarker.html
+    //FOMGraph.SetLineColor(2);
+    //FOMGraph.SetLineWidth(2);
+    //FOMGraph.SetMarkerColor(4);
+    //FOMGraph.SetMarkerStyle(21);
+    //http://root.cern.ch/root/html/TAttFill.html
+    //http://root.cern.ch/root/html/TColor.html
+    Graph.SetFillColor(kBlue-9);
+    Graph.SetFillStyle(3354);
+    Graph.SetMarkerStyle(21);
+
+    Graph.Draw("ALP");
+
+    Graph.GetXaxis()->SetTitle(xTitle.c_str());
+    Graph.GetYaxis()->SetTitle(yTitle.c_str());
+    Graph.GetXaxis()->CenterTitle();
+
+    for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
+    {
+      c1.SaveAs((name + *ext).c_str());
+    }
+  }
+  else
+  {
+    TGraphErrors Graph(xVals.size(), xVals.data(), yVals.data(), xValsUnc.data(), yValsUnc.data());
+    // http://root.cern.ch/root/html/TAttMarker.html
+    //FOMGraph.SetLineColor(2);
+    //FOMGraph.SetLineWidth(2);
+    //FOMGraph.SetMarkerColor(4);
+    //FOMGraph.SetMarkerStyle(21);
+    //http://root.cern.ch/root/html/TAttFill.html
+    //http://root.cern.ch/root/html/TColor.html
+    Graph.SetFillColor(kBlue-9);
+    Graph.SetFillStyle(3354);
+
+    Graph.Draw("3A");
+    Graph.Draw("same LP");
+
+    Graph.GetXaxis()->SetTitle(xTitle.c_str());
+    Graph.GetYaxis()->SetTitle(yTitle.c_str());
+    Graph.GetXaxis()->CenterTitle();
+
+    for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
+    {
+      c1.SaveAs((name + *ext).c_str());
+    }
+  }
+
+  return;
+}
+
+std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> CutOptimizer::GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity)
+{
+  gROOT->cd();
+  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> retVal;
+
+  for(auto index = processes_.begin(); index != processes_.end(); ++index)
+  {
+    std::map<std::string,std::map<std::string,doubleUnc>> typeYieldMap;
+    for(auto process = index->second.begin(); process != index->second.end(); ++process)
+    {
+      std::map<std::string,doubleUnc> processYieldMap;
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        if(sample->nFiles == 0)
+          continue;
+        doubleUnc sampleYield;
+
+        TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
+        temp_histo.Sumw2();
+
+        TCut cut = currentSelection;
+        if(index->first == "SIG" && isMultipointSignalSample_)
+          cut = signalSelection && currentSelection;
+
+        if(nSignalPoints_ > 1 && index->first == "SIG")
+          sample->chain->Draw("puWeight>>temp_histo", cut*"puWeight", "goff");
+        else
+          sample->chain->Draw("weight>>temp_histo", cut*"weight", "goff");
+
+        sampleYield.value = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
+        //double a = temp_histo.GetBinError(0);
+        //double b = temp_histo.GetBinError(1);
+        //double c = temp_histo.GetBinError(2);
+        //double uncertainty = std::sqrt(a*a + b*b + c*c);
+        TArrayD* w2Vec = temp_histo.GetSumw2();
+        sampleYield.uncertainty = std::sqrt(w2Vec->fArray[0] + w2Vec->fArray[1] + w2Vec->fArray[2]);
+
+        if(index->first != "Data")
+        {
+          if(!isMultipointSignalSample_ || index->first != "SIG")
+          {
+            sampleYield.value       = sampleYield.value       /sample->nFiles;
+            sampleYield.uncertainty = sampleYield.uncertainty /sample->nFiles;
+          }
+          else
+          {
+            if(nSignalPoints_ > 1)
+            {
+              sampleYield.value       = (sampleYield.value       * roundInfo_[report.round].sigCrossSection())/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
+              sampleYield.uncertainty = (sampleYield.uncertainty * roundInfo_[report.round].sigCrossSection())/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
+            }
+          }
+
+          sampleYield.value       = sampleYield.value * integratedLuminosity;
+          sampleYield.uncertainty = sampleYield.uncertainty * integratedLuminosity;
+        }
+
+        processYieldMap[sample->name] = sampleYield;
+      }
+      typeYieldMap[process->name] = processYieldMap;
+    }
+    retVal[index->first] = typeYieldMap;
+  }
+
+  return retVal;
+}
+
+int CutOptimizer::GetSigPoints(size_t n)
+{
+  gROOT->cd();
+  int retVal = 0;
+  int maxVal = 501*1000+1; //Change-me if you are having problems with multipart signal samples and it only finds some of them
+  TH1D finalHist("finalHist", "finalHist", maxVal, 0, maxVal);
+
+  std::string variable = roundInfo_[n].pointVariable();
+  TCut baseSelection = roundInfo_[n].baseSelection().c_str();
+  TCut signalSelection = roundInfo_[n].signalSelection().c_str();
+  TCut cut = baseSelection && signalSelection;
+
+  for(auto process = processes_["SIG"].begin(); process != processes_["SIG"].end(); ++process)
+  {
+    for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+    {
+      if(sample->nFiles == 0)
+        continue;
+
+      TH1D* temp_hist = new TH1D("temp_hist", "temp_hist", maxVal, 0, maxVal);
+      sample->chain->Draw((variable+">>temp_hist").c_str(), cut*"weight", "goff");
+      finalHist.Add(temp_hist);
+      delete temp_hist;
+    }
+  }
+
+  int nBins = finalHist.GetNbinsX();
+  for(int i = 1; i <= nBins; ++i)
+    if(finalHist.GetBinContent(i) != 0)
+      ++retVal;
+
+  return retVal;
+}
+
+bool CutOptimizer::GetSamples(size_t n)
+{
+  ClearSamples();
+  JSONWrapper::Object json(roundInfo_[n].jsonFile(), true);
   std::vector<JSONWrapper::Object> processes = json["proc"].daughters();
+
   for(auto process = processes.begin(); process != processes.end(); ++process)
   {
     bool isData = (*process)["isdata"].toBool();
     bool isSig  = !isData && (*process).isTag("spimpose") && (*process)["spimpose"].toBool();
     bool isMC   = !isData && !isSig;
 
-    if(isData) // Here we are enforcing for the data samples to not even be present, might not make sense for a data-driven background estimation
-      continue;
+    std::string type = "Data";
+    if(isMC)
+      type = "BG";
+    if(isSig)
+      type = "SIG";
 
-    if(type == "SIG" && isMC) // Here we make sure we are only processing the requested processes
-      continue;
-    if(type == "BG" && isSig)
-      continue;
-
-    tempProcess.first = (*process).getString("tag", "Sample");
+    ProcessFiles tempProc;
+    tempProc.name = (*process).getString("tag", "Sample");
 
     std::string filtExt;
     if((*process).isTag("mctruthmode"))
@@ -878,25 +1297,28 @@ fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std
     }
 
     std::vector<JSONWrapper::Object> samples = (*process)["data"].daughters();
-    tempSamples.clear();
     for(auto sample = samples.begin(); sample != samples.end(); ++sample)
     {
+      SampleFiles tempSample;
+      tempSample.nFiles = 0;
+      tempSample.name = (*sample).getString("dtag", "");
+      tempSample.chain = new TChain(roundInfo_[n].ttree().c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
       int nFiles = (*sample).getInt("split", 1);
-      tempSample.first = 0;
-      tempSample.second = new TChain(treename.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
-      for(int f = 0; f < nFiles; ++f)
+
+      for(int filen = 0; filen < nFiles; ++filen)
       {
         std::string segmentExt;
         if(nFiles != 1)
         {
           std::stringstream buf;
-          buf << "_" << f;
+          buf << "_" << filen;
           buf >> segmentExt;
         }
 
-        std::string fileName = RootDir + "/" + (*sample).getString("dtag", "") + (*sample).getString("suffix", "") + segmentExt + filtExt + customExtension + ".root";
-        TFile* file = new TFile(fileName.c_str());
-        bool& fileExists = FileExists[fileName];
+        std::string fileName = roundInfo_[n].inDir() + "/" + (*sample).getString("dtag", "") + (*sample).getString("suffix", "") + segmentExt + filtExt + roundInfo_[n].customExtension() + ".root";
+
+        TFile* file = new TFile(fileName.c_str(), "READONLY");
+        bool& fileExists = FileExists_[fileName];
 
         if(!file || file->IsZombie() || !file->IsOpen() || file->TestBit(TFile::kRecovered))
         {
@@ -912,17 +1334,39 @@ fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std
           delete file;
         }
 
-        // Chain the valid files together
-        tempSample.second->Add(fileName.c_str());
-        ++tempSample.first;
+        tempSample.chain->Add(fileName.c_str());
+        ++(tempSample.nFiles);
       }
-      tempSamples.push_back(tempSample);
+
+      tempProc.samples.push_back(tempSample);
     }
-    tempProcess.second = tempSamples;
-    retVal.push_back(tempProcess);
+
+    processes_[type].push_back(tempProc);
   }
 
-  return retVal;
+  return true;
+}
+
+bool CutOptimizer::ClearSamples()
+{
+  for(auto iterator = processes_.begin(); iterator != processes_.end(); ++iterator)
+  {
+    for(auto process = iterator->second.begin(); process != iterator->second.end(); ++process)
+    {
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        delete sample->chain;
+      }
+    }
+  }
+  processes_.clear();
+
+  std::vector<ProcessFiles> temp;
+  processes_["BG"] = temp;
+  processes_["SIG"] = temp;
+  processes_["Data"] = temp;
+
+  return true;
 }
 
 void printHelp()
@@ -933,8 +1377,8 @@ void printHelp()
   std::cout << "--json    -->  Configuration file for cut optimization, should define which files to run on, where they are located, the integrated luminosity and the variables to optimize the cuts on" << std::endl;
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
   std::cout << "--plotExt -->  Extension format with which to save the plots, repeat this command if multiple formats are desired" << std::endl;
+  std::cout << "--verbose -->  Set to verbose mode, the current step will be printed out to screen" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
 }
-

@@ -134,7 +134,7 @@ int main(int argc, char** argv)
 
         std::string fileName = dir + "/" + (*sample).getString("dtag", "") + (*sample).getString("suffix", "") + segmentExt + ".root";
 
-        TFile* file = new TFile(fileName.c_str());
+        TFile* file = new TFile(fileName.c_str(), "READONLY");
 
         //bool fileDoesntExist = false;
         //bool fileIsZombie = false;
