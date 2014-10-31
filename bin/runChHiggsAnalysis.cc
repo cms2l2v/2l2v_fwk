@@ -555,8 +555,8 @@ int main(int argc, char* argv[])
 	      std::vector<float> wgts=mPDFInfo->getWeights(inum);
 	      for(size_t ipw=0; ipw<wgts.size(); ipw++)
 		{
-		  PDFWeight_plus = TMath::Max(PDFWeight_plus,wgts[ipw]/wgts[0]);
-		  PDFWeight_down = TMath::Min(PDFWeight_down,wgts[ipw]/wgts[0]);
+		  PDFWeight_plus = TMath::Max(PDFWeight_plus,wgts[ipw]);
+		  PDFWeight_down = TMath::Min(PDFWeight_down,wgts[ipw]);
 		}
 	    }
 	  ///if(Q2weightsGr.size()==2)
