@@ -48,6 +48,11 @@
 
 #include <iostream>
 
+// Do not forget the citation in the paper
+// This is the ChengHan bisect algo, which is the recommended (and quickest) one
+#include "UserCode/llvv_fwk/interface/mt2_bisect.h"
+
+
 using namespace std;
 
 
@@ -131,6 +136,14 @@ int main(int argc, char* argv[])
 
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
+
+  // Set up mt2
+  mt2_bisect::mt2 mt2_evt;
+    // Format: M, px, py
+  double pa[3] = { 0.106, 39.0, 12.0 };
+  double pb[3] = { 0.106, 119.0, -33.0 };
+  double pmiss[3] = { 0, -29.9, 35.9 };
+  double mn    = 0.; // Neutrino mass
 
   
   //pdf info
@@ -357,6 +370,8 @@ int main(int argc, char* argv[])
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll"+var,";Dilepton transverse momentum [GeV];Events",50,0,250) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pte"+var,";Electron transverse momentum [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmu"+var,";Muon transverse momentum [GeV];Events",50,0,500) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"masse"+var,";Electron mass [GeV];Events",50,0,1) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"massmu"+var,";Muon mass [GeV];Events",50,0,1) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptlep"+var,";Lepton transverse momentum [GeV];Events",50,0,500) ); 
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"sumpt"+var,";Sum of lepton transverse momenta [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+var,";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
@@ -371,6 +386,9 @@ int main(int argc, char* argv[])
 
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met"+var,";Missing transverse energy [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"metnotoppt"+var,";Missing transverse energy [GeV];Events",50,0,500) );
+
+
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mt2"+var,";M_{T2} [GeV];Events",25,0.,500.) );
 	
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht"+var,";H_{T} [GeV];Events",50,0,1000) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb"+var,";H_{T} (bjets) [GeV];Events",50,0,1000) );
@@ -831,10 +849,12 @@ int main(int argc, char* argv[])
 		  controlHistos.fillHisto(ctrlCategs[icat]+"emva"+var, ch, selLeptons[ilep].getVal("mvatrig"), weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"pte"+var,  ch, selLeptons[ilep].pt(),        weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptlep"+var,ch, selLeptons[ilep].pt(),        weight);
+		  controlHistos.fillHisto(ctrlCategs[icat]+"masse"+var,ch, selLeptons[ilep].M(),         weight);
 		}
 		else if(abs(selLeptons[ilep].get("id"))==13){
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptmu"+var,  ch, selLeptons[ilep].pt(),        weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptlep"+var, ch, selLeptons[ilep].pt(),        weight);
+		  controlHistos.fillHisto(ctrlCategs[icat]+"massmu"+var,ch, selLeptons[ilep].M(),         weight);
 		}
 	      }
 	    controlHistos.fillHisto(ctrlCategs[icat]+"sumpt"+var, ch, sumpt, weight);
@@ -861,6 +881,22 @@ int main(int argc, char* argv[])
 	    htnol+=met.pt();
 	    htbnol+=met.pt();
 	    
+	    // mt2 computation
+	    
+	    pa[0] = selLeptons[0].M();
+	    pa[1] = selLeptons[0].px();
+	    pa[2] = selLeptons[0].py();
+	    pb[0] = selLeptons[1].M();
+	    pb[1] = selLeptons[1].px();
+	    pb[2] = selLeptons[1].py();
+	    pmiss[1] = met.px();
+	    pmiss[2] = met.py();
+	    
+	    mt2_evt.set_momenta(pa,pb,pmiss);
+	    mt2_evt.set_mn(mn);
+	    double mt2 = mt2_evt.get_mt2();
+
+
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptmin"+var,        ch, ptmin,           weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"mll"+var,          ch, mll,             weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptll"+var,         ch, ll.pt(),         weight);
@@ -868,6 +904,8 @@ int main(int argc, char* argv[])
 	    controlHistos.fillHisto(ctrlCategs[icat]+"dilarccosine"+var, ch, thetall,         weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"met"+var,          ch, met.pt(),        weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"metnotoppt"+var,   ch, met.pt(),        weight/wgtTopPt);
+	    controlHistos.fillHisto(ctrlCategs[icat]+"mt2"+var,          ch, mt2,             weight);
+
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njets"+var,        ch, selJets.size(),  weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njetsnotoppt"+var, ch, selJets.size(),  weight/wgtTopPt);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"nbjets"+var,       ch, selbJets.size(), weight);
