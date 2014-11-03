@@ -123,7 +123,7 @@ elif [ "${1}" = "current" ]; then
 	#JSONFILE=data/chhiggs/plot-ch-higgs_samples.json
 	for plotList in evtflow geq2btagsmet geq2btagsnbjets geq2btagsptlep geq2btagssumpt met mll mtsum nbjets njets nvertices nverticesUnweighted pte ptjet1eta ptjet1pt ptjet2eta ptjet2pt ptmin ptmu sumpt dilarccosine geq2btagsdilarccosine geq2btagsdphill geq2btagsdrll geq2btagsBDTD BDTD  geq2btagsBDTD_shape BDTD_shape geq2btagsBDTD_finalshape BDTD_finalshape geq2btagsFisher Fisher  geq2btagsFisher_shape Fisher_shape geq2btagsFisher_finalshape Fisher_finalshape geq2btagsMLP MLP geq2btagsMLP_shape MLP_shape geq2btagsMLP_finalshape MLP_finalshape
 	  do
-	  for chanList in emu ee mumu 
+	  for chanList in emu ee mumu
 	    do
 	    for formatList in pdf png C
 	      do
