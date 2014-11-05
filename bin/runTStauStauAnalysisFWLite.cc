@@ -52,6 +52,7 @@
 #include <boost/shared_ptr.hpp>
 #include <Math/VectorUtil.h>
 #include <bitset>
+#include <cctype>
 
 // Include MT2 library:
 // http://particle.physics.ucdavis.edu/hefti/projects/doku.php?id=wimpmass    ** Code from here
@@ -85,11 +86,41 @@ int main(int argc, char* argv[])
   if(argc < 2)
     std::cout << "Usage: " << argv[0] << " parameters_cfg.py" << std::endl, exit(1);
 
+  size_t limit = 0;
+  int fileIndex = 1;
+  if(argc > 2)
+  {
+    std::stringstream parser;
+
+    for(int i = 1; i < argc; ++i)
+    {
+      if(argv[i][0] != '-')
+      {
+        fileIndex = i;
+        break;
+      }
+
+      std::string arg = argv[i];
+      if(arg.find("--limit") != std::string::npos)
+      {
+        char first = argv[i+1][0];
+        if(!isdigit(first))
+          continue;
+
+        parser << argv[i+1];
+        parser >> limit;
+
+        ++i;
+        continue;
+      }
+    }
+  }
+
   gSystem->Load("libFWCoreFWLite");
   AutoLibraryLoader::enable();
 
   // Read parameters from the configuration file
-  const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
+  const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[fileIndex])->getParameter<edm::ParameterSet>("runProcess");
   // If we are supposed to run the old analysis, run the old analysis
   bool doOldAnalysis = false;
   if(runProcess.exists("doOldAnalysis"))
@@ -1527,6 +1558,9 @@ int main(int argc, char* argv[])
       summaryTree->Fill();
 
 //    break;
+    if(limit != 0)
+      if(iev >= limit - 1)
+        break;
   }
 
   // Output temporary buffer and restore cout and cerr behaviour
