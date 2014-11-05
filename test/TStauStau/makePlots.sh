@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #rm ~/www/TStauStau/MCvsData/2012{B,C,D,BCD}/{exclusive,inclusive}{/,/DY/}*.{png,pdf,root,C,tex}
-OUTDIR=/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Plots_noSF
-INDIR=/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results_noSF
+OUTDIR=/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Plots
+INDIR=/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results
 
 ## 2012ABCD
 runPlotterFWLite --noPowers --iEcm 8 --iLumi 19672 --inDir $INDIR/ --outDir $OUTDIR/ --outFile $OUTDIR/plotter.root --json tstaustau_samples_full.json --plotExt .png --plotExt .root
