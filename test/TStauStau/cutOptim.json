@@ -42,7 +42,8 @@
           "minVal":0,
           "maxVal":300,
           "step":10,
-          "comment":"the fields minVal, maxVal and step, as their names imply, control how the scan itself is performed, they also control the ranges for the plots",
+          "bins":30,
+          "comment":"the fields minVal, maxVal and bins, as their names imply, control how the scan itself is performed, they also control the ranges for the plots",
           "label":"MET",
           "comment":"the label field holds the value that will be printed on the plots, ie it can contain valid LaTeX commands in root for nicer output"
         },
@@ -52,6 +53,7 @@
           "minVal":0,
           "maxVal":200,
           "step":10,
+          "bins":20,
           "label":"p_{T}(l)"
         },
         {
@@ -60,6 +62,7 @@
           "minVal":0,
           "maxVal":200,
           "step":10,
+          "bins":20,
           "label":"p_{T}(#tau)"
         },
         {
@@ -68,6 +71,7 @@
           "minVal":0,
           "maxVal":300,
           "step":10,
+          "bins":30,
           "label":"M_{SVFit}"
         },
         {
@@ -76,6 +80,7 @@
           "minVal":0,
           "maxVal":300,
           "step":10,
+          "bins":30,
           "label":"MET vs P_{T}(lep)"
         },
         {
@@ -84,6 +89,7 @@
           "minVal":0,
           "maxVal":300,
           "step":10,
+          "bins":30,
           "label":"MET vs P_{T}(#tau)"
         },
         {
@@ -92,6 +98,7 @@
           "minVal":0,
           "maxVal":180,
           "step":5,
+          "bins":36,
           "label":"M_{T2}"
         },
         {
@@ -100,6 +107,7 @@
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
+          "bins":31,
           "label":"#Delta#alpha_{#tau-l}(Lab)"
         },
         {
@@ -108,6 +116,7 @@
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
+          "bins":31,
           "label":"#Delta#phi_{#taul-MET}(Lab)"
         },
         {
@@ -116,6 +125,7 @@
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
+          "bins":31,
           "label":"#Delta#phi_{#tau-l}(Lab)"
         },
         {
@@ -124,6 +134,7 @@
           "minVal":0,
           "maxVal":1,
           "step":0.05,
+          "bins":20,
           "label":"cos#theta_{l}"
         },
         {
@@ -132,6 +143,7 @@
           "minVal":0,
           "maxVal":1,
           "step":0.05,
+          "bins":20,
           "label":"cos#theta_{#tau}"
         }
       ],

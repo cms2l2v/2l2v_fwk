@@ -149,6 +149,7 @@ public:
   inline double& minVal(){return _minVal;};
   inline double& maxVal(){return _maxVal;};
   inline double& step(){return _step;};
+  inline double& bins(){return _bins;};
   inline std::string& label(){return _label;};
 
   friend bool CutOptimizer::LoadJson();
@@ -156,7 +157,7 @@ public:
 private:
   std::string _name;
   std::string _expression;
-  double _minVal, _maxVal, _step;
+  double _minVal, _maxVal, _step, _bins;
   std::string _label;
 
 protected:
@@ -388,6 +389,7 @@ std::unordered_map<std::string,std::unordered_map<std::string,double>> Optimizat
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
     tempVal["step"]   = variable->step();
+    tempVal["bins"]   = variable->bins();
 
     retVal[variable->name()] = tempVal;
   }
@@ -414,6 +416,7 @@ OptimizationVariableInfo::OptimizationVariableInfo()
   _minVal = 0;
   _maxVal = 0;
   _step = 0;
+  _bins = 1;
 }
 
 OptimizationVariableInfo::~OptimizationVariableInfo()
@@ -537,6 +540,12 @@ bool CutOptimizer::LoadJson()
       if(variableInfo._maxVal - variableInfo._minVal <= 0)
       {
         std::cout << roundInfo._name << "::" << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
+        continue;
+      }
+      variableInfo._step = variable->getDouble("bins", 1);
+      if(variableInfo._step <= 0)
+      {
+        std::cout << roundInfo._name << "::" << variableInfo._name << ": bins must be a valid (positive and non-zero) value. Continuing..." << std::endl;
         continue;
       }
       variableInfo._step = variable->getDouble("step", 0);
