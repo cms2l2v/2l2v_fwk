@@ -123,6 +123,9 @@ int main(int argc, char* argv[])
   bool debug = false;
   if(runProcess.exists("debug"))
     debug = runProcess.getParameter<bool>("debug");
+  bool doTightTauID = false;
+  if(runProcess.exists("doTightTauID"))
+    debug = runProcess.getParameter<bool>("doTightTauID");
 
   if(debug)
     std::cout << "Finished loading config file" << std::endl;
@@ -202,6 +205,7 @@ int main(int argc, char* argv[])
   // Taus
   mon.addHistogram(new TH1F("ntaus", ";ntaus;Events", 10, 0, 10));
   mon.addHistogram(new TH1F("ptSelectedTau", ";p_{T}^{#tau};Events", 50, 0, 100));
+  mon.addHistogram(new TH1F("ptSelectedTauExtended", ";p_{T}^{#tau};Events", 50, 0, 250));
   mon.addHistogram(new TH1F("etaSelectedTau", ";#eta^{#tau};Events", 25, -2.6, 2.6));
   mon.addHistogram(new TH1F("chargeSelectedTau", ";q^{#tau};Events", 5, -2, 2));
   mon.addHistogram(new TH1F("dzSelectedTau", ";dz^{#tau};Events", 25, 0, 2));
@@ -897,7 +901,7 @@ int main(int argc, char* argv[])
         if(abs(eta) > maxMuEta)
           passKin = false;
 
-        if(leptons[i].pt() < 15)
+        if(leptons[i].pt() < 10)
           keepKin = false;
         if(abs(eta) > 2.4)
           keepKin = false;
@@ -1024,7 +1028,10 @@ int main(int argc, char* argv[])
       // Tau ID
       bool passID = true;
       if(!tau.passId(llvvTAUID::decayModeFinding)) passID = false;
-      if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      if(!doTightTauID)
+        if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      else
+        if(!tau.passId(llvvTAUID::byTightCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
       if(!tau.passId(llvvTAUID::againstMuonTight3)) passID = false;
       if(!tau.passId(llvvTAUID::againstElectronMediumMVA5)) passID = false;
 
@@ -1039,7 +1046,7 @@ int main(int argc, char* argv[])
       {
         mon.fillHisto("tauCutFlow", chTags, 1, weight);
         mon.fillHisto("tauID", chTags, 0, weight);
-        if(tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))
+        if((doTightTauID && tau.passId(llvvTAUID::byTightCombinedIsolationDeltaBetaCorr3Hits)) || (!doTightTauID && tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)))
         {
           mon.fillHisto("tauID", chTags, 1, weight);
           if(tau.passId(llvvTAUID::decayModeFinding))
@@ -1487,6 +1494,7 @@ int main(int argc, char* argv[])
 
                     mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
                     mon.fillHisto("ptSelectedTau", chTags, selTaus[tauIndex].pt(), weight);
+                    mon.fillHisto("ptSelectedTauExtended", chTags, selTaus[tauIndex].pt(), weight);
                     mon.fillHisto("etaSelectedTau", chTags, selTaus[tauIndex].eta(), weight);
                     mon.fillHisto("chargeSelectedTau", chTags, (selTaus[tauIndex].id > 0)?(-1):(1), weight);
                     mon.fillHisto("emfracSelectedTau", chTags, selTaus[tauIndex].emfraction, weight);
