@@ -385,8 +385,9 @@ int main(int argc, char* argv[])
   double leptonIdIsoSF = 1.;
   double tauSF = 1.;
   llvvLeptonCollection selLeptons;
-  llvvJetCollection selBJets;
   llvvJetExtCollection selJets;
+  llvvJetCollection selJetsOut;
+  llvvJetCollection selBJets;
   llvvTauCollection selTaus;
   bool selected = false;
   int tauIndex = -1, leptonIndex = -1;
@@ -438,7 +439,7 @@ int main(int argc, char* argv[])
     summaryTree->Branch("tauSF", &tauSF);
     summaryTree->Branch("selLeptons", &selLeptons);
     summaryTree->Branch("selTaus", &selTaus);
-    summaryTree->Branch("selJets", &selJets);
+    summaryTree->Branch("selJets", &selJetsOut);
     summaryTree->Branch("selBJets", &selBJets);
     summaryTree->Branch("isOS", &isOS);
     summaryTree->Branch("isMultilepton", &isMultilepton);
@@ -496,6 +497,7 @@ int main(int argc, char* argv[])
     chTags.clear();
     selLeptons.clear();
     selJets.clear();
+    selJetsOut.clear();
     selBJets.clear();
     selTaus.clear();
     tauIndex = -1, leptonIndex = -1;
@@ -1191,7 +1193,10 @@ int main(int argc, char* argv[])
       }
 
       if(passPFLoose && passID && passKin)
+      {
         selJets.push_back(jets[i]);
+        selJetsOut.push_back(jets_[i]);
+      }
       if(passPFLoose && passID && passKin && isBJet)
         selBJets.push_back(jets_[i]);
       if(!triggeredOn)
