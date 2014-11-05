@@ -87,7 +87,10 @@ int main(int argc, char* argv[])
     std::cout << "Usage: " << argv[0] << " parameters_cfg.py" << std::endl, exit(1);
 
   size_t limit = 0;
+
+  #if defined(DEBUG_EVENT)
   bool debugEvent = false;
+  #endif
 
   int fileIndex = 1;
   if(argc > 2)
@@ -115,11 +118,14 @@ int main(int argc, char* argv[])
         ++i;
         continue;
       }
+
+      #if defined(DEBUG_EVENT)
       if(arg.find("--debugEvent") != std::string::npos)
       {
         debugEvent = true;
         continue;
       }
+      #endif
     }
   }
 
@@ -308,7 +314,7 @@ int main(int argc, char* argv[])
   if(debug)
     std::cout << "Preparing for event loop" << std::endl;
   fwlite::ChainEvent ev(urls);
-  const Int_t totalEntries = ev.size();
+  const size_t totalEntries = ev.size();
 
   // MC normalization to 1/pb
   double nInitEvent = 1.;
@@ -351,7 +357,7 @@ int main(int argc, char* argv[])
 
   DuplicatesChecker duplicatesChecker;
 //  int nDuplicates(0);
-  int step(totalEntries/50);
+  int step = int(totalEntries/50);
 
   // Redirect stdout and stderr to a temporary buffer, then output buffer after event loop
   std::ostream myCout(std::cout.rdbuf());
@@ -465,7 +471,7 @@ int main(int argc, char* argv[])
   myCout << "Scanning the ntuple:";
 
   // Loop on events
-  for(int iev = 0; iev < totalEntries; ++iev)
+  for(size_t iev = 0; iev < totalEntries; ++iev)
   {
     if(iev%step == 0)
       myCout << "_" << std::flush;
@@ -1070,9 +1076,13 @@ int main(int argc, char* argv[])
       bool passID = true;
       if(!tau.passId(llvvTAUID::decayModeFinding)) passID = false;
       if(!doTightTauID)
+      {
         if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      }
       else
+      {
         if(!tau.passId(llvvTAUID::byTightCombinedIsolationDeltaBetaCorr3Hits)) passID = false;
+      }
       if(!tau.passId(llvvTAUID::againstMuonTight3)) passID = false;
       if(!tau.passId(llvvTAUID::againstElectronMediumMVA5)) passID = false;
 
