@@ -51,11 +51,17 @@
 #include <sstream>
 #include <boost/shared_ptr.hpp>
 #include <Math/VectorUtil.h>
+#include <bitset>
 
 // Include MT2 library:
 // http://particle.physics.ucdavis.edu/hefti/projects/doku.php?id=wimpmass    ** Code from here
 // http://www.hep.phy.cam.ac.uk/~lester/mt2/    ** Other libraries
 #include "UserCode/llvv_fwk/interface/mt2_bisect.h"
+
+
+#ifndef DEBUG_EVENT
+//#define DEBUG_EVENT true
+#endif
 
 
 enum ID_Type {LooseID, MediumID, TightID};
@@ -683,6 +689,167 @@ int main(int argc, char* argv[])
       weight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
     }
 
+    // Get trigger Scale Factor
+    triggerSF = 1;
+    if(isMC)
+    {
+      #if defined(DEBUG_EVENT)
+      if(debug)
+      {
+        myCout << "New event";
+        if(TauPlusETrigger)
+          myCout << ", it is a TauPlusE event";
+        if(TauPlusMuTrigger)
+          myCout << ", it is a TauPlusMu event";
+        myCout << std::endl;
+
+        if(triggeredOn)
+        {
+          myCout << "  Looping on leptons:" << std::endl;
+          for(auto lep = leptons.begin(); lep != leptons.end(); ++lep)
+            myCout << "    Lepton (" << lep->id << ", pT=" << lep->pt() << ") trigger bits: " << bitset<8*sizeof(int)>(lep->Tbits) << std::endl;
+
+          myCout << "  Looping on taus:" << std::endl;
+          for(auto tau = taus.begin(); tau != taus.end(); ++tau)
+            myCout << "    Tau (pT=" << tau->pt() << ") trigger bits: " << bitset<8*sizeof(int)>(tau->Tbits) << std::endl;
+        }
+      }
+      #endif
+
+      if(TauPlusETrigger)
+      {
+        llvvTau* trigTau = NULL, *leadTau = NULL;
+        llvvLepton* trigE = NULL, *leadE = NULL;
+
+        // This is working, but sometimes it can't find the triggered lepton
+        //so, when it can't be found, we select the leading pt lepton of the right type
+        for(auto lep = leptons.begin(); lep != leptons.end(); ++lep)
+        {
+          if(lep->Tbits & (3 << 17))
+          {
+            if(trigE == NULL)
+              trigE = &(*lep);
+            else
+              if(lep->pt() > trigE->pt())
+                trigE = &(*lep);
+          }
+
+          if(abs(lep->id) == 11)
+          {
+            if(leadE == NULL)
+              leadE = &(*lep);
+            else
+              if(lep->pt() > leadE->pt())
+                leadE = &(*lep);
+          }
+        }
+        if(trigE == NULL)
+          trigE = leadE;
+
+        // Tau trigger matching has not yet been enabled in the nTuple production (Tbits is filled with random data)
+        //so we use the leading pt pt
+        for(auto tau = taus.begin(); tau != taus.end(); ++tau)
+        {
+          //if(tau->Tbits & (3 << 17))
+          //{
+          //  trigTau = &(*tau);
+          //  break;
+          //}
+
+          if(leadTau == NULL)
+            leadTau = &(*tau);
+          else
+            if(tau->pt() > leadTau->pt())
+              leadTau = &(*tau);
+        }
+        if(trigTau == NULL)
+          trigTau = leadTau;
+
+        if(trigTau != NULL && trigE != NULL)
+        {
+          triggerSF *= leptonTauTriggerScaleFactor(*trigE, *trigTau);
+        }
+        else
+        {
+          #if defined(DEBUG_EVENT)
+          if(debug)
+          {
+            if(trigE == NULL)
+              myCout << "TauPlusE trigSF: Unable to find triggered electron" << std::endl;
+            if(trigTau == NULL)
+              myCout << "TauPlusE trigSF: Unable to find triggered tau" << std::endl;
+          }
+          #endif
+        }
+      }
+
+      if(TauPlusMuTrigger)
+      {
+        llvvTau* trigTau = NULL, *leadTau = NULL;
+        llvvLepton* trigMu = NULL, *leadMu = NULL;
+
+        // This is working, but sometimes it can't find the triggered lepton
+        //so, when it can't be found, we select the leading pt lepton of the right type
+        for(auto lep = leptons.begin(); lep != leptons.end(); ++lep)
+        {
+          if(lep->Tbits & (3 << 21))
+          {
+            if(trigMu == NULL)
+              trigMu = &(*lep);
+            else
+              if(lep->pt() > trigMu->pt())
+                trigMu = &(*lep);
+          }
+
+          if(abs(lep->id) == 11)
+          {
+            if(leadMu == NULL)
+              leadMu = &(*lep);
+            else
+              if(lep->pt() > leadMu->pt())
+                leadMu = &(*lep);
+          }
+        }
+        if(trigMu == NULL)
+          trigMu = leadMu;
+
+        // Tau trigger matching has not yet been enabled in the nTuple production (Tbits is filled with random data)
+        //so we use the leading pt pt
+        for(auto tau = taus.begin(); tau != taus.end(); ++tau)
+        {
+          //if(tau->Tbits & (3 << 21))
+          //{
+          //  trigTau = &(*tau);
+          //  break;
+          //}
+
+          if(leadTau == NULL)
+            leadTau = &(*tau);
+          else
+            if(tau->pt() > leadTau->pt())
+              leadTau = &(*tau);
+        }
+        if(trigTau == NULL)
+          trigTau = leadTau;
+
+        if(trigTau != NULL && trigMu != NULL)
+        {
+          triggerSF *= leptonTauTriggerScaleFactor(*trigMu, *trigTau);
+        }
+        else
+        {
+          #if defined(DEBUG_EVENT)
+          if(trigMu == NULL)
+            myCout << "TauPlusMu trigSF: Unable to find triggered muon" << std::endl;
+          if(trigTau == NULL)
+            myCout << "TauPlusMu trigSF: Unable to find triggered tau" << std::endl;
+          #endif
+        }
+      }
+    }
+    if(applyScaleFactors && isMC)
+      weight *= triggerSF;
+
 
 
     // Get Leading Lepton
@@ -1051,7 +1218,7 @@ int main(int argc, char* argv[])
             isOS = true;
             tauLeadPt = selTaus[tauIndex].pt();
             lepLeadPt = selLeptons[leptonIndex].pt();
-            triggerSF = leptonTauTriggerScaleFactor(selLeptons[leptonIndex], selTaus[tauIndex]);
+//            triggerSF = leptonTauTriggerScaleFactor(selLeptons[leptonIndex], selTaus[tauIndex]);
             leptonIdIsoSF = leptonIdAndIsoScaleFactor(selLeptons[leptonIndex]);
             tauSF = ::tauSF(selTaus[tauIndex], gen, antiEMva5Medium);
           }
@@ -1062,13 +1229,13 @@ int main(int argc, char* argv[])
     }
     if(!isMC)
     {
-      triggerSF = 1;
+//      triggerSF = 1;
       leptonIdIsoSF = 1;
       tauSF = 1;
     }
     if(isOS && applyScaleFactors)
     {
-      weight *= triggerSF;
+//      weight *= triggerSF;
       weight *= leptonIdIsoSF;
       weight *= tauSF;
     }
