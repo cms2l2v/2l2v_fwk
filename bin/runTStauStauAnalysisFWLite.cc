@@ -87,6 +87,8 @@ int main(int argc, char* argv[])
     std::cout << "Usage: " << argv[0] << " parameters_cfg.py" << std::endl, exit(1);
 
   size_t limit = 0;
+  bool debugEvent = false;
+
   int fileIndex = 1;
   if(argc > 2)
   {
@@ -111,6 +113,11 @@ int main(int argc, char* argv[])
         parser >> limit;
 
         ++i;
+        continue;
+      }
+      if(arg.find("--debugEvent") != std::string::npos)
+      {
+        debugEvent = true;
         continue;
       }
     }
@@ -729,7 +736,7 @@ int main(int argc, char* argv[])
     if(isMC)
     {
       #if defined(DEBUG_EVENT)
-      if(debug)
+      if(debugEvent)
       {
         myCout << "New event";
         if(TauPlusETrigger)
@@ -807,7 +814,7 @@ int main(int argc, char* argv[])
         else
         {
           #if defined(DEBUG_EVENT)
-          if(debug)
+          if(debugEvent)
           {
             if(trigE == NULL)
               myCout << "TauPlusE trigSF: Unable to find triggered electron" << std::endl;
@@ -874,10 +881,13 @@ int main(int argc, char* argv[])
         else
         {
           #if defined(DEBUG_EVENT)
-          if(trigMu == NULL)
-            myCout << "TauPlusMu trigSF: Unable to find triggered muon" << std::endl;
-          if(trigTau == NULL)
-            myCout << "TauPlusMu trigSF: Unable to find triggered tau" << std::endl;
+          if(debugEvent)
+          {
+            if(trigMu == NULL)
+              myCout << "TauPlusMu trigSF: Unable to find triggered muon" << std::endl;
+            if(trigTau == NULL)
+              myCout << "TauPlusMu trigSF: Unable to find triggered tau" << std::endl;
+          }
           #endif
         }
       }
