@@ -474,6 +474,10 @@ int main(int argc, char* argv[])
   // Loop on events
   for(size_t iev = 0; iev < totalEntries; ++iev)
   {
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "## Event " << iev << std::endl;
+    #endif
     if(iev%step == 0)
       myCout << "_" << std::flush;
 
@@ -518,8 +522,13 @@ int main(int argc, char* argv[])
     chTags.push_back("all");
 
     // Load the event content from tree
-    ev.to(iev);
+    ev.to(int(iev));
 
+
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << " Loading collections" << std::endl;
+    #endif
 
     /**** Get information/collections from the event ****/
     // Number of vertexes
@@ -724,6 +733,11 @@ int main(int argc, char* argv[])
 
 
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << " Finished loading collections, now computing PU weight and trigger scale factor" << std::endl;
+    #endif
+
     // Pileup Weight
     if(isMC)
     {
@@ -851,7 +865,7 @@ int main(int argc, char* argv[])
                 trigMu = &(*lep);
           }
 
-          if(abs(lep->id) == 11)
+          if(abs(lep->id) == 13)
           {
             if(leadMu == NULL)
               leadMu = &(*lep);
@@ -905,6 +919,13 @@ int main(int argc, char* argv[])
 
 
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+    {
+      myCout << " Finished computing PU weight and trigger scale factors" << std::endl;
+      myCout << " Getting leading lepton" << std::endl;
+    }
+    #endif
     // Get Leading Lepton
     for(size_t i = 0; i < leptons.size(); ++i)
     {
@@ -1019,6 +1040,10 @@ int main(int argc, char* argv[])
       }
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Getting taus" << std::endl;
+    #endif
     // Get taus
     for(size_t i = 0; i < taus.size(); ++i)
     {
@@ -1130,6 +1155,10 @@ int main(int argc, char* argv[])
       }
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Getting jets" << std::endl;
+    #endif
     // Get Jets
     for(size_t i = 0; i < jets.size(); ++i)
     {
@@ -1216,6 +1245,10 @@ int main(int argc, char* argv[])
       }
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Sorting leptons, taus and jets" << std::endl;
+    #endif
     if(selLeptons.size() != 0)
     {
       std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
@@ -1234,6 +1267,10 @@ int main(int argc, char* argv[])
 
 
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Requiring an opposite sign pair" << std::endl;
+    #endif
     // Opposite Sign requirements
     maxPtSum = 0;
     tauIndex = -1;
@@ -1303,6 +1340,10 @@ int main(int argc, char* argv[])
       weight *= tauSF;
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Rejecting event if multilepton" << std::endl;
+    #endif
     // Reject events with more leptons
     isMultilepton = false;
     if(isOS)
@@ -1335,12 +1376,19 @@ int main(int argc, char* argv[])
       }
 
       // Set up channels
-      if(abs(selLeptons[leptonIndex].id) == 11)
-        chTags.push_back("etau");
-      else
-        chTags.push_back("mutau");
+      if(!isMultilepton)
+      {
+        if(abs(selLeptons[leptonIndex].id) == 11)
+          chTags.push_back("etau");
+        else
+          chTags.push_back("mutau");
+      }
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Computing angular variables" << std::endl;
+    #endif
     // Get angular variables
     if(isOS && !isMultilepton)
     {
@@ -1408,6 +1456,10 @@ int main(int argc, char* argv[])
       deltaPhiLepMETCS = metCS.DeltaPhi(lepCS);
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Computing pair mass" << std::endl;
+    #endif
     // Tau-Lepton pair mass calculation
     isSVfit = doSVfit;
     if(isOS && !isMultilepton)
@@ -1448,6 +1500,10 @@ int main(int argc, char* argv[])
       }
     }
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Computing MT2" << std::endl;
+    #endif
     // MT2 calculation
     if(isOS && !isMultilepton && (!doSVfit || isSVfit))
     {
@@ -1489,6 +1545,10 @@ int main(int argc, char* argv[])
     if(stauMass == stauMtoPlot && neutralinoMass == neutralinoMtoPlot)
       stauPlot = true;
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Filling histograms" << std::endl;
+    #endif
     bool plotThisEvent = !isStauStau || stauPlot;
     if(plotThisEvent)
     {
@@ -1579,9 +1639,17 @@ int main(int argc, char* argv[])
     if(triggeredOn && selLeptons.size() > 0 && selBJets.size() == 0 && selTaus.size() > 0 && isOS && !isMultilepton && (!doSVfit || isSVfit))
       selected = true;
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Filling TTree" << std::endl;
+    #endif
     if(saveSummaryTree)
       summaryTree->Fill();
 
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
+      myCout << "Finished event " << iev << std::endl;
+    #endif
 //    break;
     if(limit != 0)
       if(iev >= limit - 1)
