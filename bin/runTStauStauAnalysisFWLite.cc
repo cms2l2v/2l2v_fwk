@@ -439,8 +439,8 @@ int main(int argc, char* argv[])
     summaryTree->Branch("tauSF", &tauSF);
     summaryTree->Branch("selLeptons", &selLeptons);
     summaryTree->Branch("selTaus", &selTaus);
-//    summaryTree->Branch("selJets", &selJetsOut);
-//    summaryTree->Branch("selBJets", &selBJets);
+    summaryTree->Branch("selJets", &selJetsOut);
+    summaryTree->Branch("selBJets", &selBJets);
     summaryTree->Branch("isOS", &isOS);
     summaryTree->Branch("isMultilepton", &isMultilepton);
     summaryTree->Branch("isSVfit", &isSVfit);
