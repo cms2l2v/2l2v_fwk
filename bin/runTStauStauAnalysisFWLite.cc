@@ -439,8 +439,8 @@ int main(int argc, char* argv[])
     summaryTree->Branch("tauSF", &tauSF);
     summaryTree->Branch("selLeptons", &selLeptons);
     summaryTree->Branch("selTaus", &selTaus);
-    summaryTree->Branch("selJets", &selJetsOut);
-    summaryTree->Branch("selBJets", &selBJets);
+//    summaryTree->Branch("selJets", &selJetsOut);
+//    summaryTree->Branch("selBJets", &selBJets);
     summaryTree->Branch("isOS", &isOS);
     summaryTree->Branch("isMultilepton", &isMultilepton);
     summaryTree->Branch("isSVfit", &isSVfit);
@@ -760,7 +760,7 @@ int main(int argc, char* argv[])
       #if defined(DEBUG_EVENT)
       if(debugEvent)
       {
-        myCout << "New event";
+        myCout << " Event";
         if(TauPlusETrigger)
           myCout << ", it is a TauPlusE event";
         if(TauPlusMuTrigger)
@@ -839,9 +839,9 @@ int main(int argc, char* argv[])
           if(debugEvent)
           {
             if(trigE == NULL)
-              myCout << "TauPlusE trigSF: Unable to find triggered electron" << std::endl;
+              myCout << " TauPlusE trigSF: Unable to find triggered electron" << std::endl;
             if(trigTau == NULL)
-              myCout << "TauPlusE trigSF: Unable to find triggered tau" << std::endl;
+              myCout << " TauPlusE trigSF: Unable to find triggered tau" << std::endl;
           }
           #endif
         }
@@ -906,9 +906,9 @@ int main(int argc, char* argv[])
           if(debugEvent)
           {
             if(trigMu == NULL)
-              myCout << "TauPlusMu trigSF: Unable to find triggered muon" << std::endl;
+              myCout << " TauPlusMu trigSF: Unable to find triggered muon" << std::endl;
             if(trigTau == NULL)
-              myCout << "TauPlusMu trigSF: Unable to find triggered tau" << std::endl;
+              myCout << " TauPlusMu trigSF: Unable to find triggered tau" << std::endl;
           }
           #endif
         }
@@ -1042,7 +1042,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Getting taus" << std::endl;
+      myCout << " Getting taus" << std::endl;
     #endif
     // Get taus
     for(size_t i = 0; i < taus.size(); ++i)
@@ -1157,7 +1157,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Getting jets" << std::endl;
+      myCout << " Getting jets" << std::endl;
     #endif
     // Get Jets
     for(size_t i = 0; i < jets.size(); ++i)
@@ -1247,7 +1247,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Sorting leptons, taus and jets" << std::endl;
+      myCout << " Sorting leptons, taus and jets" << std::endl;
     #endif
     if(selLeptons.size() != 0)
     {
@@ -1269,7 +1269,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Requiring an opposite sign pair" << std::endl;
+      myCout << " Requiring an opposite sign pair" << std::endl;
     #endif
     // Opposite Sign requirements
     maxPtSum = 0;
@@ -1342,7 +1342,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Rejecting event if multilepton" << std::endl;
+      myCout << " Rejecting event if multilepton" << std::endl;
     #endif
     // Reject events with more leptons
     isMultilepton = false;
@@ -1387,7 +1387,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Computing angular variables" << std::endl;
+      myCout << " Computing angular variables" << std::endl;
     #endif
     // Get angular variables
     if(isOS && !isMultilepton)
@@ -1458,7 +1458,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Computing pair mass" << std::endl;
+      myCout << " Computing pair mass" << std::endl;
     #endif
     // Tau-Lepton pair mass calculation
     isSVfit = doSVfit;
@@ -1502,7 +1502,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Computing MT2" << std::endl;
+      myCout << " Computing MT2" << std::endl;
     #endif
     // MT2 calculation
     if(isOS && !isMultilepton && (!doSVfit || isSVfit))
@@ -1547,7 +1547,7 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Filling histograms" << std::endl;
+      myCout << " Filling histograms" << std::endl;
     #endif
     bool plotThisEvent = !isStauStau || stauPlot;
     if(plotThisEvent)
@@ -1641,14 +1641,14 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Filling TTree" << std::endl;
+      myCout << " Filling TTree" << std::endl;
     #endif
     if(saveSummaryTree)
       summaryTree->Fill();
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
-      myCout << "Finished event " << iev << std::endl;
+      myCout << " Finished event " << iev << std::endl;
     #endif
 //    break;
     if(limit != 0)
@@ -3650,9 +3650,13 @@ double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
       norm[1] = 4.7241;
     }
 
-    double electronDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
-    double electronMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
-    double electronSF = electronDataEff/electronMCEff;
+    double electronSF = 1;
+    if(pt >= 20) // Do not apply for electrons with pt below threshold
+    {
+      double electronDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
+      double electronMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
+      electronSF = electronDataEff/electronMCEff;
+    }
 
     // Tau leg
     eta = tau.eta();
@@ -3684,9 +3688,13 @@ double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
       norm[1]  = 0.865756;
     }
 
-    double tauDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
-    double tauMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
-    double tauSF = tauDataEff/tauMCEff;
+    double tauSF = 1;
+    if(pt >= 20)
+    {
+      double tauDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
+      double tauMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
+      tauSF = tauDataEff/tauMCEff;
+    }
 
     scaleFactor = electronSF * tauSF;
   }
@@ -3774,9 +3782,13 @@ double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
       norm[1]  = 0.884502;
     }
 
-    double muonDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
-    double muonMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
-    double muonSF = muonDataEff/muonMCEff;
+    double muonSF = 1;
+    if(pt >= 17)
+    {
+      double muonDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
+      double muonMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
+      muonSF = muonDataEff/muonMCEff;
+    }
 
     // Tau leg
     eta = tau.eta();
@@ -3808,9 +3820,13 @@ double leptonTauTriggerScaleFactor(llvvLepton& lepton, llvvTau& tau)
       norm[1]  = 0.893975;
     }
 
-    double tauDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
-    double tauMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
-    double tauSF = tauDataEff/tauMCEff;
+    double tauSF = 1;
+    if(pt >= 20)
+    {
+      double tauDataEff = efficiency(pt, m0[0], sigma[0], alpha[0], n[0], norm[0]);
+      double tauMCEff   = efficiency(pt, m0[1], sigma[1], alpha[1], n[1], norm[1]);
+      tauSF = tauDataEff/tauMCEff;
+    }
 
     scaleFactor = muonSF * tauSF;
   }
