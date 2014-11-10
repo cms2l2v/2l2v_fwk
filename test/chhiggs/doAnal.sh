@@ -85,9 +85,9 @@ elif [ "${1}" = "fwlite" ]; then
 
     fi
 elif [ "${1}" = "current" ]; then
-### base:   BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/
+    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315/
     ###angular stuff: BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_angular/
-    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_mva/
+###    BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_mva/
     BASEDIRPDF=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_pdfweights/
     SAVESUMMARYTREE=False
 # run in 5315
@@ -242,56 +242,57 @@ elif [ "${1}" = "current" ]; then
 	done
     elif [ "${2}" = "datacardstest" ]; then
  	mkdir -p ${BASEDIR}outputs/datacards/
- 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}outputs/plotter_forSystTable.root --showUnc --noPlots --noPowers --only evtflow --only optim_systs
- 	runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}/outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm.root --noPlot --noPowers  --only finalevtflow2btags --only optim_systs 	
+	SUFFIX="_november"
+ 	#runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}outputs/datacards/ --json data/chhiggs/all-samples.json     --outFile ${BASEDIR}outputs/plotter_forSystTable${SUFFIX}.root --showUnc --noPlots --noPowers --only evtflow --only optim_systs
+ 	#runPlotter --iLumi 19702 --inDir ${BASEDIR} --outDir ${BASEDIR}/outputs/plots --json data/chhiggs/all-samples_higgs1pb.json --outFile ${BASEDIR}outputs/plotter_all-samplesForDatacards${SUFFIX}_finalevtflow_norm.root --noPlot --noPowers  --only finalevtflow2btags --only optim_systs 	
 
- 	mv ${BASEDIR}outputs/datacardsByDecayMode    ${BASEDIR}outputs/datacardsByDecayMode_bak
- 	mv ${BASEDIR}outputs/datacardsByDecaySyst    ${BASEDIR}outputs/datacardsByDecaySyst_bak
- 	mv ${BASEDIR}outputs/datacardsByDecaySystPAS ${BASEDIR}outputs/datacardsByDecaySystPAS_bak
+ 	mv ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}    ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}_bak
+ 	mv ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}    ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}_bak
+ 	mv ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX} ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}_bak
  	
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/180
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/200 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/220 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/250 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/300
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/350
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/400 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/500 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/600 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode/700
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/180
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/200 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/220 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/250 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/300
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/350
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/400 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/500 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/600 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/700
  	
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/180
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/200 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/220 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/250 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/300
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/350
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/400 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/500 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/600 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst/700
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/180
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/200 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/220 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/250 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/300
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/350
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/400 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/500 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/600 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/700
  	
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/180
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/200 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/220 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/250 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/300
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/350
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/400 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/500 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/600 
- 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS/700
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/180
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/200 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/220 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/250 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/300
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/350
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/400 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/500 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/600 
+ 	mkdir -p ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/700
 
 	for i in 180 200 220 250 300 400 500 600
 	  do
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm.root --out ${BASEDIR}outputs/datacardsByDecayMode/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards_finalevtflow_norm.root --out ${BASEDIR}outputs/datacardsByDecayMode/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards${SUFFIX}_finalevtflow_norm.root --out ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_all-samplesForDatacards${SUFFIX}_finalevtflow_norm.root --out ${BASEDIR}outputs/datacardsByDecayMode${SUFFIX}/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
 	    
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySyst/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySyst/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable${SUFFIX}.root --out ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable${SUFFIX}.root --out ${BASEDIR}outputs/datacardsByDecaySyst${SUFFIX}/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo finalevtflow2btags --bin 1 --ch emu,ee,mumu & 
 	    
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
-	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable${SUFFIX}.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/${i}/ --suffix tb --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_tb.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
+	    prepareChHiggsDatacards --in ${BASEDIR}outputs/plotter_forSystTable${SUFFIX}.root --out ${BASEDIR}outputs/datacardsByDecaySystPAS${SUFFIX}/${i}/ --suffix taunu --json /afs/cern.ch/work/v/vischia/private/results/HIG-13-026/tempjsonByFinalState/${i}_taunu.json --noPowers --histo evtflow --bin 1 --ch emu,ee,mumu & 
 	done
 	
     elif [ "${2}" = "mhmax" ]; then
