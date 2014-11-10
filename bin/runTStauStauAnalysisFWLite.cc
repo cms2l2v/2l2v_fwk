@@ -283,6 +283,14 @@ int main(int argc, char* argv[])
   // MET
   mon.addHistogram(new TH1F("MET", ";MET [GeV];Events", 25, 0, 200));
 
+  // MT
+  mon.addHistogram(new TH1F("MT", ";MT [GeV];Events", 25, 0, 200));
+
+  // Deconstructed MT: https://indico.cern.ch/event/344807/
+  mon.addHistogram(new TH1F("Q80", ";Q_{80};Events", 30, -2, 1));
+  mon.addHistogram(new TH1F("Q100", ";Q_{100};Events", 30, -2, 1));
+  mon.addHistogram(new TH1F("cosPhi", ";cos#Phi;Events", 30, -1, 1));
+
   // MT2
   mon.addHistogram(new TH1F("MT2", ";M_{T2} [GeV];Events", 25, 0, 500));
 
@@ -305,6 +313,9 @@ int main(int argc, char* argv[])
   // 2D variables
   mon.addHistogram(new TH2F("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
   mon.addHistogram(new TH2F("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
+  //  Deconstructed MT 2D Plots:
+  mon.addHistogram(new TH2F("Q80VsCosPhi", ";cos#Phi;Q_{80}", 20, -1, 1, 20, -2, 1));
+  mon.addHistogram(new TH2F("Q100VsCosPhi", ";cos#Phi;Q_{100}", 20, -1, 1, 20, -2, 1));
 
 
 
@@ -396,6 +407,10 @@ int main(int argc, char* argv[])
   bool isSVfit = true;
   double mass = -1;
   double invMass = -1;
+  double mt = -1;
+  double Q80 = 2;
+  double Q100 = 2;
+  double cosPhi = -10;
   double mt2 = -1;
   double stauMass = 0;
   double neutralinoMass = 0;
@@ -449,6 +464,10 @@ int main(int argc, char* argv[])
     if(doSVfit)
       summaryTree->Branch("SVFitMass", &mass);
     summaryTree->Branch("InvariantMass", &invMass);
+    summaryTree->Branch("MT", &mt);
+    summaryTree->Branch("Q80", &Q80);
+    summaryTree->Branch("Q100", &Q100);
+    summaryTree->Branch("cosPhi", &cosPhi);
     summaryTree->Branch("MT2", &mt2);
     summaryTree->Branch("stauMass", &stauMass);
     summaryTree->Branch("neutralinoMass", &neutralinoMass);
@@ -510,6 +529,10 @@ int main(int argc, char* argv[])
     isSVfit = false;
     mass = -1;
     invMass = -1;
+    mt = -1;
+    Q80 = 2;
+    Q100 = 2;
+    cosPhi = -10;
     mt2 = -1;
     stauMass = -1;
     neutralinoMass = -1;
@@ -1502,6 +1525,23 @@ int main(int argc, char* argv[])
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
+      myCout << " Computing MT and deconstructed MT" << std::endl;
+    #endif
+    // MT and deconstructed MT calculation
+    if(isOS && !isMultilepton && (!doSVfit || isSVfit))
+    {
+      auto& selLepton = selLeptons[leptonIndex];
+      double cosDeltaPhi = cos(deltaPhi(selLepton.phi(), met.phi()));
+      double fac = 2 * met.pt() * selLepton.pt();
+
+      mt = sqrt(fac * (1 - cosDeltaPhi));
+      Q80 = 1 - (80.0*80.0) / fac;
+      Q100 = 1 - (100.0*100.0) / fac;
+      cosPhi = cosDeltaPhi;
+    }
+
+    #if defined(DEBUG_EVENT)
+    if(debugEvent)
       myCout << " Computing MT2" << std::endl;
     #endif
     // MT2 calculation
@@ -1584,6 +1624,13 @@ int main(int argc, char* argv[])
                     mon.fillHisto("rho25", chTags, rho25, weight);
 
                     mon.fillHisto("MET", chTags, met.pt(), weight);
+
+                    mon.fillHisto("MT", chTags, mt, weight);
+                    mon.fillHisto("Q80", chTags, Q80, weight);
+                    mon.fillHisto("Q100", chTags, Q100, weight);
+                    mon.fillHisto("cosPhi", chTags, cosPhi, weight);
+                    mon.fillHisto("Q80VsCosPhi", chTags, cosPhi, Q80, weight);
+                    mon.fillHisto("Q100VsCosPhi", chTags, cosPhi, Q100, weight);
 
                     mon.fillHisto("MT2", chTags, mt2, weight);
                     if(doSVfit)
