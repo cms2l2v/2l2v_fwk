@@ -421,7 +421,18 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	      float thxsec = Process[i]["data"].daughters()[0]["xsec"].toDouble();
 	      float thxsecunc=0;
 	      if(Process[i]["data"].daughters()[0].isTag("xsecunc") )  thxsecunc = Process[i]["data"].daughters()[0]["xsecunc"].toDouble();
+
+	      // converter
+	      if(proc.Contains("Z#rightarrow ll") || proc.Contains("dy"         )   ) thxsecunc = 0.04*thxsec;
+	      if(proc.Contains("VV")              || proc.Contains("vv"	        )   ) thxsecunc = 0.04*thxsec;
+	      if(proc.Contains("W,multijets")     || proc.Contains("wjets"      )   ) thxsecunc = 0.04*thxsec;
+	      if(proc.Contains("other t#bar{t}")  || proc.Contains("otherttbar" )   ) thxsecunc = 0.06*thxsec;
+	      if(proc.Contains("Single top")      || proc.Contains("st"	        )   ) thxsecunc = 0.08*thxsec;
+	      if(proc.Contains("t#bar{t}")        || proc.Contains("ttbar"      )   ) thxsecunc = 0.06*thxsec;
+	      
+
 	      shape.crossSections[proc]=std::pair<float,float>(thxsec,thxsecunc);
+	      
 	    }
 	    else{
 	      shape.bckgVars[proc][varName]=hshape;
@@ -758,7 +769,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	for(size_t j=0; j<shape.bckg.size(); j++)
 	  {
 	    TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	    if(proc=="ttbar") continue;
+	    //	    if(proc=="ttbar") continue;
 	    std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
 	    if(procXsec.second<=0) continue;
 	    if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
@@ -774,15 +785,15 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	    fprintf(pFile,"\n");
 	  }
 	
-	//fakes
-	fprintf(pFile,"%35s %10s ", "fakes", "lnN");
-	fprintf(pFile,"%6s ","-");
-	for(size_t j=0; j<shape.bckg.size(); j++) {
-	  TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
-	  if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
-	  else                                            fprintf(pFile,"%6s ","2.0");
-	}
-	fprintf(pFile,"\n");
+/// meh /// 	//fakes
+/// meh /// 	fprintf(pFile,"%35s %10s ", "fakes", "lnN");
+/// meh /// 	fprintf(pFile,"%6s ","-");
+/// meh /// 	for(size_t j=0; j<shape.bckg.size(); j++) {
+/// meh /// 	  TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+/// meh /// 	  if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
+/// meh /// 	  else                                            fprintf(pFile,"%6s ","2.0");
+/// meh /// 	}
+/// meh /// 	fprintf(pFile,"\n");
 	
 	//systematics described by shapes
 	for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)
