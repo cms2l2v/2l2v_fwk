@@ -11,7 +11,7 @@
 #include <vector>
 #include <utility>
 #include <cassert>
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -27,6 +27,7 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH1D.h"
+#include "THStack.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
 
@@ -36,6 +37,37 @@
 class OptimizationRoundInfo;
 
 void printHelp();
+
+class MyStyle
+{
+public:
+  MyStyle()
+  {
+    marker_ = 1;
+    lcolor_ = kBlack;
+    mcolor_ = kBlack;
+    fcolor_ = kWhite;
+    lwidth_ = 1;
+    lstyle_ = 1;
+  };
+
+  inline int& marker(){return marker_;};
+  inline int& lcolor(){return lcolor_;};
+  inline int& mcolor(){return mcolor_;};
+  inline int& fcolor(){return fcolor_;};
+  inline int& lwidth(){return lwidth_;};
+  inline int& lstyle(){return lstyle_;};
+
+private:
+  int marker_;
+  int lcolor_;
+  int mcolor_;
+  int fcolor_;
+  int lwidth_;
+  int lstyle_;
+
+protected:
+};
 
 struct doubleUnc
 {
@@ -59,6 +91,7 @@ struct ProcessFiles
 {
   std::string name;
   std::vector<SampleFiles> samples;
+  MyStyle style;
 };
 
 struct UserCutInfo
@@ -128,6 +161,7 @@ private:
   std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield);
   std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
   void SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle);
+  std::map<std::string,std::map<std::string,TH1D*>> GetAndSaveHists(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity, std::string varName, std::string varExpression, std::string varLabel, std::map<std::string,double>& varParams);
   bool ClearSamples();
 
 protected:
@@ -196,9 +230,9 @@ public:
   inline int nInitEvents(){return _nInitEvents;};
 
   std::vector<std::string> getListOfVariables();
-  std::unordered_map<std::string,std::string> getVariableExpressions();
-  std::unordered_map<std::string,std::unordered_map<std::string,double>> getVariableParameterMap();
-  std::unordered_map<std::string,std::string> getVariableLabels();
+  std::map<std::string,std::string> getVariableExpressions();
+  std::map<std::string,std::map<std::string,double>> getVariableParameterMap();
+  std::map<std::string,std::string> getVariableLabels();
 
   friend bool CutOptimizer::LoadJson();
 
@@ -364,9 +398,9 @@ std::vector<std::string> OptimizationRoundInfo::getListOfVariables()
   return retVal;
 }
 
-std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableLabels()
+std::map<std::string,std::string> OptimizationRoundInfo::getVariableLabels()
 {
-  std::unordered_map<std::string,std::string> retVal;
+  std::map<std::string,std::string> retVal;
 
   for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
   {
@@ -378,13 +412,13 @@ std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableLa
   return retVal;
 }
 
-std::unordered_map<std::string,std::unordered_map<std::string,double>> OptimizationRoundInfo::getVariableParameterMap()
+std::map<std::string,std::map<std::string,double>> OptimizationRoundInfo::getVariableParameterMap()
 {
-  std::unordered_map<std::string,std::unordered_map<std::string,double>> retVal;
+  std::map<std::string,std::map<std::string,double>> retVal;
 
   for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
   {
-    std::unordered_map<std::string,double> tempVal;
+    std::map<std::string,double> tempVal;
 
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
@@ -397,9 +431,9 @@ std::unordered_map<std::string,std::unordered_map<std::string,double>> Optimizat
   return retVal;
 }
 
-std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableExpressions()
+std::map<std::string,std::string> OptimizationRoundInfo::getVariableExpressions()
 {
-  std::unordered_map<std::string,std::string> retVal;
+  std::map<std::string,std::string> retVal;
 
   for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
   {
@@ -821,9 +855,9 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 {
   CutInfo retVal;
   std::vector<std::string> variables = roundInfo_[n].getListOfVariables(); // TODO - buffer this stuff
-  std::unordered_map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
-  std::unordered_map<std::string,std::unordered_map<std::string,double>> variableParameterMap = roundInfo_[n].getVariableParameterMap();
-  std::unordered_map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
+  std::map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
+  std::map<std::string,std::map<std::string,double>> variableParameterMap = roundInfo_[n].getVariableParameterMap();
+  std::map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
 
   TCut baseSelection = roundInfo_[n].baseSelection().c_str();
   TCut signalSelection = roundInfo_[n].signalSelection().c_str();
@@ -862,13 +896,18 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     double minVal = variableParameterMap[*variableName]["minVal"];
     double maxVal = variableParameterMap[*variableName]["maxVal"];
     double step   = variableParameterMap[*variableName]["step"];
-    std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
+    double bins   = variableParameterMap[*variableName]["bins"];
+    std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << bins + 1 << " steps to be processed." << std::endl;
 
     std::vector<double> xVals, yVals, xValsUnc, yValsUnc;
     std::vector<double> signalYield, backgroundYield, signalYieldUnc, backgroundYieldUnc;
 
-    for(double cutVal = minVal; cutVal <= maxVal; cutVal += step)
+//TODO - enable this
+//    std::map<std::string,std::map<std::string,TH1D*>> hists = GetAndSaveHists(report, signalSelection, baseSelection && cumulativeSelection, roundInfo_[n].iLumi(), *variableName, variableExpressions[*variableName], variableLabels[*variableName], variableParameterMap[*variableName]);
+    for(int i = 0; i <= int(bins); ++i)
     {
+      double cutVal = minVal + (maxVal-minVal)*i/bins;
+
       std::string thisCutStr;
       std::stringstream buf;
       buf << ">";
@@ -1058,6 +1097,116 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
   }
 
   return retVal;
+}
+
+std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity, std::string varName, std::string varExpression, std::string varLabel, std::map<std::string,double>& varParams)
+{
+  gROOT->cd();
+
+  double minVal = varParams["minVal"];
+  double maxVal = varParams["maxVal"];
+  double step   = varParams["step"];
+  double bins   = varParams["bins"];
+
+  std::map<std::string,TH1D*> hists; // Hists for ratio
+  std::map<std::string,std::map<std::string,TH1D*>> histsPlot; // Hists for plotting //TODO - Add an option in the variable definition in the JSON for "noCut" so that the variable is not cut on but just plotted
+  std::string title = ";"+varLabel+";Events";
+
+  for(auto index = processes_.begin(); index != processes_.end(); ++index)
+  {
+    hists[index->first] = new TH1D((index->first).c_str(), (index->first+title).c_str(), bins, minVal, maxVal);
+    hists[index->first]->Sumw2();
+
+    TCut cut = currentSelection;
+    if(index->first == "SIG" && isMultipointSignalSample_)
+      cut = cut && signalSelection;
+
+    for(auto process = index->second.begin(); process != index->second.end(); ++process)
+    {
+      histsPlot[index->first][process->name] = new TH1D((process->name).c_str(), (process->name + title).c_str(), bins, minVal, maxVal);
+      histsPlot[index->first][process->name]->Sumw2();
+
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        if(sample->nFiles == 0)
+          continue;
+
+        TH1D temp_hist("temp_hist", title.c_str(), bins, minVal, maxVal);
+        temp_hist.Sumw2();
+
+        if(nSignalPoints_ > 1 && index->first == "SIG")
+          sample->chain->Draw((varExpression+">>temp_hist").c_str(), cut*"puWeight", "goff");
+        else
+          sample->chain->Draw((varExpression+">>temp_hist").c_str(), cut*"weight", "goff");
+
+        if(index->first != "Data")
+        {
+          if(!isMultipointSignalSample_ || index->first != "SIG")
+          {
+            temp_hist.Scale(1.0/sample->nFiles);
+          }
+          else
+          {
+            if(nSignalPoints_ > 1)
+              temp_hist.Scale(roundInfo_[report.round].sigCrossSection() / (roundInfo_[report.round].nInitEvents() * nSignalPoints_));
+          }
+
+          temp_hist.Scale(integratedLuminosity);
+        }
+
+        histsPlot[index->first][process->name]->Add(&temp_hist);
+      }
+
+      histsPlot[index->first][process->name]->SetLineColor  (process->style.lcolor());
+      histsPlot[index->first][process->name]->SetMarkerColor(process->style.mcolor());
+      histsPlot[index->first][process->name]->SetFillColor  (process->style.fcolor());
+      histsPlot[index->first][process->name]->SetLineWidth  (process->style.lwidth());
+      histsPlot[index->first][process->name]->SetLineStyle  (process->style.lstyle());
+      histsPlot[index->first][process->name]->SetMarkerStyle(process->style.marker());
+
+      hists[index->first]->Add(histsPlot[index->first][process->name]);
+    }
+  }
+
+  // Todo: expand histos to show underflow/overflow if needed
+  // Todo: what about plotting 2D histos, only with the no-cut option
+
+  std::string baseFileName = roundInfo_[report.round].name() + "_" + varName;
+  double maximum = hists["BG"]->GetMaximum();
+  for(auto hist = histsPlot["SIG"].begin(); hist != histsPlot["SIG"].end(); ++hist)
+    if(hist->second->GetMaximum() > maximum)
+      maximum = hist->second->GetMaximum();
+
+  // Todo: add option to unblind - Do not forget about implementing the ratio
+  TCanvas c1("c1", "c1", 800, 600);
+
+  THStack* bgStack = new THStack((varName+"_BG").c_str(), (varName+title).c_str());
+  for(auto hist = histsPlot["BG"].begin(); hist != histsPlot["BG"].end(); ++hist)
+    bgStack->Add(hist->second);
+
+  bgStack->Draw();
+  bgStack->SetMaximum(maximum);
+  for(auto hist = histsPlot["SIG"].begin(); hist != histsPlot["SIG"].end(); ++hist)
+    hist->second->Draw("same");
+
+  c1.BuildLegend(0.88, 0.67, 1, 1);
+
+  for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
+    c1.SaveAs((outDir_ + "/" + baseFileName + *ext).c_str());
+
+  delete bgStack;
+
+  // Todo: normalized plots
+
+
+  // Cleaning up:
+  for(auto hist = hists.begin(); hist != hists.end(); ++hist)
+  {
+    delete hist->second;
+    hist->second = NULL;
+  }
+
+  return histsPlot;
 }
 
 std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield)
@@ -1296,6 +1445,28 @@ bool CutOptimizer::GetSamples(size_t n)
 
     ProcessFiles tempProc;
     tempProc.name = (*process).getString("tag", "Sample");
+
+    // Todo add possibility of plotting multiple signals, by extending the data json to include the cuts and a label for each signal sample
+    if(process->isTag("color"))
+    {
+      tempProc.style.lcolor() = process->getInt("color");
+      tempProc.style.mcolor() = tempProc.style.lcolor();
+      tempProc.style.fcolor() = tempProc.style.lcolor();
+    }
+    if(process->isTag("lcolor"))
+      tempProc.style.lcolor() = process->getInt("lcolor");
+    if(process->isTag("mcolor"))
+      tempProc.style.mcolor() = process->getInt("mcolor");
+    if(process->isTag("fcolor"))
+      tempProc.style.fcolor() = process->getInt("fcolor");
+    if(process->isTag("fill"))
+      tempProc.style.fcolor() = process->getInt("fill");
+    if(process->isTag("lwidth"))
+      tempProc.style.lwidth() = process->getInt("lwidth");
+    if(process->isTag("lstyle"))
+      tempProc.style.lstyle() = process->getInt("lstyle");
+    if(process->isTag("marker"))
+      tempProc.style.marker() = process->getInt("marker");
 
     std::string filtExt;
     if((*process).isTag("mctruthmode"))
