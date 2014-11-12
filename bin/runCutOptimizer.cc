@@ -106,7 +106,7 @@ struct CutInfo
   std::string variable;
   std::string direction;
   double value;
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield;
+  std::map<std::string,std::map<std::string,doubleUnc>> yield;
   double FOM;
   double FOMerr;
 };
@@ -158,8 +158,8 @@ private:
   bool GetSamples(size_t n);
   int  GetSigPoints(size_t n);
   CutInfo GetBestCutAndMakePlots(size_t n, ReportInfo& report);
-  std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield);
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
+  std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,doubleUnc>>& yield);
+  std::map<std::string,std::map<std::string,doubleUnc>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
   void SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle);
   std::map<std::string,std::map<std::string,TH1D*>> GetAndSaveHists(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity, std::string varName, std::string varExpression, std::string varLabel, std::map<std::string,double>& varParams);
   bool ClearSamples();
@@ -793,18 +793,13 @@ bool CutOptimizer::OptimizeRound_(size_t n)
           for(auto process = thisCut.yield["SIG"].begin(); process != thisCut.yield["SIG"].end(); ++process)
           {
             std::cout << "    " << process->first << ":" << std::endl;
-            doubleUnc processTot{0,0};
-            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-            {
-              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
-              processTot.value += sample->second.value;
-              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-            }
+            doubleUnc processTot = process->second;
+
             sigTot.value += processTot.value;
-            sigTot.uncertainty += processTot.uncertainty;
-            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            sigTot.uncertainty += processTot.uncertainty*processTot.uncertainty;
             std::cout << "      Total: " << processTot << std::endl;
           }
+          sigTot.uncertainty = std::sqrt(sigTot.uncertainty);
           std::cout << "    Total: " << sigTot << std::endl;
 
           std::cout << "  Background Processes:" << std::endl;
@@ -812,18 +807,13 @@ bool CutOptimizer::OptimizeRound_(size_t n)
           for(auto process = thisCut.yield["BG"].begin(); process != thisCut.yield["BG"].end(); ++process)
           {
             std::cout << "    " << process->first << ":" << std::endl;
-            doubleUnc processTot{0,0};
-            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-            {
-              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
-              processTot.value += sample->second.value;
-              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-            }
+            doubleUnc processTot = process->second;
+
             bgTot.value += processTot.value;
-            bgTot.uncertainty += processTot.uncertainty;
-            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            bgTot.uncertainty += processTot.uncertainty*processTot.uncertainty;
             std::cout << "      Total: " << processTot << std::endl;
           }
+          bgTot.uncertainty = std::sqrt(bgTot.uncertainty);
           std::cout << "    Total: " << bgTot << std::endl;
         }
         else
@@ -921,7 +911,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       if(verbose_)
         std::cout << "    Full cut expression: " << currentSelection << std::endl;
 
-      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+      std::map<std::string,std::map<std::string,doubleUnc>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
       std::vector<doubleUnc> fomReport = GetFOM(yield);
       doubleUnc fom  = fomReport[0];
       doubleUnc nSig = fomReport[1];
@@ -1007,7 +997,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       if(verbose_)
         std::cout << "    Full cut expression: " << currentSelection << std::endl;
 
-      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+      std::map<std::string,std::map<std::string,doubleUnc>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
       std::vector<doubleUnc> fomReport = GetFOM(yield);
       doubleUnc fom  = fomReport[0];
       doubleUnc nSig = fomReport[1];
@@ -1078,7 +1068,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     TCut thisCut = thisCutStr.c_str();
     TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
 
-    std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+    std::map<std::string,std::map<std::string,doubleUnc>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
     std::vector<doubleUnc> fomReport = GetFOM(yield);
     doubleUnc fom  = fomReport[0];
     doubleUnc nSig = fomReport[1];
@@ -1209,7 +1199,7 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
   return histsPlot;
 }
 
-std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield)
+std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,doubleUnc>>& yield)
 {
   std::vector<doubleUnc> retVal;
 
@@ -1221,21 +1211,15 @@ std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::s
 
   for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
   {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      nSig.value += sample->second.value;
-      nSig.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-    }
+    nSig.value += process->second.value;
+    nSig.uncertainty += process->second.uncertainty*process->second.uncertainty;
   }
   nSig.uncertainty = std::sqrt(nSig.uncertainty);
 
   for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
   {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      nBg.value += sample->second.value;
-      nBg.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-    }
+    nBg.value += process->second.value;
+    nBg.uncertainty += process->second.uncertainty*process->second.uncertainty;
   }
   nBg.uncertainty = std::sqrt(nBg.uncertainty);
 
@@ -1324,17 +1308,20 @@ void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std:
   return;
 }
 
-std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> CutOptimizer::GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity)
+std::map<std::string,std::map<std::string,doubleUnc>> CutOptimizer::GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity)
 {
   gROOT->cd();
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> retVal;
+  std::map<std::string,std::map<std::string,doubleUnc>> retVal;
 
   for(auto index = processes_.begin(); index != processes_.end(); ++index)
   {
-    std::map<std::string,std::map<std::string,doubleUnc>> typeYieldMap;
+    std::map<std::string,doubleUnc> typeYieldMap;
     for(auto process = index->second.begin(); process != index->second.end(); ++process)
     {
-      std::map<std::string,doubleUnc> processYieldMap;
+      doubleUnc processYield;
+      processYield.value = 0;
+      processYield.uncertainty = 0;
+
       for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
       {
         if(sample->nFiles == 0)
@@ -1381,9 +1368,12 @@ std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> CutO
           sampleYield.uncertainty = sampleYield.uncertainty * integratedLuminosity;
         }
 
-        processYieldMap[sample->name] = sampleYield;
+        processYield.value += sampleYield.value;
+        processYield.uncertainty += sampleYield.uncertainty*sampleYield.uncertainty;
       }
-      typeYieldMap[process->name] = processYieldMap;
+      processYield.uncertainty = std::sqrt(processYield.uncertainty);
+
+      typeYieldMap[process->name] = processYield;
     }
     retVal[index->first] = typeYieldMap;
   }
