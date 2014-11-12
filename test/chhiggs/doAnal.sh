@@ -38,20 +38,95 @@ if [ "${1}" = "singletop" ]; then
 	mkdir -p ${PLOTSDIR}emu
 	mkdir -p ${PLOTSDIR}ee
 	mkdir -p ${PLOTSDIR}mumu
-        mkdir -p ${PLOTSDIR}slep  
+        mkdir -p ${PLOTSDIR}singlemu
+	mkdir -p ${PLOTSDIR}singlee 
 	cp ${PLOTSDIR}../index.php ${PLOTSDIR}
 	cp ${PLOTSDIR}../index.php ${PLOTSDIR}emu
 	cp ${PLOTSDIR}../index.php ${PLOTSDIR}ee
 	cp ${PLOTSDIR}../index.php ${PLOTSDIR}mumu
-        cp ${PLOTSDIR}../index.php ${PLOTSDIR}slep
+        cp ${PLOTSDIR}../index.php ${PLOTSDIR}singlemu
+	cp ${PLOTSDIR}../index.php ${PLOTSDIR}singlee
 	cp ${BASEDIR}outputs/plots/ee_*       ${PLOTSDIR}ee/
 	cp ${BASEDIR}outputs/plots/emu_*      ${PLOTSDIR}emu/
 	cp ${BASEDIR}outputs/plots/mumu_*     ${PLOTSDIR}mumu/
-        cp ${BASEDIR}outputs/plots/slep*     ${PLOTSDIR}slep/
+        cp ${BASEDIR}outputs/plots/singlemu*  ${PLOTSDIR}singlemu/
+	cp ${BASEDIR}outputs/plots/singlee*   ${PLOTSDIR}singlee/ 
 	cp ${BASEDIR}outputs/tables/plotsemu_evtflow.tex  ${PLOTSDIR}emu/   
 	cp ${BASEDIR}outputs/tables/plotsee_evtflow.tex   ${PLOTSDIR}ee/
 	cp ${BASEDIR}outputs/tables/plotsmumu_evtflow.tex ${PLOTSDIR}mumu/ 
-        cp ${BASEDIR}outputs/tables/plotsslep_evtflow.tex ${PLOTSDIR}slep/
+        cp ${BASEDIR}outputs/tables/plotssinglemu_evtflow.tex ${PLOTSDIR}singlemu/
+	cp ${BASEDIR}outputs/tables/plotssinglee_evtflow.tex ${PLOTSDIR}singlee/
+    fi
+elif [ "${1}" = "lip" ]; then
+    BASEDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/out/
+    INPUTDIR=/lustre/ncg.ingrid.pt/cmst3/store/user/cbeiraod/14_08_06_2l2nu_EDMtuples_merged/
+    INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff/
+    #BASEJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/all-samples_fwlite.json
+    BASEJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/almost-samples_fwlite.json
+    SLEPJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/slep_fwlite.json
+    PLOTSJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/plot_fwlite.json
+    if [ "${2}" = "anal_sus" ]; then
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ch-higgs_samples.json -o ${BASEDIR} -d   ${INPUTDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "anal_sm" ]; then
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j ${BASEJSON} -o ${BASEDIR} -d  ${INPUTDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "anal_sl" ]; then
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j ${SLEPJSON} -o ${BASEDIR} -d  ${INPUTSLEPDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "plots" ]; then
+	runPlotterFWLite --iEcm 8 --iLumi 19782 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json ${PLOTSJSON} --noPowers --showUnc
+   elif [ "${2}" = "display" ]; then	
+	#cp ${BASEDIR}/plots/ee_*       ~/www/newAnal/ee/
+	#cp ${BASEDIR}/plots/emu_*      ~/www/newAnal/emu/
+	#cp ${BASEDIR}/plots/mumu_*     ~/www/newAnal/mumu/
+	#cp ${BASEDIR}/plots/singlemu_* ~/www/newAnal/singlemu/
+	PLOTSDIR=~/public_html/newNtuples/
+	mkdir -p ${PLOTSDIR}
+	mkdir -p ${PLOTSDIR}emu
+	mkdir -p ${PLOTSDIR}ee
+	mkdir -p ${PLOTSDIR}mumu
+        mkdir -p ${PLOTSDIR}singlemu
+	mkdir -p ${PLOTSDIR}singlee
+	mkdir -p ${PLOTSDIR}all
+	mkdir -p ${PLOTSDIR}unclassified  
+	cp ${PLOTSDIR}../index_php ${PLOTSDIR}/index.php
+	cp ${PLOTSDIR}index.php ${PLOTSDIR}emu
+	cp ${PLOTSDIR}index.php ${PLOTSDIR}ee
+	cp ${PLOTSDIR}index.php ${PLOTSDIR}mumu
+        cp ${PLOTSDIR}index.php ${PLOTSDIR}singlemu
+        cp ${PLOTSDIR}index.php ${PLOTSDIR}singlee
+        cp ${PLOTSDIR}index.php ${PLOTSDIR}all
+        cp ${PLOTSDIR}index.php ${PLOTSDIR}unclassified
+	cp ${BASEDIR}/plots/ee_*       ${PLOTSDIR}ee/
+	cp ${BASEDIR}/plots/emu_*      ${PLOTSDIR}emu/
+	cp ${BASEDIR}/plots/mumu_*     ${PLOTSDIR}mumu/
+        cp ${BASEDIR}/plots/singlemu*     ${PLOTSDIR}singlemu/
+        cp ${BASEDIR}/plots/singlee*     ${PLOTSDIR}singlee/
+        cp ${BASEDIR}/plots/all*     ${PLOTSDIR}all/
+        cp ${BASEDIR}/plots/unclassified*     ${PLOTSDIR}unclassified/
+	cp ${BASEDIR}/plots/emu_eventflowdileptons.tex  ${PLOTSDIR}emu/   
+	cp ${BASEDIR}/plots/ee_eventflowdileptons.tex   ${PLOTSDIR}ee/
+	cp ${BASEDIR}/plots/mumu_eventflowdileptons.tex ${PLOTSDIR}mumu/ 
+        cp ${BASEDIR}/plots/singlemu_eventflowsinglelepton.tex ${PLOTSDIR}singlemu/
+        cp ${BASEDIR}/plots/singlee_eventflowsinglelepton.tex ${PLOTSDIR}singlee/
+        cp ${BASEDIR}/plots/eventflowdileptons.tex ${PLOTSDIR}all/
+	cp ${BASEDIR}/plots/eventflowsinglelepton.tex ${PLOTSDIR}all/
+        cp ${BASEDIR}/plots/unclassified_eventflow.tex ${PLOTSDIR}unclassified/
+   elif [ "${2}" = "cleanDisplay" ]; then	
+	rm ~/www/newAnal/ee/*png
+	rm ~/www/newAnal/emu/*png
+	rm ~/www/newAnal/mumu/*png
+	rm ~/www/newAnal/singlemu/*png
+
+	rm ~/www/newAnal/ee/*tex
+	rm ~/www/newAnal/emu/*tex
+	rm ~/www/newAnal/mumu/*tex
+	rm ~/www/newAnal/singlemu/*tex
+   elif [ "${2}" = "cleanArea" ]; then	
+	rm ${BASEDIR}/plots/*
+	rm -r ${BASEDIR}/FARM
+	rm -r ${BASEDIR}/*py
+	rm -r ${BASEDIR}/*txt
+	rm -r ${BASEDIR}/*root
+
     fi
 elif [ "${1}" = "fwlite" ]; then
     BASEDIR=/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5315_fwlite/
