@@ -576,8 +576,8 @@ bool CutOptimizer::LoadJson()
         std::cout << roundInfo._name << "::" << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
         continue;
       }
-      variableInfo._step = variable->getDouble("bins", 1);
-      if(variableInfo._step <= 0)
+      variableInfo._bins = variable->getDouble("bins", 1);
+      if(variableInfo._bins <= 0)
       {
         std::cout << roundInfo._name << "::" << variableInfo._name << ": bins must be a valid (positive and non-zero) value. Continuing..." << std::endl;
         continue;
