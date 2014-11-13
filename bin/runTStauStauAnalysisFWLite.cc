@@ -462,7 +462,9 @@ int main(int argc, char* argv[])
     summaryTree->Branch("tauIndex", &tauIndex);
     summaryTree->Branch("leptonIndex", &leptonIndex);
     if(doSVfit)
+    {
       summaryTree->Branch("SVFitMass", &mass);
+    }
     summaryTree->Branch("InvariantMass", &invMass);
     summaryTree->Branch("MT", &mt);
     summaryTree->Branch("Q80", &Q80);
@@ -1405,6 +1407,35 @@ int main(int argc, char* argv[])
           chTags.push_back("etau");
         else
           chTags.push_back("mutau");
+
+        #if defined(DEBUG_EVENT)
+        if(debugEvent || true)
+        {
+          bool isMuTau = false;
+          bool isAll = false;
+          for(auto tag = chTags.begin(); tag != chTags.end(); ++tag)
+          {
+            if(*tag == "all")
+              isAll = true;
+            if(*tag == "mutau")
+              isMuTau = true;
+          }
+
+          if(!isAll)
+          {
+            myCout << " Found a ";
+            if(isMuTau)
+              myCout << "mu-tau";
+            else
+              myCout << "e-tau";
+            myCout << " event";
+            if(isAll)
+              myCout << " and it is tagged as all" << std::endl;
+            else
+              myCout << " but it is not tagged as all" << std::endl;
+          }
+        }
+        #endif
       }
     }
 
