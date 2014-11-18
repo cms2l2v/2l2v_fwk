@@ -33,6 +33,7 @@
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
 
 class OptimizationRoundInfo;
 
@@ -43,12 +44,12 @@ class MyStyle
 public:
   MyStyle()
   {
-    marker_ = 1;
-    lcolor_ = kBlack;
-    mcolor_ = kBlack;
-    fcolor_ = kWhite;
-    lwidth_ = 1;
-    lstyle_ = 1;
+    lcolor_ = 1;//kBlack;
+    mcolor_ = 1;//kBlack;
+    fcolor_ = 0;//kWhite;
+    lwidth_ = -1;
+    lstyle_ = -1;
+    marker_ = -1;
   };
 
   inline int& marker(){return marker_;};
@@ -149,6 +150,7 @@ private:
 
   std::map<std::string,bool> FileExists_;
   std::vector<ReportInfo> report_;
+  std::vector<std::string> printOrder_;
 //  JSONWrapper::Object* json;
 
   std::vector<OptimizationRoundInfo> roundInfo_;
@@ -268,6 +270,7 @@ size_t OptimizationRoundInfo::_counter = 0;
 int main(int argc, char** argv)
 {
   AutoLibraryLoader::enable();
+  setTDRStyle();
 
   std::string jsonFile;
   std::string outDir = "./OUT/";
@@ -707,7 +710,7 @@ bool CutOptimizer::OptimizeRound_(size_t n)
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::streambuf *cerrbuf = std::cerr.rdbuf();
   if(verbose_)
-    std::cout << "Opening log file: " << outDir_+"/"+roundName << std::endl;
+    std::cout << "Opening log file: " << outDir_+"/"+roundName+".log" << std::endl;
   ofstream out(outDir_+"/"+roundName+".log", std::ios::out | std::ios::trunc);
   out << "This is the log file for round: " << roundName << std::endl;
   out.flush();
@@ -1158,9 +1161,15 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
       histsPlot[index->first][process->name]->SetLineColor  (process->style.lcolor());
       histsPlot[index->first][process->name]->SetMarkerColor(process->style.mcolor());
       histsPlot[index->first][process->name]->SetFillColor  (process->style.fcolor());
-      histsPlot[index->first][process->name]->SetLineWidth  (process->style.lwidth());
-      histsPlot[index->first][process->name]->SetLineStyle  (process->style.lstyle());
-      histsPlot[index->first][process->name]->SetMarkerStyle(process->style.marker());
+      if(process->style.lwidth() >= 0)
+        histsPlot[index->first][process->name]->SetLineWidth  (process->style.lwidth());
+      if(process->style.lstyle() >= 0)
+        histsPlot[index->first][process->name]->SetLineStyle  (process->style.lstyle());
+      if(process->style.marker() >= 0)
+        histsPlot[index->first][process->name]->SetMarkerStyle(process->style.marker());
+
+//      if(index->first == "MC")
+//        histsPlot[index->first][process->name]->SetFillStyle(1001);
 
       hists[index->first]->Add(histsPlot[index->first][process->name]);
     }
@@ -1181,15 +1190,20 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
 
   // Todo: add option to unblind - Do not forget about implementing the ratio
   TCanvas c1("c1", "c1", 800, 600);
+  c1.SetLogy(true);
 
   THStack* bgStack = new THStack((varName+"_BG").c_str(), (varName+title).c_str());
-  for(auto hist = histsPlot["BG"].begin(); hist != histsPlot["BG"].end(); ++hist)
-    bgStack->Add(hist->second);
+  for(auto sample = printOrder_.begin(); sample != printOrder_.end(); ++sample)
+    if(histsPlot["BG"].find(*sample) != histsPlot["BG"].end())
+      bgStack->Add(histsPlot["BG"][*sample]);
+//  for(auto hist = histsPlot["BG"].begin(); hist != histsPlot["BG"].end(); ++hist)
+//    bgStack->Add(hist->second);
 
-  bgStack->Draw();
-  bgStack->SetMaximum(maximum);
+  bgStack->Draw("hist");
+  bgStack->SetMaximum(maximum*1.1);
+  bgStack->SetMinimum(5e-2);
   for(auto hist = histsPlot["SIG"].begin(); hist != histsPlot["SIG"].end(); ++hist)
-    hist->second->Draw("same");
+    hist->second->Draw("hist same");
 
   c1.BuildLegend(0.88, 0.67, 1, 1);
 
@@ -1447,6 +1461,7 @@ bool CutOptimizer::GetSamples(size_t n)
 
     ProcessFiles tempProc;
     tempProc.name = (*process).getString("tag", "Sample");
+    printOrder_.push_back(tempProc.name);
 
     // Todo add possibility of plotting multiple signals, by extending the data json to include the cuts and a label for each signal sample
     if(process->isTag("color"))
@@ -1542,6 +1557,7 @@ bool CutOptimizer::ClearSamples()
     }
   }
   processes_.clear();
+  printOrder_.clear();
 
   std::vector<ProcessFiles> temp;
   processes_["BG"] = temp;
