@@ -184,7 +184,6 @@ public:
   inline std::string& expression(){return _expression;};
   inline double& minVal(){return _minVal;};
   inline double& maxVal(){return _maxVal;};
-  inline double& step(){return _step;};
   inline double& bins(){return _bins;};
   inline std::string& label(){return _label;};
 
@@ -193,7 +192,7 @@ public:
 private:
   std::string _name;
   std::string _expression;
-  double _minVal, _maxVal, _step, _bins;
+  double _minVal, _maxVal, _bins;
   std::string _label;
 
 protected:
@@ -425,7 +424,6 @@ std::map<std::string,std::map<std::string,double>> OptimizationRoundInfo::getVar
 
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
-    tempVal["step"]   = variable->step();
     tempVal["bins"]   = variable->bins();
 
     retVal[variable->name()] = tempVal;
@@ -452,7 +450,6 @@ OptimizationVariableInfo::OptimizationVariableInfo()
   _expression = "";
   _minVal = 0;
   _maxVal = 0;
-  _step = 0;
   _bins = 1;
 }
 
@@ -583,12 +580,6 @@ bool CutOptimizer::LoadJson()
       if(variableInfo._bins <= 0)
       {
         std::cout << roundInfo._name << "::" << variableInfo._name << ": bins must be a valid (positive and non-zero) value. Continuing..." << std::endl;
-        continue;
-      }
-      variableInfo._step = variable->getDouble("step", 0);
-      if(variableInfo._step <= 0 || variableInfo._step > variableInfo._maxVal - variableInfo._minVal)
-      {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": step must be a resonable and valid value. Continuing..." << std::endl;
         continue;
       }
       variableInfo._label = variable->getString("label", "");
@@ -888,7 +879,6 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
   {
 //    double minVal = variableParameterMap[*variableName]["minVal"];
 //    double maxVal = variableParameterMap[*variableName]["maxVal"];
-//    double step   = variableParameterMap[*variableName]["step"]; // TODO: remove all mentions of step from the code since it is no longer used
     double bins   = variableParameterMap[*variableName]["bins"];
     std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << bins + 1 << " steps to be processed." << std::endl;
 
@@ -1106,7 +1096,6 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
 
   double minVal = varParams["minVal"];
   double maxVal = varParams["maxVal"];
-//  double step   = varParams["step"];
   double bins   = varParams["bins"];
 
   std::map<std::string,TH1D*> hists; // Hists for ratio
