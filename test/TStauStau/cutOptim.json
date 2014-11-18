@@ -8,9 +8,9 @@
       "comment":"the name field is self explanatory, ie the name of the round",
       "iLumi":18893,
       "comment":"the iLumi field should contain the integrated luminosity, this should not affect the result unless a data driven background is being used",
-      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/IPM_selection/",
+      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
       "comment":"the inDir field should contain the directory where the summary trees may be found",
-      "jsonFile":"tstaustau_samples_exclusive_2012B.json",
+      "jsonFile":"tstaustau_samples_full.json",
       "comment":"the jsonFile field should contain the json file describing the processes and samples to use. It should be the same file given to runPlotter for instance",
       "ttree":"Events",
       "comment":"the ttree field should contain the name of the ttree where the variables are kept",
@@ -25,7 +25,7 @@
       "sigCrossSection":0.0755,
       "nInitEvents":10000,
       "comment":"For signal types where multiple signal points are within the same sample, other methods have to be used for normalization, define here the cross section and initial number of events per signal point. If you are using a different type of signal (a single sample per signal point for instance) place nInitEvents to a negative number and put some placeholder value in sigCrossSection",
-      "userCuts":[
+      "hidden_userCuts":[
         {
           "variable":"MT2",
           "direction":"above",
@@ -93,6 +93,15 @@
           "label":"MET vs P_{T}(#tau)"
         },
         {
+          "name":"MT",
+          "expression":"MT",
+          "minVal":0,
+          "maxVal":180,
+          "step":5,
+          "bins":36,
+          "label":"M_{T}"
+        },
+        {
           "name":"MT2",
           "expression":"MT2",
           "minVal":0,
@@ -102,35 +111,35 @@
           "label":"M_{T2}"
         },
         {
-          "name":"deltaAlphaTauLep",
-          "expression":"abs(deltaAlphaTauTau)",
+          "name":"deltaAlphaLepTau",
+          "expression":"abs(deltaAlphaLepTau)",
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
           "bins":31,
-          "label":"#Delta#alpha_{#tau-l}(Lab)"
+          "label":"#Delta#alpha_{l-#tau}(Lab)"
         },
         {
-          "name":"deltaPhiTauLepMET",
-          "expression":"abs(deltaPhiTauTauMET)",
+          "name":"deltaPhiLepTauMET",
+          "expression":"abs(deltaPhiLepTauMET)",
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
           "bins":31,
-          "label":"#Delta#phi_{#taul-MET}(Lab)"
+          "label":"#Delta#phi_{l#tau-MET}(Lab)"
         },
         {
-          "name":"deltaPhiTauLep",
-          "expression":"abs(deltaPhiTauTau)",
+          "name":"deltaPhiLepTau",
+          "expression":"abs(deltaPhiLepTau)",
           "minVal":0,
           "maxVal":3.14,
           "step":0.1,
           "bins":31,
-          "label":"#Delta#phi_{#tau-l}(Lab)"
+          "label":"#Delta#phi_{l-#tau}(Lab)"
         },
         {
           "name":"cosThetaLep",
-          "expression":"abs(cosThetaTauL)",
+          "expression":"abs(cosThetaLep)",
           "minVal":0,
           "maxVal":1,
           "step":0.05,
@@ -139,7 +148,7 @@
         },
         {
           "name":"cosThetaTau",
-          "expression":"abs(cosThetaTauH)",
+          "expression":"abs(cosThetaTau)",
           "minVal":0,
           "maxVal":1,
           "step":0.05,
