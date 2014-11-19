@@ -815,7 +815,27 @@ bool CutOptimizer::OptimizeRound_(size_t n)
       }
     }
 
-    // TODO - Print the final selection info
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "The final selection string chosen is: ";
+    bool noOut = true;
+    std::map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      if(noOut)
+        noOut = false;
+      else
+        std::cout << " && ";
+      std::cout << variableExpressions[cut->variable];
+      if(cut->direction == "below")
+        std::cout << "<";
+      else
+        std::cout << ">";
+      std::cout << cut->value;
+    }
+    std::cout << "std::endl";
+
     // TODO - Make the report (including the tex table with the yields)
   }
   else
