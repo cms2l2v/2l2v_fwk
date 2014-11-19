@@ -229,6 +229,7 @@ public:
   inline std::string signalPoint(){return _signalPoint;};
   inline double sigCrossSection(){return _sigCrossSection;};
   inline int nInitEvents(){return _nInitEvents;};
+  inline double minSigEvents(){return _minSigEvents;};
 
   std::vector<std::string> getListOfVariables();
   std::map<std::string,std::string> getVariableExpressions();
@@ -254,6 +255,7 @@ private:
   std::vector<UserCutInfo> _UserCuts;
   double      _sigCrossSection;
   int         _nInitEvents;
+  double      _minSigEvents;
 
 protected:
 };
@@ -350,6 +352,7 @@ OptimizationRoundInfo::OptimizationRoundInfo()
   _iLumi           = 1;
   _inDir           = "";
   _jsonFile        = "";
+  _minSigEvents    = -1;
   ++_counter;
 }
 
@@ -531,6 +534,7 @@ bool CutOptimizer::LoadJson()
     roundInfo._channel = round->getString("channel", roundInfo._channel);
     roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
     roundInfo._nInitEvents = round->getInt("nInitEvents", roundInfo._nInitEvents);
+    roundInfo._minSigEvents = round->getDouble("minSigEvents", roundInfo._minSigEvents);
 
     if(verbose_)
       std::cout << "    Loaded round info, now trying to load user-defined cuts, if any." << std::endl;
@@ -902,7 +906,6 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     double bins   = variableParameterMap[*variableName]["bins"];
     std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << bins + 1 << " steps to be processed." << std::endl;
 
-//TODO - enable and use this
     std::map<std::string,std::map<std::string,TH1D*>> hists = GetAndSaveHists(report, signalSelection, baseSelection && cumulativeSelection, roundInfo_[n].iLumi(), *variableName, variableExpressions[*variableName], variableLabels[*variableName], variableParameterMap[*variableName]);
 
     TH1D* exampleHist = NULL;
@@ -988,7 +991,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
         backgroundYieldAbove.push_back(fomReportAbove[2].value);
         backgroundYieldUncAbove.push_back(fomReportAbove[2].uncertainty);
 
-        if(retVal.FOM < fomReportAbove[0].value)// todo: implement here a minimum limit for the number of signal events, implement an option in the json to specify this amount
+        if(retVal.FOM < fomReportAbove[0].value && fomReportAbove[1].value > roundInfo_[n].minSigEvents())
         {
           retVal.FOM = fomReportAbove[0].value;
           retVal.FOMerr = fomReportAbove[0].uncertainty;
@@ -1010,7 +1013,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
         backgroundYieldBelow.push_back(fomReportBelow[2].value);
         backgroundYieldUncBelow.push_back(fomReportBelow[2].uncertainty);
 
-        if(retVal.FOM < fomReportBelow[0].value)// todo: implement here a minimum limit for the number of signal events, implement an option in the json to specify this amount
+        if(retVal.FOM < fomReportBelow[0].value && fomReportBelow[1].value > roundInfo_[n].minSigEvents())
         {
           retVal.FOM = fomReportBelow[0].value;
           retVal.FOMerr = fomReportBelow[0].uncertainty;

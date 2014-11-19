@@ -25,6 +25,8 @@
       "sigCrossSection":0.0755,
       "nInitEvents":10000,
       "comment":"For signal types where multiple signal points are within the same sample, other methods have to be used for normalization, define here the cross section and initial number of events per signal point. If you are using a different type of signal (a single sample per signal point for instance) place nInitEvents to a negative number and put some placeholder value in sigCrossSection",
+      "minSigEvents":0.8,
+      "comment":"minSigEvents sets the minimum number of signal events after which the optimization will no longer be performed",
       "hidden_userCuts":[
         {
           "variable":"MT2",
@@ -68,7 +70,7 @@
           "minVal":0,
           "maxVal":300,
           "bins":30,
-          "label":"M_{SVFit}"
+          "label":"|M_{SVFit}-95|"
         },
         {
           "name":"METvsPTlep",
