@@ -14,7 +14,7 @@
     {
       "tag":"Single top",
       "isdata":false,
-      "color":824,
+      "color":592,
       "lcolor":1,
       "data":[
         { "dtag":"MC8TeV_SingleT_t"                        , "split":1, "xsec":56.4        , "br":[ 1.0 ]                 , "dset":"/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -39,7 +39,7 @@
     {
       "tag":"VV/VVV",
       "isdata":false,
-      "color":592,
+      "color":824,
       "lcolor":1,
       "marker":1,
       "data":[
