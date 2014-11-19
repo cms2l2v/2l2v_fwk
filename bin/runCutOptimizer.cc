@@ -186,6 +186,7 @@ public:
   inline double& maxVal(){return _maxVal;};
   inline double& bins(){return _bins;};
   inline std::string& label(){return _label;};
+  inline bool& noCut(){return _noCut;};
 
   friend bool CutOptimizer::LoadJson();
 
@@ -194,6 +195,7 @@ private:
   std::string _expression;
   double _minVal, _maxVal, _bins;
   std::string _label;
+  bool _noCut;
 
 protected:
 };
@@ -428,6 +430,7 @@ std::map<std::string,std::map<std::string,double>> OptimizationRoundInfo::getVar
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
     tempVal["bins"]   = variable->bins();
+    tempVal["noCut"]  = (variable->noCut())?1.0:0.0;
 
     retVal[variable->name()] = tempVal;
   }
@@ -454,6 +457,7 @@ OptimizationVariableInfo::OptimizationVariableInfo()
   _minVal = 0;
   _maxVal = 0;
   _bins = 1;
+  _noCut = false;
 }
 
 OptimizationVariableInfo::~OptimizationVariableInfo()
@@ -587,6 +591,7 @@ bool CutOptimizer::LoadJson()
         continue;
       }
       variableInfo._label = variable->getString("label", "");
+      variableInfo._noCut = variable->getBool("noCut", false);
 
       roundInfo._variables.push_back(variableInfo);
     }
@@ -905,8 +910,26 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 //    double maxVal = variableParameterMap[*variableName]["maxVal"];
     double bins   = variableParameterMap[*variableName]["bins"];
     std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << bins + 1 << " steps to be processed." << std::endl;
+    if(verbose_)
+      std::cout << "  This variable has the following value for noCut: " << variableParameterMap[*variableName]["noCut"] << std::endl;
 
     std::map<std::string,std::map<std::string,TH1D*>> hists = GetAndSaveHists(report, signalSelection, baseSelection && cumulativeSelection, roundInfo_[n].iLumi(), *variableName, variableExpressions[*variableName], variableLabels[*variableName], variableParameterMap[*variableName]);
+
+    if(variableParameterMap[*variableName]["noCut"] != 0.0)
+    {
+      std::cout << "  This variable is marked as \"noCut\", skipping optimization for this variable." << std::endl;
+
+      for(auto index = hists.begin(); index != hists.end(); ++index)
+      {
+        for(auto process = index->second.begin(); process != index->second.end(); ++process)
+        {
+          delete process->second;
+          process->second = NULL;
+        }
+      }
+
+      continue;
+    }
 
     TH1D* exampleHist = NULL;
     std::vector<double> xValsAbove, yValsAbove, xValsUncAbove, yValsUncAbove;
@@ -1122,7 +1145,7 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
   double bins   = varParams["bins"];
 
   std::map<std::string,TH1D*> hists; // Hists for ratio
-  std::map<std::string,std::map<std::string,TH1D*>> histsPlot; // Hists for plotting //TODO - Add an option in the variable definition in the JSON for "noCut" so that the variable is not cut on but just plotted
+  std::map<std::string,std::map<std::string,TH1D*>> histsPlot; // Hists for plotting
   std::string title = ";"+varLabel+";Events";
 
   for(auto index = processes_.begin(); index != processes_.end(); ++index)
@@ -1180,9 +1203,6 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
       if(process->style.marker() >= 0)
         histsPlot[index->first][process->name]->SetMarkerStyle(process->style.marker());
 
-//      if(index->first == "MC")
-//        histsPlot[index->first][process->name]->SetFillStyle(1001);
-
       hists[index->first]->Add(histsPlot[index->first][process->name]);
     }
   }
@@ -1208,8 +1228,6 @@ std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(
   for(auto sample = printOrder_.begin(); sample != printOrder_.end(); ++sample)
     if(histsPlot["BG"].find(*sample) != histsPlot["BG"].end())
       bgStack->Add(histsPlot["BG"][*sample]);
-//  for(auto hist = histsPlot["BG"].begin(); hist != histsPlot["BG"].end(); ++hist)
-//    bgStack->Add(hist->second);
 
   bgStack->Draw("hist");
   bgStack->SetMaximum(maximum*1.1);

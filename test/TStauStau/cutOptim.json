@@ -8,7 +8,7 @@
       "comment":"the name field is self explanatory, ie the name of the round",
       "iLumi":18893,
       "comment":"the iLumi field should contain the integrated luminosity, this should not affect the result unless a data driven background is being used",
-      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
+      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results_old/",
       "comment":"the inDir field should contain the directory where the summary trees may be found",
       "jsonFile":"tstaustau_samples_full.json",
       "comment":"the jsonFile field should contain the json file describing the processes and samples to use. It should be the same file given to runPlotter for instance",
@@ -47,6 +47,16 @@
           "comment":"the fields minVal, maxVal and bins, as their names imply, control how the scan itself is performed, they also control the ranges for the plots",
           "label":"MET",
           "comment":"the label field holds the value that will be printed on the plots, ie it can contain valid LaTeX commands in root for nicer output"
+        },
+        {
+          "name":"nvtx",
+          "expression":"nvtx",
+          "minVal":0,
+          "maxVal":50,
+          "bins":50,
+          "label":"nvtx",
+          "noCut":true,
+          "comment":"noCut is assumed to be false for all variables, except otherwise specified, if this value is true, no cut optimization will be performed on this variable, it will only be plotted"
         },
         {
           "name":"lepLeadPt",
