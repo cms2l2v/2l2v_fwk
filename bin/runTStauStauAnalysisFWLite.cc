@@ -53,6 +53,7 @@
 #include <Math/VectorUtil.h>
 #include <bitset>
 #include <cctype>
+#include <cmath>
 
 // Include MT2 library:
 // http://particle.physics.ucdavis.edu/hefti/projects/doku.php?id=wimpmass    ** Code from here
@@ -63,6 +64,9 @@
 #ifndef DEBUG_EVENT
 //#define DEBUG_EVENT true
 #endif
+
+#define NAN_WARN(X) if(std::isnan(X)) std::cout << "  Warning: " << #X << " is nan" << std::endl;
+
 
 
 enum ID_Type {LooseID, MediumID, TightID};
@@ -938,6 +942,11 @@ int main(int argc, char* argv[])
           #endif
         }
       }
+
+      #if defined(DEBUG_EVENT)
+      if(debugEvent)
+        myCout << "  Computed trigger SF: " << triggerSF << std::endl;
+      #endif
     }
     if(applyScaleFactors && isMC)
       weight *= triggerSF;
@@ -1720,6 +1729,34 @@ int main(int argc, char* argv[])
     #if defined(DEBUG_EVENT)
     if(debugEvent)
       myCout << " Filling TTree" << std::endl;
+    NAN_WARN(rho)
+    NAN_WARN(rho25)
+    NAN_WARN(weight)
+    NAN_WARN(weight_plus)
+    NAN_WARN(weight_minus)
+    NAN_WARN(puWeight)
+    NAN_WARN(triggerSF)
+    NAN_WARN(leptonIdIsoSF)
+    NAN_WARN(tauSF)
+    NAN_WARN(mass)
+    NAN_WARN(invMass)
+    NAN_WARN(mt)
+    NAN_WARN(Q80)
+    NAN_WARN(Q100)
+    NAN_WARN(cosPhi)
+    NAN_WARN(mt2)
+    NAN_WARN(stauMass)
+    NAN_WARN(neutralinoMass)
+    NAN_WARN(deltaAlphaLepTau)
+    NAN_WARN(deltaPhiLepTauMET)
+    NAN_WARN(deltaPhiLepTau)
+    NAN_WARN(cosThetaTau)
+    NAN_WARN(cosThetaLep)
+    NAN_WARN(deltaPhiLepMETCS)
+    NAN_WARN(cosThetaCS)
+    NAN_WARN(tauLeadPt)
+    NAN_WARN(lepLeadPt)
+    NAN_WARN(maxPtSum)
     #endif
     if(saveSummaryTree)
       summaryTree->Fill();
