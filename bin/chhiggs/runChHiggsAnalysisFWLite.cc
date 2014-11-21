@@ -113,16 +113,16 @@ int main(int argc, char* argv[])
   printf("TextFile URL = %s\n",outTxtUrl.Data());
 
   //residual corrections from Z+1 jet recoil
-  std::vector<TGraph *> recoilResidualsGr;
-  TFile *fIn=TFile::Open("/afs/cern.ch/user/p/psilva/work/CMSSW_5_3_3_patch2/src/CMGTools/HtoZZ2l2nu/data/recoilBalance.root");
-  if(fIn){
-    TGraph *gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfdydata2mc");
-    if(gr) recoilResidualsGr.push_back( gr );
-    gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfgdata2mc");
-    if(gr) recoilResidualsGr.push_back( gr );
-    fIn->Close();
-    cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
-  }
+///////////   std::vector<TGraph *> recoilResidualsGr;
+///////////   TFile *fIn=TFile::Open("/afs/cern.ch/user/p/psilva/work/CMSSW_5_3_3_patch2/src/CMGTools/HtoZZ2l2nu/data/recoilBalance.root");
+///////////   if(fIn){
+///////////     TGraph *gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfdydata2mc");
+///////////     if(gr) recoilResidualsGr.push_back( gr );
+///////////     gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfgdata2mc");
+///////////     if(gr) recoilResidualsGr.push_back( gr );
+///////////     fIn->Close();
+///////////     cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
+///////////   }
  
 
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
