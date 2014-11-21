@@ -32,6 +32,7 @@
 
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TDirectory.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TCanvas.h"
@@ -94,6 +95,7 @@ int main(int argc, char* argv[])
 
   #if defined(DEBUG_EVENT)
   bool debugEvent = false;
+  int skipEvents = 0;
   #endif
 
   int fileIndex = 1;
@@ -127,6 +129,18 @@ int main(int argc, char* argv[])
       if(arg.find("--debugEvent") != std::string::npos)
       {
         debugEvent = true;
+        continue;
+      }
+      if(arg.find("--skipEvents") != std::string::npos)
+      {
+        char first = argv[i+1][0];
+        if(!isdigit(first))
+          continue;
+
+        parser << argv[i+1];
+        parser >> skipEvents;
+
+        ++i;
         continue;
       }
       #endif
@@ -199,14 +213,30 @@ int main(int argc, char* argv[])
   while(outFileUrl.find(".root", 0) != std::string::npos)
     outFileUrl.replace(outFileUrl.find(".root", 0), 5, "");
   std::string outUrl = outdir;
+  outUrl += "/";
+  outUrl += outFileUrl + ".root";
 
   TString turl(url);
   bool isV0JetsMC(isMC && (turl.Contains("DYJetsToLL_50toInf") || turl.Contains("WJets")));
   bool isStauStau(isMC && turl.Contains("TStauStau"));
 
   TTree* summaryTree = NULL;
+  TFile* summaryOutFile = NULL;
   if(saveSummaryTree)
+  {
+    TDirectory* cwd = gDirectory;
+
+    std::string summaryOutUrl = outUrl;
+    summaryOutUrl.replace(summaryOutUrl.find(".root", 0), 5, "_summary.root");
+    std::cout << "Saving summary results in " << summaryOutUrl << std::endl;
+    summaryOutFile = new TFile(summaryOutUrl.c_str(), "RECREATE");
+
     summaryTree = new TTree("Events", "Events");
+
+    summaryTree->SetDirectory(summaryOutFile);
+
+    cwd->cd();
+  }
 
 
 
@@ -500,6 +530,8 @@ int main(int argc, char* argv[])
   for(size_t iev = 0; iev < totalEntries; ++iev)
   {
     #if defined(DEBUG_EVENT)
+    if(iev < skipEvents)
+      continue;
     if(debugEvent)
       myCout << "## Event " << iev << std::endl;
     #endif
@@ -1784,8 +1816,6 @@ int main(int argc, char* argv[])
   /***************************************************************************/
   /*                        Saving Histograms to File                        */
   /***************************************************************************/
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
   std::cout << "Saving results in " << outUrl << std::endl;
   TFile* outfile = new TFile(outUrl.c_str(), "RECREATE");
   mon.Write();
@@ -1794,14 +1824,15 @@ int main(int argc, char* argv[])
 
   if(saveSummaryTree)
   {
-    outUrl.replace(outUrl.find(".root", 0), 5, "_summary.root");
-    std::cout << "Saving summary results in " << outUrl << std::endl;
-    outfile = new TFile(outUrl.c_str(), "RECREATE");
+//    std::string summaryOutUrl = outUrl;
+//    summaryOutUrl.replace(summaryOutUrl.find(".root", 0), 5, "_summary.root");
+//    std::cout << "Saving summary results in " << summaryOutUrl << std::endl;
+//    summaryOutFile = new TFile(summaryOutUrl.c_str(), "RECREATE");
     // Write Tuple/Tree
-    summaryTree->SetDirectory(outfile);
+//    summaryTree->SetDirectory(summaryOutFile);
     summaryTree->Write();
-    outfile->Close();
-    delete outfile;
+    summaryOutFile->Close();
+    delete summaryOutFile;
   }
 
   return 0;
