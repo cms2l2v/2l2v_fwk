@@ -3,6 +3,8 @@
 // <date>2014-06-02</date>
 // <summary>Script that runs an iterative cut optimization procedure. Cut values are scanned and the value with the maximum FOM is used.</summary>
 
+// Todo add option for special optimization variables such as double varying in a 2D cut
+
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
 #include <iostream>
@@ -34,6 +36,8 @@
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 #include "UserCode/llvv_fwk/interface/tdrstyle.h"
+
+#include "UserCode/llvv_fwk/interface/doubleWithUncertainty.h"
 
 class OptimizationRoundInfo;
 
@@ -70,16 +74,16 @@ private:
 protected:
 };
 
-struct doubleUnc
-{
-  double value;
-  double uncertainty;
-};
+//struct doubleUnc
+//{
+//  double value;
+//  double uncertainty;
+//};
 
-std::ostream& operator << (std::ostream &o, doubleUnc& val)
-{
-  return o << val.value << " +- " << val.uncertainty;
-}
+//std::ostream& operator << (std::ostream &o, doubleUnc& val)
+//{
+//  return o << val.value << " +- " << val.uncertainty;
+//}
 
 struct SampleFiles
 {
@@ -792,31 +796,27 @@ bool CutOptimizer::OptimizeRound_(size_t n)
           std::cout << "The cut has a Figure of Merit (FOM) of " << thisCut.FOM << " +- " << thisCut.FOMerr << "; with the following yields:" << std::endl;
 
           std::cout << "  Signal Processes:" << std::endl;
-          doubleUnc sigTot{0,0};
+          doubleUnc sigTot(0,0);
           for(auto process = thisCut.yield["SIG"].begin(); process != thisCut.yield["SIG"].end(); ++process)
           {
             std::cout << "    " << process->first << ":" << std::endl;
             doubleUnc processTot = process->second;
 
-            sigTot.value += processTot.value;
-            sigTot.uncertainty += processTot.uncertainty*processTot.uncertainty;
+            sigTot += processTot;
             std::cout << "      Total: " << processTot << std::endl;
           }
-          sigTot.uncertainty = std::sqrt(sigTot.uncertainty);
           std::cout << "    Total: " << sigTot << std::endl;
 
           std::cout << "  Background Processes:" << std::endl;
-          doubleUnc bgTot{0,0};
+          doubleUnc bgTot(0,0);
           for(auto process = thisCut.yield["BG"].begin(); process != thisCut.yield["BG"].end(); ++process)
           {
             std::cout << "    " << process->first << ":" << std::endl;
             doubleUnc processTot = process->second;
 
-            bgTot.value += processTot.value;
-            bgTot.uncertainty += processTot.uncertainty*processTot.uncertainty;
+            bgTot += processTot;
             std::cout << "      Total: " << processTot << std::endl;
           }
-          bgTot.uncertainty = std::sqrt(bgTot.uncertainty);
           std::cout << "    Total: " << bgTot << std::endl;
         }
         else
@@ -944,7 +944,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       std::map<std::string,doubleUnc> tmp;
       for(auto process = index->second.begin(); process != index->second.end(); ++process)
       {
-        doubleUnc val{0,0};
+        doubleUnc val(0,0);
         tmp[process->first] = val;
         exampleHist = process->second;
       }
@@ -964,34 +964,26 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       {
         for(auto process = index->second.begin(); process != index->second.end(); ++process)
         {
-          yieldsAbove[index->first][process->first].value       = 0;
-          yieldsAbove[index->first][process->first].uncertainty = 0;
-          yieldsBelow[index->first][process->first].value       = 0;
-          yieldsBelow[index->first][process->first].uncertainty = 0;
+          yieldsAbove[index->first][process->first] = 0.0;
+          yieldsBelow[index->first][process->first] = 0.0;
 
           for(int bin = 1; bin <= nbins; ++bin)
           {
+            doubleUnc tempVal(process->second->GetBinContent(bin), process->second->GetBinError(bin));
             if(bin < cutBin)
             {
-              yieldsBelow[index->first][process->first].value += process->second->GetBinContent(bin);
-              yieldsBelow[index->first][process->first].uncertainty += process->second->GetBinError(bin)*process->second->GetBinError(bin);
+              yieldsBelow[index->first][process->first] += tempVal;
             }
             if(bin > cutBin)
             {
-              yieldsAbove[index->first][process->first].value += process->second->GetBinContent(bin);
-              yieldsAbove[index->first][process->first].uncertainty += process->second->GetBinError(bin)*process->second->GetBinError(bin);
+              yieldsAbove[index->first][process->first] += tempVal;
             }
             if(bin == cutBin)
             {
-              yieldsAbove[index->first][process->first].value += process->second->GetBinContent(bin);
-              yieldsAbove[index->first][process->first].uncertainty += process->second->GetBinError(bin)*process->second->GetBinError(bin);
-              yieldsBelow[index->first][process->first].value += process->second->GetBinContent(bin);
-              yieldsBelow[index->first][process->first].uncertainty += process->second->GetBinError(bin)*process->second->GetBinError(bin);
+              yieldsAbove[index->first][process->first] += tempVal;
+              yieldsBelow[index->first][process->first] += tempVal;
             }
           }
-
-          yieldsAbove[index->first][process->first].uncertainty = std::sqrt(yieldsAbove[index->first][process->first].uncertainty);
-          yieldsBelow[index->first][process->first].uncertainty = std::sqrt(yieldsBelow[index->first][process->first].uncertainty);
         }
       }
 
@@ -1003,21 +995,21 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       std::cout << "    n(Bkg): " << fomReportAbove[2] << ": " << fomReportBelow[2] << std::endl;
       std::cout << "    FOM: " << fomReportAbove[0] << ": " << fomReportBelow[0] << std::endl;
 
-      if(fomReportAbove[2].value != 0 && fomReportAbove[1].value != 0)
+      if(fomReportAbove[2].value() != 0 && fomReportAbove[1].value() != 0)
       {
         xValsAbove.push_back(binLow);
         xValsUncAbove.push_back(0);
-        yValsAbove.push_back(fomReportAbove[0].value);
-        yValsUncAbove.push_back(fomReportAbove[0].uncertainty);
-        signalYieldAbove.push_back(fomReportAbove[1].value);
-        signalYieldUncAbove.push_back(fomReportAbove[1].uncertainty);
-        backgroundYieldAbove.push_back(fomReportAbove[2].value);
-        backgroundYieldUncAbove.push_back(fomReportAbove[2].uncertainty);
+        yValsAbove.push_back(fomReportAbove[0].value());
+        yValsUncAbove.push_back(fomReportAbove[0].uncertainty());
+        signalYieldAbove.push_back(fomReportAbove[1].value());
+        signalYieldUncAbove.push_back(fomReportAbove[1].uncertainty());
+        backgroundYieldAbove.push_back(fomReportAbove[2].value());
+        backgroundYieldUncAbove.push_back(fomReportAbove[2].uncertainty());
 
-        if(retVal.FOM < fomReportAbove[0].value && fomReportAbove[1].value > roundInfo_[n].minSigEvents())
+        if(retVal.FOM < fomReportAbove[0].value() && fomReportAbove[1].value() > roundInfo_[n].minSigEvents())
         {
-          retVal.FOM = fomReportAbove[0].value;
-          retVal.FOMerr = fomReportAbove[0].uncertainty;
+          retVal.FOM = fomReportAbove[0].value();
+          retVal.FOMerr = fomReportAbove[0].uncertainty();
           retVal.variable = *variableName;
           retVal.direction = "above";
           retVal.value = binLow;
@@ -1025,21 +1017,21 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
         }
       }
 
-      if(fomReportBelow[2].value != 0 && fomReportBelow[1].value != 0)
+      if(fomReportBelow[2].value() != 0 && fomReportBelow[1].value() != 0)
       {
         xValsBelow.push_back(binHigh);
         xValsUncBelow.push_back(0);
-        yValsBelow.push_back(fomReportBelow[0].value);
-        yValsUncBelow.push_back(fomReportBelow[0].uncertainty);
-        signalYieldBelow.push_back(fomReportBelow[1].value);
-        signalYieldUncBelow.push_back(fomReportBelow[1].uncertainty);
-        backgroundYieldBelow.push_back(fomReportBelow[2].value);
-        backgroundYieldUncBelow.push_back(fomReportBelow[2].uncertainty);
+        yValsBelow.push_back(fomReportBelow[0].value());
+        yValsUncBelow.push_back(fomReportBelow[0].uncertainty());
+        signalYieldBelow.push_back(fomReportBelow[1].value());
+        signalYieldUncBelow.push_back(fomReportBelow[1].uncertainty());
+        backgroundYieldBelow.push_back(fomReportBelow[2].value());
+        backgroundYieldUncBelow.push_back(fomReportBelow[2].uncertainty());
 
-        if(retVal.FOM < fomReportBelow[0].value && fomReportBelow[1].value > roundInfo_[n].minSigEvents())
+        if(retVal.FOM < fomReportBelow[0].value() && fomReportBelow[1].value() > roundInfo_[n].minSigEvents())
         {
-          retVal.FOM = fomReportBelow[0].value;
-          retVal.FOMerr = fomReportBelow[0].uncertainty;
+          retVal.FOM = fomReportBelow[0].value();
+          retVal.FOMerr = fomReportBelow[0].uncertainty();
           retVal.variable = *variableName;
           retVal.direction = "below";
           retVal.value = binHigh;
@@ -1125,8 +1117,8 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     std::cout << "    n(Bkg): " << nBg << std::endl;
     std::cout << "    FOM: " << fom << std::endl;
 
-    retVal.FOM = fom.value;
-    retVal.FOMerr = fom.uncertainty;
+    retVal.FOM = fom.value();
+    retVal.FOMerr = fom.uncertainty();
     retVal.variable = roundInfo_[n].getUserCutVar(report.cuts.size());;
     retVal.direction = roundInfo_[n].getUserCutDir(report.cuts.size());;
     retVal.value = roundInfo_[n].getUserCutValue(report.cuts.size());;
@@ -1261,25 +1253,21 @@ std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::s
 
   double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
   // TODO - Add option to run with full systematic uncertainty (ie: calculate full analysis at each point) - is this feasible and reasonable?
-  doubleUnc nSig{0,0};
-  doubleUnc nBg{0,0};
-  doubleUnc fom{0,0};
+  doubleUnc nSig(0,0);
+  doubleUnc nBg(0,0);
+  doubleUnc fom(0,0);
 
   for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
   {
-    nSig.value += process->second.value;
-    nSig.uncertainty += process->second.uncertainty*process->second.uncertainty;
+    nSig += process->second;
   }
-  nSig.uncertainty = std::sqrt(nSig.uncertainty);
 
   for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
   {
-    nBg.value += process->second.value;
-    nBg.uncertainty += process->second.uncertainty*process->second.uncertainty;
+    nBg += process->second;
   }
-  nBg.uncertainty = std::sqrt(nBg.uncertainty);
 
-  if(nBg.value == 0 || nSig.value == 0)
+  if(nBg.value() == 0 || nSig.value() == 0)
   {
     retVal.push_back(fom);
     retVal.push_back(nSig);
@@ -1287,13 +1275,14 @@ std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::s
     return retVal;
   }
 
-  double dividend = std::sqrt(nBg.value + (systUnc*nBg.value)*(systUnc*nBg.value));
-  fom.value = nSig.value/dividend;
-  {
-    double SIGContrib = nSig.uncertainty/dividend;
-    double BGContrib = nBg.uncertainty*nSig.value*(1+2*systUnc*systUnc*nBg.value)/(2*dividend*dividend*dividend);
-    fom.uncertainty = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
-  }
+  fom = nSig/(nBg + nBg*nBg*systUnc*systUnc);
+//  double dividend = std::sqrt(nBg.value() + (systUnc*nBg.value())*(systUnc*nBg.value()));
+//  fom.setValue(nSig.value()/dividend);
+//  {
+//    double SIGContrib = nSig.uncertainty2()/(dividend*dividend);
+//    double BGContrib = nSig.value()*(1+2*systUnc*systUnc*nBg.value())/(2*dividend*dividend*dividend);
+//    fom.setUncertainty2(SIGContrib + nBg.uncertainty2()*(BGContrib*BGContrib));
+//  }
 
   retVal.push_back(fom);
   retVal.push_back(nSig);
@@ -1374,15 +1363,13 @@ std::map<std::string,std::map<std::string,doubleUnc>> CutOptimizer::GetYields(Re
     std::map<std::string,doubleUnc> typeYieldMap;
     for(auto process = index->second.begin(); process != index->second.end(); ++process)
     {
-      doubleUnc processYield;
-      processYield.value = 0;
-      processYield.uncertainty = 0;
+      doubleUnc processYield(0,0);
 
       for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
       {
         if(sample->nFiles == 0)
           continue;
-        doubleUnc sampleYield;
+        doubleUnc sampleYield(0,0);
 
         TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
         temp_histo.Sumw2();
@@ -1396,39 +1383,33 @@ std::map<std::string,std::map<std::string,doubleUnc>> CutOptimizer::GetYields(Re
         else
           sample->chain->Draw("weight>>temp_histo", cut*"weight", "goff");
 
-        sampleYield.value = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
+        sampleYield.setValue(temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2));
         //double a = temp_histo.GetBinError(0);
         //double b = temp_histo.GetBinError(1);
         //double c = temp_histo.GetBinError(2);
         //double uncertainty = std::sqrt(a*a + b*b + c*c);
         TArrayD* w2Vec = temp_histo.GetSumw2();
-        sampleYield.uncertainty = std::sqrt(w2Vec->fArray[0] + w2Vec->fArray[1] + w2Vec->fArray[2]);
+        sampleYield.setUncertainty2(w2Vec->fArray[0] + w2Vec->fArray[1] + w2Vec->fArray[2]);
 
         if(index->first != "Data")
         {
           if(!isMultipointSignalSample_ || index->first != "SIG")
           {
-            sampleYield.value       = sampleYield.value       /sample->nFiles;
-            sampleYield.uncertainty = sampleYield.uncertainty /sample->nFiles;
+            sampleYield /= double(sample->nFiles);
           }
           else
           {
             if(nSignalPoints_ > 1)
             {
-              sampleYield.value       = (sampleYield.value       * roundInfo_[report.round].sigCrossSection())/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
-              sampleYield.uncertainty = (sampleYield.uncertainty * roundInfo_[report.round].sigCrossSection())/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
+              sampleYield *= roundInfo_[report.round].sigCrossSection()/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
             }
           }
 
-          sampleYield.value       = sampleYield.value * integratedLuminosity;
-          sampleYield.uncertainty = sampleYield.uncertainty * integratedLuminosity;
+          sampleYield       *= integratedLuminosity;
         }
 
-        processYield.value += sampleYield.value;
-        processYield.uncertainty += sampleYield.uncertainty*sampleYield.uncertainty;
+        processYield += sampleYield;
       }
-      processYield.uncertainty = std::sqrt(processYield.uncertainty);
-
       typeYieldMap[process->name] = processYield;
     }
     retVal[index->first] = typeYieldMap;

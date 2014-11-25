@@ -10,7 +10,7 @@ std::ostream& operator << (std::ostream &o, doubleUnc& val)
   return o << val.value_ << " +- " << std::sqrt(val.uncertainty2_);
 }
 
-doubleUnc& doubleUnc::operator= (doubleUnc& val)
+doubleUnc& doubleUnc::operator= (const doubleUnc& val)
 {
   value_ = val.value_;
   uncertainty2_ = val.uncertainty2_;
@@ -18,7 +18,7 @@ doubleUnc& doubleUnc::operator= (doubleUnc& val)
   return *this;
 }
 
-doubleUnc& doubleUnc::operator+=(doubleUnc& val)
+doubleUnc& doubleUnc::operator+=(const doubleUnc& val)
 {
   value_ += val.value_;
   uncertainty2_ += val.uncertainty2_;
@@ -26,7 +26,7 @@ doubleUnc& doubleUnc::operator+=(doubleUnc& val)
   return *this;
 }
 
-doubleUnc& doubleUnc::operator-=(doubleUnc& val)
+doubleUnc& doubleUnc::operator-=(const doubleUnc& val)
 {
   value_ -= val.value_;
   uncertainty2_ += val.uncertainty2_;
@@ -34,7 +34,7 @@ doubleUnc& doubleUnc::operator-=(doubleUnc& val)
   return *this;
 }
 
-doubleUnc& doubleUnc::operator*=(doubleUnc& val)
+doubleUnc& doubleUnc::operator*=(const doubleUnc& val)
 {
   uncertainty2_ = val.value_*val.value_*uncertainty2_ + value_*value_*val.uncertainty2_;
   value_ *= val.value_;
@@ -42,7 +42,7 @@ doubleUnc& doubleUnc::operator*=(doubleUnc& val)
   return *this;
 }
 
-doubleUnc& doubleUnc::operator/=(doubleUnc& val)
+doubleUnc& doubleUnc::operator/=(const doubleUnc& val)
 {
   uncertainty2_ = uncertainty2_/(val.value_*val.value_) + (val.uncertainty2_/(val.value_*val.value_)) * ((value_*value_)/(val.value_*val.value_));
   value_ /= val.value_;
@@ -50,35 +50,35 @@ doubleUnc& doubleUnc::operator/=(doubleUnc& val)
   return *this;
 }
 
-doubleUnc  doubleUnc::operator+ (doubleUnc& val)
+doubleUnc  doubleUnc::operator+ (const doubleUnc& val) const
 {
   doubleUnc retVal(*this);
 
   return retVal += val;
 }
 
-doubleUnc  doubleUnc::operator- (doubleUnc& val)
+doubleUnc  doubleUnc::operator- (const doubleUnc& val) const
 {
   doubleUnc retVal(*this);
 
   return retVal -= val;
 }
 
-doubleUnc  doubleUnc::operator* (doubleUnc& val)
+doubleUnc  doubleUnc::operator* (const doubleUnc& val) const
 {
   doubleUnc retVal(*this);
 
   return retVal *= val;
 }
 
-doubleUnc  doubleUnc::operator/ (doubleUnc& val)
+doubleUnc  doubleUnc::operator/ (const doubleUnc& val) const
 {
   doubleUnc retVal(*this);
 
   return retVal /= val;
 }
 
-doubleUnc& doubleUnc::operator= (double& val)
+doubleUnc& doubleUnc::operator= (const double& val)
 {
   value_ = val;
   uncertainty2_ = defaultUnc(val);
@@ -86,52 +86,52 @@ doubleUnc& doubleUnc::operator= (double& val)
   return *this;
 }
 
-doubleUnc& doubleUnc::operator+=(double& val)
+doubleUnc& doubleUnc::operator+=(const double& val)
 {
   doubleUnc tempVal(val, defaultUnc(val));
   return (*this) += tempVal;
 }
 
-doubleUnc& doubleUnc::operator-=(double& val)
+doubleUnc& doubleUnc::operator-=(const double& val)
 {
   doubleUnc tempVal(val, defaultUnc(val));
   return (*this) -= tempVal;
 }
 
-doubleUnc& doubleUnc::operator*=(double& val)
+doubleUnc& doubleUnc::operator*=(const double& val)
 {
   doubleUnc tempVal(val, defaultUnc(val));
   return (*this) *= tempVal;
 }
 
-doubleUnc& doubleUnc::operator/=(double& val)
+doubleUnc& doubleUnc::operator/=(const double& val)
 {
   doubleUnc tempVal(val, defaultUnc(val));
   return (*this) /= tempVal;
 }
 
-doubleUnc  doubleUnc::operator+ (double& val)
+doubleUnc  doubleUnc::operator+ (const double& val) const
 {
   doubleUnc retVal(val, defaultUnc(val));
 
   return retVal += *this;
 }
 
-doubleUnc  doubleUnc::operator- (double& val)
+doubleUnc  doubleUnc::operator- (const double& val) const
 {
   doubleUnc tempVal(val, defaultUnc(val));
   doubleUnc retVal = *this;
   return retVal -= tempVal;
 }
 
-doubleUnc  doubleUnc::operator* (double& val)
+doubleUnc  doubleUnc::operator* (const double& val) const
 {
   doubleUnc retVal(val, defaultUnc(val));
 
   return retVal *= *this;
 }
 
-doubleUnc  doubleUnc::operator/ (double& val)
+doubleUnc  doubleUnc::operator/ (const double& val) const
 {
   doubleUnc tempVal(val, defaultUnc(val));
   doubleUnc retVal = *this;
@@ -139,7 +139,7 @@ doubleUnc  doubleUnc::operator/ (double& val)
   return retVal /= tempVal;
 }
 
-double doubleUnc::defaultUnc(double currentValue)
+double doubleUnc::defaultUnc(double currentValue) const
 {
   switch(defaultUncValue)
   {
