@@ -466,6 +466,9 @@ int main(int argc, char* argv[])
     if(debug)
       std::cout << "  Defining all branches in output root file" << std::endl;
 
+    TDirectory* cwd = gDirectory;
+    summaryOutFile->cd();
+
     // Dataset specific variables
     summaryTree->Branch("isMC", &isMC);
     summaryTree->Branch("xSecWeight", &xsecWeight);
@@ -516,6 +519,8 @@ int main(int argc, char* argv[])
     summaryTree->Branch("cosThetaCS", &cosThetaCS);
     summaryTree->Branch("tauLeadPt", &tauLeadPt);
     summaryTree->Branch("lepLeadPt", &lepLeadPt);
+
+    cwd->cd();
   }
 
 
@@ -1791,7 +1796,12 @@ int main(int argc, char* argv[])
     NAN_WARN(maxPtSum)
     #endif
     if(saveSummaryTree)
+    {
+      TDirectory* cwd = gDirectory;
+      summaryOutFile->cd();
       summaryTree->Fill();
+      cwd->cd();
+    }
 
     #if defined(DEBUG_EVENT)
     if(debugEvent)
@@ -1830,9 +1840,12 @@ int main(int argc, char* argv[])
 //    summaryOutFile = new TFile(summaryOutUrl.c_str(), "RECREATE");
     // Write Tuple/Tree
 //    summaryTree->SetDirectory(summaryOutFile);
+    TDirectory* cwd = gDirectory;
+    summaryOutFile->cd();
     summaryTree->Write();
     summaryOutFile->Close();
     delete summaryOutFile;
+    cwd->cd();
   }
 
   return 0;
