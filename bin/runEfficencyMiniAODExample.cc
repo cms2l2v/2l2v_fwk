@@ -53,7 +53,6 @@
 #include "TROOT.h"
 #include "TNtuple.h"
 #include <Math/VectorUtil.h>
-#include <TRandom3.h>
 #include <TMath.h>
 
 using namespace std;
@@ -125,54 +124,22 @@ int main(int argc, char* argv[])
   SmartSelectionMonitor mon;
   
   int evcounter = 0;
-  int passTag = 0;
-  int passKin = 0;
-  int passId  = 0;
-  int passProbe = 0;
-  int passZPick = 0; 
-  //Muon Efficency Vs Eta
-  //std::cout << "=> Definition of the Histo for the Eff Vs Eta" << std::endl;
-  mon.addHistogram( new TH1F("Probe_eta_Mu", "Probe Vs #eta - Muon", 480, -2.4, 2.4));
-  mon.addHistogram( new TH1F("PassProbe_eta_Th_Mu", "PassProbe Vs #eta - Tight Selection", 480, -2.4, 2.4));
-  mon.addHistogram( new TH1F("PassProbe_eta_Sf_Mu", "PassProbe Vs #eta - Soft Selection",  480, -2.4, 2.4));
-  mon.addHistogram( new TH1F("PassProbe_eta_Lo_Mu", "PassProbe Vs #eta - Loose Selection", 480, -2.4, 2.4));
-  //Muon Efficency Vs Pt
-  //std::cout << "=> Definition of the Histo for the Eff Vs Pt" << std::endl;
-  mon.addHistogram( new TH1F("Probe_pT_Mu", "Probe Vs pT - Muon", 300, 0, 300));
-  mon.addHistogram( new TH1F("PassProbe_pT_Th_Mu", "PassProbe Vs pT - Tight Selection", 300, 0, 300));
-  mon.addHistogram( new TH1F("PassProbe_pT_Sf_Mu", "PassProbe Vs pT - Soft Selection",  300, 0, 300));
-  mon.addHistogram( new TH1F("PassProbe_pT_Lo_Mu", "PassProbe Vs pT - Loose Selection", 300, 0, 300));  
+ 
+  //Efficency Vs Eta
+  double NewEtaBins[5] = {-2.4,-1.4,0.,1.4,2.4};
+  mon.addHistogram( new TH1F("Probe_eta", "Efficency Vs #eta", 4, NewEtaBins));
 
-  //Muon Kinematic
-  mon.addHistogram(new TH1F("Z_mass_Mu","Z Pick",1000,0,1000));
-  mon.addHistogram(new TH1F("pT_Led_Mu","pT - Leading Mu", 1000, 0, 1000));
-  mon.addHistogram(new TH1F("pT_SubLed_Mu", "pT - SubLeading Mu", 1000, 0, 1000));
+  // Efficency Vs Pt
+  double NewPtBins[7] = {0.,10.,20.,30.,40.,50.,100.};
+  mon.addHistogram( new TH1F("Probe_pT", "Efficency Vs pT", 6, NewPtBins));
 
-  //Electron Efficency Vs Eta
-  mon.addHistogram( new TH1F("Probe_eta_Ele", "Probe Vs #eta - Electron", 480, -2.4, 2.4));
-  mon.addHistogram( new TH1F("PassProbe_eta_Th_Ele", "PassProbe Vs #eta - Tight Selection",  480, -2.4, 2.4));
-  mon.addHistogram( new TH1F("PassProbe_eta_Md_Ele", "PassProbe Vs #eta - Medium Selection", 480, -2.4, 2.4));
-  mon.addHistogram( new TH1F("PassProbe_eta_Lo_Ele", "PassProbe Vs #eta - Loose Selection",  480, -2.4, 2.4));
-  //Electron Efficency Vs Pt
-  mon.addHistogram( new TH1F("Probe_pT_Ele", "Probe Vs pT - Electron", 300, 0, 300));
-  mon.addHistogram( new TH1F("PassProbe_pT_Th_Ele", "PassProbe Vs pT - Tight Selection",   300, 0, 300));
-  mon.addHistogram( new TH1F("PassProbe_pT_Md_Ele", "PassProbe Vs pT - Medium  Selection", 300, 0, 300));
-  mon.addHistogram( new TH1F("PassProbe_pT_Lo_Ele", "PassProbe Vs pT - Loose Selection",   300, 0, 300));
-
-  //Electron Kinematic
-  mon.addHistogram(new TH1F("Z_mass_Ele","Z Pick",1000,0,1000));
-  mon.addHistogram(new TH1F("dEtaIn", "dEtaIn", 500, 0, 1));
-  mon.addHistogram(new TH1F("dPhiIn", "dPhiIn", 500, 0, 1));
-  mon.addHistogram(new TH1F("SiEta", "SiEta", 500, 0, 1));
-  mon.addHistogram(new TH1F("HE","HE", 500, 0, 1));
-  mon.addHistogram(new TH1F("dx", "dx", 500, 0, 1));
-  mon.addHistogram(new TH1F("dz", "dz", 500, 0, 1));
-  mon.addHistogram(new TH1F("InvEInvP", "InvEInvP", 500, 0, 1));
-  mon.addHistogram(new TH1F("Iso", "Iso", 500, 0, 1));
-  mon.addHistogram(new TH1F("pT_Led_Ele","pT - Leading Ele", 1000, 0, 1000));
-  mon.addHistogram(new TH1F("pT_SubLed_Ele", "pT - SubLeading Ele", 1000, 0, 1000));
+  //Efficency in sub-Eta region
+  mon.addHistogram( new TH2F("Probe_pT_Eta", "Probe Vs pT - Eta SubRegion", 6, NewPtBins, 4, NewEtaBins));
   
-  TH1F *counter_selector = (TH1F*) mon.addHistogram(new TH1F("counter_selector","Selection",5,0,5));
+  //Lepton Kinematic
+  mon.addHistogram(new TH1F("Z_mass", "Z Pick", 1000,  0,  1000));
+  mon.addHistogram(new TH1F("pT",   "pT - Lepton", 1000,    0, 1000));
+  mon.addHistogram(new TH1F("Eta", "Eta - Lepton",  480, -2.4,  2.4));
  
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
@@ -226,9 +193,8 @@ int main(int argc, char* argv[])
   int treeStep(totalEntries/50);
   //DuplicatesChecker duplicatesChecker;
   //int nDuplicates(0);
-  //totalEntries->10
-  TRandom3 *rndm  = new TRandom3(1234);
-  for( size_t iev=0; iev<100; iev++){
+  //totalEntries->10 
+  for( size_t iev=0; iev<totalEntries; iev++){
       if(iev%treeStep==0){printf(".");fflush(stdout);}
 
        //##############################################   EVENT LOOP STARTS   ##############################################
@@ -347,19 +313,14 @@ int main(int argc, char* argv[])
        LorentzVector muDiff(0,0,0,0);
        std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
        //Request exactly two leptons
-       //std::cout << "=> Pre-Selection" << std::endl;
-
+       
        //PRE-SELECTION based to pt value
        for(unsigned int j=0; j<leptons.size(); j++){
-         if(leptons[j].pt() > 10 && abs(leptons[j].eta()) < 2.6) selLeptons.push_back(leptons[j]);
+         if(leptons[j].pt() > 8) selLeptons.push_back(leptons[j]);
        }
 
        std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
-       //std::cout << "=> Pre-Selection passed" << std::endl;
-       //std::cout << "=> The dimension of the vector of the selLeptons: " << selLeptons.size() << std::endl;
        if(selLeptons.size() != 2) continue;
-       //std::cout << "=> The dimension of the vector containing the leptons is: " << selLeptons.size() << std::endl;
-       //std::cout << "=> PdgIds are => " << selLeptons[0].pdgId() << ", the second is " << selLeptons[1].pdgId() << std::endl;
        if(abs(selLeptons[0].pdgId()) == 13 && abs(selLeptons[1].pdgId()) == 13) passOnlyMuon = true;
        if(abs(selLeptons[0].pdgId()) == 11 && abs(selLeptons[1].pdgId()) == 11) passOnlyEle = true;
      
@@ -371,7 +332,7 @@ int main(int argc, char* argv[])
        //Logical tag for Tag and Probe Muon
        bool Tag(false), Probe(false);
        //Logical tag for Id Muons
-       bool passIdTh(false), passIdSf(false), passIdLo(false);
+       bool passIdTh(false), passIdSf(false), passIdLo(false), passIsoProbeMu(false);
        //Logical tag for Pass Probe Muons  
        bool PassProbeTh(false), PassProbeSf(false), PassProbeLo(false);
 
@@ -379,7 +340,7 @@ int main(int argc, char* argv[])
        //Logical tag for Tag and Probe Ele
        bool TagEle(false), ProbeEle(false);
        //Logical tag for Id Ele
-       bool passIdEleTh(false), passIdEleMd(false), passIdEleLo(false);
+       bool passIdEleTh(false), passIdEleMd(false), passIdEleLo(false), passIsoProbeEle(false);
        //Logical tag for Pass Probe Ele
        bool PassProbeEleTh(false), PassProbeEleMd(false), PassProbeEleLo(false);
        bool ZPick(false);
@@ -391,40 +352,45 @@ int main(int argc, char* argv[])
        //////////////////////
 
        if(passOnlyMuon){
-         //std::cout << "=> Analyzing a couple of Muons" << std::endl; 
-         int first  = rndm->Rndm();
-         int second = rndm->Rndm();
-         if(first>=second){
-           first  = 0;
-           second = 1;
-         } else {
-           first  = 1;
-           second = 0;
-         }
-         mon.fillHisto("pT_Led_Mu","",selLeptons[0].pt(),weight);
-         mon.fillHisto("pT_SubLed_Mu","",selLeptons[1].pt(),weight);
+
+         int first  = rand()%2;
+         int second = (first+1)%2;
+
+         mon.fillHisto("pT",     "Mu_Led", selLeptons[0].pt(),  weight);
+         mon.fillHisto("pT",  "Mu_SubLed", selLeptons[1].pt(),  weight);
+         mon.fillHisto("Eta",    "Mu_Led", selLeptons[0].eta(), weight);
+         mon.fillHisto("Eta", "Mu_SubLed", selLeptons[1].eta(), weight);
 
          double etaf = selLeptons[first].eta();
          double ptf  = selLeptons[first].pt();
          double etas = selLeptons[second].eta();
          double pts  = selLeptons[second].pt();
 
-         //Select the Tag muon
-         passKinMu = (abs(etaf) < 2.4);
+         //Select the Tag muon 
          passKinMu = (ptf > 20);
          passIdMu  = patUtils::passId(selLeptons[first].mu, vtx[0], patUtils::llvvMuonId::Tight);      
-         passIsoMu = patUtils::passIso(selLeptons[first].mu,  patUtils::llvvMuonIso::Loose); 
-         if(passIdMu && passKinMu) Tag = true;
+         passIsoMu = patUtils::passIso(selLeptons[first].mu,  patUtils::llvvMuonIso::Tight); 
+         if(passIdMu && passKinMu && passIsoMu) Tag = true;
+         if(Tag){
+           mon.fillHisto("pT",  "Mu_Tag",  ptf, weight);
+           mon.fillHisto("Eta", "Mu_Tag", etaf, weight);
+         }         
 
          //Select the Probe Muon
-         Probe = (pts > 17);
+         Probe = (pts > 20);
+         Probe = patUtils::passIso(selLeptons[second].mu,  patUtils::llvvMuonIso::Loose);
+         if(Probe){
+           mon.fillHisto("pT",  "Mu_NoCutProbe",  pts, weight);
+           mon.fillHisto("Eta", "Mu_NoCutProbe", etas, weight);
+         }
          TLorentzVector lep1(selLeptons[first].px(),selLeptons[first].py(),selLeptons[first].pz(),selLeptons[first].energy());
          TLorentzVector lep2(selLeptons[second].px(),selLeptons[second].py(),selLeptons[second].pz(),selLeptons[second].energy());
          double mass = (lep1+lep2).M();
-         mon.fillHisto("Z_mass_Mu","",mass,weight);
+         mon.fillHisto("Z_mass","Mu",mass,weight);
          if((mass > 70 && mass < 110) && Tag && Probe) {
-            mon.fillHisto("Probe_eta_Mu","",etas,weight);
-            mon.fillHisto("Probe_pT_Mu","",pts,weight);
+            mon.fillHisto("Probe_eta",     "Mu", etas, weight);
+            mon.fillHisto("Probe_pT",      "Mu",  pts, weight);
+            mon.fillHisto("Probe_pT_Eta",  "Mu",  pts, etas, weight);
             ZPick = true;
          }
          //Select the PassProbe
@@ -432,20 +398,24 @@ int main(int argc, char* argv[])
            passIdTh = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::Tight);
            passIdLo = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::Loose);
            passIdSf = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::Soft);
-           if(passIdTh) PassProbeTh = true;
-           if(passIdLo) PassProbeLo = true;
-           if(passIdSf) PassProbeSf = true;
+           passIsoProbeMu = patUtils::passIso(selLeptons[second].mu,  patUtils::llvvMuonIso::Loose);
+           if(passIdTh && passIsoProbeMu) PassProbeTh = true;
+           if(passIdLo && passIsoProbeMu) PassProbeLo = true;
+           if(passIdSf && passIsoProbeMu) PassProbeSf = true;
            if(passIdTh){
-             mon.fillHisto("PassProbe_eta_Th_Mu","",etas,weight);
-             mon.fillHisto("PassProbe_pT_Th_Mu","",pts,weight);
+             mon.fillHisto("Probe_eta",     "Mu_Th_Pass", etas, weight);
+             mon.fillHisto("Probe_pT",      "Mu_Th_Pass",  pts, weight);
+             mon.fillHisto("Probe_pT_Eta",  "Mu_Th_Pass",  pts, etas, weight);
            }
            if(passIdLo){
-             mon.fillHisto("PassProbe_eta_Lo_Mu","",etas,weight);
-             mon.fillHisto("PassProbe_pT_Lo_Mu","",pts,weight);
+             mon.fillHisto("Probe_eta",     "Mu_Lo_Pass", etas, weight);
+             mon.fillHisto("Probe_pT",      "Mu_Lo_Pass",  pts, weight);
+             mon.fillHisto("Probe_pT_Eta",  "Mu_Lo_Pass",  pts, etas, weight);
            }         
            if(passIdSf){
-             mon.fillHisto("PassProbe_eta_Sf_Mu","",etas,weight);
-             mon.fillHisto("PassProbe_pT_Sf_Mu","",pts,weight);
+             mon.fillHisto("Probe_eta",     "Mu_Sf_Pass", etas, weight);
+             mon.fillHisto("Probe_pT",      "Mu_Sf_Pass",  pts, weight);
+             mon.fillHisto("Probe_pT_Eta",  "Mu_Sf_Pass",  pts, etas, weight);
            }
          }
 
@@ -456,64 +426,51 @@ int main(int argc, char* argv[])
       ////////////////////////// 
 
        } else if(passOnlyEle){
-         //std::cout <<"Analyzing Electron particles" << std::endl;
-         int first  = rndm->Rndm();
-         int second = rndm->Rndm();
-         if(first>=second){
-           first  = 0;
-           second = 1;
-         } else {
-           first  = 1;
-           second = 0;
-         }
-         for(int i=0; i<selLeptons.size(); i++){
-            float dEtaln         = fabs(selLeptons[i].el.deltaEtaSuperClusterTrackAtVtx());
-            float dPhiln         = fabs(selLeptons[i].el.deltaPhiSuperClusterTrackAtVtx());
-            float sigmaletaleta  = selLeptons[i].el.sigmaIetaIeta();
-            float hem            = selLeptons[i].el.hadronicOverEm();
-            double resol         = fabs((1/selLeptons[i].el.ecalEnergy())-(selLeptons[i].el.eSuperClusterOverP()/selLeptons[i].el.ecalEnergy()));
-            double dxy           = fabs(selLeptons[i].el.gsfTrack()->dxy(vtx[0].position()));
-            double dz            = fabs(selLeptons[i].el.gsfTrack()->dz(vtx[0].position()));
-            mon.fillHisto("dEtaIn","",dEtaln,weight);
-            mon.fillHisto("dPhiIn","",dPhiln,weight);
-            mon.fillHisto("SiEta","",sigmaletaleta,weight);
-            mon.fillHisto("HE","",hem,weight);
-            mon.fillHisto("dx","",dxy,weight);
-            mon.fillHisto("dz","",dz,weight);
-            mon.fillHisto("InvEInvP","",resol,weight);
-         }
-         mon.fillHisto("pT_Led_Ele","",selLeptons[0].pt(),weight);
-         mon.fillHisto("pT_SubLed_Ele","",selLeptons[1].pt(),weight);   
+        
+         int first  = rand()%2;
+         int second = (first+1)%2;
          
-         double etaf = selLeptons[first].el.superCluster()->eta();
-         double ptf  = selLeptons[first].pt();
-         double etas = selLeptons[second].el.superCluster()->eta();         
-         double pts  = selLeptons[second].pt();
-         //std::cout << "The momentum of the selected electron is: " << ptf << ", " << pts << std::endl;
+         mon.fillHisto("pT",     "Ele_Led",   selLeptons[0].pt(), weight);
+         mon.fillHisto("pT",  "Ele_SubLed",   selLeptons[1].pt(), weight); 
+         mon.fillHisto("Eta",    "Ele_Led",  selLeptons[0].eta(), weight);  
+         mon.fillHisto("Eta", "Ele_SubLed",  selLeptons[1].eta(), weight);         
+         mon.fillHisto("Eta",    "Ele_Led_Cluster",  selLeptons[0].el.superCluster()->eta(), weight);
+         mon.fillHisto("Eta", "Ele_SubLed_Cluster",  selLeptons[1].el.superCluster()->eta(), weight);
 
+         double etaf = selLeptons[first].eta();
+         double ptf  = selLeptons[first].pt();
+         double etas = selLeptons[second].eta();         
+         double pts  = selLeptons[second].pt();
+       
          //Selection of the Tag
          passKinEle = (ptf > 20);
-         if(passKinEle) passKin++;
-         passIdEle  = patUtils::passId(selLeptons[first].el, vtx[0], patUtils::llvvElecId::Loose); 
-         if(passIdEle) passId++;
-         passIsoEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Loose);
-         if(passKinEle && passIdEle) TagEle = true; 
-         if(TagEle) passTag++; 
-   
-         //Selection of the Probe
-         ProbeEle = (pts > 17);
-         if(ProbeEle) passProbe++;
+         passKinEle = ((abs(etas) >= 0 && abs(etas) <= 1.4442) || (abs(etas) >= 1.5660 && abs(etas) <= 2.5));
+         passIdEle  = patUtils::passId(selLeptons[first].el, vtx[0], patUtils::llvvElecId::Tight);  
+         passIsoEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Tight);
+         if(passKinEle && passIdEle && passIsoEle) TagEle = true; 
+         if(TagEle) {
+           mon.fillHisto("passTag", "Ele",    1,     1.); 
+           mon.fillHisto("pT",  "Ele_Tag",  ptf, weight);
+           mon.fillHisto("Eta", "Ele_Tag", etaf, weight);
+         }
 
+         //Selection of the Probe
+         ProbeEle = (pts > 20);
+         ProbeEle = ((abs(etas) >= 0 && abs(etas) <= 1.4442) || (abs(etas) >= 1.5660 && abs(etas) <= 2.5));
+         ProbeEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Loose); 
+         if(ProbeEle){
+           mon.fillHisto("pT",  "Ele_NoCutProbe",  pts, weight);
+           mon.fillHisto("Eta", "Ele_NoCutProbe", etas, weight);
+         }
          TLorentzVector lep1(selLeptons[first].px(),selLeptons[first].py(),selLeptons[first].pz(),selLeptons[first].energy());
          TLorentzVector lep2(selLeptons[second].px(),selLeptons[second].py(),selLeptons[second].pz(),selLeptons[second].energy());
          double mass = (lep1+lep2).M();
-         mon.fillHisto("Z_mass_Ele","",mass,weight);
-         //std::cout << "L'invariant Mass of the two Ele is: " << mass << std::endl;
-         if((mass > 70 && mass < 110) && TagEle && ProbeEle){
-           mon.fillHisto("Probe_eta_Ele","",etas,weight);
-           mon.fillHisto("Probe_pT_Ele","",pts,weight);
+         mon.fillHisto("Z_mass","Ele",mass,weight);
+         if((mass > 70 && mass < 110) && TagEle && ProbeEle){ 
+           mon.fillHisto("Probe_eta",    "Ele",  etas, weight);
+           mon.fillHisto("Probe_pT",     "Ele",   pts, weight);
+           mon.fillHisto("Probe_pT_Eta", "Ele",   pts, etas, weight);
            ZPick = true;
-           if(ZPick) passZPick++;
          }
 
          //Counting the Passing Prob
@@ -521,20 +478,24 @@ int main(int argc, char* argv[])
            passIdEleTh = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Tight);
            passIdEleMd = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Medium);
            passIdEleLo = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Loose);
-           if(passIdEleTh) PassProbeEleTh = true;
-           if(passIdEleLo) PassProbeEleLo = true;
-           if(passIdEleMd) PassProbeEleMd = true;
+           passIsoProbeEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Loose);
+           if(passIdEleTh && passIsoProbeEle) PassProbeEleTh = true;
+           if(passIdEleLo && passIsoProbeEle) PassProbeEleLo = true;
+           if(passIdEleMd && passIsoProbeEle) PassProbeEleMd = true;
            if(passIdEleTh){
-             mon.fillHisto("PassProbe_eta_Th_Ele","",etas,weight);
-             mon.fillHisto("PassProbe_pT_Th_Ele","",pts,weight);
+             mon.fillHisto("Probe_eta",    "Ele_Th_Pass", etas, weight);
+             mon.fillHisto("Probe_pT",     "Ele_Th_Pass",  pts, weight);
+             mon.fillHisto("Probe_pT_Eta", "Ele_Th_Pass",  pts, etas, weight);
            }
-           if(passIdEleLo){
-             mon.fillHisto("PassProbe_eta_Lo_Ele","",etas,weight);
-             mon.fillHisto("PassProbe_pT_Lo_Ele","",pts,weight);
+           if(passIdEleLo){ 
+             mon.fillHisto("Probe_eta",    "Ele_Lo_Pass", etas, weight);
+             mon.fillHisto("Probe_pT",     "Ele_Lo_Pass",  pts, weight);
+             mon.fillHisto("Probe_pT_Eta", "Ele_Lo_Pass",  pts, etas, weight);
            }
-           if(passIdEleMd){
-             mon.fillHisto("PassProbe_eta_Md_Ele","",etas,weight);
-             mon.fillHisto("PassProbe_pT_Md_Ele","",pts,weight);
+           if(passIdEleMd){ 
+             mon.fillHisto("Probe_eta",    "Ele_Sf_Pass", etas, weight);
+             mon.fillHisto("Probe_pT",     "Ele_Sf_Pass",  pts, weight);
+             mon.fillHisto("Probe_pT_Eta", "Ele_Sf_Pass",  pts, etas, weight);
            }
 
          }
@@ -542,19 +503,6 @@ int main(int argc, char* argv[])
        }
          
   }
-
-  //Filling Counter Selector
-  counter_selector->SetBinContent(1,passKin);
-  counter_selector->GetXaxis()->SetBinLabel(1,"Kin Cut");
-  counter_selector->SetBinContent(2,passId);
-  counter_selector->GetXaxis()->SetBinLabel(2,"Id Cut");
-  counter_selector->SetBinContent(3,passTag);
-  counter_selector->GetXaxis()->SetBinLabel(3,"Tag Selection");
-  counter_selector->SetBinContent(4,passProbe);
-  counter_selector->GetXaxis()->SetBinLabel(4,"Probe Selection");
-  counter_selector->SetBinContent(5,passZPick);
-  counter_selector->GetXaxis()->SetBinLabel(5,"Z Pick");
-
 
   //##############################################
   //########     SAVING HISTO TO FILE     ########
