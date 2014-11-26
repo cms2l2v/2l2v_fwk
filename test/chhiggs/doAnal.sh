@@ -60,10 +60,12 @@ if [ "${1}" = "singletop" ]; then
 elif [ "${1}" = "lip" ]; then
     BASEDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/out/
     INPUTDIR=/lustre/ncg.ingrid.pt/cmst3/store/user/cbeiraod/14_08_06_2l2nu_EDMtuples_merged/
-    INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff2/
+    #INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff2/
+    INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff/
     #BASEJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/all-samples_fwlite.json
     BASEJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/almost-samples_fwlite.json
-    SLEPJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/slep_fwlite.json
+#    SLEPJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/slep_fwlite.json
+    SLEPJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/test/mergeMe.json
     PLOTSJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/plot_fwlite.json
     if [ "${2}" = "anal_sus" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ch-higgs_samples.json -o ${BASEDIR} -d   ${INPUTDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
