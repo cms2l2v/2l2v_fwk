@@ -299,6 +299,7 @@ int main(int argc, char* argv[])
     TString var=systVars[ivar];
 
     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, var);
+    cout << "Variation " << var << " added to optim systs histogram." << endl;
     
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+var,";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);

@@ -171,12 +171,12 @@ elif [ "${1}" = "current" ]; then
     elif [ "${2}" = "anal_sm" ]; then
        runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=${SAVESUMMARYTREE} @useMVA=True @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_ttbar" ]; then
-       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ttbaronly.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=False @saveSummaryTree=${SAVESUMMARYTREE} @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+       runLocalAnalysisOverSamples.py -e runChHiggsAnalysis -j data/chhiggs/ttbaronly.json -d /store/cmst3/user/psilva/5311_ntuples/             -o ${BASEDIR}     -c test/runAnalysis_cfg.py.templ -p "@runSystematics=True @saveSummaryTree=${SAVESUMMARYTREE} @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
 
     elif [ "${2}" = "dopdfweights_sus" ]; then
 	runLocalAnalysisOverSamples.py -e computePDFvariations -j data/chhiggs/ch-higgs_samples.json -d /afs/cern.ch/work/v/vischia/private/store/5311_ntuples/ -o ${BASEDIRPDF} -c test/runAnalysis_cfg.py.templ  -s 1nd;
     elif [ "${2}" = "dopdfweights_sm" ]; then
-	runLocalAnalysisOverSamples.py -e computePDFvariations -j data/top_samples_pre.json -d /store/cmst3/user/psilva/5311_ntuples/  -o ${BASEDIRPDF} -c test/runAnalysis_cfg.py.templ -s 1nd;
+	runLocalAnalysisOverSamples.py -e computePDFvariations -j data/top_samples_pdf.json -d /store/cmst3/user/psilva/5311_ntuples/  -o ${BASEDIRPDF} -c test/runAnalysis_cfg.py.templ -s 1nd;
 
     elif [ "${2}" = "plotspdfunc" ]; then
 #	JSONFILEFORPLOTS=data/chhiggs/plot-ch-higgs_1pb_samples.json
