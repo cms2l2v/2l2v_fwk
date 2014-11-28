@@ -146,7 +146,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
               for(int s=0; s<split; s++){
  	         string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
                  string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root";
-	         TFile* File = new TFile(FileName.c_str());
+	         TFile* File = TFile::Open(FileName.c_str());
                  bool& fileExist = FileExist[FileName];
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
                     fileExist=false;
@@ -224,7 +224,7 @@ void SavingTreeToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndTyp
 
            string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
            if(!FileExist[FileName])continue;
-           TFile* File = new TFile(FileName.c_str());
+           TFile* File = TFile::Open(FileName.c_str());
            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
 
            TTree* tmptree = (TTree*)GetObjectFromPath(File,HistoProperties.name);
@@ -269,7 +269,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 	   
            string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
            if(!FileExist[FileName])continue;
-           TFile* File = new TFile(FileName.c_str());
+           TFile* File = TFile::Open(FileName.c_str());
            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
            
            TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
@@ -334,7 +334,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
-            TFile* File = new TFile(FileName.c_str());
+            TFile* File = TFile::Open(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
             TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
             if(!tmptmphist){delete File;continue;}
@@ -436,7 +436,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
-            TFile* File = new TFile(FileName.c_str());
+            TFile* File = TFile::Open(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
             TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
             if(!tmptmphist){delete File;continue;}
@@ -551,7 +551,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])
                continue;
-            TFile* File = new TFile(FileName.c_str());
+            TFile* File = TFile::Open(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )
                continue;
             TH1* tmptmphist = NULL; 
@@ -874,7 +874,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
-            TFile* File = new TFile(FileName.c_str());
+            TFile* File = TFile::Open(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
             TH1* tmptmphist = NULL;
             if(HistoProperties.isIndexPlot && cutIndex>=0){
@@ -1072,7 +1072,7 @@ int main(int argc, char* argv[]){
    histlist.unique();   
 
    TFile* OutputFile = NULL;
-   if(StoreInFile) OutputFile = new TFile(outFile.c_str(),"RECREATE");
+   if(StoreInFile) OutputFile = TFile::Open(outFile.c_str(),"RECREATE");
    printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
    printf("                             :");
    int TreeStep = histlist.size()/50;if(TreeStep==0)TreeStep=1;

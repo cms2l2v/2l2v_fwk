@@ -113,16 +113,16 @@ int main(int argc, char* argv[])
   printf("TextFile URL = %s\n",outTxtUrl.Data());
 
   //residual corrections from Z+1 jet recoil
-  std::vector<TGraph *> recoilResidualsGr;
-  TFile *fIn=TFile::Open("/afs/cern.ch/user/p/psilva/work/CMSSW_5_3_3_patch2/src/CMGTools/HtoZZ2l2nu/data/recoilBalance.root");
-  if(fIn){
-    TGraph *gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfdydata2mc");
-    if(gr) recoilResidualsGr.push_back( gr );
-    gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfgdata2mc");
-    if(gr) recoilResidualsGr.push_back( gr );
-    fIn->Close();
-    cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
-  }
+///////////   std::vector<TGraph *> recoilResidualsGr;
+///////////   TFile *fIn=TFile::Open("/afs/cern.ch/user/p/psilva/work/CMSSW_5_3_3_patch2/src/CMGTools/HtoZZ2l2nu/data/recoilBalance.root");
+///////////   if(fIn){
+///////////     TGraph *gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfdydata2mc");
+///////////     if(gr) recoilResidualsGr.push_back( gr );
+///////////     gr=(TGraph *)fIn->Get("mumurecoilbalancevseta50toInfgdata2mc");
+///////////     if(gr) recoilResidualsGr.push_back( gr );
+///////////     fIn->Close();
+///////////     cout << "Read " << recoilResidualsGr.size() << " residual recoil systematics" << endl;
+///////////   }
  
 
   std::vector<string>  weightsFile = runProcess.getParameter<std::vector<string> >("weightsFile");
@@ -1220,7 +1220,7 @@ int main(int argc, char* argv[])
 	llvvJetExtCollection selJets, /*selJetsNoId,*/ selBJets;
 	int njets(0), nbjets(0);
 	int nTrueJets(0);
-	int nTauJets(0);
+	int nLooseJets(0);
 	
 	for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	  {
@@ -1281,12 +1281,13 @@ int main(int argc, char* argv[])
 	    //selJetsNoId.push_back(jets[ijet]);
 	    double jetpt=jets[ijet].pt();
 	    
-	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId)
+	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId)
 	      nTrueJets++;
-	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLoosePuId)
-	      nTauJets++;
+	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId)
+	      nLooseJets++;
 	    
-	    if(!passPFloose || !passLoosePuId || jets[ijet].pt()<30 || abs(jets[ijet].eta())>2.5) continue;	    
+	    //	    if(!passPFloose || !passLoosePuId || jets[ijet].pt()<30 || abs(jets[ijet].eta())>2.5) continue;	    
+	    if(!passPFloose || !passLooseSimplePuId || jets[ijet].pt()<30 || abs(jets[ijet].eta())>2.5) continue;	    
 	    //	    if(passPFloose && passLooseSimplePuId){
 	    //	      selJets.push_back(jets[ijet]);
 	    //	      if(jets[ijet].pt()>minJetPtToApply) njets++;
@@ -1296,7 +1297,8 @@ int main(int argc, char* argv[])
 	    //bjets
 	    mon.fillHisto("bjetcsv"   ,  chTags, jets[ijet].origcsv,  weight);
 
-	    bool hasCSVV1L(jets[ijet].csv >0.405);
+	    //	    bool hasCSVV1L(jets[ijet].csv >0.405);
+	    bool hasCSVV1L(jets[ijet].origcsv >0.679); // OLDCSV MEDIUM
 	    bool hasBtagCorr(hasCSVV1L);
 	    if(isMC){
 	      // set a unique seed
@@ -1403,7 +1405,7 @@ int main(int argc, char* argv[])
 	
 	//bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  // No. emu and mumu trigger may fire but we select the event for mutau  
 	bool passLeptonVeto( nVetoE==0 && nVetoMu==0 );
-	bool passLeptonPlusJets( (chTags[1] == "singlemu" ? muTrigger : eTrigger) && selSingleLepLeptons.size()==1 /*&& !otherTriggersVeto*/ && passLeptonVeto && nTrueJets>1 && nTauJets>2 );    
+	bool passLeptonPlusJets( (chTags[1] == "singlemu" ? muTrigger : eTrigger) && selSingleLepLeptons.size()==1 /*&& !otherTriggersVeto*/ && passLeptonVeto && nTrueJets>1 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tauNoDecayMode(selTausNoDecayMode.size()==1);
