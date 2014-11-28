@@ -238,12 +238,13 @@ int main(int argc, char* argv[])
   //##############################################
   SmartSelectionMonitor mon;
 
-  TH1 *h=mon.addHistogram( new TH1F ("eventflowsinglelepton", ";;Events", 5,0,5) );
+  TH1 *h=mon.addHistogram( new TH1F ("eventflowsinglelepton", ";;Events", 6,0,6 /*5,0,5*/));
   h->GetXaxis()->SetBinLabel(1,"1 lep, #geq 3 jets");
   h->GetXaxis()->SetBinLabel(2,"E_{T}^{miss} #geq 40 GeV");
   h->GetXaxis()->SetBinLabel(3,"#geq 1 btag");
-  h->GetXaxis()->SetBinLabel(4,"1 #tau_{h} "); 
-  h->GetXaxis()->SetBinLabel(5,"OS");
+  h->GetXaxis()->SetBinLabel(4,"1 #tau_{h} NDM");
+  h->GetXaxis()->SetBinLabel(5/*4*/,"1 #tau_{h} "); 
+  h->GetXaxis()->SetBinLabel(6/*5*/,"OS");
 
   h=mon.addHistogram( new TH1F ("eventflowdileptons", ";;Events", 6,0,6) );
   h->GetXaxis()->SetBinLabel(1,"2 leptons");
@@ -1361,7 +1362,9 @@ int main(int argc, char* argv[])
 	//
 	// TAU ANALYSIS
 	//
-	llvvTauCollection selTaus;
+	llvvTauCollection 
+	  selTaus,
+	  selTausNoDecayMode;
 	for(size_t itau=0; itau<taus.size(); itau++){
 	  llvvTau& tau = taus[itau];
 	  if(tau.pt()<20.0 || fabs(tau.eta()) > 2.3)continue; 
@@ -1382,11 +1385,11 @@ int main(int argc, char* argv[])
 	  //	  if(abs(tau.id/15.0) !=1) continue; // Non non-1 taus. Actually this should be always ok 
 	  
 	  
-	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
 	  if(!tau.passId(llvvTAUID::againstMuonTight3))continue; 
 	  if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))continue;
 	  if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))continue;
-	  
+	  selTausNoDecayMode.push_back(tau);
+	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
 	  selTaus.push_back(tau);         
 	}
 	
@@ -1403,6 +1406,7 @@ int main(int argc, char* argv[])
 	bool passLeptonPlusJets( (chTags[1] == "singlemu" ? muTrigger : eTrigger) && selSingleLepLeptons.size()==1 /*&& !otherTriggersVeto*/ && passLeptonVeto && nTrueJets>1 && nTauJets>2 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
+	bool pass1tauNoDecayMode(selTausNoDecayMode.size()==1);
 	bool pass1tau(selTaus.size()==1);
 	bool passOS(true);
 	if(pass1tau)  passOS = ((selTaus[0].id)*(selSingleLepLeptons[0].id)<0);      
@@ -1410,8 +1414,9 @@ int main(int argc, char* argv[])
 	if(passLeptonPlusJets)                                               mon.fillHisto("eventflowsinglelepton",chTags,0,weight);
 	if(passLeptonPlusJets && passMet)                                    mon.fillHisto("eventflowsinglelepton",chTags,1,weight);
 	if(passLeptonPlusJets && passMet && pass1bjet)                       mon.fillHisto("eventflowsinglelepton",chTags,2,weight);
-	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau)           mon.fillHisto("eventflowsinglelepton",chTags,3,weight);
-	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau && passOS) mon.fillHisto("eventflowsinglelepton",chTags,4,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet && pass1tauNoDecayMode)mon.fillHisto("eventflowsinglelepton",chTags,3,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau)           mon.fillHisto("eventflowsinglelepton",chTags,4/*3*/,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau && passOS) mon.fillHisto("eventflowsinglelepton",chTags,5/*4*/,weight);
 	
 	
 	if(passLeptonPlusJets){
