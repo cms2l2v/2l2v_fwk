@@ -1,0 +1,20 @@
+{
+    "proc":[
+	{
+         "tag":"t#bar{t}",
+	 "issignal":false,
+         "isdata":false,
+         "color":"614",
+         "lcolor":1,
+	 "mctruthmode":1,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJetsFullLeptMGDecays",
+                "xsec":245.8,
+		"split":5,
+		"br":[0.10608049]
+                }
+   	   ]
+	}
+     ]	
+}
