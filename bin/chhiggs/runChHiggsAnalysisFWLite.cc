@@ -1368,20 +1368,18 @@ int main(int argc, char* argv[])
 	  llvvTau& tau = taus[itau];
 	  if(tau.pt()<20.0 || fabs(tau.eta()) > 2.3)continue; 
 	  
-	  
-	  bool overalWithLepton(false);
+	  bool overlapWithLepton(false);
 	  for(int l1=0   ;l1<(int)selSingleLepLeptons.size();l1++){
-	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overalWithLepton=true; break;}
+	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
 	  }
-	  if(overalWithLepton)continue;
+	  if(overlapWithLepton)continue;
 	  
 	  //         printf("TauId: "); for(unsigned int i=0;i<64;i++){printf("%i ", (int) ((tau.idbits>>i)&1));}printf("\n");
-	  
 	  if(!tau.isPF) continue; // We want PF taus
 	  if(abs(tau.dZ)>=0.5) continue;  
 	  if( tau.emfraction >= 2. /*0.95*/ ) continue;
-	  // Dafuck?
-	  //	  if(abs(tau.id/15.0) !=1) continue; // Non non-1 taus. Actually this should be always ok 
+	  
+	  //	  if(abs(tau.id/15.0) !=1) continue; // Only 1 prong taus MEH // Non non-1 taus. Actually this should be always ok 
 	  
 	  
 	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
