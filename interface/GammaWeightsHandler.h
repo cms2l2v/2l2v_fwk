@@ -10,6 +10,9 @@
 #ifndef GammaWeightsHandler_H
 #define GammaWeightsHandler_H
 
+#include<iostream>
+
+
 #include "TString.h"
 #include "TSystem.h"
 #include "TFile.h"
@@ -18,8 +21,10 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "UserCode/llvv_fwk/interface/DataEventSummaryHandler.h"
-#include "UserCode/llvv_fwk/interface/llvvObjects.h"
+#include "Math/LorentzVector.h"
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
+
 
 class GammaWeightsHandler
 {
@@ -29,7 +34,6 @@ class GammaWeightsHandler
 
   float getWeightFor(std::vector<Float_t> &vars, TString evCategoryLabel="");
   LorentzVector getMassiveP4(LorentzVector &gamma,TString evCategoryLabel="");
-  LorentzVector getMassiveP4(LorentzVectorF &gamma,TString evCategoryLabel="");
   ~GammaWeightsHandler();
 
  private:

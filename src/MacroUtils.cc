@@ -195,15 +195,15 @@ namespace utils
     }
 
 
-   double relIso(llvvLepton lep, double rho){
-      if(abs(lep.id)==11){
-          return (TMath::Max(lep.nhIso03+lep.gIso03-rho*utils::cmssw::getEffectiveArea(11,lep.electronInfoRef->sceta),double(0.))+lep.chIso03)/lep.pt();
-      }else if(abs(lep.id)==13){
-          return (TMath::Max(lep.nhIso04+lep.gIso04-0.5*lep.puchIso04,double(0.))+lep.chIso04)/lep.pt();
-      }else{
-          return -1;
-      }
-   }
+//   double relIso(llvvLepton lep, double rho){
+//      if(abs(lep.id)==11){
+//          return (TMath::Max(lep.nhIso03+lep.gIso03-rho*utils::cmssw::getEffectiveArea(11,lep.electronInfoRef->sceta),double(0.))+lep.chIso03)/lep.pt();
+//      }else if(abs(lep.id)==13){
+//          return (TMath::Max(lep.nhIso04+lep.gIso04-0.5*lep.puchIso04,double(0.))+lep.chIso04)/lep.pt();
+//      }else{
+//          return -1;
+//      }
+//   }
     
     
     void getSingleMuTrigEff(const double& pt, const double& abseta, double& muontriggerefficiency){
@@ -341,24 +341,6 @@ namespace utils
       for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
          if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
       }
-      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
-      mcpileup[ngenITpu]++;
-    }
-  }
-
-
-  void getMCPileupDistribution(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
-  {
-    mcpileup.clear();
-    mcpileup.resize(Npu);
-    for(Long64_t ientry=0;ientry<ev.size();ientry++){
-      ev.to(ientry);
-      
-      fwlite::Handle< llvvGenEvent > genEventHandle;
-      genEventHandle.getByLabel(ev, "llvvObjectProducersUsed");
-//      if(!genEventHandle.isValid()){printf("llvvGenEvent Object NotFound\n");continue;}
-      if(!genEventHandle.isValid()){continue;} //remove the warning... CAREFULL!
-      unsigned int ngenITpu = (int)genEventHandle->ngenITpu;
       if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
       mcpileup[ngenITpu]++;
     }
