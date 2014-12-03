@@ -7,8 +7,9 @@
 <use name="TauAnalysis/SVfitStandalone"/>
 <environment>
   <bin name="extractLumiJSON"             file="extractLumiJSON.cc"></bin>
-  <bin name="runPlotter"                  file="runPlotter.cc"></bin> 
   <bin name="jsonTools"                   file="jsonTools.cc"></bin>
+  <bin name="computeLimit"                file="computeLimit.cc"></bin>
+  <bin name="runPlotter"                  file="runPlotter.cc"></bin> 
   <bin name="runExample"                  file="runExample.cc"></bin>
 </environment>
 
