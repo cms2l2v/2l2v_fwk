@@ -35,8 +35,8 @@
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
-#include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
+#include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
@@ -136,7 +136,6 @@ int main(int argc, char* argv[])
 
   GammaWeightsHandler *gammaWgtHandler=0;
   if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,"",true);
-  //if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,false);
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
