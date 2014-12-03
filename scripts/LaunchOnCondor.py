@@ -111,7 +111,7 @@ def CreateTheShellFile(argv):
  
         if 'purdue.edu' in hostname:
             shell_file.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
-            #shell_file.write('source /grp/cms/tools/glite/setup.sh\n')
+            shell_file.write('source /grp/cms/tools/glite/setup.sh\n')
 
 	shell_file.write('export SCRAM_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
         shell_file.write('export BUILD_ARCH='+os.getenv("BUILD_ARCH","slc5_amd64_gcc462")+'\n')
@@ -209,6 +209,8 @@ def CreateTheCmdFile():
 		#code specific for louvain
 		if(commands.getstatusoutput("uname -n")[1].find("ucl.ac.be")!=-1):
         		cmd_file.write('requirements            = (CMSFARM=?=True)&&(Memory > 200)\n')
+                elif(commands.getstatusoutput("uname -n")[1].find("purdue.edu")!=-1):
+        		cmd_file.write('requirements            = (request_memory > 200)\n')
 		else:
 			cmd_file.write('requirements            = (Memory > 200)\n')
 		cmd_file.write('should_transfer_files   = YES\n')
