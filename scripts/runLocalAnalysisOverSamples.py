@@ -62,9 +62,6 @@ if 'purdue.edu' in hostname:
     s = raw_input('Do you have valid certificate? (yes or no) ')
     if s == 'yes': 
         kInitDone = True
-    if s != 'yes':
-        sys.stdout.write('Please Use voms-proxy-info to check. \n')
-        sys.exit()
 
 initialCommand = '';
 #run over sample
