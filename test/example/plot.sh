@@ -1,0 +1,1 @@
+runPlotter --iEcm 8 --iLumi 19577 --inDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/results/ --outDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/plots/ --outFile $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/samples.json --no2D
