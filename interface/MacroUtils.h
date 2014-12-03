@@ -160,15 +160,13 @@ namespace utils
 }
 
 // CODE FOR DUPLICATE EVENTS CHECKING
-namespace __gnu_cxx{
-  template<> struct hash< std::string >{
-    size_t operator()( const std::string& x ) const{ return hash< const char* >()( x.c_str() );  }
-  };
-}
+//  template<> struct hash< std::string >{
+//    size_t operator()( const std::string& x ) const{ return hash< const char* >()( x.c_str() );  }
+//  };
 
 class DuplicatesChecker{
  private :
-  typedef __gnu_cxx::hash_map<std::string, bool > RunEventHashMap;
+  typedef std::unordered_map<std::string, bool > RunEventHashMap;
   RunEventHashMap map;
  public :
   DuplicatesChecker(){}
