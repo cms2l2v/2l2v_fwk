@@ -97,6 +97,8 @@ def CreateTheShellFile(argv):
         global absoluteShellPath
         Path_Shell = Farm_Directories[1]+'script'+Jobs_Index+Jobs_Name+'.sh'
         function_argument=''
+        hostname = os.getenv("HOSTNAME", "")
+        
         for i in range(2,len(argv)):
                 function_argument+="%s" % argv[i]
                 if i != len(argv)-1:
@@ -106,10 +108,20 @@ def CreateTheShellFile(argv):
 	shell_file.write('#! /bin/sh\n')
 	shell_file.write(CopyRights + '\n')
         shell_file.write('pwd\n')
+ 
+        if 'purdue.edu' in hostname:
+            shell_file.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
+            #shell_file.write('source /grp/cms/tools/glite/setup.sh\n')
+
 	shell_file.write('export SCRAM_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
         shell_file.write('export BUILD_ARCH='+os.getenv("BUILD_ARCH","slc5_amd64_gcc462")+'\n')
-        shell_file.write('export VO_CMS_SW_DIR='+os.getenv("VO_CMS_SW_DIR","/nfs/soft/cms")+'\n')
+
+        if 'purdue.edu' in hostname:
+            shell_file.write('export VO_CMS_SW_DIR=/apps/osg/cmssoft/cms\n')
+        else: 
+            shell_file.write('export VO_CMS_SW_DIR='+os.getenv("VO_CMS_SW_DIR","/nfs/soft/cms")+'\n')            
 	#shell_file.write('source /nfs/soft/cms/cmsset_default.sh\n')
+
 	shell_file.write('cd ' + os.getcwd() + '\n')
 	shell_file.write('eval `scramv1 runtime -sh`\n')
 
@@ -288,6 +300,7 @@ def SendCluster_Create(FarmDirectory, JobName):
         else:                                        useLIP = False;
 	Jobs_Name  = JobName
 	Jobs_Count = 0
+
         CreateDirectoryStructure(FarmDirectory)
         CreateTheCmdFile()
 
