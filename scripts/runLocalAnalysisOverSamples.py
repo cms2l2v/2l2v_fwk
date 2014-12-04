@@ -47,8 +47,8 @@ LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
 LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.Jobs_EmailReport    = opt.report
-LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
+LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 
 #define local site
 hostname = os.getenv("HOSTNAME", "");
@@ -58,6 +58,11 @@ if(hostname.find("cern.ch")>0) : localTier = "CERN"
 
 
 kInitDone = False;
+if 'purdue.edu' in hostname:
+    s = raw_input('Do you have valid certificate? (yes or no) ')
+    if s == 'yes': 
+        kInitDone = True
+
 initialCommand = '';
 #run over sample
 for proc in procList :

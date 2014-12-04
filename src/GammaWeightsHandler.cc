@@ -78,19 +78,6 @@ LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVector &gamma,TString evC
   return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
 }
 
-LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVectorF &gamma,TString evCategoryLabel)
-{
-  //generate a mass from the line shape (0 if not available)
-  float mass(0);
-  if(zmassH_.find(evCategoryLabel)!=zmassH_.end())
-    {
-      if(zmassH_[evCategoryLabel]->Integral())
-        while(fabs(mass-91)>15)
-          mass = zmassH_[evCategoryLabel]->GetRandom();
-    }
-  return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
-}
-
 float GammaWeightsHandler::getWeightFor(std::vector<Float_t> &vars, TString evCategoryLabel)
 {
   //get the weight (1.0 if not available)

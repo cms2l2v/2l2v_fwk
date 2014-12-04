@@ -13,30 +13,30 @@ namespace patUtils
             double resol         = fabs((1/el.ecalEnergy())-(el.eSuperClusterOverP()/el.ecalEnergy()));
             double dxy           = fabs(el.gsfTrack()->dxy(vtx.position()));
             double dz            = fabs(el.gsfTrack()->dz(vtx.position())); 
-            double mHits         = el.gsfTrack()->trackerExpectedHitsInner().numberOfHits();                       
+            double mHits         = el.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
 
             bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
             bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
 
             switch(IdLevel){
                case llvvElecId::Veto :
-                  if(barrel && dEtaln < 0.0200 && dPhiln < 0.2579 && sigmaletaleta < 0.0125 && hem < 0.2564 && dxy < 0.0250 && dz < 0.5863 && resol < 0.1508 && mHits == 2)return true;
-                  if(endcap && dEtaln < 0.0141 && dPhiln < 0.2591 && sigmaletaleta < 0.0371 && hem < 0.1335 && dxy < 0.2232 && dz < 0.9513 && resol < 0.1542 && mHits == 2)return true;
+                  if(barrel && dEtaln < 0.0200 && dPhiln < 0.2579 && sigmaletaleta < 0.0125 && hem < 0.2564 && dxy < 0.0250 && dz < 0.5863 && resol < 0.1508 && mHits <=2)return true;
+                  if(endcap && dEtaln < 0.0141 && dPhiln < 0.2591 && sigmaletaleta < 0.0371 && hem < 0.1335 && dxy < 0.2232 && dz < 0.9513 && resol < 0.1542 && mHits <= 2)return true;
                   break;
 
                case llvvElecId::Loose :
-                  if(barrel && dEtaln < 0.0181 && dPhiln < 0.0936 && sigmaletaleta < 0.0123 && hem < 0.141 && dxy < 0.0166 && dz < 0.54342 && resol < 0.1043 && mHits == 1)return true;
-                  if(endcap && dEtaln < 0.0124 && dPhiln < 0.0642 && sigmaletaleta < 0.035 && hem < 0.1115 && dxy < 0.0980 && dz < 0.91870 && resol < 0.1443 && mHits == 1)return true;
+                  if(barrel && dEtaln < 0.0181 && dPhiln < 0.0936 && sigmaletaleta < 0.0123 && hem < 0.141 && dxy < 0.0166 && dz < 0.54342 && resol < 0.1043 && mHits <= 1)return true; 
+                  if(endcap && dEtaln < 0.0124 && dPhiln < 0.0642 && sigmaletaleta < 0.035 && hem < 0.1115 && dxy < 0.0980 && dz < 0.91870 && resol < 0.1443 && mHits <= 1)return true; 
                   break;
 
                 case llvvElecId::Medium :
-                  if(barrel && dEtaln < 0.0106 && dPhiln < 0.0323 && sigmaletaleta < 0.0107 && hem < 0.067 && dxy < 0.0131 && dz < 0.22310 && resol < 0.1043 && mHits == 1)return true;
-                  if(endcap && dEtaln < 0.0108 && dPhiln < 0.0455 && sigmaletaleta < 0.0318 && hem < 0.097 && dxy < 0.0845 && dz < 0.75230 && resol < 0.1201 && mHits == 1)return true;
+                  if(barrel && dEtaln < 0.0106 && dPhiln < 0.0323 && sigmaletaleta < 0.0107 && hem < 0.067 && dxy < 0.0131 && dz < 0.22310 && resol < 0.1043 && mHits <= 1)return true; 
+                  if(endcap && dEtaln < 0.0108 && dPhiln < 0.0455 && sigmaletaleta < 0.0318 && hem < 0.097 && dxy < 0.0845 && dz < 0.75230 && resol < 0.1201 && mHits <= 1)return true; 
                   break;
   
                case llvvElecId::Tight :
-                  if(barrel && dEtaln < 0.0091 && dPhiln < 0.0310 && sigmaletaleta < 0.0106 && hem < 0.0532 && dxy < 0.0126 && dz < 0.0116 && resol < 0.0609 && mHits == 1)return true;
-                  if(endcap && dEtaln < 0.0106 && dPhiln < 0.0359 && sigmaletaleta < 0.0305 && hem < 0.0835 && dxy < 0.0163 && dz < 0.5999 && resol < 0.1126 && mHits == 1)return true;
+                  if(barrel && dEtaln < 0.0091 && dPhiln < 0.0310 && sigmaletaleta < 0.0106 && hem < 0.0532 && dxy < 0.0126 && dz < 0.0116 && resol < 0.0609 && mHits <= 1)return true; 
+                  if(endcap && dEtaln < 0.0106 && dPhiln < 0.0359 && sigmaletaleta < 0.0305 && hem < 0.0835 && dxy < 0.0163 && dz < 0.5999 && resol < 0.1126 && mHits <= 1)return true; 
                   break;
 
                case llvvElecId::LooseMVA :
@@ -146,12 +146,4 @@ namespace patUtils
           }
           return false;          
    }
-
-
-
-
-
-
-
-
 }

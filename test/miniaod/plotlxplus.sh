@@ -1,1 +1,0 @@
-runPlotterFWLite --iEcm 8 --iLumi 19577 --inDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/miniaod/results/ --outDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/miniaod/plots/ --outFile $CMSSW_BASE/src/UserCode/llvv_fwk/test/miniaod/plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/test/miniaod/json.json --no2D

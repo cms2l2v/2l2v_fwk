@@ -11,85 +11,6 @@ namespace higgs{
 
     EventCategory::~EventCategory() { }
     
-  
-    //
-    TString EventCategory::GetCategory(data::PhysicsObjectCollection_t &jets, LorentzVector &boson)
-    {
-      //jet multiplicity
-      int NJets(0);
-      for(size_t ijet=0; ijet<jets.size(); ijet++){
-	if(jets[ijet].pt()<=30)continue;
-	NJets++;
-      }
-      
-      //VBF tag
-      bool isVBF(false);
-      if(NJets>=2){
-	LorentzVector VBFSyst = jets[0] + jets[1];
-	double j1eta=jets[0].eta() ;
-	double j2eta=jets[1].eta();
-	double dEta = fabs(j1eta-j2eta);
-	
-	int NCentralJet(0), NCentralBoson(0);
-	double MaxEta, MinEta;
-	if(j1eta<j2eta) { MinEta=j1eta; MaxEta=j2eta;}
-	else            { MinEta=j2eta; MaxEta=j1eta;}
-	for(size_t ijet=2; ijet<jets.size(); ijet++){
-	  float jpt=jets[ijet].pt();
-	  float jeta=jets[ijet].eta();
-	  if(jpt<30)continue; 
-	  if(jeta>MinEta && jeta<MaxEta) NCentralJet++;  
-	}
-	
-	if(boson.eta()>MinEta && boson.eta()<MaxEta) NCentralBoson=1;
-	isVBF=( (dEta>4.0) && (VBFSyst.M()>500) && (NCentralJet==0) && (NCentralBoson==1) );
-      }
-      
-      //build classification
-      TString cat("");
-      switch(mode_)
-	{
-	case EXCLUSIVEVBF:
-	  {
-	    cat= isVBF ? "vbf":"novbf";
-	    break;
-	  }
-	case EXCLUSIVE3JETS:
-	  {
-	    if(NJets==0)      cat="eq0jets";
-	    else if(NJets==1) cat="eq1jets";
-	    else              cat="geq2jets";
-	    break;
-	  }
-	case EXCLUSIVE3JETSVBF:
-	  {
-	    if(isVBF)         cat="vbf";
-	    else if(NJets==0) cat="eq0jets";
-	    else if(NJets==1) cat="eq1jets";
-	    else              cat="geq2jets";
-	    break;
-	  }
-	case EXCLUSIVE2JETS:
-	  {
-	    if(NJets==0)      cat="eq0jets";
-	    else              cat="geq1jets";
-	    break;
-	  }
-	case  EXCLUSIVE2JETSVBF:
-	  {
-	    if(isVBF)         cat="vbf";
-	    else if(NJets==0) cat="eq0jets";
-	    else              cat="geq1jets";
-	    break;
-	  }
-	default:
-	  break;
-	}
-	
-      return cat;
-    }
-
-
     TString EventCategory::GetCategory(pat::JetCollection &jets, LorentzVector &boson)
     {
       //jet multiplicity
@@ -172,12 +93,12 @@ namespace higgs{
     double transverseMass(LorentzVector &visible, LorentzVector &invisible, bool assumeSameMass){
       if(assumeSameMass){
 	LorentzVector sum=visible+invisible;
-	double tMass = TMath::Power(TMath::Sqrt(TMath::Power(visible.pt(),2)+pow(visible.mass(),2))+TMath::Sqrt(TMath::Power(invisible.pt(),2)+pow(visible.mass(),2)),2);
-	tMass-=TMath::Power(sum.pt(),2);
-	return TMath::Sqrt(tMass);
+	double tMass = pow(sqrt(pow(visible.pt(),2)+pow(visible.mass(),2))+sqrt(pow(invisible.pt(),2)+pow(visible.mass(),2)),2);
+	tMass-=pow(sum.pt(),2);
+	return sqrt(tMass);
       }else{
 	double dphi=fabs(deltaPhi(invisible.phi(),visible.phi()));
-	return TMath::Sqrt(2*invisible.pt()*visible.pt()*(1-TMath::Cos(dphi)));
+	return sqrt(2*invisible.pt()*visible.pt()*(1-cos(dphi)));
       }
       return -1;
     }

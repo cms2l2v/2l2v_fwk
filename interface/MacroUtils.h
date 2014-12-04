@@ -35,9 +35,6 @@
 
 #include "DataFormats/Math/interface/deltaPhi.h"
 
-#include "UserCode/llvv_fwk/interface/llvvObjects.h"
-
-
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
 
@@ -46,6 +43,10 @@
 #include "TMath.h"
 #include "TGraph.h"
 #include <Math/VectorUtil.h>
+
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
+
 
 namespace utils
 {
@@ -119,7 +120,7 @@ namespace utils
     utils::cmssw::PuShifter_t getPUshifters(std::vector< float > &Lumi_distr, float puUnc);
 
     Float_t getEffectiveArea(int id, float eta,int cone=3,TString isoSum="");
-    double relIso(llvvLepton lep, double rho);
+//    double relIso(llvvLepton lep, double rho);
 
     // Single muon trigger efficiency 
     void getSingleMuTrigEff(const double&, const double&, double& );
@@ -160,15 +161,13 @@ namespace utils
 }
 
 // CODE FOR DUPLICATE EVENTS CHECKING
-namespace __gnu_cxx{
-  template<> struct hash< std::string >{
-    size_t operator()( const std::string& x ) const{ return hash< const char* >()( x.c_str() );  }
-  };
-}
+//  template<> struct hash< std::string >{
+//    size_t operator()( const std::string& x ) const{ return hash< const char* >()( x.c_str() );  }
+//  };
 
 class DuplicatesChecker{
  private :
-  typedef __gnu_cxx::hash_map<std::string, bool > RunEventHashMap;
+  typedef std::unordered_map<std::string, bool > RunEventHashMap;
   RunEventHashMap map;
  public :
   DuplicatesChecker(){}
