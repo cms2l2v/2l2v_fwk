@@ -1,0 +1,1 @@
+runPlotter --iEcm 13 --iLumi 1000 --inDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/results/ --outDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/plots/ --outFile $CMSSW_BASE/src/UserCode/llvv_fwk/test/example/plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_samples.json --no2D --plotExt .png --plotExt .pdf
