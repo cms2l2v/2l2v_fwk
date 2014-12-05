@@ -1,0 +1,65 @@
+{
+  "proc":[
+    {
+      "tag":"Z#rightarrow ll",
+      "isdata":false,
+      "color":831,
+      "lcolor":1,
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":5, "xsec":3503.71     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_13TeV-madgraph-pythia8/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"W,multijets",
+      "isdata":false,
+      "color":809,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_WJets"                            , "split":5, "xsec":37509       , "br":[ 1.0 ]                 , "dset":"/W1234JetsToLNu_Tune4C_13TeV-madgraph-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"ZZ",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_ZZ4l"                             , "split":10, "xsec":7.920       , "br":[ 0.0403896 ]           , "dset":"/ZZTo4L_Tune4C_13TeV-powheg-pythia8/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Top",
+      "isdata":false,
+      "color":614,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"/TT_Tune4C_13TeV-pythia8-tauola/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"#gamma+jets",
+      "isdata":false,
+      "color":800,
+      "lcolor":1,
+      "mctruthmode":22,
+      "isinvisible":true,
+      "data":[
+        { "dtag":"MC13TeV_GJets_15to3000"                   , "split":5, "xsec":224012    , "br":[ 1.3 ]                 , "dset":"/GJet_Pt-15to3000_Tune4C_13TeV_pythia8/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"   }
+      ]
+    },
+    {
+      "tag":"QCD",
+      "isdata":false,
+      "color":5,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_QCDPt15to3000"                    , "split":25, "xsec":9231786    , "br":[ 1.0 ]              , "dset":"/QCD_Pt-15to3000_Tune4C_Flat_13TeV_pythia8/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"        }
+      ]
+    }
+  ]
+}
+
+
+
+

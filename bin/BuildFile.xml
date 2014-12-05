@@ -6,11 +6,15 @@
 <use name="UserCode/llvv_fwk"/>
 <use name="TauAnalysis/SVfitStandalone"/>
 <environment>
+<!-- Common tools and examples -->
   <bin name="extractLumiJSON"             file="extractLumiJSON.cc"></bin>
   <bin name="jsonTools"                   file="jsonTools.cc"></bin>
   <bin name="computeLimit"                file="computeLimit.cc"></bin>
   <bin name="runPlotter"                  file="runPlotter.cc"></bin> 
   <bin name="runExample"                  file="runExample.cc"></bin>
+
+<!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
+  <bin name="runChHiggsAnalysis"          file="chhiggs/runAnalysis.cc"></bin>
 </environment>
 
 <flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable  -Os"/>
