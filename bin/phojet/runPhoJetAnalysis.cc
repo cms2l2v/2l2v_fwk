@@ -36,7 +36,6 @@ int main(int argc, char* argv[])
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
 
-  TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
   TString url = TString(argv[1]);
   TString outFileUrl(gSystem->BaseName(url));
@@ -50,10 +49,10 @@ int main(int argc, char* argv[])
   SmartSelectionMonitor mon;
  
   // pu control
-  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtx", ";Vertices;Events", 50, 0, 50) ); 
 
   // photon control
-  mon.addHistogram( new TH1F( "npho",";Photons;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "npho",";Photons;Events", 20, 0, 20) ); 
   
   // get ready for the event loop
   fwlite::ChainEvent ev(urls);
@@ -145,12 +144,12 @@ int main(int argc, char* argv[])
     mon.fillHisto("nvtx",  tags,vtx.size(),weight);
 
   } // event loop done
-  printf("\n"); 
+  printf(" done.\n"); 
   
   //save control plots to file
   outUrl += "/";
   outUrl += outFileUrl + ".root";
-  printf("Results save in %s\n", outUrl.Data());
+  printf("Results saved in %s\n", outUrl.Data());
 
   TFile *ofile=TFile::Open(outUrl, "recreate");
   mon.Write();
