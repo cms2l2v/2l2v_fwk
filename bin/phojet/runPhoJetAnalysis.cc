@@ -21,6 +21,18 @@
 #include "TH1F.h"
 
 
+SmartSelectionMonitor
+initHistograms(){
+  SmartSelectionMonitor mon;
+  // pu control
+  mon.addHistogram( new TH1F( "nvtx", ";Vertices;Events", 50, 0, 50) ); 
+  // photon control
+  mon.addHistogram( new TH1F( "npho",";Photons;Events", 20, 0, 20) ); 
+
+  return mon; 
+}
+
+
 bool
 passPhotonTrigger(fwlite::ChainEvent ev) {
   edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
@@ -101,7 +113,14 @@ passPhotonSelection(SmartSelectionMonitor mon,
   
   mon.fillHisto("npho", "all", photons.size(), weight);
   mon.fillHisto("nvtx", "all", vtx.size(), weight);
-  
+
+  for(size_t ipho=0; ipho<photons.size(); ipho++) {
+    double pt=photons[ipho].pt();
+    double eta=photons[ipho].superCluster()->eta();
+    
+
+  }
+
   return selPhotons; 
 }
 
@@ -131,13 +150,7 @@ int main(int argc, char* argv[])
   gSystem->Exec("mkdir -p " + outUrl);
 
   // initiating histograms
-  SmartSelectionMonitor mon;
- 
-  // pu control
-  mon.addHistogram( new TH1F( "nvtx", ";Vertices;Events", 50, 0, 50) ); 
-
-  // photon control
-  mon.addHistogram( new TH1F( "npho",";Photons;Events", 20, 0, 20) ); 
+  SmartSelectionMonitor mon = initHistograms();
   
   // get ready for the event loop
   fwlite::ChainEvent ev(urls);
@@ -163,7 +176,6 @@ int main(int argc, char* argv[])
   int treeStep(totalEntries/50);
   for( size_t iev=0; iev<totalEntries; iev++){
     if(iev%treeStep==0){printf(".");fflush(stdout);}
-
     // load the event content from the EDM file
     ev.to(iev);
     
@@ -185,8 +197,6 @@ int main(int argc, char* argv[])
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
     
     // below follows the analysis of the main selection with n-1 plots
-
-    // photon selection
     pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx);
 
   } // end event loop 
