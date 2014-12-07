@@ -29,6 +29,7 @@ initHistograms(){
   // photon control
   mon.addHistogram(new TH1F("npho", ";Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1500) ); 
+  mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
 
   return mon; 
 }
@@ -119,6 +120,7 @@ passPhotonSelection(SmartSelectionMonitor mon,
     double pt=photons[ipho].pt();
     double eta=photons[ipho].superCluster()->eta();
     mon.fillHisto("phopt", "all", pt, weight);
+    mon.fillHisto("phoeta", "all", eta, weight);
 
   }
 
