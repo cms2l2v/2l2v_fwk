@@ -21,7 +21,8 @@
 #include "TH1F.h"
 
 
-bool passPhotonTrigger(fwlite::ChainEvent ev) {
+bool
+passPhotonTrigger(fwlite::ChainEvent ev) {
   edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
   if( !tr.isValid() ) return false;
 
@@ -90,8 +91,19 @@ bool passPhotonTrigger(fwlite::ChainEvent ev) {
 }
 
 
+pat::PhotonCollection
+passPhotonSelection(SmartSelectionMonitor mon,
+		    pat::PhotonCollection photons,
+		    reco::VertexCollection vtx){
 
-
+  pat::PhotonCollection selPhotons;
+  float weight = 1.0 ; // only consider 1.0 weight 
+  
+  mon.fillHisto("npho", "all", photons.size(), weight);
+  mon.fillHisto("nvtx", "all", vtx.size(), weight);
+  
+  return selPhotons; 
+}
 
 int main(int argc, char* argv[])
 {
@@ -175,14 +187,9 @@ int main(int argc, char* argv[])
     // below follows the analysis of the main selection with n-1 plots
 
     // photon selection
-    pat::PhotonCollection selPhotons;
-    std::vector<TString> tags(1,"all"); // only consider all for now.
-    float weight = 1.0 ; // only consider 1.0 weight now. 
+    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx);
 
-    mon.fillHisto("npho",  tags,photons.size(),weight);
-    mon.fillHisto("nvtx",  tags,vtx.size(),weight);
-
-  } // event loop done
+  } // end event loop 
   printf(" done.\n"); 
   
   //save control plots to file
