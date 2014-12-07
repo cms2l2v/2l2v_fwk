@@ -25,9 +25,10 @@ SmartSelectionMonitor
 initHistograms(){
   SmartSelectionMonitor mon;
   // pu control
-  mon.addHistogram( new TH1F( "nvtx", ";Vertices;Events", 50, 0, 50) ); 
+  mon.addHistogram(new TH1F("nvtx", ";Vertices;Events", 50, 0, 50) ); 
   // photon control
-  mon.addHistogram( new TH1F( "npho",";Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("npho", ";Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1500) ); 
 
   return mon; 
 }
@@ -117,7 +118,7 @@ passPhotonSelection(SmartSelectionMonitor mon,
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
     double pt=photons[ipho].pt();
     double eta=photons[ipho].superCluster()->eta();
-    
+    mon.fillHisto("phopt", "all", pt, weight);
 
   }
 
