@@ -20,7 +20,6 @@
 #include "TTree.h"
 #include "TH1F.h"
 
-
 SmartSelectionMonitor
 initHistograms(){
   SmartSelectionMonitor mon;
@@ -31,6 +30,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
+  mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
 
   return mon; 
 }
@@ -44,7 +44,6 @@ passPhotonTrigger(fwlite::ChainEvent ev) {
   bool hasPhotonTrigger(false);
   float triggerPrescale(1.0); 
   float triggerThreshold(0);
-  // bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
 
   std::string successfulPath="";
   if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){
@@ -99,7 +98,6 @@ passPhotonTrigger(fwlite::ChainEvent ev) {
     const edm::TriggerResults& trResults =  prescales.triggerResults();
     prescales.setTriggerNames( ev.triggerNames(trResults) );
     triggerPrescale = prescales.getPrescaleForName(successfulPath);
-    // if (debug) printf("preScale = %f", triggerPrescale); 
   }
 
   return hasPhotonTrigger; 
@@ -126,6 +124,9 @@ passPhotonSelection(SmartSelectionMonitor mon,
 
     double r9 = photons[ipho].r9(); 
     mon.fillHisto("phor9", "all", r9, weight);
+
+    double iso = photons[ipho].photonIso(); // particleIso() returns all -1.0 
+    mon.fillHisto("phoiso", "all", iso, weight);
 
   }
 
