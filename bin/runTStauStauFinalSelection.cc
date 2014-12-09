@@ -89,6 +89,7 @@ struct SampleFiles
   std::string name;
   TChain* chain;
   int nFiles;
+  TTree* tree;
 };
 
 struct ProcessFiles
@@ -128,6 +129,7 @@ public:
   SignalRegion(JSONWrapper::Object& json);
 
   inline bool isValid() const {return isValid_;};
+  inline std::string signalSelection() const {return (isValid_)?(selection_):("");};
 
 private:
   bool isValid_;
@@ -178,9 +180,12 @@ private: // TODO: Add Channels
   std::vector<std::string> printOrder_;
   std::map<std::string,std::vector<ProcessFiles>> processes_;
 
+  TFile* scratchArea_;
+
 
   bool loadJson(std::vector<JSONWrapper::Object>& selection);
   void clearSamples();
+  std::vector<int> getSignalPoints(std::string currentSelection);
 
 protected:
 };
@@ -548,6 +553,7 @@ SignalRegion::SignalRegion(JSONWrapper::Object& json):
 bool SignalRegion::loadJson(JSONWrapper::Object& json)
 {
   selection_ = json.getString("signalRegionSelection", "");
+//  std::cout << "SignalRegion::loadJson(): signal Region Selection: " << selection_  << std::endl;
   if(selection_ == "")
     return false;
 
@@ -611,11 +617,70 @@ bool SignalRegionCutInfo::loadJson(JSONWrapper::Object& json)
   return true;
 }
 
+//TDirectory* cwd = gDirectory;
+//cwd->cd();
 bool DatacardMaker::genDatacards()
 {
+  TDirectory* cwd = gDirectory;
+  scratchArea_ = new TFile(".finalSelectionScratchArea.root", "RECREATE");
+
   for(auto signalRegion = signalRegions_.begin(); signalRegion != signalRegions_.end(); ++signalRegion)
   {
+    std::vector<int> signalPoints = getSignalPoints(signalRegion->signalSelection());
+    for(auto point = signalPoints.begin(); point != signalPoints.end(); ++point)
+    {
+      std::stringstream temp;
+      std::string fileName;
+
+      temp << outDir_ << "/SignalPoint_" << *point << ".txt";
+      temp >> fileName;
+
+      bool exists = std::ifstream(fileName).good();
+      if(exists)
+        std::cout << "DatacardMaker::genDatacards(): The defined signal regions overlap, program execution will continue but only the last signal region for a given signal point will be kept. Please check " << jsonFile_ << " for errors." << std::endl;
+    }
+
+    //Todo: Do whatever has to be done for each signal point in the signal region
+
   }
 
+  cwd->cd();
+
   return false;
+}
+
+std::vector<int> DatacardMaker::getSignalPoints(std::string currentSelection)
+{
+  std::vector<int> retVal;
+
+  std::string selection = baseSelection_ + "&&" + currentSelection;
+
+  int maxVal = 501*1000+1; //Change-me if you are having problems with multipart signal samples and it only finds some of them
+  TH1D* signalPoints = new TH1D("signalPoints", "signalPoints", maxVal, 0, maxVal);
+
+  for(auto process = processes_["SIG"].begin(); process != processes_["SIG"].end(); ++process)
+  {
+    for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+    {
+      if(sample->nFiles == 0)
+        continue;
+
+      TH1D* temp_hist = new TH1D("temp_hist", "temp_hist", maxVal, 0, maxVal);
+      sample->chain->Draw((signalPointVariable_+">>temp_hist").c_str(), selection.c_str(), "goff");
+      signalPoints->Add(temp_hist);
+      delete temp_hist;
+    }
+  }
+
+  int nBins = signalPoints->GetNbinsX();
+  for(int i = 1; i <= nBins; ++i)
+    if(signalPoints->GetBinContent(i) != 0)
+    {
+//      std::cout << signalPoints->GetBinLowEdge(i) << std::endl;
+      retVal.push_back(int(signalPoints->GetBinLowEdge(i)));
+    }
+
+  delete signalPoints;
+
+  return retVal;
 }
