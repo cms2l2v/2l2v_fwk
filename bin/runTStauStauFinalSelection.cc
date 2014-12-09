@@ -151,6 +151,7 @@ public:
   inline void clearUnblind() {unblind_ = false;};
 
   bool loadJson(const std::string& jsonFile);
+  bool genDatacards();
 
 private: // TODO: Add Channels
   double iLumi_;
@@ -171,8 +172,13 @@ private: // TODO: Add Channels
   bool unblind_;
   std::string jsonLoaded_;
 
+  std::map<std::string,bool> FileExists_;
+  std::vector<std::string> printOrder_;
+  std::map<std::string,std::vector<ProcessFiles>> processes_;
+
 
   bool loadJson(std::vector<JSONWrapper::Object>& selection);
+  void clearSamples();
 
 protected:
 };
@@ -240,6 +246,7 @@ int main(int argc, char** argv)
 
   DatacardMaker myDatacardMaker;
   if(verbose)  myDatacardMaker.setVerbose();
+  myDatacardMaker.genDatacards();
 
   return 0;
 }
@@ -379,7 +386,37 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
     return false;
   }
 
+  // TODO - Load the Json file with the samples
+  clearSamples();
+
   return true;
+}
+
+void DatacardMaker::clearSamples()
+{
+  if(verbose_)
+    std::cout << "DatacardMaker::clearSamples(): Clearing the datastructures to hold the samples." << std::endl;
+
+  for(auto iterator = processes_.begin(); iterator != processes_.end(); ++iterator)
+  {
+    for(auto process = iterator->second.begin(); process != iterator->second.end(); ++process)
+    {
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        delete sample->chain;
+      }
+    }
+  }
+
+  processes_.clear();
+  printOrder_.clear();
+
+  std::vector<ProcessFiles> temp;
+  processes_["BG"] = temp;
+  processes_["SIG"] = temp;
+  processes_["Data"] = temp;
+
+  return;
 }
 
 SignalRegion::SignalRegion():
@@ -465,4 +502,9 @@ bool SignalRegionCutInfo::loadJson(JSONWrapper::Object& json)
   value_ = json.getDouble("value", 0.0);
 
   return true;
+}
+
+bool DatacardMaker::genDatacards()
+{
+  return false;
 }
