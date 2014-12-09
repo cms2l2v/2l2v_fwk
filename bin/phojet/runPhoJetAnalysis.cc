@@ -141,8 +141,6 @@ passPhotonSelection(SmartSelectionMonitor mon,
     float iso = photons[ipho].photonIso(); // particleIso() returns all -1.0 
     mon.fillHisto("phoiso", "all", iso, weight);
 
-    float reliso = iso/pt; // range: 0 - 2
-
     bool passId = passPhotonId(r9);
     bool passIso = passPhotonIso();
 
@@ -231,7 +229,11 @@ int main(int argc, char* argv[])
     
     // below follows the analysis of the main selection with n-1 plots
     pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx, triggerThreshold);
-
+    for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
+      float pt = selPhotons[ipho].pt();
+      mon.fillHisto("phopt", "sel", pt, 1.0);
+    }
+    
   } // end event loop 
   printf(" done.\n"); 
   
