@@ -144,6 +144,7 @@ class DatacardMaker
 public:
   DatacardMaker();
   DatacardMaker(const std::string& jsonFile);
+  ~DatacardMaker();
 
   inline void setVerbose()   {verbose_ = true;};
   inline void clearVerbose() {verbose_ = false;};
@@ -279,6 +280,16 @@ DatacardMaker::DatacardMaker(const std::string& jsonFile)
   unblind_ = false;
   jsonLoaded_ = "";
   loadJson(jsonFile);
+}
+
+DatacardMaker::~DatacardMaker()
+{
+  std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
+  for(auto key = FileExists_.begin(); key != FileExists_.end(); ++key)
+  {
+    if(!key->second)
+      std::cout << "  " << key->first << std::endl;
+  }
 }
 
 bool DatacardMaker::loadJson(const std::string& jsonFile)
