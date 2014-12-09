@@ -37,13 +37,14 @@ initHistograms(){
 
 
 bool
-passPhotonTrigger(fwlite::ChainEvent ev) {
+passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
   edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
   if( !tr.isValid() ) return false;
 
   bool hasPhotonTrigger(false);
   float triggerPrescale(1.0); 
-  float triggerThreshold(0);
+  // float triggerThreshold(0);
+  triggerThreshold = 0.0;
 
   std::string successfulPath="";
   if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){
@@ -104,10 +105,22 @@ passPhotonTrigger(fwlite::ChainEvent ev) {
 }
 
 
+bool
+passPhotonId(float r9){
+  if ( r9 > 0.9) return false; 
+  return true; 
+}
+
+bool
+passPhotonIso(){
+  return true;  
+}
+
 pat::PhotonCollection
 passPhotonSelection(SmartSelectionMonitor mon,
 		    pat::PhotonCollection photons,
-		    reco::VertexCollection vtx){
+		    reco::VertexCollection vtx,
+		    float triggerThreshold){
 
   pat::PhotonCollection selPhotons;
   float weight = 1.0 ; // only consider 1.0 weight 
@@ -116,18 +129,28 @@ passPhotonSelection(SmartSelectionMonitor mon,
   mon.fillHisto("nvtx", "all", vtx.size(), weight);
 
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
-    double pt = photons[ipho].pt();
+    float pt = photons[ipho].pt();
     mon.fillHisto("phopt", "all", pt, weight);
 
-    double eta = photons[ipho].superCluster()->eta();
+    float eta = photons[ipho].superCluster()->eta();
     mon.fillHisto("phoeta", "all", eta, weight);
 
-    double r9 = photons[ipho].r9(); 
+    float r9 = photons[ipho].r9(); 
     mon.fillHisto("phor9", "all", r9, weight);
 
-    double iso = photons[ipho].photonIso(); // particleIso() returns all -1.0 
+    float iso = photons[ipho].photonIso(); // particleIso() returns all -1.0 
     mon.fillHisto("phoiso", "all", iso, weight);
 
+    float reliso = iso/pt; // range: 0 - 2
+
+    bool passId = passPhotonId(r9);
+    bool passIso = passPhotonIso();
+
+    // select the photon
+    if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
+    if(!passId) continue;
+    if(!passIso) continue; 
+    selPhotons.push_back(photons[ipho]);
   }
 
   return selPhotons; 
@@ -189,7 +212,8 @@ int main(int argc, char* argv[])
     ev.to(iev);
     
     //apply trigger and require compatibilitiy of the event with the PD
-    bool hasPhotonTrigger = passPhotonTrigger(ev);
+    float triggerThreshold = 0.0; 
+    bool hasPhotonTrigger = passPhotonTrigger(ev, triggerThreshold);
 
     // only run on the events that pass our triggers
     if( !hasPhotonTrigger ) continue; 
@@ -206,7 +230,7 @@ int main(int argc, char* argv[])
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
     
     // below follows the analysis of the main selection with n-1 plots
-    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx);
+    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx, triggerThreshold);
 
   } // end event loop 
   printf(" done.\n"); 
