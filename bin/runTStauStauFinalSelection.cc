@@ -152,6 +152,7 @@ public:
   inline void clearUnblind() {unblind_ = false;};
 
   bool loadJson(const std::string& jsonFile);
+  inline void setOutDir(const std::string& outDir) {outDir_ = outDir;};
   bool genDatacards();
 
 private: // TODO: Add Channels
@@ -195,7 +196,7 @@ void printHelp(std::string binName);
 /*****************************************************************************/
 int main(int argc, char** argv)
 {
-//  AutoLibraryLoader::enable();
+  AutoLibraryLoader::enable();
   setTDRStyle();
 
   std::string jsonFile;
@@ -247,6 +248,8 @@ int main(int argc, char** argv)
 
   DatacardMaker myDatacardMaker;
   if(verbose)  myDatacardMaker.setVerbose();
+  myDatacardMaker.loadJson(jsonFile);
+  myDatacardMaker.setOutDir(outDir);
   myDatacardMaker.genDatacards();
 
   return 0;
@@ -397,8 +400,101 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
     return false;
   }
 
-  // TODO - Load the Json file with the samples
   clearSamples();
+
+  JSONWrapper::Object json(jsonFile_, true);
+  std::vector<JSONWrapper::Object> processes = json["proc"].daughters();
+  for(auto process = processes.begin(); process != processes.end(); ++process)
+  {
+    bool isData = (*process)["isdata"].toBool();
+    bool isSig  = !isData && (*process).isTag("spimpose") && (*process)["spimpose"].toBool();
+    bool isMC   = !isData && !isSig;
+
+    std::string type = "Data";
+    if(isMC)
+      type = "BG";
+    if(isSig)
+      type = "SIG";
+
+    ProcessFiles tempProc;
+    tempProc.name = (*process).getString("tag", "Sample");
+    printOrder_.push_back(tempProc.name);
+
+    if(process->isTag("color"))
+    {
+      tempProc.style.lcolor() = process->getInt("color");
+      tempProc.style.mcolor() = tempProc.style.lcolor();
+      tempProc.style.fcolor() = tempProc.style.lcolor();
+    }
+    if(process->isTag("lcolor"))
+      tempProc.style.lcolor() = process->getInt("lcolor");
+    if(process->isTag("mcolor"))
+      tempProc.style.mcolor() = process->getInt("mcolor");
+    if(process->isTag("fcolor"))
+      tempProc.style.fcolor() = process->getInt("fcolor");
+    if(process->isTag("fill"))
+      tempProc.style.fcolor() = process->getInt("fill");
+    if(process->isTag("lwidth"))
+      tempProc.style.lwidth() = process->getInt("lwidth");
+    if(process->isTag("lstyle"))
+      tempProc.style.lstyle() = process->getInt("lstyle");
+    if(process->isTag("marker"))
+      tempProc.style.marker() = process->getInt("marker");
+
+    std::string filtExt;
+    if((*process).isTag("mctruthmode"))
+    {
+      std::stringstream buf;
+      buf << "_filt" << (*process)["mctruthmode"].toInt();
+      buf >> filtExt;
+    }
+    std::vector<JSONWrapper::Object> samples = (*process)["data"].daughters();
+    for(auto sample = samples.begin(); sample != samples.end(); ++sample)
+    {
+      SampleFiles tempSample;
+      tempSample.nFiles = 0;
+      tempSample.name = (*sample).getString("dtag", "");
+      tempSample.chain = new TChain(ttree_.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
+      int nFiles = (*sample).getInt("split", 1);
+
+      for(int filen = 0; filen < nFiles; ++filen)
+      {
+        std::string segmentExt;
+        if(nFiles != 1)
+        {
+          std::stringstream buf;
+          buf << "_" << filen;
+          buf >> segmentExt;
+        }
+
+        std::string fileName = inDir_ + "/" + (*sample).getString("dtag", "") + (*sample).getString("suffix", "") + segmentExt + filtExt + customExtension_ + ".root";
+
+        TFile* file = new TFile(fileName.c_str(), "READONLY");
+        bool& fileExists = FileExists_[fileName];
+
+        if(!file || file->IsZombie() || !file->IsOpen() || file->TestBit(TFile::kRecovered))
+        {
+          fileExists = false;
+          file->Close();
+          delete file;
+          continue;
+        }
+        else
+        {
+          fileExists = true;
+          file->Close();
+          delete file;
+        }
+
+        tempSample.chain->Add(fileName.c_str());
+        ++(tempSample.nFiles);
+      }
+
+      tempProc.samples.push_back(tempSample);
+    }
+
+    processes_[type].push_back(tempProc);
+  }
 
   return true;
 }
@@ -517,5 +613,9 @@ bool SignalRegionCutInfo::loadJson(JSONWrapper::Object& json)
 
 bool DatacardMaker::genDatacards()
 {
+  for(auto signalRegion = signalRegions_.begin(); signalRegion != signalRegions_.end(); ++signalRegion)
+  {
+  }
+
   return false;
 }
