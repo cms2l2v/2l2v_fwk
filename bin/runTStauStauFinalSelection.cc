@@ -411,9 +411,9 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
 
   auto channels = mySelection["channels"].daughters();
   channels_.clear();
-  for(auto channel = channels.begin(); channel != channels.end(); ++channel)
+  for(auto &channel : channels)
   {
-    ChannelInfo temp(*channel);
+    ChannelInfo temp(channel);
 
     if(temp.isValid())
       channels_.push_back(temp);
@@ -425,14 +425,14 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
 
   auto signalRegions = mySelection["signalRegions"].daughters();
   signalRegions_.clear();
-  for(auto signalRegion = signalRegions.begin(); signalRegion != signalRegions.end(); ++signalRegion)
+  for(auto &signalRegion : signalRegions)
   {
-    if(signalRegion->getString("signalRegionSelection", "") == "")
-    {
+    SignalRegion temp(signalRegion);
+
+    if(temp.isValid())
+      signalRegions_.push_back(temp);
+    else
       std::cout << "DatacardMaker::loadJson(): The signal region must have a signalRegionSelection defined. In case there is only one signal region and you do not want to apply any extra selection, I suggest using one of the base selection variables so that this value is defined." << std::endl;
-      continue;
-    }
-    signalRegions_.push_back(SignalRegion(*signalRegion));
   }
   if(signalRegions_.size() == 0)
   {
