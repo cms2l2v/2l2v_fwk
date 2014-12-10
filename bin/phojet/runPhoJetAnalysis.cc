@@ -31,6 +31,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
+  mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
 
   return mon; 
 }
@@ -138,9 +139,12 @@ passPhotonSelection(SmartSelectionMonitor mon,
     float r9 = photons[ipho].r9(); 
     mon.fillHisto("phor9", "all", r9, weight);
 
-    float iso = photons[ipho].photonIso(); // particleIso() returns all -1.0 
+    float iso = photons[ipho].photonIso(); 
     mon.fillHisto("phoiso", "all", iso, weight);
 
+    float hoe = photons[ipho].hadTowOverEm();
+    mon.fillHisto("phohoe", "all", hoe, weight);
+    
     bool passId = passPhotonId(r9);
     bool passIso = passPhotonIso();
 
@@ -170,7 +174,7 @@ int main(int argc, char* argv[])
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
 
-  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
+  std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
   TString url = TString(argv[1]);
   TString outFileUrl(gSystem->BaseName(url));
   outFileUrl.ReplaceAll("_cfg.py","");
