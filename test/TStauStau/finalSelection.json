@@ -1,0 +1,42 @@
+{
+  "finalSelection":[
+    {
+      "iLumi":19672,
+      "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
+      "jsonFile":"tstaustau_samples_full.json",
+      "customExtension":"_summary",
+      "ttree":"Events",
+      "baseSelection":"selected",
+      "shapeVariable":"",
+      "numBins":1,
+      "minVal":0,
+      "maxVal":2,
+      "channels":[
+        {
+          "name":"leptonTau",
+          "selection":"selected"
+        }
+      ],
+      "systematicUncertainties_NI":[
+        {
+          "comment":"Not implemented yet, but here the names of the systematic uncertainties should show up as well as information necessary to go into the datacard"
+        }
+      ],
+      "signalPointVariable":"stauMass*1000+neutralinoMass",
+      "signalRegions":[
+        {
+          "signalRegionSelection":"(stauMass-neutralinoMass)>80 && (stauMass-neutralinoMass)<120",
+          "cuts":[
+            {
+              "variableExpression":"met",
+              "variableProperty":"Et()",
+              "comment":"The two above are combined into a single expression, yielding: 'met.Et()'. It is defined in this way so that the systematics can be automatically assesed",
+              "cutDirection":"above",
+              "value":30
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
