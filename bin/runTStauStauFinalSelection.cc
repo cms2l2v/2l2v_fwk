@@ -7,6 +7,7 @@
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
+// TODO: Implement shape correctly, using the shape analysis from combine and providing histograms
 
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
@@ -141,6 +142,26 @@ private:
 protected:
 };
 
+class ChannelInfo
+{
+public:
+  ChannelInfo();
+  ChannelInfo(JSONWrapper::Object& json);
+
+  inline bool isValid() const {return isValid_;};
+  inline std::string name() const {return name_;};
+  inline std::string selection() const {return selection_;};
+
+private:
+  bool isValid_;
+  std::string name_;
+  std::string selection_;
+
+  bool loadJson(JSONWrapper::Object& json);
+
+protected:
+};
+
 class DatacardMaker
 {
 public:
@@ -165,12 +186,13 @@ private: // TODO: Add Channels
   std::string customExtension_;
   std::string ttree_;
   std::string baseSelection_;
-  std::string binningVariable_;
+  std::string shapeVariable_;
   int nBins_;
   double minVal_;
   double maxVal_;
   std::string signalPointVariable_;
   std::vector<SignalRegion> signalRegions_;
+  std::vector<ChannelInfo> channels_;
 
   bool verbose_;
   bool unblind_;
@@ -359,11 +381,10 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
   customExtension_ = mySelection.getString("customExtension", "");
   ttree_           = mySelection.getString("ttree", "Events");
   baseSelection_   = mySelection.getString("baseSelection", "");
-  binningVariable_ = mySelection.getString("binningVariable", "");
-  if(binningVariable_ == "")
+  shapeVariable_   = mySelection.getString("shapeVariable", "");
+  if(shapeVariable_ == "")
   {
-    std::cout << "DatacardMaker::loadJson(): You must define a binning variable for the datacards." << std::endl;
-    return false;
+    std::cout << "DatacardMaker::loadJson(): No shape variable defined for the datacards." << std::endl;
   }
   nBins_ = mySelection.getInt("numBins", 0);
   if(nBins_ <= 0)
@@ -387,6 +408,20 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
 
   if(verbose_)
     std::cout << "DatacardMaker::loadJson(): Finished loading basic info from JSON. Now loading the different signal regions." << std::endl << "    Do not forget about the systematics." << std::endl;
+
+  auto channels = mySelection["channels"].daughters();
+  channels_.clear();
+  for(auto channel = channels.begin(); channel != channels.end(); ++channel)
+  {
+    ChannelInfo temp(*channel);
+
+    if(temp.isValid())
+      channels_.push_back(temp);
+    else
+      std::cout << "DatacardMaker::loadJson(): The channel must have a name and a selection defined." << std::endl;
+  }
+  if(channels_.size() == 0)
+    std::cout << "DatacardMaker::loadJson(): No channels were defined, assuming a default channel with name 'channel'." << std::endl;
 
   auto signalRegions = mySelection["signalRegions"].daughters();
   signalRegions_.clear();
@@ -641,7 +676,10 @@ bool DatacardMaker::genDatacards()
     }
 
     //Todo: Do whatever has to be done for each signal point in the signal region
-
+    for(auto point = signalPoints.begin(); point != signalPoints.end(); ++point)
+    {
+      
+    }
   }
 
   cwd->cd();
@@ -683,4 +721,31 @@ std::vector<int> DatacardMaker::getSignalPoints(std::string currentSelection)
   delete signalPoints;
 
   return retVal;
+}
+
+ChannelInfo::ChannelInfo():
+  isValid_(false),
+  name_(""),
+  selection_("")
+{
+}
+
+ChannelInfo::ChannelInfo(JSONWrapper::Object& json):
+  isValid_(false),
+  name_(""),
+  selection_("")
+{
+  if(loadJson(json))
+    isValid_ = true;
+}
+
+bool ChannelInfo::loadJson(JSONWrapper::Object& json)
+{
+  name_ = json.getString("name", "");
+  selection_ = json.getString("selection", "");
+
+  if(name_ == "" || selection_ == "")
+    return false;
+
+  return true;
 }
