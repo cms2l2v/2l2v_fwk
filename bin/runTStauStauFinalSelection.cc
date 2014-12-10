@@ -147,6 +147,7 @@ class ChannelInfo
 public:
   ChannelInfo();
   ChannelInfo(JSONWrapper::Object& json);
+  ChannelInfo(std::string name, std::string selection);
 
   inline bool isValid() const {return isValid_;};
   inline std::string name() const {return name_;};
@@ -421,7 +422,10 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
       std::cout << "DatacardMaker::loadJson(): The channel must have a name and a selection defined." << std::endl;
   }
   if(channels_.size() == 0)
+  {
     std::cout << "DatacardMaker::loadJson(): No channels were defined, assuming a default channel with name 'channel'." << std::endl;
+    channels_.push_back(ChannelInfo("channel", baseSelection_));
+  }
 
   auto signalRegions = mySelection["signalRegions"].daughters();
   signalRegions_.clear();
@@ -593,15 +597,14 @@ bool SignalRegion::loadJson(JSONWrapper::Object& json)
     return false;
 
   auto cuts = json["cuts"].daughters();
-  for(auto cut = cuts.begin(); cut != cuts.end(); ++cut)
+  for(auto &cut : cuts)
   {
-    if(cut->getString("variableExpression", "") == "")
-    {
-      std::cout << "SignalRegion::loadJson(): The cut must have a valid expression. Skipping this cut." << std::endl;
-      continue;
-    }
+    SignalRegionCutInfo temp(cut);
 
-    cuts_.push_back(SignalRegionCutInfo(*cut));
+    if(temp.isValid())
+      cuts_.push_back(temp);
+    else
+      std::cout << "SignalRegion::loadJson(): The cut must have a valid expression. Skipping this cut." << std::endl;
   }
 
   return true;
@@ -659,26 +662,57 @@ bool DatacardMaker::genDatacards()
   TDirectory* cwd = gDirectory;
   scratchArea_ = new TFile(".finalSelectionScratchArea.root", "RECREATE");
 
-  for(auto signalRegion = signalRegions_.begin(); signalRegion != signalRegions_.end(); ++signalRegion)
+  for(auto &signalRegion : signalRegions_)
   {
-    std::vector<int> signalPoints = getSignalPoints(signalRegion->signalSelection());
-    for(auto point = signalPoints.begin(); point != signalPoints.end(); ++point)
+    // Todo: Load the background info with the cuts from this signal region. Do not forget about systematics
+    doubleUnc background(0,0), data(0,0); // Have to multiply this by the number of channels
+    // Todo: Temporarily print out the info for the background
+
+    //Todo: Do whatever has to be done for each signal point in the signal region
+    std::vector<int> signalPoints = getSignalPoints(signalRegion.signalSelection());
+    for(auto &point : signalPoints)
     {
       std::stringstream temp;
       std::string fileName;
 
-      temp << outDir_ << "/SignalPoint_" << *point << ".txt";
+      temp << outDir_ << "/SignalPoint_" << point << ".txt";
       temp >> fileName;
 
-      bool exists = std::ifstream(fileName).good();
-      if(exists)
-        std::cout << "DatacardMaker::genDatacards(): The defined signal regions overlap, program execution will continue but only the last signal region for a given signal point will be kept. Please check " << jsonFile_ << " for errors." << std::endl;
-    }
+      {
+        bool exists = std::ifstream(fileName).good();
+        if(exists)
+          std::cout << "DatacardMaker::genDatacards(): The defined signal regions overlap, program execution will continue but only the last signal region for a given signal point will be kept. Please check " << jsonFile_ << " for errors." << std::endl;
+      }
 
-    //Todo: Do whatever has to be done for each signal point in the signal region
-    for(auto point = signalPoints.begin(); point != signalPoints.end(); ++point)
-    {
-      
+
+//      doubleUnc signal(0,0);
+
+      ofstream file(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
+
+      std::streambuf *coutbuf = std::cout.rdbuf();
+      if(!file.is_open())
+        std::cout << "DatacardMaker::genDatacards(): There was a problem opening the file '" << fileName << "'. The output of the file will be redirected to the terminal." << std::endl;
+      else
+        std::cout.rdbuf(file.rdbuf());
+
+      std::string separator = "";
+      for(int i = 0; i < 80; ++i)
+        separator += "-";
+
+      // Output datacard to file (or stdout of opening the file failed)
+      std::cout << "# Datacard for signal point " << point << std::endl;
+      std::cout << "imax " << channels_.size() << " number of channels" << std::endl;
+      std::cout << "jmax * number of backgrounds" << std::endl;
+      std::cout << "kmax * number of nuisance parameters" << std::endl;
+      std::cout << separator << std::endl;
+
+      std::cout << "bin";
+
+      if(file.is_open())
+      {
+        std::cout.rdbuf(coutbuf);
+        file.close();
+      }
     }
   }
 
@@ -737,6 +771,15 @@ ChannelInfo::ChannelInfo(JSONWrapper::Object& json):
 {
   if(loadJson(json))
     isValid_ = true;
+}
+
+ChannelInfo::ChannelInfo(std::string name, std::string selection):
+  isValid_(true),
+  name_(name),
+  selection_(selection)
+{
+  if(name == "" || selection == "")
+    isValid_ = false;
 }
 
 bool ChannelInfo::loadJson(JSONWrapper::Object& json)
