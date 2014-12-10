@@ -176,14 +176,16 @@ int main(int argc, char* argv[])
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
 
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
-  TString url = TString(argv[1]);
-  TString outFileUrl(gSystem->BaseName(url));
-  outFileUrl.ReplaceAll("_cfg.py","");
-  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
-  TString outdir=runProcess.getParameter<std::string>("outdir");
-  TString outUrl( outdir );
-  gSystem->Exec("mkdir -p " + outUrl);
+  // TString url = TString(argv[1]);
+  // TString outFileUrl(gSystem->BaseName(url));
+  // outFileUrl.ReplaceAll("_cfg.py","");
+  // if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
+  // TString outdir=runProcess.getParameter<std::string>("outdir");
+  // TString outUrl( outdir );
+  // gSystem->Exec("mkdir -p " + outUrl);
 
+  TString output=runProcess.getParameter<std::string>("output");
+  
   // initiating histograms
   SmartSelectionMonitor mon = initHistograms();
   
@@ -269,11 +271,14 @@ int main(int argc, char* argv[])
   printf(" done.\n"); 
   
   //save control plots to file
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
-  printf("Results saved in %s\n", outUrl.Data());
+  // outUrl += "/";
+  // outUrl += outFileUrl + ".root";
+  // printf("Results saved in %s\n", outUrl.Data());
+  // TFile *ofile=TFile::Open(outUrl, "recreate");
 
-  TFile *ofile=TFile::Open(outUrl, "recreate");
+  printf("Results saved in %s\n", output.Data());
+  TFile *ofile=TFile::Open(output, "recreate");
+
   mon.Write();
   ofile->Close();
 }  
