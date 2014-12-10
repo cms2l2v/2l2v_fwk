@@ -108,45 +108,46 @@ passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
 
 bool
 passPhotonId(float r9){
-  if ( r9 > 0.9) return false; 
-  return true; 
+  if ( r9 > 0.9)
+    return true; 
+  else
+    return false; 
 }
 
 bool
-passPhotonIso(){
-  return true;  
+passPhotonIso(float hoe){
+  if (hoe < 0.05 )
+    return true;
+  else 
+    return false;  
 }
 
 pat::PhotonCollection
 passPhotonSelection(SmartSelectionMonitor mon,
 		    pat::PhotonCollection photons,
-		    reco::VertexCollection vtx,
 		    float triggerThreshold){
 
   pat::PhotonCollection selPhotons;
-  float weight = 1.0 ; // only consider 1.0 weight 
-  
-  mon.fillHisto("npho", "all", photons.size(), weight);
-  mon.fillHisto("nvtx", "all", vtx.size(), weight);
-
+  TString tag = "all";  
+  double weight = 1.0;  
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
     float pt = photons[ipho].pt();
-    mon.fillHisto("phopt", "all", pt, weight);
+    mon.fillHisto("phopt", tag, pt, weight);
 
     float eta = photons[ipho].superCluster()->eta();
-    mon.fillHisto("phoeta", "all", eta, weight);
+    mon.fillHisto("phoeta", tag, eta, weight);
 
     float r9 = photons[ipho].r9(); 
-    mon.fillHisto("phor9", "all", r9, weight);
+    mon.fillHisto("phor9", tag, r9, weight);
 
     float iso = photons[ipho].photonIso(); 
-    mon.fillHisto("phoiso", "all", iso, weight);
+    mon.fillHisto("phoiso", tag, iso, weight);
 
     float hoe = photons[ipho].hadTowOverEm();
-    mon.fillHisto("phohoe", "all", hoe, weight);
+    mon.fillHisto("phohoe", tag, hoe, weight);
     
     bool passId = passPhotonId(r9);
-    bool passIso = passPhotonIso();
+    bool passIso = passPhotonIso(hoe);
 
     // select the photon
     if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
@@ -208,6 +209,10 @@ int main(int argc, char* argv[])
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
   int treeStep(totalEntries/50);
+  
+  TString tag("all");
+  double weight(1.0); // for testing now. 
+
   for( size_t iev=0; iev<totalEntries; iev++){
     if(iev%treeStep==0){printf(".");fflush(stdout);}
     // load the event content from the EDM file
@@ -225,17 +230,39 @@ int main(int argc, char* argv[])
     fwlite::Handle< reco::VertexCollection > vtxHandle; 
     vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
     if (vtxHandle.isValid() ) { vtx = *vtxHandle; }
+    mon.fillHisto("nvtx", "all", vtx.size(), weight);
     
     pat::PhotonCollection photons;
     fwlite::Handle< pat::PhotonCollection > photonsHandle;
     photonsHandle.getByLabel(ev, "slimmedPhotons");
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
-    
+    mon.fillHisto("npho", "all", photons.size(), weight);
+
+  
     // below follows the analysis of the main selection with n-1 plots
-    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx, triggerThreshold);
+    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold);
+    if ( selPhotons.size() == 0) continue;  
+
+    tag = "sel";
+    mon.fillHisto("npho", tag, selPhotons.size(), weight);
+    mon.fillHisto("nvtx", tag, vtx.size(), weight);
+    
     for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
       float pt = selPhotons[ipho].pt();
-      mon.fillHisto("phopt", "sel", pt, 1.0);
+      mon.fillHisto("phopt", tag, pt, weight);
+
+      float eta = photons[ipho].superCluster()->eta();
+      mon.fillHisto("phoeta", tag, eta, weight);
+      
+      float r9 = photons[ipho].r9(); 
+      mon.fillHisto("phor9", tag, r9, weight);
+      
+      float iso = photons[ipho].photonIso(); 
+      mon.fillHisto("phoiso", tag, iso, weight);
+      
+      float hoe = photons[ipho].hadTowOverEm();
+      mon.fillHisto("phohoe", tag, hoe, weight);
+      
     }
     
   } // end event loop 
