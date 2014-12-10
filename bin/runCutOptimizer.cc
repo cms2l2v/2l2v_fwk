@@ -169,6 +169,7 @@ private:
   void SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle);
   std::map<std::string,std::map<std::string,TH1D*>> GetAndSaveHists(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity, std::string varName, std::string varExpression, std::string varLabel, std::map<std::string,double>& varParams);
   bool ClearSamples();
+  std::string clearTex(std::string& str);
 
 protected:
 };
@@ -283,6 +284,7 @@ int main(int argc, char** argv)
   std::string outDir = "./OUT/";
   std::vector<std::string> plotExt;
   bool verbose = false;
+  int round = -1;
 
 //  gInterpreter->GenerateDictionary("llvvMet", "");
 //  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
@@ -322,6 +324,14 @@ int main(int argc, char** argv)
     {
       verbose = true;
     }
+
+    if(arg.find("--round") != std::string::npos)
+    {
+      std::stringstream temp;
+      temp << argv[i+1];
+      temp >> round;
+      ++i;
+    }
   }
   if(plotExt.size() == 0)
     plotExt.push_back(".png");
@@ -339,8 +349,11 @@ int main(int argc, char** argv)
   if(verbose)
     myOptimizer.setVerbose();
   myOptimizer.LoadJson();
-  myOptimizer.OptimizeAllRounds();
-//  myOptimizer.OptimizeRound(2);
+
+  if(round < 0)
+    myOptimizer.OptimizeAllRounds();
+  else
+    myOptimizer.OptimizeRound(round);
 
   return 0;
 }
@@ -688,6 +701,26 @@ bool CutOptimizer::OptimizeRound(size_t n)
   return OptimizeRound_(n);
 }
 
+std::string CutOptimizer::clearTex(std::string& str)
+{
+  std::string retVal = str;
+  bool foundMathMode = false;
+
+  if(retVal.find("_") != std::string::npos || retVal.find("<") != std::string::npos || retVal.find(">") != std::string::npos)
+    foundMathMode = true;
+
+  if(retVal.find("#") != std::string::npos)
+  {
+    foundMathMode = true;
+    std::replace(retVal.begin(), retVal.end(), '#', '\\');
+  }
+
+  if(foundMathMode)
+    retVal = "$" + retVal + "$";
+
+  return retVal;
+}
+
 bool CutOptimizer::OptimizeRound_(size_t n)
 {
   bool retVal = false;
@@ -830,6 +863,7 @@ bool CutOptimizer::OptimizeRound_(size_t n)
     std::cout << "The final selection string chosen is: ";
     bool noOut = true;
     std::map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
+    std::map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
     for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
     {
       if(noOut)
@@ -843,9 +877,75 @@ bool CutOptimizer::OptimizeRound_(size_t n)
         std::cout << ">";
       std::cout << cut->value;
     }
-    std::cout << "std::endl";
+    std::cout << std::endl;
 
     // TODO - Make the report (including the tex table with the yields)
+    std::cout << "Creating the '" << roundName << ".tex' file with the LaTeX code for the cutflow table." << std::endl;
+    ofstream texFile(outDir_+"/"+roundName+".tex", std::ios::out | std::ios::trunc);
+    int numCols = myReport.cuts.size();
+
+    texFile << "\\begin{table}[htp]" << std::endl;
+    texFile << "\\begin{center}" << std::endl;
+    texFile << "\\caption{Optimizaton Cutflow}" << std::endl;
+    texFile << "\\begin{tabular}{ |l|";
+    for(int i = 0; i < numCols; ++i)
+      texFile << "c";
+    texFile << "| } \\hline" << std::endl;
+    texFile << "Process ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      texFile << "& ";
+      texFile << clearTex(variableLabels[cut->variable]);
+      if(cut->direction == "below")
+        texFile << "$<";
+      else
+        texFile << "$>";
+      texFile << cut->value << "$ ";
+    }
+    texFile << "\\\\ " << std::endl << "\\hline\\hline" << std::endl;
+    for(auto sample = printOrder_.begin(); sample != printOrder_.end(); ++sample)
+    {
+      if(myReport.cuts[0].yield["BG"].find(*sample) == myReport.cuts[0].yield["BG"].end())
+        continue;
+      texFile << clearTex(*sample) << " ";
+      for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+      {
+        texFile << "& $" << cut->yield["BG"][*sample].value() << "\\pm" << cut->yield["BG"][*sample].uncertainty();
+        texFile << "$ ";
+      }
+      texFile << "\\\\" << std::endl;
+    }
+    texFile << "Total Expected ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      doubleUnc yield(0,0);
+      for(auto y = cut->yield["BG"].begin(); y != cut->yield["BG"].end(); ++y)
+      {
+        yield += y->second;
+      }
+      texFile << "& $" << yield.value() << "\\pm" << yield.uncertainty() << "$ ";
+    }
+    texFile << "\\\\" << std::endl;
+    texFile << "\\hline\\hline" << std::endl;
+    // TODO: if unblind output data
+    texFile << "Signal ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      doubleUnc yield(0,0);
+      for(auto y = cut->yield["SIG"].begin(); y != cut->yield["SIG"].end(); ++y)
+      {
+        yield += y->second;
+      }
+      texFile << "& $" << yield.value() << "\\pm" << yield.uncertainty() << "$ ";
+    }
+    texFile << "\\\\" << std::endl;
+    texFile << "FOM ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+      texFile << "& $" << cut->FOM << "\\pm" << cut->FOMerr << "$ ";
+    texFile << "\\\\" << std::endl;
+    texFile << "\\hline" << std::endl << "\\end{tabular}" << std::endl << "\\end{center}" << std::endl << "\\end{table}" << std::endl;
+
+    texFile.close();
   }
   else
   {
@@ -895,7 +995,10 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       if(pass->direction == "above")
         tmpStr = ">" + tmpStr;
       else
+      {
+        std::cerr << "Pass direction is set to: " << pass->direction << std::endl;
         assert(pass->direction == "below" || pass->direction == "above");
+      }
     }
     tmpStr = variableExpressions[pass->variable] + tmpStr;
     cumulativeSelection = cumulativeSelection && tmpStr.c_str();
@@ -997,14 +1100,17 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 
       if(fomReportAbove[2].value() != 0 && fomReportAbove[1].value() != 0)
       {
-        xValsAbove.push_back(binLow);
-        xValsUncAbove.push_back(0);
-        yValsAbove.push_back(fomReportAbove[0].value());
-        yValsUncAbove.push_back(fomReportAbove[0].uncertainty());
-        signalYieldAbove.push_back(fomReportAbove[1].value());
-        signalYieldUncAbove.push_back(fomReportAbove[1].uncertainty());
-        backgroundYieldAbove.push_back(fomReportAbove[2].value());
-        backgroundYieldUncAbove.push_back(fomReportAbove[2].uncertainty());
+        if(fomReportAbove[1].value() > roundInfo_[n].minSigEvents())
+        {
+          xValsAbove.push_back(binLow);
+          xValsUncAbove.push_back(0);
+          yValsAbove.push_back(fomReportAbove[0].value());
+          yValsUncAbove.push_back(fomReportAbove[0].uncertainty());
+          signalYieldAbove.push_back(fomReportAbove[1].value());
+          signalYieldUncAbove.push_back(fomReportAbove[1].uncertainty());
+          backgroundYieldAbove.push_back(fomReportAbove[2].value());
+          backgroundYieldUncAbove.push_back(fomReportAbove[2].uncertainty());
+        }
 
         if(retVal.FOM < fomReportAbove[0].value() && fomReportAbove[1].value() > roundInfo_[n].minSigEvents())
         {
@@ -1019,14 +1125,17 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 
       if(fomReportBelow[2].value() != 0 && fomReportBelow[1].value() != 0)
       {
-        xValsBelow.push_back(binHigh);
-        xValsUncBelow.push_back(0);
-        yValsBelow.push_back(fomReportBelow[0].value());
-        yValsUncBelow.push_back(fomReportBelow[0].uncertainty());
-        signalYieldBelow.push_back(fomReportBelow[1].value());
-        signalYieldUncBelow.push_back(fomReportBelow[1].uncertainty());
-        backgroundYieldBelow.push_back(fomReportBelow[2].value());
-        backgroundYieldUncBelow.push_back(fomReportBelow[2].uncertainty());
+        if(fomReportBelow[1].value() > roundInfo_[n].minSigEvents())
+        {
+          xValsBelow.push_back(binHigh);
+          xValsUncBelow.push_back(0);
+          yValsBelow.push_back(fomReportBelow[0].value());
+          yValsUncBelow.push_back(fomReportBelow[0].uncertainty());
+          signalYieldBelow.push_back(fomReportBelow[1].value());
+          signalYieldUncBelow.push_back(fomReportBelow[1].uncertainty());
+          backgroundYieldBelow.push_back(fomReportBelow[2].value());
+          backgroundYieldUncBelow.push_back(fomReportBelow[2].uncertainty());
+        }
 
         if(retVal.FOM < fomReportBelow[0].value() && fomReportBelow[1].value() > roundInfo_[n].minSigEvents())
         {
