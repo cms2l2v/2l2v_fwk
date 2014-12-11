@@ -46,6 +46,7 @@
 #include <map>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
 
 #ifndef DEBUG_EVENT
@@ -98,6 +99,10 @@ struct ProcessFiles
   std::string name;
   std::vector<SampleFiles> samples;
   MyStyle style;
+  bool reweight;
+  bool isData;
+  bool isSig;
+  bool isMC;
 };
 
 class SignalRegionCutInfo
@@ -180,6 +185,7 @@ public:
   bool genDatacards();
 
 private: // TODO: Add Channels
+  std::string name_;
   double iLumi_;
   std::string inDir_;
   std::string outDir_;
@@ -209,6 +215,7 @@ private: // TODO: Add Channels
   bool loadJson(std::vector<JSONWrapper::Object>& selection);
   void clearSamples();
   std::vector<int> getSignalPoints(std::string currentSelection);
+  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> applySelection(std::vector<ProcessFiles> &processes, const SignalRegion &signalRegion, std::string additionalSelection = "", bool doSyst = false);
 
 protected:
 };
@@ -361,6 +368,12 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
 
   auto& mySelection = selection[0];
 
+  name_ = mySelection.getString("name", "");
+  if(name_ == "")
+  {
+    std::cout << "DatacardMaker::loadJson(): You should define a name for the analysis." << std::endl;
+    return false;
+  }
   iLumi_ = mySelection.getDouble("iLumi", 0);
   if(iLumi_ <= 0)
   {
@@ -461,6 +474,9 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
       type = "SIG";
 
     ProcessFiles tempProc;
+    tempProc.isData = isData;
+    tempProc.isSig = isSig;
+    tempProc.isMC = isMC;
     tempProc.name = (*process).getString("tag", "Sample");
     printOrder_.push_back(tempProc.name);
 
@@ -484,6 +500,8 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
       tempProc.style.lstyle() = process->getInt("lstyle");
     if(process->isTag("marker"))
       tempProc.style.marker() = process->getInt("marker");
+
+    tempProc.reweight = process->getBool("reweight", true);
 
     std::string filtExt;
     if((*process).isTag("mctruthmode"))
@@ -566,6 +584,8 @@ void DatacardMaker::clearSamples()
   processes_["BG"] = temp;
   processes_["SIG"] = temp;
   processes_["Data"] = temp;
+
+  jsonLoaded_ = "";
 
   return;
 }
@@ -655,18 +675,114 @@ bool SignalRegionCutInfo::loadJson(JSONWrapper::Object& json)
   return true;
 }
 
+std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> DatacardMaker::applySelection(std::vector<ProcessFiles> &processes, const SignalRegion &signalRegion, std::string additionalSelection, bool doSyst)
+{
+  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> retVal;
+  // retVal[channel][process][systematic]
+  // without systematic is called "noSyst"
+
+  // TODO: Fix this
+  std::string SRSelection = ""; //signalRegion.cuts();
+  for(auto &channel : channels_)
+  {
+    std::string channelSelection = channel.selection();
+
+    std::string selection = "((" + baseSelection_ + ") && (" + channelSelection + "))";// + ") && (" + SRSelection;
+
+    std::map<std::string,std::map<std::string,doubleUnc>> channelYields;
+    for(auto &process : processes)
+    {
+      std::map<std::string,doubleUnc> yields;
+
+      TH1D processHist("processHist", "processHist", 1, 0, 20);
+      processHist.Sumw2();
+      for(auto &sample : process.samples)
+      {
+        TH1D tempHist("tempHist", "tempHist", 1, 0, 20);
+        tempHist.Sumw2();
+
+        sample.chain->Draw("weight>>tempHist", (selection+"*weight").c_str(), "goff");
+
+        if(process.reweight && !process.isData)
+          tempHist.Scale(1.0/sample.nFiles);
+
+        processHist.Add(&tempHist);
+      }
+      if(!process.isData)
+        processHist.Scale(iLumi_);
+
+      doubleUnc yield(0,0);
+      yield.setValue(processHist.GetBinContent(0) + processHist.GetBinContent(1) + processHist.GetBinContent(2));
+      TArrayD* w2Vec = processHist.GetSumw2();
+      yield.setUncertainty2(w2Vec->fArray[0] + w2Vec->fArray[1] + w2Vec->fArray[2]);
+
+      yields["noSyst"] = yield;
+
+      // Todo: Add here the other systematics retrieval
+      if(doSyst)
+      {
+      }
+
+      channelYields[process.name] = yields;
+    }
+
+    retVal[channel.name()] = channelYields;
+  }
+
+  return retVal;
+}
+
 //TDirectory* cwd = gDirectory;
 //cwd->cd();
 bool DatacardMaker::genDatacards()
 {
+  if(jsonLoaded_ == "")
+    return false;
+
+  std::string cmd = "if [[ -d \"";
+  cmd += outDir_;
+  cmd += "\" ]]; then exit 1; else exit 0; fi";
+  if(system(cmd.c_str()) == 0)
+  {
+    cmd = "mkdir ";
+    cmd += outDir_;
+    system(cmd.c_str());
+  }
+  else
+  {
+    // TODO: The directory already exists, check if there are signal region datacards and if they exist, prompt the user to delete them or not.
+  }
+
   TDirectory* cwd = gDirectory;
   scratchArea_ = new TFile(".finalSelectionScratchArea.root", "RECREATE");
 
   for(auto &signalRegion : signalRegions_)
   {
     // Todo: Load the background info with the cuts from this signal region. Do not forget about systematics
-    doubleUnc background(0,0), data(0,0); // Have to multiply this by the number of channels
+    auto backgrounds = applySelection(processes_["BG"], signalRegion);
+    std::map<std::string,doubleUnc> totalBackground, data;
+    {
+      for(auto &channel : channels_)
+      {
+        doubleUnc total(0,0);
+        for(auto &process : backgrounds[channel.name()])
+          total += process.second["noSyst"];
+
+        totalBackground[channel.name()] = total;
+      }
+      // TODO: if unblind, process data and fill the data variable from above
+    }
+
     // Todo: Temporarily print out the info for the background
+    //if(verbose_)
+    for(auto &channel : channels_)
+    {
+      std::cout << "Background yields for channel " << channel.name() << std::endl;
+      for(auto &process : backgrounds[channel.name()])
+      {
+        std::cout << "  " << process.first << ": " << process.second["noSyst"] << std::endl;
+      }
+    }
 
     //Todo: Do whatever has to be done for each signal point in the signal region
     std::vector<int> signalPoints = getSignalPoints(signalRegion.signalSelection());
@@ -699,7 +815,7 @@ bool DatacardMaker::genDatacards()
       for(int i = 0; i < 80; ++i)
         separator += "-";
 
-      // Output datacard to file (or stdout of opening the file failed)
+      // Output datacard to file (or stdout if opening the file failed)
       std::cout << "# Datacard for signal point " << point << std::endl;
       std::cout << "imax " << channels_.size() << " number of channels" << std::endl;
       std::cout << "jmax * number of backgrounds" << std::endl;
@@ -707,6 +823,21 @@ bool DatacardMaker::genDatacards()
       std::cout << separator << std::endl;
 
       std::cout << "bin";
+      for(auto &channel : channels_)
+      {
+        std::cout << " " << channel.name();
+      }
+      std::cout << std::endl;
+      // Todo: Change the following output if we are unblinded
+      std::cout << "# We are blinded right now so the following observation numbers are the sum of the MC processes" << std::endl;
+      std::cout << "observation";
+      for(auto &channel : channels_)
+      {
+        // TODO: Add here to unblind
+        std::cout << " " << totalBackground[channel.name()].value();
+      }
+      std::cout << std::endl;
+      std::cout << separator << std::endl;
 
       if(file.is_open())
       {
@@ -717,6 +848,8 @@ bool DatacardMaker::genDatacards()
   }
 
   cwd->cd();
+  scratchArea_->Close();
+  std::remove(".finalSelectionScratchArea.root");
 
   return false;
 }
