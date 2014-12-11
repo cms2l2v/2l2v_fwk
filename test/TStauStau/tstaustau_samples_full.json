@@ -5,6 +5,7 @@
       "isdata":false,
       "color":2,
       "lcolor":1,
+      "label":"Higgs",
       "data":[
         { "dtag":"MC8TeV_XH125toTauTau"                    , "split":1, "xsec":1.2492      , "br":[ 0.0632 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_XH125toWW"                        , "split":1, "xsec":0.0065034022, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-125_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM", "isfastsim":0        },
@@ -16,6 +17,7 @@
       "isdata":false,
       "color":592,
       "lcolor":1,
+      "label":"Top",
       "data":[
         { "dtag":"MC8TeV_SingleT_t"                        , "split":1, "xsec":56.4        , "br":[ 1.0 ]                 , "dset":"/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_SingleT_tW"                       , "split":1, "xsec":11.1        , "br":[ 1.0 ]                 , "dset":"/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -30,6 +32,7 @@
       "isdata":false,
       "color":614,
       "lcolor":1,
+      "label":"ttbar",
       "data":[
         { "dtag":"MC8TeV_TTWJets"                          , "split":1,  "xsec":0.232       , "br":[ 1.0 ]                 , "dset":"/TTWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_TTZJets"                          , "split":1,  "xsec":0.208       , "br":[ 1.0 ]                 , "dset":"/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -42,6 +45,7 @@
       "color":824,
       "lcolor":1,
       "marker":1,
+      "label":"VVV",
       "data":[
         { "dtag":"MC8TeV_WWWJets"                          , "split":1, "xsec":0.08217     , "br":[ 1.0 ]                 , "dset":"/WWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_WWZJets"                          , "split":1, "xsec":0.0633      , "br":[ 1.0 ]                 , "dset":"/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -57,6 +61,7 @@
       "isdata":false,
       "color":620,
       "lcolor":1,
+      "label":"gammaJets",
       "data":[
         { "dtag":"MC8TeV_GJets_15to30"                     , "split":3, "xsec":200061.7    , "br":[ 1.3 ]                 , "dset":"/G_Pt-15to30_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_GJets_30to50"                     , "split":5, "xsec":19931.62    , "br":[ 1.3 ]                 , "dset":"/G_Pt-30to50_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -76,6 +81,7 @@
       "isdata":false,
       "color":809,
       "lcolor":1,
+      "label":"QCD",
       "data":[
         { "dtag":"MC8TeV_QCDMuPt20toInf"                   , "split":2, "xsec":364000000   , "br":[ 0.00037 ]             , "dset":"/QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_QCDPt30to80"                      , "split":2, "xsec":74330000    , "br":[ 0.0621 ]              , "dset":"/QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -90,6 +96,7 @@
       "isdata":false,
       "color":831,
       "lcolor":1,
+      "label":"DY",
       "data":[
         { "dtag":"MC8TeV_DYJetsToLL_10to50"                , "split":10, "xsec":860.5       , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_DYJetsToLL_50toInf"               , "split":15, "xsec":3503.71     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -105,6 +112,7 @@
       "isdata":false,
       "color":811,
       "lcolor":1,
+      "label":"WJets",
       "data":[
         { "dtag":"MC8TeV_W1Jets"                           , "split":10, "xsec":37509       , "br":[ 0.178 ]               , "dset":"/W1JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
         { "dtag":"MC8TeV_W2Jets"                           , "split":10, "xsec":37509       , "br":[ 0.058 ]               , "dset":"/W2JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "isfastsim":0        },
@@ -130,6 +138,7 @@
     {
       "tag":"TStauStau_120_20",
       "isinvisible":false,
+      "reweight":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -138,6 +147,7 @@
       "lstyle":3,
       "fill":0,
       "marker":1,
+      "label":"StauStau",
       "data":[
         { "dtag":"MC8TeV_TStauStau"                        , "split":30, "xsec":1           , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM", "isfastsim":1        }
       ]
