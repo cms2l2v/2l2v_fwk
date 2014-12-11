@@ -1,6 +1,7 @@
 {
   "finalSelection":[
     {
+      "name":"diStau",
       "iLumi":19672,
       "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
       "jsonFile":"tstaustau_samples_full.json",
