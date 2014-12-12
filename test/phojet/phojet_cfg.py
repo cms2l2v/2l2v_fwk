@@ -2,16 +2,20 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("PhoJet")
 
-process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('file:input.root'))
-#import PSet
+inputFiles = cms.untracked.vstring("file:input.root")
+try:
+    import PSet
+    print "loading from PSet..."
+    inputFiles =  PSet.process.source.fileNames
+except:
+    print "not able to import" 
+    pass
 
-#print PSet.process.source.fileNames
+print inputFiles
 
 runProcess = cms.PSet(
     #input = cms.untracked.vstring("file:input.root"),
-    #input = PSet.process.source.fileNames, 
-    input = process.source.fileNames, 
+    input = inputFiles, 
     #outdir = cms.string("results"),
     output = cms.string("output.root"),
     debug = cms.bool(True),
