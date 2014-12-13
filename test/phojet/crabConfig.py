@@ -10,7 +10,7 @@ config.section_("JobType")
 config.JobType.psetName = 'phojet_cfg.py'
 config.JobType.scriptExe = 'submit.sh'
 config.JobType.inputFiles = ['FrameworkJobReport.xml',
-                             'lib.tar.gz', 'bin.tar.gz']
+                             'runPhoJetAnalysis', 'phojet_cfg.py']
 config.JobType.outputFiles = ['output.root']
 
 config.section_("Data")
