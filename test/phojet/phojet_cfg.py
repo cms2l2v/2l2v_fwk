@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("PhoJet")
 
+
 inputFiles = cms.untracked.vstring("file:input.root")
 try:
     import PSet
@@ -12,6 +13,8 @@ except:
     pass
 
 print inputFiles
+
+process.source = cms.Source("PoolSource", fileNames = inputFiles)
 
 runProcess = cms.PSet(
     #input = cms.untracked.vstring("file:input.root"),
