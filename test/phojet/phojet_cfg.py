@@ -7,7 +7,11 @@ inputFiles = cms.untracked.vstring("file:input.root")
 try:
     import PSet
     print "loading from PSet..."
-    inputFiles =  PSet.process.source.fileNames
+    #inputFiles =  PSet.process.source.fileNames
+    fnames = list(PSet.process.source.fileNames)
+    fnames = [ 'root://cms-xrd-global.cern.ch/%s' %f for f in fnames] 
+    #print fnames
+    inputFiles =  cms.untracked.vstring(fnames)                
 except:
     print "not able to import" 
     pass
