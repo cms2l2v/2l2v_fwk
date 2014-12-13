@@ -8,10 +8,10 @@ config.General.workArea = 'crab_phojet'
 config.section_("JobType")
 #config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'phojet_cfg.py'
-config.JobType.scriptExe = 'myscript.sh'
-config.JobType.inputFiles = ['FrameworkJobReport.xml']
+config.JobType.scriptExe = 'submit.sh'
+config.JobType.inputFiles = ['FrameworkJobReport.xml',
+                             'lib.tar.gz', 'bin.tar.gz']
 config.JobType.outputFiles = ['output.root']
-
 
 config.section_("Data")
 config.Data.inputDataset = '/GJets_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM'
