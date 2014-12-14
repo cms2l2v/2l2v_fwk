@@ -1,7 +1,7 @@
 {
   "finalSelection":[
     {
-      "name":"diStau",
+      "name":"diStau_8TeV",
       "iLumi":19672,
       "inDir":"/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Results/",
       "jsonFile":"tstaustau_samples_full.json",
@@ -26,12 +26,34 @@
       "signalPointVariable":"stauMass*1000+neutralinoMass",
       "signalRegions":[
         {
-          "signalRegionSelection":"(stauMass-neutralinoMass)>80 && (stauMass-neutralinoMass)<120",
+          "signalRegionSelection":"(stauMass-neutralinoMass)>=80",
+          "cuts":[
+            {
+              "variableExpression":"MT2",
+              "variableProperty":"",
+              "cutDirection":"above",
+              "value":90
+            },
+            {
+              "variableExpression":"abs(SVFitMass-95)",
+              "variableProperty":"",
+              "cutDirection":"above",
+              "value":30
+            }
+          ]
+        },
+        {
+          "signalRegionSelection":"(stauMass-neutralinoMass)<80",
           "cuts":[
             {
               "variableExpression":"met",
               "variableProperty":"Et()",
-              "comment":"The two above are combined into a single expression, yielding: 'met.Et()'. It is defined in this way so that the systematics can be automatically assesed",
+              "cutDirection":"above",
+              "value":160
+            },
+            {
+              "variableExpression":"abs(SVFitMass-95)",
+              "variableProperty":"",
               "cutDirection":"above",
               "value":30
             }
