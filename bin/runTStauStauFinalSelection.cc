@@ -97,6 +97,7 @@ struct SampleFiles
 struct ProcessFiles
 {
   std::string name;
+  std::string label;
   std::vector<SampleFiles> samples;
   MyStyle style;
   bool reweight;
@@ -112,6 +113,7 @@ public:
   SignalRegionCutInfo(JSONWrapper::Object& json);
 
   inline bool isValid() const {return isValid_;};
+  std::string cut() const;
 
 private:
   std::string variable_;
@@ -136,6 +138,8 @@ public:
 
   inline bool isValid() const {return isValid_;};
   inline std::string signalSelection() const {return (isValid_)?(selection_):("");};
+
+  std::string cuts() const;
 
 private:
   bool isValid_;
@@ -184,7 +188,7 @@ public:
   inline void setOutDir(const std::string& outDir) {outDir_ = outDir;};
   bool genDatacards();
 
-private: // TODO: Add Channels
+private:
   std::string name_;
   double iLumi_;
   std::string inDir_;
@@ -237,6 +241,7 @@ int main(int argc, char** argv)
   std::string jsonFile;
   std::string outDir = "./OUT/";
   bool verbose = false;
+  bool unblind = false;
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
@@ -266,9 +271,10 @@ int main(int argc, char** argv)
     }
 
     if(arg.find("--verbose") != std::string::npos)
-    {
       verbose = true;
-    }
+
+    if(arg.find("--unblind") != std::string::npos)
+      unblind = true;
   }
 
   if(jsonFile == "")
@@ -283,6 +289,7 @@ int main(int argc, char** argv)
 
   DatacardMaker myDatacardMaker;
   if(verbose)  myDatacardMaker.setVerbose();
+  if(unblind)  myDatacardMaker.setUnblind();
   myDatacardMaker.loadJson(jsonFile);
   myDatacardMaker.setOutDir(outDir);
   myDatacardMaker.genDatacards();
@@ -300,7 +307,7 @@ void printHelp(std::string binName)
   std::cout << "  --outDir  - set the output directory (default: ./OUT/)" << std::endl;
   std::cout << "  --json  - configuration file specifying the final selection in the several signal regions and other auxiliary data. Example file: $CMSSW_BASE/src/UserCode/llvv_fwk/test/TStauStau/finalSelection.json" << std::endl;
   std::cout << "  --verbose  - give more output text, can be useful for debugging" << std::endl;
-  std::cout << "  --unblind  - include data yields in the output datacards (Not implemented yet)" << std::endl; // TODO: Implement the unblind option
+  std::cout << "  --unblind  - include data yields in the output datacards (Not completely implemented yet)" << std::endl; // TODO: Finish implementing the unblind option
 
   return;
 }
@@ -503,6 +510,10 @@ bool DatacardMaker::loadJson(std::vector<JSONWrapper::Object>& selection)
 
     tempProc.reweight = process->getBool("reweight", true);
 
+    tempProc.label = process->getString("label", "");
+    if(tempProc.label == "")
+      tempProc.label = tempProc.name;
+
     std::string filtExt;
     if((*process).isTag("mctruthmode"))
     {
@@ -681,13 +692,20 @@ std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> Data
   // retVal[channel][process][systematic]
   // without systematic is called "noSyst"
 
-  // TODO: Fix this
-  std::string SRSelection = ""; //signalRegion.cuts();
+  std::string SRSelection = signalRegion.cuts();
   for(auto &channel : channels_)
   {
     std::string channelSelection = channel.selection();
 
-    std::string selection = "((" + baseSelection_ + ") && (" + channelSelection + "))";// + ") && (" + SRSelection;
+
+    std::string selection;
+    selection  = "((" + baseSelection_ + ")";
+    selection += " && (" + channelSelection + ")";
+    if(SRSelection != "")
+      selection += " && (" + SRSelection + ")";
+    if(additionalSelection != "")
+      selection += " && (" + additionalSelection + ")";
+    selection += ")";
 
     std::map<std::string,std::map<std::string,doubleUnc>> channelYields;
     for(auto &process : processes)
@@ -758,7 +776,7 @@ bool DatacardMaker::genDatacards()
 
   for(auto &signalRegion : signalRegions_)
   {
-    // Todo: Load the background info with the cuts from this signal region. Do not forget about systematics
+    // Todo: Load the background info with the cuts from this signal region. Do not forget about systematics (Done? systematics will be tricky)
     auto backgrounds = applySelection(processes_["BG"], signalRegion);
     std::map<std::string,doubleUnc> totalBackground, data;
     {
@@ -773,18 +791,18 @@ bool DatacardMaker::genDatacards()
       // TODO: if unblind, process data and fill the data variable from above
     }
 
-    // Todo: Temporarily print out the info for the background
-    //if(verbose_)
-    for(auto &channel : channels_)
+    if(verbose_)
     {
-      std::cout << "Background yields for channel " << channel.name() << std::endl;
-      for(auto &process : backgrounds[channel.name()])
+      for(auto &channel : channels_)
       {
-        std::cout << "  " << process.first << ": " << process.second["noSyst"] << std::endl;
+        std::cout << "Background yields for channel " << channel.name() << std::endl;
+        for(auto &process : backgrounds[channel.name()])
+        {
+          std::cout << "  " << process.first << ": " << process.second["noSyst"] << std::endl;
+        }
       }
     }
 
-    //Todo: Do whatever has to be done for each signal point in the signal region
     std::vector<int> signalPoints = getSignalPoints(signalRegion.signalSelection());
     for(auto &point : signalPoints)
     {
@@ -801,7 +819,11 @@ bool DatacardMaker::genDatacards()
       }
 
 
-//      doubleUnc signal(0,0);
+      temp.clear();
+      std::string signalPointSelection;
+      temp << "((" << signalPointVariable_ << ")==" << point << ")";
+      temp >> signalPointSelection;
+      auto signals = applySelection(processes_["SIG"], signalRegion, signalPointSelection);
 
       ofstream file(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
 
@@ -816,7 +838,7 @@ bool DatacardMaker::genDatacards()
         separator += "-";
 
       // Output datacard to file (or stdout if opening the file failed)
-      std::cout << "# Datacard for signal point " << point << std::endl;
+      std::cout << "# Datacard for " << name_ << " analysis for signal point " << point << std::endl;
       std::cout << "imax " << channels_.size() << " number of channels" << std::endl;
       std::cout << "jmax * number of backgrounds" << std::endl;
       std::cout << "kmax * number of nuisance parameters" << std::endl;
@@ -834,10 +856,121 @@ bool DatacardMaker::genDatacards()
       for(auto &channel : channels_)
       {
         // TODO: Add here to unblind
-        std::cout << " " << totalBackground[channel.name()].value();
+        std::cout << " " << int(totalBackground[channel.name()].value());
       }
       std::cout << std::endl;
       std::cout << separator << std::endl;
+
+      std::cout << "bin";
+      for(auto &channel : channels_)
+      {
+        for(auto &process : processes_["SIG"])
+          std::cout << " " << channel.name();
+        for(auto &process : processes_["BG"])
+          std::cout << " " << channel.name();
+      }
+      std::cout << std::endl;
+
+      std::cout << "process";
+      for(auto &channel : channels_)
+      {
+        for(auto &process : processes_["SIG"])
+          std::cout << " " << process.label;
+        for(auto &process : processes_["BG"])
+          std::cout << " " << process.label;
+      }
+      std::cout << std::endl;
+
+      std::cout << "process";
+      for(auto &channel : channels_)
+      {
+        int index = 0;
+        for(auto &process : processes_["SIG"])
+        {
+          std::cout << " " << index;
+          --index;
+        }
+        index = 1;
+        for(auto &process : processes_["BG"])
+        {
+          std::cout << " " << index;
+          ++index;
+        }
+      }
+      std::cout << std::endl;
+
+      std::cout << "rate";
+      for(auto &channel : channels_)
+      {
+        for(auto &process : processes_["SIG"])
+          std::cout << " " << signals[channel.name()][process.name]["noSyst"].value();
+        for(auto &process : processes_["BG"])
+          std::cout << " " << backgrounds[channel.name()][process.name]["noSyst"].value();
+      }
+      std::cout << std::endl;
+      std::cout << separator << std::endl;
+
+      // TODO: Fixme, do not use a hardcoded value, get it from the json
+      std::cout << "lumi_8TeV lnN";
+      for(auto &channel : channels_)
+      {
+        for(auto &process : processes_["SIG"])
+          std::cout << " 1.026";
+        for(auto &process : processes_["BG"])
+          std::cout << " 1.026";
+      }
+      std::cout << std::endl;
+
+      // Statistical uncertainty
+      for(auto &channel : channels_)
+      {
+        for(auto &process : processes_["SIG"])
+        {
+          if(signals[channel.name()][process.name]["noSyst"].value() == 0)
+            continue;
+
+          std::cout << "CMS_" << name_ << "_" << process.label << "_" << channel.name() << "_stat lnN";
+
+          for(auto &channel2 : channels_)
+          {
+            for(auto &process2 : processes_["SIG"])
+            {
+              if(process.label != process2.label || channel.name() != channel2.name())
+                std::cout << " -";
+              else
+                std::cout << " " << (signals[channel.name()][process.name]["noSyst"].value() + signals[channel.name()][process.name]["noSyst"].uncertainty())/(signals[channel.name()][process.name]["noSyst"].value());
+            }
+            for(auto &process2 : processes_["BG"])
+              std::cout << " -";
+          }
+
+          std::cout << std::endl;
+        }
+
+        for(auto &process : processes_["BG"])
+        {
+          if(backgrounds[channel.name()][process.name]["noSyst"].value() == 0)
+            continue;
+
+          std::cout << "CMS_" << name_ << "_" << process.label << "_" << channel.name() << "_stat lnN";
+
+          for(auto &channel2 : channels_)
+          {
+            for(auto &process2 : processes_["SIG"])
+              std::cout << " -";
+            for(auto &process2 : processes_["BG"])
+            {
+              if(process.label != process2.label || channel.name() != channel2.name())
+                std::cout << " -";
+              else
+                std::cout << " " << (backgrounds[channel.name()][process.name]["noSyst"].value() + backgrounds[channel.name()][process.name]["noSyst"].uncertainty())/(backgrounds[channel.name()][process.name]["noSyst"].value());
+            }
+          }
+
+          std::cout << std::endl;
+        }
+      }
+      // TODO: Finish outputting uncertainties
 
       if(file.is_open())
       {
@@ -924,4 +1057,43 @@ bool ChannelInfo::loadJson(JSONWrapper::Object& json)
     return false;
 
   return true;
+}
+
+std::string SignalRegion::cuts() const
+{
+  std::string retVal = "(";
+  bool first = true;
+
+  for(auto &cut : cuts_)
+  {
+    if(cut.isValid())
+    {
+      if(!first)
+        retVal += "&&";
+      else
+        first = false;
+      retVal += "(" + cut.cut() + ")";
+    }
+  }
+
+  if(retVal == "(")
+    retVal = "";
+  else
+    retVal += ")";
+
+  return retVal;
+}
+
+std::string SignalRegionCutInfo::cut() const
+{
+  std::string retVal;
+
+  std::stringstream temp;
+  temp << variable_;
+  if(property_ != "")
+    temp << "." << property_;
+  temp << direction_ << value_;
+  temp >> retVal;
+
+  return retVal;
 }
