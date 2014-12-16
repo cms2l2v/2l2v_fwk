@@ -2,6 +2,13 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("PhoJet")
 
+def lfn_to_pfn(f):
+    import subprocess
+    proc = subprocess.Popen(["edmFileUtil -d %s" %f],
+                            stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    pfn = out.strip()
+    return pfn
 
 inputFiles = cms.untracked.vstring("file:input.root")
 try:
@@ -9,8 +16,13 @@ try:
     print "loading from PSet..."
     #inputFiles =  PSet.process.source.fileNames
     fnames = list(PSet.process.source.fileNames)
-    fnames = [ 'root://cms-xrd-global.cern.ch/%s' %f for f in fnames] 
-    #print fnames
+
+    #fnames = [ 'root://cms-xrd-global.cern.ch/%s' %f for f in fnames]
+    # import sys 
+    # for f in fnames:
+    #     lfn_to_pfn(f)
+    #     sys.exit()
+    fnames = [ lfn_to_pfn(f) for f in fnames]    
     inputFiles =  cms.untracked.vstring(fnames)                
 except:
     print "not able to import" 
