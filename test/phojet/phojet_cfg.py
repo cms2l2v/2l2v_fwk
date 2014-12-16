@@ -22,11 +22,13 @@ try:
     # for f in fnames:
     #     lfn_to_pfn(f)
     #     sys.exit()
-    fnames = [ lfn_to_pfn(f) for f in fnames]    
+    fnames = [ 'file:%s' %lfn_to_pfn(f) for f in fnames]    
     inputFiles =  cms.untracked.vstring(fnames)                
 except:
     print "not able to import" 
     pass
+
+#inputFiles = cms.untracked.vstring("file:/mnt/hadoop/store/data/Run2012B/MuOnia/AOD/22Jan2013-v1/20000/FECA8EB7-FA84-E211-A607-002618943979.root")
 
 print inputFiles
 
