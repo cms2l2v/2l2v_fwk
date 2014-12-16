@@ -22,7 +22,8 @@ try:
     # for f in fnames:
     #     lfn_to_pfn(f)
     #     sys.exit()
-    fnames = [ 'file:%s' %lfn_to_pfn(f) for f in fnames]    
+    #fnames = [ 'file:%s' %lfn_to_pfn(f) for f in fnames]    
+    fnames = [ lfn_to_pfn(f) for f in fnames]    
     inputFiles =  cms.untracked.vstring(fnames)                
 except:
     print "not able to import" 
