@@ -422,6 +422,7 @@ int main(int argc, char* argv[])
   llvvMet met;
   double rho = 0;
   double rho25 = 0;
+  double crossSection = xsec;
   double weight = 1.;
   double weight_plus = 1.;
   double weight_minus = 1.;
@@ -434,6 +435,8 @@ int main(int argc, char* argv[])
   llvvJetCollection selJetsOut;
   llvvJetCollection selBJets;
   llvvTauCollection selTaus;
+  int nJets = 0;
+  int nBJets = 0;
   bool selected = false;
   int tauIndex = -1, leptonIndex = -1;
   bool isOS = false;
@@ -482,6 +485,7 @@ int main(int argc, char* argv[])
     summaryTree->Branch("rho", &rho);
     summaryTree->Branch("rho25", &rho25);
     summaryTree->Branch("met", &met);
+    summaryTree->Branch("crossSection", &crossSection);
     summaryTree->Branch("weight", &weight);
     summaryTree->Branch("weight_plus", &weight_plus);
     summaryTree->Branch("weight_minus", &weight_minus);
@@ -491,8 +495,10 @@ int main(int argc, char* argv[])
     summaryTree->Branch("tauSF", &tauSF);
     summaryTree->Branch("selLeptons", &selLeptons);
     summaryTree->Branch("selTaus", &selTaus);
-    summaryTree->Branch("selJets", &selJetsOut);
-    summaryTree->Branch("selBJets", &selBJets);
+//    summaryTree->Branch("selJets", &selJetsOut);
+//    summaryTree->Branch("selBJets", &selBJets);
+    summaryTree->Branch("nJets", &nJets);
+    summaryTree->Branch("nBJets", &nBJets);
     summaryTree->Branch("isOS", &isOS);
     summaryTree->Branch("isMultilepton", &isMultilepton);
     summaryTree->Branch("isSVfit", &isSVfit);
@@ -562,6 +568,8 @@ int main(int argc, char* argv[])
     tauSF = 1.;
     chTags.clear();
     selLeptons.clear();
+    nJets = 0;
+    nBJets = 0;
     selJets.clear();
     selJetsOut.clear();
     selBJets.clear();
@@ -811,6 +819,7 @@ int main(int argc, char* argv[])
       {
         int nEvents = 10000;
         double xsec = stauCrossSec(stauMass, neutralinoMass);
+        crossSection = xsec;
         xsecWeight  = xsec/nEvents;
       }
       puWeight     = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
@@ -1333,7 +1342,9 @@ int main(int argc, char* argv[])
     if(selTaus.size() != 0)
       std::sort(selTaus.begin(), selTaus.end(), sort_llvvObjectByPt);
 
-    if(selJets.size() != 0)
+    nBJets = selBJets.size();
+    nJets = selJets.size();
+    if(nJets != 0)
       std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
 
 
