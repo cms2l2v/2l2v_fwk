@@ -31,6 +31,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
+  mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
 
   return mon; 
 }
@@ -107,42 +108,46 @@ passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
 
 bool
 passPhotonId(float r9){
-  if ( r9 > 0.9) return false; 
-  return true; 
+  if ( r9 > 0.9)
+    return true; 
+  else
+    return false; 
 }
 
 bool
-passPhotonIso(){
-  return true;  
+passPhotonIso(float hoe){
+  if (hoe < 0.05 )
+    return true;
+  else 
+    return false;  
 }
 
 pat::PhotonCollection
 passPhotonSelection(SmartSelectionMonitor mon,
 		    pat::PhotonCollection photons,
-		    reco::VertexCollection vtx,
 		    float triggerThreshold){
 
   pat::PhotonCollection selPhotons;
-  float weight = 1.0 ; // only consider 1.0 weight 
-  
-  mon.fillHisto("npho", "all", photons.size(), weight);
-  mon.fillHisto("nvtx", "all", vtx.size(), weight);
-
+  TString tag = "all";  
+  double weight = 1.0;  
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
     float pt = photons[ipho].pt();
-    mon.fillHisto("phopt", "all", pt, weight);
+    mon.fillHisto("phopt", tag, pt, weight);
 
     float eta = photons[ipho].superCluster()->eta();
-    mon.fillHisto("phoeta", "all", eta, weight);
+    mon.fillHisto("phoeta", tag, eta, weight);
 
     float r9 = photons[ipho].r9(); 
-    mon.fillHisto("phor9", "all", r9, weight);
+    mon.fillHisto("phor9", tag, r9, weight);
 
-    float iso = photons[ipho].photonIso(); // particleIso() returns all -1.0 
-    mon.fillHisto("phoiso", "all", iso, weight);
+    float iso = photons[ipho].photonIso(); 
+    mon.fillHisto("phoiso", tag, iso, weight);
 
+    float hoe = photons[ipho].hadTowOverEm();
+    mon.fillHisto("phohoe", tag, hoe, weight);
+    
     bool passId = passPhotonId(r9);
-    bool passIso = passPhotonIso();
+    bool passIso = passPhotonIso(hoe);
 
     // select the photon
     if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
@@ -170,15 +175,17 @@ int main(int argc, char* argv[])
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
 
-  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
-  TString url = TString(argv[1]);
-  TString outFileUrl(gSystem->BaseName(url));
-  outFileUrl.ReplaceAll("_cfg.py","");
-  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
-  TString outdir=runProcess.getParameter<std::string>("outdir");
-  TString outUrl( outdir );
-  gSystem->Exec("mkdir -p " + outUrl);
+  std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
+  // TString url = TString(argv[1]);
+  // TString outFileUrl(gSystem->BaseName(url));
+  // outFileUrl.ReplaceAll("_cfg.py","");
+  // if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
+  // TString outdir=runProcess.getParameter<std::string>("outdir");
+  // TString outUrl( outdir );
+  // gSystem->Exec("mkdir -p " + outUrl);
 
+  TString output=runProcess.getParameter<std::string>("output");
+  
   // initiating histograms
   SmartSelectionMonitor mon = initHistograms();
   
@@ -204,6 +211,10 @@ int main(int argc, char* argv[])
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
   int treeStep(totalEntries/50);
+  
+  TString tag("all");
+  double weight(1.0); // for testing now. 
+
   for( size_t iev=0; iev<totalEntries; iev++){
     if(iev%treeStep==0){printf(".");fflush(stdout);}
     // load the event content from the EDM file
@@ -221,28 +232,53 @@ int main(int argc, char* argv[])
     fwlite::Handle< reco::VertexCollection > vtxHandle; 
     vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
     if (vtxHandle.isValid() ) { vtx = *vtxHandle; }
+    mon.fillHisto("nvtx", "all", vtx.size(), weight);
     
     pat::PhotonCollection photons;
     fwlite::Handle< pat::PhotonCollection > photonsHandle;
     photonsHandle.getByLabel(ev, "slimmedPhotons");
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
-    
+    mon.fillHisto("npho", "all", photons.size(), weight);
+
+  
     // below follows the analysis of the main selection with n-1 plots
-    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, vtx, triggerThreshold);
+    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold);
+    if ( selPhotons.size() == 0) continue;  
+
+    tag = "sel";
+    mon.fillHisto("npho", tag, selPhotons.size(), weight);
+    mon.fillHisto("nvtx", tag, vtx.size(), weight);
+    
     for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
       float pt = selPhotons[ipho].pt();
-      mon.fillHisto("phopt", "sel", pt, 1.0);
+      mon.fillHisto("phopt", tag, pt, weight);
+
+      float eta = photons[ipho].superCluster()->eta();
+      mon.fillHisto("phoeta", tag, eta, weight);
+      
+      float r9 = photons[ipho].r9(); 
+      mon.fillHisto("phor9", tag, r9, weight);
+      
+      float iso = photons[ipho].photonIso(); 
+      mon.fillHisto("phoiso", tag, iso, weight);
+      
+      float hoe = photons[ipho].hadTowOverEm();
+      mon.fillHisto("phohoe", tag, hoe, weight);
+      
     }
     
   } // end event loop 
   printf(" done.\n"); 
   
   //save control plots to file
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
-  printf("Results saved in %s\n", outUrl.Data());
+  // outUrl += "/";
+  // outUrl += outFileUrl + ".root";
+  // printf("Results saved in %s\n", outUrl.Data());
+  // TFile *ofile=TFile::Open(outUrl, "recreate");
 
-  TFile *ofile=TFile::Open(outUrl, "recreate");
+  printf("Results saved in %s\n", output.Data());
+  TFile *ofile=TFile::Open(output, "recreate");
+
   mon.Write();
   ofile->Close();
 }  
