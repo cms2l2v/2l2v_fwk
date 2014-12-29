@@ -6,10 +6,10 @@ config.General.requestName = 'phojet_analysis'
 config.General.workArea = 'crab_phojet'
 
 config.section_("JobType")
-#config.JobType.pluginName = 'Analysis'
+config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'phojet_cfg.py'
 config.JobType.scriptExe = 'submit.sh'
-config.JobType.inputFiles = ['FrameworkJobReport.xml',
+config.JobType.inputFiles = ['FrameworkJobReport.xml', 'x509_proxy',
                              'runPhoJetAnalysis', 'phojet_cfg.py']
 config.JobType.outputFiles = ['output.root']
 
