@@ -19,8 +19,15 @@ void print_usage() {
   printf("--json    --> containing list of process (and associated style) to process to process\n");
 }
 
+
 int main(int argc, char* argv[])
 {
+
+  std::string inDir   = "results/";
+  std::string jsonFile = "../../data/phojet/phys14_samples.json";
+  std::string outDir  = "plots/";
+  std::string outFile = "plotter.root";
+
   // check arguments
   if(argc<2){
     print_usage();
@@ -33,9 +40,24 @@ int main(int argc, char* argv[])
       print_usage();
       return 0; 
     }
-  }
-    
 
+    if( arg.find("--inDir"  )!=std::string::npos && i+1<argc) {
+      inDir = argv[i+1];  i++;  printf("inDir = %s\n", inDir.c_str());
+    }
+
+    if(arg.find("--outDir" )!=std::string::npos && i+1<argc){
+      outDir = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());
+    }
+
+    if(arg.find("--outFile")!=std::string::npos && i+1<argc){
+      outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());
+    }
+
+    if(arg.find("--json"   )!=std::string::npos && i+1<argc){
+      jsonFile = argv[i+1];  i++;
+    }
+  
+  }
 }  
 
 
