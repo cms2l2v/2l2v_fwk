@@ -29,10 +29,10 @@ int main(int argc, char* argv[])
   std::string outFile = "plotter.root";
 
   // check arguments
-  if(argc<2){
-    print_usage();
-    return 0;
-  }
+  // if(argc<2){
+  //   print_usage();
+  //   return 0;
+  // }
   
   for(int i=1;i<argc;i++){
     std::string arg(argv[i]);
@@ -56,8 +56,10 @@ int main(int argc, char* argv[])
     if(arg.find("--json"   )!=std::string::npos && i+1<argc){
       jsonFile = argv[i+1];  i++;
     }
-  
   }
+
+  system( (std::string("mkdir -p ") + outDir).c_str());
+  
 }  
 
 
