@@ -343,6 +343,7 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("cosThetaLep", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
+  mon.addHistogram(new TH1F("minDeltaPhiMETJetPt40", ";min(#Delta#phi_{MET-Jet40});Events", 20, 0, TMath::Pi()));
 
   // 2D variables
   mon.addHistogram(new TH2F("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
@@ -458,6 +459,7 @@ int main(int argc, char* argv[])
   double cosThetaLep = 0;
   double deltaPhiLepMETCS = 0;
   double cosThetaCS = 0;
+  double minDeltaPhiMETJetPt40 = 0;
   double tauLeadPt = 0;
   double lepLeadPt = 0;
   double maxPtSum = 0;
@@ -523,6 +525,7 @@ int main(int argc, char* argv[])
     summaryTree->Branch("cosThetaLep", &cosThetaLep);
     summaryTree->Branch("deltaPhiLepMETCS", &deltaPhiLepMETCS);
     summaryTree->Branch("cosThetaCS", &cosThetaCS);
+    summaryTree->Branch("minDeltaPhiMETJetPt40", &minDeltaPhiMETJetPt40);
     summaryTree->Branch("tauLeadPt", &tauLeadPt);
     summaryTree->Branch("lepLeadPt", &lepLeadPt);
 
@@ -557,6 +560,7 @@ int main(int argc, char* argv[])
     cosThetaLep = 0;
     deltaPhiLepMETCS = 0;
     cosThetaCS = 0;
+    minDeltaPhiMETJetPt40 = 0;
     nvtx = 0;
     selected = false;
     weight = 1.;
@@ -1512,6 +1516,19 @@ int main(int argc, char* argv[])
       deltaPhiLepTauMET = Tmet.DeltaPhi(lep + tau);
       deltaPhiLepTau = lep.DeltaPhi(tau);
 
+      minDeltaPhiMETJetPt40 = 5;
+      for(auto &jet : selJets)
+      {
+        TLorentzVector tJet(jet.Px(), jet.Py(), jet.Pz(), jet.E());
+
+        if(tJet.Pt() < 40)
+          break;
+
+        temp = Tmet.DeltaPhi(tJet);
+        if(temp < minDeltaPhiMETJetPt40)
+          minDeltaPhiMETJetPt40 = temp;
+      }
+
       double posSign = Tmet.CosTheta();
       cosThetaTau = tau.CosTheta();
       cosThetaLep = lep.CosTheta();
@@ -1732,6 +1749,7 @@ int main(int argc, char* argv[])
                     mon.fillHisto("cosThetaLep", chTags, cosThetaLep, weight);
                     mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
                     mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
+                    mon.fillHisto("minDeltaPhiMETJetPt40", chTags, minDeltaPhiMETJetPt40, weight);
 
                     mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
                     mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
