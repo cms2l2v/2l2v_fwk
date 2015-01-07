@@ -36,8 +36,10 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TCanvas.h"
-#include "TH1F.h"
-#include "TH2F.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH1D.h"
+#include "TH2D.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TEventList.h"
@@ -246,7 +248,7 @@ int main(int argc, char* argv[])
   if(debug)
     std::cout << "Initializing histograms" << std::endl;
   SmartSelectionMonitor mon;
-  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 7, 0, 7));
+  TH1D *eventflow = (TH1D*)mon.addHistogram(new TH1D("eventflow", ";;Events", 7, 0, 7));
   eventflow->GetXaxis()->SetBinLabel(1, "HLT");
   eventflow->GetXaxis()->SetBinLabel(2, "> 1l");
   eventflow->GetXaxis()->SetBinLabel(3, "B-veto");
@@ -255,47 +257,47 @@ int main(int argc, char* argv[])
   eventflow->GetXaxis()->SetBinLabel(6, "lep veto");
   eventflow->GetXaxis()->SetBinLabel(7, "SVfit");
 
-  mon.addHistogram(new TH1F("nup", ";NUP;Events", 10, 0, 10));
+  mon.addHistogram(new TH1D("nup", ";NUP;Events", 10, 0, 10));
 
   // Pile Up
-//  mon.addHistogram(new TH1F("nvtxAll", ";Vertices;Events", 50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtx", ";Vertices;Events", 50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events", 50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("rho", ";#rho;Events", 25, 0, 25));
-  mon.addHistogram(new TH1F("rho25", ";#rho(#eta<2.5);Events", 25, 0, 25));
+//  mon.addHistogram(new TH1D("nvtxAll", ";Vertices;Events", 50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtx", ";Vertices;Events", 50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtxraw", ";Vertices;Events", 50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("rho", ";#rho;Events", 25, 0, 25));
+  mon.addHistogram(new TH1D("rho25", ";#rho(#eta<2.5);Events", 25, 0, 25));
 
 
   // Leptons
-  mon.addHistogram(new TH1F("nlep", ";nlep;Events", 10, 0, 10));
-  mon.addHistogram(new TH1F("ptSelectedLep", ";p_{T}^{l};Events", 50, 0, 100));
-  mon.addHistogram(new TH1F("etaSelectedLep", ";#eta^{l};Events", 25, -2.6, 2.6));
-  mon.addHistogram(new TH1F("chargeSelectedLep", ";q^{l};Events", 5, -2, 2));
-  TH1F *leptonCutFlow = (TH1F*)mon.addHistogram(new TH1F("leptonCutFlow", ";;Leptons", 4, 0, 4));
+  mon.addHistogram(new TH1D("nlep", ";nlep;Events", 10, 0, 10));
+  mon.addHistogram(new TH1D("ptSelectedLep", ";p_{T}^{l};Events", 50, 0, 100));
+  mon.addHistogram(new TH1D("etaSelectedLep", ";#eta^{l};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1D("chargeSelectedLep", ";q^{l};Events", 5, -2, 2));
+  TH1D *leptonCutFlow = (TH1D*)mon.addHistogram(new TH1D("leptonCutFlow", ";;Leptons", 4, 0, 4));
   leptonCutFlow->GetXaxis()->SetBinLabel(1, "All");
   leptonCutFlow->GetXaxis()->SetBinLabel(2, "ID");
   leptonCutFlow->GetXaxis()->SetBinLabel(3, "Kin");
   leptonCutFlow->GetXaxis()->SetBinLabel(4, "Iso");
 
   // Lepton Isolation
-  mon.addHistogram(new TH1F("isomu", "RelIso(#mu);;Leptons", 100, -0.5, 9.5));
-  mon.addHistogram(new TH1F("isoele", "RelIso(ele);;Leptons", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1D("isomu", "RelIso(#mu);;Leptons", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1D("isoele", "RelIso(ele);;Leptons", 100, -0.5, 9.5));
 
   // Taus
-  mon.addHistogram(new TH1F("ntaus", ";ntaus;Events", 10, 0, 10));
-  mon.addHistogram(new TH1F("ptSelectedTau", ";p_{T}^{#tau};Events", 50, 0, 100));
-  mon.addHistogram(new TH1F("ptSelectedTauExtended", ";p_{T}^{#tau};Events", 50, 0, 250));
-  mon.addHistogram(new TH1F("etaSelectedTau", ";#eta^{#tau};Events", 25, -2.6, 2.6));
-  mon.addHistogram(new TH1F("chargeSelectedTau", ";q^{#tau};Events", 5, -2, 2));
-  mon.addHistogram(new TH1F("dzSelectedTau", ";dz^{#tau};Events", 25, 0, 2));
-  mon.addHistogram(new TH1F("emfracSelectedTau", ";emf^{#tau};Events", 25, 0, 5));
-  TH1F *tauCutFlow = (TH1F*)mon.addHistogram(new TH1F("tauCutFlow", ";;#tau", 6, 0, 6));
+  mon.addHistogram(new TH1D("ntaus", ";ntaus;Events", 10, 0, 10));
+  mon.addHistogram(new TH1D("ptSelectedTau", ";p_{T}^{#tau};Events", 50, 0, 100));
+  mon.addHistogram(new TH1D("ptSelectedTauExtended", ";p_{T}^{#tau};Events", 50, 0, 250));
+  mon.addHistogram(new TH1D("etaSelectedTau", ";#eta^{#tau};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1D("chargeSelectedTau", ";q^{#tau};Events", 5, -2, 2));
+  mon.addHistogram(new TH1D("dzSelectedTau", ";dz^{#tau};Events", 25, 0, 2));
+  mon.addHistogram(new TH1D("emfracSelectedTau", ";emf^{#tau};Events", 25, 0, 5));
+  TH1D *tauCutFlow = (TH1D*)mon.addHistogram(new TH1D("tauCutFlow", ";;#tau", 6, 0, 6));
   tauCutFlow->GetXaxis()->SetBinLabel(1, "All");
   tauCutFlow->GetXaxis()->SetBinLabel(2, "PF");
   tauCutFlow->GetXaxis()->SetBinLabel(3, "ID");
   tauCutFlow->GetXaxis()->SetBinLabel(4, "Quality");
   tauCutFlow->GetXaxis()->SetBinLabel(5, "Kin");
   tauCutFlow->GetXaxis()->SetBinLabel(6, "Iso");
-  TH1F *tauID = (TH1F*)mon.addHistogram(new TH1F("tauID", ";;#tau", 5, 0, 5));
+  TH1D *tauID = (TH1D*)mon.addHistogram(new TH1D("tauID", ";;#tau", 5, 0, 5));
   tauID->GetXaxis()->SetBinLabel(1, "All");
   tauID->GetXaxis()->SetBinLabel(2, "Medium comb iso");
   tauID->GetXaxis()->SetBinLabel(3, "Decay mode");
@@ -303,54 +305,54 @@ int main(int argc, char* argv[])
   tauID->GetXaxis()->SetBinLabel(5, "Not #mu");
 
   // Jets
-  mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
-  mon.addHistogram(new TH1F("nbjets", ";njets;Events", 6, 0, 6));
-  mon.addHistogram(new TH1F("jetleadpt", ";p_{T}^{jet};Events", 25, 0, 500));
-  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 50, -5, 5));
-  mon.addHistogram(new TH1F("jetcsv", ";csv;jets", 25, 0, 1));
-  TH1F *jetCutFlow = (TH1F*)mon.addHistogram(new TH1F("jetCutFlow", ";;jets", 4, 0, 4));
+  mon.addHistogram(new TH1D("njets", ";njets;Events", 6, 0, 6));
+  mon.addHistogram(new TH1D("nbjets", ";njets;Events", 6, 0, 6));
+  mon.addHistogram(new TH1D("jetleadpt", ";p_{T}^{jet};Events", 25, 0, 500));
+  mon.addHistogram(new TH1D("jetleadeta", ";#eta^{jet};Events", 50, -5, 5));
+  mon.addHistogram(new TH1D("jetcsv", ";csv;jets", 25, 0, 1));
+  TH1D *jetCutFlow = (TH1D*)mon.addHistogram(new TH1D("jetCutFlow", ";;jets", 4, 0, 4));
   jetCutFlow->GetXaxis()->SetBinLabel(1, "All");
   jetCutFlow->GetXaxis()->SetBinLabel(2, "PF Loose");
   jetCutFlow->GetXaxis()->SetBinLabel(3, "ID");
   jetCutFlow->GetXaxis()->SetBinLabel(4, "Kin");
 
   // MET
-  mon.addHistogram(new TH1F("MET", ";MET [GeV];Events", 25, 0, 200));
+  mon.addHistogram(new TH1D("MET", ";MET [GeV];Events", 25, 0, 200));
 
   // MT
-  mon.addHistogram(new TH1F("MT", ";MT [GeV];Events", 25, 0, 200));
+  mon.addHistogram(new TH1D("MT", ";MT [GeV];Events", 25, 0, 200));
 
   // Deconstructed MT: https://indico.cern.ch/event/344807/
-  mon.addHistogram(new TH1F("Q80", ";Q_{80};Events", 30, -2, 1));
-  mon.addHistogram(new TH1F("Q100", ";Q_{100};Events", 30, -2, 1));
-  mon.addHistogram(new TH1F("cosPhi", ";cos#Phi;Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("Q80", ";Q_{80};Events", 30, -2, 1));
+  mon.addHistogram(new TH1D("Q100", ";Q_{100};Events", 30, -2, 1));
+  mon.addHistogram(new TH1D("cosPhi", ";cos#Phi;Events", 30, -1, 1));
 
   // MT2
-  mon.addHistogram(new TH1F("MT2", ";M_{T2} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1D("MT2", ";M_{T2} [GeV];Events", 25, 0, 500));
 
   // SVFit Mass
   if(doSVfit)
-    mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
+    mon.addHistogram(new TH1D("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
 
   // Invariant Mass
-  mon.addHistogram(new TH1F("InvMass", ";M_{l-#tau};Events", 50, 0, 500));
+  mon.addHistogram(new TH1D("InvMass", ";M_{l-#tau};Events", 50, 0, 500));
 
   // Angles
-  mon.addHistogram(new TH1F("deltaAlphaLepTau", ";#Delta#alpha_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiLepTauMET", ";#Delta#phi_{l#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiLepTau", ";#Delta#phi_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("cosThetaTau", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("cosThetaLep", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("minDeltaPhiMETJetPt40", ";min(#Delta#phi_{MET-Jet40});Events", 20, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaAlphaLepTau", ";#Delta#alpha_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaPhiLepTauMET", ";#Delta#phi_{l#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaPhiLepTau", ";#Delta#phi_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("cosThetaTau", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("cosThetaLep", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("minDeltaPhiMETJetPt40", ";min(#Delta#phi_{MET-Jet40});Events", 20, 0, TMath::Pi()));
 
   // 2D variables
-  mon.addHistogram(new TH2F("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
-  mon.addHistogram(new TH2F("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
   //  Deconstructed MT 2D Plots:
-  mon.addHistogram(new TH2F("Q80VsCosPhi", ";cos#Phi;Q_{80}", 20, -1, 1, 20, -2, 1));
-  mon.addHistogram(new TH2F("Q100VsCosPhi", ";cos#Phi;Q_{100}", 20, -1, 1, 20, -2, 1));
+  mon.addHistogram(new TH2D("Q80VsCosPhi", ";cos#Phi;Q_{80}", 20, -1, 1, 20, -2, 1));
+  mon.addHistogram(new TH2D("Q100VsCosPhi", ";cos#Phi;Q_{100}", 20, -1, 1, 20, -2, 1));
 
 
 
@@ -2054,7 +2056,7 @@ int old_main(int argc, char* argv[])
   /*                         Initializing Histograms                         */
   /***************************************************************************/
   SmartSelectionMonitor mon;
-  TH1F *eventflow = (TH1F*)mon.addHistogram(new TH1F("eventflow", ";;Events", 5, 0, 5));
+  TH1D *eventflow = (TH1D*)mon.addHistogram(new TH1D("eventflow", ";;Events", 5, 0, 5));
   eventflow->GetXaxis()->SetBinLabel(1, "HLT");
   eventflow->GetXaxis()->SetBinLabel(2, "> 1l");
   eventflow->GetXaxis()->SetBinLabel(3, "B-veto");
@@ -2063,53 +2065,53 @@ int old_main(int argc, char* argv[])
   // ...
   // TH2D* hist = (TH2D*)mon.addHistogram(...);
 
-  mon.addHistogram(new TH1F("nup",     ";NUP;Events", 10, 0, 10));
-  //mon.addHistogram(new TH1F("nupfilt", ";NUP;Events", 10, 0, 10));
+  mon.addHistogram(new TH1D("nup",     ";NUP;Events", 10, 0, 10));
+  //mon.addHistogram(new TH1D("nupfilt", ";NUP;Events", 10, 0, 10));
 
   // PU
-  mon.addHistogram(new TH1F("nvtxAll",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxHLT",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtx1l",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxBveto",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtx1tau",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxOS",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtxAll",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtxHLT",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtx1l",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtxBveto",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtx1tau",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtxOS",    ";Vertices;Events",       50, -0.5, 49.5));
 
-  mon.addHistogram(new TH1F("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
-  mon.addHistogram(new TH1F("rho",     ";#rho;Events",           25,  0,   25));
-  mon.addHistogram(new TH1F("rho25",   ";#rho(#eta<2.5);Events", 25,  0,   25));
+  mon.addHistogram(new TH1D("nvtx",    ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("nvtxraw", ";Vertices;Events",       50, -0.5, 49.5));
+  mon.addHistogram(new TH1D("rho",     ";#rho;Events",           25,  0,   25));
+  mon.addHistogram(new TH1D("rho25",   ";#rho(#eta<2.5);Events", 25,  0,   25));
 
 
   // Leptons
-  mon.addHistogram(new TH1F("nlep",       ";nlep;Events",       10,  0,   10));
-  mon.addHistogram(new TH1F("leadpt",     ";p_{T}^{l};Events",  50,  0,  100));
-  mon.addHistogram(new TH1F("leadeta",    ";#eta^{l};Events",   25, -2.6,  2.6));
-  mon.addHistogram(new TH1F("leadcharge", ";q^{l};Events",       5, -2,    2));
-  TH1F *leptonCutFlow   = (TH1F*)mon.addHistogram(new TH1F("leptonCutFlow",   ";;Leptons", 4, 0, 4));
+  mon.addHistogram(new TH1D("nlep",       ";nlep;Events",       10,  0,   10));
+  mon.addHistogram(new TH1D("leadpt",     ";p_{T}^{l};Events",  50,  0,  100));
+  mon.addHistogram(new TH1D("leadeta",    ";#eta^{l};Events",   25, -2.6,  2.6));
+  mon.addHistogram(new TH1D("leadcharge", ";q^{l};Events",       5, -2,    2));
+  TH1D *leptonCutFlow   = (TH1D*)mon.addHistogram(new TH1D("leptonCutFlow",   ";;Leptons", 4, 0, 4));
   leptonCutFlow->GetXaxis()->SetBinLabel(1, "All");
   leptonCutFlow->GetXaxis()->SetBinLabel(2, "ID");
   leptonCutFlow->GetXaxis()->SetBinLabel(3, "Kin");
   leptonCutFlow->GetXaxis()->SetBinLabel(4, "Iso");
 
   // Lepton Isolation
-  mon.addHistogram(new TH1F("isomu",  "RelIso(#mu);;Leptons", 100, -0.5, 9.5));
-  mon.addHistogram(new TH1F("isoele", "RelIso(ele);;Leptons", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1D("isomu",  "RelIso(#mu);;Leptons", 100, -0.5, 9.5));
+  mon.addHistogram(new TH1D("isoele", "RelIso(ele);;Leptons", 100, -0.5, 9.5));
 
   // Taus
-  mon.addHistogram(new TH1F("ntaus",         ";ntaus;Events",         10,  0, 10));
-  mon.addHistogram(new TH1F("tauleadpt",     ";p_{T}^{#tau};Events",  50,  0,  100));
-  mon.addHistogram(new TH1F("tauleadeta",    ";#eta^{#tau};Events",   25, -2.6,  2.6));
-  mon.addHistogram(new TH1F("tauleadcharge", ";q^{#tau};Events",       5, -2,    2));
-  mon.addHistogram(new TH1F("tauleaddz",     ";dz^{#tau};Events",     25,  0,    2));
-  mon.addHistogram(new TH1F("tauleademfrac", ";emf^{#tau};Events",    25,  0,    5));
-  TH1F *tauCutFlow   = (TH1F*)mon.addHistogram(new TH1F("tauCutFlow",   ";;#tau", 6, 0, 6));
+  mon.addHistogram(new TH1D("ntaus",         ";ntaus;Events",         10,  0, 10));
+  mon.addHistogram(new TH1D("tauleadpt",     ";p_{T}^{#tau};Events",  50,  0,  100));
+  mon.addHistogram(new TH1D("tauleadeta",    ";#eta^{#tau};Events",   25, -2.6,  2.6));
+  mon.addHistogram(new TH1D("tauleadcharge", ";q^{#tau};Events",       5, -2,    2));
+  mon.addHistogram(new TH1D("tauleaddz",     ";dz^{#tau};Events",     25,  0,    2));
+  mon.addHistogram(new TH1D("tauleademfrac", ";emf^{#tau};Events",    25,  0,    5));
+  TH1D *tauCutFlow   = (TH1D*)mon.addHistogram(new TH1D("tauCutFlow",   ";;#tau", 6, 0, 6));
   tauCutFlow->GetXaxis()->SetBinLabel(1, "All");
   tauCutFlow->GetXaxis()->SetBinLabel(2, "PF");
   tauCutFlow->GetXaxis()->SetBinLabel(3, "ID");
   tauCutFlow->GetXaxis()->SetBinLabel(4, "Quality");
   tauCutFlow->GetXaxis()->SetBinLabel(5, "Kin");
   tauCutFlow->GetXaxis()->SetBinLabel(6, "Iso");
-  TH1F *tauID = (TH1F*)mon.addHistogram(new TH1F("tauID", ";;#tau", 5, 0, 5));
+  TH1D *tauID = (TH1D*)mon.addHistogram(new TH1D("tauID", ";;#tau", 5, 0, 5));
   tauID->GetXaxis()->SetBinLabel(1, "All");
   tauID->GetXaxis()->SetBinLabel(2, "Not e");
   tauID->GetXaxis()->SetBinLabel(3, "Not #mu");
@@ -2117,12 +2119,12 @@ int old_main(int argc, char* argv[])
   tauID->GetXaxis()->SetBinLabel(5, "Medium comb iso");
 
   // Jets
-  mon.addHistogram(new TH1F("njets", ";njets;Events", 6, 0, 6));
-  mon.addHistogram(new TH1F("nbjets", ";njets;Events", 6, 0, 6));
-  mon.addHistogram(new TH1F("jetleadpt", ";p_{T}^{jet};Events", 25, 0, 500));
-  mon.addHistogram(new TH1F("jetleadeta", ";#eta^{jet};Events", 25, -2.6, 2.6));
-  mon.addHistogram(new TH1F("jetcsv", ";csv;jets", 25, 0, 1));
-  TH1F *jetCutFlow   = (TH1F*)mon.addHistogram(new TH1F("jetCutFlow",   ";;jets", 6, 0, 6));
+  mon.addHistogram(new TH1D("njets", ";njets;Events", 6, 0, 6));
+  mon.addHistogram(new TH1D("nbjets", ";njets;Events", 6, 0, 6));
+  mon.addHistogram(new TH1D("jetleadpt", ";p_{T}^{jet};Events", 25, 0, 500));
+  mon.addHistogram(new TH1D("jetleadeta", ";#eta^{jet};Events", 25, -2.6, 2.6));
+  mon.addHistogram(new TH1D("jetcsv", ";csv;jets", 25, 0, 1));
+  TH1D *jetCutFlow   = (TH1D*)mon.addHistogram(new TH1D("jetCutFlow",   ";;jets", 6, 0, 6));
   jetCutFlow->GetXaxis()->SetBinLabel(1, "All");
   jetCutFlow->GetXaxis()->SetBinLabel(2, "PF Loose");
   jetCutFlow->GetXaxis()->SetBinLabel(3, "Pre-Selection");
@@ -2131,28 +2133,28 @@ int old_main(int argc, char* argv[])
   jetCutFlow->GetXaxis()->SetBinLabel(6, "Kin");
 
   // MET
-  mon.addHistogram(new TH1F("MET", ";MET [GeV];Events", 25, 0, 200));
+  mon.addHistogram(new TH1D("MET", ";MET [GeV];Events", 25, 0, 200));
 
   // MT2
-  mon.addHistogram(new TH1F("MT2",     ";M_{T2} [GeV];Events", 25, 0, 500));
-  mon.addHistogram(new TH1F("MT2_50",  ";M_{T2(50)} [GeV];Events", 25, 0, 500));
-  mon.addHistogram(new TH1F("MT2_150", ";M_{T2(150)} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1D("MT2",     ";M_{T2} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1D("MT2_50",  ";M_{T2(50)} [GeV];Events", 25, 0, 500));
+  mon.addHistogram(new TH1D("MT2_150", ";M_{T2(150)} [GeV];Events", 25, 0, 500));
 
   // SVFit Mass
-  mon.addHistogram(new TH1F("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
+  mon.addHistogram(new TH1D("SVFitMass", ";M_{SVFit};Events", 50, 0, 500));
   // Invariant Mass
-  mon.addHistogram(new TH1F("InvMass", ";M_{l-#tau};Events", 50, 0, 500));
+  mon.addHistogram(new TH1D("InvMass", ";M_{l-#tau};Events", 50, 0, 500));
 
   // Angles
-  mon.addHistogram(new TH1F("deltaAlphaTauTau", ";#Delta#alpha_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("cosThetaTauH", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1F("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1F("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
-  mon.addHistogram(new TH2F("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
-  mon.addHistogram(new TH2F("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH1D("deltaAlphaTauTau", ";#Delta#alpha_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaPhiTauTauMET", ";#Delta#phi_{#tau#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaPhiTauTau", ";#Delta#phi_{#tau-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("cosThetaTauH", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
+  mon.addHistogram(new TH2D("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
 
 
 
