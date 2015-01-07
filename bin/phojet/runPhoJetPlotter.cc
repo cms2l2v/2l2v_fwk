@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 #include "TFile.h" 
+#include "TDirectory.h"
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 
@@ -40,65 +41,114 @@ void print_usage() {
 
 void GetListOfObject(JSONWrapper::Object& Root,
 		     std::string RootDir,
-		     std::list<NameAndType>& histlist){
+		     std::list<NameAndType>& histlist,
+		     TDirectory* dir=NULL,
+		     std::string parentPath=""){
+  if(parentPath=="" && !dir){
+    int dataProcessed = 0;
+    int signProcessed = 0;
+    int bckgProcessed = 0; 
+  
+    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+    std::cout << "Num of Process: " << Process.size() << std::endl; 
 
-  std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-  std::cout << "Num of Process: " << Process.size() << std::endl; 
+    std::unordered_map<std::string, bool> FileExist;
 
-  std::unordered_map<std::string, bool> FileExist;
+    // loop over all procs
+    for(size_t ip=0; ip<Process.size(); ip++){
+      bool isData (  Process[ip]["isdata"].toBool()  );
+      bool isSign ( !isData &&  Process[ip].isTag("spimpose")
+		    && Process[ip]["spimpose"].toBool());
+      bool isMC = !isData && !isSign; 
 
-  // loop over all procs
-  for(size_t ip=0; ip<Process.size(); ip++){
-    bool isData (  Process[ip]["isdata"].toBool()  );
-    std::string filtExt("");
-    if(Process[ip].isTag("mctruthmode") )
-      { char buf[255];
-	sprintf(buf, "_filt%d", (int)Process[ip]["mctruthmode"].toInt());
-	filtExt += buf;
-      }
-    
-    std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
-    // loop over all samples 
-    for(size_t id=0; id<Samples.size(); id++){
-      int split = Samples[id].getInt("split", 1); // default 1 
-      std::cout << "Split = " << split << std::endl;
-
-      // loop over all files with CRAB convention
-      for(int s=1; s<=split; s++){
-	std::string segmentExt;
-	if(split>1) {
-	  char buf[255];
-	  sprintf(buf,"_%i",s);
-	  segmentExt += buf;
+      std::string filtExt("");
+      if(Process[ip].isTag("mctruthmode") )
+	{ char buf[255];
+	  sprintf(buf, "_filt%d", (int)Process[ip]["mctruthmode"].toInt());
+	  filtExt += buf;
 	}
-	std::string FileName = RootDir 
-	  + Samples[id].getString("dtag", "") + "/"
-	  + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
-	std::cout << FileName << std::endl;
-	
-	TFile* File = new TFile(FileName.c_str());
-	bool& fileExist = FileExist[FileName];
-	if(!File || File->IsZombie() || !File->IsOpen() ||
-	   // consider "recovered" as non-exist file
-	   File->TestBit(TFile::kRecovered) ){
-	  fileExist=false;
-	  continue; 
-	}else{
-	  fileExist=true;
-	}
-	
-	//do the following only for the first file
-	if(s>1) continue;
-
-	printf("Adding all objects from %25s to the list of considered objects\n",
-	       FileName.c_str());
-
-
-      } // end on all files 
-
-    } // end on all samples 
     
-  } // end on all procs 
+      std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
+      // loop over all samples 
+      for(size_t id=0; id<Samples.size(); id++){
+	int split = Samples[id].getInt("split", 1); // default 1 
+	std::cout << "Split = " << split << std::endl;
+
+	// loop over all files with CRAB convention
+	for(int s=1; s<=split; s++){
+	  std::string segmentExt;
+	  if(split>1) {
+	    char buf[255];
+	    sprintf(buf,"_%i",s);
+	    segmentExt += buf;
+	  }
+	  std::string FileName = RootDir 
+	    + Samples[id].getString("dtag", "") + "/"
+	    + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
+	  std::cout << FileName << std::endl;
+	
+	  TFile* File = new TFile(FileName.c_str());
+	  bool& fileExist = FileExist[FileName];
+	  if(!File || File->IsZombie() || !File->IsOpen() ||
+	     // consider "recovered" as non-exist file
+	     File->TestBit(TFile::kRecovered) ){
+	    fileExist=false;
+	    continue; 
+	  }else{
+	    fileExist=true;
+	  }
+	
+	  //do the following only for the first file
+	  if(s>1) continue;
+
+	  printf("Adding all objects from %25s to the list of considered objects\n",
+		 FileName.c_str());
+
+	  //just to make it faster, only consider the first 3 sample of a same kind
+	  if(isData) {
+	    if (dataProcessed>=1){
+	      File->Close();
+	      continue;
+	    }
+	    else{
+	      dataProcessed++;
+	    }
+	  }
+	
+	  if(isSign) {
+	    if (signProcessed>=2){
+	      File->Close();
+	      continue;
+	    }else{
+	      signProcessed++;
+	    }
+	  }
+
+	  if (isMC ){
+	    if (bckgProcessed>0) {
+	      File->Close();
+	      continue;
+	    }else{
+	      bckgProcessed++;
+	    }
+	  }
+
+	  GetListOfObject(Root, RootDir, histlist, (TDirectory*)File, "" );
+	  File->Close();
+	} // end on all files 
+      } // end on all samples 
+    } // end on all procs
+
+    // printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
+    for(std::unordered_map<std::string, bool>::iterator it = FileExist.begin(); it!=FileExist.end(); it++){
+      if(!it->second)
+	printf("[INFO] missing or corrupted file:  %s\n", it->first.c_str());
+    }
+
+    return ; 
+    
+  } // end of no parentPath or no dir case
+
 }
 
 
