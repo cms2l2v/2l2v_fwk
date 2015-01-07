@@ -39,15 +39,29 @@ void print_usage() {
 
 void GetListOfObject(JSONWrapper::Object& Root,
 		     std::string RootDir,
-		     std::list<NameAndType>& histlist,
-		     TDirectory* dir=NULL,
-		     std::string parentPath=""){
+		     std::list<NameAndType>& histlist){
 
-  if(parentPath=="" && !dir){
-    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-    std::cout << "Num of Process: " << Process.size() << std::endl; 
-
-  } // only three arg case 
+  std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+  std::cout << "Num of Process: " << Process.size() << std::endl; 
+  
+  // loop over all procs
+  for(size_t ip=0; ip<Process.size(); ip++){
+    bool isData (  Process[ip]["isdata"].toBool()  );
+    std::string filtExt("");
+    if(Process[ip].isTag("mctruthmode") )
+      { char buf[255];
+	sprintf(buf, "_filt%d", (int)Process[ip]["mctruthmode"].toInt());
+	filtExt += buf;
+      }
+    
+    std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
+    // loop over all samples 
+    for(size_t id=0; id<Samples.size(); id++){
+      int split = Samples[id].getInt("split", 1);
+      std::cout << "Split = " << split << std::endl;
+    } // end on all samples 
+    
+  } // end on all procs 
 }
 
 
