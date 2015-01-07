@@ -252,8 +252,8 @@ int main(int argc, char* argv[])
   eventflow->GetXaxis()->SetBinLabel(1, "HLT");
   eventflow->GetXaxis()->SetBinLabel(2, "MET > 30");
   eventflow->GetXaxis()->SetBinLabel(3, "> 1l");
-  eventflow->GetXaxis()->SetBinLabel(4, "B-veto");
-  eventflow->GetXaxis()->SetBinLabel(5, "> 1#tau");
+  eventflow->GetXaxis()->SetBinLabel(4, "> 1#tau");
+  eventflow->GetXaxis()->SetBinLabel(5, "B-veto");
   eventflow->GetXaxis()->SetBinLabel(6, "OS");
   eventflow->GetXaxis()->SetBinLabel(7, "lep veto");
   eventflow->GetXaxis()->SetBinLabel(8, "SVfit");
@@ -1712,10 +1712,10 @@ int main(int argc, char* argv[])
         {
           mon.fillHisto("eventflow", chTags, 2, weight);
           mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
-          if(selBJets.size() == 0)
+          if(selTaus.size() > 0)
           {
             mon.fillHisto("eventflow", chTags, 3, weight);
-            if(selTaus.size() > 0)
+            if(selBJets.size() == 0)
             {
               mon.fillHisto("eventflow", chTags, 4, weight);
               if(isOS)
