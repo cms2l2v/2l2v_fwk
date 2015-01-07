@@ -57,8 +57,24 @@ void GetListOfObject(JSONWrapper::Object& Root,
     std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
     // loop over all samples 
     for(size_t id=0; id<Samples.size(); id++){
-      int split = Samples[id].getInt("split", 1);
+      int split = Samples[id].getInt("split", 1); // default 1 
       std::cout << "Split = " << split << std::endl;
+
+      // loop over all files 
+      for(int s=0; s<split; s++){
+	std::string segmentExt;
+	if(split>1) {
+	  char buf[255];
+	  sprintf(buf,"_%i",s);
+	  segmentExt += buf;
+	}
+	std::string FileName = RootDir 
+	  + Samples[id].getString("dtag", "") + "/"
+	  + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
+	std::cout << FileName << std::endl;
+
+      } // end on all files 
+
     } // end on all samples 
     
   } // end on all procs 
