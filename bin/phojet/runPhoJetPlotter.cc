@@ -39,6 +39,29 @@ void print_usage() {
   printf("--json    --> containing list of process (and associated style) to process to process\n");
 }
 
+TObject* GetObjectFromPath(TDirectory* File, std::string Path, bool GetACopy=false)
+{
+  // std::cout << Path << std::endl;
+  size_t pos = Path.find("/");
+  // std::cout << ">>> " << pos  << std::endl;
+  if(pos < 256){
+    std::string firstPart = Path.substr(0,pos);
+    std::string endPart   = Path.substr(pos+1,Path.length());
+    TDirectory* TMP = (TDirectory*)File->Get(firstPart.c_str());
+    if(TMP!=NULL){
+      TObject* TMP2 =  GetObjectFromPath(TMP,endPart,GetACopy);
+      return TMP2;
+    }
+    return NULL;
+  }else{
+    TObject* TMP = File->Get(Path.c_str());
+    if(GetACopy){	return TMP->Clone();
+    }else{            return TMP;
+    }
+  }
+}
+
+
 void GetListOfObject(JSONWrapper::Object& Root,
 		     std::string RootDir,
 		     std::list<NameAndType>& histlist,
@@ -139,8 +162,9 @@ void GetListOfObject(JSONWrapper::Object& Root,
       } // end on all samples 
     } // end on all procs
 
-    // printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
-    for(std::unordered_map<std::string, bool>::iterator it = FileExist.begin(); it!=FileExist.end(); it++){
+    // print out missing or corrupted files if any 
+    for(std::unordered_map<std::string, bool>::iterator it = FileExist.begin();
+	it!=FileExist.end(); it++){
       if(!it->second)
 	printf("[INFO] missing or corrupted file:  %s\n", it->first.c_str());
     }
@@ -148,6 +172,14 @@ void GetListOfObject(JSONWrapper::Object& Root,
     return ; 
     
   } // end of no parentPath or no dir case
+  
+  if (dir==NULL) return;
+  TList* list = dir->GetListOfKeys();
+  // std::cout << list << std::endl;
+  for(int i=0;i<list->GetSize();i++){
+    std::cout << list->At(i)->GetName() << std::endl;
+    TObject* tmp = GetObjectFromPath(dir,list->At(i)->GetName(),false);
+  }
 
 }
 
