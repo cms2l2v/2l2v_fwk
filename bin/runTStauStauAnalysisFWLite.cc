@@ -1707,92 +1707,92 @@ int main(int argc, char* argv[])
         mon.fillHisto("eventflow", chTags, 0, weight);
         if(met.pt() > 30)
         {
-        mon.fillHisto("eventflow", chTags, 1, weight);
-        if(selLeptons.size() > 0)
-        {
-          mon.fillHisto("eventflow", chTags, 2, weight);
-          mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
-          if(selTaus.size() > 0)
+          mon.fillHisto("eventflow", chTags, 1, weight);
+          if(selLeptons.size() > 0)
           {
-            mon.fillHisto("eventflow", chTags, 3, weight);
-            if(selBJets.size() == 0)
+            mon.fillHisto("eventflow", chTags, 2, weight);
+            mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
+            if(selTaus.size() > 0)
             {
-              mon.fillHisto("eventflow", chTags, 4, weight);
-              if(isOS)
+              mon.fillHisto("eventflow", chTags, 3, weight);
+              if(selBJets.size() == 0)
               {
-                mon.fillHisto("eventflow", chTags, 5, weight);
-                if(!isMultilepton)
+                mon.fillHisto("eventflow", chTags, 4, weight);
+                if(isOS)
                 {
-                  mon.fillHisto("eventflow", chTags, 6, weight);
-                  if(!doSVfit || isSVfit)
+                  mon.fillHisto("eventflow", chTags, 5, weight);
+                  if(!isMultilepton)
                   {
-                    mon.fillHisto("eventflow", chTags, 7, weight);
-
-                    mon.fillHisto("nvtx", chTags, nvtx, weight);
-                    mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
-                    mon.fillHisto("nup", "", genEv.nup, 1);
-
-                    mon.fillHisto("rho", chTags, rho, weight);
-                    mon.fillHisto("rho25", chTags, rho25, weight);
-
-                    mon.fillHisto("MET", chTags, met.pt(), weight);
-
-                    mon.fillHisto("MT", chTags, mt, weight);
-                    mon.fillHisto("Q80", chTags, Q80, weight);
-                    mon.fillHisto("Q100", chTags, Q100, weight);
-                    mon.fillHisto("cosPhi", chTags, cosPhi, weight);
-                    mon.fillHisto("Q80VsCosPhi", chTags, cosPhi, Q80, weight);
-                    mon.fillHisto("Q100VsCosPhi", chTags, cosPhi, Q100, weight);
-
-                    mon.fillHisto("MT2", chTags, mt2, weight);
-                    if(doSVfit)
-                      mon.fillHisto("SVFitMass", chTags, mass, weight);
-                    mon.fillHisto("InvMass", chTags, invMass, weight);
-
-                    mon.fillHisto("deltaAlphaLepTau", chTags, deltaAlphaLepTau, weight);
-                    mon.fillHisto("deltaPhiLepTauMET", chTags, deltaPhiLepTauMET, weight);
-                    mon.fillHisto("deltaPhiLepTau", chTags, deltaPhiLepTau, weight);
-                    mon.fillHisto("cosThetaTau", chTags, cosThetaTau, weight);
-                    mon.fillHisto("cosThetaLep", chTags, cosThetaLep, weight);
-                    mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
-                    mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
-                    mon.fillHisto("minDeltaPhiMETJetPt40", chTags, minDeltaPhiMETJetPt40, weight);
-
-                    mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
-                    mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
-
-                    mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
-                    double eta = selLeptons[leptonIndex].eta();
-                    if(abs(selLeptons[leptonIndex].id) == 11) eta = selLeptons[leptonIndex].electronInfoRef->sceta;
-                    mon.fillHisto("etaSelectedLep", chTags, eta, weight);
-                    mon.fillHisto("ptSelectedLep", chTags, selLeptons[leptonIndex].pt(), weight);
-                    mon.fillHisto("chargeSelectedLep", chTags, (selLeptons[leptonIndex].id > 0)?(-1):(1), weight);
-
-                    mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
-                    mon.fillHisto("ptSelectedTau", chTags, selTaus[tauIndex].pt(), weight);
-                    mon.fillHisto("ptSelectedTauExtended", chTags, selTaus[tauIndex].pt(), weight);
-                    mon.fillHisto("etaSelectedTau", chTags, selTaus[tauIndex].eta(), weight);
-                    mon.fillHisto("chargeSelectedTau", chTags, (selTaus[tauIndex].id > 0)?(-1):(1), weight);
-                    mon.fillHisto("emfracSelectedTau", chTags, selTaus[tauIndex].emfraction, weight);
-                    mon.fillHisto("dzSelectedTau", chTags, selTaus[tauIndex].dZ, weight);
-
-                    mon.fillHisto("njets", chTags, selJets.size(), weight);
-                    if(selJets.size() != 0)
+                    mon.fillHisto("eventflow", chTags, 6, weight);
+                    if(!doSVfit || isSVfit)
                     {
-                      mon.fillHisto("jetleadpt", chTags, selJets[0].pt(), weight);
-                      mon.fillHisto("jetleadeta", chTags, selJets[0].eta(), weight);
-                    }
+                      mon.fillHisto("eventflow", chTags, 7, weight);
 
-                    for(auto i = selJets.begin(); i != selJets.end(); ++i)
-                    {
-                      mon.fillHisto("jetcsv", chTags, i->origcsv, weight);
+                      mon.fillHisto("nvtx", chTags, nvtx, weight);
+                      mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
+                      mon.fillHisto("nup", "", genEv.nup, 1);
+
+                      mon.fillHisto("rho", chTags, rho, weight);
+                      mon.fillHisto("rho25", chTags, rho25, weight);
+
+                      mon.fillHisto("MET", chTags, met.pt(), weight);
+
+                      mon.fillHisto("MT", chTags, mt, weight);
+                      mon.fillHisto("Q80", chTags, Q80, weight);
+                      mon.fillHisto("Q100", chTags, Q100, weight);
+                      mon.fillHisto("cosPhi", chTags, cosPhi, weight);
+                      mon.fillHisto("Q80VsCosPhi", chTags, cosPhi, Q80, weight);
+                      mon.fillHisto("Q100VsCosPhi", chTags, cosPhi, Q100, weight);
+
+                      mon.fillHisto("MT2", chTags, mt2, weight);
+                      if(doSVfit)
+                        mon.fillHisto("SVFitMass", chTags, mass, weight);
+                      mon.fillHisto("InvMass", chTags, invMass, weight);
+
+                      mon.fillHisto("deltaAlphaLepTau", chTags, deltaAlphaLepTau, weight);
+                      mon.fillHisto("deltaPhiLepTauMET", chTags, deltaPhiLepTauMET, weight);
+                      mon.fillHisto("deltaPhiLepTau", chTags, deltaPhiLepTau, weight);
+                      mon.fillHisto("cosThetaTau", chTags, cosThetaTau, weight);
+                      mon.fillHisto("cosThetaLep", chTags, cosThetaLep, weight);
+                      mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
+                      mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
+                      mon.fillHisto("minDeltaPhiMETJetPt40", chTags, minDeltaPhiMETJetPt40, weight);
+
+                      mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
+                      mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
+
+                      mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
+                      double eta = selLeptons[leptonIndex].eta();
+                      if(abs(selLeptons[leptonIndex].id) == 11) eta = selLeptons[leptonIndex].electronInfoRef->sceta;
+                      mon.fillHisto("etaSelectedLep", chTags, eta, weight);
+                      mon.fillHisto("ptSelectedLep", chTags, selLeptons[leptonIndex].pt(), weight);
+                      mon.fillHisto("chargeSelectedLep", chTags, (selLeptons[leptonIndex].id > 0)?(-1):(1), weight);
+
+                      mon.fillHisto("ntaus", chTags, selTaus.size(), weight);
+                      mon.fillHisto("ptSelectedTau", chTags, selTaus[tauIndex].pt(), weight);
+                      mon.fillHisto("ptSelectedTauExtended", chTags, selTaus[tauIndex].pt(), weight);
+                      mon.fillHisto("etaSelectedTau", chTags, selTaus[tauIndex].eta(), weight);
+                      mon.fillHisto("chargeSelectedTau", chTags, (selTaus[tauIndex].id > 0)?(-1):(1), weight);
+                      mon.fillHisto("emfracSelectedTau", chTags, selTaus[tauIndex].emfraction, weight);
+                      mon.fillHisto("dzSelectedTau", chTags, selTaus[tauIndex].dZ, weight);
+
+                      mon.fillHisto("njets", chTags, selJets.size(), weight);
+                      if(selJets.size() != 0)
+                      {
+                        mon.fillHisto("jetleadpt", chTags, selJets[0].pt(), weight);
+                        mon.fillHisto("jetleadeta", chTags, selJets[0].eta(), weight);
+                      }
+
+                      for(auto i = selJets.begin(); i != selJets.end(); ++i)
+                      {
+                        mon.fillHisto("jetcsv", chTags, i->origcsv, weight);
+                      }
                     }
                   }
                 }
               }
             }
           }
-        }
         }
       }
     }
