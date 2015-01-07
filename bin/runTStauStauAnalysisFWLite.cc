@@ -1526,7 +1526,7 @@ int main(int argc, char* argv[])
         if(tJet.Pt() < 40)
           break;
 
-        temp = Tmet.DeltaPhi(tJet);
+        double temp = Tmet.DeltaPhi(tJet);
         if(temp < minDeltaPhiMETJetPt40)
           minDeltaPhiMETJetPt40 = temp;
       }
