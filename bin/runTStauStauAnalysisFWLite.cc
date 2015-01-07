@@ -248,14 +248,15 @@ int main(int argc, char* argv[])
   if(debug)
     std::cout << "Initializing histograms" << std::endl;
   SmartSelectionMonitor mon;
-  TH1D *eventflow = (TH1D*)mon.addHistogram(new TH1D("eventflow", ";;Events", 7, 0, 7));
+  TH1D *eventflow = (TH1D*)mon.addHistogram(new TH1D("eventflow", ";;Events", 8, 0, 8));
   eventflow->GetXaxis()->SetBinLabel(1, "HLT");
-  eventflow->GetXaxis()->SetBinLabel(2, "> 1l");
-  eventflow->GetXaxis()->SetBinLabel(3, "B-veto");
-  eventflow->GetXaxis()->SetBinLabel(4, "> 1#tau");
-  eventflow->GetXaxis()->SetBinLabel(5, "OS");
-  eventflow->GetXaxis()->SetBinLabel(6, "lep veto");
-  eventflow->GetXaxis()->SetBinLabel(7, "SVfit");
+  eventflow->GetXaxis()->SetBinLabel(2, "MET > 30");
+  eventflow->GetXaxis()->SetBinLabel(3, "> 1l");
+  eventflow->GetXaxis()->SetBinLabel(4, "B-veto");
+  eventflow->GetXaxis()->SetBinLabel(5, "> 1#tau");
+  eventflow->GetXaxis()->SetBinLabel(6, "OS");
+  eventflow->GetXaxis()->SetBinLabel(7, "lep veto");
+  eventflow->GetXaxis()->SetBinLabel(8, "SVfit");
 
   mon.addHistogram(new TH1D("nup", ";NUP;Events", 10, 0, 10));
 
@@ -774,6 +775,7 @@ int main(int argc, char* argv[])
     // MET Collection
     fwlite::Handle<llvvMet> metHandle;
     metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfMETPFlow");
+//    metHandle.getByLabel(ev, "llvvObjectProducersUsed", "pfType1CorrectedMet");
     if(!metHandle.isValid())
     {
       std::cout << "llvvMet Object NotFound" << std::endl;
@@ -1703,25 +1705,28 @@ int main(int argc, char* argv[])
       if(triggeredOn)
       {
         mon.fillHisto("eventflow", chTags, 0, weight);
+        if(met.pt() > 30)
+        {
+        mon.fillHisto("eventflow", chTags, 1, weight);
         if(selLeptons.size() > 0)
         {
-          mon.fillHisto("eventflow", chTags, 1, weight);
+          mon.fillHisto("eventflow", chTags, 2, weight);
           mon.fillHisto("nbjets", chTags, selBJets.size(), weight);
           if(selBJets.size() == 0)
           {
-            mon.fillHisto("eventflow", chTags, 2, weight);
+            mon.fillHisto("eventflow", chTags, 3, weight);
             if(selTaus.size() > 0)
             {
-              mon.fillHisto("eventflow", chTags, 3, weight);
+              mon.fillHisto("eventflow", chTags, 4, weight);
               if(isOS)
               {
-                mon.fillHisto("eventflow", chTags, 4, weight);
+                mon.fillHisto("eventflow", chTags, 5, weight);
                 if(!isMultilepton)
                 {
-                  mon.fillHisto("eventflow", chTags, 5, weight);
+                  mon.fillHisto("eventflow", chTags, 6, weight);
                   if(!doSVfit || isSVfit)
                   {
-                    mon.fillHisto("eventflow", chTags, 6, weight);
+                    mon.fillHisto("eventflow", chTags, 7, weight);
 
                     mon.fillHisto("nvtx", chTags, nvtx, weight);
                     mon.fillHisto("nvtxraw", chTags, nvtx, weight/puWeight);
@@ -1788,10 +1793,11 @@ int main(int argc, char* argv[])
             }
           }
         }
+        }
       }
     }
 
-    if(triggeredOn && selLeptons.size() > 0 && selBJets.size() == 0 && selTaus.size() > 0 && isOS && !isMultilepton && (!doSVfit || isSVfit))
+    if(triggeredOn && met.pt() > 30 && selLeptons.size() > 0 && selBJets.size() == 0 && selTaus.size() > 0 && isOS && !isMultilepton && (!doSVfit || isSVfit))
       selected = true;
 
     #if defined(DEBUG_EVENT)
@@ -1822,6 +1828,7 @@ int main(int argc, char* argv[])
     NAN_WARN(cosThetaLep)
     NAN_WARN(deltaPhiLepMETCS)
     NAN_WARN(cosThetaCS)
+    NAN_WARN(minDeltaPhiMetJet40)
     NAN_WARN(tauLeadPt)
     NAN_WARN(lepLeadPt)
     NAN_WARN(maxPtSum)
