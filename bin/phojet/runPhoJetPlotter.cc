@@ -10,8 +10,9 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <unordered_map>
 
-#include "TDirectory.h"
+#include "TFile.h" 
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 
@@ -43,7 +44,9 @@ void GetListOfObject(JSONWrapper::Object& Root,
 
   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
   std::cout << "Num of Process: " << Process.size() << std::endl; 
-  
+
+  std::unordered_map<std::string, bool> FileExist;
+
   // loop over all procs
   for(size_t ip=0; ip<Process.size(); ip++){
     bool isData (  Process[ip]["isdata"].toBool()  );
@@ -60,8 +63,8 @@ void GetListOfObject(JSONWrapper::Object& Root,
       int split = Samples[id].getInt("split", 1); // default 1 
       std::cout << "Split = " << split << std::endl;
 
-      // loop over all files 
-      for(int s=0; s<split; s++){
+      // loop over all files with CRAB convention
+      for(int s=1; s<=split; s++){
 	std::string segmentExt;
 	if(split>1) {
 	  char buf[255];
@@ -72,6 +75,24 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	  + Samples[id].getString("dtag", "") + "/"
 	  + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
 	std::cout << FileName << std::endl;
+	
+	TFile* File = new TFile(FileName.c_str());
+	bool& fileExist = FileExist[FileName];
+	if(!File || File->IsZombie() || !File->IsOpen() ||
+	   // consider "recovered" as non-exist file
+	   File->TestBit(TFile::kRecovered) ){
+	  fileExist=false;
+	  continue; 
+	}else{
+	  fileExist=true;
+	}
+	
+	//do the following only for the first file
+	if(s>1) continue;
+
+	printf("Adding all objects from %25s to the list of considered objects\n",
+	       FileName.c_str());
+
 
       } // end on all files 
 
@@ -123,7 +144,7 @@ int main(int argc, char* argv[])
 
   JSONWrapper::Object Root(jsonFile, true);
   std::list<NameAndType> histlist;
-  GetListOfObject(Root,inDir,histlist);
+  GetListOfObject(Root, inDir, histlist);
     
 }  
 
