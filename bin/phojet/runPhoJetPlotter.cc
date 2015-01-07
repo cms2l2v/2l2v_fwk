@@ -12,8 +12,13 @@
 #include <list>
 #include <unordered_map>
 
-#include "TFile.h" 
+#include "TFile.h"
+#include "TObject.h"
 #include "TDirectory.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TH3.h"
+
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 
@@ -108,12 +113,11 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	  std::string FileName = RootDir 
 	    + Samples[id].getString("dtag", "") + "/"
 	    + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
-	  std::cout << FileName << std::endl;
+	  // std::cout << FileName << std::endl;
 	
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
 	  if(!File || File->IsZombie() || !File->IsOpen() ||
-	     // consider "recovered" as non-exist file
 	     File->TestBit(TFile::kRecovered) ){
 	    fileExist=false;
 	    continue; 
@@ -128,33 +132,9 @@ void GetListOfObject(JSONWrapper::Object& Root,
 		 FileName.c_str());
 
 	  //just to make it faster, only consider the first 3 sample of a same kind
-	  if(isData) {
-	    if (dataProcessed>=1){
-	      File->Close();
-	      continue;
-	    }
-	    else{
-	      dataProcessed++;
-	    }
-	  }
-	
-	  if(isSign) {
-	    if (signProcessed>=2){
-	      File->Close();
-	      continue;
-	    }else{
-	      signProcessed++;
-	    }
-	  }
-
-	  if (isMC ){
-	    if (bckgProcessed>0) {
-	      File->Close();
-	      continue;
-	    }else{
-	      bckgProcessed++;
-	    }
-	  }
+	  if(isData){if(dataProcessed>=1){ File->Close(); continue;}else{dataProcessed++;}}
+	  if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
+	  if(isMC  ){if(bckgProcessed>0) { File->Close(); continue;}else{bckgProcessed++;}}
 
 	  GetListOfObject(Root, RootDir, histlist, (TDirectory*)File, "" );
 	  File->Close();
@@ -174,12 +154,39 @@ void GetListOfObject(JSONWrapper::Object& Root,
   } // end of no parentPath or no dir case
   
   if (dir==NULL) return;
+  // std::cout << "dir = " << dir << std::endl;
+  // std::cout << "parentPath = " << parentPath << std::endl;
+
   TList* list = dir->GetListOfKeys();
-  // std::cout << list << std::endl;
+
+  // loop over list 
   for(int i=0;i<list->GetSize();i++){
-    std::cout << list->At(i)->GetName() << std::endl;
+    // std::cout << list->At(i)->GetName() << std::endl;
     TObject* tmp = GetObjectFromPath(dir,list->At(i)->GetName(),false);
-  }
+
+    if(tmp->InheritsFrom("TDirectory")){
+      printf("found object from TDirectory\n");
+      GetListOfObject(Root, RootDir, histlist, (TDirectory*)tmp, parentPath
+		      + list->At(i)->GetName() + "/" );
+    }else if (tmp->InheritsFrom("TTree")){ 
+      printf("found one object inheriting from a ttree\n");
+      // isTree = type 4, isIndexPlot = false 
+      histlist.push_back(NameAndType(parentPath+list->At(i)->GetName(), 4, false ) );
+    }else if (tmp->InheritsFrom("TH1")){
+      // printf("found one object inheriting from TH1\n");
+      int  type = 0;
+      if(tmp->InheritsFrom("TH1")) type++;
+      if(tmp->InheritsFrom("TH2")) type++;
+      if(tmp->InheritsFrom("TH3")) type++;
+      bool hasIndex = std::string(((TH1*)tmp)->GetXaxis()->GetTitle()).find("cut index")
+	<std::string::npos;
+      if(hasIndex){type=1;}
+      histlist.push_back(NameAndType(parentPath+list->At(i)->GetName(), type, hasIndex ) );
+    }else{
+      printf("The file contain an unknown object named %s\n", list->At(i)->GetName() );
+    }
+    delete tmp;
+  } // end list loop 
 
 }
 
@@ -206,20 +213,16 @@ int main(int argc, char* argv[])
     }
 
     if( arg.find("--inDir"  )!=std::string::npos && i+1<argc) {
-      inDir = argv[i+1];  i++;  printf("inDir = %s\n", inDir.c_str());
-    }
+      inDir = argv[i+1];  i++;  printf("inDir = %s\n", inDir.c_str()); }
 
     if(arg.find("--outDir" )!=std::string::npos && i+1<argc){
-      outDir = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());
-    }
+      outDir = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());}
 
     if(arg.find("--outFile")!=std::string::npos && i+1<argc){
-      outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());
-    }
+      outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());}
 
     if(arg.find("--json"   )!=std::string::npos && i+1<argc){
-      jsonFile = argv[i+1];  i++;
-    }
+      jsonFile = argv[i+1];  i++;}
   }
 
   system( (std::string("mkdir -p ") + outDir).c_str());
@@ -227,7 +230,10 @@ int main(int argc, char* argv[])
   JSONWrapper::Object Root(jsonFile, true);
   std::list<NameAndType> histlist;
   GetListOfObject(Root, inDir, histlist);
-    
+  std::cout << "Total of hists found: " << histlist.size() << std::endl;
+  histlist.sort();
+  histlist.unique();   
+  
 }  
 
 
