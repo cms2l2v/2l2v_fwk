@@ -12,12 +12,26 @@
 #include <list>
 #include <unordered_map>
 
+#include "TROOT.h"
 #include "TFile.h"
-#include "TObject.h"
 #include "TDirectory.h"
+#include "TChain.h"
+#include "TObject.h"
+#include "TCanvas.h"
+#include "TMath.h"
+#include "TLegend.h"
+#include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TTree.h"
+#include "TF1.h"
+#include "TCutG.h"
+#include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
+#include "TMultiGraph.h"
+#include "TPaveText.h"
+#include "THStack.h"
 
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
@@ -43,6 +57,25 @@ void print_usage() {
   printf("--outFile --> path of the output summary .root file\n");
   printf("--json    --> containing list of process (and associated style) to process to process\n");
 }
+
+std::string get_FileName(std::string RootDir,
+			 std::vector<JSONWrapper::Object> Samples,
+			 int id,
+			 int s) {
+  // follow CRAB convention, always start with 1 
+  std::string segmentExt;
+  char buf[255];
+  sprintf(buf,"_%i",s);
+  segmentExt += buf;
+
+  std::string FileName = RootDir 
+    + Samples[id].getString("dtag", "") + "/"
+    + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
+  // std::cout << FileName << std::endl;
+  
+  return FileName; 
+}
+
 
 TObject* GetObjectFromPath(TDirectory* File, std::string Path, bool GetACopy=false)
 {
@@ -102,19 +135,25 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	int split = Samples[id].getInt("split", 1); // default 1 
 	std::cout << "Split = " << split << std::endl;
 
-	// loop over all files with CRAB convention
+	// loop over all files, follow CRAB convention start with 1 
 	for(int s=1; s<=split; s++){
-	  std::string segmentExt;
-	  if(split>1) {
-	    char buf[255];
-	    sprintf(buf,"_%i",s);
-	    segmentExt += buf;
-	  }
-	  std::string FileName = RootDir 
-	    + Samples[id].getString("dtag", "") + "/"
-	    + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
-	  // std::cout << FileName << std::endl;
-	
+	  // follow with CRAB convention, start with 1
+	  // std::string segmentExt;
+	  // if(split>1) {
+	  //   char buf[255];
+	  //   sprintf(buf,"_%i",s);
+	  //   segmentExt += buf;
+	  // }
+
+	  // std::string suffix = Samples[id].getString("suffix","") + segmentExt; 
+
+	  std::string FileName = get_FileName(RootDir, Samples, id, s);
+
+	  // std::string FileName = RootDir 
+	  //   + Samples[id].getString("dtag", "") + "/"
+	  //   + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
+	  // // std::cout << FileName << std::endl;
+	  
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
 	  if(!File || File->IsZombie() || !File->IsOpen() ||
@@ -190,6 +229,68 @@ void GetListOfObject(JSONWrapper::Object& Root,
 
 }
 
+void Draw1DHistogram(JSONWrapper::Object& Root,
+		     std::string RootDir,
+		     NameAndType HistoProperties){
+
+  TCanvas* c1 = new TCanvas("c1","c1",800,800);
+  TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
+  t1->Draw();
+  t1->cd();
+  // std::cout << HistoProperties << std::endl;
+
+  std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+
+  // loop over procs 
+  for(unsigned int i=0;i<Process.size();i++){
+    std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
+    // loop over samples 
+    for(unsigned int j=0;j<Samples.size();j++){
+      int split = Samples[j].getInt("split", 1);
+      TH1* tmphist = NULL;
+      int NFiles=0;
+      // loop over files 
+      for(int s=0;s<split;s++){
+	
+
+	
+      }// end files loop 
+      
+    } // end samples loop 
+
+    
+  } // end procs loop 
+  
+  
+}
+
+void runPlotter(std::string inDir, std::string jsonFile,
+		std::string outDir, std::string outFile)
+{
+  JSONWrapper::Object Root(jsonFile, true);
+  std::list<NameAndType> histlist;
+  GetListOfObject(Root, inDir, histlist);
+  std::cout << "Total of hists found: " << histlist.size() << std::endl;
+  histlist.sort();
+  histlist.unique();   
+
+  TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
+  printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
+  printf("                             :");
+  int TreeStep = histlist.size()/50;
+  if (TreeStep == 0) TreeStep = 1;
+  
+  int ictr(0);
+  for(std::list<NameAndType>::iterator it= histlist.begin();
+      it!= histlist.end(); it++, ictr++){
+    if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+    if( it->is1D() ){
+      // std::cout << "is 1D" << std::endl;
+      Draw1DHistogram(Root, inDir, *it);
+    }
+  }
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -226,14 +327,8 @@ int main(int argc, char* argv[])
   }
 
   system( (std::string("mkdir -p ") + outDir).c_str());
+  runPlotter(inDir, jsonFile, outDir, outFile); 
 
-  JSONWrapper::Object Root(jsonFile, true);
-  std::list<NameAndType> histlist;
-  GetListOfObject(Root, inDir, histlist);
-  std::cout << "Total of hists found: " << histlist.size() << std::endl;
-  histlist.sort();
-  histlist.unique();   
-  
 }  
 
 
