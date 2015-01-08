@@ -76,6 +76,15 @@ std::string get_FileName(std::string RootDir,
   return FileName; 
 }
 
+bool isFileExist(TFile* File){
+  if(!File || File->IsZombie() || !File->IsOpen() ||
+     File->TestBit(TFile::kRecovered) )
+    return false;
+
+  else
+    return true;
+}
+
 
 TObject* GetObjectFromPath(TDirectory* File, std::string Path, bool GetACopy=false)
 {
@@ -156,13 +165,17 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	  
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
-	  if(!File || File->IsZombie() || !File->IsOpen() ||
-	     File->TestBit(TFile::kRecovered) ){
-	    fileExist=false;
-	    continue; 
-	  }else{
-	    fileExist=true;
-	  }
+
+	  fileExist = isFileExist(File);
+	  if ( !fileExist ) continue;
+ 
+	  // if(!File || File->IsZombie() || !File->IsOpen() ||
+	  //    File->TestBit(TFile::kRecovered) ){
+	  //   fileExist=false;
+	  //   continue; 
+	  // }else{
+	  //   fileExist=true;
+	  // }
 	
 	  //do the following only for the first file
 	  if(s>1) continue;
