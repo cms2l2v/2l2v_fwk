@@ -218,36 +218,85 @@ void GetListOfObject(JSONWrapper::Object& Root,
 
 }
 
+
+void checkSumw2(TH1 *h) { if(h==0) return;  if(h->GetDefaultSumw2()) h->Sumw2();  }
+
+
 void Draw1DHistogram(JSONWrapper::Object& Root,
 		     std::string RootDir,
 		     NameAndType HistoProperties){
+
+  std::vector<TObject*> ObjectToDelete;
+  THStack* stack = new THStack("MC","MC");
+  TCanvas* c1 = new TCanvas("c1","c1",800,800);
+     
   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
   // loop over procs 
   for(unsigned int i=0;i<Process.size();i++){
+    TH1* proc_hist = NULL;
     std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
     // loop over samples 
     for(unsigned int j=0;j<Samples.size();j++){
+      double Weight = 1.0; // use 1.0 for now. 
+
       int split = Samples[j].getInt("split", 1);
-      TH1* tmphist = NULL;
+      TH1* samp_hist = NULL;
       int NFiles=0;
       // loop over files 
       for(int s=1;s<=split;s++){
 	std::string FileName = get_FileName(RootDir, Samples, j, s);
 	TFile* File = new TFile(FileName.c_str());
-	if ( !isFileExist(File) ) continue;
-	tmphist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
-	if(!tmphist) continue;
+	if ( !isFileExist(File) ) {delete File; continue;}
+	TH1* file_hist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
+	if(!file_hist) {delete File; continue;} 
 
-	std::cout << "Found hist" << tmphist << std::endl;
+	// std::cout << "Found hist" << file_hist << std::endl;
+	NFiles++;
+	if(!samp_hist) {
+	  gROOT->cd();
+	  samp_hist = (TH1*)file_hist->Clone(file_hist->GetName());
+	  checkSumw2(samp_hist);
+	}else 
+	  samp_hist->Add(file_hist);
 
+	delete file_hist;
+	delete File;
       }// end files loop 
-      
-    } // end samples loop 
 
+      if(!samp_hist) continue;
+      // Need to check : 
+      // if(!Process[i]["isdata"].toBool())
+      //  tmphist->Scale(1.0/NFiles);      
+      
+      if(!proc_hist) {
+	gROOT->cd();
+	proc_hist = (TH1*)samp_hist->Clone(samp_hist->GetName());
+	checkSumw2(proc_hist);
+	proc_hist->Scale(Weight);
+      } else
+	proc_hist->Add(samp_hist, Weight);
+      delete samp_hist;
+      
+    } // end samples loop
+
+    if(!proc_hist) continue;
+    ObjectToDelete.push_back(proc_hist);
+
+    //Add to Stack
+    stack->Add(proc_hist, "HIST");   
     
   } // end procs loop 
+
+  if(! stack || stack->GetStack() || stack->GetStack()->GetEntriesFast()>0)
+    return;
   
-  
+  stack->Draw("");
+  ObjectToDelete.push_back(stack);
+
+  c1->SaveAs("c1.pdf"); 
+  delete c1;
+  for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
+    
 }
 
 void runPlotter(std::string inDir, std::string jsonFile,
