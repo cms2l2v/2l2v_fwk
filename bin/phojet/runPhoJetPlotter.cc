@@ -146,37 +146,13 @@ void GetListOfObject(JSONWrapper::Object& Root,
 
 	// loop over all files, follow CRAB convention start with 1 
 	for(int s=1; s<=split; s++){
-	  // follow with CRAB convention, start with 1
-	  // std::string segmentExt;
-	  // if(split>1) {
-	  //   char buf[255];
-	  //   sprintf(buf,"_%i",s);
-	  //   segmentExt += buf;
-	  // }
-
-	  // std::string suffix = Samples[id].getString("suffix","") + segmentExt; 
-
 	  std::string FileName = get_FileName(RootDir, Samples, id, s);
-
-	  // std::string FileName = RootDir 
-	  //   + Samples[id].getString("dtag", "") + "/"
-	  //   + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
-	  // // std::cout << FileName << std::endl;
-	  
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
 
 	  fileExist = isFileExist(File);
 	  if ( !fileExist ) continue;
  
-	  // if(!File || File->IsZombie() || !File->IsOpen() ||
-	  //    File->TestBit(TFile::kRecovered) ){
-	  //   fileExist=false;
-	  //   continue; 
-	  // }else{
-	  //   fileExist=true;
-	  // }
-	
 	  //do the following only for the first file
 	  if(s>1) continue;
 
@@ -245,15 +221,7 @@ void GetListOfObject(JSONWrapper::Object& Root,
 void Draw1DHistogram(JSONWrapper::Object& Root,
 		     std::string RootDir,
 		     NameAndType HistoProperties){
-
-  TCanvas* c1 = new TCanvas("c1","c1",800,800);
-  TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
-  t1->Draw();
-  t1->cd();
-  // std::cout << HistoProperties << std::endl;
-
   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-
   // loop over procs 
   for(unsigned int i=0;i<Process.size();i++){
     std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
@@ -263,10 +231,15 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       TH1* tmphist = NULL;
       int NFiles=0;
       // loop over files 
-      for(int s=0;s<split;s++){
-	
+      for(int s=1;s<=split;s++){
+	std::string FileName = get_FileName(RootDir, Samples, j, s);
+	TFile* File = new TFile(FileName.c_str());
+	if ( !isFileExist(File) ) continue;
+	tmphist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
+	if(!tmphist) continue;
 
-	
+	std::cout << "Found hist" << tmphist << std::endl;
+
       }// end files loop 
       
     } // end samples loop 
