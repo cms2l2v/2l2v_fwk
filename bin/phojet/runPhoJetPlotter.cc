@@ -35,6 +35,8 @@
 
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+
 
 struct NameAndType{
    std::string name;
@@ -54,7 +56,7 @@ void print_usage() {
   printf("--help    --> print this helping text\n");
   printf("--inDir   --> path to the directory containing the .root files to process\n");
   printf("--outDir  --> path of the directory that will contains the output plots and tables\n");
-  printf("--outFile --> path of the output summary .root file\n");
+  //  printf("--outFile --> path of the output summary .root file\n");
   printf("--json    --> containing list of process (and associated style) to process to process\n");
 }
 
@@ -224,12 +226,15 @@ void checkSumw2(TH1 *h) { if(h==0) return;  if(h->GetDefaultSumw2()) h->Sumw2();
 
 void Draw1DHistogram(JSONWrapper::Object& Root,
 		     std::string RootDir,
-		     NameAndType HistoProperties){
+		     NameAndType HistoProperties,
+		     std::string outDir){
 
   std::vector<TObject*> ObjectToDelete;
   THStack* stack = new THStack("MC","MC");
   TCanvas* c1 = new TCanvas("c1","c1",800,800);
-     
+
+  std::string SaveName = "";
+   
   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
   // loop over procs 
   for(unsigned int i=0;i<Process.size();i++){
@@ -288,6 +293,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
     } // end samples loop
     std::cout << ">>> 4 " << std::endl;
     if(!proc_hist) continue;
+    SaveName = proc_hist->GetName();
     ObjectToDelete.push_back(proc_hist);
 
     std::cout << ">>> 5 " << std::endl;
@@ -301,16 +307,40 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
   // if(! stack || stack->GetStack() || stack->GetStack()->GetEntriesFast()>0)
   //   return;
 
+
+  std::string SavePath = SaveName;
+  while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
+  while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
+   while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
+   while(SavePath.find("}")!=std::string::npos)SavePath.replace(SavePath.find("}"),1,"");
+   while(SavePath.find("(")!=std::string::npos)SavePath.replace(SavePath.find("("),1,"");
+   while(SavePath.find(")")!=std::string::npos)SavePath.replace(SavePath.find(")"),1,"");
+   while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
+   while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
+   if(outDir.size()) SavePath = outDir +"/"+ SavePath;
+ 
   if(stack && stack->GetStack() && stack->GetStack()->GetEntriesFast()>0){
 
     std::cout << ">>> before draw " << std::endl;
     
     stack->Draw("");
+    TH1 *hist=(TH1*)stack->GetStack()->At(0);
+    if(stack->GetXaxis()) {
+      stack->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
+      stack->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
+      stack->SetMinimum(hist->GetMinimum());
+      // stack->SetMaximum(maximumFound);
+      // stack->SetMinimum(SignalMin);
+    }
+
     ObjectToDelete.push_back(stack);
     std::cout << "stack draw done. " << std::endl;
-    c1->SaveAs("c1.pdf");
-    std::cout << "c1 saved" << std::endl;
-    // delete c1;
+    // c1->SaveAs("c1.pdf");
+    // std::cout << "c1 saved" << std::endl;
+    system(std::string(("rm -f ") + SavePath + ".pdf").c_str());
+    c1->SaveAs((SavePath + ".pdf").c_str());
+  
+    delete c1;
   }
   for(unsigned int d=0;d<ObjectToDelete.size();d++){
     delete ObjectToDelete[d];
@@ -324,17 +354,24 @@ void SavingToFile(JSONWrapper::Object& Root,
 		  NameAndType HistoProperties,
 		  TFile* OutputFile){
   std::vector<TObject*> ObjectToDelete;
-  
-  
 }
 
 
-
-
-
-void runPlotter(std::string inDir, std::string jsonFile,
-		std::string outDir, std::string outFile)
+void runPlotter(std::string inDir,
+		std::string jsonFile,
+		std::string outDir)
 {
+  setTDRStyle();  
+  // gStyle->SetPadTopMargin   (0.06);
+  // gStyle->SetPadBottomMargin(0.12);
+  // gStyle->SetPadRightMargin (0.16);
+  // gStyle->SetPadLeftMargin  (0.14);
+  // gStyle->SetTitleSize(0.04, "XYZ");
+  // gStyle->SetTitleXOffset(1.1);
+  // gStyle->SetTitleYOffset(1.45);
+  // gStyle->SetPalette(1);
+  // gStyle->SetNdivisions(505);
+  
   JSONWrapper::Object Root(jsonFile, true);
   std::list<NameAndType> histlist;
   GetListOfObject(Root, inDir, histlist);
@@ -342,7 +379,7 @@ void runPlotter(std::string inDir, std::string jsonFile,
   histlist.sort();
   histlist.unique();   
 
-  TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
+  //TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
   printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("                             :");
   int TreeStep = histlist.size()/50;
@@ -357,7 +394,7 @@ void runPlotter(std::string inDir, std::string jsonFile,
     if(ictr%TreeStep==0){printf(".");fflush(stdout);}
     if( it->is1D() ){
       // std::cout << "is 1D" << std::endl;
-      Draw1DHistogram(Root, inDir, *it);
+      Draw1DHistogram(Root, inDir, *it, outDir);
       // SavingToFile(Root, inDir, *it, OutputFile);
     }
 
@@ -375,7 +412,7 @@ int main(int argc, char* argv[])
   std::string inDir   = "results/";
   std::string jsonFile = "../../data/phojet/phys14_samples.json";
   std::string outDir  = "plots/";
-  std::string outFile = "plotter.root";
+  // std::string outFile = "plotter.root";
 
   // check arguments
   // if(argc<2){
@@ -396,15 +433,15 @@ int main(int argc, char* argv[])
     if(arg.find("--outDir" )!=std::string::npos && i+1<argc){
       outDir = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());}
 
-    if(arg.find("--outFile")!=std::string::npos && i+1<argc){
-      outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());}
+    // if(arg.find("--outFile")!=std::string::npos && i+1<argc){
+    //   outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());}
 
     if(arg.find("--json"   )!=std::string::npos && i+1<argc){
       jsonFile = argv[i+1];  i++;}
   }
 
   system( (std::string("mkdir -p ") + outDir).c_str());
-  runPlotter(inDir, jsonFile, outDir, outFile); 
+  runPlotter(inDir, jsonFile, outDir); 
 
 }  
 
