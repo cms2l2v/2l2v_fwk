@@ -255,11 +255,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
 	std::cout << FileName << std::endl;
 	TFile* File = new TFile(FileName.c_str());
 	if ( !isFileExist(File) ) {delete File; continue;}
-	std::cout << ">>>>>" << HistoProperties.name << std::endl;
+	// std::cout << ">>>>>" << HistoProperties.name << std::endl;
 	file_hist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
 	if(!file_hist) {delete File; continue;} 
 
-	std::cout << "Found hist" << file_hist << std::endl;
+	// std::cout << "Found hist" << file_hist << std::endl;
 	NFiles++;
 	if(!samp_hist) {
 	  gROOT->cd();
@@ -321,7 +321,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
  
   if(stack && stack->GetStack() && stack->GetStack()->GetEntriesFast()>0){
 
-    std::cout << ">>> before draw " << std::endl;
+    // std::cout << ">>> before draw " << std::endl;
     
     stack->Draw("");
     TH1 *hist=(TH1*)stack->GetStack()->At(0);
@@ -334,7 +334,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
     }
 
     ObjectToDelete.push_back(stack);
-    std::cout << "stack draw done. " << std::endl;
+    // std::cout << "stack draw done. " << std::endl;
     // c1->SaveAs("c1.pdf");
     // std::cout << "c1 saved" << std::endl;
     system(std::string(("rm -f ") + SavePath + ".pdf").c_str());
