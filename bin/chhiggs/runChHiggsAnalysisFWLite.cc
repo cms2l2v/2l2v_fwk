@@ -708,12 +708,12 @@ int main(int argc, char* argv[])
           if( (lid==11 && relIso>0.15) || (lid==13 && relIso>0.20) ) passIso=false;
           if( (lid==11 && relIso>0.15)  || (lid==13 && relIso>0.12) ) passSingleLepIso=false;
 
-	  // overlap with taus
-	  bool overlapWithTaus(false);
-	  for(int l1=0   ;l1<(int)selSingleLepLeptons.size();l1++){
-	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
-	  }
-	  if(overlapWithLepton)continue;
+//	  // overlap with taus
+//	  bool overlapWithTaus(false);
+//	  for(int l1=0   ;l1<(int)selSingleLepLeptons.size();l1++){
+//	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithTaus=true; break;}
+//	  }
+//	  if(overlapWithTaus)continue;
 
 
 	  
