@@ -266,13 +266,16 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
 	delete file_hist;
 	delete File;
 
+	std::cout << ">>> 2 " << std::endl;
       }// end files loop 
 
       if(!samp_hist) continue;
       // Need to check : 
       // if(!Process[i]["isdata"].toBool())
       //  tmphist->Scale(1.0/NFiles);      
-      
+
+      std::cout << ">>> 3 " << std::endl;
+	
       if(!proc_hist) {
 	gROOT->cd();
 	proc_hist = (TH1*)samp_hist->Clone(samp_hist->GetName());
@@ -283,24 +286,32 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       delete samp_hist;
       
     } // end samples loop
-
+    std::cout << ">>> 4 " << std::endl;
     if(!proc_hist) continue;
     ObjectToDelete.push_back(proc_hist);
 
+    std::cout << ">>> 5 " << std::endl;
     //Add to Stack
     stack->Add(proc_hist, "HIST");   
+
+    std::cout << ">>> 6 " << std::endl;
     
   } // end procs loop 
 
-  if(! stack || stack->GetStack() || stack->GetStack()->GetEntriesFast()>0)
-    return;
-  
-  stack->Draw("");
-  ObjectToDelete.push_back(stack);
-  std::cout << "stack draw done. " << std::endl;
-  c1->SaveAs("c1.pdf");
-  std::cout << "c1 saved" << std::endl;
-  // delete c1;
+  // if(! stack || stack->GetStack() || stack->GetStack()->GetEntriesFast()>0)
+  //   return;
+
+  if(stack && stack->GetStack() && stack->GetStack()->GetEntriesFast()>0){
+
+    std::cout << ">>> before draw " << std::endl;
+    
+    stack->Draw("");
+    ObjectToDelete.push_back(stack);
+    std::cout << "stack draw done. " << std::endl;
+    c1->SaveAs("c1.pdf");
+    std::cout << "c1 saved" << std::endl;
+    // delete c1;
+  }
   for(unsigned int d=0;d<ObjectToDelete.size();d++){
     delete ObjectToDelete[d];
   }
