@@ -32,6 +32,7 @@
 #include "TMultiGraph.h"
 #include "TPaveText.h"
 #include "THStack.h"
+#include "TGaxis.h"
 
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
@@ -252,7 +253,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
 	TH1* file_hist = NULL; 
 	std::string FileName = get_FileName(RootDir, Samples, j, s);
 
-	std::cout << FileName << std::endl;
+	// std::cout << FileName << std::endl;
 	TFile* File = new TFile(FileName.c_str());
 	if ( !isFileExist(File) ) {delete File; continue;}
 	// std::cout << ">>>>>" << HistoProperties.name << std::endl;
@@ -329,6 +330,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       stack->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
       stack->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
       stack->SetMinimum(hist->GetMinimum());
+
       // stack->SetMaximum(maximumFound);
       // stack->SetMinimum(SignalMin);
     }
@@ -366,12 +368,15 @@ void runPlotter(std::string inDir,
   // gStyle->SetPadBottomMargin(0.12);
   // gStyle->SetPadRightMargin (0.16);
   // gStyle->SetPadLeftMargin  (0.14);
-  // gStyle->SetTitleSize(0.04, "XYZ");
-  // gStyle->SetTitleXOffset(1.1);
-  // gStyle->SetTitleYOffset(1.45);
+  gStyle->SetTitleSize(0.03, "XYZ");
+  gStyle->SetLabelSize(.03, "XY");
+  gStyle->SetTitleXOffset(1.1);
+  gStyle->SetTitleYOffset(2.1);
   // gStyle->SetPalette(1);
   // gStyle->SetNdivisions(505);
-  
+  // TGaxis::SetMaxDigits(4);
+ 
+
   JSONWrapper::Object Root(jsonFile, true);
   std::list<NameAndType> histlist;
   GetListOfObject(Root, inDir, histlist);
@@ -380,18 +385,18 @@ void runPlotter(std::string inDir,
   histlist.unique();   
 
   //TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
-  printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
-  printf("                             :");
-  int TreeStep = histlist.size()/50;
-  if (TreeStep == 0) TreeStep = 1;
+  // printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
+  // printf("                             :");
+  // int TreeStep = histlist.size()/50;
+  // if (TreeStep == 0) TreeStep = 1;
   
   int ictr(0);
   for(std::list<NameAndType>::iterator it= histlist.begin();
       it!= histlist.end(); it++, ictr++){
     // std::cout << "ictr = " << ictr << std::endl;
     // if (ictr > 1  ) break;
-    std::cout << "Processing name: " << (*it).name  << std::endl;    
-    if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+    /// std::cout << "Processing name: " << (*it).name  << std::endl;    
+    // if(ictr%TreeStep==0){printf(".");fflush(stdout);}
     if( it->is1D() ){
       // std::cout << "is 1D" << std::endl;
       Draw1DHistogram(Root, inDir, *it, outDir);
@@ -402,7 +407,7 @@ void runPlotter(std::string inDir,
     
   }
   
-  std::cout << "jumped out" << std::endl;
+  // std::cout << "jumped out" << std::endl;
 }
 
 
