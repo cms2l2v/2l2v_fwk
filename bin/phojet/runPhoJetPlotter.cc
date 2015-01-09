@@ -244,13 +244,17 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       int NFiles=0;
       // loop over files 
       for(int s=1;s<=split;s++){
+	TH1* file_hist = NULL; 
 	std::string FileName = get_FileName(RootDir, Samples, j, s);
+
+	std::cout << FileName << std::endl;
 	TFile* File = new TFile(FileName.c_str());
 	if ( !isFileExist(File) ) {delete File; continue;}
-	TH1* file_hist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
+	std::cout << ">>>>>" << HistoProperties.name << std::endl;
+	file_hist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
 	if(!file_hist) {delete File; continue;} 
 
-	// std::cout << "Found hist" << file_hist << std::endl;
+	std::cout << "Found hist" << file_hist << std::endl;
 	NFiles++;
 	if(!samp_hist) {
 	  gROOT->cd();
@@ -261,6 +265,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
 
 	delete file_hist;
 	delete File;
+
       }// end files loop 
 
       if(!samp_hist) continue;
@@ -292,12 +297,29 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
   
   stack->Draw("");
   ObjectToDelete.push_back(stack);
-
-  c1->SaveAs("c1.pdf"); 
-  delete c1;
-  for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
-    
+  std::cout << "stack draw done. " << std::endl;
+  c1->SaveAs("c1.pdf");
+  std::cout << "c1 saved" << std::endl;
+  // delete c1;
+  for(unsigned int d=0;d<ObjectToDelete.size();d++){
+    delete ObjectToDelete[d];
+  }
+  ObjectToDelete.clear();
+  
 }
+
+void SavingToFile(JSONWrapper::Object& Root,
+		  std::string RootDir,
+		  NameAndType HistoProperties,
+		  TFile* OutputFile){
+  std::vector<TObject*> ObjectToDelete;
+  
+  
+}
+
+
+
+
 
 void runPlotter(std::string inDir, std::string jsonFile,
 		std::string outDir, std::string outFile)
@@ -318,12 +340,21 @@ void runPlotter(std::string inDir, std::string jsonFile,
   int ictr(0);
   for(std::list<NameAndType>::iterator it= histlist.begin();
       it!= histlist.end(); it++, ictr++){
+    std::cout << "ictr = " << ictr << std::endl;
+    if (ictr > 0  ) break;
+    std::cout << "Processing name: " << (*it).name  << std::endl;    
     if(ictr%TreeStep==0){printf(".");fflush(stdout);}
     if( it->is1D() ){
       // std::cout << "is 1D" << std::endl;
       Draw1DHistogram(Root, inDir, *it);
+      // SavingToFile(Root, inDir, *it, OutputFile);
     }
+
+
+    
   }
+  
+  std::cout << "jumped out" << std::endl;
 }
 
 
