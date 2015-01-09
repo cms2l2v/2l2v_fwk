@@ -271,7 +271,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
 	delete file_hist;
 	delete File;
 
-	std::cout << ">>> 2 " << std::endl;
+	// std::cout << ">>> 2 " << std::endl;
       }// end files loop 
 
       if(!samp_hist) continue;
@@ -279,7 +279,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       // if(!Process[i]["isdata"].toBool())
       //  tmphist->Scale(1.0/NFiles);      
 
-      std::cout << ">>> 3 " << std::endl;
+      // std::cout << ">>> 3 " << std::endl;
 	
       if(!proc_hist) {
 	gROOT->cd();
@@ -291,16 +291,16 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       delete samp_hist;
       
     } // end samples loop
-    std::cout << ">>> 4 " << std::endl;
+    // std::cout << ">>> 4 " << std::endl;
     if(!proc_hist) continue;
     SaveName = proc_hist->GetName();
     ObjectToDelete.push_back(proc_hist);
 
-    std::cout << ">>> 5 " << std::endl;
+    // std::cout << ">>> 5 " << std::endl;
     //Add to Stack
     stack->Add(proc_hist, "HIST");   
 
-    std::cout << ">>> 6 " << std::endl;
+    // std::cout << ">>> 6 " << std::endl;
     
   } // end procs loop 
 
@@ -388,8 +388,8 @@ void runPlotter(std::string inDir,
   int ictr(0);
   for(std::list<NameAndType>::iterator it= histlist.begin();
       it!= histlist.end(); it++, ictr++){
-    std::cout << "ictr = " << ictr << std::endl;
-    if (ictr > 0  ) break;
+    // std::cout << "ictr = " << ictr << std::endl;
+    // if (ictr > 1  ) break;
     std::cout << "Processing name: " << (*it).name  << std::endl;    
     if(ictr%TreeStep==0){printf(".");fflush(stdout);}
     if( it->is1D() ){
