@@ -647,6 +647,9 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
       systName+=syst;
       systName.ReplaceAll("down","Down");
       systName.ReplaceAll("up","Up");
+     
+      ///      systName.ReplaceAll("topptunc", TString("topptunc")+oDir->GetTitle());
+
       h->Write(systName);
     }
 }
@@ -825,13 +828,15 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)
 	  {
 	    if(it->EndsWith("down")) continue;
+	    if(it->Contains("leff")) continue;
 	    TString systName(*it);
 	    if(systName.EndsWith("up")) systName.Remove(systName.Length()-2,2);
-	    
 	    bool systIsValid(false);
 	    TString systLine("");
 	    char systBuf[500];
-	    sprintf(systBuf,"%35s %10s ", systName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
+	    TString systLineName(systName);
+	    if(systName=="topptunc") systLineName.Append(oDir->GetName());
+	    sprintf(systBuf,"%35s %10s ", systLineName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
 	    if(shape.signalVars.find(*it)==shape.signalVars.end())     { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	    else if(shape.signalVars.find(*it)->second->Integral()==0) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	    else 
@@ -859,8 +864,17 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 		      shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->Scale( shape.bckg[j]->Integral() / shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->Integral() );
 		      shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second->Scale( shape.bckg[j]->Integral() / shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second->Integral() );
 		    }
-		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
-		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+
+		  if(systName=="topptunc")
+		    {
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+TString(oDir->GetName())+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+TString(oDir->GetName())+"down"); 
+		    }
+		  else
+		    {
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+		    }
 		}
 	    }
 	    cout << "I arrive here" << endl;
