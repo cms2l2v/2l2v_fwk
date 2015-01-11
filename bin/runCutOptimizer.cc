@@ -140,6 +140,7 @@ public:
   std::vector<std::string>& setPlotExt(const std::vector<std::string> & plotExt);
   inline size_t getNRounds() const {return roundInfo_.size();};
   inline void setVerbose() {verbose_ = true; return;};
+  inline void setLimit(int limit) {limit_ = limit; return;};
 
 private:
   std::string jsonFile_;
@@ -159,6 +160,8 @@ private:
 
   std::vector<OptimizationRoundInfo> roundInfo_;
   std::map<std::string,std::vector<ProcessFiles>> processes_;
+
+  int limit_;
 
   bool OptimizeRound_(size_t n);
   bool GetSamples(size_t n);
@@ -285,6 +288,7 @@ int main(int argc, char** argv)
   std::vector<std::string> plotExt;
   bool verbose = false;
   int round = -1;
+  int limit = 0;
 
 //  gInterpreter->GenerateDictionary("llvvMet", "");
 //  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
@@ -332,6 +336,14 @@ int main(int argc, char** argv)
       temp >> round;
       ++i;
     }
+
+    if(arg.find("--limit") != std::string::npos)
+    {
+      std::stringstream temp;
+      temp << argv[i+1];
+      temp >> limit;
+      ++i;
+    }
   }
   if(plotExt.size() == 0)
     plotExt.push_back(".png");
@@ -348,6 +360,8 @@ int main(int argc, char** argv)
   CutOptimizer myOptimizer(jsonFile, outDir, plotExt);
   if(verbose)
     myOptimizer.setVerbose();
+  if(limit > 0)
+    myOptimizer.setLimit(limit);
   myOptimizer.LoadJson();
 
   if(round < 0)
@@ -368,7 +382,7 @@ OptimizationRoundInfo::OptimizationRoundInfo()
   _baseSelection   = "selected";
   _signalSelection = "";
   _channel         = "";
-  _iLumi           = 1;
+  _iLumi           =  1;
   _inDir           = "";
   _jsonFile        = "";
   _minSigEvents    = -1;
@@ -482,7 +496,7 @@ OptimizationVariableInfo::~OptimizationVariableInfo()
 }
 
 CutOptimizer::CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt):
-  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false)
+  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false), limit_(0)
 {
 //  json = new JSONWrapper::Object(jsonFile_, true);
 }
@@ -855,6 +869,12 @@ bool CutOptimizer::OptimizeRound_(size_t n)
         else
           improve = false;
       }
+
+      if(limit_ > 0)
+      {
+        if(int(myReport.cuts.size()) >= limit_)
+          improve = false;
+      }
     }
 
     std::cout << std::endl;
@@ -1100,7 +1120,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 
       if(fomReportAbove[2].value() != 0 && fomReportAbove[1].value() != 0)
       {
-        if(fomReportAbove[1].value() > roundInfo_[n].minSigEvents())
+        if(fomReportAbove[1].value() > 0.5)
         {
           xValsAbove.push_back(binLow);
           xValsUncAbove.push_back(0);
@@ -1125,7 +1145,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 
       if(fomReportBelow[2].value() != 0 && fomReportBelow[1].value() != 0)
       {
-        if(fomReportBelow[1].value() > roundInfo_[n].minSigEvents())
+        if(fomReportBelow[1].value() > 0.5)
         {
           xValsBelow.push_back(binHigh);
           xValsUncBelow.push_back(0);
@@ -1696,6 +1716,7 @@ void printHelp()
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
   std::cout << "--plotExt -->  Extension format with which to save the plots, repeat this command if multiple formats are desired" << std::endl;
   std::cout << "--verbose -->  Set to verbose mode, the current step will be printed out to screen" << std::endl;
+  std::cout << "--limit   -->  Limit the maximum number of steps" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;
