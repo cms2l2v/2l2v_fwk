@@ -322,11 +322,16 @@ int main(int argc, char* argv[])
 
   // MT
   mon.addHistogram(new TH1D("MT", ";MT [GeV];Events", 25, 0, 200));
+  mon.addHistogram(new TH1D("MTTau", ";MT(#tau) [GeV];Events", 25, 0, 200));
+  mon.addHistogram(new TH1D("SumMT", ";SumMT [GeV];Events", 25, 0, 200));
 
   // Deconstructed MT: https://indico.cern.ch/event/344807/
   mon.addHistogram(new TH1D("Q80", ";Q_{80};Events", 30, -2, 1));
   mon.addHistogram(new TH1D("Q100", ";Q_{100};Events", 30, -2, 1));
   mon.addHistogram(new TH1D("cosPhi", ";cos#Phi;Events", 30, -1, 1));
+  mon.addHistogram(new TH1D("Q80Tau", ";Q_{80};Events", 30, -2, 1));
+  mon.addHistogram(new TH1D("Q100Tau", ";Q_{100};Events", 30, -2, 1));
+  mon.addHistogram(new TH1D("cosPhiTau", ";cos#Phi;Events", 30, -1, 1));
 
   // MT2
   mon.addHistogram(new TH1D("MT2", ";M_{T2} [GeV];Events", 25, 0, 500));
@@ -349,11 +354,13 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1D("minDeltaPhiMETJetPt40", ";min(#Delta#phi_{MET-Jet40});Events", 20, 0, TMath::Pi()));
 
   // 2D variables
-  mon.addHistogram(new TH2D("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
-  mon.addHistogram(new TH2D("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVsPtl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVsPtTau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
   //  Deconstructed MT 2D Plots:
   mon.addHistogram(new TH2D("Q80VsCosPhi", ";cos#Phi;Q_{80}", 20, -1, 1, 20, -2, 1));
   mon.addHistogram(new TH2D("Q100VsCosPhi", ";cos#Phi;Q_{100}", 20, -1, 1, 20, -2, 1));
+  mon.addHistogram(new TH2D("Q80VsCosPhiTau", ";cos#Phi;Q_{80}", 20, -1, 1, 20, -2, 1));
+  mon.addHistogram(new TH2D("Q100VsCosPhiTau", ";cos#Phi;Q_{100}", 20, -1, 1, 20, -2, 1));
 
 
 
@@ -449,9 +456,14 @@ int main(int argc, char* argv[])
   double mass = -1;
   double invMass = -1;
   double mt = -1;
+  double mtTau = -1;
+  double sumMt = -1;
   double Q80 = 2;
   double Q100 = 2;
   double cosPhi = -10;
+  double Q80Tau = 2;
+  double Q100Tau = 2;
+  double cosPhiTau = -10;
   double mt2 = -1;
   double stauMass = 0;
   double neutralinoMass = 0;
@@ -515,9 +527,14 @@ int main(int argc, char* argv[])
     }
     summaryTree->Branch("InvariantMass", &invMass);
     summaryTree->Branch("MT", &mt);
+    summaryTree->Branch("MTTau", &mtTau);
+    summaryTree->Branch("SumMT", &sumMt);
     summaryTree->Branch("Q80", &Q80);
     summaryTree->Branch("Q100", &Q100);
     summaryTree->Branch("cosPhi", &cosPhi);
+    summaryTree->Branch("Q80Tau", &Q80Tau);
+    summaryTree->Branch("Q100Tau", &Q100Tau);
+    summaryTree->Branch("cosPhiTau", &cosPhiTau);
     summaryTree->Branch("MT2", &mt2);
     summaryTree->Branch("stauMass", &stauMass);
     summaryTree->Branch("neutralinoMass", &neutralinoMass);
@@ -588,9 +605,14 @@ int main(int argc, char* argv[])
     mass = -1;
     invMass = -1;
     mt = -1;
+    mtTau = -1;
+    sumMt = -1;
     Q80 = 2;
     Q100 = 2;
     cosPhi = -10;
+    Q80Tau = 2;
+    Q100Tau = 2;
+    cosPhiTau = -10;
     mt2 = -1;
     stauMass = -1;
     neutralinoMass = -1;
@@ -1647,6 +1669,17 @@ int main(int argc, char* argv[])
       Q80 = 1 - (80.0*80.0) / fac;
       Q100 = 1 - (100.0*100.0) / fac;
       cosPhi = cosDeltaPhi;
+
+      auto& selTau = selTaus[tauIndex];
+      cosDeltaPhi = cos(deltaPhi(selTau.phi(), met.phi()));
+      fac = 2 * met.pt() * selTau.pt();
+
+      mtTau = sqrt(fac * (1 - cosDeltaPhi));
+      Q80Tau = 1 - (80.0*80.0) / fac;
+      Q100Tau = 1 - (100.0*100.0) / fac;
+      cosPhiTau = cosDeltaPhi;
+
+      sumMt = mt + mtTau;
     }
 
     #if defined(DEBUG_EVENT)
@@ -1744,6 +1777,15 @@ int main(int argc, char* argv[])
                       mon.fillHisto("Q80VsCosPhi", chTags, cosPhi, Q80, weight);
                       mon.fillHisto("Q100VsCosPhi", chTags, cosPhi, Q100, weight);
 
+                      mon.fillHisto("MTTau", chTags, mtTau, weight);
+                      mon.fillHisto("Q80Tau", chTags, Q80Tau, weight);
+                      mon.fillHisto("Q100Tau", chTags, Q100Tau, weight);
+                      mon.fillHisto("cosPhiTau", chTags, cosPhiTau, weight);
+                      mon.fillHisto("Q80VsCosPhiTau", chTags, cosPhiTau, Q80Tau, weight);
+                      mon.fillHisto("Q100VsCosPhiTau", chTags, cosPhiTau, Q100Tau, weight);
+
+                      mon.fillHisto("SumMT", chTags, sumMt, weight);
+
                       mon.fillHisto("MT2", chTags, mt2, weight);
                       if(doSVfit)
                         mon.fillHisto("SVFitMass", chTags, mass, weight);
@@ -1758,8 +1800,8 @@ int main(int argc, char* argv[])
                       mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
                       mon.fillHisto("minDeltaPhiMETJetPt40", chTags, minDeltaPhiMETJetPt40, weight);
 
-                      mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
-                      mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
+                      mon.fillHisto("metVsPtl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
+                      mon.fillHisto("metVsPtTau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
 
                       mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
                       double eta = selLeptons[leptonIndex].eta();
@@ -2160,8 +2202,8 @@ int old_main(int argc, char* argv[])
   mon.addHistogram(new TH1D("cosThetaTauL", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1D("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
   mon.addHistogram(new TH1D("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
-  mon.addHistogram(new TH2D("metVSPTl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
-  mon.addHistogram(new TH2D("metVSPTtau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVsPtl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metVsPtTau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
 
 
 
@@ -3439,8 +3481,8 @@ int old_main(int argc, char* argv[])
             mon.fillHisto("cosThetaCS", chTags, cosThetaCS, weight);
             mon.fillHisto("deltaPhiLepMETCS", chTags, deltaPhiLepMETCS, weight);
 
-            mon.fillHisto("metVSPTl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
-            mon.fillHisto("metVSPTtau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
+            mon.fillHisto("metVsPtl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
+            mon.fillHisto("metVsPtTau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
 
             mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
             if(selLeptons.size() != 0)
