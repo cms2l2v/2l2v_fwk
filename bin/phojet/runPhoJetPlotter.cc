@@ -247,6 +247,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
   std::vector<TObject*> ObjectToDelete;
   THStack* stack = new THStack("MC","MC");
   TCanvas* c1 = new TCanvas("c1","c1",800,800);
+  TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
 
   std::string SaveName = "";
    
@@ -315,6 +316,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
     // std::cout << ">>> 5 " << std::endl;
     //Add to Stack
     stack->Add(proc_hist, "HIST");   
+    legA->AddEntry(proc_hist, Process[i]["tag"].c_str(), "F");
 
     // std::cout << ">>> 6 " << std::endl;
     
@@ -350,6 +352,13 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
       // stack->SetMinimum(SignalMin);
     }
 
+    legA->SetFillColor(0);
+    legA->SetFillStyle(0);
+    legA->SetLineColor(0);
+    legA->SetHeader("");
+    legA->Draw("same");
+    legA->SetTextFont(42);
+ 
     ObjectToDelete.push_back(stack);
     // std::cout << "stack draw done. " << std::endl;
     // c1->SaveAs("c1.pdf");
