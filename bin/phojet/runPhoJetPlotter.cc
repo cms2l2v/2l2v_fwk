@@ -247,7 +247,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
   std::vector<TObject*> ObjectToDelete;
   THStack* stack = new THStack("MC","MC");
   TCanvas* c1 = new TCanvas("c1","c1",800,800);
-  TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
+  TLegend* legA  = new TLegend(0.7,0.8,0.99, 0.99, "NDC"); 
 
   std::string SaveName = "";
    
