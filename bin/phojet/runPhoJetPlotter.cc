@@ -225,6 +225,20 @@ void GetListOfObject(JSONWrapper::Object& Root,
 void checkSumw2(TH1 *h) { if(h==0) return;  if(h->GetDefaultSumw2()) h->Sumw2();  }
 
 
+TH1* set_hist_style(JSONWrapper::Object proc, TH1* hist) {
+  if(proc.isTag("color" ) )hist->SetLineColor  ((int)proc[ "color"].toDouble()); else hist->SetLineColor  (1);
+  if(proc.isTag("color" ) )hist->SetMarkerColor((int)proc[ "color"].toDouble()); else hist->SetMarkerColor(1);
+  if(proc.isTag("color" ) )hist->SetFillColor  ((int)proc[ "color"].toDouble()); else hist->SetFillColor  (0);
+  if(proc.isTag("lcolor") )hist->SetLineColor  ((int)proc["lcolor"].toDouble());
+  if(proc.isTag("mcolor") )hist->SetMarkerColor((int)proc["mcolor"].toDouble()); 
+  if(proc.isTag("fcolor") )hist->SetFillColor  ((int)proc["fcolor"].toDouble()); 
+  if(proc.isTag("lwidth") )hist->SetLineWidth  ((int)proc["lwidth"].toDouble());// else hist->SetLineWidth  (1);
+  if(proc.isTag("lstyle") )hist->SetLineStyle  ((int)proc["lstyle"].toDouble());// else hist->SetLinStyle  (1);
+  if(proc.isTag("fill"  ) )hist->SetFillColor  ((int)proc["fill"  ].toDouble());
+  if(proc.isTag("marker") )hist->SetMarkerStyle((int)proc["marker"].toDouble());
+  return hist;
+}
+
 void Draw1DHistogram(JSONWrapper::Object& Root,
 		     std::string RootDir,
 		     NameAndType HistoProperties,
@@ -297,6 +311,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
     SaveName = proc_hist->GetName();
     ObjectToDelete.push_back(proc_hist);
 
+    proc_hist = set_hist_style(Process[i], proc_hist); 
     // std::cout << ">>> 5 " << std::endl;
     //Add to Stack
     stack->Add(proc_hist, "HIST");   
