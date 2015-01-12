@@ -20,6 +20,15 @@
       "data":[
         { "dtag":"MC13TeV_GJets_Pt-15to3000", "split":26, "xsec":224012    , "br":[ 1.3 ]                 , "dset":"/GJet_Pt-15to3000_Tune4C_13TeV_pythia8/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"   }
       ]
+    },
+    {
+      "tag":"QCD",
+      "isdata":false,
+      "color":5,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_QCD_Pt-15to3000", "split":28, "xsec":9231786    , "br":[ 1.0 ]              , "dset":"/QCD_Pt-15to3000_Tune4C_Flat_13TeV_pythia8/Spring14miniaod-PU20bx25_POSTLS170_V5-v1/MINIAODSIM"        }
+      ]
     } 
   ]
 }
