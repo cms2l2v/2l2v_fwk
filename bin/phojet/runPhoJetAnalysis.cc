@@ -32,7 +32,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
-  mon.addHistogram(new TH1F("eleveto", ";Electron Veto;Events", 2, 0, 1) );
+  mon.addHistogram(new TH1F("elevto", ";Electron Veto;Events", 2, 0, 1) );
   mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
   return mon; 
 }
@@ -106,23 +106,6 @@ passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
   return hasPhotonTrigger; 
 }
 
-
-bool
-passPhotonId(float r9){
-  if ( r9 > 0.9)
-    return true; 
-  else
-    return false; 
-}
-
-bool
-passPhotonIso(float hoe){
-  if (hoe < 0.05 )
-    return true;
-  else 
-    return false;  
-}
-
 bool
 passCutBasedPhotonID(SmartSelectionMonitor mon,
 		     std::string label,
@@ -135,8 +118,8 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   double weight = 1.0; 
 
   // Electron Veto
-  bool eleveto = photon.hasPixelSeed();
-  mon.fillHisto("eleveto", tag, eleveto, weight);
+  bool elevto = photon.hasPixelSeed();
+  mon.fillHisto("elevto", tag, elevto, weight);
   
   // sigma ieta ieta
   // full5x5 is not ready in 720 yet 
@@ -154,7 +137,7 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
     max_hoe = 0.012;
     max_sigmaIetaIeta = 0.0098;  
   }
-  if ( eleveto ) return false;
+  if ( elevto ) return false;
   if ( hoe > max_hoe) return false; 
   if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
   return true;
@@ -169,38 +152,23 @@ passPhotonSelection(SmartSelectionMonitor mon,
 
   pat::PhotonCollection selPhotons;
   TString tag = "all";  
-  double weight = 1.0;  
+  double weight = 1.0;
+
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
-    float pt = photons[ipho].pt();
-    mon.fillHisto("phopt", tag, pt, weight);
+    pat::Photon photon = photons[ipho]; 
+    mon.fillHisto("phopt", tag, photon.pt(), weight);
+    mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
+    mon.fillHisto("phor9", tag, photon.r9(), weight);
+    mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
 
-    float eta = photons[ipho].superCluster()->eta();
-    mon.fillHisto("phoeta", tag, eta, weight);
-
-    float r9 = photons[ipho].r9(); 
-    mon.fillHisto("phor9", tag, r9, weight);
-
-    float iso = photons[ipho].photonIso(); 
-    mon.fillHisto("phoiso", tag, iso, weight);
-
-    // float hoe = photons[ipho].hadTowOverEm();
-    // mon.fillHisto("phohoe", tag, hoe, weight);
-    
-    // bool passId = passPhotonId(r9);
-    // bool passIso = passPhotonIso(hoe);
-
-    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photons[ipho]); 
-    // select the photon
-    // if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
-    // if(!passId) continue;
-    // if(!passIso) continue; 
-
+    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photon); 
     if(!passPhotonSelection) continue; 
-    selPhotons.push_back(photons[ipho]);
+    selPhotons.push_back(photon);
   }
 
   return selPhotons; 
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -282,7 +250,6 @@ int main(int argc, char* argv[])
     photonsHandle.getByLabel(ev, "slimmedPhotons");
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
     mon.fillHisto("npho", "all", photons.size(), weight);
-
   
     // below follows the analysis of the main selection with n-1 plots
     pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold);
@@ -291,23 +258,16 @@ int main(int argc, char* argv[])
     tag = "sel";
     mon.fillHisto("npho", tag, selPhotons.size(), weight);
     mon.fillHisto("nvtx", tag, vtx.size(), weight);
-    
-    for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
-      float pt = selPhotons[ipho].pt();
-      mon.fillHisto("phopt", tag, pt, weight);
 
-      float eta = photons[ipho].superCluster()->eta();
-      mon.fillHisto("phoeta", tag, eta, weight);
-      
-      float r9 = photons[ipho].r9(); 
-      mon.fillHisto("phor9", tag, r9, weight);
-      
-      float iso = photons[ipho].photonIso(); 
-      mon.fillHisto("phoiso", tag, iso, weight);
-      
-      float hoe = photons[ipho].hadTowOverEm();
-      mon.fillHisto("phohoe", tag, hoe, weight);
-      
+    for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
+      pat::Photon photon = selPhotons[ipho]; 
+      mon.fillHisto("phopt", tag, photon.pt(), weight);
+      mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
+      mon.fillHisto("phor9", tag, photon.r9(), weight);
+      mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
+      mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
+      mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
+      mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
     }
     
   } // end event loop 
