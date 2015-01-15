@@ -123,17 +123,20 @@ passPhotonIso(float hoe){
 }
 
 bool
-passCutBasedElectronID(std::string label, float hoe) {
-  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
-  // CSA14 selection, conditions: 25ns, better detector
-  // alignment. Barrel Cuts ( |eta supercluster| <= 1.479)
+passCutBasedPhotonID(std::string label, pat::Photon photon) {
+  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
+  // CSA14 selection, conditions: 25ns, better detector alignment. 
 
+  // Electron Veto
+  if ( photon.hasPixelSeed() ) return false; 
+  
   float max_hoe(0);
-  if (label == "Veto") max_hoe = 0.2564;
+  if (label == "Tight") {
+    max_hoe = 0.012;
+  }
+  if ( photon.hadTowOverEm() > max_hoe) return false; 
 
-  if (hoe < max_hoe) return true;
-
-  return false; 
+  return true;
 
 }
 
@@ -165,7 +168,7 @@ passPhotonSelection(SmartSelectionMonitor mon,
     bool passId = passPhotonId(r9);
     bool passIso = passPhotonIso(hoe);
 
-    bool passPhotonSelection = passCutBasedElectronID("Veto", hoe); 
+    bool passPhotonSelection = passCutBasedPhotonID("Tight", photons[ipho]); 
     // select the photon
     if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
     if(!passId) continue;
