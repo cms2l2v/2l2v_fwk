@@ -149,14 +149,14 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   mon.fillHisto("phohoe", tag, hoe, weight);
     
   float max_hoe(0);
-  float min_sigmaIetaIeta(0); 
+  float max_sigmaIetaIeta(0); 
   if (label == "Tight") {
     max_hoe = 0.012;
-    min_sigmaIetaIeta = 0.0098;  
+    max_sigmaIetaIeta = 0.0098;  
   }
   if ( eleveto ) return false;
   if ( hoe > max_hoe) return false; 
-  if ( sigmaIetaIeta < min_sigmaIetaIeta ) return false; 
+  if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
   return true;
 
 }
