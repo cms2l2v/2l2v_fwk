@@ -33,7 +33,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
   mon.addHistogram(new TH1F("eleveto", ";Electron Veto;Events", 2, 0, 1) );
-  mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 1) );
+  mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
   return mon; 
 }
 
@@ -135,22 +135,28 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   double weight = 1.0; 
 
   // Electron Veto
-  mon.fillHisto("eleveto", tag, photon.hasPixelSeed(), weight);
-  std::cout << photon.sigmaIetaIeta() << std::endl;
-  if (photon.full5x5_sigmaIetaIeta() < 5)
-    std::cout << photon.full5x5_sigmaIetaIeta() << std::endl;
-  mon.fillHisto("sigietaieta", tag, photon.full5x5_sigmaIetaIeta(), weight);
-
+  bool eleveto = photon.hasPixelSeed();
+  mon.fillHisto("eleveto", tag, eleveto, weight);
   
+  // sigma ieta ieta
+  // full5x5 is not ready in 720 yet 
+  // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta(); 
+  float sigmaIetaIeta = photon.sigmaIetaIeta(); 
+  mon.fillHisto("sigietaieta", tag, sigmaIetaIeta, weight);
+
+  // H/E 
+  float hoe = photon.hadTowOverEm();
+  mon.fillHisto("phohoe", tag, hoe, weight);
+    
   float max_hoe(0);
   float min_sigmaIetaIeta(0); 
   if (label == "Tight") {
     max_hoe = 0.012;
     min_sigmaIetaIeta = 0.0098;  
   }
-  if ( photon.hasPixelSeed() ) return false;
-  if ( photon.hadTowOverEm() > max_hoe) return false; 
-  if ( photon.full5x5_sigmaIetaIeta() < min_sigmaIetaIeta ) return false; 
+  if ( eleveto ) return false;
+  if ( hoe > max_hoe) return false; 
+  if ( sigmaIetaIeta < min_sigmaIetaIeta ) return false; 
   return true;
 
 }
@@ -177,17 +183,17 @@ passPhotonSelection(SmartSelectionMonitor mon,
     float iso = photons[ipho].photonIso(); 
     mon.fillHisto("phoiso", tag, iso, weight);
 
-    float hoe = photons[ipho].hadTowOverEm();
-    mon.fillHisto("phohoe", tag, hoe, weight);
+    // float hoe = photons[ipho].hadTowOverEm();
+    // mon.fillHisto("phohoe", tag, hoe, weight);
     
-    bool passId = passPhotonId(r9);
-    bool passIso = passPhotonIso(hoe);
+    // bool passId = passPhotonId(r9);
+    // bool passIso = passPhotonIso(hoe);
 
     bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photons[ipho]); 
     // select the photon
-    if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
-    if(!passId) continue;
-    if(!passIso) continue; 
+    // if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
+    // if(!passId) continue;
+    // if(!passIso) continue; 
 
     if(!passPhotonSelection) continue; 
     selPhotons.push_back(photons[ipho]);
