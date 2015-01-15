@@ -33,6 +33,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
   mon.addHistogram(new TH1F("eleveto", ";Electron Veto;Events", 2, 0, 1) );
+  mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 1) );
   return mon; 
 }
 
@@ -135,7 +136,11 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
 
   // Electron Veto
   mon.fillHisto("eleveto", tag, photon.hasPixelSeed(), weight);
-  if ( photon.hasPixelSeed() ) return false; 
+  std::cout << photon.sigmaIetaIeta() << std::endl;
+  if (photon.full5x5_sigmaIetaIeta() < 5)
+    std::cout << photon.full5x5_sigmaIetaIeta() << std::endl;
+  mon.fillHisto("sigietaieta", tag, photon.full5x5_sigmaIetaIeta(), weight);
+
   
   float max_hoe(0);
   float min_sigmaIetaIeta(0); 
@@ -143,6 +148,7 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
     max_hoe = 0.012;
     min_sigmaIetaIeta = 0.0098;  
   }
+  if ( photon.hasPixelSeed() ) return false;
   if ( photon.hadTowOverEm() > max_hoe) return false; 
   if ( photon.full5x5_sigmaIetaIeta() < min_sigmaIetaIeta ) return false; 
   return true;
