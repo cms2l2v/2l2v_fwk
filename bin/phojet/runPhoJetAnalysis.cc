@@ -32,7 +32,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
-  mon.addHistogram(new TH1F("phoeleveto", ";Photon Electron Veto;Events", 2, 0, 1) );
+  mon.addHistogram(new TH1F("eleveto", ";Electron Veto;Events", 2, 0, 1) );
   return mon; 
 }
 
@@ -134,7 +134,7 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   double weight = 1.0; 
 
   // Electron Veto
-  mon.fillHisto("phoeleveto", tag, photon.hasPixelSeed(), weight);
+  mon.fillHisto("eleveto", tag, photon.hasPixelSeed(), weight);
   if ( photon.hasPixelSeed() ) return false; 
   
   float max_hoe(0);
