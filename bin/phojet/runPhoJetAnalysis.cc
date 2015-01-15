@@ -126,16 +126,19 @@ bool
 passCutBasedPhotonID(std::string label, pat::Photon photon) {
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
   // CSA14 selection, conditions: 25ns, better detector alignment. 
-
+  // Used Savvas Kyriacou's slides, mailed from Ilya. 
+  
   // Electron Veto
   if ( photon.hasPixelSeed() ) return false; 
   
   float max_hoe(0);
+  float min_sigmaIetaIeta(0); 
   if (label == "Tight") {
     max_hoe = 0.012;
+    min_sigmaIetaIeta = 0.0098;  
   }
   if ( photon.hadTowOverEm() > max_hoe) return false; 
-
+  if ( photon.full5x5_sigmaIetaIeta() < min_sigmaIetaIeta ) return false; 
   return true;
 
 }
