@@ -32,7 +32,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
   mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
-
+  mon.addHistogram(new TH1F("phoeleveto", ";Photon Electron Veto;Events", 2, 0, 1) );
   return mon; 
 }
 
@@ -123,12 +123,18 @@ passPhotonIso(float hoe){
 }
 
 bool
-passCutBasedPhotonID(std::string label, pat::Photon photon) {
+passCutBasedPhotonID(SmartSelectionMonitor mon,
+		     std::string label,
+		     pat::Photon photon) {
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
   // CSA14 selection, conditions: 25ns, better detector alignment. 
   // Used Savvas Kyriacou's slides, mailed from Ilya. 
-  
+
+  TString tag = "all";  
+  double weight = 1.0; 
+
   // Electron Veto
+  mon.fillHisto("phoeleveto", tag, photon.hasPixelSeed(), weight);
   if ( photon.hasPixelSeed() ) return false; 
   
   float max_hoe(0);
@@ -171,7 +177,7 @@ passPhotonSelection(SmartSelectionMonitor mon,
     bool passId = passPhotonId(r9);
     bool passIso = passPhotonIso(hoe);
 
-    bool passPhotonSelection = passCutBasedPhotonID("Tight", photons[ipho]); 
+    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photons[ipho]); 
     // select the photon
     if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
     if(!passId) continue;
