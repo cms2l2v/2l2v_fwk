@@ -30,8 +30,8 @@ initHistograms(){
   mon.addHistogram(new TH1F("npho", ";Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
-  mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
-  mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
+  // mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
+  // mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
   mon.addHistogram(new TH1F("elevto", ";Electron Veto;Events", 2, 0, 1) );
   mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
@@ -147,25 +147,30 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   float nhIso = photon.neutralHadronIso();
   float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
 
+  float gIso = photon.photonIso();
+  float gArea = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");
+
   // apply cuts 
   float max_hoe(0);
   float max_sigmaIetaIeta(0);
   float max_chIso(0); 
   float max_nhIso(0); 
+  float max_gIso(0); 
 
   if (label == "Tight") {
     max_hoe = 0.012;
     max_sigmaIetaIeta = 0.0098;
     max_chIso = 1.91;
     max_nhIso = 2.55 + 0.0023*pt; 
+    max_gIso  = 1.29 + 0.0004*pt; 
   }
-
 
   if ( elevto ) return false;
   if ( hoe > max_hoe) return false; 
   if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
   if ( TMath::Max(chIso-chArea*rho,0.0) > max_chIso ) return false; 
   if ( TMath::Max(nhIso-nhArea*rho,0.0) > max_nhIso ) return false; 
+  if ( TMath::Max(gIso-gArea*rho,  0.0) > max_gIso ) return false; 
 
   return true;
 
@@ -301,8 +306,8 @@ int main(int argc, char* argv[])
       pat::Photon photon = selPhotons[ipho]; 
       mon.fillHisto("phopt", tag, photon.pt(), weight);
       mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
-      mon.fillHisto("phor9", tag, photon.r9(), weight);
-      mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
+      // mon.fillHisto("phor9", tag, photon.r9(), weight);
+      // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
       mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
       mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
       // mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
