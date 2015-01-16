@@ -520,7 +520,7 @@ int main (int argc, char *argv[])
             }
           
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight = xsecWeight * puWeight;
+          weight = xsecWeight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
@@ -757,7 +757,7 @@ int main (int argc, char *argv[])
           tags.push_back (chTags[ich]);
           //tags.push_back( chTags[ich]+evCat );
         }
-      
+
       if (chTags.size() == 0 || chTags.size() >1 ) continue; // That should never happen ("unclassified" is always present)
       
 
