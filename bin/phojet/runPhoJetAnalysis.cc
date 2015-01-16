@@ -143,22 +143,29 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
 
   float chIso = photon.chargedHadronIso(); 
   float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
-  
+
+  float nhIso = photon.neutralHadronIso();
+  float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+
   // apply cuts 
   float max_hoe(0);
   float max_sigmaIetaIeta(0);
   float max_chIso(0); 
+  float max_nhIso(0); 
 
   if (label == "Tight") {
     max_hoe = 0.012;
     max_sigmaIetaIeta = 0.0098;
-    max_chIso = 1.91; 
+    max_chIso = 1.91;
+    max_nhIso = 2.55 + 0.0023*pt; 
   }
+
 
   if ( elevto ) return false;
   if ( hoe > max_hoe) return false; 
   if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
   if ( TMath::Max(chIso-chArea*rho,0.0) > max_chIso ) return false; 
+  if ( TMath::Max(nhIso-nhArea*rho,0.0) > max_nhIso ) return false; 
 
   return true;
 
@@ -177,10 +184,14 @@ passPhotonSelection(SmartSelectionMonitor mon,
 
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
     pat::Photon photon = photons[ipho]; 
-    mon.fillHisto("phopt", tag, photon.pt(), weight);
-    mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
-    mon.fillHisto("phor9", tag, photon.r9(), weight);
-    mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
+    double pt=photon.pt();
+    double eta=photon.superCluster()->eta();
+    mon.fillHisto("phopt", tag, pt, weight);
+    mon.fillHisto("phoeta", tag, eta, weight);
+    // mon.fillHisto("phor9", tag, photon.r9(), weight);
+    // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
+
+    if( pt < triggerThreshold || fabs(eta)>1.4442 ) continue;
 
     bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photon, rho); 
     if(!passPhotonSelection) continue; 
