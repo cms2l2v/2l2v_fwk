@@ -164,31 +164,31 @@ namespace utils
 	}
       else if(abs(id)==22){
 	if(isoSum=="chIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.012;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.010;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.014;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.012;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.016;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.020;
-          else                                      Aeff=0.012;
+	  if(fabs(eta)<1.0)                         Aeff=0.0089;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0062;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0086;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0041;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0113;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0085;
+          else                                      Aeff=0.0039;
 	}
 	if(isoSum=="nhIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.030;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.057;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.039;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.015;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.024;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.039;
-          else                                      Aeff=0.072;
+	  if(fabs(eta)<1.0)                         Aeff=0.0049;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0108;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0019;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0037;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0062;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0130;
+          else                                      Aeff=0.1699;
 	}
 	if(isoSum=="gIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.148;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.130;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.112;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.216;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.262;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.260;
-          else                                      Aeff=0.266;
+	  if(fabs(eta)<1.0)                         Aeff=0.0894;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0750;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0423;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0561;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0882;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.1144;
+          else                                      Aeff=0.1684;
 	}
       }
       return Aeff;

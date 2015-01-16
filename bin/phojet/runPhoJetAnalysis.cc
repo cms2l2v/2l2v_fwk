@@ -26,13 +26,15 @@ initHistograms(){
   // pu control
   mon.addHistogram(new TH1F("nvtx", ";Vertices;Events", 50, 0, 50) ); 
   // photon control
+  mon.addHistogram(new TH1F("rho", ";Average energy density (#rho);Events", 100, 0, 100) ); 
   mon.addHistogram(new TH1F("npho", ";Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
-  mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
-  mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
+  // mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
+  // mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
-
+  mon.addHistogram(new TH1F("elevto", ";Electron Veto;Events", 2, 0, 1) );
+  mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
   return mon; 
 }
 
@@ -105,59 +107,105 @@ passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
   return hasPhotonTrigger; 
 }
 
-
 bool
-passPhotonId(float r9){
-  if ( r9 > 0.9)
-    return true; 
-  else
-    return false; 
+passCutBasedPhotonID(SmartSelectionMonitor mon,
+		     std::string label,
+		     pat::Photon photon,
+		     double rho) {
+  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
+  // CSA14 selection, conditions: 25ns, better detector alignment. 
+  // Used Savvas Kyriacou's slides, mailed from Ilya. 
+
+  TString tag = "all";  
+  double weight = 1.0; 
+
+  // Electron Veto
+  bool elevto = photon.hasPixelSeed();
+  mon.fillHisto("elevto", tag, elevto, weight);
+  
+  // sigma ieta ieta
+  // full5x5 is not ready in 720 yet 
+  // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
+  // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
+  
+  // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
+  float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
+  mon.fillHisto("sigietaieta", tag, sigmaIetaIeta, weight);
+
+  // H/E 
+  float hoe = photon.hadTowOverEm();
+  mon.fillHisto("phohoe", tag, hoe, weight);
+
+  // isolation
+  bool passIso(true);
+  double pt=photon.pt();
+  double eta=photon.superCluster()->eta();
+
+  float chIso = photon.chargedHadronIso(); 
+  float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
+
+  float nhIso = photon.neutralHadronIso();
+  float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+
+  float gIso = photon.photonIso();
+  float gArea = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");
+
+  // apply cuts 
+  float max_hoe(0);
+  float max_sigmaIetaIeta(0);
+  float max_chIso(0); 
+  float max_nhIso(0); 
+  float max_gIso(0); 
+
+  if (label == "Tight") {
+    max_hoe = 0.012;
+    max_sigmaIetaIeta = 0.0098;
+    max_chIso = 1.91;
+    max_nhIso = 2.55 + 0.0023*pt; 
+    max_gIso  = 1.29 + 0.0004*pt; 
+  }
+
+  if ( elevto ) return false;
+  if ( hoe > max_hoe) return false; 
+  if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
+  if ( TMath::Max(chIso-chArea*rho,0.0) > max_chIso ) return false; 
+  if ( TMath::Max(nhIso-nhArea*rho,0.0) > max_nhIso ) return false; 
+  if ( TMath::Max(gIso-gArea*rho,  0.0) > max_gIso ) return false; 
+
+  return true;
+
 }
 
-bool
-passPhotonIso(float hoe){
-  if (hoe < 0.05 )
-    return true;
-  else 
-    return false;  
-}
 
 pat::PhotonCollection
 passPhotonSelection(SmartSelectionMonitor mon,
 		    pat::PhotonCollection photons,
-		    float triggerThreshold){
+		    float triggerThreshold,
+		    double rho){
 
   pat::PhotonCollection selPhotons;
   TString tag = "all";  
-  double weight = 1.0;  
+  double weight = 1.0;
+
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
-    float pt = photons[ipho].pt();
+    pat::Photon photon = photons[ipho]; 
+    double pt=photon.pt();
+    double eta=photon.superCluster()->eta();
     mon.fillHisto("phopt", tag, pt, weight);
-
-    float eta = photons[ipho].superCluster()->eta();
     mon.fillHisto("phoeta", tag, eta, weight);
+    // mon.fillHisto("phor9", tag, photon.r9(), weight);
+    // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
 
-    float r9 = photons[ipho].r9(); 
-    mon.fillHisto("phor9", tag, r9, weight);
+    if( pt < triggerThreshold || fabs(eta)>1.4442 ) continue;
 
-    float iso = photons[ipho].photonIso(); 
-    mon.fillHisto("phoiso", tag, iso, weight);
-
-    float hoe = photons[ipho].hadTowOverEm();
-    mon.fillHisto("phohoe", tag, hoe, weight);
-    
-    bool passId = passPhotonId(r9);
-    bool passIso = passPhotonIso(hoe);
-
-    // select the photon
-    if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
-    if(!passId) continue;
-    if(!passIso) continue; 
-    selPhotons.push_back(photons[ipho]);
+    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photon, rho); 
+    if(!passPhotonSelection) continue; 
+    selPhotons.push_back(photon);
   }
 
   return selPhotons; 
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -233,38 +281,37 @@ int main(int argc, char* argv[])
     vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
     if (vtxHandle.isValid() ) { vtx = *vtxHandle; }
     mon.fillHisto("nvtx", "all", vtx.size(), weight);
+
+    double rho = 0;
+    fwlite::Handle< double > rhoHandle;
+    rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
+    if(rhoHandle.isValid()){ rho = *rhoHandle;}
+    mon.fillHisto("rho", "all", rho, weight);
     
     pat::PhotonCollection photons;
     fwlite::Handle< pat::PhotonCollection > photonsHandle;
     photonsHandle.getByLabel(ev, "slimmedPhotons");
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
     mon.fillHisto("npho", "all", photons.size(), weight);
-
   
     // below follows the analysis of the main selection with n-1 plots
-    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold);
+    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
     if ( selPhotons.size() == 0) continue;  
 
     tag = "sel";
     mon.fillHisto("npho", tag, selPhotons.size(), weight);
     mon.fillHisto("nvtx", tag, vtx.size(), weight);
-    
-    for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
-      float pt = selPhotons[ipho].pt();
-      mon.fillHisto("phopt", tag, pt, weight);
 
-      float eta = photons[ipho].superCluster()->eta();
-      mon.fillHisto("phoeta", tag, eta, weight);
-      
-      float r9 = photons[ipho].r9(); 
-      mon.fillHisto("phor9", tag, r9, weight);
-      
-      float iso = photons[ipho].photonIso(); 
-      mon.fillHisto("phoiso", tag, iso, weight);
-      
-      float hoe = photons[ipho].hadTowOverEm();
-      mon.fillHisto("phohoe", tag, hoe, weight);
-      
+    for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
+      pat::Photon photon = selPhotons[ipho]; 
+      mon.fillHisto("phopt", tag, photon.pt(), weight);
+      mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
+      // mon.fillHisto("phor9", tag, photon.r9(), weight);
+      // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
+      mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
+      mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
+      // mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
+      mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
     }
     
   } // end event loop 
