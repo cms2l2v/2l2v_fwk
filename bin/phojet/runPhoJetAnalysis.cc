@@ -26,6 +26,7 @@ initHistograms(){
   // pu control
   mon.addHistogram(new TH1F("nvtx", ";Vertices;Events", 50, 0, 50) ); 
   // photon control
+  mon.addHistogram(new TH1F("rho", ";Average energy density (#rho);Events", 100, 0, 100) ); 
   mon.addHistogram(new TH1F("npho", ";Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
@@ -247,6 +248,12 @@ int main(int argc, char* argv[])
     vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
     if (vtxHandle.isValid() ) { vtx = *vtxHandle; }
     mon.fillHisto("nvtx", "all", vtx.size(), weight);
+
+    double rho = 0;
+    fwlite::Handle< double > rhoHandle;
+    rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
+    if(rhoHandle.isValid()){ rho = *rhoHandle;}
+    mon.fillHisto("rho", "all", rho, weight);
     
     pat::PhotonCollection photons;
     fwlite::Handle< pat::PhotonCollection > photonsHandle;
