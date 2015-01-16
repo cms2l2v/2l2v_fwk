@@ -123,8 +123,11 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   
   // sigma ieta ieta
   // full5x5 is not ready in 720 yet 
-  // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta(); 
-  float sigmaIetaIeta = photon.sigmaIetaIeta(); 
+  // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
+  // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
+  
+  // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
+  float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
   mon.fillHisto("sigietaieta", tag, sigmaIetaIeta, weight);
 
   // H/E 
@@ -267,7 +270,8 @@ int main(int argc, char* argv[])
       mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
       mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
       mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
-      mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
+      // mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
+      mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
     }
     
   } // end event loop 
