@@ -110,7 +110,8 @@ passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
 bool
 passCutBasedPhotonID(SmartSelectionMonitor mon,
 		     std::string label,
-		     pat::Photon photon) {
+		     pat::Photon photon,
+		     double rho) {
   // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
   // CSA14 selection, conditions: 25ns, better detector alignment. 
   // Used Savvas Kyriacou's slides, mailed from Ilya. 
@@ -134,16 +135,31 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
   // H/E 
   float hoe = photon.hadTowOverEm();
   mon.fillHisto("phohoe", tag, hoe, weight);
-    
+
+  // isolation
+  bool passIso(true);
+  double pt=photon.pt();
+  double eta=photon.superCluster()->eta();
+
+  float chIso = photon.chargedHadronIso(); 
+  float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
+  
+  // apply cuts 
   float max_hoe(0);
-  float max_sigmaIetaIeta(0); 
+  float max_sigmaIetaIeta(0);
+  float max_chIso(0); 
+
   if (label == "Tight") {
     max_hoe = 0.012;
-    max_sigmaIetaIeta = 0.0098;  
+    max_sigmaIetaIeta = 0.0098;
+    max_chIso = 1.91; 
   }
+
   if ( elevto ) return false;
   if ( hoe > max_hoe) return false; 
   if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
+  if ( TMath::Max(chIso-chArea*rho,0.0) > max_chIso ) return false; 
+
   return true;
 
 }
@@ -152,7 +168,8 @@ passCutBasedPhotonID(SmartSelectionMonitor mon,
 pat::PhotonCollection
 passPhotonSelection(SmartSelectionMonitor mon,
 		    pat::PhotonCollection photons,
-		    float triggerThreshold){
+		    float triggerThreshold,
+		    double rho){
 
   pat::PhotonCollection selPhotons;
   TString tag = "all";  
@@ -165,7 +182,7 @@ passPhotonSelection(SmartSelectionMonitor mon,
     mon.fillHisto("phor9", tag, photon.r9(), weight);
     mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
 
-    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photon); 
+    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photon, rho); 
     if(!passPhotonSelection) continue; 
     selPhotons.push_back(photon);
   }
@@ -262,7 +279,7 @@ int main(int argc, char* argv[])
     mon.fillHisto("npho", "all", photons.size(), weight);
   
     // below follows the analysis of the main selection with n-1 plots
-    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold);
+    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
     if ( selPhotons.size() == 0) continue;  
 
     tag = "sel";
