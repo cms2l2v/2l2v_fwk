@@ -28,7 +28,7 @@ initHistograms(){
   // photon control
   mon.addHistogram(new TH1F("rho", ";Average energy density (#rho);Events", 100, 0, 100) ); 
   mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
-  mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1000) ); 
+  mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   // mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
   // mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
@@ -36,7 +36,9 @@ initHistograms(){
   mon.addHistogram(new TH1F("elevto", ";Electron Veto;Events", 2, 0, 1) );
   mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
   // jet control
-  mon.addHistogram(new TH1F("njet", ";Number of Jets;Events", 100, 0, 100) );   
+  mon.addHistogram(new TH1F("njet", ";Number of Jets;Events", 100, 0, 100) );
+  mon.addHistogram(new TH1F("jetpt", ";Jet pT [GeV];Events", 100, 0, 1000) ); 
+  mon.addHistogram(new TH1F("jeteta", ";Jet pseudo-rapidity;Events", 50, 0, 5) );
   return mon; 
 }
 
@@ -209,6 +211,27 @@ passPhotonSelection(SmartSelectionMonitor mon,
 }
 
 
+pat::JetCollection
+passJetSelection(SmartSelectionMonitor mon,
+		 pat::JetCollection jets) {
+  pat::JetCollection selJets;
+  TString tag = "all";  
+  double weight = 1.0;
+
+  for(size_t ijet=0; ijet<jets.size(); ijet++){
+    pat::Jet jet = jets[ijet]; 
+    double pt=jet.pt();
+    double eta=jet.eta();
+    mon.fillHisto("jetpt", tag, pt, weight);
+    mon.fillHisto("jeteta", tag, eta, weight);
+	
+    if(pt<15 || fabs(eta)>4.7 ) continue;
+    selJets.push_back(jet); 
+  }
+  return selJets; 
+}
+
+
 int main(int argc, char* argv[])
 {
   // check arguments
@@ -303,10 +326,11 @@ int main(int argc, char* argv[])
     mon.fillHisto("njet", "all", jets.size(), weight);
 
     // below follows the analysis of the main selection with n-1 plots
+    tag = "sel";
+    
+    // select photons 
     pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
     if ( selPhotons.size() == 0) continue;  
-
-    tag = "sel";
     mon.fillHisto("npho", tag, selPhotons.size(), weight);
     mon.fillHisto("nvtx", tag, vtx.size(), weight);
 
@@ -320,6 +344,15 @@ int main(int argc, char* argv[])
       mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
       // mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
       mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
+    }
+
+    // select jets
+    pat::JetCollection selJets = passJetSelection(mon, jets); 
+    if ( selJets.size() == 0) continue;  
+    for(size_t ijet=0; ijet<selJets.size(); ijet++) {
+      pat::Jet jet = selJets[ijet]; 
+      mon.fillHisto("jetpt", tag, jet.pt(), weight);
+      mon.fillHisto("jeteta", tag, jet.eta(), weight);
     }
     
   } // end event loop 
