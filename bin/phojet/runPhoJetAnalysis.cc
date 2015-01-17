@@ -27,7 +27,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("nvtx", ";Vertices;Events", 50, 0, 50) ); 
   // photon control
   mon.addHistogram(new TH1F("rho", ";Average energy density (#rho);Events", 100, 0, 100) ); 
-  mon.addHistogram(new TH1F("npho", ";Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon transverse momentum [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   // mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
@@ -35,6 +35,8 @@ initHistograms(){
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
   mon.addHistogram(new TH1F("elevto", ";Electron Veto;Events", 2, 0, 1) );
   mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
+  // jet control
+  mon.addHistogram(new TH1F("njet", ";Number of Jets;Events", 100, 0, 100) );   
   return mon; 
 }
 
@@ -293,7 +295,13 @@ int main(int argc, char* argv[])
     photonsHandle.getByLabel(ev, "slimmedPhotons");
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
     mon.fillHisto("npho", "all", photons.size(), weight);
-  
+
+    pat::JetCollection jets;
+    fwlite::Handle< pat::JetCollection > jetsHandle;
+    jetsHandle.getByLabel(ev, "slimmedJets");
+    if(jetsHandle.isValid()){ jets = *jetsHandle;}
+    mon.fillHisto("njet", "all", jets.size(), weight);
+
     // below follows the analysis of the main selection with n-1 plots
     pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
     if ( selPhotons.size() == 0) continue;  
