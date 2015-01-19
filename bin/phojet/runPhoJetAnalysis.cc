@@ -39,6 +39,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("njet", ";Number of Jets;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("jetpt", ";Jet pT [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("jeteta", ";Jet pseudo-rapidity;Events", 50, 0, 5) );
+  mon.addHistogram(new TH1F("jetrawen", ";Jet raw energy;Events", 100, 0, 1000) );
   return mon; 
 }
 
@@ -222,10 +223,28 @@ passJetSelection(SmartSelectionMonitor mon,
     pat::Jet jet = jets[ijet]; 
     double pt=jet.pt();
     double eta=jet.eta();
+    float rawJetEn(jet.correctedJet("Uncorrected").energy() );
     mon.fillHisto("jetpt", tag, pt, weight);
     mon.fillHisto("jeteta", tag, eta, weight);
+    mon.fillHisto("jetrawen", tag, rawJetEn, weight);
 	
     if(pt<15 || fabs(eta)>4.7 ) continue;
+
+    //mc truth for this jet
+    const reco::GenJet* genJet=jets[ijet].genJet();
+    TString jetType( genJet && genJet->pt()>0 ? "truejetsid" : "pujetsid" );
+
+    //cross-clean with selected leptons and photons
+    // float minDRlj(9999.),minDRlg(9999.);
+    // for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
+    //   minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+    // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+    //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
+    // if(minDRlj<0.4 || minDRlg<0.4) continue;
+    
+    //jet id
+    bool passPFloose = true; //FIXME --> Need to be updated according to te latest
+
     selJets.push_back(jet); 
   }
   return selJets; 
