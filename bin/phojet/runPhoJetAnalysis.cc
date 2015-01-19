@@ -217,6 +217,44 @@ passPhotonSelection(SmartSelectionMonitor mon,
   return selPhotons; 
 }
 
+bool passPFJetID(SmartSelectionMonitor mon,
+		 std::string label,
+		 pat::Jet jet){
+  
+  TString tag = "all";  
+  double weight = 1.0;
+  bool passID(false); 
+  
+  float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+
+  double eta=jet.eta();
+ 
+  float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+  float nef( jet.neutralEmEnergy()/rawJetEn );
+  float cef( jet.chargedEmEnergy()/rawJetEn );
+  float chf( jet.chargedHadronEnergy()/rawJetEn );
+  float nch    = jet.chargedMultiplicity();
+  float nconst = jet.numberOfDaughters();
+  
+  mon.fillHisto("jetrawen", tag, rawJetEn, weight);
+  mon.fillHisto("jetnhf", tag, nhf, weight);
+  mon.fillHisto("jetnef", tag, nef, weight);
+  mon.fillHisto("jetcef", tag, cef, weight);
+  mon.fillHisto("jetchf", tag, chf, weight);
+  mon.fillHisto("jetnch", tag, nch, weight);
+  mon.fillHisto("jetnconst", tag, nconst, weight);
+
+   // use the original for now
+   if (label == "Loose") 
+    passID = (nhf<0.99  && nef<0.99 && nconst>1); 
+
+  if(fabs(eta)<2.4) {
+    passID &= (chf>0 && nch>0 && cef<0.99);
+  }
+
+  return passID; 
+  
+}
 
 pat::JetCollection
 passJetSelection(SmartSelectionMonitor mon,
@@ -229,26 +267,28 @@ passJetSelection(SmartSelectionMonitor mon,
     pat::Jet jet = jets[ijet]; 
     double pt=jet.pt();
     double eta=jet.eta();
-    float rawJetEn(jet.correctedJet("Uncorrected").energy() );
-
-    float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
-    float nef( jet.neutralEmEnergy()/rawJetEn );
-    float cef( jet.chargedEmEnergy()/rawJetEn );
-    float chf( jet.chargedHadronEnergy()/rawJetEn );
-    float nch    = jet.chargedMultiplicity();
-    float nconst = jet.numberOfDaughters();
-    
     mon.fillHisto("jetpt", tag, pt, weight);
     mon.fillHisto("jeteta", tag, eta, weight);
-    mon.fillHisto("jetrawen", tag, rawJetEn, weight);
-    mon.fillHisto("jetnhf", tag, nhf, weight);
-    mon.fillHisto("jetnef", tag, nef, weight);
-    mon.fillHisto("jetcef", tag, cef, weight);
-    mon.fillHisto("jetchf", tag, chf, weight);
-    mon.fillHisto("jetnch", tag, nch, weight);
-    mon.fillHisto("jetnconst", tag, nconst, weight);
-	
-    if(pt<15 || fabs(eta)>4.7 ) continue;
+ 
+
+    // float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+
+    // float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+    // float nef( jet.neutralEmEnergy()/rawJetEn );
+    // float cef( jet.chargedEmEnergy()/rawJetEn );
+    // float chf( jet.chargedHadronEnergy()/rawJetEn );
+    // float nch    = jet.chargedMultiplicity();
+    // float nconst = jet.numberOfDaughters();
+    
+    // mon.fillHisto("jetpt", tag, pt, weight);
+    // mon.fillHisto("jeteta", tag, eta, weight);
+    // mon.fillHisto("jetrawen", tag, rawJetEn, weight);
+    // mon.fillHisto("jetnhf", tag, nhf, weight);
+    // mon.fillHisto("jetnef", tag, nef, weight);
+    // mon.fillHisto("jetcef", tag, cef, weight);
+    // mon.fillHisto("jetchf", tag, chf, weight);
+    // mon.fillHisto("jetnch", tag, nch, weight);
+    // mon.fillHisto("jetnconst", tag, nconst, weight);
 
     //mc truth for this jet
     const reco::GenJet* genJet=jets[ijet].genJet();
@@ -263,8 +303,16 @@ passJetSelection(SmartSelectionMonitor mon,
     // if(minDRlj<0.4 || minDRlg<0.4) continue;
     
     //jet id
-    bool passPFloose = true; //FIXME --> Need to be updated according to te latest
+    // use the original for now
+    // bool passLooseId(nhf<0.99  && nef<0.99 && nconst>1); 
+    // if(fabs(eta)<2.4) {
+    // 	passLooseId  &= (chf>0 && nch>0 && cef<0.99);
+    // }
 
+    if(pt<15 || fabs(eta)>4.7 ) continue;
+    bool passPFloose = passPFJetID(mon, "Loose", jet); 
+    if (!passPFloose) continue;  
+    
     selJets.push_back(jet); 
   }
   return selJets; 
