@@ -40,6 +40,12 @@ initHistograms(){
   mon.addHistogram(new TH1F("jetpt", ";Jet pT [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("jeteta", ";Jet pseudo-rapidity;Events", 50, 0, 5) );
   mon.addHistogram(new TH1F("jetrawen", ";Jet raw energy;Events", 100, 0, 1000) );
+  mon.addHistogram(new TH1F("jetnhf", ";Jet neutral hadron energy fraction;Events", 100, 0, 1) );
+  mon.addHistogram(new TH1F("jetnef", ";Jet electromagnetic energy fraction;Events", 100, 0, 1) );
+  mon.addHistogram(new TH1F("jetcef", ";Jet charged electromagnetic energy fraction;Events", 100, 0, 1) );
+  mon.addHistogram(new TH1F("jetchf", ";Jet charged hadron energy fraction;Events", 100, 0, 1) );
+  mon.addHistogram(new TH1F("jetnch", ";Jet charged multiplicity;Events", 100, 0, 100) );
+  mon.addHistogram(new TH1F("jetnconst", ";Jet number of constitutes;Events", 100, 0, 100) );
   return mon; 
 }
 
@@ -224,9 +230,23 @@ passJetSelection(SmartSelectionMonitor mon,
     double pt=jet.pt();
     double eta=jet.eta();
     float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+
+    float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+    float nef( jet.neutralEmEnergy()/rawJetEn );
+    float cef( jet.chargedEmEnergy()/rawJetEn );
+    float chf( jet.chargedHadronEnergy()/rawJetEn );
+    float nch    = jet.chargedMultiplicity();
+    float nconst = jet.numberOfDaughters();
+    
     mon.fillHisto("jetpt", tag, pt, weight);
     mon.fillHisto("jeteta", tag, eta, weight);
     mon.fillHisto("jetrawen", tag, rawJetEn, weight);
+    mon.fillHisto("jetnhf", tag, nhf, weight);
+    mon.fillHisto("jetnef", tag, nef, weight);
+    mon.fillHisto("jetcef", tag, cef, weight);
+    mon.fillHisto("jetchf", tag, chf, weight);
+    mon.fillHisto("jetnch", tag, nch, weight);
+    mon.fillHisto("jetnconst", tag, nconst, weight);
 	
     if(pt<15 || fabs(eta)>4.7 ) continue;
 
