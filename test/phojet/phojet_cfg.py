@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
+from RecoJets.JetProducers.PileupJetIDParams_cfi import cutbased as pu_jetid
+
 process = cms.Process("PhoJet")
 
 def lfn_to_pfn(f):
@@ -43,5 +45,6 @@ runProcess = cms.PSet(
     debug = cms.bool(True),
     isMC = cms.bool(True),
     xsec = cms.double(9999.99),
-    mctruthmode = cms.int32(22)
+    mctruthmode = cms.int32(22),
+    pujetidparas = cms.PSet(pu_jetid)
 )
