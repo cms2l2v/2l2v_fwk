@@ -139,7 +139,7 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
   Use["BDTD"]            = 1; // decorrelation + Adaptive Boost
   Use["BDTF"]            = 0; // allow usage of fisher discriminant for node splitting 
 
-  Use["BDTDPG"]         = 0; // decorrelation + pca + gaussianization + Adaptive Boost
+  Use["myBDTDPG"]         = 0; // decorrelation + pca + gaussianization + Adaptive Boost
 
   // 
   // --- Friedman's RuleFit method, ie, an optimised series of cuts ("rules")
@@ -240,8 +240,8 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
   //  factory->SetBackgroundWeightExpression( "weight/cnorm" );
   //  factory->SetSignalWeightExpression( "weight/cnorm" );
 
-///  factory->SetBackgroundWeightExpression( "weight" );
-///  factory->SetSignalWeightExpression( "weight" );
+  factory->SetBackgroundWeightExpression( "weight" );
+  factory->SetSignalWeightExpression( "weight" );
 
   //define variables for the training
 
@@ -268,12 +268,16 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
       //      if(useQG) factory->AddVariable( "qg2",   "q/g(2)",      "",    'F' );
     }
   
+  // Add channel
 
   // Apply additional cuts on the signal and background samples (can be different)
   TCut mycuts = ""; // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
   TCut mycutb = ""; // for example: TCut mycutb = "abs(var1)<0.5";
+//  factory->PrepareTrainingAndTestTree( mycuts, mycutb,
+//				       "nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V" );
+
   factory->PrepareTrainingAndTestTree( mycuts, mycutb,
-				       "nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V" );
+				       "nTrain_Signal=10000:nTrain_Background=100000:SplitMode=Random:NormMode=NumEvents:!V" );
 
   // ---- Book MVA methods
   //
@@ -422,7 +426,8 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
 
   // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
   if (Use["MLP"])
-    factory->BookMethod( TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
+    //    factory->BookMethod( TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
+    factory->BookMethod( TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=1:TestRate=5:!UseRegulator" );
 
   if (Use["MLPBFGS"])
     factory->BookMethod( TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
@@ -461,8 +466,8 @@ void tmvaClassifier( TString myMethodList = "", TString inputDir="~/work/ewkzp2j
   //"!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
 
 
-  if (Use["BDTDPG"]) // Decorrelation + Adaptive Boost
-    factory->BookMethod( TMVA::Types::kBDT, "BDTDPG",
+  if (Use["myBDTDPG"]) // Decorrelation + Adaptive Boost
+    factory->BookMethod( TMVA::Types::kBDT, "myBDTDPG",
 			 "!H:!V:NTrees=400:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=25:PruneMethod=CostComplexity:PruneStrength=25.0:VarTransform=D,P,G");
   //"!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
 

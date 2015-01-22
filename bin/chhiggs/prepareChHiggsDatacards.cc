@@ -421,7 +421,18 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	      float thxsec = Process[i]["data"].daughters()[0]["xsec"].toDouble();
 	      float thxsecunc=0;
 	      if(Process[i]["data"].daughters()[0].isTag("xsecunc") )  thxsecunc = Process[i]["data"].daughters()[0]["xsecunc"].toDouble();
+
+	      // converter
+	      if(proc.Contains("Z#rightarrow ll") || proc.Contains("dy"         )   ) thxsecunc = 0.04*thxsec;
+	      if(proc.Contains("VV")              || proc.Contains("vv"	        )   ) thxsecunc = 0.04*thxsec;
+	      if(proc.Contains("W,multijets")     || proc.Contains("wjets"      )   ) thxsecunc = 0.04*thxsec;
+	      if(proc.Contains("other t#bar{t}")  || proc.Contains("otherttbar" )   ) thxsecunc = 0.06*thxsec;
+	      if(proc.Contains("Single top")      || proc.Contains("st"	        )   ) thxsecunc = 0.08*thxsec;
+	      if(proc.Contains("t#bar{t}")        || proc.Contains("ttbar"      )   ) thxsecunc = 0.06*thxsec;
+	      
+
 	      shape.crossSections[proc]=std::pair<float,float>(thxsec,thxsecunc);
+	      
 	    }
 	    else{
 	      shape.bckgVars[proc][varName]=hshape;
@@ -594,8 +605,38 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 	  statup  ->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), statup  ->GetBinContent(ibin) + statup  ->GetBinError(ibin))));
 	  statdown->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), statdown->GetBinContent(ibin) - statdown->GetBinError(ibin))));
 	}
-	statup  ->Write(proc+"_"+statSystName+"Up");
-	statdown->Write(proc+"_"+statSystName+"Down");
+//	statup  ->Write(proc+"_"+statSystName+"Up");
+//	statdown->Write(proc+"_"+statSystName+"Down");
+
+	/////////////////////////////////////////////////////////
+	TH1* hc = (TH1*) h->Clone("TMPFORSTAT");
+	
+	//bin by bin stat uncertainty
+	int BIN=0;
+	for(int ibin=1; ibin<=hc->GetXaxis()->GetNbins(); ibin++){           
+	  if(hc->GetBinContent(ibin)<=0 || hc->GetBinContent(ibin)/hc->Integral()<0.0000001)continue;
+	  //           if(h->GetBinContent(ibin)<=0)continue;
+	  char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+	  TH1* statU=(TH1 *)hc->Clone(TString(hc->GetName())+"StatU"+ibintxt);//  statU->Reset();
+	  TH1* statD=(TH1 *)hc->Clone(TString(hc->GetName())+"StatD"+ibintxt);//  statD->Reset();           
+	  statU->SetBinContent(ibin,std::min(2*hc->GetBinContent(ibin), std::max(0.01*hc->GetBinContent(ibin), hc->GetBinContent(ibin) + hc->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
+	  statD->SetBinContent(ibin,std::min(2*hc->GetBinContent(ibin), std::max(0.01*hc->GetBinContent(ibin), hc->GetBinContent(ibin) - hc->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+	  //           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
+	  //           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+	  ///	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
+	  ///	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
+	  /*h->SetBinContent(ibin, 0);*/  hc->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
+	  //printf("%s --> %f - %f - %f\n", (prefix+"stat"+suffix+ibintxt+suffix2+"Up").c_str(), statD->Integral(), h->GetBinContent(ibin), statU->Integral() );
+	  statU->Write(proc+"_"+proc+ibintxt+"_"+statSystName+"Up");
+	  statD->Write(proc+"_"+proc+ibintxt+"_"+statSystName+"Down");
+	}
+	
+	////////////////////////////////////////////////////////
+	
+
+	
+	
+	
       }
     }
   else
@@ -606,6 +647,9 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
       systName+=syst;
       systName.ReplaceAll("down","Down");
       systName.ReplaceAll("up","Up");
+     
+      ///      systName.ReplaceAll("topptunc", TString("topptunc")+oDir->GetTitle());
+
       h->Write(systName);
     }
 }
@@ -695,14 +739,41 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	}
 	fprintf(pFile,"\n");
 	
-	//diepton BR
-	fprintf(pFile,"%35s %10s","br","lnN");
-	fprintf(pFile,"%6.3f ",1.017);
+	////diepton BR
+	//fprintf(pFile,"%35s %10s","br","lnN");
+	//fprintf(pFile,"%6.3f ",1.017);
+	//for(size_t j=0; j<shape.bckg.size(); j++) {
+	//  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	//  else                                                           fprintf(pFile,"%6.3f ",1.017);
+	//}
+	//fprintf(pFile,"\n");
+
+	//q2
+	fprintf(pFile,"%35s %10s","q2scale","lnN");
+	fprintf(pFile,"%6.3f ",1.00);
 	for(size_t j=0; j<shape.bckg.size(); j++) {
 	  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	  else                                                           fprintf(pFile,"%6.3f ",1.017);
+	  else                                                           fprintf(pFile,"%6.3f ",1.03);
 	}
 	fprintf(pFile,"\n");
+
+	//matching
+	fprintf(pFile,"%35s %10s","matching","lnN");
+	fprintf(pFile,"%6.3f ",1.00);
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	  else                                                           fprintf(pFile,"%6.3f ",1.01);
+	}
+	fprintf(pFile,"\n");
+
+	////diepton BR
+	//fprintf(pFile,"%35s %10s","br","lnN");
+	//fprintf(pFile,"%6.3f ",1.017);
+	//for(size_t j=0; j<shape.bckg.size(); j++) {
+	//  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	//  else                                                           fprintf(pFile,"%6.3f ",1.017);
+	//}
+	//fprintf(pFile,"\n");
 	
 	//rate systematics
 	for(std::map<TString,std::pair<float,float> >::const_iterator rIt = shape.rateUncs.begin(); rIt!=shape.rateUncs.end(); rIt++)
@@ -727,7 +798,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	for(size_t j=0; j<shape.bckg.size(); j++)
 	  {
 	    TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	    if(proc=="ttbar") continue;
+	    //	    if(proc=="ttbar") continue;
 	    std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
 	    if(procXsec.second<=0) continue;
 	    if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
@@ -743,27 +814,29 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	    fprintf(pFile,"\n");
 	  }
 	
-	//fakes
-	fprintf(pFile,"%35s %10s ", "fakes", "lnN");
-	fprintf(pFile,"%6s ","-");
-	for(size_t j=0; j<shape.bckg.size(); j++) {
-	  TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
-	  if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
-	  else                                            fprintf(pFile,"%6s ","2.0");
-	}
-	fprintf(pFile,"\n");
+/// meh /// 	//fakes
+/// meh /// 	fprintf(pFile,"%35s %10s ", "fakes", "lnN");
+/// meh /// 	fprintf(pFile,"%6s ","-");
+/// meh /// 	for(size_t j=0; j<shape.bckg.size(); j++) {
+/// meh /// 	  TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+/// meh /// 	  if(name!="qcd" && name!="ttbar" && name !="w")  fprintf(pFile,"%6s ","-");
+/// meh /// 	  else                                            fprintf(pFile,"%6s ","2.0");
+/// meh /// 	}
+/// meh /// 	fprintf(pFile,"\n");
 	
 	//systematics described by shapes
 	for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)
 	  {
 	    if(it->EndsWith("down")) continue;
+	    if(it->Contains("leff")) continue;
 	    TString systName(*it);
 	    if(systName.EndsWith("up")) systName.Remove(systName.Length()-2,2);
-	    
 	    bool systIsValid(false);
 	    TString systLine("");
 	    char systBuf[500];
-	    sprintf(systBuf,"%35s %10s ", systName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
+	    TString systLineName(systName);
+	    if(systName=="topptunc") systLineName.Append(oDir->GetName());
+	    sprintf(systBuf,"%35s %10s ", systLineName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
 	    if(shape.signalVars.find(*it)==shape.signalVars.end())     { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	    else if(shape.signalVars.find(*it)->second->Integral()==0) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	    else 
@@ -784,39 +857,64 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 		  systIsValid=true;
 		  sprintf(systBuf,"%6s ","1"); 
 		  systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
-		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
-		  saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+
+
+		  if(systName=="pdf")
+		    {
+		      shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->Scale( shape.bckg[j]->Integral() / shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->Integral() );
+		      shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second->Scale( shape.bckg[j]->Integral() / shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second->Integral() );
+		    }
+
+		  if(systName=="topptunc")
+		    {
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+TString(oDir->GetName())+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+TString(oDir->GetName())+"down"); 
+		    }
+		  else
+		    {
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+		    }
 		}
 	    }
 	    cout << "I arrive here" << endl;
 	    if(systIsValid) fprintf(pFile,"%s \n",systLine.Data());
 	  }
-	
+
+
 	//MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
 	TString myName=convertNameForDataCard(shape.signal->GetTitle()).Data();
-	fprintf(pFile,"%35s %10s ", (myName/*signalTag*/+"_"+ch+"_stat").Data(), "shape");
-	fprintf(pFile,"%6s ","1");
-	for(size_t j=0; j<shape.bckg.size(); j++) {
-	  //	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	  //	else                                                           fprintf(pFile,"%6s ","1");
-	  fprintf(pFile,"%6s","-");
+	int BIN=0;
+	for(int ibin=1; ibin<=shape.signal->GetXaxis()->GetNbins(); ibin++){           
+	  if(shape.signal->GetBinContent(ibin)<=0 || shape.signal->GetBinContent(ibin)/shape.signal->Integral()<0.0000001)continue;	  
+	  char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+	  fprintf(pFile,"%35s %10s ", (myName/*signalTag*/+ibintxt+"_"+myName+"_"+ch+"_stat").Data(), "shape");
+	  fprintf(pFile,"%6s ","1");
+	  for(size_t j=0; j<shape.bckg.size(); j++) {
+	    //	if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	    //	else                                                           fprintf(pFile,"%6s ","1");
+	    fprintf(pFile,"%6s","-");
+	  }
+	  fprintf(pFile,"\n");
 	}
-	fprintf(pFile,"\n");
-	
 	for(size_t j=0; j<shape.bckg.size(); j++)
 	  {
 	    TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
 	    //	  if(proc=="ttbar") continue;
 	    //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
-	    
-	    fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
-	    fprintf(pFile,"%6s ","-");
-	    for(size_t k=0; k<shape.bckg.size(); k++) {
-	      if(k!=j) fprintf(pFile,"%6s ","-");
-	      //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	      else     fprintf(pFile,"%6s ","1");
-	    }
+	    BIN=0;
+	    for(int ibin=1; ibin<=shape.bckg[j]->GetXaxis()->GetNbins(); ibin++){
+	      if(shape.bckg[j]->GetBinContent(ibin)<=0 || shape.bckg[j]->GetBinContent(ibin)/shape.bckg[j]->Integral()<0.0000001)continue;	  
+	      char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN); BIN++;
+	      fprintf(pFile,"%35s %10s ", (proc+ibintxt+"_"+proc+"_"+ch+"_stat").Data(), "shape");
+	      fprintf(pFile,"%6s ","-");
+	      for(size_t k=0; k<shape.bckg.size(); k++) {
+		if(k!=j) fprintf(pFile,"%6s ","-");
+		//else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+		else     fprintf(pFile,"%6s ","1");
+	      }
 	    fprintf(pFile,"\n");
+	    }
 	  }
 	
 	//all done

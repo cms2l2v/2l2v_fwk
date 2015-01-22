@@ -48,6 +48,11 @@
 
 #include <iostream>
 
+// Do not forget the citation in the paper
+// This is the ChengHan bisect algo, which is the recommended (and quickest) one
+#include "UserCode/llvv_fwk/interface/mt2_bisect.h"
+
+
 using namespace std;
 
 
@@ -131,6 +136,14 @@ int main(int argc, char* argv[])
 
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
+
+  // Set up mt2
+  mt2_bisect::mt2 mt2_evt;
+    // Format: M, px, py
+  double pa[3] = { 0.106, 39.0, 12.0 };
+  double pb[3] = { 0.106, 119.0, -33.0 };
+  double pmiss[3] = { 0, -29.9, 35.9 };
+  double mn    = 0.; // Neutrino mass
 
   
   //pdf info
@@ -286,16 +299,8 @@ int main(int argc, char* argv[])
     TString var=systVars[ivar];
 
     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, var);
+    cout << "Variation " << var << " added to optim systs histogram." << endl;
     
-//    // MVA histos
-//    if(tmvaH.size())
-//      for(size_t im=0; im<tmvaH.size(); ++im)
-//	{
-//	  TString hname(tmvaMethods[im].c_str());
-//	  controlHistos.addHistogram( new TH2F(hname+"_shapes"+varNames[ivar],";cut index;"+TString(tmvaH[im]->GetXaxis()->GetTitle())+";Events",optim_Cuts2_jet_pt1.size()m
-//
-
-
     TH1F *cutflowH = (TH1F *)controlHistos.addHistogram( new TH1F("evtflow"+var,";Cutflow;Events",nsteps,0,nsteps) );
     for(int ibin=0; ibin<nsteps; ibin++) cutflowH->GetXaxis()->SetBinLabel(ibin+1,labels[ibin]);
    
@@ -333,6 +338,16 @@ int main(int argc, char* argv[])
     TH1D *finalCutflowH_5 = new TH1D("finalevtflow5"+var,";Category;Events",1,0,1); 
     finalCutflowH_5->GetXaxis()->SetBinLabel(1,"#geq5 jets");
     controlHistos.addHistogram( finalCutflowH_5 );
+
+
+    // Final cutflow MVA histos
+    if(tmvaH.size())
+      for(size_t im=0; im<tmvaH.size(); ++im)
+	{
+	  TString hname(tmvaMethods[im].c_str());
+	  controlHistos.addHistogram( (TH1*) tmvaH[im]->Clone(hname+"_finalshape"+var ));
+	}
+    
     
     //    TString ctrlCats[]={"","eq1jets","lowmet","eq1jetslowmet","zlowmet","zeq1jets","zeq1jetslowmet","z"};
     TString ctrlCats[]={"","eq2leptons","eq1jets","eq2jets","geq2btags"//, // through the base cutflow
@@ -342,11 +357,22 @@ int main(int argc, char* argv[])
       {
 
 	if(var!="") continue; // Do not create unneeded syst histograms
+	
+	// MVA histos
+	if(tmvaH.size())
+	  for(size_t im=0; im<tmvaH.size(); ++im)
+	    {
+	      TString hname(tmvaMethods[im].c_str());
+	      controlHistos.addHistogram( (TH1*) tmvaH[im]->Clone(ctrlCats[k]+hname+"_shape"+var ));
+	    }
+	
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"emva"+var, "; e-id MVA; Electrons", 50, 0.95,1.0) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mll"+var,";Dilepton invariant mass [GeV];Events",50,0,250) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptll"+var,";Dilepton transverse momentum [GeV];Events",50,0,250) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"pte"+var,";Electron transverse momentum [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmu"+var,";Muon transverse momentum [GeV];Events",50,0,500) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"masse"+var,";Electron mass [GeV];Events",50,0,1) );
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"massmu"+var,";Muon mass [GeV];Events",50,0,1) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptlep"+var,";Lepton transverse momentum [GeV];Events",50,0,500) ); 
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"sumpt"+var,";Sum of lepton transverse momenta [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ptmin"+var,";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
@@ -361,6 +387,9 @@ int main(int argc, char* argv[])
 
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"met"+var,";Missing transverse energy [GeV];Events",50,0,500) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"metnotoppt"+var,";Missing transverse energy [GeV];Events",50,0,500) );
+
+
+	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"mt2"+var,";M_{T2} [GeV];Events",25,0.,500.) );
 	
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"ht"+var,";H_{T} [GeV];Events",50,0,1000) );
 	controlHistos.addHistogram( new TH1F(ctrlCats[k]+"htb"+var,";H_{T} (bjets) [GeV];Events",50,0,1000) );
@@ -821,10 +850,12 @@ int main(int argc, char* argv[])
 		  controlHistos.fillHisto(ctrlCategs[icat]+"emva"+var, ch, selLeptons[ilep].getVal("mvatrig"), weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"pte"+var,  ch, selLeptons[ilep].pt(),        weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptlep"+var,ch, selLeptons[ilep].pt(),        weight);
+		  controlHistos.fillHisto(ctrlCategs[icat]+"masse"+var,ch, selLeptons[ilep].M(),         weight);
 		}
 		else if(abs(selLeptons[ilep].get("id"))==13){
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptmu"+var,  ch, selLeptons[ilep].pt(),        weight);
 		  controlHistos.fillHisto(ctrlCategs[icat]+"ptlep"+var, ch, selLeptons[ilep].pt(),        weight);
+		  controlHistos.fillHisto(ctrlCategs[icat]+"massmu"+var,ch, selLeptons[ilep].M(),         weight);
 		}
 	      }
 	    controlHistos.fillHisto(ctrlCategs[icat]+"sumpt"+var, ch, sumpt, weight);
@@ -851,6 +882,22 @@ int main(int argc, char* argv[])
 	    htnol+=met.pt();
 	    htbnol+=met.pt();
 	    
+	    // mt2 computation
+	    
+	    pa[0] = selLeptons[0].M();
+	    pa[1] = selLeptons[0].px();
+	    pa[2] = selLeptons[0].py();
+	    pb[0] = selLeptons[1].M();
+	    pb[1] = selLeptons[1].px();
+	    pb[2] = selLeptons[1].py();
+	    pmiss[1] = met.px();
+	    pmiss[2] = met.py();
+	    
+	    mt2_evt.set_momenta(pa,pb,pmiss);
+	    mt2_evt.set_mn(mn);
+	    double mt2 = mt2_evt.get_mt2();
+
+
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptmin"+var,        ch, ptmin,           weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"mll"+var,          ch, mll,             weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptll"+var,         ch, ll.pt(),         weight);
@@ -858,6 +905,8 @@ int main(int argc, char* argv[])
 	    controlHistos.fillHisto(ctrlCategs[icat]+"dilarccosine"+var, ch, thetall,         weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"met"+var,          ch, met.pt(),        weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"metnotoppt"+var,   ch, met.pt(),        weight/wgtTopPt);
+	    controlHistos.fillHisto(ctrlCategs[icat]+"mt2"+var,          ch, mt2,             weight);
+
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njets"+var,        ch, selJets.size(),  weight);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"njetsnotoppt"+var, ch, selJets.size(),  weight/wgtTopPt);
 	    controlHistos.fillHisto(ctrlCategs[icat]+"nbjets"+var,       ch, selbJets.size(), weight);
@@ -951,23 +1000,19 @@ int main(int argc, char* argv[])
 	  {
 	    std::string variable = tmvaVarNames[ivar];
 	    // Cat and weight are for bookkeeping, not needed here.
-	    if(variable=="nbjets") tmvaVars[ivar] = nbtags;
-	    else if(variable=="leadbjetpt"){ tmvaVars[ivar] = selbJets[0].pt();}
-	    else if(variable=="njets") tmvaVars[ivar] = selJets.size();
-	    else if(variable=="globalmt"){
-	      tmvaVars[ivar] = globalmt.Mt();
-      	    }
-	    else if(variable=="met")    tmvaVars[ivar] = met.pt();
-	    else if(variable=="detajj") tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
-	    else if(variable=="detall") tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
-	    else if(variable=="dphill") tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
+	    if(variable=="nbjets")          tmvaVars[ivar] = nbtags;
+	    else if(variable=="leadbjetpt") tmvaVars[ivar] = selbJets[0].pt();
+	    else if(variable=="njets")      tmvaVars[ivar] = selJets.size();
+	    else if(variable=="globalmt")   tmvaVars[ivar] = globalmt.Mt();
+	    else if(variable=="met")        tmvaVars[ivar] = met.pt();
+	    else if(variable=="detajj")     tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
+	    else if(variable=="detall")     tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
+	    else if(variable=="dphill")     tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
 	  }
 	if(tmvaReader)
 	  for(size_t im=0; im<tmvaMethods.size(); ++im)
-	    {
-	      float iTmvaDiscrVal=tmvaReader->EvaluateMVA( tmvaMethods[im] );
-	      //	      controlHistos.fillHisto(TString(tmvaMethods[im]+"_shapes")+varNames[ivar],local
-	    }
+	    tmvaDiscrVals[im]=tmvaReader->EvaluateMVA( tmvaMethods[im] );
+	
 	// Save for training
 	summaryTupleVars[0] = ev.cat;
 	summaryTupleVars[1] = weight;
@@ -980,9 +1025,11 @@ int main(int argc, char* argv[])
 	summaryTupleVars[8] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
 	summaryTupleVars[9] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
 	summaryTuple->Fill(summaryTupleVars);
-	for(size_t im=0; im<tmvaMethods.size(); ++im)
-	  controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
-	
+	for(size_t im=0; im<tmvaMethods.size(); ++im){
+	  if(var=="") controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
+	  controlHistos.fillHisto(tmvaMethods[im]+"_finalshape"+var, ch, tmvaDiscrVals[im], weight);
+	}
+
 	if(nbtags>5)
 	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, 5, weight);	
 	else

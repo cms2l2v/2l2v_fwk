@@ -537,26 +537,7 @@ int main(int argc, char* argv[])
       int nvtx(*nvtxHandle);
 
       //require compatibilitity of the event with the PD
-      bool eeTrigger          ( triggerBits[0]                   );
-      bool emuTrigger         ( triggerBits[4] || triggerBits[5] );
       bool muTrigger          ( triggerBits[6]                   );
-      //      bool eTrigger           ( triggerBits[12]                  ); // FIXME: must process singleElectron
-      bool mumuTrigger        ( triggerBits[2] || triggerBits[3] );// || muTrigger;
-      if(filterOnlyEE)       {                  emuTrigger=false; mumuTrigger=false; muTrigger=false; /*eTrigger=false;*/}
-      if(filterOnlyEMU)      { eeTrigger=false;                   mumuTrigger=false; muTrigger=false; /*eTrigger=false;*/}
-      if(filterOnlyMUMU)     { eeTrigger=false; emuTrigger=false;                    muTrigger=false; /*eTrigger=false;*/}
-      if(filterOnlySINGLEMU) { eeTrigger=false; emuTrigger=false; mumuTrigger=false;                  /*eTrigger=false;*/}
-      //      if(filterOnlySINGLEELE){ eeTrigger=false; emuTrigger=false; mumuTrigger=false; muTrigger=false;                }
-      
-      //      if(isSingleMuPD)   { eeTrigger=false; if( mumuTrigger || !muTrigger ) mumuTrigger= false;  }
-
-// test mu//      //////////////////////
-// test mu//      if(muTrigger){
-// test mu//	eeTrigger=false;
-// test mu//	emuTrigger=false;
-// test mu//	mumuTrigger=false;
-// test mu//      }
-// test mu//      //////////////////////
      
       // PU weighting now follows channel selection, to take into account the different pileup distribution between singleMu and dileptons
       //pileup weight
@@ -731,9 +712,6 @@ int main(int argc, char* argv[])
       std::vector<TString> chTags;
       //chTags.push_back("ll");
       
-//      if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
-//      else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
-//      else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
       if( abs(singleLeptonId) == 13 && muTrigger /*&& selSingleLepLeptons.size()>0 */&& nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu"); // selSingleLepLeptons.size() implicitly checked by abs(singleLeptonId)==13
       else continue;
       
@@ -1308,9 +1286,8 @@ int main(int argc, char* argv[])
 	//	{
 	//	  std::vector<TString> tags(1,chTags[ich]);
 	
-	bool otherTriggersVeto( eeTrigger || emuTrigger || mumuTrigger ); // It should be already excluded by the channel requirement  
 	bool additionalLeptonsVeto( nVetoE>0 || nVetoMu>0 );
-	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1 && !otherTriggersVeto && !additionalLeptonsVeto && nTrueJets>1 && nTauJets>2 );    
+	bool passMuonPlusJets( muTrigger && selSingleLepLeptons.size()==1  && !additionalLeptonsVeto && nTrueJets>1 && nTauJets>2 );    
 	bool passMet(met.pt()>40.);
 	bool pass1bjet(nbjets>0);
 	bool pass1tau(selTaus.size()==1);
