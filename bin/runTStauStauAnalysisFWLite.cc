@@ -70,6 +70,39 @@
 
 #define NAN_WARN(X) if(std::isnan(X)) std::cout << "  Warning: " << #X << " is nan" << std::endl;
 
+class Analyzer
+{
+public:
+  Analyzer();
+
+private:
+
+protected:
+  size_t limitEvents;
+  bool debugEvent;
+  int skipEvents;
+
+};
+
+Analyzer::Analyzer(): limitEvents(0), debugEvent(false), skipEvents(0)
+{
+}
+
+class StauAnalyzer : public Analyzer
+{
+public:
+  StauAnalyzer();
+
+private:
+
+protected:
+
+};
+
+StauAnalyzer::StauAnalyzer(): Analyzer()
+{
+}
+
 
 
 enum ID_Type {LooseID, MediumID, TightID};
