@@ -15,6 +15,8 @@
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
+#include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
+
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -256,9 +258,30 @@ bool passPFJetID(SmartSelectionMonitor mon,
   
 }
 
+
+bool passCutBasedPUJetID(SmartSelectionMonitor mon,
+			 pat::Jet jet,
+			 edm::ParameterSet pujetidparas){
+
+  bool passID(false); 
+
+  std::unique_ptr<PileupJetIdAlgo> cutBasedPuJetIdAlgo;
+  cutBasedPuJetIdAlgo.reset(new PileupJetIdAlgo(pujetidparas)); 
+
+  // PileupJetIdAlgo *cutBasedPuJetIdAlgo_ = new PileupJetIdAlgo(pujetidparas);
+
+  // float jec = 1;
+  // PileupJetIdentifier puIdentifier = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet.originalObject()), jec, primVtx.get(), *vtxH.product(), true);
+ 
+  
+
+  return passID; 
+}
+
 pat::JetCollection
 passJetSelection(SmartSelectionMonitor mon,
-		 pat::JetCollection jets) {
+		 pat::JetCollection jets,
+		 edm::ParameterSet pujetidparas) {
   pat::JetCollection selJets;
   TString tag = "all";  
   double weight = 1.0;
@@ -269,26 +292,6 @@ passJetSelection(SmartSelectionMonitor mon,
     double eta=jet.eta();
     mon.fillHisto("jetpt", tag, pt, weight);
     mon.fillHisto("jeteta", tag, eta, weight);
- 
-
-    // float rawJetEn(jet.correctedJet("Uncorrected").energy() );
-
-    // float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
-    // float nef( jet.neutralEmEnergy()/rawJetEn );
-    // float cef( jet.chargedEmEnergy()/rawJetEn );
-    // float chf( jet.chargedHadronEnergy()/rawJetEn );
-    // float nch    = jet.chargedMultiplicity();
-    // float nconst = jet.numberOfDaughters();
-    
-    // mon.fillHisto("jetpt", tag, pt, weight);
-    // mon.fillHisto("jeteta", tag, eta, weight);
-    // mon.fillHisto("jetrawen", tag, rawJetEn, weight);
-    // mon.fillHisto("jetnhf", tag, nhf, weight);
-    // mon.fillHisto("jetnef", tag, nef, weight);
-    // mon.fillHisto("jetcef", tag, cef, weight);
-    // mon.fillHisto("jetchf", tag, chf, weight);
-    // mon.fillHisto("jetnch", tag, nch, weight);
-    // mon.fillHisto("jetnconst", tag, nconst, weight);
 
     //mc truth for this jet
     const reco::GenJet* genJet=jets[ijet].genJet();
@@ -302,17 +305,13 @@ passJetSelection(SmartSelectionMonitor mon,
     //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
     // if(minDRlj<0.4 || minDRlg<0.4) continue;
     
-    //jet id
-    // use the original for now
-    // bool passLooseId(nhf<0.99  && nef<0.99 && nconst>1); 
-    // if(fabs(eta)<2.4) {
-    // 	passLooseId  &= (chf>0 && nch>0 && cef<0.99);
-    // }
-
     if(pt<15 || fabs(eta)>4.7 ) continue;
     bool passPFloose = passPFJetID(mon, "Loose", jet); 
     if (!passPFloose) continue;  
-    
+
+    bool passPuId = passCutBasedPUJetID(mon, jet, pujetidparas);
+    if (!passPuId) continue;
+
     selJets.push_back(jet); 
   }
   return selJets; 
@@ -334,7 +333,7 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");  
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
-
+  edm::ParameterSet pujetidparas = runProcess.getParameter<edm::ParameterSet>("pujetidparas"); 
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
   // TString url = TString(argv[1]);
   // TString outFileUrl(gSystem->BaseName(url));
@@ -434,7 +433,7 @@ int main(int argc, char* argv[])
     }
 
     // select jets
-    pat::JetCollection selJets = passJetSelection(mon, jets); 
+    pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas); 
     if ( selJets.size() == 0) continue;  
     for(size_t ijet=0; ijet<selJets.size(); ijet++) {
       pat::Jet jet = selJets[ijet]; 
