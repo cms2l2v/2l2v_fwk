@@ -70,10 +70,12 @@
 
 #define NAN_WARN(X) if(std::isnan(X)) std::cout << "  Warning: " << #X << " is nan" << std::endl;
 
-class Analyzer
+class Analyser
 {
 public:
-  Analyzer();
+  Analyser(std::string cfgFile);
+
+  virtual void Setup();
 
 private:
 
@@ -82,25 +84,105 @@ protected:
   bool debugEvent;
   int skipEvents;
 
+  edm::ParameterSet cfgOptions;
+
+  bool isMC;
+  double crossSection;
+  std::vector<std::string> fileList;
+  std::string baseDir;
+  std::string outDir;
+  std::string jecDir;
+  bool runSystematics;
+  bool saveSummaryTree;
+  bool applyScaleFactors;
+  bool debug;
+
+  virtual void LoadCfgOptions();
+
 };
 
-Analyzer::Analyzer(): limitEvents(0), debugEvent(false), skipEvents(0)
+Analyser::Analyser(std::string cfgFile): limitEvents(0), debugEvent(false), skipEvents(0)
 {
+  // Read the cfgFile
+  cfgOptions = (edm::readPSetsFrom(cfgFile.c_str())->getParameter<edm::ParameterSet>("runProcess"));
 }
 
-class StauAnalyzer : public Analyzer
+void Analyser::LoadCfgOptions()
+{
+  isMC            = cfgOptions.getParameter<bool>("isMC");
+  crossSection    = cfgOptions.getParameter<double>("xsec");
+  fileList        = cfgOptions.getParameter<std::vector<std::string>>("input");
+  baseDir         = cfgOptions.getParameter<std::string>("dirName");
+  outDir          = cfgOptions.getParameter<std::string>("outdir");
+  jecDir          = cfgOptions.getParameter<std::string>("jecDir");
+  runSystematics  = cfgOptions.getParameter<bool>("runSystematics");
+  saveSummaryTree = cfgOptions.getParameter<bool>("saveSummaryTree");
+
+  applyScaleFactors = true;
+  debug = false;
+
+  if(cfgOptions.exists("applyScaleFactors"))
+    applyScaleFactors = cfgOptions.getParameter<bool>("applyScaleFactors");
+  if(cfgOptions.exists("debug"))
+    debug             = cfgOptions.getParameter<bool>("debug");
+
+  if(debug)
+    std::cout << "Finished Analyser::LoadCfgOptions()" << std::endl;
+
+  return;
+}
+
+void Analyser::Setup()
+{
+  LoadCfgOptions();
+}
+
+class StauAnalyser : public Analyser
 {
 public:
-  StauAnalyzer();
+  StauAnalyser(std::string cfgFile);
 
 private:
 
 protected:
+  bool exclusiveRun;
+  double stauMtoPlot;
+  double neutralinoMtoPlot;
+  bool doSVfit;
+  bool doTightTauID;
+
+  virtual void LoadCfgOptions();
 
 };
 
-StauAnalyzer::StauAnalyzer(): Analyzer()
+StauAnalyser::StauAnalyser(std::string cfgFile): Analyser(cfgFile)
 {
+}
+
+void StauAnalyser::LoadCfgOptions()
+{
+  Analyser::LoadCfgOptions(); // In general you should always call Analyser::LoadCfgOptions() from your own LoadCfgOptions() before you load any parameters
+
+  exclusiveRun = cfgOptions.getParameter<bool>("exclusiveRun");
+
+  stauMtoPlot       =   120;
+  neutralinoMtoPlot =    20; // Default mass point to place in plots
+  doSVfit           = false;
+  doTightTauID      =  true;
+
+  if(cfgOptions.exists("stauMtoPlot"))
+    stauMtoPlot  = cfgOptions.getParameter<double>("stauMtoPlot");
+  if(cfgOptions.exists("neutralinoMtoPlot"))
+    stauMtoPlot  = cfgOptions.getParameter<double>("neutralinoMtoPlot");
+  if(cfgOptions.exists("doSVfit"))
+    doSVfit      = cfgOptions.getParameter<bool>("doSVfit");
+  if(cfgOptions.exists("doTightTauID"))
+    doTightTauID = cfgOptions.getParameter<bool>("doTightTauID");
+
+  if(debug)
+    std::cout << "Finished StauAnalyser::LoadCfgOptions()" << std::endl;
+
+  return;
 }
 
 
