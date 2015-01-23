@@ -48,6 +48,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("jetchf", ";Jet charged hadron energy fraction;Events", 100, 0, 1) );
   mon.addHistogram(new TH1F("jetnch", ";Jet charged multiplicity;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("jetnconst", ";Jet number of constitutes;Events", 100, 0, 100) );
+  mon.addHistogram(new TH1F("jetpudsct", ";Jet pileup ID discriminant;Events", 100, -1, 1) );
   return mon; 
 }
 
@@ -261,18 +262,21 @@ bool passPFJetID(SmartSelectionMonitor mon,
 
 bool passCutBasedPUJetID(SmartSelectionMonitor mon,
 			 pat::Jet jet,
-			 edm::ParameterSet pujetidparas){
-
+			 edm::ParameterSet pujetidparas,
+			 reco::VertexCollection vtx){
+  // Currently not for miniAOD yet
   bool passID(false); 
 
   std::unique_ptr<PileupJetIdAlgo> cutBasedPuJetIdAlgo;
   cutBasedPuJetIdAlgo.reset(new PileupJetIdAlgo(pujetidparas)); 
 
-  // PileupJetIdAlgo *cutBasedPuJetIdAlgo_ = new PileupJetIdAlgo(pujetidparas);
+  // float jec=1./ev.jn_torawsf[ev.jn];
+  // PileupJetIdentifier cutBasedPuIdentifier = cutBasedPuJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet->originalObject()), jec, primVtx.get(), *vtxH.product(), true);
 
-  // float jec = 1;
-  // PileupJetIdentifier puIdentifier = puJetIdAlgo_->computeIdVariables(dynamic_cast<const reco::Jet*>(jet.originalObject()), jec, primVtx.get(), *vtxH.product(), true);
- 
+  // https://github.com/cms-analysis/flashgg/blob/master/MicroAODProducers/plugins/JetProducer.cc#L86
+  // PileupJetIdentifier lPUJetId = pileupJetIdAlgo_->computeIdVariables(pjet.get(),vtx,*vertexCandidateMap,true);
+
+
   
 
   return passID; 
@@ -281,7 +285,9 @@ bool passCutBasedPUJetID(SmartSelectionMonitor mon,
 pat::JetCollection
 passJetSelection(SmartSelectionMonitor mon,
 		 pat::JetCollection jets,
-		 edm::ParameterSet pujetidparas) {
+		 edm::ParameterSet pujetidparas,
+		 reco::VertexCollection vtx){
+  
   pat::JetCollection selJets;
   TString tag = "all";  
   double weight = 1.0;
@@ -294,7 +300,7 @@ passJetSelection(SmartSelectionMonitor mon,
     mon.fillHisto("jeteta", tag, eta, weight);
 
     //mc truth for this jet
-    const reco::GenJet* genJet=jets[ijet].genJet();
+    const reco::GenJet* genJet=jet.genJet();
     TString jetType( genJet && genJet->pt()>0 ? "truejetsid" : "pujetsid" );
 
     //cross-clean with selected leptons and photons
@@ -309,9 +315,11 @@ passJetSelection(SmartSelectionMonitor mon,
     bool passPFloose = passPFJetID(mon, "Loose", jet); 
     if (!passPFloose) continue;  
 
-    bool passPuId = passCutBasedPUJetID(mon, jet, pujetidparas);
-    if (!passPuId) continue;
-
+    // bool passPuId = passCutBasedPUJetID(mon, jet, pujetidparas, vtx);
+    // if (!passPuId) continue;
+    float jetpudsct = jet.userFloat("pileupJetId:fullDiscriminant");
+    mon.fillHisto("jetpudsct", tag, jetpudsct, weight);
+    
     selJets.push_back(jet); 
   }
   return selJets; 
@@ -398,7 +406,7 @@ int main(int argc, char* argv[])
     rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
     if(rhoHandle.isValid()){ rho = *rhoHandle;}
     mon.fillHisto("rho", "all", rho, weight);
-    
+
     pat::PhotonCollection photons;
     fwlite::Handle< pat::PhotonCollection > photonsHandle;
     photonsHandle.getByLabel(ev, "slimmedPhotons");
@@ -433,7 +441,7 @@ int main(int argc, char* argv[])
     }
 
     // select jets
-    pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas); 
+    pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas, vtx); 
     if ( selJets.size() == 0) continue;  
     for(size_t ijet=0; ijet<selJets.size(); ijet++) {
       pat::Jet jet = selJets[ijet]; 
