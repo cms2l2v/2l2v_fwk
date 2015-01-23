@@ -74,8 +74,9 @@ class Analyser
 {
 public:
   Analyser(std::string cfgFile);
+  virtual ~Analyser();
 
-  virtual void Setup();
+  void Setup();
 
 private:
 
@@ -83,8 +84,13 @@ protected:
   size_t limitEvents;
   bool debugEvent;
   int skipEvents;
+  bool isSetup;
 
   edm::ParameterSet cfgOptions;
+  std::string outFile;
+  std::string summaryOutFile;
+  TFile* summaryOutTFile;
+  TTree* summaryTree;
 
   bool isMC;
   double crossSection;
@@ -97,14 +103,21 @@ protected:
   bool applyScaleFactors;
   bool debug;
 
+  bool isV0JetsMC;
+
   virtual void LoadCfgOptions();
+  virtual void UserSetup() = 0;
 
 };
 
-Analyser::Analyser(std::string cfgFile): limitEvents(0), debugEvent(false), skipEvents(0)
+Analyser::Analyser(std::string cfgFile): limitEvents(0), debugEvent(false), skipEvents(0), isSetup(false)
 {
   // Read the cfgFile
   cfgOptions = (edm::readPSetsFrom(cfgFile.c_str())->getParameter<edm::ParameterSet>("runProcess"));
+}
+
+Analyser::~Analyser()
+{
 }
 
 void Analyser::LoadCfgOptions()
@@ -135,6 +148,36 @@ void Analyser::LoadCfgOptions()
 void Analyser::Setup()
 {
   LoadCfgOptions();
+
+  // Create output directory if it doesn't exist
+  gSystem->Exec(("mkdir -p " + outDir).c_str());
+
+  std::string url = fileList[0];
+  std::string outFileUrl(gSystem->BaseName(url.c_str()));
+  while(outFileUrl.find(".root", 0) != std::string::npos)
+    outFileUrl.replace(outFileUrl.find(".root", 0), 5, "");
+  outFile = outDir + "/" + outFileUrl + ".root";
+  TString turl(url);
+
+  if(saveSummaryTree)
+  {
+    TDirectory* cwd = gDirectory;
+
+    summaryOutFile = outFile;
+    summaryOutFile.replace(summaryOutFile.find(".root", 0), 5, "_summary.root");
+
+    summaryOutTFile = new TFile(summaryOutFile.c_str(), "RECREATE");
+    summaryTree = new TTree("Events", "Events");
+    summaryTree->SetDirectory(summaryOutTFile);  // This line is probably not needed
+
+    cwd->cd();
+  }
+
+  UserSetup();
+
+  isSetup = true;
+
+  return;
 }
 
 class StauAnalyser : public Analyser
@@ -152,6 +195,7 @@ protected:
   bool doTightTauID;
 
   virtual void LoadCfgOptions();
+  virtual void UserSetup();
 
 };
 
@@ -179,9 +223,16 @@ void StauAnalyser::LoadCfgOptions()
   if(cfgOptions.exists("doTightTauID"))
     doTightTauID = cfgOptions.getParameter<bool>("doTightTauID");
 
+  // Consider setting here the cut values etc, will have to be added to the cfg file
+
   if(debug)
     std::cout << "Finished StauAnalyser::LoadCfgOptions()" << std::endl;
 
+  return;
+}
+
+void StauAnalyser::UserSetup()
+{
   return;
 }
 
@@ -295,7 +346,7 @@ int main(int argc, char* argv[])
     debug = runProcess.getParameter<bool>("debug");
   bool doTightTauID = false;
   if(runProcess.exists("doTightTauID"))
-    debug = runProcess.getParameter<bool>("doTightTauID");
+    doTightTauID = runProcess.getParameter<bool>("doTightTauID");
 
   if(debug)
     std::cout << "Finished loading config file" << std::endl;
@@ -451,13 +502,14 @@ int main(int argc, char* argv[])
 
   // Angles
   mon.addHistogram(new TH1D("deltaAlphaLepTau", ";#Delta#alpha_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1D("deltaPhiLepTauMET", ";#Delta#phi_{l#tau-MET}(Lab);Events", 30, 0, TMath::Pi()));
-  mon.addHistogram(new TH1D("deltaPhiLepTau", ";#Delta#phi_{l-#tau}(Lab);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaRLepTau", ";#Delta R_{l-#tau}(Lab);Events", 40, 0, 8));
+  mon.addHistogram(new TH1D("deltaPhiLepTauMET", ";#Delta#phi_{l#tau-MET}(Lab);Events", 30, -TMath::Pi(), TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaPhiLepTau", ";#Delta#phi_{l-#tau}(Lab);Events", 30, -TMath::Pi(), TMath::Pi()));
   mon.addHistogram(new TH1D("cosThetaTau", ";cos#theta_{#tau}(Lab);Events", 30, -1, 1));
   mon.addHistogram(new TH1D("cosThetaLep", ";cos#theta_{l}(Lab);Events", 30, -1, 1));
-  mon.addHistogram(new TH1D("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("deltaPhiLepMETCS", ";#Delta#phi_{l-MET}(CS);Events", 30, -TMath::Pi(), TMath::Pi()));
   mon.addHistogram(new TH1D("cosThetaCS", ";cos#theta(CS);Events", 30, -1, 1));
-  mon.addHistogram(new TH1D("minDeltaPhiMETJetPt40", ";min(#Delta#phi_{MET-Jet40});Events", 20, 0, TMath::Pi()));
+  mon.addHistogram(new TH1D("minDeltaPhiMETJetPt40", ";min(#Delta#phi_{MET-Jet40});Events", 20, -TMath::Pi(), TMath::Pi()));
 
   // 2D variables
   mon.addHistogram(new TH2D("metVsPtl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
@@ -574,6 +626,7 @@ int main(int argc, char* argv[])
   double stauMass = 0;
   double neutralinoMass = 0;
   double deltaAlphaLepTau = 0;
+  double deltaRLepTau = 0;
   double deltaPhiLepTauMET = 0;
   double deltaPhiLepTau = 0;
   double cosThetaTau = 0;
@@ -645,6 +698,7 @@ int main(int argc, char* argv[])
     summaryTree->Branch("stauMass", &stauMass);
     summaryTree->Branch("neutralinoMass", &neutralinoMass);
     summaryTree->Branch("deltaAlphaLepTau", &deltaAlphaLepTau);
+    summaryTree->Branch("deltaRLepTau", &deltaRLepTau);
     summaryTree->Branch("deltaPhiLepTauMET", &deltaPhiLepTauMET);
     summaryTree->Branch("deltaPhiLepTau", &deltaPhiLepTau);
     summaryTree->Branch("cosThetaTau", &cosThetaTau);
@@ -680,6 +734,7 @@ int main(int argc, char* argv[])
 
     // Init variables
     deltaAlphaLepTau = 0;
+    deltaRLepTau = 0;
     deltaPhiLepTauMET = 0;
     deltaPhiLepTau = 0;
     cosThetaTau = 0;
@@ -1645,6 +1700,7 @@ int main(int argc, char* argv[])
       TLorentzVector Tmet(met.Px(), met.Py(), met.Pz(), met.E());
 
       deltaAlphaLepTau = lep.Angle(tau.Vect());
+      deltaRLepTau = deltaR(selTaus[tauIndex], selLeptons[leptonIndex]);
       deltaPhiLepTauMET = Tmet.DeltaPhi(lep + tau);
       deltaPhiLepTau = lep.DeltaPhi(tau);
 
@@ -1898,6 +1954,7 @@ int main(int argc, char* argv[])
                       mon.fillHisto("InvMass", chTags, invMass, weight);
 
                       mon.fillHisto("deltaAlphaLepTau", chTags, deltaAlphaLepTau, weight);
+                      mon.fillHisto("deltaRLepTau", chTags, deltaRLepTau, weight);
                       mon.fillHisto("deltaPhiLepTauMET", chTags, deltaPhiLepTauMET, weight);
                       mon.fillHisto("deltaPhiLepTau", chTags, deltaPhiLepTau, weight);
                       mon.fillHisto("cosThetaTau", chTags, cosThetaTau, weight);
@@ -1970,6 +2027,7 @@ int main(int argc, char* argv[])
     NAN_WARN(stauMass)
     NAN_WARN(neutralinoMass)
     NAN_WARN(deltaAlphaLepTau)
+    NAN_WARN(deltaRLepTau)
     NAN_WARN(deltaPhiLepTauMET)
     NAN_WARN(deltaPhiLepTau)
     NAN_WARN(cosThetaTau)
