@@ -23,6 +23,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
+#include "UserCode/llvv_fwk/interface/MacroUtils.h"
 
 #include <vector>
 #include "TVector3.h"
@@ -49,13 +50,16 @@ namespace patUtils
 
    namespace llvvElecId { enum ElecId  {Veto, Loose, Medium, Tight, LooseMVA, MediumMVA, TightMVA}; }
    namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight}; }
+   namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
 
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
+   bool passId (pat::Photon& photon,  double rho, int IdLevel);
    bool passIso(pat::Electron& el,  int IsoLevel);
    bool passIso(pat::Muon&     mu,  int IsoLevel);
+   bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
 
 }
 
