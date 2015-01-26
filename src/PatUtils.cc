@@ -1,5 +1,4 @@
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
-#include "UserCode/llvv_fwk/interface/MacroUtils.h"
 
 namespace patUtils
 {
@@ -253,4 +252,75 @@ namespace patUtils
           }
           return false;          
    }
+
+  bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold,
+			 float &triggerPrescale ){
+    edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+    if( !tr.isValid() ) return false;
+
+    bool hasPhotonTrigger(false);
+    // float triggerPrescale(1.0); 
+    // float triggerThreshold(0);
+    triggerPrescale = 1.0; 
+    triggerThreshold = 0.0;
+
+    std::string successfulPath="";
+    if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=300;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon250_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=250;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=160;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=150;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=135;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=120;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=92;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=77;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=50;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=36;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=22;
+    }
+      
+    if(successfulPath!=""){ //get the prescale associated to it
+      fwlite::Handle< pat::PackedTriggerPrescales > prescalesHandle;
+      prescalesHandle.getByLabel(ev, "patTrigger");
+      pat::PackedTriggerPrescales prescales = *prescalesHandle;
+      const edm::TriggerResults& trResults =  prescales.triggerResults();
+      prescales.setTriggerNames( ev.triggerNames(trResults) );
+      triggerPrescale = prescales.getPrescaleForName(successfulPath);
+    }
+
+    return hasPhotonTrigger; 
+  }
+
+
 }
