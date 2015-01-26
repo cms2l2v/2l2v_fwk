@@ -22,6 +22,12 @@
 #include "TTree.h"
 #include "TH1F.h"
 
+// constants
+
+const int MUON_PDGID = 13;
+const int ELECTRON_PDGID = 11;
+
+
 SmartSelectionMonitor
 initHistograms(){
   SmartSelectionMonitor mon;
@@ -33,11 +39,6 @@ initHistograms(){
   mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
-  // mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 10, 0, 1) );
-  // mon.addHistogram(new TH1F("phoiso", ";Photon Iso;Events", 100, 0, 100) );
-  mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 100, 0, 1) );
-  mon.addHistogram(new TH1F("elevto", ";Electron Veto;Events", 2, 0, 1) );
-  mon.addHistogram(new TH1F("sigietaieta", ";#sigma_{i#eta i#eta};Events", 100, 0, 0.1) );
   
   // jet 
   mon.addHistogram(new TH1F("njet", ";Number of Jets;Events", 100, 0, 100) );
@@ -55,145 +56,11 @@ initHistograms(){
   // met
   mon.addHistogram(new TH1F("met", ";Missing ET [GeV];Events", 100, 0, 1000) );
 
+  // lepton
+  mon.addHistogram( new TH1F( "leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram( new TH1F( "mindrlg", ";Min #Delta R(lepton, #gamma);Events", 100, 0, 10) );
+    
   return mon; 
-}
-
-
-bool
-passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold) {
-  edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
-  if( !tr.isValid() ) return false;
-
-  bool hasPhotonTrigger(false);
-  float triggerPrescale(1.0); 
-  // float triggerThreshold(0);
-  triggerThreshold = 0.0;
-
-  std::string successfulPath="";
-  if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=300;
-  }
-  else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon250_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=250;
-  }
-  else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=160;
-  }
-  else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=150;
-  }
-  else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=135;
-  }
-  else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=120;
-  }
-  else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=92;
-  }
-  else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=77;
-  }
-  else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=50;
-  }
-  else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=36;
-  }
-  else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_*")){
-    hasPhotonTrigger=true;
-    triggerThreshold=22;
-  }
-      
-  if(successfulPath!=""){ //get the prescale associated to it
-    fwlite::Handle< pat::PackedTriggerPrescales > prescalesHandle;
-    prescalesHandle.getByLabel(ev, "patTrigger");
-    pat::PackedTriggerPrescales prescales = *prescalesHandle;
-    const edm::TriggerResults& trResults =  prescales.triggerResults();
-    prescales.setTriggerNames( ev.triggerNames(trResults) );
-    triggerPrescale = prescales.getPrescaleForName(successfulPath);
-  }
-
-  return hasPhotonTrigger; 
-}
-
-bool
-passCutBasedPhotonID(SmartSelectionMonitor mon,
-		     std::string label,
-		     pat::Photon photon,
-		     double rho) {
-  // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
-  // CSA14 selection, conditions: 25ns, better detector alignment. 
-  // Used Savvas Kyriacou's slides, mailed from Ilya. 
-
-  TString tag = "all";  
-  double weight = 1.0; 
-
-  // Electron Veto
-  bool elevto = photon.hasPixelSeed();
-  mon.fillHisto("elevto", tag, elevto, weight);
-  
-  // sigma ieta ieta
-  // full5x5 is not ready in 720 yet 
-  // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
-  // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
-  
-  // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
-  float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
-  mon.fillHisto("sigietaieta", tag, sigmaIetaIeta, weight);
-
-  // H/E 
-  float hoe = photon.hadTowOverEm();
-  mon.fillHisto("phohoe", tag, hoe, weight);
-
-  // isolation
-  bool passIso(true);
-  double pt=photon.pt();
-  double eta=photon.superCluster()->eta();
-
-  float chIso = photon.chargedHadronIso(); 
-  float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
-
-  float nhIso = photon.neutralHadronIso();
-  float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
-
-  float gIso = photon.photonIso();
-  float gArea = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");
-
-  // apply cuts 
-  float max_hoe(0);
-  float max_sigmaIetaIeta(0);
-  float max_chIso(0); 
-  float max_nhIso(0); 
-  float max_gIso(0); 
-
-  if (label == "Tight") {
-    max_hoe = 0.012;
-    max_sigmaIetaIeta = 0.0098;
-    max_chIso = 1.91;
-    max_nhIso = 2.55 + 0.0023*pt; 
-    max_gIso  = 1.29 + 0.0004*pt; 
-  }
-
-  if ( elevto ) return false;
-  if ( hoe > max_hoe) return false; 
-  if ( sigmaIetaIeta > max_sigmaIetaIeta ) return false; 
-  if ( TMath::Max(chIso-chArea*rho,0.0) > max_chIso ) return false; 
-  if ( TMath::Max(nhIso-nhArea*rho,0.0) > max_nhIso ) return false; 
-  if ( TMath::Max(gIso-gArea*rho,  0.0) > max_gIso ) return false; 
-
-  return true;
-
 }
 
 
@@ -213,13 +80,11 @@ passPhotonSelection(SmartSelectionMonitor mon,
     double eta=photon.superCluster()->eta();
     mon.fillHisto("phopt", tag, pt, weight);
     mon.fillHisto("phoeta", tag, eta, weight);
-    // mon.fillHisto("phor9", tag, photon.r9(), weight);
-    // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
 
     if( pt < triggerThreshold || fabs(eta)>1.4442 ) continue;
 
-    bool passPhotonSelection = passCutBasedPhotonID(mon, "Tight", photon, rho); 
-    if(!passPhotonSelection) continue; 
+    bool passId = patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight);
+    if(!passId) continue; 
     selPhotons.push_back(photon);
   }
 
@@ -333,6 +198,57 @@ passJetSelection(SmartSelectionMonitor mon,
   return selJets; 
 }
 
+void passLeptonSelection(SmartSelectionMonitor mon,
+			 std::vector<patUtils::GenericLepton> leptons,
+			 pat::PhotonCollection selPhotons,
+			 reco::VertexCollection vtx, 
+			 std::vector<patUtils::GenericLepton> & selLeptons,
+			 std::vector<patUtils::GenericLepton> & extraLeptons) {
+  
+  LorentzVector muDiff(0,0,0,0);
+  for(size_t ilep=0; ilep<leptons.size(); ilep++) {
+    bool passKin(true),passId(true),passIso(true);
+    bool passLooseLepton(true), passSoftMuon(true);
+    bool passSoftElectron(true), passVetoElectron(true);
+
+    int lid=leptons[ilep].pdgId();
+    
+    //no muon corrections yet, which need the charge info
+
+    //no need for charge info in the following process 
+    lid=abs(lid);
+    
+    //veto nearby photon (loose electrons are many times photons...)
+    double minDRlg(9999.);
+    for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+      minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
+
+    mon.fillHisto("mindrlg", "all", minDRlg, 1.0);
+    if(minDRlg<0.1) continue;
+
+    //kinematics
+    float leta = fabs(lid==ELECTRON_PDGID ?  leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta());
+    if(leta > (lid==ELECTRON_PDGID ? 2.5 : 2.4) ) passKin=false;
+    if(lid==ELECTRON_PDGID && (leta > 1.4442 && leta < 1.5660)) passKin=false;
+
+    passLooseLepton &= passKin;
+    passSoftMuon    &= passKin;
+    if(lid == MUON_PDGID){
+      if(leptons[ilep].pt()< 10) passLooseLepton=false;
+      if(leptons[ilep].pt()< 3)  passSoftMuon=false;
+    } else if(lid==ELECTRON_PDGID){
+      if(leptons[ilep].pt()<10) passLooseLepton=false;
+    }
+    if(leptons[ilep].pt()<20) passKin=false;
+
+    //Cut based identification 
+    passId = lid==ELECTRON_PDGID ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+
+
+
+  }
+  
+} 
 
 int main(int argc, char* argv[])
 {
@@ -396,8 +312,9 @@ int main(int argc, char* argv[])
     ev.to(iev);
     
     //apply trigger and require compatibilitiy of the event with the PD
-    float triggerThreshold = 0.0; 
-    bool hasPhotonTrigger = passPhotonTrigger(ev, triggerThreshold);
+    float triggerPrescale(1.0); 
+    float triggerThreshold(0.0); 
+    bool hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
 
     // only run on the events that pass our triggers
     if( !hasPhotonTrigger ) continue; 
@@ -432,7 +349,17 @@ int main(int argc, char* argv[])
     metsHandle.getByLabel(ev, "slimmedMETs");
     if(metsHandle.isValid()){ mets = *metsHandle;}
     LorentzVector met = mets[0].p4(); 
+    
+    pat::ElectronCollection electrons;
+    fwlite::Handle< pat::ElectronCollection > electronsHandle;
+    electronsHandle.getByLabel(ev, "slimmedElectrons");
+    if(electronsHandle.isValid()){ electrons = *electronsHandle;}
 
+    pat::MuonCollection muons;
+    fwlite::Handle< pat::MuonCollection > muonsHandle;
+    muonsHandle.getByLabel(ev, "slimmedMuons");
+    if(muonsHandle.isValid()){ muons = *muonsHandle;}
+    
     // below follows the analysis of the main selection with n-1 plots
     tag = "sel";
     
@@ -465,7 +392,19 @@ int main(int argc, char* argv[])
 
     // met
     mon.fillHisto("met", tag, met.pt(), weight);
+    
+    // merge electrons and muons
+    std::vector<patUtils::GenericLepton> leptons;
+    for(size_t l=0;l<electrons.size();l++){leptons.push_back(patUtils::GenericLepton(electrons[l]));}      
+    for(size_t l=0;l<muons    .size();l++){leptons.push_back(patUtils::GenericLepton(muons    [l]));}      
+    std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
 
+    // select leptons
+    std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
+    passLeptonSelection(mon, leptons, selPhotons, vtx, selLeptons, extraLeptons); 
+    
+    
+    
   } // end event loop 
   printf(" done.\n"); 
   
