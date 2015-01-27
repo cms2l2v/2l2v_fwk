@@ -159,7 +159,9 @@ pat::JetCollection
 passJetSelection(SmartSelectionMonitor mon,
 		 pat::JetCollection jets,
 		 edm::ParameterSet pujetidparas,
-		 reco::VertexCollection vtx){
+		 reco::VertexCollection vtx,
+		 std::vector<patUtils::GenericLepton> selLeptons,
+		 pat::PhotonCollection selPhotons){
   
   pat::JetCollection selJets;
   TString tag = "all";  
@@ -177,12 +179,13 @@ passJetSelection(SmartSelectionMonitor mon,
     TString jetType( genJet && genJet->pt()>0 ? "truejetsid" : "pujetsid" );
 
     //cross-clean with selected leptons and photons
-    // float minDRlj(9999.),minDRlg(9999.);
-    // for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-    //   minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
-    // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-    //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
-    // if(minDRlj<0.4 || minDRlg<0.4) continue;
+    float minDRlj(9999.), minDRlg(9999.);
+    for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
+      minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+    for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+      minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
+
+    if(minDRlj<0.4 || minDRlg<0.4) continue;
     
     if(pt<15 || fabs(eta)>4.7 ) continue;
     bool passPFloose = passPFJetID(mon, "Loose", jet); 
@@ -386,18 +389,7 @@ int main(int argc, char* argv[])
       mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
     }
 
-    // select jets
-    pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas, vtx); 
-    if ( selJets.size() == 0) continue;  
-    for(size_t ijet=0; ijet<selJets.size(); ijet++) {
-      pat::Jet jet = selJets[ijet]; 
-      mon.fillHisto("jetpt", tag, jet.pt(), weight);
-      mon.fillHisto("jeteta", tag, jet.eta(), weight);
-    }
 
-    // met
-    mon.fillHisto("met", tag, met.pt(), weight);
-    
     // merge electrons and muons
     std::vector<patUtils::GenericLepton> leptons;
     for(size_t l=0;l<electrons.size();l++){leptons.push_back(patUtils::GenericLepton(electrons[l]));}      
@@ -414,7 +406,19 @@ int main(int argc, char* argv[])
     mon.fillHisto("nlep", tag, selLeptons.size(), weight);
     mon.fillHisto("nexlep", tag, extraLeptons.size(), weight);
   
+    // select jets
+    pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas,
+						  vtx, selLeptons, selPhotons); 
+    if ( selJets.size() == 0) continue;  
+    for(size_t ijet=0; ijet<selJets.size(); ijet++) {
+      pat::Jet jet = selJets[ijet]; 
+      mon.fillHisto("jetpt", tag, jet.pt(), weight);
+      mon.fillHisto("jeteta", tag, jet.eta(), weight);
+    }
     
+    // met
+    mon.fillHisto("met", tag, met.pt(), weight);
+       
     
   } // end event loop 
   printf(" done.\n"); 
