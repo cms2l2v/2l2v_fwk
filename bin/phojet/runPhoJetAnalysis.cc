@@ -57,8 +57,10 @@ initHistograms(){
   mon.addHistogram(new TH1F("met", ";Missing ET [GeV];Events", 100, 0, 1000) );
 
   // lepton
-  mon.addHistogram( new TH1F( "leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
-  mon.addHistogram( new TH1F( "mindrlg", ";Min #Delta R(lepton, #gamma);Events", 100, 0, 10) );
+  // mon.addHistogram(new TH1F("leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram(new TH1F("mindrlg", ";Min #Delta R(lepton, #gamma);Events", 100, 0, 10) );
+  mon.addHistogram(new TH1F("nlep", ";Number of leptons;Events", 10, 0, 10) );
+  mon.addHistogram(new TH1F("nexlep", ";Number of extra leptons;Events", 10, 0, 10) );
     
   return mon; 
 }
@@ -243,11 +245,14 @@ void passLeptonSelection(SmartSelectionMonitor mon,
 
     //Cut based identification 
     passId = lid==ELECTRON_PDGID ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+    
+    //isolation
+    passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
 
-
-
-  }
-  
+    if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
+    else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
+    
+  } // end lepton loop
 } 
 
 int main(int argc, char* argv[])
@@ -402,7 +407,13 @@ int main(int argc, char* argv[])
     // select leptons
     std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
     passLeptonSelection(mon, leptons, selPhotons, vtx, selLeptons, extraLeptons); 
-    
+
+    std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
+    std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
+
+    mon.fillHisto("nlep", tag, selLeptons.size(), weight);
+    mon.fillHisto("nexlep", tag, extraLeptons.size(), weight);
+  
     
     
   } // end event loop 
