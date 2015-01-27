@@ -14,6 +14,7 @@
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
+#include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 
 #include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
 
@@ -31,6 +32,17 @@ const int ELECTRON_PDGID = 11;
 SmartSelectionMonitor
 initHistograms(){
   SmartSelectionMonitor mon;
+  // event selection
+  TH1F *h=(TH1F*) mon.addHistogram(new TH1F ("eventflow", ";;Events", 9,0,9) );
+  h->GetXaxis()->SetBinLabel(1,"raw");
+  h->GetXaxis()->SetBinLabel(2,"#geq 2 iso leptons");
+  h->GetXaxis()->SetBinLabel(3,"|M-91|<15");
+  h->GetXaxis()->SetBinLabel(4,"p_{T}>55");
+  h->GetXaxis()->SetBinLabel(5,"3^{rd}-lepton veto");
+  h->GetXaxis()->SetBinLabel(6,"b-veto"); 
+  h->GetXaxis()->SetBinLabel(7,"#Delta #phi(jet,E_{T}^{miss})>0.5");
+  h->GetXaxis()->SetBinLabel(8,"E_{T}^{miss}>80");
+  
   // pile up 
   mon.addHistogram(new TH1F("nvtx", ";Vertices;Events", 50, 0, 50) ); 
 
@@ -61,7 +73,8 @@ initHistograms(){
   mon.addHistogram(new TH1F("mindrlg", ";Min #Delta R(lepton, #gamma);Events", 100, 0, 10) );
   mon.addHistogram(new TH1F("nlep", ";Number of leptons;Events", 10, 0, 10) );
   mon.addHistogram(new TH1F("nexlep", ";Number of extra leptons;Events", 10, 0, 10) );
-    
+
+ 
   return mon; 
 }
 
@@ -305,7 +318,9 @@ int main(int argc, char* argv[])
   // lumireweighting are not destroyed when closing the file
   gROOT->cd();  
 
-  // event loop
+  higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
+
+  // event loop  
   // loop on all the events
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
@@ -323,7 +338,7 @@ int main(int argc, char* argv[])
     float triggerPrescale(1.0); 
     float triggerThreshold(0.0); 
     bool hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
-
+    
     // only run on the events that pass our triggers
     if( !hasPhotonTrigger ) continue; 
     
@@ -418,8 +433,30 @@ int main(int argc, char* argv[])
     
     // met
     mon.fillHisto("met", tag, met.pt(), weight);
-       
-    
+
+    // assign channel based on lepton flavors
+    std::vector<TString> chTags;
+    int dilId(1);
+    LorentzVector boson(0,0,0,0);
+    // only consider the photon selection case  
+    if(hasPhotonTrigger && selPhotons.size()) {
+      dilId=22;
+      chTags.push_back("ee");
+      chTags.push_back("mumu");
+      boson = selPhotons[0].p4();
+      weight *= triggerPrescale;
+    }
+
+    TString evCat=eventCategoryInst.GetCategory(selJets, boson);
+    std::vector<TString> tags(1,"all"); // first element init 
+    for(size_t ich=0; ich<chTags.size(); ich++){
+      tags.push_back( chTags[ich] );
+      tags.push_back( chTags[ich]+evCat );
+    }
+
+    mon.fillHisto("eventflow", tags, 0, weight);
+    if(chTags.size()==0) continue;
+        
   } // end event loop 
   printf(" done.\n"); 
   
