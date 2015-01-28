@@ -15,6 +15,7 @@
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
+#include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 
 #include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
 
@@ -314,12 +315,20 @@ int main(int argc, char* argv[])
     printf("DEBUG: xsecWeight = %f\n", xsecWeight);
   }
 
+  //b-tagging: beff and leff must be derived from the MC sample using the discriminator vs flavor
+  //the scale factors are taken as average numbers from the pT dependent curves see:
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
+  BTagSFUtil btsfutil;
+  float beff(0.68), sfb(0.99), sfbunc(0.015);
+  float leff(0.13), sfl(1.05), sflunc(0.12);
+
   // make sure that histogram internally produced in 
   // lumireweighting are not destroyed when closing the file
   gROOT->cd();  
 
   higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
 
+  // ----------------------------------------------------------------------------------------
   // event loop  
   // loop on all the events
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
@@ -425,11 +434,31 @@ int main(int argc, char* argv[])
     pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas,
 						  vtx, selLeptons, selPhotons); 
     if ( selJets.size() == 0) continue;  
+    int njets(0), nbtags(0), nbtagsJP(0);
+    float mindphijmet(9999.);
+
     for(size_t ijet=0; ijet<selJets.size(); ijet++) {
       pat::Jet jet = selJets[ijet]; 
       mon.fillHisto("jetpt", tag, jet.pt(), weight);
       mon.fillHisto("jeteta", tag, jet.eta(), weight);
-    }
+
+      if(jet.pt()>30) {
+	njets++;
+	float dphijmet=fabs(deltaPhi(met.phi(), jet.phi()));
+	if(dphijmet<mindphijmet) mindphijmet=dphijmet;
+	if(fabs(jet.eta())<2.5){
+	  bool hasCSVtag(jet.bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
+	  //update according to the SF measured by BTV
+	  if(isMC){
+	    int flavId=jet.partonFlavour();
+	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
+	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
+	    else	              btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
+	  }
+	  nbtags   += hasCSVtag;
+	}
+      }
+    } 
     
     // met
     mon.fillHisto("met", tag, met.pt(), weight);
@@ -456,7 +485,23 @@ int main(int argc, char* argv[])
 
     mon.fillHisto("eventflow", tags, 0, weight);
     if(chTags.size()==0) continue;
-        
+
+    // baseline selection
+    bool passMass(fabs(boson.mass()-91)<15);
+    bool passQt(boson.pt()>55);
+    bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
+    bool passBtags(nbtags==0);
+    bool passMinDphijmet( njets==0 || mindphijmet>0.5);
+    
+    passMass=hasPhotonTrigger;
+    passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
+      
+    mon.fillHisto("eventflow", tags, 1, weight);
+    // mon.fillHisto("nvtxraw", tags, vtx.size(), weight/puWeight);
+    mon.fillHisto("nvtx", tags, vtx.size(), weight);
+    mon.fillHisto("rho", tags, rho, weight);
+     
+    
   } // end event loop 
   printf(" done.\n"); 
   
