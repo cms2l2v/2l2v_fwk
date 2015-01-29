@@ -38,15 +38,18 @@
 
 class MyVariable;
 class MyStyle;
+class My2DPlot;
 
 typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> fileChains;
 
 void printHelp();
 std::vector<MyVariable> getVariables(JSONWrapper::Object& json);
+std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
 fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension);
 TH1D* getHist(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
 THStack* getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
-void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, MyVariable xVar, MyVariable yVar, bool correctFiles = true);
+void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, My2DPlot TwoDPlot, bool correctFiles = true);
+std::string cleanString(std::string str, std::string illegal, char replacement);
 
 
 class MyStyle
@@ -101,6 +104,7 @@ public:
   inline std::string& label(){return _label;};
 
   friend std::vector<MyVariable> getVariables(JSONWrapper::Object& json);
+  friend std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
 
 private:
   std::string _name;
@@ -108,6 +112,22 @@ private:
   double _minVal, _maxVal;
   int _bins;
   std::string _label;
+
+protected:
+};
+
+class My2DPlot
+{
+public:
+
+  inline MyVariable& xVar(){return xVar_;};
+  inline MyVariable& yVar(){return yVar_;};
+
+  friend std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
+
+private:
+  MyVariable xVar_;
+  MyVariable yVar_;
 
 protected:
 };
@@ -226,6 +246,7 @@ int main(int argc, char** argv)
   JSONWrapper::Object variables_json(variablesFile, true);
 
   std::vector<MyVariable> variables = getVariables(variables_json);
+  std::vector<My2DPlot> TwoDPlots = get2DPlots(variables_json);
   auto  BG_samples = getChainsFromJSON(json, inDir,  "BG", ttree_name, customExtension);
   auto SIG_samples = getChainsFromJSON(json, inDir, "SIG", ttree_name, customExtension);
 
@@ -233,6 +254,7 @@ int main(int argc, char** argv)
   TCut SIGCut = BGCut && signalSelection.c_str();
 
   TCanvas c1("c1", "c1", 800, 600);
+  c1.SetLogy();
   gStyle->SetOptStat(0);
   for(auto variable = variables.begin(); variable != variables.end(); ++variable)
   {
@@ -251,9 +273,13 @@ int main(int argc, char** argv)
     //final_bg->SetLineColor(kBlue);
     //final_sig->SetLineColor(kRed);
     final_bg->Draw();
+    final_bg->SetMinimum(10e-6);
     double max = final_sig->GetMaximum();
+    double min = final_sig->GetMinimum();
     if(final_bg->GetMaximum() > max)
       max = final_bg->GetMaximum();
+    if(final_bg->GetMinimum() < min)
+      min = final_bg->GetMinimum();
 
     if(extraSignal != "")
     {
@@ -264,13 +290,17 @@ int main(int argc, char** argv)
       sig_2->SetLineColor(kBlue);
       if(sig_2->GetMaximum() > max)
         max = sig_2->GetMaximum();
+      if(sig_2->GetMinimum() < min)
+        min = sig_2->GetMinimum();
       final_bg->SetMaximum(max);
+//      final_bg->SetMinimum(min);
       final_sig->Draw("same");
       sig_2->Draw("same");
     }
     else
     {
       final_bg->SetMaximum(max);
+//      final_bg->SetMinimum(min);
       final_sig->Draw("same");
     }
 
@@ -283,23 +313,10 @@ int main(int argc, char** argv)
     delete final_sig;
   }
 
+  for(auto TwoDPlot = TwoDPlots.begin(); TwoDPlot != TwoDPlots.end(); ++TwoDPlot)
   {
-    MyVariable met;
-    met.name() = "MET";
-    met.expression() = "met.Et()";
-    met.bins() = 30;
-    met.minVal() = 0;
-    met.maxVal() = 300;
-    MyVariable tauLeadPt;
-    tauLeadPt.name() = "tauLeadPt";
-    tauLeadPt.expression() = "tauLeadPt";
-    tauLeadPt.bins() = 30;
-    tauLeadPt.minVal() = 0;
-    tauLeadPt.maxVal() = 300;
-    tauLeadPt.label() = "p_{T}(#tau)";
-
-    make2D(outDir, plotExt, BG_samples, BGCut, met, tauLeadPt);
-    make2D(outDir, plotExt, SIG_samples, SIGCut, met, tauLeadPt, false);
+    make2D(outDir, plotExt, BG_samples, BGCut, *TwoDPlot);
+    make2D(outDir, plotExt, SIG_samples, SIGCut, *TwoDPlot, false);
   }
 
   std::cout << "The list of ignored files, either missing or corrupt, can be found below:" << std::endl;
@@ -312,29 +329,30 @@ int main(int argc, char** argv)
   return 0;
 }
 
-void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, MyVariable xVar, MyVariable yVar, bool correctFiles)
+void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, My2DPlot TwoDPlot, bool correctFiles)
 {
-  std::string xName = xVar.name();
-  std::string xExpression = xVar.expression();
-  std::string xLabel = xVar.label();
+  std::string xName = TwoDPlot.xVar().name();
+  std::string xExpression = TwoDPlot.xVar().expression();
+  std::string xLabel = TwoDPlot.xVar().label();
   if(xLabel == "")
     xLabel = xName;
-  std::string yName = yVar.name();
-  std::string yExpression = yVar.expression();
-  std::string yLabel = yVar.label();
+  std::string yName = TwoDPlot.yVar().name();
+  std::string yExpression = TwoDPlot.yVar().expression();
+  std::string yLabel = TwoDPlot.yVar().label();
   if(yLabel == "")
     yLabel = yName;
 
-  TCanvas c1("c1", "c1", 800, 800);
+  TCanvas c2("c2", "c2", 800, 800);
+  c2.SetLogz();
   for(auto process = files.begin(); process != files.end(); ++process)
   {
-    TH2D* processHist = new TH2D((xName+yName+process->first).c_str(), (process->first+";"+xLabel+";"+yLabel).c_str(), xVar.bins(), xVar.minVal(), xVar.maxVal(), yVar.bins(), yVar.minVal(), yVar.maxVal());
+    TH2D* processHist = new TH2D((xName+yName+process->first).c_str(), (process->first+";"+xLabel+";"+yLabel).c_str(), TwoDPlot.xVar().bins(), TwoDPlot.xVar().minVal(), TwoDPlot.xVar().maxVal(), TwoDPlot.yVar().bins(), TwoDPlot.yVar().minVal(), TwoDPlot.yVar().maxVal());
     for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
     {
       if(sample->first == 0)
         continue;
 
-      TH2D tempHisto("temp", (";"+xLabel+";"+yLabel).c_str(), xVar.bins(), xVar.minVal(), xVar.maxVal(), yVar.bins(), yVar.minVal(), yVar.maxVal());
+      TH2D tempHisto("temp", (";"+xLabel+";"+yLabel).c_str(), TwoDPlot.xVar().bins(), TwoDPlot.xVar().minVal(), TwoDPlot.xVar().maxVal(), TwoDPlot.yVar().bins(), TwoDPlot.yVar().minVal(), TwoDPlot.yVar().maxVal());
       sample->second->Draw((yExpression+":"+xExpression+">>temp").c_str(), cut*"weight", "goff");
       if(correctFiles)
         tempHisto.Scale(1./sample->first);
@@ -342,14 +360,27 @@ void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains fil
     }
 
     processHist->Draw("colz");
+    processHist->SetMinimum(processHist->GetMinimum());
 
     for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
-      c1.SaveAs((outDir + process->first + "_" + xName + "_" + yName + *ext).c_str());
+      c2.SaveAs((outDir + cleanString(process->first, "\\\"?|<>:/#+{} ", '_') + "_" + xName + "_" + yName + *ext).c_str());
 
     delete processHist;
   }
 
   return;
+}
+
+std::string cleanString(std::string str, std::string illegal, char replacement)
+{
+  for(auto it = str.begin(); it != str.end(); ++it)
+  {
+    bool found = illegal.find(*it) != std::string::npos;
+    if(found)
+      *it = replacement;
+  }
+
+  return str;
 }
 
 THStack* getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles)
@@ -542,6 +573,69 @@ fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std
     }
     tempProcess.second = tempSamples;
     retVal.push_back(tempProcess);
+  }
+
+  return retVal;
+}
+
+std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json)
+{
+  std::vector<My2DPlot> retVal;
+
+  std::vector<JSONWrapper::Object> TwoDPlots = json["2DPlots"].daughters();
+  for(auto TwoDPlot = TwoDPlots.begin(); TwoDPlot != TwoDPlots.end(); ++TwoDPlot)
+  {
+    My2DPlot TwoDPlotInfo;
+
+    TwoDPlotInfo.xVar_._name = TwoDPlot->getString("xname", "");
+    TwoDPlotInfo.yVar_._name = TwoDPlot->getString("yname", "");
+    if(TwoDPlotInfo.xVar()._name == "" || TwoDPlotInfo.yVar()._name == "")
+    {
+      std::cout << "All variables must have names. Continuing..." << std::endl;
+      continue;
+    }
+    TwoDPlotInfo.xVar_._expression = TwoDPlot->getString("xexpression", "");
+    TwoDPlotInfo.yVar_._expression = TwoDPlot->getString("yexpression", "");
+    if(TwoDPlotInfo.xVar_._expression == "")
+    {
+      std::cout << TwoDPlotInfo.yVar_._name << "_Vs_" << TwoDPlotInfo.xVar_._name << ": The variable " << TwoDPlotInfo.xVar_._name << " must have and expression, it must be a valid root exprtession. Continuing..." << std::endl;
+      continue;
+    }
+    if(TwoDPlotInfo.yVar_._expression == "")
+    {
+      std::cout << TwoDPlotInfo.yVar_._name << "_Vs_" << TwoDPlotInfo.xVar_._name << ": The variable " << TwoDPlotInfo.yVar_._name << " must have and expression, it must be a valid root exprtession. Continuing..." << std::endl;
+      continue;
+    }
+    TwoDPlotInfo.xVar_._minVal = TwoDPlot->getDouble("xminVal", 0);
+    TwoDPlotInfo.xVar_._maxVal = TwoDPlot->getDouble("xmaxVal", 0);
+    TwoDPlotInfo.yVar_._minVal = TwoDPlot->getDouble("yminVal", 0);
+    TwoDPlotInfo.yVar_._maxVal = TwoDPlot->getDouble("ymaxVal", 0);
+    if(TwoDPlotInfo.xVar_._maxVal - TwoDPlotInfo.xVar_._minVal <= 0)
+    {
+      std::cout << TwoDPlotInfo.yVar_._name << "_Vs_" << TwoDPlotInfo.xVar_._name << ": maxVal and minVal for " << TwoDPlotInfo.xVar_._name << " must be specified and define a valid range of values. Continuing..." << std::endl;
+      continue;
+    }
+    if(TwoDPlotInfo.yVar_._maxVal - TwoDPlotInfo.yVar_._minVal <= 0)
+    {
+      std::cout << TwoDPlotInfo.yVar_._name << "_Vs_" << TwoDPlotInfo.xVar_._name << ": maxVal and minVal for " << TwoDPlotInfo.yVar_._name << " must be specified and define a valid range of values. Continuing..." << std::endl;
+      continue;
+    }
+    TwoDPlotInfo.xVar_._bins = TwoDPlot->getInt("xbins", 0);
+    TwoDPlotInfo.yVar_._bins = TwoDPlot->getInt("ybins", 0);
+    if(TwoDPlotInfo.xVar_._bins <= 0)
+    {
+      std::cout << TwoDPlotInfo.yVar_._name << "_Vs_" << TwoDPlotInfo.xVar_._name << ": bins for " << TwoDPlotInfo.xVar_._name << " must be a resonable and valid value. Continuing..." << std::endl;
+      continue;
+    }
+    if(TwoDPlotInfo.yVar_._bins <= 0)
+    {
+      std::cout << TwoDPlotInfo.yVar_._name << "_Vs_" << TwoDPlotInfo.xVar_._name << ": bins for " << TwoDPlotInfo.yVar_._name << " must be a resonable and valid value. Continuing..." << std::endl;
+      continue;
+    }
+    TwoDPlotInfo.xVar_._label = TwoDPlot->getString("xlabel", "");
+    TwoDPlotInfo.yVar_._label = TwoDPlot->getString("ylabel", "");
+
+    retVal.push_back(TwoDPlotInfo);
   }
 
   return retVal;

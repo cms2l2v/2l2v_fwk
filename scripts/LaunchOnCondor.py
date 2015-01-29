@@ -223,7 +223,7 @@ def AddJobToCmdFile():
 	         absoluteOutPath = Path_Out
 	         if(not os.path.isabs(absoluteOutPath)):
 	           absoluteOutPath = os.getcwd() + "/" + Path_Out
-	         temp = temp + " -oo " + absoluteOutPath + ".cout"
+	         temp = temp + " -oo " + absoluteOutPath + ".out"
 	       temp = temp + " '" + absoluteShellPath + "'\n"
 	       cmd_file.write(temp)
 #               cmd_file.write("bsub -q " + Jobs_Queue + " -J " + Jobs_Name+Jobs_Index + " '" + os.getcwd() + "/"+Path_Shell + " 0 ele'\n")
@@ -239,7 +239,15 @@ def AddJobToCmdFile():
             else:
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
-                cmd_file.write("qsub " + absoluteShellPath + "\n")
+                temp = "qsub "
+                logOut = Path_Log
+                if(not os.path.isabs(logOut)):
+                  logOut = os.getcwd() + "/" + Path_Log
+                temp = temp + "-e " + logOut + ".err "
+                temp = temp + "-o " + logOut + ".out "
+                temp = temp + absoluteShellPath + "\n"
+                cmd_file.write(temp)
+#                cmd_file.write("qsub " + absoluteShellPath + "\n")
         cmd_file.close()
 
 def CreateDirectoryStructure(FarmDirectory):
