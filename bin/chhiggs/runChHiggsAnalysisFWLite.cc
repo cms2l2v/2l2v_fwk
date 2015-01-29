@@ -540,6 +540,7 @@ int main(int argc, char* argv[])
       //load the event content from tree
       //      evSummary.getEntry(iev);
       ev.to(iev);
+
       //      DataEventSummary &ev = evSummary.getEvent();
       if(!isMC && duplicatesChecker.isDuplicate( ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event()) ) { nDuplicates++; continue; }
 
@@ -644,10 +645,19 @@ int main(int argc, char* argv[])
       // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
       //
       //
+
+      // Event info:
+      if(debug){
+	cout << " ================================= NEW EVENT ================================ " << endl;
+	cout << "Run " << ev.eventAuxiliary().run() << ", lumi " << ev.eventAuxiliary().luminosityBlock() << ", evId " << ev.eventAuxiliary().event() << endl;
+      }
       
       //
       // LEPTON ANALYSIS
       //
+
+      if(debug) cout << "---------------------------------------------- LEPTONS DEBUG -----------------------------" << endl;
+
       llvvLeptonCollection selLeptons;
       llvvLeptonCollection selSingleLepLeptons;
       for(size_t ilep=0; ilep<leptons.size(); ilep++)
@@ -715,7 +725,7 @@ int main(int argc, char* argv[])
 //	  }
 //	  if(overlapWithTaus)continue;
 
-
+	  if(debug) cout << "Lepton pdgId==" << leptons[ilep].id << ", pt==" << leptons[ilep].pt() << ", eta==" << leptons[ilep].pt() << ", passID==" << passSingleLepId << ", passIso==" << passSingleLepIso << ", passKin==" << passSingleLepKin << endl;
 	  
 	  if(passId          && passIso          && passKin         ) selLeptons.push_back(leptons[ilep]);
 	  if(passSingleLepId && passSingleLepIso && passSingleLepKin) selSingleLepLeptons.push_back(leptons[ilep]);
@@ -726,7 +736,8 @@ int main(int argc, char* argv[])
       //at this point check if it's worth continuing
       //      if(selLeptons.size()<1) continue;
 
-
+      if(debug) cout << "---------------------------------------------------------------------------" << endl;
+	
       //
       // SINGLE LEPTON ANALYSIS
       //
@@ -786,7 +797,7 @@ int main(int argc, char* argv[])
 	    if(lid==13) nVetoMu++; 
 	  }
       }
-
+	
 
       //check the channel
       //prepare the tag's vectors for histo filling
@@ -1162,7 +1173,7 @@ int main(int argc, char* argv[])
       if(chTags[1] == "singlemu" || chTags[1] == "singlee" ){
 	mon.fillHisto("eventflowsinglelepton",chTags,0,weight); // Log number of initial events
 	if(selSingleLepLeptons.size()<1) continue;
-	
+
 	if(isMC){
 	  puWeight          = singleLepLumiWeights->weight(genEv.ngenITpu) * singleLepPUNorm[0];
 	  weight            = xsecWeight*puWeight;
@@ -1196,7 +1207,7 @@ int main(int argc, char* argv[])
 	      ngenLeptonsStatus3++;
 	    }
 	    if(mctruthmode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
-	    if(mctruthmode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
+ 	    if(mctruthmode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
 	  }
 	
 	if(tPt>0 && tbarPt>0 && topPtWgt)
@@ -1231,7 +1242,9 @@ int main(int argc, char* argv[])
 	int njets(0), nbjets(0);
 	int nTrueJets(0);
 	int nLooseJets(0);
-	
+
+
+	if(debug) cout << "---------------------------------------------- JET DEBUG -----------------------------" << endl;
 	for(size_t ijet=0; ijet<jets.size(); ijet++) 
 	  {
 	    //correct jet
@@ -1246,6 +1259,10 @@ int main(int argc, char* argv[])
 	    jets[ijet] *= newJECSF;
 	    jets[ijet].torawsf = 1./newJECSF;
 	    if(jets[ijet].pt()<15 || fabs(jets[ijet].eta())>4.7 ) continue;
+
+	    if(debug){
+	      cout << "\t\t\t Jet " << ijet << " pt=" << jets[ijet].pt() << ", eta=" << jets[ijet].eta() << endl;
+	    }
 	    
 	    
 	    //cross-clean with selected leptons, photons and taus
@@ -1256,8 +1273,10 @@ int main(int argc, char* argv[])
 	      if( taus[itau].pt()<20.0 || fabs(taus[itau].eta()) > 2.3) continue;
 	      minDRtj = TMath::Min( minDRtj, (double)deltaR(jets[ijet],taus[itau] ) );
 	    }
-	    if(minDRlj<0.4 || minDRlg<0.4 || minDRtj<0.4) continue;
-	    
+	    if(minDRlj<0.4 || minDRlg<0.4 || minDRtj<0.4){
+	      if(debug) cout << "Rejected: DRlj=" << minDRlj << ", DRlg: " << minDRlg << ", DRtj=" << minDRtj << endl;
+	      continue;
+	    }
 	    
 	    //jet id
 	    // float pumva=jets[ijet].puMVA;
@@ -1293,6 +1312,7 @@ int main(int argc, char* argv[])
 	    
 	    if(jets[ijet].pt()>=30 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId)
 	      nTrueJets++;
+	    if(debug) cout << "passPFLoose=" << passPFloose << ", passLooseSimplePuId=" << passLooseSimplePuId << endl;
 	    if(jets[ijet].pt()>=20 && abs(jets[ijet].eta())<=2.5 && passPFloose && passLooseSimplePuId)
 	      nLooseJets++;
 	    
@@ -1361,12 +1381,14 @@ int main(int argc, char* argv[])
 		}
 	    }
 	    //	    if(!hasCSVV1L) continue;
+	    if(debug) cout << "Jet btagging status = " << hasBtagCorr << endl;
 	    if(!hasBtagCorr) continue;
 	    mon.fillHisto("bjetpt"    ,  chTags, jets[ijet].pt(),  weight);
 	    // if(jets[ijet].pt()>20 && fabs(jets[ijet].eta())<2.4 && jets[ijet].origcsv>0.898){
 	    selBJets.push_back(jets[ijet]);  
 	    nbjets++;
 	  }
+	if(debug) cout << "---------------------------------------------- -----------------------------" << endl;
 	std::sort(selJets.begin(), selJets.end(), sort_llvvObjectByPt);
 	std::sort(selBJets.begin(), selBJets.end(), sort_llvvObjectByPt);
 	mon.fillHisto("nbjets"    ,  chTags, nbjets,  weight);
@@ -1374,6 +1396,7 @@ int main(int argc, char* argv[])
 	//
 	// TAU ANALYSIS
 	//
+	if(debug) cout << "---------------------------------------------- TAU DEBUG -----------------------------" << endl;
 	llvvTauCollection 
 	  selTaus,
 	  selTausNoDecayMode;
@@ -1385,6 +1408,11 @@ int main(int argc, char* argv[])
 	  for(int l1=0   ;l1<(int)selSingleLepLeptons.size();l1++){
 	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
 	  }
+	  if(debug) cout << "Tau pt=" << tau.pt() << ", eta=" << tau.eta() << ", overlapwithlepton=" << overlapWithLepton << ", dz==" << tau.dZ << ", emfraction==" << tau.emfraction <<
+	    ", againstMuonTight3== " << tau.passId(llvvTAUID::againstMuonTight3) << ", againstElectronMediumMVA5==" << tau.passId(llvvTAUID::againstElectronMediumMVA5) <<
+		      ", isolation(3hits, deltabetacorr)==" << tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits) << ", decaymodefinding==" << tau.passId(llvvTAUID::decayModeFinding) << endl;
+
+
 	  if(overlapWithLepton)continue;
 	  
 	  //         printf("TauId: "); for(unsigned int i=0;i<64;i++){printf("%i ", (int) ((tau.idbits>>i)&1));}printf("\n");
@@ -1394,7 +1422,6 @@ int main(int argc, char* argv[])
 	  
 	  //	  if(abs(tau.id/15.0) !=1) continue; // Only 1 prong taus MEH // Non non-1 taus. Actually this should be always ok 
 	  
-	  
 	  if(!tau.passId(llvvTAUID::againstMuonTight3))continue; 
 	  if(!tau.passId(llvvTAUID::againstElectronMediumMVA5))continue;
 	  if(!tau.passId(llvvTAUID::byMediumCombinedIsolationDeltaBetaCorr3Hits))continue;
@@ -1402,6 +1429,7 @@ int main(int argc, char* argv[])
 	  if(!tau.passId(llvvTAUID::decayModeFinding))continue;
 	  selTaus.push_back(tau);         
 	}
+	if(debug) cout << "-------------------------------------------------------------------------" << endl;
 	
 	
 	// NOW FOR THE CONTROL PLOTS
@@ -1441,6 +1469,42 @@ int main(int argc, char* argv[])
 	  mon.fillHisto( "jetpt"  , chTags, selJets[0].pt(), weight);
 	  mon.fillHisto( "jeteta" , chTags, selJets[0].eta(), weight);
 	  // FIXME: add exclusive plots
+
+	  
+	  
+	  if(debug){
+	    llvvLepton mylep; mylep=selSingleLepLeptons[0];
+	    TString lepid(mylep.id==13 ? "muon" : "electron");
+	    
+	    bool passKin(true),passId(true),passIso(true);	    
+	    float lepeta( lepid==11 ? mylep.electronInfoRef->sceta : mylep.eta() );
+	    if(mylep.pt()< (lepid==11 ? 20 : 10 ) )                       passKin=false; // Single lepton has a higher cut for muons
+	    if( abs(lepeta)> (lepid==11 ? 2.5 : 2.1) )                    passKin=false; // Single lepton has 2.1 for eta. Double lepton 2.1 
+	    if(lepid==11 && (abs(lepeta)>1.4442 && abs(lepeta)<1.5660)) passKin=false; // Crack veto
+	    
+	    //id
+	    Int_t idbits(mylep.idbits);
+	    if(lepid==11){
+	      if(mylep.electronInfoRef->isConv)              passId=false;
+	      bool isLoose ( ((idbits >> 4) & 0x1));
+	      if(!isLoose)                                   passId=false;
+	    }
+	    else{
+	      bool isLoose    ( ((idbits >> 8) & 0x1) ); // Veto is loose
+	      //bool isTight    = ((idbits >> 10) & 0x1);
+	      if(!isLoose)                                   passId=false;
+	    }
+	    
+	    //isolation
+	    float relIso( utils::cmssw::relIso(mylep, rho) );
+	    if( (lepid==11 && relIso>0.15) || (lepid!=11 && relIso>0.2) ) passIso=false; // SingleLepton values
+	    
+	    cout << "Selected lepton is a " << lepid << "with pt=" << mylep.pt() << " eta=" << mylep.eta() << endl;
+	    cout << "\t\t passID=" << passId << ", passIso=" << passIso << ", passKin=" << passKin << endl;	   
+
+ 
+	  }
+
 	}
 	
 	

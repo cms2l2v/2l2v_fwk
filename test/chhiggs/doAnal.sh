@@ -61,7 +61,8 @@ elif [ "${1}" = "lip" ]; then
     BASEDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/out/
     INPUTDIR=/lustre/ncg.ingrid.pt/cmst3/store/user/cbeiraod/14_08_06_2l2nu_EDMtuples_merged/
     #INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff2/
-    INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff/
+    #INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/vischia/newstuff/
+    INPUTSLEPDIR=/lustre/ncg.ingrid.pt/cmslocal/samples/tempSingleLepton
     #BASEJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/all-samples_fwlite.json
     BASEJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/almost-samples_fwlite.json
 #    SLEPJSON=${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/slep_fwlite.json
@@ -73,6 +74,8 @@ elif [ "${1}" = "lip" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j ${BASEJSON} -o ${BASEDIR} -d  ${INPUTDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "anal_sl" ]; then
 	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j ${SLEPJSON} -o ${BASEDIR} -d  ${INPUTSLEPDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
+    elif [ "${2}" = "viesturstest" ]; then
+	runLocalAnalysisOverSamples.py -e runChHiggsAnalysisFWLite -j ${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/viesturstest_fwlite.json -o ${CMSSW_BASE}/src/UserCode/llvv_fwk/test/chhiggs/viesturstest/ -d ${INPUTSLEPDIR} -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @debug=True @is2011=False @jacknife=0 @jacks=0 @weightsFile='${CMSSW_BASE}/src/UserCode/llvv_fwk/data/weights/'" -s 8nh
     elif [ "${2}" = "plots" ]; then
 	runPlotterFWLite --iEcm 8 --iLumi 19782 --inDir ${BASEDIR} --outDir ${BASEDIR}plots/ --outFile ${BASEDIR}plotter.root  --json ${PLOTSJSON} --noPowers --showUnc
    elif [ "${2}" = "display" ]; then	
