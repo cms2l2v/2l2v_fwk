@@ -66,8 +66,6 @@ initHistograms(){
   mon.addHistogram(new TH1F("jetnconst", ";Jet number of constitutes;Events", 100, 0, 100) );
   mon.addHistogram(new TH1F("jetpudsct", ";Jet pileup ID discriminant;Events", 100, -1, 1) );
 
-  // met
-  mon.addHistogram(new TH1F("met", ";Missing ET [GeV];Events", 100, 0, 1000) );
 
   // lepton
   // mon.addHistogram(new TH1F("leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
@@ -86,14 +84,33 @@ initHistograms(){
   mon.addHistogram(new TH1F("thirdleptoneta", ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram(new TH1F("thirdleptonmt", ";Transverse mass(3^{rd} lepton,E_{T}^{miss}) [GeV];Events", 50,0,500) );
 
-  mon.addHistogram( new TH1F("csv",      ";Combined Secondary Vertex;Jets",50,0.,1.) );
-  mon.addHistogram( new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
-  mon.addHistogram( new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
-  mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
-  
-  mon.addHistogram(new TH1F("nbtags", ";b-tag multiplicity;Events",5,0,5) );
-  
+  // combined secondary vertex 
+  mon.addHistogram(new TH1F("csv",      ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram(new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram(new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram(new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
 
+  // b-tags 
+  mon.addHistogram(new TH1F("nbtags", ";b-tag multiplicity;Events",5,0,5) );
+
+  mon.addHistogram(new TH1F("mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+
+  // MET
+  Double_t metaxis[] = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100,
+			125, 150, 175, 200, 250, 300, 400, 500};
+  Int_t nmetAxis=sizeof(metaxis)/sizeof(Double_t);
+  mon.addHistogram(new TH1F("met", ";Missing transverse energy [GeV];Events", nmetAxis-1, metaxis));
+  mon.addHistogram( new TH1F( "qmass", ";Mass [GeV];Events / (1 GeV)",100,76,106));
+  mon.addHistogram( new TH1D( "balance", ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
+  mon.addHistogram( new TH1F( "axialmet", ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
+  
+  // MT 
+  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,
+		     325,350,375,400,450,500,600,700,800,900,1000,2000};
+  Int_t nmtAxis=sizeof(mtaxis)/sizeof(Double_t);
+  mon.addHistogram(new TH1F( "mt", ";Transverse mass;Events",nmtAxis-1,mtaxis) );
+
+  
   return mon; 
 }
 
@@ -561,7 +578,48 @@ int main(int argc, char* argv[])
     }
     
     mon.fillHisto( "nbtags",tags,nbtags,weight);
-    
+
+    // "b-veto"
+    if(!passBtags) continue;
+    mon.fillHisto("eventflow",tags,5,weight);
+
+    // include photon prediction from this point forward
+    // requires looping tag by tag as weights are category-specific
+    // the following relies on the hypothesis that the tags are ordered as follows:
+    // all, ch, ch+subtag, ch, ch+subtag, etc...
+    // so that the ch will be assigned the weight of its subtag and all will be
+    // the summ of all ch+subtag weights
+    std::vector<LorentzVector> massiveBoson(tags.size(),boson);
+    std::vector<float> photonWeights(tags.size(),1.0);
+
+    //  Todo: gammaWgtHandler  
+
+    for(size_t itag=0; itag<tags.size(); itag++){		
+      //update the weight
+      TString icat=tags[itag];
+      float iweight(weight*photonWeights[itag]);
+      LorentzVector iboson=massiveBoson[itag];
+
+      mon.fillHisto("mindphijmet",icat,mindphijmet,iweight);
+
+      // "#Delta #phi(jet,E_{T}^{miss})>0.5" 
+      if(!passMinDphijmet) continue;
+
+      mon.fillHisto("eventflow",icat,6,iweight);
+      //this one is used to sample the boson mass: cuts may shape Z lineshape
+      mon.fillHisto("qmass",       tags, boson.mass(),weight); 
+
+      mon.fillHisto( "njets",icat,njets,iweight);
+      mon.fillHisto( "met",icat,met.pt(),iweight,true);
+      mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
+      TVector2 met2(met.px(),met.py());
+      TVector2 boson2(iboson.px(), iboson.py());
+      double axialMet(boson2*met2); axialMet/=-iboson.pt();
+      mon.fillHisto( "axialmet",icat,axialMet,iweight);
+      double mt=higgs::utils::transverseMass(iboson,met,true);
+      mon.fillHisto( "mt",icat,mt,iweight,true);
+      
+    } // end tags loop 
     
   } // end event loop 
   printf(" done.\n"); 
