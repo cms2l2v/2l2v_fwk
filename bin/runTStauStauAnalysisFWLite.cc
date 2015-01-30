@@ -1458,6 +1458,8 @@ int main(int argc, char* argv[])
       bool passKin = true;
       if(abs(jets[i].eta()) > maxJetEta)
         passKin = false;
+      if(jets[i].pt() <= 30)  // TODO: remove hardcoded value
+        passKin = false;
 
       // B-jets
       bool isBJet = false;
@@ -1901,6 +1903,7 @@ int main(int argc, char* argv[])
       {
         mon.fillHisto("eventflow", chTags, 0, weight);
         if(met.pt() > 30)
+//        if(true)
         {
           mon.fillHisto("eventflow", chTags, 1, weight);
           if(selLeptons.size() > 0)
@@ -2003,6 +2006,7 @@ int main(int argc, char* argv[])
     }
 
     if(triggeredOn && met.pt() > 30 && selLeptons.size() > 0 && selBJets.size() == 0 && selTaus.size() > 0 && isOS && !isMultilepton && (!doSVfit || isSVfit))
+//    if(triggeredOn && selLeptons.size() > 0 && selBJets.size() == 0 && selTaus.size() > 0 && isOS && !isMultilepton && (!doSVfit || isSVfit))
       selected = true;
 
     #if defined(DEBUG_EVENT)
