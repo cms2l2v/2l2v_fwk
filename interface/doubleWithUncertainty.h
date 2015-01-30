@@ -50,6 +50,8 @@ public:
   doubleUnc  operator* (const double& val) const;
   doubleUnc  operator/ (const double& val) const;
 
+  doubleUnc sqrt() const;
+
 
   friend std::ostream& operator << (std::ostream &o, doubleUnc& val);
 
