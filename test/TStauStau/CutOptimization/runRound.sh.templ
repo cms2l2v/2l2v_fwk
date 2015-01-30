@@ -7,4 +7,5 @@ cd /exper-sw/cmst3/cmssw/users/cbeiraod/SLC6/CMSSW_5_3_15/src/
 eval `scramv1 runtime -sh`
 
 cd #CWD
-runCutOptimizer --limit 1 --round #ROUND --json #FILE --outDir ./Results/ --plotExt .png --plotExt .root
+runCutOptimizer --round #ROUND --json #FILE --outDir ./Results/ --plotExt .png --plotExt .root
+#--limit 1

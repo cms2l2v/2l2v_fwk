@@ -43,3 +43,10 @@ do
   sed -i -e "s|#CWD|$CWD|g" "./Results/runRound$round.sh"
   sed -i -e "s|#FILE|$FILE|g" "./Results/runRound$round.sh"
 done
+
+echo "Submitting the jobs"
+for (( round=0; round<$NRounds; round++ ))
+do
+  TEMP="qsub ./Results/runRound$round.sh"
+  eval $TEMP
+done
