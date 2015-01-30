@@ -74,8 +74,26 @@ initHistograms(){
   mon.addHistogram(new TH1F("mindrlg", ";Min #Delta R(lepton, #gamma);Events", 100, 0, 10) );
   mon.addHistogram(new TH1F("nlep", ";Number of leptons;Events", 10, 0, 10) );
   mon.addHistogram(new TH1F("nexlep", ";Number of extra leptons;Events", 10, 0, 10) );
+  mon.addHistogram(new TH1F("zmass", ";Mass [GeV];Events", 100, 40, 250) );
+  mon.addHistogram(new TH1F("zy", ";Rapidity;Events", 50, 0, 3) );
+  mon.addHistogram(new TH1F("zpt", ";Transverse momentum [GeV];Events", 100, 0, 1500));
+  mon.addHistogram(new TH1F("qt", ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
+  mon.addHistogram(new TH1F("qtraw", ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
 
- 
+  //extra leptons in the event
+  mon.addHistogram(new TH1F("nextraleptons", ";Extra leptons;Events",4,0,4) );
+  mon.addHistogram(new TH1F("thirdleptonpt", ";Transverse momentum;Events", 50,0,500) );
+  mon.addHistogram(new TH1F("thirdleptoneta", ";Pseudo-rapidity;Events", 50,0,2.6) );
+  mon.addHistogram(new TH1F("thirdleptonmt", ";Transverse mass(3^{rd} lepton,E_{T}^{miss}) [GeV];Events", 50,0,500) );
+
+  mon.addHistogram( new TH1F("csv",      ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
+  mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
+  
+  mon.addHistogram(new TH1F("nbtags", ";b-tag multiplicity;Events",5,0,5) );
+  
+
   return mon; 
 }
 
@@ -434,7 +452,7 @@ int main(int argc, char* argv[])
     pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas,
 						  vtx, selLeptons, selPhotons); 
     if ( selJets.size() == 0) continue;  
-    int njets(0), nbtags(0), nbtagsJP(0);
+    int njets(0), nbtags(0); 
     float mindphijmet(9999.);
 
     for(size_t ijet=0; ijet<selJets.size(); ijet++) {
@@ -500,7 +518,50 @@ int main(int argc, char* argv[])
     // mon.fillHisto("nvtxraw", tags, vtx.size(), weight/puWeight);
     mon.fillHisto("nvtx", tags, vtx.size(), weight);
     mon.fillHisto("rho", tags, rho, weight);
-     
+    mon.fillHisto("zmass", tags,boson.mass(),weight); 
+    mon.fillHisto("zy",    tags,fabs(boson.Rapidity()),weight); 
+  
+    // "|M-91|<15"  
+    if(!passMass) continue; 
+    mon.fillHisto("eventflow",tags, 2,weight);
+    mon.fillHisto("zpt",      tags, boson.pt(),weight);
+
+    //these two are used to reweight photon -> Z, the 3rd is a control
+    mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
+    mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
+
+    // "p_{T}>55" 
+    if(!passQt) continue; 
+    mon.fillHisto("eventflow",tags,3,weight);
+    int nExtraLeptons((selLeptons.size()-2)+extraLeptons.size());
+    mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
+    if(nExtraLeptons>0){
+      LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1].p4() : extraLeptons[0].p4());
+      double dphi=fabs(deltaPhi(thirdLepton.phi(),met.phi()));
+      double mt=TMath::Sqrt(2*thirdLepton.pt()*met.pt()*(1-TMath::Cos(dphi)));
+      mon.fillHisto("thirdleptonpt",tags,thirdLepton.pt(),weight);
+      mon.fillHisto("thirdleptoneta",tags,fabs(thirdLepton.eta()),weight);
+      mon.fillHisto("thirdleptonmt",tags,mt,weight);
+    }
+
+    // "3^{rd}-lepton veto" 
+    if(!passThirdLeptonVeto) continue; 
+    mon.fillHisto("eventflow",tags,4,weight);
+    for(size_t ijet=0; ijet<selJets.size(); ijet++){
+      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
+      
+      float csv(selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+      mon.fillHisto( "csv",tags,csv,weight);
+      if(!isMC) continue;
+      int flavId=selJets[ijet].partonFlavour();
+      TString jetFlav("others");
+      if(abs(flavId)==5)      jetFlav="b";
+      else if(abs(flavId)==4) jetFlav="c";
+      mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
+    }
+    
+    mon.fillHisto( "nbtags",tags,nbtags,weight);
+    
     
   } // end event loop 
   printf(" done.\n"); 
