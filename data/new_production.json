@@ -214,7 +214,7 @@
       "tag":"Data8TeV_JetMon2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_JetMon2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/JetMon/Run2012C-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_JetMon2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/JetMon/Run2012C-22Jan2013-v1/AOD"}
       ]
     },
     {
@@ -455,19 +455,19 @@
     {
       "tag":"MC8TeV_QCD_HT250to500",
       "data":[
-        { "dtag":"MC8TeV_QCD_HT100to250"                    , "split":2, "xsec":276000       , "br":[ 1.0 ]               , "dset":"/QCD_HT-250To500_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCD_HT250to500"                    , "split":2, "xsec":276000       , "br":[ 1.0 ]               , "dset":"/QCD_HT-250To500_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_QCD_HT500to1000",
       "data":[
-        { "dtag":"MC8TeV_QCD_HT100to250"                    , "split":2, "xsec":8426       , "br":[ 1.0 ]               , "dset":"/QCD_HT-500To1000_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCD_HT500to1000"                    , "split":2, "xsec":8426       , "br":[ 1.0 ]               , "dset":"/QCD_HT-500To1000_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
       "tag":"MC8TeV_QCD_HT1000toInf",
       "data":[
-        { "dtag":"MC8TeV_QCD_HT100to250"                    , "split":1, "xsec":204       , "br":[ 1.0 ]               , "dset":"/QCD_HT-1000ToInf_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCD_HT1000toInf"                    , "split":1, "xsec":204       , "br":[ 1.0 ]               , "dset":"/QCD_HT-1000ToInf_TuneZ2star_8TeV-madgraph-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
       ]
     },
     {
