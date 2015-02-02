@@ -2191,7 +2191,7 @@ process.ak5GenJetsNoNu = cms.EDProducer("FastjetJetProducer",
     maxProblematicHcalCells = cms.uint32(9999999),
     src = cms.InputTag("genParticlesForJetsNoNu"),
     inputEtMin = cms.double(0.0),
-    srcPVs = cms.InputTag(""),
+    srcPVs = cms.InputTag("goodOfflinePrimaryVertices"),
     jetPtMin = cms.double(3.0),
     radiusPU = cms.double(0.5),
     maxProblematicEcalCells = cms.uint32(9999999),
@@ -3588,7 +3588,7 @@ process.ak7GenJetsNoNu = cms.EDProducer("FastjetJetProducer",
     maxProblematicHcalCells = cms.uint32(9999999),
     src = cms.InputTag("genParticlesForJetsNoNu"),
     inputEtMin = cms.double(0.0),
-    srcPVs = cms.InputTag(""),
+    srcPVs = cms.InputTag("goodOfflinePrimaryVertices"),
     jetPtMin = cms.double(3.0),
     radiusPU = cms.double(0.5),
     maxProblematicEcalCells = cms.uint32(9999999),
@@ -31393,7 +31393,7 @@ process.iterativeCone5GenJetsNoNu = cms.EDProducer("FastjetJetProducer",
     maxProblematicHcalCells = cms.uint32(9999999),
     src = cms.InputTag("genParticlesForJetsNoNu"),
     inputEtMin = cms.double(0.0),
-    srcPVs = cms.InputTag(""),
+    srcPVs = cms.InputTag("goodOfflinePrimaryVertices"),
     jetPtMin = cms.double(3.0),
     radiusPU = cms.double(0.5),
     maxProblematicEcalCells = cms.uint32(9999999),
@@ -37392,9 +37392,9 @@ process.patElectronsPFlow = cms.EDProducer("PATElectronProducer",
     reducedEndcapRecHitCollection = cms.InputTag("reducedEcalRecHitsEE"),
     pvSrc = cms.InputTag("goodOfflinePrimaryVertices"),
     addResolutions = cms.bool(False),
-    genParticleMatch = cms.InputTag(""),
+    genParticleMatch = cms.InputTag("electronMatchPFlow"),
     beamLineSrc = cms.InputTag("offlineBeamSpot"),
-    addGenMatch = cms.bool(False),
+    addGenMatch = cms.bool(True),
     electronIDSources = cms.PSet(
         eidTight = cms.InputTag("eidTight"),
         eidLoose = cms.InputTag("eidLoose"),
@@ -37411,7 +37411,7 @@ process.patElectronsPFlow = cms.EDProducer("PATElectronProducer",
         pfPhotons = cms.InputTag("elPFIsoDepositGammaPFlowPFIso"),
         pfChargedHadrons = cms.InputTag("elPFIsoDepositChargedPFlowPFIso")
     ),
-    embedGenMatch = cms.bool(False),
+    embedGenMatch = cms.bool(True),
     embedBasicClusters = cms.bool(True),
     isolationValues = cms.PSet(
         pfNeutralHadrons = cms.InputTag("elPFIsoValueNeutral03PFIdPFlowPFIso"),
@@ -37487,8 +37487,7 @@ process.patJetCorrFactorsPFlow = cms.EDProducer("JetCorrFactorsProducer",
     primaryVertices = cms.InputTag("goodOfflinePrimaryVertices"),
     levels = cms.vstring('L1FastJet', 
         'L2Relative', 
-        'L3Absolute', 
-        'L2L3Residual'),
+        'L3Absolute'),
     useNPV = cms.bool(True),
     rho = cms.InputTag("kt6PFJets","rho"),
     useRho = cms.bool(True),
@@ -37647,24 +37646,24 @@ process.patJets = cms.EDProducer("PATJetProducer",
 
 process.patJetsPFlow = cms.EDProducer("PATJetProducer",
     addJetCharge = cms.bool(True),
-    addGenJetMatch = cms.bool(False),
+    addGenJetMatch = cms.bool(True),
     embedGenJetMatch = cms.bool(True),
     addAssociatedTracks = cms.bool(True),
     addBTagInfo = cms.bool(True),
     partonJetSource = cms.InputTag("NOT_IMPLEMENTED"),
-    addGenPartonMatch = cms.bool(False),
-    JetPartonMapSource = cms.InputTag(""),
+    addGenPartonMatch = cms.bool(True),
+    JetPartonMapSource = cms.InputTag("patJetFlavourAssociationPFlow"),
     resolutions = cms.PSet(
 
     ),
-    genPartonMatch = cms.InputTag(""),
+    genPartonMatch = cms.InputTag("patJetPartonMatchPFlow"),
     addTagInfos = cms.bool(False),
     addPartonJetMatch = cms.bool(False),
-    embedGenPartonMatch = cms.bool(False),
+    embedGenPartonMatch = cms.bool(True),
     efficiencies = cms.PSet(
 
     ),
-    genJetMatch = cms.InputTag(""),
+    genJetMatch = cms.InputTag("patJetGenJetMatchPFlow"),
     userData = cms.PSet(
         userCands = cms.PSet(
             src = cms.VInputTag("")
@@ -37691,7 +37690,7 @@ process.patJetsPFlow = cms.EDProducer("PATJetProducer",
     embedPFCandidates = cms.bool(True),
     addJetCorrFactors = cms.bool(True),
     addResolutions = cms.bool(False),
-    getJetMCFlavour = cms.bool(False),
+    getJetMCFlavour = cms.bool(True),
     addDiscriminators = cms.bool(True),
     jetChargeSource = cms.InputTag("patJetChargePFlow"),
     embedCaloTowers = cms.bool(False),
@@ -37754,11 +37753,11 @@ process.patMETsPFlow = cms.EDProducer("PATMETProducer",
     addResolutions = cms.bool(False),
     muonSource = cms.InputTag("muons"),
     addEfficiencies = cms.bool(False),
-    genMETSource = cms.InputTag(""),
+    genMETSource = cms.InputTag("genMetTrue"),
     efficiencies = cms.PSet(
 
     ),
-    addGenMET = cms.bool(False),
+    addGenMET = cms.bool(True),
     addMuonCorrections = cms.bool(False),
     resolutions = cms.PSet(
 
@@ -37900,9 +37899,9 @@ process.patMuonsPFlow = cms.EDProducer("PATMuonProducer",
     embedMuonBestTrack = cms.bool(True),
     addResolutions = cms.bool(False),
     embedCombinedMuon = cms.bool(True),
-    genParticleMatch = cms.InputTag(""),
+    genParticleMatch = cms.InputTag("muonMatchPFlow"),
     beamLineSrc = cms.InputTag("offlineBeamSpot"),
-    addGenMatch = cms.bool(False),
+    addGenMatch = cms.bool(True),
     muonSource = cms.InputTag("muons"),
     isoDeposits = cms.PSet(
         pfNeutralHadrons = cms.InputTag("muPFIsoDepositNeutralPFlow"),
@@ -37911,7 +37910,7 @@ process.patMuonsPFlow = cms.EDProducer("PATMuonProducer",
         pfPhotons = cms.InputTag("muPFIsoDepositGammaPFlow"),
         pfChargedHadrons = cms.InputTag("muPFIsoDepositChargedPFlow")
     ),
-    embedGenMatch = cms.bool(False),
+    embedGenMatch = cms.bool(True),
     tcMETMuonCorrs = cms.InputTag("muonTCMETValueMapProducer","muCorrData"),
     embedPickyMuon = cms.bool(True),
     isolationValues = cms.PSet(
@@ -38017,7 +38016,7 @@ process.patPhotonsPFlow = cms.EDProducer("PATPhotonProducer",
         userFunctionLabels = cms.vstring(),
         userFunctions = cms.vstring()
     ),
-    addGenMatch = cms.bool(False),
+    addGenMatch = cms.bool(True),
     addResolutions = cms.bool(False),
     addEfficiencies = cms.bool(False),
     photonIDSources = cms.PSet(
@@ -38031,11 +38030,11 @@ process.patPhotonsPFlow = cms.EDProducer("PATPhotonProducer",
 
     ),
     embedSuperCluster = cms.bool(True),
-    embedGenMatch = cms.bool(False),
+    embedGenMatch = cms.bool(True),
     resolutions = cms.PSet(
 
     ),
-    genParticleMatch = cms.InputTag(""),
+    genParticleMatch = cms.InputTag("photonMatchPFlow"),
     photonSource = cms.InputTag("photons"),
     userIsolation = cms.PSet(
 
@@ -38414,8 +38413,8 @@ process.patTausPFlow = cms.EDProducer("PATTauProducer",
         againstMuonMediumMVA = cms.InputTag("hpsPFTauDiscriminationByMVAMediumMuonRejectionPFlow"),
         againstMuonTightMVA = cms.InputTag("hpsPFTauDiscriminationByMVATightMuonRejectionPFlow")
     ),
-    addGenJetMatch = cms.bool(False),
-    embedGenJetMatch = cms.bool(False),
+    addGenJetMatch = cms.bool(True),
+    embedGenJetMatch = cms.bool(True),
     embedLeadTrack = cms.bool(False),
     embedLeadPFCand = cms.bool(False),
     embedSignalPFChargedHadrCands = cms.bool(False),
@@ -38450,7 +38449,7 @@ process.patTausPFlow = cms.EDProducer("PATTauProducer",
     efficiencies = cms.PSet(
 
     ),
-    genJetMatch = cms.InputTag(""),
+    genJetMatch = cms.InputTag("tauGenJetMatchPFlow"),
     addEfficiencies = cms.bool(False),
     userData = cms.PSet(
         userCands = cms.PSet(
@@ -38475,8 +38474,8 @@ process.patTausPFlow = cms.EDProducer("PATTauProducer",
     tauJetCorrFactorsSource = cms.VInputTag(cms.InputTag("patTauJetCorrFactors")),
     addResolutions = cms.bool(False),
     addTauID = cms.bool(True),
-    genParticleMatch = cms.InputTag(""),
-    addGenMatch = cms.bool(False),
+    genParticleMatch = cms.InputTag("tauMatchPFlow"),
+    addGenMatch = cms.bool(True),
     embedIsolationPFNeutralHadrCands = cms.bool(False),
     embedIsolationPFChargedHadrCands = cms.bool(False),
     embedIsolationTracks = cms.bool(False),
@@ -38489,7 +38488,7 @@ process.patTausPFlow = cms.EDProducer("PATTauProducer",
     ),
     embedLeadPFChargedHadrCand = cms.bool(False),
     tauTransverseImpactParameterSource = cms.InputTag("hpsPFTauTransverseImpactParametersPFlow"),
-    embedGenMatch = cms.bool(False),
+    embedGenMatch = cms.bool(True),
     embedLeadPFNeutralCand = cms.bool(False)
 )
 
@@ -47640,7 +47639,8 @@ process.out = cms.OutputModule("PoolOutputModule",
         'keep bool_*Filter_*_*', 
         'keep double_kt6PFJets_rho_*', 
         'keep double_kt6PFJetsCentral_rho_*', 
-        'keep *_lumiProducer_*_*'),
+        'keep *_lumiProducer_*_*', 
+        'keep LHEEventProduct_*_*_*'),
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring('p')
     ),
@@ -47718,6 +47718,9 @@ process.hpsTancTauInitialSequence = cms.Sequence(process.combinatoricRecoTausDis
 
 
 process.KT4Flavour = cms.Sequence(process.KT4byRef+process.KT4byValPhys+process.KT4byValAlgo)
+
+
+process.metFilteringTaggers = cms.Sequence(process.EcalDeadCellTriggerPrimitiveFilter+process.eeBadScFilter+process.ecalLaserCorrFilter+process.goodVertices+process.trackingFailureFilter)
 
 
 process.selectedPatCandidates = cms.Sequence(process.selectedPatElectrons+process.selectedPatMuons+process.selectedPatTaus+process.selectedPatPhotons+process.selectedPatJets+process.selectedPatCandidateSummary)
@@ -48524,9 +48527,6 @@ process.jetPlusTrackZSPCorJetSiscone5 = cms.Sequence(process.JetPlusTrackCorrect
 process.ckftracks = cms.Sequence(process.iterTracking+process.electronSeedsSeq+process.doAlldEdXEstimators)
 
 
-process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter+process.CSCTightHaloFilter+process.hcalLaserEventFilter+process.EcalDeadCellTriggerPrimitiveFilter+process.eeBadScFilter+process.ecalLaserCorrFilter+process.goodVertices+process.trackingFailureFilter+process.trkPOGFilters)
-
-
 process.pfMuonSequencePFlow = cms.Sequence(process.pfAllMuonsPFlow+process.pfMuonsFromVertexPFlow+process.pfSelectedMuonsPFlow+process.pfMuonIsolationSequencePFlow+process.pfIsolatedMuonsPFlow+process.pfMuonsPFlow)
 
 
@@ -48560,7 +48560,7 @@ process.pfElectronIsolationSequencePFlowPFIso = cms.Sequence(process.electronPFI
 process.pfPhotonSequencePFlow = cms.Sequence(process.pfSelectedPhotonsPFlow+process.pfPhotonIsolationSequencePFlow+process.pfIsolatedPhotonsPFlow)
 
 
-process.btvSequence = cms.Sequence(process.mainBtvSequence)
+process.btvSequence = cms.Sequence(process.myPartons+process.AK5Flavour+process.mainBtvSequence)
 
 
 process.pfElectronIsolationSequence = cms.Sequence(process.electronPFIsolationDepositsSequence+process.elPFIsoValueCharged03PFId+process.elPFIsoValueChargedAll03PFId+process.elPFIsoValueGamma03PFId+process.elPFIsoValueNeutral03PFId+process.elPFIsoValuePU03PFId+process.elPFIsoValueCharged04PFId+process.elPFIsoValueChargedAll04PFId+process.elPFIsoValueGamma04PFId+process.elPFIsoValueNeutral04PFId+process.elPFIsoValuePU04PFId+process.elPFIsoValueCharged03NoPFId+process.elPFIsoValueChargedAll03NoPFId+process.elPFIsoValueGamma03NoPFId+process.elPFIsoValueNeutral03NoPFId+process.elPFIsoValuePU03NoPFId+process.elPFIsoValueCharged04NoPFId+process.elPFIsoValueChargedAll04NoPFId+process.elPFIsoValueGamma04NoPFId+process.elPFIsoValueNeutral04NoPFId+process.elPFIsoValuePU04NoPFId)
@@ -48602,7 +48602,7 @@ process.PFBRECOPFlow = cms.Sequence(process.pfNoPileUpSequencePFlow+process.pfPa
 process.recoTauClassicHPSSequence = cms.Sequence(process.recoTauCommonSequence+process.ak5PFJetsLegacyHPSPiZeros+process.ak5PFJetsRecoTauChargedHadrons+process.combinatoricRecoTaus+process.produceAndDiscriminateHPSPFTaus)
 
 
-process.patDefaultSequencePFlow = cms.Sequence(process.stdElectronSequencePFlowPFIso+process.patElectronsPFlow+process.patMuonsPFlow+process.patPFCandidateIsoDepositSelectionPFlow+process.patPFTauIsolationPFlow+process.patHPSPFTauDiscriminationPFlow+process.patTausPFlow+process.patJetCorrectionsPFlow+process.jetTracksAssociatorAtVertexPFlow+process.btaggingAODPFlow+process.patJetChargePFlow+process.patJetsPFlow+process.patMETsPFlow+process.patPFParticlesPFlow+process.patCandidateSummaryPFlow+process.selectedPatElectronsPFlow+process.selectedPatMuonsPFlow+process.selectedPatTausPFlow+process.selectedPatJetsPFlow+process.selectedPatPFParticlesPFlow+process.selectedPatCandidateSummaryPFlow+process.countPatElectronsPFlow+process.countPatMuonsPFlow+process.countPatTausPFlow+process.countPatLeptonsPFlow+process.countPatJetsPFlow+process.countPatPFParticlesPFlow+process.patDefaultSequencePFlowTrigger+process.patDefaultSequencePFlowTriggerEvent)
+process.patDefaultSequencePFlow = cms.Sequence(process.electronMatchPFlow+process.stdElectronSequencePFlowPFIso+process.patElectronsPFlow+process.makePatMuonsPFlow+process.patPFCandidateIsoDepositSelectionPFlow+process.patPFTauIsolationPFlow+process.tauMatchPFlow+process.tauGenJetsPFlow+process.tauGenJetsSelectorAllHadronsPFlow+process.tauGenJetMatchPFlow+process.patHPSPFTauDiscriminationPFlow+process.patTausPFlow+process.photonMatchPFlow+process.patJetCorrectionsPFlow+process.jetTracksAssociatorAtVertexPFlow+process.btaggingAODPFlow+process.patJetChargePFlow+process.patJetPartonMatchPFlow+process.genForPF2PATSequence+process.patJetGenJetMatchPFlow+process.patJetFlavourIdPFlow+process.patJetsPFlow+process.patMETsPFlow+process.patPFParticlesPFlow+process.patCandidateSummaryPFlow+process.selectedPatElectronsPFlow+process.selectedPatMuonsPFlow+process.selectedPatTausPFlow+process.selectedPatJetsPFlow+process.selectedPatPFParticlesPFlow+process.selectedPatCandidateSummaryPFlow+process.countPatElectronsPFlow+process.countPatMuonsPFlow+process.countPatTausPFlow+process.countPatLeptonsPFlow+process.countPatJetsPFlow+process.countPatPFParticlesPFlow+process.patDefaultSequencePFlowTrigger+process.patDefaultSequencePFlowTriggerEvent)
 
 
 process.jetHighLevelReco = cms.Sequence(process.recoJetAssociations+process.recoPFJets+process.recoJPTJets)
@@ -48743,7 +48743,7 @@ process.reconstruction_fromRECO_noTracking = cms.Sequence(process.clusterSummary
 process.reconstruction_HcalNZS = cms.Sequence(process.localreco_HcalNZS+process.globalreco+process.highlevelreco+process.logErrorHarvester)
 
 
-process.p = cms.Path(process.startCounter+process.noscraping+process.scrapCounter+process.goodOfflinePrimaryVertices+process.goodVertexFilter+process.vtxCounter+process.metFilteringTaggers+process.metCounter+process.eidMVASequence+process.boostedTauPreSequence+process.PFTauBoost+process.patPF2PATSequencePFlow+process.patPFTauIsolationBoost+process.patTausBoost+process.btvSequence+process.kt6PFJetsCentral+process.qgSequence+process.type0PFMEtCorrection+process.producePFMETCorrections+process.pfMEtMVAsequence+process.selectedPatElectronsWithTrigger+process.selectedPatMuonsTriggerMatch+process.llvvObjectProducersUsed+process.endCounter)
+process.p = cms.Path(process.startCounter+process.noscraping+process.scrapCounter+process.goodOfflinePrimaryVertices+process.goodVertexFilter+process.vtxCounter+process.metFilteringTaggers+process.metCounter+process.eidMVASequence+process.boostedTauPreSequence+process.PFTauBoost+process.patPF2PATSequencePFlow+process.makePatTausBoost+process.btvSequence+process.kt6PFJetsCentral+process.qgSequence+process.type0PFMEtCorrection+process.producePFMETCorrections+process.pfMEtMVAsequence+process.selectedPatElectronsWithTrigger+process.selectedPatMuonsTriggerMatch+process.llvvObjectProducersUsed+process.endCounter)
 
 
 process.endPath = cms.EndPath(process.out)
@@ -54403,7 +54403,7 @@ process.GlobalTag = cms.ESSource("PoolDBESSource",
     BlobStreamerName = cms.untracked.string('TBufferBlobStreamingService'),
     toGet = cms.VPSet(),
     connect = cms.string('frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'),
-    globaltag = cms.string('FT_53_V21_AN4::All')
+    globaltag = cms.string('START53_V23::All')
 )
 
 
