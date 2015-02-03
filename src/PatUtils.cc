@@ -95,23 +95,23 @@ namespace patUtils
 
           switch(IsoLevel){
                case llvvElecIso::Veto :
-                  if(barrel && relIso>0.3313) return true;
-                  if(endcap && relIso>0.3816) return true;
+                  if(barrel && relIso<0.3313) return true;
+                  if(endcap && relIso<0.3816) return true;
                   break;
 
                case llvvElecIso::Loose :
-                  if(barrel && relIso>0.2400) return true;
-                  if(endcap && relIso>0.3529) return true;
+                  if(barrel && relIso<0.2400) return true;
+                  if(endcap && relIso<0.3529) return true;
                   break;
 
                case llvvElecIso::Medium :
-                  if(barrel && relIso>0.2179) return true;
-                  if(endcap && relIso>0.2540) return true;
+                  if(barrel && relIso<0.2179) return true;
+                  if(endcap && relIso<0.2540) return true;
                   break;
 
                case llvvElecIso::Tight :
-                  if(barrel && relIso>0.1649) return true;
-                  if(endcap && relIso>0.2075) return true;
+                  if(barrel && relIso<0.1649) return true;
+                  if(endcap && relIso<0.2075) return true;
                   break;
 
                default:
@@ -132,11 +132,11 @@ namespace patUtils
 
           switch(IsoLevel){
                case llvvMuonIso::Loose : 
-                  if(relIso>0.20) return true;
+                  if(relIso<0.20) return true;
                   break;
 
                case llvvMuonIso::Tight :
-                  if(relIso>0.12) return true;
+                  if(relIso<0.12) return true;
                   break;
 
                default:
