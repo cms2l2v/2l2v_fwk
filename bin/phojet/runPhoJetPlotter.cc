@@ -20,6 +20,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TLegend.h"
+#include "TLegendEntry.h"
 #include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -316,8 +317,9 @@ void Draw1DHistogram(JSONWrapper::Object& Root,
     // std::cout << ">>> 5 " << std::endl;
     //Add to Stack
     stack->Add(proc_hist, "HIST");   
-    legA->AddEntry(proc_hist, Process[i]["tag"].c_str(), "F");
-
+    TLegendEntry* le = legA->AddEntry(proc_hist, Process[i]["tag"].c_str(), "F");
+    le->SetTextSize(0.02); 
+    
     // std::cout << ">>> 6 " << std::endl;
     
   } // end procs loop 
