@@ -115,6 +115,8 @@ for proc in procList :
                   list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);
 
                ngroup = len(list)/split
+               if (ngroup * split != len(list) ):
+                   ngroup = ngroup+1
                groupList = ''
                i=0;
                while(i <len(list) ):
@@ -122,7 +124,9 @@ for proc in procList :
                   if(i>0 and i%ngroup==0):
                      FileList.append(groupList)
                      groupList=''
-                  i = i+1;                                      
+                  i = i+1;               
+               if groupList != '':
+                   FileList.append(groupList)
             else:
  	       for segment in range(0,split) :
                   if(split==1): 
@@ -132,7 +136,6 @@ for proc in procList :
 
                   if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
                   FileList.append('"'+eventsFile+'"')
-
             for s in range(0,len(FileList)):
                 #create the cfg file
                 eventsFile = FileList[s]

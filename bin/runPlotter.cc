@@ -902,7 +902,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          while(SavePath.find(")")!=std::string::npos)SavePath.replace(SavePath.find(")"),1,"");
          while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
          while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
-         SavePath = outDir + SavePath;
+         SavePath = outDir + string("/") + SavePath;
          system(string(("rm -f ") + SavePath).c_str());
          pFile = fopen(SavePath.c_str(), "w");
 

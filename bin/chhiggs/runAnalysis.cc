@@ -227,13 +227,13 @@ int main (int argc, char *argv[])
     {
       TString icat (controlCats[k]);
 
-      //pu control
+      //pu control to be completed
       mon.addHistogram (new TH1F (icat+"nvtx", ";Vertices;Events", 50, 0, 50));
       mon.addHistogram (new TH1F (icat+"nvtxraw", ";Vertices;Events", 50, 0, 50));
       mon.addHistogram (new TH1F (icat+"rho", ";#rho;Events", 50, 0, 25));
       
 
-      //tau control
+      //tau control to be completed
       TH1 *htaus = mon.addHistogram (new TH1F (icat + "ntaus", ";Tau multiplicity;Events", 5, 0, 5));
       for (int ibin = 1; ibin <= htaus->GetXaxis ()->GetNbins (); ibin++)
         {
@@ -245,29 +245,51 @@ int main (int argc, char *argv[])
           label += (ibin - 1);
           htaus->GetXaxis ()->SetBinLabel (ibin, label);
         }
-      mon.addHistogram( new TH1F(icat+"tauleadpt",  ";p_{T}^{#tau};Events", 50,0,500) );
-      mon.addHistogram( new TH1F(icat+"tauleadeta", ";#eta^{#tau};Events", 50,-2.6,2.6) );
-      mon.addHistogram( new TH1F(icat+"taupt",  ";p_{T}^{#tau};Events", 50,0,500) );
-      mon.addHistogram( new TH1F(icat+"taueta",  ";#eta^{#tau};Events", 50,-2.6,2.6) );
-      mon.addHistogram( new TH1F(icat+"taucharge",  ";p_{T}^{#tau};Events", 5,-2,2) );
-      mon.addHistogram( new TH1F(icat+"taudz",      ";dz^{#tau};Events", 50,0,10) );
-      mon.addHistogram( new TH1F(icat+"tauvz",      ";vz^{#tau};Events", 50,0,10) );
-      mon.addHistogram( new TH1F(icat+"tauemfraction", ";emf^{#tau};Events", 50, 0., 5.) );
-      mon.addHistogram( new TH1F(icat+"taudizeta"    , ";dZ^{#tau};Events", 50, 0., 10.) );
+      mon.addHistogram( new TH1F(icat+"tauleadpt",     ";p_{T}^{#tau};Events", 50,0,500    ));
+      mon.addHistogram( new TH1F(icat+"tauleadeta",    ";#eta^{#tau};Events",  50,-2.6,2.6 ));
+      mon.addHistogram( new TH1F(icat+"taupt",         ";p_{T}^{#tau};Events", 50,0,500    ));
+      mon.addHistogram( new TH1F(icat+"taueta",        ";#eta^{#tau};Events",  50,-2.6,2.6 ));
+      mon.addHistogram( new TH1F(icat+"taucharge",     ";p_{T}^{#tau};Events", 5,-2,2      ));
+      mon.addHistogram( new TH1F(icat+"taudz",         ";dz^{#tau};Events",    50,0,10     ));
+      mon.addHistogram( new TH1F(icat+"tauvz",         ";vz^{#tau};Events",    50,0,10     ));
+      mon.addHistogram( new TH1F(icat+"tauemfraction", ";emf^{#tau};Events",   50, 0., 5.  ));
+      mon.addHistogram( new TH1F(icat+"taudizeta"    , ";dZ^{#tau};Events",    50, 0., 10. ));
 
 
 
       //lepton control
-      mon.addHistogram (new TH1F (icat + "leadpt", ";Transverse momentum [GeV];Events", 50, 0, 500));
-      mon.addHistogram (new TH1F (icat + "leadeta", ";Pseudo-rapidity;Events", 50, 0, 2.6));
-      mon.addHistogram (new TH1F (icat + "trailerpt", ";Transverse momentum [GeV];Events", 50, 0, 500));
-      mon.addHistogram (new TH1F (icat + "trailereta", ";Pseudo-rapidity;Events", 50, 0, 2.6));
-      mon.addHistogram (new TH1F (icat + "dily", ";Rapidity;Events", 50, 0, 3));
-      mon.addHistogram (new TH1F (icat + "dilmass", ";Mass [GeV];Events", 100, 40, 250));
-      mon.addHistogram (new TH1F (icat + "dilpt", ";Transverse momentum [GeV];Events", 100, 0, 1500));
-      mon.addHistogram (new TH1F (icat + "qmass", ";Mass [GeV];Events / (1 GeV)", 100, 76, 106));
-      mon.addHistogram (new TH1F (icat + "qt", ";Transverse momentum [GeV];Events / (1 GeV)", 1500, 0, 1500));
-      mon.addHistogram (new TH1F (icat + "qtraw", ";Transverse momentum [GeV];Events / (1 GeV)", 1500, 0, 1500));
+      mon.addHistogram( new TH1F(icat+"inclusivept", ";Transverse momentum [GeV];Events",               50, 0, 500    ));
+      mon.addHistogram( new TH1F(icat+"leadpt",      ";Transverse momentum [GeV];Events",               50, 0, 500    ));
+      mon.addHistogram( new TH1F(icat+"leadeta",     ";Pseudo-rapidity;Events",                         50, 0, 2.6    ));
+      mon.addHistogram( new TH1F(icat+"trailerpt",   ";Transverse momentum [GeV];Events",               50, 0, 500    ));
+      mon.addHistogram( new TH1F(icat+"trailereta",  ";Pseudo-rapidity;Events",                         50, 0, 2.6    ));
+      mon.addHistogram( new TH1F(icat+"pte",          ";Electron transverse momentum [GeV];Events",     50,0,500      ));
+      mon.addHistogram( new TH1F(icat+"ptmu",         ";Muon transverse momentum [GeV];Events",         50,0,500      ));
+      mon.addHistogram( new TH1F(icat+"qt",           ";Transverse momentum [GeV];Events / (1 GeV)",    1500, 0, 1500 ));
+      //mon.addHistogram( new TH1F(icat+"qtraw",        ";Transverse momentum [GeV];Events / (1 GeV)",    1500, 0, 1500 ));
+
+
+      // Dilepton control
+      mon.addHistogram( new TH1F(icat+"sumpt",        ";Sum of lepton transverse momenta [GeV];Events",                    50,0,500   ));
+      mon.addHistogram( new TH1F(icat+"mll",          ";Dilepton invariant mass [GeV];Events",                             50,0,250   ));
+      mon.addHistogram( new TH1F(icat+"ptll",         ";Dilepton transverse momentum [GeV];Events",                        100,0,1000 ));
+      mon.addHistogram( new TH1F(icat+"yll",          ";Rapidity;Events",                               50, 0, 3      ));
+      mon.addHistogram( new TH1F(icat+"dilarccosine", ";#theta(l,l') [rad];Events",                                        50,0,3.2   ));
+      mon.addHistogram( new TH1F(icat+"mtsum",        ";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events", 100,0,1000 ));
+      mon.addHistogram( new TH1F(icat+"ht",           ";H_{T} [GeV];Events",                                               50,0,1000  ));
+      mon.addHistogram( new TH1F(icat+"htb",          ";H_{T} (bjets) [GeV];Events",                                       50,0,1000  ));
+      mon.addHistogram( new TH1F(icat+"htnol",        "; H_[T] (no leptons) [GeV];Events",                                 50,0,1000  ));
+      mon.addHistogram( new TH1F(icat+"htbnol",       "; H_[T] (bjets, no leptons) [GeV];Events",                          50,0,1000  ));
+
+
+
+      mon.addHistogram( new TH1F(icat+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
+      //      mon.addHistogram( new TH1F(icat+"met",";Missing transverse energy [GeV];Events",50,0,500) );
+      mon.addHistogram( new TH1F(icat+"metnotoppt",";Missing transverse energy [GeV];Events",50,0,500) );
+
+
+      // Jet controls to be completed
+      mon.addHistogram( new TH1F( "nbjets",      ";b-jet multiplicity;Events", 6,0,6) );
 
       //extra leptons in the event
       // third lepton pt etc
@@ -310,23 +332,6 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1F (icat + "metcheckpoint", ";Missing transverse energy [GeV];Events", 100, 0, 500));
 
 
-      // Various dilepton plots
-      mon.addHistogram( new TH1F(icat+"emva", "; e-id MVA; Electrons", 50, 0.95,1.0) );
-      mon.addHistogram( new TH1F(icat+"mll",";Dilepton invariant mass [GeV];Events",50,0,250) );
-      mon.addHistogram( new TH1F(icat+"ptll",";Dilepton transverse momentum [GeV];Events",50,0,250) );
-      mon.addHistogram( new TH1F(icat+"pte",";Electron transverse momentum [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"ptmu",";Muon transverse momentum [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"ptlep",";Lepton transverse momentum [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"sumpt",";Sum of lepton transverse momenta [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"ptmin",";Minimum lepton transverse momentum [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"dilarccosine",";#theta(l,l') [rad];Events",50,0,3.2) );
-      mon.addHistogram( new TH1F(icat+"mtsum",";M_{T}(l^{1},E_{T}^{miss})+M_{T}(l^{2},E_{T}^{miss}) [GeV];Events",100,0,1000) );
-      //      mon.addHistogram( new TH1F(icat+"met",";Missing transverse energy [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"metnotoppt",";Missing transverse energy [GeV];Events",50,0,500) );
-      mon.addHistogram( new TH1F(icat+"ht",";H_{T} [GeV];Events",50,0,1000) );
-      mon.addHistogram( new TH1F(icat+"htb",";H_{T} (bjets) [GeV];Events",50,0,1000) );
-      mon.addHistogram( new TH1F(icat+"htnol","; H_[T] (no leptons) [GeV];Events",50,0,1000) );
-      mon.addHistogram( new TH1F(icat+"htbnol","; H_[T] (bjets, no leptons) [GeV];Events",50,0,1000) );
 
     }                           // End of loop on controlCats
 
@@ -515,7 +520,7 @@ int main (int argc, char *argv[])
             }
           
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight = xsecWeight * puWeight;
+          weight = xsecWeight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
@@ -626,7 +631,7 @@ int main (int argc, char *argv[])
           //      }
           //      if(overlapWithLepton) continue;
           
-          //      if(!tau.isPFTau()) continue; // Only PFTaus
+          //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
           
           if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
@@ -720,7 +725,9 @@ int main (int argc, char *argv[])
       // ASSIGN CHANNEL
       //
       std::vector < TString > chTags;
-      int dilId (1);
+      int 
+        dilId (1),
+        slepId(0);
       LorentzVector dileptonSystem (0, 0, 0, 0);
       if (selLeptons.size() >= 2)
         {
@@ -733,8 +740,11 @@ int main (int argc, char *argv[])
           
         }
       
-      if(      abs(selSingleLepLeptons[0].pdgId()) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
-      else if( abs(selSingleLepLeptons[0].pdgId()) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
+      if(selSingleLepLeptons.size()>0)
+        slepId=selSingleLepLeptons[0].pdgId();
+      
+      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
+      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
       else if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
       else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
       else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu");
@@ -747,7 +757,7 @@ int main (int argc, char *argv[])
           tags.push_back (chTags[ich]);
           //tags.push_back( chTags[ich]+evCat );
         }
-      
+
       if (chTags.size() == 0 || chTags.size() >1 ) continue; // That should never happen ("unclassified" is always present)
       
 
@@ -786,27 +796,58 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           TString icat(ctrlCats[k]);
 
-          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
-          mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                 weight);
-          mon.fillHisto (icat+"rho",        tags, rho,                        weight);
-          mon.fillHisto (icat+"leadpt",     tags, selLeptons[0].pt(),         weight);
-          mon.fillHisto (icat+"trailerpt",  tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto (icat+"leadeta",    tags, fabs (selLeptons[0].eta()), weight);
-          mon.fillHisto (icat+"trailereta", tags, fabs (selLeptons[1].eta()), weight);
+          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
+          mon.fillHisto(icat+"nvtx",       tags, vtx.size(),                 weight);
+          mon.fillHisto(icat+"rho",        tags, rho,                        weight);
+
+
+          // Lepton and dilepton control
+          mon.fillHisto(icat+"leadpt",      tags, selLeptons[0].pt(),         weight);
+          mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
+          mon.fillHisto(icat+"leadeta",     tags, fabs (selLeptons[0].eta()), weight);
+          mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
+
+          float thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
+          float sumpt(selLeptons[0].pt()+selLeptons[1].pt());
+          float mtsum(0);///utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[0],met)+utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[1],met));
+
+          mon.fillHisto(icat+"yll",          tags, fabs(dileptonSystem.Rapidity()), weight);
+          mon.fillHisto(icat+"mll",          tags, dileptonSystem.mass(),           weight);
+          mon.fillHisto(icat+"ptll",         tags, dileptonSystem.pt(),             weight);
+          mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
+          mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
+          mon.fillHisto(icat+"mtsum",        tags, mtsum,                           weight);
+          mon.fillHisto(icat+"qt",           tags, dileptonSystem.pt(),             weight, true);
+          // mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true);                                                                                      
+
+          float
+            ht    (sumpt),
+            htb   (sumpt),
+            htnol (0),
+            htbnol(0);
+
+          for(size_t ilep=0; ilep<2; ++ilep){
+            float lepid(fabs(selLeptons[ilep].pdgId()));
+            float leppt(selLeptons[ilep].pt());
+            mon.fillHisto(icat+"inclusivept",       tags, leppt, weight);
+            if(lepid==11) mon.fillHisto(icat+"pte", tags, leppt, weight);
+            if(lepid==13) mon.fillHisto(icat+"ptmu",tags, leppt, weight);
+          }
+
+
+          // Tau control ??? 
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                      weight);
           if(ntaus > 0) mon.fillHisto ("leadtaupt", tags, selTaus[0].pt(), weight);
 
-
-          mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
-          mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
-          mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
-          //these two are used to reweight photon -> Z, the 3rd is a control
-          mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
-          ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
-
-          for (size_t ijet = 0; ijet < selJets.size(); ijet++)
+          for(size_t ijet=0; ijet<selJets.size(); ++ijet)
             {
-              if (selJets[ijet].pt() < 30 || fabs (selJets[ijet].eta()) > 2.5) continue;
+              ht+=selJets[ijet].pt();
+              htnol+=selJets[ijet].pt();
+              if(ijet<selBJets.size()) // Hack in order to have only one loop. Exploits the fact that selBjets are a subset of selJets.
+                {
+                  htb+=selBJets[ijet].pt();
+                  htbnol+=selBJets[ijet].pt();
+                }
               
               float csv (selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
               mon.fillHisto ("csv", tags, csv, weight);
@@ -818,9 +859,22 @@ int main (int argc, char *argv[])
               mon.fillHisto ("csv" + jetFlav, tags, csv, weight);
             }
           
+          ht+=met.pt();
+          htb+=met.pt();
+          htnol+=met.pt();
+          htbnol+=met.pt();
+
+          mon.fillHisto(icat+"ht",     tags, ht,              weight);
+          mon.fillHisto(icat+"htb",    tags, htb,             weight);
+          mon.fillHisto(icat+"htnol",  tags, htnol,           weight);
+          mon.fillHisto(icat+"htbnol", tags, htbnol,          weight);
+          
+          mon.fillHisto(icat+"nbjets", tags, selBJets.size(), weight);
+          
+          
         }
         
-        
+
       } // End dilepton full analysis
       
       
@@ -837,7 +891,7 @@ int main (int argc, char *argv[])
         bool passMetSelection(recoMET.pt()>40.);
         bool passBtagsSelection(selBJets.size()>0);
         bool passTauSelection(selTaus.size()==1);
-        bool passOS(selSingleLepLeptons[0].pdgId() * selTaus[0].pdgId() < 0 );
+        bool passOS(selTaus.size()>0 ? selSingleLepLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
 
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
@@ -854,23 +908,23 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           TString icat(ctrlCats[k]);
 
-          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
-          mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                 weight);
-          mon.fillHisto (icat+"rho",        tags, rho,                        weight);
-          mon.fillHisto (icat+"leadpt",     tags, selLeptons[0].pt(),         weight);
-          mon.fillHisto (icat+"trailerpt",  tags, selLeptons[1].pt(),         weight);
-          mon.fillHisto (icat+"leadeta",    tags, fabs (selLeptons[0].eta()), weight);
-          mon.fillHisto (icat+"trailereta", tags, fabs (selLeptons[1].eta()), weight);
-          mon.fillHisto (icat+"ntaus",      tags, ntaus,                      weight);
-          if(ntaus > 0) mon.fillHisto ("leadtaupt", tags, selTaus[0].pt(), weight);
+          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          weight/puWeight);
+          mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
+          mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
+          mon.fillHisto (icat+"leadpt",     tags, selSingleLepLeptons[0].pt(),         weight);
+          mon.fillHisto (icat+"trailerpt",  tags, selSingleLepLeptons[1].pt(),         weight);
+          mon.fillHisto (icat+"leadeta",    tags, fabs (selSingleLepLeptons[0].eta()), weight);
+          mon.fillHisto (icat+"trailereta", tags, fabs (selSingleLepLeptons[1].eta()), weight);
+          mon.fillHisto (icat+"ntaus",      tags, ntaus,                               weight);
+          if(ntaus > 0) mon.fillHisto ("leadtaupt", tags, selTaus[0].pt(),             weight);
 
 
-          mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
-          mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
-          mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
-          //these two are used to reweight photon -> Z, the 3rd is a control
-          mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
-          ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
+// dilepton only           mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
+// dilepton only           mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
+// dilepton only           mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
+// dilepton only           //these two are used to reweight photon -> Z, the 3rd is a control
+// dilepton only           mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
+// dilepton only           ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
 
           for (size_t ijet = 0; ijet < selJets.size(); ijet++)
             {

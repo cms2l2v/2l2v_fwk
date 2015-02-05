@@ -9,7 +9,7 @@ isMC=True
 gt='FT_53_V21_AN4'
 outName='Data'
 if isMC :
-    gt='START53_V23'
+    gt='PHYS14_25_V1'
     outName='MC'
     
 process.GlobalTag.globaltag = gt+'::All'
