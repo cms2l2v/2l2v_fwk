@@ -370,8 +370,8 @@ int main(int argc,char *argv[])
 	    dysfbiasH->SetBinContent(ich+1,nominalMCSF-1.0);
 	    dysfbiasH->SetBinError(ich+1,0);
 	  }
-	  Double_t relDifference(nominalMCSF);
-	  relDifference=(ndysf.getVal()/nominalMCSF-1)*100;
+//	  Double_t relDifference(nominalMCSF);
+//	  relDifference=(ndysf.getVal()/nominalMCSF-1)*100;
 	  Double_t absDifference(ndysf.getVal()-nominalMCSF);
 	 
 	  //report the result

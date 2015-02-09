@@ -3,6 +3,8 @@
 // <date>2014-06-02</date>
 // <summary>Script that runs an iterative cut optimization procedure. Cut values are scanned and the value with the maximum FOM is used.</summary>
 
+// Todo add option for special optimization variables such as double varying in a 2D cut
+
 #include "FWCore/FWLite/interface/AutoLibraryLoader.h"
 
 #include <iostream>
@@ -11,7 +13,7 @@
 #include <vector>
 #include <utility>
 #include <cassert>
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -27,26 +29,61 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH1D.h"
+#include "THStack.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
 
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+
+#include "UserCode/llvv_fwk/interface/doubleWithUncertainty.h"
 
 class OptimizationRoundInfo;
 
 void printHelp();
 
-struct doubleUnc
+class MyStyle
 {
-  double value;
-  double uncertainty;
+public:
+  MyStyle()
+  {
+    lcolor_ = 1;//kBlack;
+    mcolor_ = 1;//kBlack;
+    fcolor_ = 0;//kWhite;
+    lwidth_ = -1;
+    lstyle_ = -1;
+    marker_ = -1;
+  };
+
+  inline int& marker(){return marker_;};
+  inline int& lcolor(){return lcolor_;};
+  inline int& mcolor(){return mcolor_;};
+  inline int& fcolor(){return fcolor_;};
+  inline int& lwidth(){return lwidth_;};
+  inline int& lstyle(){return lstyle_;};
+
+private:
+  int marker_;
+  int lcolor_;
+  int mcolor_;
+  int fcolor_;
+  int lwidth_;
+  int lstyle_;
+
+protected:
 };
 
-std::ostream& operator << (std::ostream &o, doubleUnc& val)
-{
-  return o << val.value << " +- " << val.uncertainty;
-}
+//struct doubleUnc
+//{
+//  double value;
+//  double uncertainty;
+//};
+
+//std::ostream& operator << (std::ostream &o, doubleUnc& val)
+//{
+//  return o << val.value << " +- " << val.uncertainty;
+//}
 
 struct SampleFiles
 {
@@ -59,6 +96,7 @@ struct ProcessFiles
 {
   std::string name;
   std::vector<SampleFiles> samples;
+  MyStyle style;
 };
 
 struct UserCutInfo
@@ -73,7 +111,7 @@ struct CutInfo
   std::string variable;
   std::string direction;
   double value;
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield;
+  std::map<std::string,std::map<std::string,doubleUnc>> yield;
   double FOM;
   double FOMerr;
 };
@@ -93,6 +131,7 @@ public:
   bool LoadJson();
   bool OptimizeAllRounds();
   bool OptimizeRound(size_t n);
+  void SetAlgo(std::string NewAlgo);
 
   inline std::string getJson() const {return jsonFile_;};
   std::string& setJson(const std::string & jsonFile);
@@ -102,6 +141,7 @@ public:
   std::vector<std::string>& setPlotExt(const std::vector<std::string> & plotExt);
   inline size_t getNRounds() const {return roundInfo_.size();};
   inline void setVerbose() {verbose_ = true; return;};
+  inline void setLimit(int limit) {limit_ = limit; return;};
 
 private:
   std::string jsonFile_;
@@ -116,19 +156,25 @@ private:
 
   std::map<std::string,bool> FileExists_;
   std::vector<ReportInfo> report_;
+  std::vector<std::string> printOrder_;
 //  JSONWrapper::Object* json;
 
   std::vector<OptimizationRoundInfo> roundInfo_;
   std::map<std::string,std::vector<ProcessFiles>> processes_;
 
+  int limit_;
+  std::string algo_;
+
   bool OptimizeRound_(size_t n);
   bool GetSamples(size_t n);
   int  GetSigPoints(size_t n);
   CutInfo GetBestCutAndMakePlots(size_t n, ReportInfo& report);
-  std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield);
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
+  std::vector<doubleUnc> GetFOM(std::map<std::string,std::map<std::string,doubleUnc>>& yield);
+  std::map<std::string,std::map<std::string,doubleUnc>> GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity);
   void SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle);
+  std::map<std::string,std::map<std::string,TH1D*>> GetAndSaveHists(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity, std::string varName, std::string varExpression, std::string varLabel, std::map<std::string,double>& varParams);
   bool ClearSamples();
+  std::string clearTex(std::string& str);
 
 protected:
 };
@@ -148,16 +194,18 @@ public:
   inline std::string& expression(){return _expression;};
   inline double& minVal(){return _minVal;};
   inline double& maxVal(){return _maxVal;};
-  inline double& step(){return _step;};
+  inline double& bins(){return _bins;};
   inline std::string& label(){return _label;};
+  inline bool& noCut(){return _noCut;};
 
   friend bool CutOptimizer::LoadJson();
 
 private:
   std::string _name;
   std::string _expression;
-  double _minVal, _maxVal, _step;
+  double _minVal, _maxVal, _bins;
   std::string _label;
+  bool _noCut;
 
 protected:
 };
@@ -193,11 +241,12 @@ public:
   inline std::string signalPoint(){return _signalPoint;};
   inline double sigCrossSection(){return _sigCrossSection;};
   inline int nInitEvents(){return _nInitEvents;};
+  inline double minSigEvents(){return _minSigEvents;};
 
   std::vector<std::string> getListOfVariables();
-  std::unordered_map<std::string,std::string> getVariableExpressions();
-  std::unordered_map<std::string,std::unordered_map<std::string,double>> getVariableParameterMap();
-  std::unordered_map<std::string,std::string> getVariableLabels();
+  std::map<std::string,std::string> getVariableExpressions();
+  std::map<std::string,std::map<std::string,double>> getVariableParameterMap();
+  std::map<std::string,std::string> getVariableLabels();
 
   friend bool CutOptimizer::LoadJson();
 
@@ -218,6 +267,7 @@ private:
   std::vector<UserCutInfo> _UserCuts;
   double      _sigCrossSection;
   int         _nInitEvents;
+  double      _minSigEvents;
 
 protected:
 };
@@ -233,11 +283,15 @@ size_t OptimizationRoundInfo::_counter = 0;
 int main(int argc, char** argv)
 {
   AutoLibraryLoader::enable();
+  setTDRStyle();
 
   std::string jsonFile;
   std::string outDir = "./OUT/";
   std::vector<std::string> plotExt;
   bool verbose = false;
+  int round = -1;
+  int limit = 0;
+  std::string algo = "";
 
 //  gInterpreter->GenerateDictionary("llvvMet", "");
 //  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
@@ -277,6 +331,28 @@ int main(int argc, char** argv)
     {
       verbose = true;
     }
+
+    if(arg.find("--round") != std::string::npos)
+    {
+      std::stringstream temp;
+      temp << argv[i+1];
+      temp >> round;
+      ++i;
+    }
+
+    if(arg.find("--limit") != std::string::npos)
+    {
+      std::stringstream temp;
+      temp << argv[i+1];
+      temp >> limit;
+      ++i;
+    }
+
+    if(arg.find("--algo") != std::string::npos)
+    {
+      algo = argv[i+1];
+      ++i;
+    }
   }
   if(plotExt.size() == 0)
     plotExt.push_back(".png");
@@ -293,9 +369,16 @@ int main(int argc, char** argv)
   CutOptimizer myOptimizer(jsonFile, outDir, plotExt);
   if(verbose)
     myOptimizer.setVerbose();
+  if(limit > 0)
+    myOptimizer.setLimit(limit);
+  if(algo != "")
+    myOptimizer.SetAlgo(algo);
   myOptimizer.LoadJson();
-  myOptimizer.OptimizeAllRounds();
-//  myOptimizer.OptimizeRound(2);
+
+  if(round < 0)
+    myOptimizer.OptimizeAllRounds();
+  else
+    myOptimizer.OptimizeRound(round);
 
   return 0;
 }
@@ -310,9 +393,10 @@ OptimizationRoundInfo::OptimizationRoundInfo()
   _baseSelection   = "selected";
   _signalSelection = "";
   _channel         = "";
-  _iLumi           = 1;
+  _iLumi           =  1;
   _inDir           = "";
   _jsonFile        = "";
+  _minSigEvents    = -1;
   ++_counter;
 }
 
@@ -363,9 +447,9 @@ std::vector<std::string> OptimizationRoundInfo::getListOfVariables()
   return retVal;
 }
 
-std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableLabels()
+std::map<std::string,std::string> OptimizationRoundInfo::getVariableLabels()
 {
-  std::unordered_map<std::string,std::string> retVal;
+  std::map<std::string,std::string> retVal;
 
   for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
   {
@@ -377,17 +461,18 @@ std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableLa
   return retVal;
 }
 
-std::unordered_map<std::string,std::unordered_map<std::string,double>> OptimizationRoundInfo::getVariableParameterMap()
+std::map<std::string,std::map<std::string,double>> OptimizationRoundInfo::getVariableParameterMap()
 {
-  std::unordered_map<std::string,std::unordered_map<std::string,double>> retVal;
+  std::map<std::string,std::map<std::string,double>> retVal;
 
   for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
   {
-    std::unordered_map<std::string,double> tempVal;
+    std::map<std::string,double> tempVal;
 
     tempVal["minVal"] = variable->minVal();
     tempVal["maxVal"] = variable->maxVal();
-    tempVal["step"]   = variable->step();
+    tempVal["bins"]   = variable->bins();
+    tempVal["noCut"]  = (variable->noCut())?1.0:0.0;
 
     retVal[variable->name()] = tempVal;
   }
@@ -395,9 +480,9 @@ std::unordered_map<std::string,std::unordered_map<std::string,double>> Optimizat
   return retVal;
 }
 
-std::unordered_map<std::string,std::string> OptimizationRoundInfo::getVariableExpressions()
+std::map<std::string,std::string> OptimizationRoundInfo::getVariableExpressions()
 {
-  std::unordered_map<std::string,std::string> retVal;
+  std::map<std::string,std::string> retVal;
 
   for(auto variable = _variables.begin(); variable != _variables.end(); ++variable)
   {
@@ -413,7 +498,8 @@ OptimizationVariableInfo::OptimizationVariableInfo()
   _expression = "";
   _minVal = 0;
   _maxVal = 0;
-  _step = 0;
+  _bins = 1;
+  _noCut = false;
 }
 
 OptimizationVariableInfo::~OptimizationVariableInfo()
@@ -421,7 +507,7 @@ OptimizationVariableInfo::~OptimizationVariableInfo()
 }
 
 CutOptimizer::CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt):
-  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false)
+  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false), limit_(0), algo_("LIP")
 {
 //  json = new JSONWrapper::Object(jsonFile_, true);
 }
@@ -494,6 +580,7 @@ bool CutOptimizer::LoadJson()
     roundInfo._channel = round->getString("channel", roundInfo._channel);
     roundInfo._pointVariable = round->getString("pointVariable", roundInfo._pointVariable);
     roundInfo._nInitEvents = round->getInt("nInitEvents", roundInfo._nInitEvents);
+    roundInfo._minSigEvents = round->getDouble("minSigEvents", roundInfo._minSigEvents);
 
     if(verbose_)
       std::cout << "    Loaded round info, now trying to load user-defined cuts, if any." << std::endl;
@@ -539,13 +626,14 @@ bool CutOptimizer::LoadJson()
         std::cout << roundInfo._name << "::" << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
         continue;
       }
-      variableInfo._step = variable->getDouble("step", 0);
-      if(variableInfo._step <= 0 || variableInfo._step > variableInfo._maxVal - variableInfo._minVal)
+      variableInfo._bins = variable->getDouble("bins", 1);
+      if(variableInfo._bins <= 0)
       {
-        std::cout << roundInfo._name << "::" << variableInfo._name << ": step must be a resonable and valid value. Continuing..." << std::endl;
+        std::cout << roundInfo._name << "::" << variableInfo._name << ": bins must be a valid (positive and non-zero) value. Continuing..." << std::endl;
         continue;
       }
       variableInfo._label = variable->getString("label", "");
+      variableInfo._noCut = variable->getBool("noCut", false);
 
       roundInfo._variables.push_back(variableInfo);
     }
@@ -638,6 +726,26 @@ bool CutOptimizer::OptimizeRound(size_t n)
   return OptimizeRound_(n);
 }
 
+std::string CutOptimizer::clearTex(std::string& str)
+{
+  std::string retVal = str;
+  bool foundMathMode = false;
+
+  if(retVal.find("_") != std::string::npos || retVal.find("<") != std::string::npos || retVal.find(">") != std::string::npos)
+    foundMathMode = true;
+
+  if(retVal.find("#") != std::string::npos)
+  {
+    foundMathMode = true;
+    std::replace(retVal.begin(), retVal.end(), '#', '\\');
+  }
+
+  if(foundMathMode)
+    retVal = "$" + retVal + "$";
+
+  return retVal;
+}
+
 bool CutOptimizer::OptimizeRound_(size_t n)
 {
   bool retVal = false;
@@ -664,7 +772,7 @@ bool CutOptimizer::OptimizeRound_(size_t n)
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::streambuf *cerrbuf = std::cerr.rdbuf();
   if(verbose_)
-    std::cout << "Opening log file: " << outDir_+"/"+roundName << std::endl;
+    std::cout << "Opening log file: " << outDir_+"/"+roundName+".log" << std::endl;
   ofstream out(outDir_+"/"+roundName+".log", std::ios::out | std::ios::trunc);
   out << "This is the log file for round: " << roundName << std::endl;
   out.flush();
@@ -746,39 +854,25 @@ bool CutOptimizer::OptimizeRound_(size_t n)
           std::cout << "The cut has a Figure of Merit (FOM) of " << thisCut.FOM << " +- " << thisCut.FOMerr << "; with the following yields:" << std::endl;
 
           std::cout << "  Signal Processes:" << std::endl;
-          doubleUnc sigTot{0,0};
+          doubleUnc sigTot(0,0);
           for(auto process = thisCut.yield["SIG"].begin(); process != thisCut.yield["SIG"].end(); ++process)
           {
             std::cout << "    " << process->first << ":" << std::endl;
-            doubleUnc processTot{0,0};
-            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-            {
-              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
-              processTot.value += sample->second.value;
-              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-            }
-            sigTot.value += processTot.value;
-            sigTot.uncertainty += processTot.uncertainty;
-            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            doubleUnc processTot = process->second;
+
+            sigTot += processTot;
             std::cout << "      Total: " << processTot << std::endl;
           }
           std::cout << "    Total: " << sigTot << std::endl;
 
           std::cout << "  Background Processes:" << std::endl;
-          doubleUnc bgTot{0,0};
+          doubleUnc bgTot(0,0);
           for(auto process = thisCut.yield["BG"].begin(); process != thisCut.yield["BG"].end(); ++process)
           {
             std::cout << "    " << process->first << ":" << std::endl;
-            doubleUnc processTot{0,0};
-            for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-            {
-              std::cout << "      " << sample->first << ": " << sample->second << std::endl;
-              processTot.value += sample->second.value;
-              processTot.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-            }
-            bgTot.value += processTot.value;
-            bgTot.uncertainty += processTot.uncertainty;
-            processTot.uncertainty = std::sqrt(processTot.uncertainty);
+            doubleUnc processTot = process->second;
+
+            bgTot += processTot;
             std::cout << "      Total: " << processTot << std::endl;
           }
           std::cout << "    Total: " << bgTot << std::endl;
@@ -786,10 +880,103 @@ bool CutOptimizer::OptimizeRound_(size_t n)
         else
           improve = false;
       }
+
+      if(limit_ > 0)
+      {
+        if(int(myReport.cuts.size()) >= limit_)
+          improve = false;
+      }
     }
 
-    // TODO - Print the final selection info
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    std::cout << "The final selection string chosen is: ";
+    bool noOut = true;
+    std::map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
+    std::map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      if(noOut)
+        noOut = false;
+      else
+        std::cout << " && ";
+      std::cout << variableExpressions[cut->variable];
+      if(cut->direction == "below")
+        std::cout << "<";
+      else
+        std::cout << ">";
+      std::cout << cut->value;
+    }
+    std::cout << std::endl;
+
     // TODO - Make the report (including the tex table with the yields)
+    std::cout << "Creating the '" << roundName << ".tex' file with the LaTeX code for the cutflow table." << std::endl;
+    ofstream texFile(outDir_+"/"+roundName+".tex", std::ios::out | std::ios::trunc);
+    int numCols = myReport.cuts.size();
+
+    texFile << "\\begin{table}[htp]" << std::endl;
+    texFile << "\\begin{center}" << std::endl;
+    texFile << "\\caption{Optimizaton Cutflow}" << std::endl;
+    texFile << "\\begin{tabular}{ |l|";
+    for(int i = 0; i < numCols; ++i)
+      texFile << "c";
+    texFile << "| } \\hline" << std::endl;
+    texFile << "Process ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      texFile << "& ";
+      texFile << clearTex(variableLabels[cut->variable]);
+      if(cut->direction == "below")
+        texFile << "$<";
+      else
+        texFile << "$>";
+      texFile << cut->value << "$ ";
+    }
+    texFile << "\\\\ " << std::endl << "\\hline\\hline" << std::endl;
+    for(auto sample = printOrder_.begin(); sample != printOrder_.end(); ++sample)
+    {
+      if(myReport.cuts[0].yield["BG"].find(*sample) == myReport.cuts[0].yield["BG"].end())
+        continue;
+      texFile << clearTex(*sample) << " ";
+      for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+      {
+        texFile << "& $" << cut->yield["BG"][*sample].value() << "\\pm" << cut->yield["BG"][*sample].uncertainty();
+        texFile << "$ ";
+      }
+      texFile << "\\\\" << std::endl;
+    }
+    texFile << "Total Expected ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      doubleUnc yield(0,0);
+      for(auto y = cut->yield["BG"].begin(); y != cut->yield["BG"].end(); ++y)
+      {
+        yield += y->second;
+      }
+      texFile << "& $" << yield.value() << "\\pm" << yield.uncertainty() << "$ ";
+    }
+    texFile << "\\\\" << std::endl;
+    texFile << "\\hline\\hline" << std::endl;
+    // TODO: if unblind output data
+    texFile << "Signal ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+    {
+      doubleUnc yield(0,0);
+      for(auto y = cut->yield["SIG"].begin(); y != cut->yield["SIG"].end(); ++y)
+      {
+        yield += y->second;
+      }
+      texFile << "& $" << yield.value() << "\\pm" << yield.uncertainty() << "$ ";
+    }
+    texFile << "\\\\" << std::endl;
+    texFile << "FOM ";
+    for(auto cut = myReport.cuts.begin(); cut != myReport.cuts.end(); ++cut)
+      texFile << "& $" << cut->FOM << "\\pm" << cut->FOMerr << "$ ";
+    texFile << "\\\\" << std::endl;
+    texFile << "\\hline" << std::endl << "\\end{tabular}" << std::endl << "\\end{center}" << std::endl << "\\end{table}" << std::endl;
+
+    texFile.close();
   }
   else
   {
@@ -812,9 +999,9 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
 {
   CutInfo retVal;
   std::vector<std::string> variables = roundInfo_[n].getListOfVariables(); // TODO - buffer this stuff
-  std::unordered_map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
-  std::unordered_map<std::string,std::unordered_map<std::string,double>> variableParameterMap = roundInfo_[n].getVariableParameterMap();
-  std::unordered_map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
+  std::map<std::string,std::string> variableExpressions = roundInfo_[n].getVariableExpressions();
+  std::map<std::string,std::map<std::string,double>> variableParameterMap = roundInfo_[n].getVariableParameterMap();
+  std::map<std::string,std::string> variableLabels = roundInfo_[n].getVariableLabels();
 
   TCut baseSelection = roundInfo_[n].baseSelection().c_str();
   TCut signalSelection = roundInfo_[n].signalSelection().c_str();
@@ -839,7 +1026,10 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       if(pass->direction == "above")
         tmpStr = ">" + tmpStr;
       else
+      {
+        std::cerr << "Pass direction is set to: " << pass->direction << std::endl;
         assert(pass->direction == "below" || pass->direction == "above");
+      }
     }
     tmpStr = variableExpressions[pass->variable] + tmpStr;
     cumulativeSelection = cumulativeSelection && tmpStr.c_str();
@@ -850,67 +1040,147 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
   // Loop on variables
   for(auto variableName = variables.begin(); variableName != variables.end(); ++variableName)
   {
-    double minVal = variableParameterMap[*variableName]["minVal"];
-    double maxVal = variableParameterMap[*variableName]["maxVal"];
-    double step   = variableParameterMap[*variableName]["step"];
-    std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << (maxVal-minVal)/step + 1 << " steps to be processed." << std::endl;
+//    double minVal = variableParameterMap[*variableName]["minVal"];
+//    double maxVal = variableParameterMap[*variableName]["maxVal"];
+    double bins   = variableParameterMap[*variableName]["bins"];
+    std::cout << roundInfo_[n].name() << "::" << *variableName << " has started processing, with " << bins + 1 << " steps to be processed." << std::endl;
+    if(verbose_)
+      std::cout << "  This variable has the following value for noCut: " << variableParameterMap[*variableName]["noCut"] << std::endl;
 
-    std::vector<double> xVals, yVals, xValsUnc, yValsUnc;
-    std::vector<double> signalYield, backgroundYield, signalYieldUnc, backgroundYieldUnc;
+    std::map<std::string,std::map<std::string,TH1D*>> hists = GetAndSaveHists(report, signalSelection, baseSelection && cumulativeSelection, roundInfo_[n].iLumi(), *variableName, variableExpressions[*variableName], variableLabels[*variableName], variableParameterMap[*variableName]);
 
-    for(double cutVal = minVal; cutVal <= maxVal; cutVal += step)
+    if(variableParameterMap[*variableName]["noCut"] != 0.0)
     {
-      std::string thisCutStr;
-      std::stringstream buf;
-      buf << ">";
-      buf << cutVal;
-      buf >> thisCutStr;
-      thisCutStr = variableExpressions[*variableName] + thisCutStr;
-      std::cout << "  The Cut: " << thisCutStr << std::endl;
-      TCut thisCut = thisCutStr.c_str();
-      TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
+      std::cout << "  This variable is marked as \"noCut\", skipping optimization for this variable." << std::endl;
 
-      if(verbose_)
-        std::cout << "    Full cut expression: " << currentSelection << std::endl;
-
-      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
-      std::vector<doubleUnc> fomReport = GetFOM(yield);
-      doubleUnc fom  = fomReport[0];
-      doubleUnc nSig = fomReport[1];
-      doubleUnc nBg  = fomReport[2];
-
-      std::cout << "    n(Sig): " << nSig << std::endl;
-      std::cout << "    n(Bkg): " << nBg << std::endl;
-
-      if(nBg.value == 0 || nSig.value == 0)
-        break;
-
-      std::cout << "    FOM: " << fom << std::endl;
-
-      xVals.push_back(cutVal);
-      xValsUnc.push_back(0);
-      yVals.push_back(fom.value);
-      yValsUnc.push_back(fom.uncertainty);
-      signalYield.push_back(nSig.value);
-      signalYieldUnc.push_back(nSig.uncertainty);
-      backgroundYield.push_back(nBg.value);
-      backgroundYieldUnc.push_back(nBg.uncertainty);
-
-      if(retVal.FOM < fom.value)
+      for(auto index = hists.begin(); index != hists.end(); ++index)
       {
-        retVal.FOM = fom.value;
-        retVal.FOMerr = fom.uncertainty;
-        retVal.variable = *variableName;
-        retVal.direction = "above";
-        retVal.value = cutVal;
-        retVal.yield = yield;
+        for(auto process = index->second.begin(); process != index->second.end(); ++process)
+        {
+          delete process->second;
+          process->second = NULL;
+        }
       }
 
-      //if(nSIG < 0.05)  // Minimum number of signal events: TODO - implement option in json to specify this value
-      //  break;
+      continue;
     }
 
-    if(xVals.size() == 0)
+    TH1D* exampleHist = NULL;
+    std::vector<double> xValsAbove, yValsAbove, xValsUncAbove, yValsUncAbove;
+    std::vector<double> signalYieldAbove, backgroundYieldAbove, signalYieldUncAbove, backgroundYieldUncAbove;
+    std::vector<double> xValsBelow, yValsBelow, xValsUncBelow, yValsUncBelow;
+    std::vector<double> signalYieldBelow, backgroundYieldBelow, signalYieldUncBelow, backgroundYieldUncBelow;
+
+    // Set up yield data structure
+    std::map<std::string,std::map<std::string,doubleUnc>> yieldsAbove, yieldsBelow;
+    for(auto index = hists.begin(); index != hists.end(); ++index)
+    {
+      std::map<std::string,doubleUnc> tmp;
+      for(auto process = index->second.begin(); process != index->second.end(); ++process)
+      {
+        doubleUnc val(0,0);
+        tmp[process->first] = val;
+        exampleHist = process->second;
+      }
+      yieldsAbove[index->first] = tmp;
+      yieldsBelow[index->first] = tmp;
+    }
+
+    int nbins = exampleHist->GetNbinsX();//int(bins);//+2; //TODO: remember to fix this when adding under/overflow bins
+
+    for(int cutBin = 1; cutBin <= nbins; ++cutBin)
+    {
+      double binLow = exampleHist->GetBinLowEdge(cutBin);
+      double binHigh = exampleHist->GetBinLowEdge(cutBin+1);
+//      double binWidth = exampleHist->GetBinWidth(cutBin);
+
+      for(auto index = hists.begin(); index != hists.end(); ++index)
+      {
+        for(auto process = index->second.begin(); process != index->second.end(); ++process)
+        {
+          yieldsAbove[index->first][process->first] = 0.0;
+          yieldsBelow[index->first][process->first] = 0.0;
+
+          for(int bin = 1; bin <= nbins; ++bin)
+          {
+            doubleUnc tempVal(process->second->GetBinContent(bin), process->second->GetBinError(bin));
+            if(bin < cutBin)
+            {
+              yieldsBelow[index->first][process->first] += tempVal;
+            }
+            if(bin > cutBin)
+            {
+              yieldsAbove[index->first][process->first] += tempVal;
+            }
+            if(bin == cutBin)
+            {
+              yieldsAbove[index->first][process->first] += tempVal;
+              yieldsBelow[index->first][process->first] += tempVal;
+            }
+          }
+        }
+      }
+
+      std::vector<doubleUnc> fomReportAbove = GetFOM(yieldsAbove);
+      std::vector<doubleUnc> fomReportBelow = GetFOM(yieldsBelow);
+
+      std::cout << "  The Cut: " << variableExpressions[*variableName] << " -  > " << binLow << ":  < " << binHigh << std::endl;
+      std::cout << "    n(Sig): " << fomReportAbove[1] << ": " << fomReportBelow[1] << std::endl;
+      std::cout << "    n(Bkg): " << fomReportAbove[2] << ": " << fomReportBelow[2] << std::endl;
+      std::cout << "    FOM: " << fomReportAbove[0] << ": " << fomReportBelow[0] << std::endl;
+
+      if(fomReportAbove[2].value() != 0 && fomReportAbove[1].value() != 0)
+      {
+        if(fomReportAbove[1].value() > 0.5)
+        {
+          xValsAbove.push_back(binLow);
+          xValsUncAbove.push_back(0);
+          yValsAbove.push_back(fomReportAbove[0].value());
+          yValsUncAbove.push_back(fomReportAbove[0].uncertainty());
+          signalYieldAbove.push_back(fomReportAbove[1].value());
+          signalYieldUncAbove.push_back(fomReportAbove[1].uncertainty());
+          backgroundYieldAbove.push_back(fomReportAbove[2].value());
+          backgroundYieldUncAbove.push_back(fomReportAbove[2].uncertainty());
+        }
+
+        if(retVal.FOM < fomReportAbove[0].value() && fomReportAbove[1].value() > roundInfo_[n].minSigEvents())
+        {
+          retVal.FOM = fomReportAbove[0].value();
+          retVal.FOMerr = fomReportAbove[0].uncertainty();
+          retVal.variable = *variableName;
+          retVal.direction = "above";
+          retVal.value = binLow;
+          retVal.yield = yieldsAbove;
+        }
+      }
+
+      if(fomReportBelow[2].value() != 0 && fomReportBelow[1].value() != 0)
+      {
+        if(fomReportBelow[1].value() > 0.5)
+        {
+          xValsBelow.push_back(binHigh);
+          xValsUncBelow.push_back(0);
+          yValsBelow.push_back(fomReportBelow[0].value());
+          yValsUncBelow.push_back(fomReportBelow[0].uncertainty());
+          signalYieldBelow.push_back(fomReportBelow[1].value());
+          signalYieldUncBelow.push_back(fomReportBelow[1].uncertainty());
+          backgroundYieldBelow.push_back(fomReportBelow[2].value());
+          backgroundYieldUncBelow.push_back(fomReportBelow[2].uncertainty());
+        }
+
+        if(retVal.FOM < fomReportBelow[0].value() && fomReportBelow[1].value() > roundInfo_[n].minSigEvents())
+        {
+          retVal.FOM = fomReportBelow[0].value();
+          retVal.FOMerr = fomReportBelow[0].uncertainty();
+          retVal.variable = *variableName;
+          retVal.direction = "below";
+          retVal.value = binHigh;
+          retVal.yield = yieldsBelow;
+        }
+      }
+    }
+
+    if(xValsAbove.size() == 0)
     {
       std::cout << "  No points processed for \"above\"" << std::endl;
     }
@@ -923,80 +1193,18 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       buf << outDir_ << "/";
       buf << roundInfo_[n].name() << "_Pass" << report.cuts.size() << "_" << *variableName;
       buf >> name;
-
       name = name + "_above";
 
-      SaveGraph(name, xVals, xValsUnc, xTitle, yVals, yValsUnc, yTitle);
+      SaveGraph(name, xValsAbove, xValsUncAbove, xTitle, yValsAbove, yValsUncAbove, yTitle);
       yTitle = "SignalYield";
       std::string tmp = name+"_signalYield";
-      SaveGraph(tmp, xVals, xValsUnc, xTitle, signalYield, signalYieldUnc, yTitle);
+      SaveGraph(tmp, xValsAbove, xValsUncAbove, xTitle, signalYieldAbove, signalYieldUncAbove, yTitle);
       yTitle = "BackgroundYield";
       tmp = name+"_backgroundYield";
-      SaveGraph(tmp, xVals, xValsUnc, xTitle, backgroundYield, backgroundYieldUnc, yTitle);
+      SaveGraph(tmp, xValsAbove, xValsUncAbove, xTitle, backgroundYieldAbove, backgroundYieldUncAbove, yTitle);
     }
 
-    xVals.clear();
-    yVals.clear();
-    xValsUnc.clear();
-    xValsUnc.clear();
-    signalYield.clear();
-    backgroundYield.clear();
-    signalYieldUnc.clear();
-    backgroundYieldUnc.clear();
-
-    for(double cutVal = maxVal; cutVal >= minVal; cutVal -= step)
-    {
-      std::string thisCutStr;
-      std::stringstream buf;
-      buf << "<";
-      buf << cutVal;
-      buf >> thisCutStr;
-      thisCutStr = variableExpressions[*variableName] + thisCutStr;
-      std::cout << "  The Cut: " << thisCutStr << std::endl;
-      TCut thisCut = thisCutStr.c_str();
-      TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
-
-      if(verbose_)
-        std::cout << "    Full cut expression: " << currentSelection << std::endl;
-
-      std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
-      std::vector<doubleUnc> fomReport = GetFOM(yield);
-      doubleUnc fom  = fomReport[0];
-      doubleUnc nSig = fomReport[1];
-      doubleUnc nBg  = fomReport[2];
-
-      std::cout << "    n(Sig): " << nSig << std::endl;
-      std::cout << "    n(Bkg): " << nBg << std::endl;
-
-      if(nBg.value == 0 || nSig.value == 0)
-        break;
-
-      std::cout << "    FOM: " << fom << std::endl;
-
-      xVals.push_back(cutVal);
-      xValsUnc.push_back(0);
-      yVals.push_back(fom.value);
-      yValsUnc.push_back(fom.uncertainty);
-      signalYield.push_back(nSig.value);
-      signalYieldUnc.push_back(nSig.uncertainty);
-      backgroundYield.push_back(nBg.value);
-      backgroundYieldUnc.push_back(nBg.uncertainty);
-
-      if(retVal.FOM < fom.value)
-      {
-        retVal.FOM = fom.value;
-        retVal.FOMerr = fom.uncertainty;
-        retVal.variable = *variableName;
-        retVal.direction = "above";
-        retVal.value = cutVal;
-        retVal.yield = yield;
-      }
-
-      //if(nSIG < 0.05)  // Minimum number of signal events: TODO - implement option in json to specify this value
-      //  break;
-    }
-
-    if(xVals.size() == 0)
+    if(xValsBelow.size() == 0)
     {
       std::cout << "  No points processed for \"below\"" << std::endl;
     }
@@ -1009,16 +1217,25 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
       buf << outDir_ << "/";
       buf << roundInfo_[n].name() << "_Pass" << report.cuts.size() << "_" << *variableName;
       buf >> name;
-
       name = name + "_below";
 
-      SaveGraph(name, xVals, xValsUnc, xTitle, yVals, yValsUnc, yTitle);
+      SaveGraph(name, xValsBelow, xValsUncBelow, xTitle, yValsBelow, yValsUncBelow, yTitle);
       yTitle = "SignalYield";
       std::string tmp = name+"_signalYield";
-      SaveGraph(tmp, xVals, xValsUnc, xTitle, signalYield, signalYieldUnc, yTitle);
+      SaveGraph(tmp, xValsBelow, xValsUncBelow, xTitle, signalYieldBelow, signalYieldUncBelow, yTitle);
       yTitle = "BackgroundYield";
       tmp = name+"_backgroundYield";
-      SaveGraph(tmp, xVals, xValsUnc, xTitle, backgroundYield, backgroundYieldUnc, yTitle);
+      SaveGraph(tmp, xValsBelow, xValsUncBelow, xTitle, backgroundYieldBelow, backgroundYieldUncBelow, yTitle);
+    }
+
+    //Clearing memory
+    for(auto index = hists.begin(); index != hists.end(); ++index)
+    {
+      for(auto process = index->second.begin(); process != index->second.end(); ++process)
+      {
+        delete process->second;
+        process->second = NULL;
+      }
     }
   }
 
@@ -1030,7 +1247,7 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     TCut thisCut = thisCutStr.c_str();
     TCut currentSelection = baseSelection && cumulativeSelection && thisCut;
 
-    std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
+    std::map<std::string,std::map<std::string,doubleUnc>> yield = GetYields(report, signalSelection, currentSelection, roundInfo_[n].iLumi());
     std::vector<doubleUnc> fomReport = GetFOM(yield);
     doubleUnc fom  = fomReport[0];
     doubleUnc nSig = fomReport[1];
@@ -1040,8 +1257,8 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
     std::cout << "    n(Bkg): " << nBg << std::endl;
     std::cout << "    FOM: " << fom << std::endl;
 
-    retVal.FOM = fom.value;
-    retVal.FOMerr = fom.uncertainty;
+    retVal.FOM = fom.value();
+    retVal.FOMerr = fom.uncertainty();
     retVal.variable = roundInfo_[n].getUserCutVar(report.cuts.size());;
     retVal.direction = roundInfo_[n].getUserCutDir(report.cuts.size());;
     retVal.value = roundInfo_[n].getUserCutValue(report.cuts.size());;
@@ -1051,37 +1268,146 @@ CutInfo CutOptimizer::GetBestCutAndMakePlots(size_t n, ReportInfo& report)
   return retVal;
 }
 
-std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>>& yield)
+std::map<std::string,std::map<std::string,TH1D*>> CutOptimizer::GetAndSaveHists(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity, std::string varName, std::string varExpression, std::string varLabel, std::map<std::string,double>& varParams)
+{
+  gROOT->cd();
+
+  double minVal = varParams["minVal"];
+  double maxVal = varParams["maxVal"];
+  double bins   = varParams["bins"];
+
+  std::map<std::string,TH1D*> hists; // Hists for ratio
+  std::map<std::string,std::map<std::string,TH1D*>> histsPlot; // Hists for plotting
+  std::string title = ";"+varLabel+";Events";
+
+  for(auto index = processes_.begin(); index != processes_.end(); ++index)
+  {
+    hists[index->first] = new TH1D((index->first).c_str(), (index->first+title).c_str(), bins, minVal, maxVal);
+    hists[index->first]->Sumw2();
+
+    TCut cut = currentSelection;
+    if(index->first == "SIG" && isMultipointSignalSample_)
+      cut = cut && signalSelection;
+
+    for(auto process = index->second.begin(); process != index->second.end(); ++process)
+    {
+      histsPlot[index->first][process->name] = new TH1D((process->name).c_str(), (process->name + title).c_str(), bins, minVal, maxVal);
+      histsPlot[index->first][process->name]->Sumw2();
+
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        if(sample->nFiles == 0)
+          continue;
+
+        TH1D temp_hist("temp_hist", title.c_str(), bins, minVal, maxVal);
+        temp_hist.Sumw2();
+
+        if(nSignalPoints_ > 1 && index->first == "SIG")
+          sample->chain->Draw((varExpression+">>temp_hist").c_str(), cut*"puWeight", "goff");
+        else
+          sample->chain->Draw((varExpression+">>temp_hist").c_str(), cut*"weight", "goff");
+
+        if(index->first != "Data")
+        {
+          if(!isMultipointSignalSample_ || index->first != "SIG")
+          {
+            temp_hist.Scale(1.0/sample->nFiles);
+          }
+          else
+          {
+            if(nSignalPoints_ > 1)
+              temp_hist.Scale(roundInfo_[report.round].sigCrossSection() / (roundInfo_[report.round].nInitEvents() * nSignalPoints_));
+          }
+
+          temp_hist.Scale(integratedLuminosity);
+        }
+
+        histsPlot[index->first][process->name]->Add(&temp_hist);
+      }
+
+      histsPlot[index->first][process->name]->SetLineColor  (process->style.lcolor());
+      histsPlot[index->first][process->name]->SetMarkerColor(process->style.mcolor());
+      histsPlot[index->first][process->name]->SetFillColor  (process->style.fcolor());
+      if(process->style.lwidth() >= 0)
+        histsPlot[index->first][process->name]->SetLineWidth  (process->style.lwidth());
+      if(process->style.lstyle() >= 0)
+        histsPlot[index->first][process->name]->SetLineStyle  (process->style.lstyle());
+      if(process->style.marker() >= 0)
+        histsPlot[index->first][process->name]->SetMarkerStyle(process->style.marker());
+
+      hists[index->first]->Add(histsPlot[index->first][process->name]);
+    }
+  }
+
+  // Todo: expand histos to show underflow/overflow if needed
+  // Todo: what about plotting 2D histos, only with the no-cut option
+
+  std::stringstream buf;
+  std::string baseFileName;
+  buf << roundInfo_[report.round].name() + "_Pass" << report.cuts.size();
+  buf << "_" << varName;
+  buf >> baseFileName;
+  double maximum = hists["BG"]->GetMaximum();
+  for(auto hist = histsPlot["SIG"].begin(); hist != histsPlot["SIG"].end(); ++hist)
+    if(hist->second->GetMaximum() > maximum)
+      maximum = hist->second->GetMaximum();
+
+  // Todo: add option to unblind - Do not forget about implementing the ratio
+  TCanvas c1("c1", "c1", 800, 600);
+  c1.SetLogy(true);
+
+  THStack* bgStack = new THStack((varName+"_BG").c_str(), (varName+title).c_str());
+  for(auto sample = printOrder_.begin(); sample != printOrder_.end(); ++sample)
+    if(histsPlot["BG"].find(*sample) != histsPlot["BG"].end())
+      bgStack->Add(histsPlot["BG"][*sample]);
+
+  bgStack->Draw("hist");
+  bgStack->SetMaximum(maximum*1.1);
+  bgStack->SetMinimum(5e-2);
+  for(auto hist = histsPlot["SIG"].begin(); hist != histsPlot["SIG"].end(); ++hist)
+    hist->second->Draw("hist same");
+
+  c1.BuildLegend(0.88, 0.67, 1, 1);
+
+  for(auto ext = plotExt_.begin(); ext != plotExt_.end(); ++ext)
+    c1.SaveAs((outDir_ + "/" + baseFileName + *ext).c_str());
+
+  delete bgStack;
+
+  // Todo: normalized plots
+
+
+  // Cleaning up:
+  for(auto hist = hists.begin(); hist != hists.end(); ++hist)
+  {
+    delete hist->second;
+    hist->second = NULL;
+  }
+
+  return histsPlot;
+}
+
+std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::string,doubleUnc>>& yield)
 {
   std::vector<doubleUnc> retVal;
 
   double systUnc = 0.15;  // Hard coded systematic uncertainty /////////////////////////////////////////////////////////////////////////////////////
   // TODO - Add option to run with full systematic uncertainty (ie: calculate full analysis at each point) - is this feasible and reasonable?
-  doubleUnc nSig{0,0};
-  doubleUnc nBg{0,0};
-  doubleUnc fom{0,0};
+  doubleUnc nSig(0,0);
+  doubleUnc nBg(0,0);
+  doubleUnc fom(0,0);
 
   for(auto process = yield["SIG"].begin(); process != yield["SIG"].end(); ++process)
   {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      nSig.value += sample->second.value;
-      nSig.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-    }
+    nSig += process->second;
   }
-  nSig.uncertainty = std::sqrt(nSig.uncertainty);
 
   for(auto process = yield["BG"].begin(); process != yield["BG"].end(); ++process)
   {
-    for(auto sample = process->second.begin(); sample != process->second.end(); ++sample)
-    {
-      nBg.value += sample->second.value;
-      nBg.uncertainty += sample->second.uncertainty*sample->second.uncertainty;
-    }
+    nBg += process->second;
   }
-  nBg.uncertainty = std::sqrt(nBg.uncertainty);
 
-  if(nBg.value == 0 || nSig.value == 0)
+  if(nBg.value() == 0 || nSig.value() == 0)
   {
     retVal.push_back(fom);
     retVal.push_back(nSig);
@@ -1089,19 +1415,40 @@ std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::s
     return retVal;
   }
 
-  double dividend = std::sqrt(nBg.value + (systUnc*nBg.value)*(systUnc*nBg.value));
-  fom.value = nSig.value/dividend;
+  if(algo_ == "QuickNDirty")
   {
-    double SIGContrib = nSig.uncertainty/dividend;
-    double BGContrib = nBg.uncertainty*nSig.value*(1+2*systUnc*systUnc*nBg.value)/(2*dividend*dividend*dividend);
-    fom.uncertainty = std::sqrt(SIGContrib*SIGContrib + BGContrib*BGContrib);
+    fom = ((nSig+nBg).sqrt() - nBg.sqrt()) * 2;
   }
+  else // if(algo_=="LIP")
+  {
+    fom = nSig/(nBg + nBg*nBg*systUnc*systUnc);
+  }
+//  double dividend = std::sqrt(nBg.value() + (systUnc*nBg.value())*(systUnc*nBg.value()));
+//  fom.setValue(nSig.value()/dividend);
+//  {
+//    double SIGContrib = nSig.uncertainty2()/(dividend*dividend);
+//    double BGContrib = nSig.value()*(1+2*systUnc*systUnc*nBg.value())/(2*dividend*dividend*dividend);
+//    fom.setUncertainty2(SIGContrib + nBg.uncertainty2()*(BGContrib*BGContrib));
+//  }
 
   retVal.push_back(fom);
   retVal.push_back(nSig);
   retVal.push_back(nBg);
 
   return retVal;
+}
+
+void CutOptimizer::SetAlgo(std::string newAlgo)
+{
+  if(newAlgo == "QuickNDirty")
+  {
+    algo_ = "QuickNDirty";
+  }
+  else // Default algorithm is the LIP algorithm
+  {
+    algo_ = "LIP";
+  }
+  return;
 }
 
 void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle)
@@ -1166,22 +1513,23 @@ void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std:
   return;
 }
 
-std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> CutOptimizer::GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity)
+std::map<std::string,std::map<std::string,doubleUnc>> CutOptimizer::GetYields(ReportInfo& report, TCut signalSelection, TCut currentSelection, double integratedLuminosity)
 {
   gROOT->cd();
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> retVal;
+  std::map<std::string,std::map<std::string,doubleUnc>> retVal;
 
   for(auto index = processes_.begin(); index != processes_.end(); ++index)
   {
-    std::map<std::string,std::map<std::string,doubleUnc>> typeYieldMap;
+    std::map<std::string,doubleUnc> typeYieldMap;
     for(auto process = index->second.begin(); process != index->second.end(); ++process)
     {
-      std::map<std::string,doubleUnc> processYieldMap;
+      doubleUnc processYield(0,0);
+
       for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
       {
         if(sample->nFiles == 0)
           continue;
-        doubleUnc sampleYield;
+        doubleUnc sampleYield(0,0);
 
         TH1D temp_histo("temp_histo", "temp_histo", 1, 0, 20);
         temp_histo.Sumw2();
@@ -1195,37 +1543,34 @@ std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> CutO
         else
           sample->chain->Draw("weight>>temp_histo", cut*"weight", "goff");
 
-        sampleYield.value = temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2);
+        sampleYield.setValue(temp_histo.GetBinContent(0) + temp_histo.GetBinContent(1) + temp_histo.GetBinContent(2));
         //double a = temp_histo.GetBinError(0);
         //double b = temp_histo.GetBinError(1);
         //double c = temp_histo.GetBinError(2);
         //double uncertainty = std::sqrt(a*a + b*b + c*c);
         TArrayD* w2Vec = temp_histo.GetSumw2();
-        sampleYield.uncertainty = std::sqrt(w2Vec->fArray[0] + w2Vec->fArray[1] + w2Vec->fArray[2]);
+        sampleYield.setUncertainty2(w2Vec->fArray[0] + w2Vec->fArray[1] + w2Vec->fArray[2]);
 
         if(index->first != "Data")
         {
           if(!isMultipointSignalSample_ || index->first != "SIG")
           {
-            sampleYield.value       = sampleYield.value       /sample->nFiles;
-            sampleYield.uncertainty = sampleYield.uncertainty /sample->nFiles;
+            sampleYield /= double(sample->nFiles);
           }
           else
           {
             if(nSignalPoints_ > 1)
             {
-              sampleYield.value       = (sampleYield.value       * roundInfo_[report.round].sigCrossSection())/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
-              sampleYield.uncertainty = (sampleYield.uncertainty * roundInfo_[report.round].sigCrossSection())/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
+              sampleYield *= roundInfo_[report.round].sigCrossSection()/(roundInfo_[report.round].nInitEvents() * nSignalPoints_);
             }
           }
 
-          sampleYield.value       = sampleYield.value * integratedLuminosity;
-          sampleYield.uncertainty = sampleYield.uncertainty * integratedLuminosity;
+          sampleYield       *= integratedLuminosity;
         }
 
-        processYieldMap[sample->name] = sampleYield;
+        processYield += sampleYield;
       }
-      typeYieldMap[process->name] = processYieldMap;
+      typeYieldMap[process->name] = processYield;
     }
     retVal[index->first] = typeYieldMap;
   }
@@ -1287,6 +1632,29 @@ bool CutOptimizer::GetSamples(size_t n)
 
     ProcessFiles tempProc;
     tempProc.name = (*process).getString("tag", "Sample");
+    printOrder_.push_back(tempProc.name);
+
+    // Todo add possibility of plotting multiple signals, by extending the data json to include the cuts and a label for each signal sample
+    if(process->isTag("color"))
+    {
+      tempProc.style.lcolor() = process->getInt("color");
+      tempProc.style.mcolor() = tempProc.style.lcolor();
+      tempProc.style.fcolor() = tempProc.style.lcolor();
+    }
+    if(process->isTag("lcolor"))
+      tempProc.style.lcolor() = process->getInt("lcolor");
+    if(process->isTag("mcolor"))
+      tempProc.style.mcolor() = process->getInt("mcolor");
+    if(process->isTag("fcolor"))
+      tempProc.style.fcolor() = process->getInt("fcolor");
+    if(process->isTag("fill"))
+      tempProc.style.fcolor() = process->getInt("fill");
+    if(process->isTag("lwidth"))
+      tempProc.style.lwidth() = process->getInt("lwidth");
+    if(process->isTag("lstyle"))
+      tempProc.style.lstyle() = process->getInt("lstyle");
+    if(process->isTag("marker"))
+      tempProc.style.marker() = process->getInt("marker");
 
     std::string filtExt;
     if((*process).isTag("mctruthmode"))
@@ -1305,13 +1673,13 @@ bool CutOptimizer::GetSamples(size_t n)
       tempSample.chain = new TChain(roundInfo_[n].ttree().c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
       int nFiles = (*sample).getInt("split", 1);
 
-      for(int file = 0; file < nFiles; ++file)
+      for(int filen = 0; filen < nFiles; ++filen)
       {
         std::string segmentExt;
         if(nFiles != 1)
         {
           std::stringstream buf;
-          buf << "_" << file;
+          buf << "_" << filen;
           buf >> segmentExt;
         }
 
@@ -1360,6 +1728,7 @@ bool CutOptimizer::ClearSamples()
     }
   }
   processes_.clear();
+  printOrder_.clear();
 
   std::vector<ProcessFiles> temp;
   processes_["BG"] = temp;
@@ -1378,6 +1747,10 @@ void printHelp()
   std::cout << "--outDir  -->  Path to the directory where to output plots and tables (will be created if it doesn't exist)" << std::endl;
   std::cout << "--plotExt -->  Extension format with which to save the plots, repeat this command if multiple formats are desired" << std::endl;
   std::cout << "--verbose -->  Set to verbose mode, the current step will be printed out to screen" << std::endl;
+  std::cout << "--limit   -->  Limit the maximum number of steps" << std::endl;
+  std::cout << "--algo    -->  Algorithm used to compute the FOM. Options:" << std::endl;
+  std::cout << "                  - LIP         - Use the LIP algorithm: FOM = S/sqrt(B + (f.B)^2)" << std::endl;
+  std::cout << "                  - QuickNDirty - Use the algorithm suggested by the statistics committee: FOM = 2*[sqrt(S+B) - sqrt(B)], from https://indico.cern.ch/event/301310/session/5/contribution/49/material/slides/0.pptx" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;

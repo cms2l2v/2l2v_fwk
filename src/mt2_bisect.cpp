@@ -301,6 +301,7 @@ int mt2::nsols_massless(double Dsq)
   A2sq = A2*A2;
   A3sq = A3*A3;
   A4sq = A4*A4;
+  A0sq*=1.0; A1sq*=1.0; A2sq*=1.0; A3sq*=1.0; A4sq*=1.0; //added to avoid unused variables warning
 
   long double B3, B2, B1, B0;
   B3 = 4*A4;
@@ -532,7 +533,7 @@ int mt2::scan_high(double & Deltasq_high)
    int nsols_high;
 
    
-   double Deltasq_low;
+//   double Deltasq_low;
    double tempmass, maxmass;
    tempmass = mn + ma;
    maxmass  = sqrt(mnsq + Deltasq_high);
@@ -544,7 +545,7 @@ int mt2::scan_high(double & Deltasq_high)
       
       if( nsols_high > 0)
       {
-	 Deltasq_low = (mass-SCANSTEP)*(mass-SCANSTEP) - mnsq;
+//	 Deltasq_low = (mass-SCANSTEP)*(mass-SCANSTEP) - mnsq;
          foundhigh   = 1;
          break;
       }
@@ -604,7 +605,8 @@ int mt2::nsols(  double Dsq)
    A2sq = A2*A2;
    A3sq = A3*A3;
    A4sq = A4*A4;
-   
+   A0sq*=1.0; A1sq*=1.0; A2sq*=1.0; A3sq*=1.0; A4sq*=1.0; //added to avoid unused variables warning
+
    long double B3, B2, B1, B0;
    B3 = 4*A4;
    B2 = 3*A3;

@@ -39720,8 +39720,7 @@ process.pfTauPFJets08Region = cms.EDProducer("RecoTauJetRegionProducer",
     pfCandAssocMapSrc = cms.InputTag(""),
     src = cms.InputTag("ak5PFJets"),
     deltaR = cms.double(0.8),
-    pfCandSrc = cms.InputTag("particleFlow"),
-    pfSrc = cms.InputTag("particleFlow")
+    pfCandSrc = cms.InputTag("particleFlow")
 )
 
 
@@ -39729,7 +39728,6 @@ process.pfTauPFJets08RegionPFlow = cms.EDProducer("RecoTauJetRegionProducer",
     pfCandAssocMapSrc = cms.InputTag(""),
     src = cms.InputTag("ak5PFJets"),
     deltaR = cms.double(0.8),
-    pfSrc = cms.InputTag("particleFlow"),
     pfCandSrc = cms.InputTag("particleFlow")
 )
 
@@ -46067,7 +46065,7 @@ process.zdcreco = cms.EDProducer("ZdcHitReconstructor",
 
 
 process.CSCTightHaloFilter = cms.EDFilter("CSCTightHaloFilter",
-    taggingMode = cms.bool(False)
+    taggingMode = cms.bool(True)
 )
 
 
@@ -46690,7 +46688,9 @@ process.llvvObjectProducers = cms.EDFilter("llvvObjectProducers",
     triggerCats = cms.vint32(1111, 1111, 1313, 1313, 1113, 
         1113, 13, 22, 22, 22, 
         22, 22, 22, 11, 11, 
-        13),
+        13, 1511, 1511, 1511, 1511, 
+        1513, 1513, 1513, 1513, 1, 
+        1, 1, 1515, 1515),
     jetSource = cms.InputTag("selectedPatJetsPFlow"),
     tauSource = cms.InputTag("selectedPatTausPFlow"),
     rhoSource = cms.InputTag("kt6PFJets","rho"),
@@ -46711,7 +46711,20 @@ process.llvvObjectProducers = cms.EDFilter("llvvObjectProducers",
         'HLT_Photon300_NoHE_v1_v', 
         'HLT_Ele27_WP80_v', 
         'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v', 
-        'HLT_IsoMu24_v'),
+        'HLT_IsoMu24_v', 
+        'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_v', 
+        'HLT_Ele22_eta2p1_WP90Rho_LooseIsoPFTau20_v', 
+        'HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v', 
+        'HLT_Ele22_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v', 
+        'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_IsoMu20_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_PFJet40_v', 
+        'HLT_PFJet80_v', 
+        'HLT_PFJet320_v', 
+        'HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_v', 
+        'HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_v'),
     pfSource = cms.InputTag("particleFlow")
 )
 
@@ -46802,7 +46815,9 @@ process.llvvObjectProducersUsed = cms.EDFilter("llvvObjectProducers",
     triggerCats = cms.vint32(1111, 1111, 1313, 1313, 1113, 
         1113, 13, 22, 22, 22, 
         22, 22, 22, 11, 11, 
-        13),
+        13, 1511, 1511, 1511, 1511, 
+        1513, 1513, 1513, 1513, 1, 
+        1, 1, 1515, 1515),
     jetSource = cms.InputTag("selectedPatJetsPFlow"),
     tauSource = cms.InputTag("selectedPatTausPFlow"),
     rhoSource = cms.InputTag("kt6PFJets","rho"),
@@ -46823,7 +46838,20 @@ process.llvvObjectProducersUsed = cms.EDFilter("llvvObjectProducers",
         'HLT_Photon300_NoHE_v1_v', 
         'HLT_Ele27_WP80_v', 
         'HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v', 
-        'HLT_IsoMu24_v'),
+        'HLT_IsoMu24_v', 
+        'HLT_Ele13_eta2p1_WP90Rho_LooseIsoPFTau20_v', 
+        'HLT_Ele22_eta2p1_WP90Rho_LooseIsoPFTau20_v', 
+        'HLT_Ele20_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v', 
+        'HLT_Ele22_CaloIdVT_CaloIsoRhoT_TrkIdT_TrkIsoT_LooseIsoPFTau20_v', 
+        'HLT_IsoMu8_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_IsoMu18_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_IsoMu20_eta2p1_LooseIsoPFTau20_v', 
+        'HLT_PFJet40_v', 
+        'HLT_PFJet80_v', 
+        'HLT_PFJet320_v', 
+        'HLT_DoubleMediumIsoPFTau35_Trk1_eta2p1_v', 
+        'HLT_DoubleMediumIsoPFTau35_Trk5_eta2p1_v'),
     pfSource = cms.InputTag("particleFlow")
 )
 
@@ -47725,9 +47753,6 @@ process.hpsPFTauDiscriminationByCombinedIsolationSeqDBSumPtCorr3Hits = cms.Seque
 process.patPFTauIsolation = cms.Sequence(process.tauIsoDepositPFCandidates+process.tauIsoDepositPFChargedHadrons+process.tauIsoDepositPFNeutralHadrons+process.tauIsoDepositPFGammas)
 
 
-process.produceAndDiscriminateBoostedHPSPFTaus = cms.Sequence(process.pfPileUpForBoostedTaus+process.pfNoPileUpForBoostedTaus+process.ca8PFJetsCHSprunedForBoostedTaus+process.boostedTauSeeds)
-
-
 process.muonSelectionTypeSequence = cms.Sequence(process.muidTrackerMuonArbitrated+process.muidAllArbitrated+process.muidGlobalMuonPromptTight+process.muidTMLastStationLoose+process.muidTMLastStationTight+process.muidTM2DCompatibilityLoose+process.muidTM2DCompatibilityTight+process.muidTMOneStationLoose+process.muidTMOneStationTight+process.muidTMLastStationOptimizedLowPtLoose+process.muidTMLastStationOptimizedLowPtTight+process.muidGMTkChiCompatibility+process.muidGMStaChiCompatibility+process.muidGMTkKinkTight+process.muidTMLastStationAngLoose+process.muidTMLastStationAngTight+process.muidTMOneStationAngLoose+process.muidTMOneStationAngTight)
 
 
@@ -47750,6 +47775,9 @@ process.type0PFMEtCorrection = cms.Sequence(process.type0PFMEtCorrectionPFCandTo
 
 
 process.uncleanedOnlyElectrons = cms.Sequence(process.uncleanedOnlyGsfElectronCores+process.uncleanedOnlyGsfElectrons)
+
+
+process.boostedTauPreSequence = cms.Sequence(process.pfPileUpForBoostedTaus+process.pfNoPileUpForBoostedTaus+process.ca8PFJetsCHSprunedForBoostedTaus+process.boostedTauSeeds)
 
 
 process.genJetParticles = cms.Sequence(process.genParticlesForJets)
@@ -48496,7 +48524,7 @@ process.jetPlusTrackZSPCorJetSiscone5 = cms.Sequence(process.JetPlusTrackCorrect
 process.ckftracks = cms.Sequence(process.iterTracking+process.electronSeedsSeq+process.doAlldEdXEstimators)
 
 
-process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter+process.hcalLaserEventFilter+process.EcalDeadCellTriggerPrimitiveFilter+process.eeBadScFilter+process.ecalLaserCorrFilter+process.trackingFailureFilter+process.trkPOGFilters)
+process.metFilteringTaggers = cms.Sequence(process.HBHENoiseFilter+process.CSCTightHaloFilter+process.hcalLaserEventFilter+process.EcalDeadCellTriggerPrimitiveFilter+process.eeBadScFilter+process.ecalLaserCorrFilter+process.goodVertices+process.trackingFailureFilter+process.trkPOGFilters)
 
 
 process.pfMuonSequencePFlow = cms.Sequence(process.pfAllMuonsPFlow+process.pfMuonsFromVertexPFlow+process.pfSelectedMuonsPFlow+process.pfMuonIsolationSequencePFlow+process.pfIsolatedMuonsPFlow+process.pfMuonsPFlow)
@@ -48715,7 +48743,7 @@ process.reconstruction_fromRECO_noTracking = cms.Sequence(process.clusterSummary
 process.reconstruction_HcalNZS = cms.Sequence(process.localreco_HcalNZS+process.globalreco+process.highlevelreco+process.logErrorHarvester)
 
 
-process.p = cms.Path(process.startCounter+process.noscraping+process.scrapCounter+process.goodOfflinePrimaryVertices+process.goodVertexFilter+process.vtxCounter+process.metFilteringTaggers+process.metCounter+process.eidMVASequence+process.produceAndDiscriminateBoostedHPSPFTaus+process.PFTauBoost+process.patPF2PATSequencePFlow+process.patPFTauIsolationBoost+process.patTausBoost+process.btvSequence+process.kt6PFJetsCentral+process.qgSequence+process.type0PFMEtCorrection+process.producePFMETCorrections+process.pfMEtMVAsequence+process.selectedPatElectronsWithTrigger+process.selectedPatMuonsTriggerMatch+process.llvvObjectProducersUsed+process.endCounter)
+process.p = cms.Path(process.startCounter+process.noscraping+process.scrapCounter+process.goodOfflinePrimaryVertices+process.goodVertexFilter+process.vtxCounter+process.metFilteringTaggers+process.metCounter+process.eidMVASequence+process.boostedTauPreSequence+process.PFTauBoost+process.patPF2PATSequencePFlow+process.patPFTauIsolationBoost+process.patTausBoost+process.btvSequence+process.kt6PFJetsCentral+process.qgSequence+process.type0PFMEtCorrection+process.producePFMETCorrections+process.pfMEtMVAsequence+process.selectedPatElectronsWithTrigger+process.selectedPatMuonsTriggerMatch+process.llvvObjectProducersUsed+process.endCounter)
 
 
 process.endPath = cms.EndPath(process.out)

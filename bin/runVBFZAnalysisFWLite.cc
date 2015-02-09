@@ -669,7 +669,7 @@ int main(int argc, char* argv[])
 	  //veto nearby photon (loose electrons are many times photons...)
 	  double minDRlg(9999.);
 	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-	    minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep],selPhotons[ipho]));
+	    minDRlg=TMath::Min((double)minDRlg,(double)deltaR(leptons[ilep],selPhotons[ipho]));
 	  if(minDRlg<0.1) continue;
 
 	  
@@ -789,9 +789,9 @@ int main(int argc, char* argv[])
 	  //cross-clean with selected leptons and photons
 	  double minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+            minDRlj = TMath::Min( (double)minDRlj, (double)deltaR(jets[ijet],selLeptons[ilep]) );
 	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-	    minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
+	    minDRlg = TMath::Min( (double)minDRlg, (double)deltaR(jets[ijet],selPhotons[ipho]) );
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id

@@ -84,8 +84,8 @@ bool passHiggsCuts(llvvTauLeptonCollection& selLeptons, float rho, int higgsCand
       llvvLepton& lep2 = selLeptons[higgsCandL2].lep;
 
       if((lep1.pt()+lep2.pt()) >= sumPtCut
-      &&  utils::cmssw::relIso(lep1, rho) <= abs(lep1.id)==11?isoElCut:isoMuCut 
-      &&  utils::cmssw::relIso(lep2, rho) <= abs(lep2.id)==11?isoElCut:isoMuCut  ){
+      &&  utils::cmssw::relIso(lep1, rho) <= (abs(lep1.id)==11?isoElCut:isoMuCut) 
+      &&  utils::cmssw::relIso(lep2, rho) <= (abs(lep2.id)==11?isoElCut:isoMuCut)  ){
          return true;
       }
 
@@ -178,8 +178,8 @@ int main(int argc, char* argv[])
 	bool isSignal(isMC && (url.Contains("VBFNLO") || url.Contains("lljj")) );
 
 	TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
-	FILE* outTxtFile = NULL;
-	if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
+//	FILE* outTxtFile = NULL;
+//	if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
 	printf("TextFile URL = %s\n",outTxtUrl.Data());
 
 	//lepton efficienciesAOA
@@ -502,11 +502,10 @@ int main(int argc, char* argv[])
 	printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
 	printf("Scanning the ntuple :");
 	DuplicatesChecker duplicatesChecker;
-	int nDuplicates(0);
 	int step(totalEntries/50);
 	for( int iev=0; iev<totalEntries; iev++ ){
 		if(iev%step==0){printf(".");fflush(stdout);}
-		if(!isMC && jacknife>0 && jacks>0 && iev%jacks==(uint)jacknife) continue;
+		if(!isMC && jacknife>0 && jacks>0 && iev%jacks==(int)jacknife) continue;
 
 		//##############################################   EVENT LOOP STARTS   ##############################################
 		//load the event content from tree
@@ -514,6 +513,7 @@ int main(int argc, char* argv[])
 		ev.to(iev);
 
 		//int FaillingReason = 0;
+		//    static int nDuplicates(0);
 		//    if(!isMC && duplicatesChecker.isDuplicate( ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock(),ev.eventAuxiliary().event()) ) { nDuplicates++; continue; }
 		//      edm::TriggerResultsByName tr = ev.triggerResultsByName("DataAna");      if(!tr.isValid()){printf("TR is invalid\n");continue;}
 		//      bool passFilter=false;
@@ -614,8 +614,8 @@ int main(int argc, char* argv[])
 
 		//pileup weight
 		float weight = 1.0;
-		double TotalWeight_plus = 1.0;
-		double TotalWeight_minus = 1.0;
+//		double TotalWeight_plus = 1.0;
+//		double TotalWeight_minus = 1.0;
 		float puWeight(1.0);
 
                 //**********************************************************************************************************************************
@@ -623,8 +623,8 @@ int main(int argc, char* argv[])
 		if(isMC){
 			puWeight          = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
 			weight            = xsecWeight*puWeight;
-			TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
-			TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
+//			TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
+//			TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
 		}
                 //**********************************************************************************************************************************
 
@@ -780,7 +780,7 @@ int main(int argc, char* argv[])
 			//cross-clean with selected leptons and photons
 			double minDRlj(9999.),minDRlg(9999.);
 			for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-				minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+				minDRlj = TMath::Min( (double)minDRlj, (double)deltaR(jets[ijet],selLeptons[ilep]) );
 			if(examineThisEvent) cout << "dR jets-leptons (should be > 0.4)" << minDRlj << endl;
 			if(minDRlj<0.4 || minDRlg<0.4) 
 				continue;

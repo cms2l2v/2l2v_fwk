@@ -210,8 +210,8 @@ class TopPtWeighter
 	  return;
 	}
 	const Int_t totalEntries=ev.size();      
-	Int_t mcn, mc_id[1000];
-	Float_t  mc_px[1000],mc_py[1000];
+	//Int_t mcn, mc_id[1000];
+	//Float_t  mc_px[1000],mc_py[1000];
 	//evTree->SetBranchAddress("mcn",   &mcn);
 	//evTree->SetBranchAddress("mc_id", mc_id);
 	//evTree->SetBranchAddress("mc_px", mc_px);

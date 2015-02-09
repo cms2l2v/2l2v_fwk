@@ -1,6 +1,6 @@
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "TGraphErrors.h"
-#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+//#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h" //FIXME
 
 namespace higgs{
 
@@ -193,7 +193,9 @@ namespace higgs{
                    hL->SetBinContent(i, valL);
                    hR->SetBinContent(i, valR);
                 }
-                TH1F* hC = th1fmorph("hC","hC", hL, hR, CsecondL, CsecondR, Csecond, 1.0, 0);
+//                TH1F* hC = th1fmorph("hC","hC", hL, hR, CsecondL, CsecondR, Csecond, 1.0, 0);
+                 TH1F* hC = hL; 
+                #pragma message ("Loic Warning: th1fmorph not defined in 7XY, code need to be fixed!")
 
                 TGraph* nrGrC = new TGraph(hC->GetXaxis()->GetNbins());
                 for(int i=0;i<hC->GetXaxis()->GetNbins();i++){

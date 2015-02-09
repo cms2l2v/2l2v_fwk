@@ -383,8 +383,7 @@ void RAnalysis::analyze(data::PhysicsObjectCollection_t &leptons, data::PhysicsO
 
       const data::PhysicsObject_t &genJet=jets[ ptIdx[ijet] ].getObject("genJet");
       int flavId=genJet.info.find("id")->second;
-      const data::PhysicsObject_t &genParton=jets[ ptIdx[ijet] ].getObject("gen");
-      int genPartonId=genParton.info.find("id")->second;
+//      const data::PhysicsObject_t &genParton=jets[ ptIdx[ijet] ].getObject("gen");
       flavIds.push_back(flavId);
 
       std::vector<TString> taggersToFill(1,"");

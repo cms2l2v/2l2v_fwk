@@ -65,9 +65,9 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
-  bool runLoosePhotonSelection(false);
+  //bool runLoosePhotonSelection(false);
 
-  bool Cut_tautau_MVA_iso = true;//currently hardcoded
+  //bool Cut_tautau_MVA_iso = true;//currently hardcoded
 
   float minJetPtToApply(30);
 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
   //summary ntuple
   TString summaryTupleVarNames("ch:weight:nInitEvent:mjj:detajj:spt:setajj:dphijj:ystar:hardpt:fisher:llr:mva:ystar3:maxcjpt:ncjv:htcjv:ncjv15:htcjv15");
   TNtuple *summaryTuple = new TNtuple("ewkzp2j","ewkzp2j",summaryTupleVarNames);
-  Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
+  //Float_t summaryTupleVars[summaryTupleVarNames.Tokenize(":")->GetEntriesFast()];
   summaryTuple->SetDirectory(0);
 
   //lepton efficiencies
@@ -423,12 +423,12 @@ int main(int argc, char* argv[])
       fwlite::Handle< double > rho25Handle;
       rho25Handle.getByLabel(ev, "kt6PFJetsCentral", "rho");
       if(!rho25Handle.isValid()){printf("rho25 Object NotFound\n");continue;}
-      double rho25 = *rho25Handle;
+      //double rho25 = *rho25Handle;
 
       fwlite::Handle< int > nvtxHandle;
       nvtxHandle.getByLabel(ev, "llvvObjectProducersUsed", "nvtx");
       if(!nvtxHandle.isValid()){printf("nvtx Object NotFound\n");continue;}
-      int nvtx = *nvtxHandle;
+      //int nvtx = *nvtxHandle;
 
       //require compatibilitiy of the event with the PD
                                 //some work as to be done on the triggers
@@ -443,14 +443,14 @@ int main(int argc, char* argv[])
 
       //pileup weight
       float weight = 1.0;
-      double TotalWeight_plus = 1.0;
-      double TotalWeight_minus = 1.0;
+      //double TotalWeight_plus = 1.0;
+      //double TotalWeight_minus = 1.0;
       float puWeight(1.0);
       if(isMC){
         puWeight          = LumiWeights->weight(genEv.ngenITpu) * PUNorm[0];
 	weight            = xsecWeight*puWeight;
-        TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
-        TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
+        //TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(genEv.ngenITpu) * (PUNorm[2]/PUNorm[0]);
+        //TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(genEv.ngenITpu) * (PUNorm[1]/PUNorm[0]);
       }
 
       //
@@ -493,12 +493,12 @@ int main(int argc, char* argv[])
 	  Int_t idbits = leptons[ilep].idbits;
 	  if(lid==11){
 	    if(leptons[ilep].electronInfoRef->isConv)              passId=false;
-	    bool isLoose = ((idbits >> 4) & 0x1);
+	    //bool isLoose = ((idbits >> 4) & 0x1);
             bool isTight = ((idbits >> 6) & 0x1);
 	    if(!isTight)                                   passId=false;
  	  }
 	  else{
-	    bool isLoose    = ((idbits >> 8) & 0x1);
+	    //bool isLoose    = ((idbits >> 8) & 0x1);
             bool isTight    = ((idbits >> 10) & 0x1);
 	    if(!isTight)                                   passId=false;
 	  }
@@ -604,7 +604,7 @@ int main(int argc, char* argv[])
 	  //cross-clean with selected leptons and photons
 	  double minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-            minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
+            minDRlj = TMath::Min( minDRlj, (double)deltaR(jets[ijet],selLeptons[ilep]) );
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 
 	  

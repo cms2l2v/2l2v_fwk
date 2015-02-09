@@ -235,7 +235,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
     //pileup
     edm::Handle<std::vector<PileupSummaryInfo> > puInfoH;
-    iEvent.getByType(puInfoH);
+//    iEvent.getByType(puInfoH);
+    iEvent.getByLabel("addPileupInfo", puInfoH);
     genEv.ngenITpu    = 0;
     genEv.ngenOOTpu   = 0;
     genEv.ngenOOTpum1 = 0;
@@ -250,7 +251,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
     //pdf info
     edm::Handle<GenEventInfoProduct> genEventInfoProd;
-    iEvent.getByType( genEventInfoProd );
+//    iEvent.getByType( genEventInfoProd );
+    iEvent.getByLabel( "generator", genEventInfoProd);        
     if(genEventInfoProd.isValid())
       {
         genEv.genWeight = genEventInfoProd->weight();
@@ -267,7 +269,8 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 
     //matrix element info
     Handle<LHEEventProduct> lheH;
-    iEvent.getByType(lheH);
+//    iEvent.getByType(lheH);
+    iEvent.getByLabel("externalLHEProducer", lheH);
     if(lheH.isValid()) genEv.nup=lheH->hepeup().NUP;
 
 
@@ -867,6 +870,15 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
  	           }
 		   */
 
+		//add trigger match
+		int TrigSum(0);
+		for(size_t it=0; it<triggerPaths.size(); it++)
+		{
+			string tempTrigName = triggerPaths[it] + "*";
+			if ( tau->triggerObjectMatchesByPath(tempTrigName).size() > 0 ) TrigSum |= (1<<it); 
+		}
+		tauInfo.Tbits = TrigSum ;
+
                    if(tauInfo.pt()>tauPtCut && (tauInfo.idbits&tauIdMask)>0 ){
                       if(L==0){     tauColl.push_back(tauInfo);
                       }else{ boostedTauColl.push_back(tauInfo);
@@ -947,6 +959,16 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 		}
 
 		gamma.idbits    = (isLoose << 0) | (isMedium << 1 ) | (isTight << 2);
+
+		//add trigger match
+//		int TrigSum(0);
+//		for(size_t it=0; it<triggerPaths.size(); it++)
+//		{
+//			string tempTrigName = triggerPaths[it] + "*";
+//			if ( pho->triggerObjectMatchesByPath(tempTrigName).size() > 0 ) TrigSum |= (1<<it); 
+//		}
+//		gamma.Tbits = TrigSum ;
+
 		if(isLoose && pho->isEB() && gamma.r9>0.9 && pho->pt()>20) nPhotons++;
 
                 phoColl.push_back(gamma);
@@ -1145,6 +1167,15 @@ bool llvvObjectProducers::filter(edm::Event& iEvent, const edm::EventSetup &iSet
 				| (passTightId << 2)
 				| ( ( uint(puIdentifier.idFlag()) & 0xf ) << 3 )
 				| ( ( uint(cutBasedPuIdentifier.idFlag()) & 0xf ) << 7 );
+
+		//add trigger match
+		int TrigSum(0);
+		for(size_t it=0; it<triggerPaths.size(); it++)
+		{
+			string tempTrigName = triggerPaths[it] + "*";
+			if ( patjet->triggerObjectMatchesByPath(tempTrigName).size() > 0 ) TrigSum |= (1<<it); 
+		}
+		jet.Tbits = TrigSum ;
 
                         if(jet.pt()>jetPtCut){
    		          jetColl.push_back(jet);

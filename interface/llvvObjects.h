@@ -5,6 +5,7 @@
 #include "DataFormats/Common/interface/AssociationMap.h"
 #include "Math/LorentzVector.h"
 #include <vector>
+#include <boost/cstdint.hpp>
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> > LorentzVectorF;
@@ -164,7 +165,7 @@ class llvvPhoton : public LorentzVectorF
 
    //member variables
    public:
-   int idbits, pid;
+   int idbits, pid, Tbits;
    float ecalIso03, hcalIso03, trkIso03, gIso03,    chIso03,   puchIso03, nhIso03;
    float ecalIso04, hcalIso04, trkIso04, gIso04,    chIso04,   puchIso04, nhIso04;
 
@@ -186,7 +187,7 @@ class llvvJet : public LorentzVectorF
 
    //member variables
    public:
-   int idbits, pfstart, pfend;
+   int idbits, pfstart, pfend, Tbits;
    float torawsf;
    float neutHadFrac, neutEmFrac, chHadFrac, muFrac, area;
    float tchp, jp, origcsv, csv, jpcsv, slcsv, supercsv, ssvhe, ivf;
@@ -249,6 +250,7 @@ class llvvJetExt : public llvvJet{
    llvvJetExt(llvvJet jet_){
       SetPxPyPzE(jet_.px(), jet_.py(), jet_.pz(), jet_.energy());
       idbits=jet_.idbits; pfstart=jet_.pfstart; pfend=jet_.pfend;
+      Tbits=jet_.Tbits;
       torawsf=jet_.torawsf;
       neutHadFrac=jet_.neutHadFrac; neutEmFrac=jet_.neutEmFrac; chHadFrac=jet_.chHadFrac; muFrac=jet_.muFrac; area=jet_.area;
       tchp=jet_.tchp; jp=jet_.jp; origcsv=jet_.origcsv; csv=jet_.csv; jpcsv=jet_.jpcsv; slcsv=jet_.slcsv; supercsv=jet_.supercsv; ssvhe=jet_.ssvhe; ivf=jet_.ivf;

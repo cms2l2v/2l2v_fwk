@@ -14,3 +14,13 @@ ewkzp2jFullNoQG = cms.PSet( weightsDir = cms.string("/afs/cern.ch/user/p/psilva/
                            methodList = cms.vstring('Fisher','BDTD', 'MLP'),
                            varsList   = cms.vstring("mjj","detajj","setajj","eta1","eta2","pt1","pt2","spt")                           
                            )
+
+chHiggsBase = cms.PSet( weightsDir = cms.string("/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_mva/base_weights"),
+                        methodList = cms.vstring('Fisher','BDTD','MLP'),
+                        varsList   = cms.vstring("nbjets","leadbjetpt","njets","globalmt","met")
+                        )
+
+chHiggsTest = cms.PSet( weightsDir = cms.string("/afs/cern.ch/work/v/vischia/private/code/tau_dilepton/chhiggs_5311_5315_mva/full_weights"),
+                        methodList = cms.vstring('Fisher','BDTD','MLP'),
+                        varsList   = cms.vstring("nbjets","leadbjetpt","njets","globalmt","met","detajj","detall","dphill")
+                        )

@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -41,6 +42,7 @@ struct SummaryInfo
   std::vector<std::string> Zombie;
   std::vector<std::string> Recovered;
   std::vector<std::string> Empty;
+  double readableEvents;
 };
 
 
@@ -121,6 +123,7 @@ int main(int argc, char** argv)
       int split = (*sample).getInt("split", 1);
       SummaryInfo mySummary;
       mySummary.sample = (*sample).getString("dtag", "");
+      mySummary.readableEvents = 0;
 
       for(int file_n = 0; file_n < split; ++file_n)
       {
@@ -136,28 +139,28 @@ int main(int argc, char** argv)
 
         TFile* file = new TFile(fileName.c_str(), "READONLY");
 
-        bool fileDoesntExist = false;
-        bool fileIsZombie = false;
-        bool fileIsRecovered = false;
-        bool fileIsEmpty = false;
+        //bool fileDoesntExist = false;
+        //bool fileIsZombie = false;
+        //bool fileIsRecovered = false;
+        //bool fileIsEmpty = false;
 
         if(!file || !file->IsOpen())
         {
-          fileDoesntExist = true;
+//          fileDoesntExist = true;
           mySummary.Lost.push_back(fileName);
         }
         else
         {
           if(file->IsZombie())
           {
-            fileIsZombie = true;
+//            fileIsZombie = true;
             mySummary.Zombie.push_back(fileName);
           }
           else
           {
             if(file->TestBit(TFile::kRecovered))
             {
-              fileIsRecovered = true;
+//              fileIsRecovered = true;
               mySummary.Recovered.push_back(fileName);
             }
             else
@@ -165,12 +168,13 @@ int main(int argc, char** argv)
               TTree* events = (TTree*)file->Get("Events");
               if(events == NULL)
               {
-                fileIsEmpty = true;
+//                fileIsEmpty = true;
                 mySummary.Empty.push_back(fileName);
               }
               else
               {
                 mySummary.OK.push_back(fileName);
+		mySummary.readableEvents += events->GetEntries();
               }
             }
           }
@@ -214,13 +218,13 @@ int main(int argc, char** argv)
   std::cout << "These were the results:" << std::endl;
   for(auto sum = summary.begin(); sum != summary.end(); ++sum)
   {
-    std::cout << sum->sample << ": " << sum->OK.size() << " OK; " << sum->Lost.size()+sum->Zombie.size()+sum->Recovered.size()+sum->Empty.size() << " failed" << std::endl;
+    std::cout << sum->sample << ": " << sum->OK.size() << " OK; " << sum->Lost.size()+sum->Zombie.size()+sum->Recovered.size()+sum->Empty.size() << " failed; " << std::setprecision(12) << sum->readableEvents << " readable events" << std::endl;
     if(log != "")
     {
       std::ofstream out(log, std::ofstream::out | std::ofstream::app);
       out << "Sample: " << sum->sample << std::endl;
       out << "---- Total files: " << sum->OK.size()+sum->Lost.size()+sum->Zombie.size()+sum->Recovered.size()+sum->Empty.size() << std::endl;
-      out << "---- Files that seem to be OK: " << sum->OK.size() << std::endl;
+      out << "---- Files that seem to be OK: " << sum->OK.size() << ", for a total of " << std::setprecision(12) << sum->readableEvents << " readable events" << std::endl;
       out << "---- Files that were lost (not produced or deleted): " << sum->Lost.size() << std::endl;
       out << "---- Zombie files: " << sum->Zombie.size() << std::endl;
       out << "---- Recovered files: " << sum->Recovered.size() << std::endl;
