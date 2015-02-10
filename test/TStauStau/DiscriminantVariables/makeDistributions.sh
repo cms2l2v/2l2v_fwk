@@ -1,14 +1,6 @@
 #!/bin/bash
 
-#Pass0
-#makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==100" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected" --outDir DeltaM100/Pass0/
-#makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==80" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected" --outDir DeltaM80/Pass0/
-#makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==40" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected" --outDir DeltaM40/Pass0/
+OUTDIR=/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/Distributions
+INDIR=/lustre/ncg.ingrid.pt/cmslocal/cbeiraod/NewObject
 
-#Pass1
-#makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==100" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected&&MT2>90" --outDir DeltaM100/Pass1/
-#makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==80" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected&&MT2>90" --outDir DeltaM80/Pass1/
-#makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==40" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected&&met.Et()>160" --outDir DeltaM40/Pass1/
-
-
-makeDistributions --json tstaustau_samples_inclusive_2012BCD.json --variables variables.json --inDir ~/local-area/Results/ --signalSelection "stauMass-neutralinoMass==100" --extraSignal "stauMass-neutralinoMass==40" --plotExt .png --plotExt .pdf --plotExt .root --baseSelection "selected" --outDir DeltaM100/Pass0/
+makeDistributions --json tstaustau_samples_full.json --variables variables.json --inDir $INDIR/ --outDir $OUTDIR/ --signalSelection "stauMass-neutralinoMass==50" --extraSignal "stauMass-neutralinoMass==200" --plotExt .png --plotExt .root --baseSelection "selected" --iLumi 19672 --pointVar "stauMass*1000+neutralinoMass" --sigXSec 0.1 --sigNInitEvents 10000 --unblind
