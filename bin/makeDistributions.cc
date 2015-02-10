@@ -25,6 +25,8 @@
 #include "TEventList.h"
 #include "TInterpreter.h"
 #include "TCanvas.h"
+#include "TLegend.h"
+#include "TPaveText.h"
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -32,6 +34,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
@@ -200,6 +203,7 @@ int main(int argc, char** argv)
   bool isMultipointSignalSample = false;
   bool unblind = false;
   bool printProcesses = false;
+  bool noLog = false;
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
@@ -268,6 +272,11 @@ int main(int argc, char** argv)
     if(arg.find("--normalize") != std::string::npos)
     {
       normalize = true;
+    }
+
+    if(arg.find("--noLog") != std::string::npos)
+    {
+      noLog = true;
     }
 
     if(arg.find("--unblind") != std::string::npos)
@@ -376,9 +385,27 @@ int main(int argc, char** argv)
   TCut BGCut  = baseSelection.c_str();
   TCut SIGCut = BGCut && signalSelection.c_str();
 
-  TCanvas c1("c1", "c1", 800, 600);
-  c1.SetLogy();
+  // Styling
+  setTDRStyle();
+  gStyle->SetPadTopMargin (0.06);
+  gStyle->SetPadBottomMargin(0.12);
+  gStyle->SetPadRightMargin (0.16);
+  gStyle->SetPadLeftMargin (0.14);
+  gStyle->SetTitleSize(0.04, "XYZ");
+  gStyle->SetTitleXOffset(1.1);
+  gStyle->SetTitleYOffset(1.45);
+  gStyle->SetPalette(1);
+  gStyle->SetNdivisions(505);
+
+  TCanvas c1("c1", "c1", 800, 800);
+//  c1.SetLogy();
   gStyle->SetOptStat(0);
+  TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
+  t1->Draw();
+  t1->cd();
+  if(!noLog) t1->SetLogy(true);
+
+
   doubleUnc bgYield{0,0}, sigYield{0,0}, dataYield{0,0}, extraSigYield{0,0};
   for(auto variable = variables.begin(); variable != variables.end(); ++variable)
   {
@@ -389,15 +416,25 @@ int main(int argc, char** argv)
 
     dataHists hists = getHists(processes, BGCut, SIGCut, *variable, iLumi, sigXSec, sigNInitEvents, pointVar, isMultipointSignalSample, normalize);
 
-    THStack* bgStack = new THStack("Background", ("Background;"+label+";% Events").c_str());
+    std::string tempLabel = variable->name()+";"+label;
+    if(normalize)
+      tempLabel+=";% Events";
+    else
+      tempLabel+=";Events";
+    THStack* bgStack = new THStack("Background", tempLabel.c_str());
     TH1D* sigHist = NULL;
     TH1D* dataHist = NULL;
     TH1D* extraSigHist = NULL;
+    TH1D* bgHist = NULL;
     bgYield.value = 0, sigYield.value = 0, dataYield.value = 0, extraSigYield.value = 0;
     bgYield.uncertainty = 0, sigYield.uncertainty = 0, dataYield.uncertainty = 0, extraSigYield.uncertainty = 0;
 
     for(auto process = hists["BG"].begin(); process != hists["BG"].end(); ++process)
     {
+      if(bgHist == NULL)
+        bgHist = static_cast<TH1D*>(process->hist->Clone());
+      else
+        bgHist->Add(process->hist);
       bgStack->Add(process->hist);
       bgYield.value += process->yield.value;
       bgYield.uncertainty += process->yield.uncertainty*process->yield.uncertainty;
@@ -459,9 +496,9 @@ int main(int argc, char** argv)
       if(extraSigHist->GetMaximum() > max)
         max = extraSigHist->GetMaximum();
 
-      sigHist->Draw("same");
+      sigHist->Draw("hist same");
       extraSigHist->SetLineColor(kBlue);
-      extraSigHist->Draw("same");
+      extraSigHist->Draw("hist same");
       if(printProcesses)
       {
         yields["ExtraSig"] = extraHists["SIG"];
@@ -469,7 +506,7 @@ int main(int argc, char** argv)
     }
     else
     {
-      sigHist->Draw("same");
+      sigHist->Draw("hist same");
     }
 
     if(unblind)
@@ -479,7 +516,84 @@ int main(int argc, char** argv)
     if(variable->minScale() != -999)
       bgStack->SetMinimum(variable->minScale());
 
-    c1.BuildLegend(0.88, 0.67, 1, 1);
+    TLegend *legA = t1->BuildLegend(0.845,0.2,0.99,0.99, "NDC");
+    legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);
+    legA->SetHeader("");
+    legA->SetTextFont(42);
+
+    TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
+    T->SetFillColor(0);
+    T->SetFillStyle(0); T->SetLineColor(0);
+    T->SetTextAlign(12);
+    char Buffer[1024];
+    sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", 8.0, iLumi/1000);
+    T->AddText(Buffer);
+    T->Draw("same");
+    T->SetBorderSize(0);
+
+    if(unblind)
+    {
+      c1.cd();
+      TPad* t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);
+      t2->Draw();
+      t2->cd();
+      t2->SetGridy(true);
+      t2->SetPad(0,0.0,1.0,0.2);
+      t2->SetTopMargin(0);
+      t2->SetBottomMargin(0.5);
+
+      TH1D *bgUncH = static_cast<TH1D*>(bgHist->Clone("bgUncH"));
+      for(int xbin=1; xbin<=bgUncH->GetXaxis()->GetNbins(); xbin++)
+      {
+        if(bgUncH->GetBinContent(xbin)==0)
+          continue;
+
+        double unc = bgUncH->GetBinError(xbin) / bgUncH->GetBinContent(xbin);
+
+        // Add systematic uncertainties
+        unc = unc*unc;
+        unc += 0.026*0.026; // Luminosity uncertainty
+//        unc += 0.15*0.15; // Value assumed for total systematic uncertainty
+        unc = std::sqrt(unc);
+
+        bgUncH->SetBinContent(xbin,1);
+        bgUncH->SetBinError(xbin,unc);
+      }
+
+      TGraphErrors *bgUnc=new TGraphErrors(bgUncH);
+      bgUnc->SetLineColor(1);
+      bgUnc->SetFillStyle(3001);
+      bgUnc->SetFillColor(kGray);
+      bgUnc->SetMarkerColor(1);
+      bgUnc->SetMarkerStyle(1);
+      bgUncH->Reset("ICE");
+      bgUncH->Draw();
+      bgUnc->Draw("3");
+      float yscale = (1.0-0.2)/(0.18-0);
+      bgUncH->GetYaxis()->SetTitle("Data/#Sigma MC");
+      bgUncH->SetMinimum(0.4);
+      bgUncH->SetMaximum(1.6);
+      bgUncH->GetXaxis()->SetTitle("");
+      bgUncH->GetXaxis()->SetTitleOffset(1.3);
+      bgUncH->GetXaxis()->SetLabelSize(0.033*yscale);
+      bgUncH->GetXaxis()->SetTitleSize(0.036*yscale);
+      bgUncH->GetXaxis()->SetTickLength(0.03*yscale);
+      bgUncH->GetYaxis()->SetTitleOffset(0.3);
+      bgUncH->GetYaxis()->SetNdivisions(5);
+      bgUncH->GetYaxis()->SetLabelSize(0.033*yscale);
+      bgUncH->GetYaxis()->SetTitleSize(0.036*yscale);
+
+      TH1D* ratio = static_cast<TH1D*>(dataHist->Clone());
+      ratio->Divide(bgHist);
+      ratio->Draw("same");
+    }
+    else
+    {
+      c1.SetWindowSize(800,600);
+      c1.SetCanvasSize(800,600);
+      t1->SetPad(0,0,1,1);
+    }
+
 
     for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
       c1.SaveAs((outDir + variable->name() + *ext).c_str());
@@ -1145,6 +1259,7 @@ void printHelp()
   std::cout << "--sigXSec          -->  When using a multipoint signal sample, you must define the signal cross section to use" << std::endl;
   std::cout << "--sigNInitEvents   -->  When using a multipoint signal sample, the number of initial events for each signal point" << std::endl;
   std::cout << "--extraSignal      -->  A second extra selection to apply only to signal" << std::endl;
+  std::cout << "--noLog            -->  Do not print the vertical axis with logarithmic scale" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\tmakeDistributions --json samples.json --outDir ./OUT/ --variables variables.json --inDir /directory" << std::endl;
   return;
