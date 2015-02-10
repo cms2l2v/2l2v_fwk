@@ -1073,13 +1073,13 @@ dataChains getChainsFromJSON(std::string jsonFile, std::string ttreeName, std::s
       tempSample.chain = new TChain(ttreeName.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
       int nFiles = (*sample).getInt("split", 1);
 
-      for(int file = 0; file < nFiles; ++file)
+      for(int filen = 0; filen < nFiles; ++filen)
       {
         std::string segmentExt;
         if(nFiles != 1)
         {
           std::stringstream buf;
-          buf << "_" << file;
+          buf << "_" << filen;
           buf >> segmentExt;
         }
 
