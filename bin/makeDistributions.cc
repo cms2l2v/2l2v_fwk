@@ -103,6 +103,7 @@ public:
   inline double& maxVal(){return _maxVal;};
   inline int& bins(){return _bins;};
   inline std::string& label(){return _label;};
+  inline double& minScale(){return _minScale;};
 
   friend std::vector<MyVariable> getVariables(JSONWrapper::Object& json);
   friend std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
@@ -113,6 +114,7 @@ private:
   double _minVal, _maxVal;
   int _bins;
   std::string _label;
+  double _minScale;
 
 protected:
 };
@@ -155,12 +157,14 @@ public:
 
   inline MyVariable& xVar(){return xVar_;};
   inline MyVariable& yVar(){return yVar_;};
+  inline double& minScale(){return minScale_;};
 
   friend std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
 
 private:
   MyVariable xVar_;
   MyVariable yVar_;
+  double minScale_;
 
 protected:
 };
@@ -455,7 +459,6 @@ int main(int argc, char** argv)
       if(extraSigHist->GetMaximum() > max)
         max = extraSigHist->GetMaximum();
 
-      bgStack->SetMaximum(max);
       sigHist->Draw("same");
       extraSigHist->SetLineColor(kBlue);
       extraSigHist->Draw("same");
@@ -466,12 +469,15 @@ int main(int argc, char** argv)
     }
     else
     {
-      bgStack->SetMaximum(max);
       sigHist->Draw("same");
     }
 
     if(unblind)
       dataHist->Draw("same");
+
+    bgStack->SetMaximum(max);
+    if(variable->minScale() != -999)
+      bgStack->SetMinimum(variable->minScale());
 
     c1.BuildLegend(0.88, 0.67, 1, 1);
 
@@ -953,6 +959,8 @@ std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json)
     TwoDPlotInfo.xVar_._label = TwoDPlot->getString("xlabel", "");
     TwoDPlotInfo.yVar_._label = TwoDPlot->getString("ylabel", "");
 
+    TwoDPlotInfo.minScale_ = TwoDPlot->getDouble("xminScale", -999);
+
     retVal.push_back(TwoDPlotInfo);
   }
 
@@ -987,6 +995,7 @@ std::vector<MyVariable> getVariables(JSONWrapper::Object& json)
       std::cout << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
       continue;
     }
+    variableInfo._minScale = variable->getDouble("minScale", -999);
     variableInfo._bins = variable->getInt("bins", 0);
     if(variableInfo._bins <= 0)
     {
