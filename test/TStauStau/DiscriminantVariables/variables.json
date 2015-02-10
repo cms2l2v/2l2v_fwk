@@ -109,7 +109,7 @@
       "label":"cos#theta_{l}"
     },
     {
-      "name":""METPlusPTtau",
+      "name":"METPlusPTtau",
       "expression":"met.Et()+tauLeadPt",
       "minVal":0,
       "maxVal":300,
