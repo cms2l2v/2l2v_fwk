@@ -122,10 +122,6 @@ int main (int argc, char *argv[])
   bool isV0JetsMC (isMC && (url.Contains ("DYJetsToLL_50toInf") || url.Contains ("WJets")));
   bool isWGmc (isMC && url.Contains ("WG"));
   bool isZGmc (isMC && url.Contains ("ZG"));
-  bool isMC_GG = isMC && (string (url.Data ()).find ("GG") != string::npos);
-  bool isMC_VBF = isMC && (string (url.Data ()).find ("VBF") != string::npos);
-  bool isMC_125OnShell = isMC && (mctruthmode == 521);
-  if (isMC_125OnShell) mctruthmode = 125;
   bool isMC_ZZ = isMC && (string (url.Data ()).find ("TeV_ZZ") != string::npos);
   bool isMC_WZ = isMC && (string (url.Data ()).find ("TeV_WZ") != string::npos);
   
@@ -155,10 +151,6 @@ int main (int argc, char *argv[])
       if (isMC_WZ)
         {
           varNames.push_back ("_wzptup"); varNames.push_back ("_wzptdown");
-        }
-      if (isMC_GG || isMC_VBF)
-        {
-          varNames.push_back ("_lshapeup"); varNames.push_back ("_lshapedown");
         }
     }
   
@@ -193,35 +185,31 @@ int main (int argc, char *argv[])
   //((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
 
   //event selection
-  TH1F *h = (TH1F *) mon.addHistogram (new TH1F ("eventflow", ";;Events", 8, 0, 8));
-  h->GetXaxis ()->SetBinLabel (1, "raw");
-  h->GetXaxis ()->SetBinLabel (2, "#geq 2 iso leptons");
-  h->GetXaxis ()->SetBinLabel (3, "M_{ll} veto");
-  h->GetXaxis ()->SetBinLabel (4, "#geq 2 jets");
-  h->GetXaxis ()->SetBinLabel (5, "E_{T}^{miss}");
-  h->GetXaxis ()->SetBinLabel (6, "op. sign");
-  h->GetXaxis ()->SetBinLabel (7, "#geq 2 b-tags");
-  h = (TH1F *) mon.addHistogram (new TH1F ("eventflowslep", ";;Events", 8, 0, 8));
-  h->GetXaxis ()->SetBinLabel (1, "raw");
-  h->GetXaxis ()->SetBinLabel (2, "1 iso lepton");
+  TH1F *h = (TH1F *) mon.addHistogram (new TH1F ("eventflow", ";;Events", 6, 0, 6));
+  h->GetXaxis ()->SetBinLabel (1, "#geq 2 iso leptons");
+  h->GetXaxis ()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis ()->SetBinLabel (3, "#geq 2 jets");
   h->GetXaxis ()->SetBinLabel (4, "E_{T}^{miss}");
-  h->GetXaxis ()->SetBinLabel (5, "#geq 1 b-tag");
-  h->GetXaxis ()->SetBinLabel (6, "1 #tau");
-  h->GetXaxis ()->SetBinLabel (7, "op. sign");
+  h->GetXaxis ()->SetBinLabel (5, "op. sign");
+  h->GetXaxis ()->SetBinLabel (6, "#geq 2 b-tags");
+  h = (TH1F *) mon.addHistogram (new TH1F ("eventflowslep", ";;Events", 6, 0, 6));
+  h->GetXaxis ()->SetBinLabel (1, "1 iso lepton");
+  h->GetXaxis ()->SetBinLabel (2, "#geq 2 jets");
+  h->GetXaxis ()->SetBinLabel (3, "E_{T}^{miss}");
+  h->GetXaxis ()->SetBinLabel (4, "#geq 1 b-tag");
+  h->GetXaxis ()->SetBinLabel (5, "1 #tau");
+  h->GetXaxis ()->SetBinLabel (6, "op. sign");
 
 
   // Setting up control categories
   std::vector < TString > controlCats;
   controlCats.clear ();
-  controlCats.push_back ("step1");
-  controlCats.push_back ("step2");
-  controlCats.push_back ("step3");
-  controlCats.push_back ("step4");
-  controlCats.push_back ("step5");
-  controlCats.push_back ("step6");
-  controlCats.push_back ("step7");
-
+  controlCats.push_back("step1");
+  controlCats.push_back("step2");
+  controlCats.push_back("step3");
+  controlCats.push_back("step4");
+  controlCats.push_back("step5");
+  controlCats.push_back("step6");
   
   for (size_t k = 0; k < controlCats.size (); ++k)
     {
@@ -289,7 +277,7 @@ int main (int argc, char *argv[])
 
 
       // Jet controls to be completed
-      mon.addHistogram( new TH1F( "nbjets",      ";b-jet multiplicity;Events", 6,0,6) );
+      mon.addHistogram( new TH1F(icat+"nbjets",      ";b-jet multiplicity;Events", 6,0,6) );
 
       //extra leptons in the event
       // third lepton pt etc
@@ -426,19 +414,19 @@ int main (int argc, char *argv[])
       if (!tr.isValid ())
         return false;
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_WP80_v*", "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*")                                       );
-      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*")                    );
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                      );
-      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*")                                                                       );
-      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*") );
+      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP85_Gsf_v*")                                                                                              );
+      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*")                                                                                     );
+      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*")                                                                    );
+      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*")                                                                                      );
+      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*") );
 
-      if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; }
+      if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
       if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
       if (filterOnlyMUMU)     { eeTrigger = false; emuTrigger = false;                      muTrigger = false; eTrigger = false; }
       if (filterOnlySINGLEMU) { eeTrigger = false; emuTrigger = false; mumuTrigger = false;                    eTrigger = false; }
       if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
 
-      if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+      //      if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
@@ -483,6 +471,13 @@ int main (int argc, char *argv[])
       metsHandle.getByLabel (ev, "slimmedMETs");
       if (metsHandle.isValid() ) mets = *metsHandle;
       LorentzVector met = mets[0].p4 ();
+
+      // MET try:
+        double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
+        cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
+        LorentzVector myshiftedMet = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+        cout << "MET = " << mets[0].pt() << ", JetEnUp: " << myshiftedMet.pt() << endl;
+        
 
       pat::TauCollection taus;
       fwlite::Handle < pat::TauCollection > tausHandle;
@@ -531,6 +526,8 @@ int main (int argc, char *argv[])
       // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
       //
       //
+
+
       
       //
       // LEPTON ANALYSIS
@@ -538,8 +535,8 @@ int main (int argc, char *argv[])
       
       //start by merging electrons and muons
       std::vector < patUtils::GenericLepton > leptons;
-      for (size_t l = 0; l < electrons.size (); l++) leptons.push_back (patUtils::GenericLepton (electrons[l]));
-      for (size_t l = 0; l < muons.size (); l++) leptons.push_back (patUtils::GenericLepton (muons[l]));
+      for(size_t l = 0; l < electrons.size (); l++) leptons.push_back (patUtils::GenericLepton (electrons[l] ));
+      for(size_t l = 0; l < muons.size (); l++)     leptons.push_back (patUtils::GenericLepton (muons[l]     ));
       std::sort (leptons.begin (), leptons.end (), utils::sort_CandidatesByPt);
 
       LorentzVector muDiff (0, 0, 0, 0);
@@ -616,7 +613,7 @@ int main (int argc, char *argv[])
       std::sort(selSingleLepLeptons.begin(), selSingleLepLeptons.end(), utils::sort_CandidatesByPt);
       LorentzVector recoMET = met - muDiff;
       
-      
+
       //select the taus
       pat::TauCollection selTaus;
       int ntaus (0);
@@ -625,20 +622,20 @@ int main (int argc, char *argv[])
           pat::Tau & tau = taus[itau];
           if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
           
-          //      bool overlapWithLepton(false);
-          //      for(int l1=0; l1<(int)selLeptons.size();++l1){
-          //        if(deltaR(tau, selLeptons[l1])<0.1){overlapWithLepton=true; break;}
-          //      }
-          //      if(overlapWithLepton) continue;
+          bool overlapWithLepton(false);
+          for(int l1=0; l1<(int)selSingleLepLeptons.size();++l1){
+            if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
+          }
+          if(overlapWithLepton) continue;
           
           //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
           
           if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
-          if (!tau.tauID ("againstMuonTight3"))                           continue;
-          if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
-          
-          selTaus.push_back (tau);
+          //if (!tau.tauID ("againstMuonTight3"))                           continue;
+          //if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
+         
+          selTaus.push_back(tau);
           ntaus++;
         }
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
@@ -667,16 +664,17 @@ int main (int argc, char *argv[])
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
           
           //cross-clean with selected leptons and photons
-          float minDRlj (9999.), minDRlg (9999.);
+          float minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
+
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
           // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
           // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
-          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
+          //          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
 
-          
+          for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
+            minDRljSingleLep = TMath::Min(minDRljSingleLep, deltaR (jets[ijet], selSingleLepLeptons[ilep]));
 
-          
           //jet id
           bool passPFloose = true;      //FIXME --> Need to be updated according to te latest recipe;
           float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
@@ -689,21 +687,31 @@ int main (int argc, char *argv[])
               if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
             }
           if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <30 || fabs(jets[ijet].eta()) > 2.5) continue;
-          selJets.push_back(jets[ijet]);
-          njets++;
 
+
+          if (minDRlj >= 0.4){
+            selJets.push_back(jets[ijet]);
+            njets++;
+          }
+          
           float minDRtj(9999.);
           for(size_t itau=0; itau<selTaus.size(); ++itau)
             {
               minDRtj = TMath::Min(minDRtj, deltaR(jets[ijet], selTaus[itau]));
             }
-          if(minDRtj >0.4) selSingleLepJets.push_back(jets[ijet]);
+          if(minDRtj >0.4 && minDRljSingleLep >= 0.4) selSingleLepJets.push_back(jets[ijet]);
           
 
           
           float dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags") > 0.405);
+          bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
+          // Apparently this V2 has the following preliminary operating points:
+          // These preliminary operating points were derived from ttbar events:
+          //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
+          //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
+          //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
+
           //update according to the SF measured by BTV
           if (isMC)
             {
@@ -713,18 +721,23 @@ int main (int argc, char *argv[])
               else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
             }
           if(!hasCSVtag) continue;
-          nbtags ++;
-          selBJets.push_back(jets[ijet]);
-          if(minDRtj >0.4) selSingleLepBJets.push_back(jets[ijet]);
+
+          if(minDRlj > 0.4){
+            nbtags++;
+            selBJets.push_back(jets[ijet]);
+          }
+          if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
           
         }
       std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
       std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
+      std::sort (selSingleLepJets.begin(),  selSingleLepJets.end(),  utils::sort_CandidatesByPt);
+      std::sort (selSingleLepBJets.begin(), selSingleLepBJets.end(), utils::sort_CandidatesByPt);
       
       //
       // ASSIGN CHANNEL
       //
-      std::vector < TString > chTags;
+      std::vector < TString > chTags; chTags.clear();
       int 
         dilId (1),
         slepId(0);
@@ -743,12 +756,18 @@ int main (int argc, char *argv[])
       if(selSingleLepLeptons.size()>0)
         slepId=selSingleLepLeptons[0].pdgId();
       
-      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
-      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
-      else if( abs(dilId)==121 && eeTrigger  ) chTags.push_back("ee");
-      else if( abs(dilId)==143 && emuTrigger ) chTags.push_back("emu");
-      else if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu");
-      else chTags.push_back("unclassified");
+//      cout << "-------------------------------------------------------------------------" << endl;
+//      cout << "selLeptons.size()==" << selLeptons.size() << ", dilId==" << dilId << ", selSingleLepLeptons.size()==" << selSingleLepLeptons.size() << ", slepId==" << slepId << endl;
+//      cout << "muTrigger==" << muTrigger << ", eTrigger==" << eTrigger << ", eeTrigger==" << eeTrigger << ", emuTrigger==" << emuTrigger << ", mumuTrigger==" << mumuTrigger << endl;
+
+      // Event classification. Single lepton triggers are first in order to ensure that the lower threshold dilepton triggers do not steal events from the single lepton category. emu trigger is last in order to ensure that it does not break the balance between ee and mumu
+
+//      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
+//      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
+      if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
+      else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
+      else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
+      else                                                                 chTags.push_back("unclassified");
       
       // keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
       std::vector < TString > tags (1, "all");
@@ -758,23 +777,21 @@ int main (int argc, char *argv[])
           //tags.push_back( chTags[ich]+evCat );
         }
 
-      if (chTags.size() == 0 || chTags.size() >1 ) continue; // That should never happen ("unclassified" is always present)
+      if (chTags.size() == 0 || chTags.size() >1 ){ cout << "ALARM! chTags.size() == " << chTags.size() << ", and that should NEVER happen!!!" << endl; continue; }// That should never happen ("unclassified" is always present)
       
 
       // Dilepton full analysis
       if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
         
-        
-        mon.fillHisto("eventflow", tags, 0, weight);
-        if(selLeptons.size()<2) continue; // Save time
+        if(selLeptons.size()!=2) continue; // Save time
         // Apply lepton efficiencies
-        for(size_t ilep=0; ilep<2; ++ilep){
-          int id (abs (selLeptons[ilep].pdgId()));
-          weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[ilep].pt(), selLeptons[ilep].eta(), id, id == 11 ? "loose" : "loose").first : 1.0;
-        }
+        //for(size_t ilep=0; ilep<2; ++ilep){
+        //  int id (abs (selLeptons[ilep].pdgId()));
+        //  weight *= isMC ? lepEff.getLeptonEfficiency(selLeptons[ilep].pt(), selLeptons[ilep].eta(), id, id == 11 ? "loose" : "loose").first : 1.0;
+        //}
         
         // Event selection booleans
-        bool passMllVeto(tags[1] == "emu" ? dileptonSystem.mass()>12. : (fabs(dileptonSystem.mass()-91.)<15 && dileptonSystem.mass()>12. ) );
+        bool passMllVeto(tags[1] == "emu" ? dileptonSystem.mass()>12. : (fabs(dileptonSystem.mass()-91.)>15 && dileptonSystem.mass()>12. ) );
         bool passJetSelection(selJets.size()>1);
         bool passMetSelection(recoMET.pt()>40.);
         bool passOS(selLeptons[0].pdgId() * selLeptons[1].pdgId() < 0 );
@@ -782,18 +799,18 @@ int main (int argc, char *argv[])
        
 
         // Setting up control categories and fill up event flow histo
-        std::vector < TString > ctrlCats;
-        ctrlCats.clear ();
-                                                                                                 { ctrlCats.push_back ("step1"); mon.fillHisto("eventflow", tags, 1, weight); }
-        if(passMllVeto   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("eventflow", tags, 2, weight); }
-        if(passMllVeto && passJetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("eventflow", tags, 3, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back ("step4"); mon.fillHisto("eventflow", tags, 4, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS )                       { ctrlCats.push_back ("step5"); mon.fillHisto("eventflow", tags, 5, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection ) { ctrlCats.push_back ("step6"); mon.fillHisto("eventflow", tags, 6, weight); }
+        std::vector < TString > ctrlCats; ctrlCats.clear ();
+                                                                                                 { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight); }
+        if(passMllVeto   )                                                                       { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", tags, 1, weight); }
+        if(passMllVeto && passJetSelection )                                                     { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS )                       { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection ) { ctrlCats.push_back("step6"); mon.fillHisto("eventflow", tags, 5, weight); }
         
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
+          
           TString icat(ctrlCats[k]);
 
           mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
@@ -881,31 +898,31 @@ int main (int argc, char *argv[])
       // Single lepton full analysis
       if(tags[1] == "singlemu" || tags[1] == "singlee"){
 
-        mon.fillHisto("eventflowslep", tags, 0, weight);
         if(selSingleLepLeptons.size()!=1) continue;
-        int id (abs (selSingleLepLeptons[0].pdgId()));
-        weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
+        //int id (abs (selSingleLepLeptons[0].pdgId()));
+        //weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
         
         // Event selection booleans
-        bool passJetSelection(selJets.size()>1);
+        bool passJetSelection(selSingleLepJets.size()>1);
         bool passMetSelection(recoMET.pt()>40.);
-        bool passBtagsSelection(selBJets.size()>0);
+        bool passBtagsSelection(selSingleLepBJets.size()>0);
         bool passTauSelection(selTaus.size()==1);
         bool passOS(selTaus.size()>0 ? selSingleLepLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
 
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 1, weight); }
-        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 2, weight); }
-        if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 3, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("eventflowslep", tags, 4, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("eventflowslep", tags, 5, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("eventflowslep", tags, 6, weight); }
+                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight); }
+        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight); }
+        if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight); }
+        if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("eventflowslep", tags, 3, weight); }
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("eventflowslep", tags, 4, weight); }
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("eventflowslep", tags, 5, weight); }
         
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
+          
           TString icat(ctrlCats[k]);
 
           mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          weight/puWeight);
@@ -926,14 +943,14 @@ int main (int argc, char *argv[])
 // dilepton only           mon.fillHisto (icat+"qt",    tags, dileptonSystem.pt(),             weight, true);
 // dilepton only           ///     mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true); 
 
-          for (size_t ijet = 0; ijet < selJets.size(); ijet++)
+          for (size_t ijet = 0; ijet < selSingleLepJets.size(); ijet++)
             {
-              if (selJets[ijet].pt() < 30 || fabs (selJets[ijet].eta()) > 2.5) continue;
+              if (selSingleLepJets[ijet].pt() < 30 || fabs (selSingleLepJets[ijet].eta()) > 2.5) continue;
               
-              float csv (selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+              float csv (selSingleLepJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
               mon.fillHisto ("csv", tags, csv, weight);
               if (!isMC) continue;
-              int flavId = selJets[ijet].partonFlavour();
+              int flavId = selSingleLepJets[ijet].partonFlavour();
               TString jetFlav ("others");
               if (abs (flavId) == 5) jetFlav = "b";
               else if (abs (flavId) == 4) jetFlav = "c";
@@ -944,7 +961,7 @@ int main (int argc, char *argv[])
         
       } // End single lepton full analysis
       
-
+      continue; // Quick break (statistical analysis will come later)
       
       //
       // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
