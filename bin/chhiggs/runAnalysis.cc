@@ -83,7 +83,8 @@ int main (int argc, char *argv[])
   
   // configure the process
   const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
-  
+
+  bool debug = runProcess.getParameter<bool>("debug");
   bool isMC = runProcess.getParameter < bool > ("isMC");
   double xsec = runProcess.getParameter < double >("xsec");
   int mctruthmode = runProcess.getParameter < int >("mctruthmode");
@@ -446,6 +447,57 @@ int main (int argc, char *argv[])
       genHandle.getByLabel (ev, "prunedGenParticles");
       if (genHandle.isValid() ) gen = *genHandle;
 
+      // Save time and don't load the rest of the objects when selecting by mctruthmode :)
+      bool hasTop(false);
+      int
+        ngenLeptonsStatus3(0),
+        ngenTausStatus3(0),
+        ngenQuarksStatus3(0);
+      //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
+      //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+      if(isMC)
+        {
+          for(size_t igen=0; igen<gen.size(); igen++){
+            if(gen[igen].status()!=3) continue;
+            int absid=abs(gen[igen].pdgId());
+            if(absid==6){
+              hasTop=true;
+              //if(isTTbarMC){
+              //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+              //  else                        tbarPt=gen[igen].pt();
+              //}
+            }
+
+            if(absid==11 || absid==13) ngenLeptonsStatus3++;
+            if(absid==15             ) ngenTausStatus3++;
+            if(absid<=5              ) ngenQuarksStatus3++;
+          }
+          
+          // mctruthmode reference table:
+          //    ttbar dileptons --> 1
+          //    ttbar ltau      --> 2
+          //    ttbar ljets     --> 3
+          //    ttbar hadrons   --> 4
+          
+          if(mctruthmode==1 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
+          if(mctruthmode==2 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
+          if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenQuarksStatus3<4 || !hasTop )) continue; // Check about the "<4"
+          if(mctruthmode==4 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+
+        }
+
+      //      if(tPt>0 && tbarPt>0 && topPtWgt)
+      //        {
+      //          topPtWgt->computeWeight(tPt,tbarPt);
+      //          topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
+      //          wgtTopPtUp /= wgtTopPt;
+      //          wgtTopPtDown /= wgtTopPt;
+      //        }
+      
+
+
+
+
       pat::MuonCollection muons;
       fwlite::Handle < pat::MuonCollection > muonsHandle;
       muonsHandle.getByLabel (ev, "slimmedMuons");
@@ -472,12 +524,13 @@ int main (int argc, char *argv[])
       if (metsHandle.isValid() ) mets = *metsHandle;
       LorentzVector met = mets[0].p4 ();
 
-      // MET try:
+      if(debug){
+        // MET try:
         double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
         cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
         LorentzVector myshiftedMet = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
         cout << "MET = " << mets[0].pt() << ", JetEnUp: " << myshiftedMet.pt() << endl;
-        
+      }
 
       pat::TauCollection taus;
       fwlite::Handle < pat::TauCollection > tausHandle;
@@ -756,15 +809,11 @@ int main (int argc, char *argv[])
       if(selSingleLepLeptons.size()>0)
         slepId=selSingleLepLeptons[0].pdgId();
       
-//      cout << "-------------------------------------------------------------------------" << endl;
-//      cout << "selLeptons.size()==" << selLeptons.size() << ", dilId==" << dilId << ", selSingleLepLeptons.size()==" << selSingleLepLeptons.size() << ", slepId==" << slepId << endl;
-//      cout << "muTrigger==" << muTrigger << ", eTrigger==" << eTrigger << ", eeTrigger==" << eeTrigger << ", emuTrigger==" << emuTrigger << ", mumuTrigger==" << mumuTrigger << endl;
-
       // Event classification. Single lepton triggers are first in order to ensure that the lower threshold dilepton triggers do not steal events from the single lepton category. emu trigger is last in order to ensure that it does not break the balance between ee and mumu
-
-//      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
-//      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
-      if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
+      
+      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
+      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
+      else if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
       else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
       else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
       else                                                                 chTags.push_back("unclassified");
