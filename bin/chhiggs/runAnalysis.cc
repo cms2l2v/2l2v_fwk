@@ -457,16 +457,19 @@ int main (int argc, char *argv[])
       //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
       if(isMC)
         {
+          //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
-            if(gen[igen].status()!=3) continue;
+            if(gen[igen].status()!=1 && abs(gen[igen].pdgId())!=6) continue;
+            //            cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << endl;
             int absid=abs(gen[igen].pdgId());
-            if(absid==6){
+            if(absid==6 && gen[igen].status()==22){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
               hasTop=true;
               //if(isTTbarMC){
               //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
               //  else                        tbarPt=gen[igen].pt();
               //}
             }
+            if(gen[igen].status()==22) continue; // Now we want only status 1 particles ;)
 
             if(absid==11 || absid==13) ngenLeptonsStatus3++;
             if(absid==15             ) ngenTausStatus3++;
@@ -478,8 +481,12 @@ int main (int argc, char *argv[])
           //    ttbar ltau      --> 2
           //    ttbar ljets     --> 3
           //    ttbar hadrons   --> 4
-          
+          //cout << "mctruthmode " << mctruthmode << ", hasTop " << hasTop << ", ngenLeptonsStatus3: " << ngenLeptonsStatus3 << ", ngenTausStatus3: " << ngenTausStatus3 << ", ngetQuarksStatus3: " << ngenQuarksStatus3 << endl;
           if(mctruthmode==1 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
+          //else{
+          //  if(mctruthmode==1) cout << "Run/LS/Ev: " << ev.eventAuxiliary().run() << "/" << ev.eventAuxiliary().luminosityBlock() << "/" << ev.eventAuxiliary().event() << "has mctruthmode 1 and will be analyzed" << endl;
+          //  
+          //}
           if(mctruthmode==2 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
           if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenQuarksStatus3<4 || !hasTop )) continue; // Check about the "<4"
           if(mctruthmode==4 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
