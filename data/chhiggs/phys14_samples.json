@@ -3,7 +3,7 @@
     {
       "tag":"t#bar{t} dileptons",
       "isdata":false,
-      "mctruthmode":1
+      "mctruthmode":1,
       "color":614,
       "lcolor":1,
       "data":[
@@ -14,7 +14,7 @@
       "tag":"t#bar{t} ltau",
       "label":"t#bar{t}#rightarrow#ell#tau",
       "isdata":false,
-      "mctruthmode":2
+      "mctruthmode":2,
       "color":614,
       "lcolor":1,
       "data":[
@@ -25,7 +25,7 @@
       "tag":"t#bar{t} ljets",
       "label":"t#bar{t}#rightarrow#ell+jets",
       "isdata":false,
-      "mctruthmode":3
+      "mctruthmode":3,
       "color":614,
       "lcolor":1,
       "data":[
@@ -36,7 +36,7 @@
       "tag":"t#bar{t} had",
       "label":"t#bar{t}#rightarrow hadrons",
       "isdata":false,
-      "mctruthmode":4
+      "mctruthmode":4,
       "color":614,
       "lcolor":1,
       "data":[
