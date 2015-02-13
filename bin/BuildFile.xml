@@ -35,11 +35,11 @@
   <bin name="runBNVAnalysisFWLite"        file="runBNVAnalysisFWLite.cc"></bin>
   <bin name="runZHTauTauAnalysisFWLite"   file="runZHTauTauAnalysisFWLite.cc"></bin> 
   <bin name="runTStauStauAnalysisFWLite"  file="TStauStau/runTStauStauAnalysisFWLite.cc"></bin>
-  <bin name="runTStauStauFinalSelection"  file="runTStauStauFinalSelection.cc"></bin>
-  <bin name="runCutOptimizer"             file="runCutOptimizer.cc"></bin>
-  <bin name="makeDistributions"           file="makeDistributions.cc"></bin>
-  <bin namr="checkNTuples"                file="checkNTuples.cc"></bin>
-  <bin namr="addSVfit"                    file="addSVfit.cc"></bin>
+  <bin namr="addSVfit"                    file="TStauStau/addSVfit.cc"></bin>
+  <bin name="datacardMaker"               file="CommonTools/datacardMaker.cc"></bin>
+  <bin name="runCutOptimizer"             file="CommonTools/runCutOptimizer.cc"></bin>
+  <bin name="makeDistributions"           file="CommonTools/makeDistributions.cc"></bin>
+  <bin namr="checkNTuples"                file="CommonTools/checkNTuples.cc"></bin>
   <bin name="runMiniAODExample"           file="runMiniAODExample.cc"></bin>
 </environment>
 

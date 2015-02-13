@@ -7,4 +7,4 @@ cd /exper-sw/cmst3/cmssw/users/cbeiraod/SLC6/CMSSW_5_3_15/src/
 eval `scramv1 runtime -sh`
 
 cd /exper-sw/cmst3/cmssw/users/cbeiraod/SLC6/CMSSW_5_3_15/src/UserCode/llvv_fwk/test/TStauStau/Limits/
-runTStauStauFinalSelection --json finalSelection.json --outDir ./Results/
+datacardMaker --json finalSelection.json --outDir ./Results/ --xsec
