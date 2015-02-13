@@ -514,6 +514,7 @@ int main(int argc, char* argv[])
   // 2D variables
   mon.addHistogram(new TH2D("metVsPtl", ";p_{T}(l);MET", 50, 0, 100, 25, 0, 200));
   mon.addHistogram(new TH2D("metVsPtTau", ";p_{T}(#tau);MET", 50, 0, 100, 25, 0, 200));
+  mon.addHistogram(new TH2D("metPtVsmetEt", ";met.Et();met.pt()", 25, 0, 200, 25, 0, 200));
   //  Deconstructed MT 2D Plots:
   mon.addHistogram(new TH2D("Q80VsCosPhi", ";cos#Phi;Q_{80}", 20, -1, 1, 20, -2, 1));
   mon.addHistogram(new TH2D("Q100VsCosPhi", ";cos#Phi;Q_{100}", 20, -1, 1, 20, -2, 1));
@@ -585,6 +586,12 @@ int main(int argc, char* argv[])
   if(debug)
     myCout << "  Declaring all variables used in loop" << std::endl;
   int nvtx = 0;
+  bool selected = false;
+  bool isetau   = false;
+  bool ismutau  = false;
+  bool istautau = false;
+  bool isloose  = false;
+  bool istight  = false;
   std::vector<TString> chTags;
   std::vector<bool> triggerBits;
   bool triggeredOn = false;
@@ -606,7 +613,6 @@ int main(int argc, char* argv[])
   llvvTauCollection selTaus;
   int nJets = 0;
   int nBJets = 0;
-  bool selected = false;
   int tauIndex = -1, leptonIndex = -1;
   bool isOS = false;
   bool isMultilepton = false;
@@ -654,6 +660,11 @@ int main(int argc, char* argv[])
 
     // Event specific variables
     summaryTree->Branch("selected", &selected);
+    summaryTree->Branch("isetau",   &isetau);
+    summaryTree->Branch("ismutau",  &ismutau);
+    summaryTree->Branch("istautau", &istautau);
+    summaryTree->Branch("isloose",  &isloose);
+    summaryTree->Branch("istight",  &istight);
     summaryTree->Branch("chTags", &chTags);
     summaryTree->Branch("nvtx", &nvtx);
     summaryTree->Branch("triggerBits", &triggerBits);
@@ -733,6 +744,12 @@ int main(int argc, char* argv[])
       myCout << "_" << std::flush;
 
     // Init variables
+    selected = false;
+    isetau   = false;
+    ismutau  = false;
+    istautau = false;
+    isloose  = false;
+    istight  = false;
     deltaAlphaLepTau = 0;
     deltaRLepTau = 0;
     deltaPhiLepTauMET = 0;
@@ -743,7 +760,6 @@ int main(int argc, char* argv[])
     cosThetaCS = 0;
     minDeltaPhiMETJetPt40 = 0;
     nvtx = 0;
-    selected = false;
     weight = 1.;
     weight_plus = 1.;
     weight_minus = 1.;
@@ -875,10 +891,10 @@ int main(int argc, char* argv[])
     bool TauPlusMuTrigger = TauPlusMu2012A || TauPlusMu2012B;
 
     triggeredOn = TauPlusETrigger || TauPlusMuTrigger;
-    if(TauPlusETrigger)
-      chTags.push_back("TauPlusE");
-    if(TauPlusMuTrigger)
-      chTags.push_back("TauPlusMu");
+//    if(TauPlusETrigger)
+//      chTags.push_back("TauPlusE");
+//    if(TauPlusMuTrigger)
+//      chTags.push_back("TauPlusMu");
 
     // Rest of Gen Particles
     fwlite::Handle<llvvGenParticleCollection> genPartCollHandle;
@@ -1226,7 +1242,7 @@ int main(int argc, char* argv[])
 
         if(leptons[i].pt() < 10)
           keepKin = false;
-        if(abs(eta) > 2.4)
+        if(abs(eta) > 2.3)
           keepKin = false;
 
         if(abs(eta) > ECALGap_MinEta && abs(eta) < ECALGap_MaxEta) // Remove electrons that fall in ECAL Gap
@@ -1249,7 +1265,7 @@ int main(int argc, char* argv[])
       }
 
       // Lepton ID
-      bool passID = true;
+      bool passID = true, keepID = true;
       Int_t idbits = leptons[i].idbits;
       if(lepId == 11)
       {
@@ -1258,42 +1274,66 @@ int main(int argc, char* argv[])
         // bool isLoose = ((idbits >> 4) & 0x1);
         // bool isTight = ((idbits >> 6) & 0x1);
         passID = electronMVAID(leptons[i].electronInfoRef->mvanontrigv0, leptons[i], LooseID);
+        keepID = passID;
         if(leptons[i].d0 > 0.045)
           passID = false;
+        if(leptons[i].dZ > 0.1)
+          passID = false;
+        if(leptons[i].d0 > 0.045)
+          keepID = false;
         if(leptons[i].dZ > 0.2)
-          passID = false;
+          keepID = false;
+
         if(leptons[i].electronInfoRef->isConv)
+        {
           passID = false;
+          keepID = false;
+        }
         if(leptons[i].trkLostInnerHits > 0)
+        {
           passID = false;
+          keepID = false;
+        }
       }
       else
       {
         // bool isLoose = ((idbits >> 8) & 0x1);
         // bool isTight = ((idbits >> 10) & 0x1);
-        passID = ((idbits >> 8) & 0x1);
-        if(leptons[i].d0 > 0.045)
+        passID = ((idbits >> 10) & 0x1);
+        keepID = ((idbits >> 8) & 0x1);
+        if(leptons[i].d0 > 0.2)
+        {
           passID = false;
-        if(leptons[i].dZ > 0.2)
+          keepID = false;
+        }
+        if(leptons[i].dZ > 0.5)
+        {
           passID = false;
+//        if(leptons[i].dZ > 0.2)
+          keepID = false;
+        }
       }
 
       // Lepton Isolation
-      bool passIso = true;
+      bool passIso = true, keepIso = true;
       double relIso = utils::cmssw::relIso(leptons[i], rho);
       if(lepId == 11)
       {
-        if(relIso > 0.3)
+        if(relIso > 0.1)
           passIso = false;
+        if(relIso > 0.3)
+          keepIso = false;
       }
       else
       {
-        if(relIso > 0.3)
+        if(relIso > 0.1)
           passIso = false;
+        if(relIso > 0.3)
+          keepIso = false;
       }
 
       // Keep desired leptons
-      if(keepKin && passID && passIso)
+      if(keepKin && keepID && keepIso)
         selLeptons.push_back(leptons[i]);
       if(!triggeredOn)
         continue;
@@ -1526,10 +1566,10 @@ int main(int argc, char* argv[])
     {
       std::sort(selLeptons.begin(), selLeptons.end(), sort_llvvObjectByPt);
 
-      if(abs(selLeptons[0].id) == 11)
-        chTags.push_back("leadingE");
-      else
-        chTags.push_back("leadingMu");
+//      if(abs(selLeptons[0].id) == 11)
+//        chTags.push_back("leadingE");
+//      else
+//        chTags.push_back("leadingMu");
     }
 
     if(selTaus.size() != 0)
@@ -1623,40 +1663,29 @@ int main(int argc, char* argv[])
     isMultilepton = false;
     if(isOS)
     {
-      if(abs(selLeptons[leptonIndex].id) == 11) //Electron tau channel
+      for(size_t i = 0; i < selLeptons.size(); ++i)
       {
-        for(size_t i  = 0; i < selLeptons.size(); ++i)
-        {
-          if(i == (size_t)leptonIndex)
-            continue;
-          if(abs(selLeptons[i].id) != 11)
-            continue;
-          if(selLeptons[i].pt() < 20)
-            continue;
-          if(abs(selLeptons[i].electronInfoRef->sceta) > 2.1)
-            continue;
-          isMultilepton = true;
-          break;
-        }
-      }
-      else // Muon tau channel
-      {
-        for(size_t i = 0; i < selLeptons.size(); ++i)
-        {
-          if(i == (size_t)leptonIndex)
-            continue;
-          isMultilepton = true;
-          break;
-        }
+        if(i == (size_t)leptonIndex)
+          continue;
+        if(abs(selLeptons[i].id) != 11 && selLeptons[i].dZ > 0.2)  // If muon
+          continue;
+        isMultilepton = true;
+        break;
       }
 
       // Set up channels
       if(!isMultilepton)
       {
         if(abs(selLeptons[leptonIndex].id) == 11)
+        {
           chTags.push_back("etau");
+          isetau = true;
+        }
         else
+        {
           chTags.push_back("mutau");
+          ismutau = true;
+        }
 
         #if defined(DEBUG_EVENT)
         if(debugEvent || true)
@@ -1968,6 +1997,7 @@ int main(int argc, char* argv[])
 
                       mon.fillHisto("metVsPtl", chTags, selLeptons[leptonIndex].pt(), met.pt(), weight);
                       mon.fillHisto("metVsPtTau", chTags, selTaus[tauIndex].pt(), met.pt(), weight);
+                      mon.fillHisto("metPtVsmetEt", chTags, met.pt(), met.Et(), weight);
 
                       mon.fillHisto("nlep", chTags, selLeptons.size(), weight);
                       double eta = selLeptons[leptonIndex].eta();
