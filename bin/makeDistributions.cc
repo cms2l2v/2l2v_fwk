@@ -401,6 +401,7 @@ int main(int argc, char** argv)
 //  c1.SetLogy();
   gStyle->SetOptStat(0);
   TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
+  TPad* t2 = NULL;
   t1->Draw();
   t1->cd();
   if(!noLog) t1->SetLogy(true);
@@ -409,6 +410,7 @@ int main(int argc, char** argv)
   doubleUnc bgYield{0,0}, sigYield{0,0}, dataYield{0,0}, extraSigYield{0,0};
   for(auto variable = variables.begin(); variable != variables.end(); ++variable)
   {
+    t1->cd();
     std::cout << "Processing " << variable->name() << std::endl;
     std::string label = variable->label();
     if(label == "")
@@ -534,7 +536,7 @@ int main(int argc, char** argv)
     if(unblind)
     {
       c1.cd();
-      TPad* t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);
+      t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);
       t2->Draw();
       t2->cd();
       t2->SetGridy(true);
@@ -612,6 +614,13 @@ int main(int argc, char** argv)
         delete process->hist;
         process->hist = NULL;
       }
+    }
+
+    if(t2 != NULL)
+    {
+      c1.cd();
+      delete t2;
+      t2 = NULL;
     }
   }
 
