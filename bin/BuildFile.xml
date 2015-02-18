@@ -35,7 +35,7 @@
   <bin name="runBNVAnalysisFWLite"        file="runBNVAnalysisFWLite.cc"></bin>
   <bin name="runZHTauTauAnalysisFWLite"   file="runZHTauTauAnalysisFWLite.cc"></bin> 
   <bin name="runTStauStauAnalysisFWLite"  file="TStauStau/runTStauStauAnalysisFWLite.cc"></bin>
-  <bin name="addSVfit"                    file="TStauStau/addSVfit.cc"></bin>
+  <bin name="addVariable"                 file="CommonTools/addVariable.cc"></bin>
   <bin name="datacardMaker"               file="CommonTools/datacardMaker.cc"></bin>
   <bin name="runCutOptimizer"             file="CommonTools/runCutOptimizer.cc"></bin>
   <bin name="makeDistributions"           file="CommonTools/makeDistributions.cc"></bin>
