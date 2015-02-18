@@ -60,11 +60,9 @@ int main(int argc, char** argv)
 {
   AutoLibraryLoader::enable();
 
-  std::string jsonFile;
   std::string ttree = "Events";
   std::string outFile;
   std::string inFile;
-  bool verbose = false;
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
