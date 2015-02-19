@@ -131,6 +131,7 @@ public:
   bool LoadJson();
   bool OptimizeAllRounds();
   bool OptimizeRound(size_t n);
+  void SetAlgo(std::string NewAlgo);
 
   inline std::string getJson() const {return jsonFile_;};
   std::string& setJson(const std::string & jsonFile);
@@ -162,6 +163,7 @@ private:
   std::map<std::string,std::vector<ProcessFiles>> processes_;
 
   int limit_;
+  std::string algo_;
 
   bool OptimizeRound_(size_t n);
   bool GetSamples(size_t n);
@@ -289,6 +291,7 @@ int main(int argc, char** argv)
   bool verbose = false;
   int round = -1;
   int limit = 0;
+  std::string algo = "";
 
 //  gInterpreter->GenerateDictionary("llvvMet", "");
 //  gROOT->ProcessLine("#include \"UserCode/llvv_fwk/interface/llvvObjects.h\"");
@@ -344,6 +347,12 @@ int main(int argc, char** argv)
       temp >> limit;
       ++i;
     }
+
+    if(arg.find("--algo") != std::string::npos)
+    {
+      algo = argv[i+1];
+      ++i;
+    }
   }
   if(plotExt.size() == 0)
     plotExt.push_back(".png");
@@ -362,6 +371,8 @@ int main(int argc, char** argv)
     myOptimizer.setVerbose();
   if(limit > 0)
     myOptimizer.setLimit(limit);
+  if(algo != "")
+    myOptimizer.SetAlgo(algo);
   myOptimizer.LoadJson();
 
   if(round < 0)
@@ -496,7 +507,7 @@ OptimizationVariableInfo::~OptimizationVariableInfo()
 }
 
 CutOptimizer::CutOptimizer(const std::string & jsonFile, const std::string & outDir, const std::vector<std::string> & plotExt):
-  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false), limit_(0)
+  jsonFile_(jsonFile), outDir_(outDir), plotExt_(plotExt), jsonLoaded(false), verbose_(false), limit_(0), algo_("LIP")
 {
 //  json = new JSONWrapper::Object(jsonFile_, true);
 }
@@ -1404,7 +1415,14 @@ std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::s
     return retVal;
   }
 
-  fom = nSig/(nBg + nBg*nBg*systUnc*systUnc);
+  if(algo_ == "QuickNDirty")
+  {
+    fom = ((nSig+nBg).sqrt() - nBg.sqrt()) * 2;
+  }
+  else // if(algo_=="LIP")
+  {
+    fom = nSig/(nBg + nBg*nBg*systUnc*systUnc);
+  }
 //  double dividend = std::sqrt(nBg.value() + (systUnc*nBg.value())*(systUnc*nBg.value()));
 //  fom.setValue(nSig.value()/dividend);
 //  {
@@ -1418,6 +1436,19 @@ std::vector<doubleUnc> CutOptimizer::GetFOM(std::map<std::string,std::map<std::s
   retVal.push_back(nBg);
 
   return retVal;
+}
+
+void CutOptimizer::SetAlgo(std::string newAlgo)
+{
+  if(newAlgo == "QuickNDirty")
+  {
+    algo_ = "QuickNDirty";
+  }
+  else // Default algorithm is the LIP algorithm
+  {
+    algo_ = "LIP";
+  }
+  return;
 }
 
 void CutOptimizer::SaveGraph(std::string& name, std::vector<double>& xVals, std::vector<double>& xValsUnc, std::string& xTitle, std::vector<double>& yVals, std::vector<double>& yValsUnc, std::string& yTitle)
@@ -1717,6 +1748,9 @@ void printHelp()
   std::cout << "--plotExt -->  Extension format with which to save the plots, repeat this command if multiple formats are desired" << std::endl;
   std::cout << "--verbose -->  Set to verbose mode, the current step will be printed out to screen" << std::endl;
   std::cout << "--limit   -->  Limit the maximum number of steps" << std::endl;
+  std::cout << "--algo    -->  Algorithm used to compute the FOM. Options:" << std::endl;
+  std::cout << "                  - LIP         - Use the LIP algorithm: FOM = S/sqrt(B + (f.B)^2)" << std::endl;
+  std::cout << "                  - QuickNDirty - Use the algorithm suggested by the statistics committee: FOM = 2*[sqrt(S+B) - sqrt(B)], from https://indico.cern.ch/event/301310/session/5/contribution/49/material/slides/0.pptx" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\trunCutOptimizer --json optimization_options.json --outDir ./OUT/" << std::endl;
   return;

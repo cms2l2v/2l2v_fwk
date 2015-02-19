@@ -47,6 +47,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cctype>
 
 
 #ifndef DEBUG_EVENT
@@ -179,10 +180,12 @@ public:
   DatacardMaker(const std::string& jsonFile);
   ~DatacardMaker();
 
-  inline void setVerbose()   {verbose_ = true;};
-  inline void clearVerbose() {verbose_ = false;};
-  inline void setUnblind()   {unblind_ = true;};
-  inline void clearUnblind() {unblind_ = false;};
+  inline void setVerbose()        {verbose_ = true;};
+  inline void clearVerbose()      {verbose_ = false;};
+  inline void setUnblind()        {unblind_ = true;};
+  inline void clearUnblind()      {unblind_ = false;};
+  inline void setCrossSection()   {upperLimitCrossSection_ = true;};
+  inline void clearCrossSection() {upperLimitCrossSection_ = false;};
 
   bool loadJson(const std::string& jsonFile);
   inline void setOutDir(const std::string& outDir) {outDir_ = outDir;};
@@ -207,6 +210,7 @@ private:
 
   bool verbose_;
   bool unblind_;
+  bool upperLimitCrossSection_;
   std::string jsonLoaded_;
 
   std::map<std::string,bool> FileExists_;
@@ -219,7 +223,7 @@ private:
   bool loadJson(std::vector<JSONWrapper::Object>& selection);
   void clearSamples();
   std::vector<int> getSignalPoints(std::string currentSelection);
-  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> applySelection(std::vector<ProcessFiles> &processes, const SignalRegion &signalRegion, std::string additionalSelection = "", bool doSyst = false);
+  std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> applySelection(std::string type, std::vector<ProcessFiles> &processes, const SignalRegion &signalRegion, std::string additionalSelection = "", bool doSyst = false);
 
 protected:
 };
@@ -242,6 +246,7 @@ int main(int argc, char** argv)
   std::string outDir = "./OUT/";
   bool verbose = false;
   bool unblind = false;
+  bool upperLimitCrossSection = false;
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
@@ -275,6 +280,9 @@ int main(int argc, char** argv)
 
     if(arg.find("--unblind") != std::string::npos)
       unblind = true;
+
+    if(arg.find("--xsec") != std::string::npos)
+      upperLimitCrossSection = true;
   }
 
   if(jsonFile == "")
@@ -288,8 +296,9 @@ int main(int argc, char** argv)
     std::cout << "Creating an object of the DatacardMaker class..." << std::endl;
 
   DatacardMaker myDatacardMaker;
-  if(verbose)  myDatacardMaker.setVerbose();
-  if(unblind)  myDatacardMaker.setUnblind();
+  if(verbose)                myDatacardMaker.setVerbose();
+  if(unblind)                myDatacardMaker.setUnblind();
+  if(upperLimitCrossSection) myDatacardMaker.setCrossSection();
   myDatacardMaker.loadJson(jsonFile);
   myDatacardMaker.setOutDir(outDir);
   myDatacardMaker.genDatacards();
@@ -303,11 +312,12 @@ void printHelp(std::string binName)
 
   std::cout << std::endl;
   std::cout << "Options:" << std::endl;
-  std::cout << "  --help  - print this help message" << std::endl;
-  std::cout << "  --outDir  - set the output directory (default: ./OUT/)" << std::endl;
-  std::cout << "  --json  - configuration file specifying the final selection in the several signal regions and other auxiliary data. Example file: $CMSSW_BASE/src/UserCode/llvv_fwk/test/TStauStau/finalSelection.json" << std::endl;
+  std::cout << "  --help     - print this help message" << std::endl;
+  std::cout << "  --outDir   - set the output directory (default: ./OUT/)" << std::endl;
+  std::cout << "  --json     - configuration file specifying the final selection in the several signal regions and other auxiliary data. Example file: $CMSSW_BASE/src/UserCode/llvv_fwk/test/TStauStau/finalSelection.json" << std::endl;
   std::cout << "  --verbose  - give more output text, can be useful for debugging" << std::endl;
   std::cout << "  --unblind  - include data yields in the output datacards (Not completely implemented yet)" << std::endl; // TODO: Finish implementing the unblind option
+  std::cout << "  --xsec     - build datacards so that the result is a limit on the cross section and not a limit on the signal strength" << std::endl;
 
   return;
 }
@@ -316,6 +326,7 @@ DatacardMaker::DatacardMaker()
 {
   verbose_ = false;
   unblind_ = false;
+  upperLimitCrossSection_ = false;
   jsonLoaded_ = "";
 }
 
@@ -323,6 +334,7 @@ DatacardMaker::DatacardMaker(const std::string& jsonFile)
 {
   verbose_ = false;
   unblind_ = false;
+  upperLimitCrossSection_ = false;
   jsonLoaded_ = "";
   loadJson(jsonFile);
 }
@@ -686,13 +698,24 @@ bool SignalRegionCutInfo::loadJson(JSONWrapper::Object& json)
   return true;
 }
 
-std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> DatacardMaker::applySelection(std::vector<ProcessFiles> &processes, const SignalRegion &signalRegion, std::string additionalSelection, bool doSyst)
+std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> DatacardMaker::applySelection(std::string type, std::vector<ProcessFiles> &processes, const SignalRegion &signalRegion, std::string additionalSelection, bool doSyst)
 {
   std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> retVal;
   // retVal[channel][process][systematic]
   // without systematic is called "noSyst"
 
+  // type == "S"  -> Signal sample
+  // type == "B"  -> Background sample
+  // type == "D"  -> Data sample
+  if(type.size() != 0)
+    type = toupper(type[0]);
+  else
+    type = "B"; // Assume background by default
+
   std::string SRSelection = signalRegion.cuts();
+  std::string weight = "weight";
+  if(upperLimitCrossSection_ && type == "S")
+    weight = "(weight/crossSection)";
   for(auto &channel : channels_)
   {
     std::string channelSelection = channel.selection();
@@ -719,7 +742,7 @@ std::map<std::string,std::map<std::string,std::map<std::string,doubleUnc>>> Data
         TH1D tempHist("tempHist", "tempHist", 1, 0, 20);
         tempHist.Sumw2();
 
-        sample.chain->Draw("weight>>tempHist", (selection+"*weight").c_str(), "goff");
+        sample.chain->Draw("weight>>tempHist", (selection+"*"+weight).c_str(), "goff");
 
         if(process.reweight && !process.isData)
           tempHist.Scale(1.0/sample.nFiles);
@@ -777,7 +800,7 @@ bool DatacardMaker::genDatacards()
   for(auto &signalRegion : signalRegions_)
   {
     // Todo: Load the background info with the cuts from this signal region. Do not forget about systematics (Done? systematics will be tricky)
-    auto backgrounds = applySelection(processes_["BG"], signalRegion);
+    auto backgrounds = applySelection("B", processes_["BG"], signalRegion);
     std::map<std::string,doubleUnc> totalBackground, data;
     {
       for(auto &channel : channels_)
@@ -823,7 +846,7 @@ bool DatacardMaker::genDatacards()
       std::string signalPointSelection;
       temp << "((" << signalPointVariable_ << ")==" << point << ")";
       temp >> signalPointSelection;
-      auto signals = applySelection(processes_["SIG"], signalRegion, signalPointSelection);
+      auto signals = applySelection("S", processes_["SIG"], signalRegion, signalPointSelection);
 
       ofstream file(fileName, std::ios::out | std::ios::trunc | std::ios::binary);
 

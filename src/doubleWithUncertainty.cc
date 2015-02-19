@@ -139,6 +139,16 @@ doubleUnc  doubleUnc::operator/ (const double& val) const
   return retVal /= tempVal;
 }
 
+doubleUnc doubleUnc::sqrt() const
+{
+  doubleUnc tempVal;
+
+  tempVal.value_ = std::sqrt(value_);
+  tempVal.uncertainty2_ = uncertainty2_/(4*value_);
+
+  return tempVal;
+}
+
 double doubleUnc::defaultUnc(double currentValue) const
 {
   switch(defaultUncValue)

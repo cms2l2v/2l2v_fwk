@@ -6,5 +6,6 @@ export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 cd /exper-sw/cmst3/cmssw/users/cbeiraod/SLC6/CMSSW_5_3_15/src/
 eval `scramv1 runtime -sh`
 
-cd /exper-sw/cmst3/cmssw/users/cbeiraod/SLC6/CMSSW_5_3_15/src/UserCode/llvv_fwk/test/TStauStau/Limits/
-datacardMaker --json finalSelection.json --outDir ./Results/ --xsec
+cd #CWD
+runCutOptimizer --round #ROUND --json #FILE --outDir ./Results/ --plotExt .png --plotExt .root
+#--limit 1

@@ -25,6 +25,8 @@
 #include "TEventList.h"
 #include "TInterpreter.h"
 #include "TCanvas.h"
+#include "TLegend.h"
+#include "TPaveText.h"
 #include "TH1F.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -32,22 +34,31 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "UserCode/llvv_fwk/interface/llvvObjects.h"
 
 
 class MyVariable;
 class MyStyle;
+struct SampleFiles;
+struct ProcessFiles;
+struct ProcessHists;
 class My2DPlot;
 
 typedef std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> fileChains;
+typedef std::map<std::string,std::vector<ProcessFiles>> dataChains;
+typedef std::map<std::string,std::vector<ProcessHists>> dataHists;
 
 void printHelp();
 std::vector<MyVariable> getVariables(JSONWrapper::Object& json);
-std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
-fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension);
+fileChains old_getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension);
+THStack* old_getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
 TH1D* getHist(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
-THStack* getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles = true);
+dataChains getChainsFromJSON(std::string jsonFile, std::string ttreeName, std::string rootDir, std::string customExtension);
+dataHists getHists(dataChains& chains, TCut cut, TCut sigCut, MyVariable& variable, double iLumi, double sigXSec = 0, int sigNInitEvents = 0, std::string pointVar = "", bool isMultipointSignalSample = false, bool normalize = false);
+
+std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
 void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, My2DPlot TwoDPlot, bool correctFiles = true);
 std::string cleanString(std::string str, std::string illegal, char replacement);
 
@@ -55,15 +66,7 @@ std::string cleanString(std::string str, std::string illegal, char replacement);
 class MyStyle
 {
 public:
-  MyStyle()
-  {
-    marker_ = 1;
-    lcolor_ = kBlack;
-    mcolor_ = kBlack;
-    fcolor_ = kWhite;
-    lwidth_ = 1;
-    lstyle_ = 1;
-  };
+  MyStyle():marker_(1),lcolor_(kBlack),mcolor_(kBlack),fcolor_(kWhite),lwidth_(1),lstyle_(1){};
 
   inline int marker(){return marker_;};
   inline int lcolor(){return lcolor_;};
@@ -72,7 +75,8 @@ public:
   inline int lwidth(){return lwidth_;};
   inline int lstyle(){return lstyle_;};
 
-  friend fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension);
+  friend fileChains old_getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension);
+  friend dataChains getChainsFromJSON(std::string jsonFile, std::string ttreeName, std::string rootDir, std::string customExtension);
 
 private:
   int marker_;
@@ -102,6 +106,7 @@ public:
   inline double& maxVal(){return _maxVal;};
   inline int& bins(){return _bins;};
   inline std::string& label(){return _label;};
+  inline double& minScale(){return _minScale;};
 
   friend std::vector<MyVariable> getVariables(JSONWrapper::Object& json);
   friend std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
@@ -112,8 +117,41 @@ private:
   double _minVal, _maxVal;
   int _bins;
   std::string _label;
+  double _minScale;
 
 protected:
+};
+
+struct doubleUnc
+{
+  double value;
+  double uncertainty;
+};
+
+std::ostream& operator << (std::ostream &o, doubleUnc& val)
+{
+  return o << val.value << " +- " << val.uncertainty;
+}
+
+struct SampleFiles
+{
+  std::string name;
+  TChain* chain;
+  int nFiles;
+};
+
+struct ProcessFiles
+{
+  std::string name;
+  MyStyle style;
+  std::vector<SampleFiles> samples;
+};
+
+struct ProcessHists
+{
+  std::string name;
+  TH1* hist;
+  doubleUnc yield;
 };
 
 class My2DPlot
@@ -122,12 +160,14 @@ public:
 
   inline MyVariable& xVar(){return xVar_;};
   inline MyVariable& yVar(){return yVar_;};
+  inline double& minScale(){return minScale_;};
 
   friend std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json);
 
 private:
   MyVariable xVar_;
   MyVariable yVar_;
+  double minScale_;
 
 protected:
 };
@@ -155,6 +195,15 @@ int main(int argc, char** argv)
   std::string extraSignal = "";
   std::string ttree_name = "Events";
   std::string customExtension = "_summary";
+  bool normalize = false;
+  double iLumi = 0;
+  double sigXSec = 0;
+  int sigNInitEvents = 0;
+  std::string pointVar = "";
+  bool isMultipointSignalSample = false;
+  bool unblind = false;
+  bool printProcesses = false;
+  bool noLog = false;
 
   // Parse the command line options
   for(int i = 1; i < argc; ++i)
@@ -166,6 +215,44 @@ int main(int argc, char** argv)
     {
       printHelp();
       return 0;
+    }
+
+    if(arg.find("--iLumi") != std::string::npos)
+    {
+      std::stringstream buf;
+      std::string temp = argv[i+1];
+      buf << temp;
+      buf >> iLumi;
+      ++i;
+    }
+
+    if(arg.find("--printProcesses") != std::string::npos)
+    {
+      printProcesses = true;
+    }
+
+    if(arg.find("--sigXSec") != std::string::npos)
+    {
+      std::stringstream buf;
+      std::string temp = argv[i+1];
+      buf << temp;
+      buf >> sigXSec;
+      ++i;
+    }
+
+    if(arg.find("--sigNInitEvents") != std::string::npos)
+    {
+      std::stringstream buf;
+      std::string temp = argv[i+1];
+      buf << temp;
+      buf >> sigNInitEvents;
+      ++i;
+    }
+
+    if(arg.find("--pointVar") != std::string::npos)
+    {
+      pointVar = argv[i+1];
+      ++i;
     }
 
     if(arg.find("--json") != std::string::npos)
@@ -180,6 +267,21 @@ int main(int argc, char** argv)
       variablesFile = argv[i+1];
       // TODO: Check if the file exists
       ++i;
+    }
+
+    if(arg.find("--normalize") != std::string::npos)
+    {
+      normalize = true;
+    }
+
+    if(arg.find("--noLog") != std::string::npos)
+    {
+      noLog = true;
+    }
+
+    if(arg.find("--unblind") != std::string::npos)
+    {
+      unblind = true;
     }
 
     if(arg.find("--outDir") != std::string::npos)
@@ -235,6 +337,33 @@ int main(int argc, char** argv)
 
   system(("mkdir -p " + outDir).c_str());
 
+  if(iLumi <= 0)
+  {
+    if(!normalize)
+    {
+      std::cout << "You should define an integrated luminosity if not plotting the normalized histograms." << std::endl;
+      return 1;
+    }
+    else
+      iLumi = 1;
+  }
+
+  if(pointVar == "")
+  {
+    isMultipointSignalSample = false;
+    sigXSec = 0;
+    sigNInitEvents = 0;
+  }
+  else
+  {
+    isMultipointSignalSample = true;
+    if(sigNInitEvents <= 0 || sigXSec <= 0)
+    {
+      std::cout << "If you are using a multipoint signal sample, by defining pointVar, you must define sigNInitEvents and sigXSec." << std::endl;
+      return 1;
+    }
+  }
+
   if(jsonFile == "" || variablesFile == "" || inDir == "")
   {
     std::cout << "You should define at least the following arguments: json, variables, inDir" << std::endl;
@@ -247,71 +376,276 @@ int main(int argc, char** argv)
 
   std::vector<MyVariable> variables = getVariables(variables_json);
   std::vector<My2DPlot> TwoDPlots = get2DPlots(variables_json);
-  auto  BG_samples = getChainsFromJSON(json, inDir,  "BG", ttree_name, customExtension);
-  auto SIG_samples = getChainsFromJSON(json, inDir, "SIG", ttree_name, customExtension);
+
+  auto  BG_samples = old_getChainsFromJSON(json, inDir,  "BG", ttree_name, customExtension);
+  auto SIG_samples = old_getChainsFromJSON(json, inDir, "SIG", ttree_name, customExtension);
+  auto processes = getChainsFromJSON(jsonFile, ttree_name, inDir, customExtension);
+  dataHists yields;
 
   TCut BGCut  = baseSelection.c_str();
   TCut SIGCut = BGCut && signalSelection.c_str();
 
-  TCanvas c1("c1", "c1", 800, 600);
-  c1.SetLogy();
+  // Styling
+  setTDRStyle();
+  gStyle->SetPadTopMargin (0.06);
+  gStyle->SetPadBottomMargin(0.12);
+  gStyle->SetPadRightMargin (0.16);
+  gStyle->SetPadLeftMargin (0.14);
+  gStyle->SetTitleSize(0.04, "XYZ");
+  gStyle->SetTitleXOffset(1.1);
+  gStyle->SetTitleYOffset(1.45);
+  gStyle->SetPalette(1);
+  gStyle->SetNdivisions(505);
+
+  TCanvas c1("c1", "c1", 800, 800);
+//  c1.SetLogy();
   gStyle->SetOptStat(0);
+  TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
+  TPad* t2 = NULL;
+  t1->Draw();
+  t1->cd();
+  if(!noLog) t1->SetLogy(true);
+
+
+  doubleUnc bgYield{0,0}, sigYield{0,0}, dataYield{0,0}, extraSigYield{0,0};
   for(auto variable = variables.begin(); variable != variables.end(); ++variable)
   {
+    t1->cd();
     std::cout << "Processing " << variable->name() << std::endl;
     std::string label = variable->label();
     if(label == "")
       label = variable->name();
-    THStack* final_bg  = getStack( BG_samples,   BGCut, *variable);
-    final_bg->SetNameTitle("Background", ("Background;"+label+";% Events").c_str());
-    TH1D* final_sig = getHist(SIG_samples,  SIGCut, *variable, false);
-    final_sig->SetNameTitle("Signal", ("Signal;"+label+";% Events").c_str());
 
-    //final_bg->Scale(1/final_bg->Integral());
-    final_sig->Scale(1/final_sig->Integral());
+    dataHists hists = getHists(processes, BGCut, SIGCut, *variable, iLumi, sigXSec, sigNInitEvents, pointVar, isMultipointSignalSample, normalize);
 
-    //final_bg->SetLineColor(kBlue);
-    //final_sig->SetLineColor(kRed);
-    final_bg->Draw();
-    final_bg->SetMinimum(10e-6);
-    double max = final_sig->GetMaximum();
-    double min = final_sig->GetMinimum();
-    if(final_bg->GetMaximum() > max)
-      max = final_bg->GetMaximum();
-    if(final_bg->GetMinimum() < min)
-      min = final_bg->GetMinimum();
+    std::string tempLabel = variable->name()+";"+label;
+    if(normalize)
+      tempLabel+=";% Events";
+    else
+      tempLabel+=";Events";
+    THStack* bgStack = new THStack("Background", tempLabel.c_str());
+    TH1D* sigHist = NULL;
+    TH1D* dataHist = NULL;
+    TH1D* extraSigHist = NULL;
+    TH1D* bgHist = NULL;
+    bgYield.value = 0, sigYield.value = 0, dataYield.value = 0, extraSigYield.value = 0;
+    bgYield.uncertainty = 0, sigYield.uncertainty = 0, dataYield.uncertainty = 0, extraSigYield.uncertainty = 0;
+
+    for(auto process = hists["BG"].begin(); process != hists["BG"].end(); ++process)
+    {
+      if(bgHist == NULL)
+        bgHist = static_cast<TH1D*>(process->hist->Clone());
+      else
+        bgHist->Add(process->hist);
+      bgStack->Add(process->hist);
+      bgYield.value += process->yield.value;
+      bgYield.uncertainty += process->yield.uncertainty*process->yield.uncertainty;
+    }
+    bgYield.uncertainty = std::sqrt(bgYield.uncertainty);
+    for(auto process = hists["SIG"].begin(); process != hists["SIG"].end(); ++process)
+    {
+      if(sigHist == NULL)
+        sigHist = static_cast<TH1D*>(process->hist->Clone());
+      else
+        sigHist->Add(process->hist);
+      sigYield.value += process->yield.value;
+      sigYield.uncertainty += process->yield.uncertainty*process->yield.uncertainty;
+    }
+    sigYield.uncertainty = std::sqrt(sigYield.uncertainty);
+    for(auto process = hists["Data"].begin(); process != hists["Data"].end(); ++process)
+    {
+      if(dataHist == NULL)
+        dataHist = static_cast<TH1D*>(process->hist->Clone());
+      else
+        dataHist->Add(process->hist);
+      dataYield.value += process->yield.value;
+      dataYield.uncertainty += process->yield.uncertainty*process->yield.uncertainty;
+    }
+    dataYield.uncertainty = std::sqrt(dataYield.uncertainty);
+
+    bgStack->Draw("hist");
+    double max = sigHist->GetMaximum();
+    if(bgStack->GetMaximum() > max)
+      max = bgStack->GetMaximum();
+    if(dataHist != NULL && unblind)
+      if(dataHist->GetMaximum() > max)
+        max = dataHist->GetMaximum();
+
+    if(printProcesses)
+    {
+      yields = hists;
+    }
 
     if(extraSignal != "")
     {
-      TCut SIG2Cut = BGCut && extraSignal.c_str();
-      TH1D* sig_2 = getHist(SIG_samples,  SIG2Cut, *variable, false);
-      sig_2->SetNameTitle("ExtraSignal", ("ExtraSignal;"+label+";% Events").c_str());
-      sig_2->Scale(1/sig_2->Integral());
-      sig_2->SetLineColor(kBlue);
-      if(sig_2->GetMaximum() > max)
-        max = sig_2->GetMaximum();
-      if(sig_2->GetMinimum() < min)
-        min = sig_2->GetMinimum();
-      final_bg->SetMaximum(max);
-//      final_bg->SetMinimum(min);
-      final_sig->Draw("same");
-      sig_2->Draw("same");
+      TCut SIG2Cut = extraSignal.c_str();
+      dataChains extraSignalChains;
+      extraSignalChains["SIG"] = processes["SIG"];
+      dataHists extraHists = getHists(extraSignalChains, BGCut, SIG2Cut, *variable, iLumi, sigXSec, sigNInitEvents, pointVar, isMultipointSignalSample, normalize);
+
+      for(auto process = extraHists["SIG"].begin(); process != extraHists["SIG"].end(); ++process)
+      {
+        if(extraSigHist == NULL)
+          extraSigHist = static_cast<TH1D*>(process->hist->Clone());
+        else
+          extraSigHist->Add(process->hist);
+        extraSigYield.value += process->yield.value;
+        extraSigYield.uncertainty += process->yield.uncertainty*process->yield.uncertainty;
+        delete process->hist;
+      }
+      extraSigYield.uncertainty = std::sqrt(extraSigYield.uncertainty);
+
+      if(extraSigHist->GetMaximum() > max)
+        max = extraSigHist->GetMaximum();
+
+      sigHist->Draw("hist same");
+      extraSigHist->SetLineColor(kBlue);
+      extraSigHist->Draw("hist same");
+      if(printProcesses)
+      {
+        yields["ExtraSig"] = extraHists["SIG"];
+      }
     }
     else
     {
-      final_bg->SetMaximum(max);
-//      final_bg->SetMinimum(min);
-      final_sig->Draw("same");
+      sigHist->Draw("hist same");
     }
 
-    c1.BuildLegend(0.88, 0.67, 1, 1);
+    if(unblind)
+      dataHist->Draw("same");
+
+    bgStack->SetMaximum(max);
+    if(variable->minScale() != -999)
+      bgStack->SetMinimum(variable->minScale());
+
+    TLegend *legA = t1->BuildLegend(0.845,0.2,0.99,0.99, "NDC");
+    legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);
+    legA->SetHeader("");
+    legA->SetTextFont(42);
+
+    TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
+    T->SetFillColor(0);
+    T->SetFillStyle(0); T->SetLineColor(0);
+    T->SetTextAlign(12);
+    char Buffer[1024];
+    sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", 8.0, iLumi/1000);
+    T->AddText(Buffer);
+    T->Draw("same");
+    T->SetBorderSize(0);
+
+    if(unblind)
+    {
+      c1.cd();
+      t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);
+      t2->Draw();
+      t2->cd();
+      t2->SetGridy(true);
+      t2->SetPad(0,0.0,1.0,0.2);
+      t2->SetTopMargin(0);
+      t2->SetBottomMargin(0.5);
+
+      TH1D *bgUncH = static_cast<TH1D*>(bgHist->Clone("bgUncH"));
+      for(int xbin=1; xbin<=bgUncH->GetXaxis()->GetNbins(); xbin++)
+      {
+        if(bgUncH->GetBinContent(xbin)==0)
+          continue;
+
+        double unc = bgUncH->GetBinError(xbin) / bgUncH->GetBinContent(xbin);
+
+        // Add systematic uncertainties
+        unc = unc*unc;
+        unc += 0.026*0.026; // Luminosity uncertainty
+//        unc += 0.15*0.15; // Value assumed for total systematic uncertainty
+        unc = std::sqrt(unc);
+
+        bgUncH->SetBinContent(xbin,1);
+        bgUncH->SetBinError(xbin,unc);
+      }
+
+      TGraphErrors *bgUnc=new TGraphErrors(bgUncH);
+      bgUnc->SetLineColor(1);
+      bgUnc->SetFillStyle(3001);
+      bgUnc->SetFillColor(kGray);
+      bgUnc->SetMarkerColor(1);
+      bgUnc->SetMarkerStyle(1);
+      bgUncH->Reset("ICE");
+      bgUncH->Draw();
+      bgUnc->Draw("3");
+      float yscale = (1.0-0.2)/(0.18-0);
+      bgUncH->GetYaxis()->SetTitle("Data/#Sigma MC");
+      bgUncH->SetMinimum(0.4);
+      bgUncH->SetMaximum(1.6);
+      bgUncH->GetXaxis()->SetTitle("");
+      bgUncH->GetXaxis()->SetTitleOffset(1.3);
+      bgUncH->GetXaxis()->SetLabelSize(0.033*yscale);
+      bgUncH->GetXaxis()->SetTitleSize(0.036*yscale);
+      bgUncH->GetXaxis()->SetTickLength(0.03*yscale);
+      bgUncH->GetYaxis()->SetTitleOffset(0.3);
+      bgUncH->GetYaxis()->SetNdivisions(5);
+      bgUncH->GetYaxis()->SetLabelSize(0.033*yscale);
+      bgUncH->GetYaxis()->SetTitleSize(0.036*yscale);
+
+      TH1D* ratio = static_cast<TH1D*>(dataHist->Clone());
+      ratio->Divide(bgHist);
+      ratio->Draw("same");
+    }
+    else
+    {
+      c1.SetWindowSize(800,600);
+      c1.SetCanvasSize(800,600);
+      t1->SetPad(0,0,1,1);
+    }
+
 
     for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
       c1.SaveAs((outDir + variable->name() + *ext).c_str());
 
-    delete final_bg;
-    delete final_sig;
+    delete sigHist;
+    delete bgStack;
+    if(dataHist != NULL)
+      delete dataHist;
+    if(extraSigHist != NULL)
+      delete extraSigHist;
+
+    for(auto type = hists.begin(); type != hists.end(); ++type)
+    {
+      for(auto process = type->second.begin(); process != type->second.end(); ++process)
+      {
+        delete process->hist;
+        process->hist = NULL;
+      }
+    }
+
+    if(t2 != NULL)
+    {
+      c1.cd();
+      delete t2;
+      t2 = NULL;
+    }
   }
+
+  if(printProcesses)
+  {
+    std::cout << "Process cutflow breakdown:" << std::endl;
+    for(auto type = yields.begin(); type != yields.end(); ++type)
+    {
+      if(type->first == "Data" && !unblind)
+        continue;
+      std::cout << "  " << type->first << std::endl;
+      for(auto process = type->second.begin(); process != type->second.end(); ++process)
+      {
+        std::cout << "    " << process->name << ": " << process->yield << std::endl;
+      }
+    }
+  }
+
+  std::cout << "Yields:" << std::endl;
+  std::cout << "  MC: " << bgYield << std::endl;
+  if(unblind)
+    std::cout << "  Data: " << dataYield << std::endl;
+  std::cout << "  Sig: " << sigYield << std::endl;
+  if(extraSignal != "")
+    std::cout << "  ExtraSig: " << extraSigYield << std::endl;
 
   for(auto TwoDPlot = TwoDPlots.begin(); TwoDPlot != TwoDPlots.end(); ++TwoDPlot)
   {
@@ -327,6 +661,119 @@ int main(int argc, char** argv)
   }
 
   return 0;
+}
+
+dataHists getHists(dataChains& chains, TCut cut, TCut sigCut, MyVariable& variable, double iLumi, double sigXSec, int sigNInitEvents, std::string pointVar, bool isMultipointSignalSample, bool normalize)
+{
+  dataHists retVal;
+
+  std::string name = variable.name();
+  std::string expression = variable.expression();
+  std::string label = variable.label();
+  if(label == "")
+    label = name;
+
+
+  int nSignalPoints = 1;
+  if(isMultipointSignalSample)
+  {
+    nSignalPoints = 0;
+    int maxVal = 501*1000+1; //Change-me if you are having problems with multipart signal samples and it only finds some of them
+    TH1D tempPoints("points", "points", maxVal, 0, maxVal);
+    for(auto process = chains["SIG"].begin(); process != chains["SIG"].end(); ++process)
+    {
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        if(sample->nFiles == 0)
+          continue;
+
+        TH1D* temp_hist = new TH1D("temp_hist", "temp_hist", maxVal, 0, maxVal);
+        sample->chain->Draw((pointVar+">>temp_hist").c_str(), (cut && sigCut)*"weight", "goff");
+        tempPoints.Add(temp_hist);
+        delete temp_hist;
+      }
+    }
+
+    int nBins = tempPoints.GetNbinsX();
+    for(int i = 1; i <= nBins; ++i)
+      if(tempPoints.GetBinContent(i) != 0)
+        ++nSignalPoints;
+  }
+
+
+  for(auto type = chains.begin(); type != chains.end(); ++type)
+  {
+    std::vector<ProcessHists> tempProcInfo;
+    double scale = 0;
+
+    for(auto process = type->second.begin(); process != type->second.end(); ++process)
+    {
+      ProcessHists procHist;
+
+      procHist.name = process->name;
+      procHist.hist = new TH1D((name+process->name).c_str(), (process->name+";"+label+";Events").c_str(), variable.bins(), variable.minVal(), variable.maxVal());
+      procHist.hist->Sumw2();
+
+      for(auto sample = process->samples.begin(); sample != process->samples.end(); ++sample)
+      {
+        if(sample->nFiles == 0)
+          continue;
+
+        TH1D tempHist("temp", (name+";"+label+";Events").c_str(), variable.bins(), variable.minVal(), variable.maxVal());
+        tempHist.Sumw2();
+
+        if(nSignalPoints > 1 && type->first == "SIG")
+          sample->chain->Draw((expression+">>temp").c_str(), (cut && sigCut)*"puWeight", "goff");
+        else
+          sample->chain->Draw((expression+">>temp").c_str(), cut*"weight", "goff");
+
+        if(type->first != "Data")
+        {
+          if(isMultipointSignalSample && type->first == "SIG")
+          {
+            if(nSignalPoints > 1)
+              tempHist.Scale(iLumi*sigXSec/(nSignalPoints*sigNInitEvents));
+          }
+          else
+          {
+            tempHist.Scale(iLumi/sample->nFiles);
+          }
+        }
+
+        tempHist.SetLineColor  (process->style.lcolor());
+        tempHist.SetMarkerColor(process->style.mcolor());
+        tempHist.SetFillColor  (process->style.fcolor());
+        tempHist.SetLineWidth  (process->style.lwidth());
+        tempHist.SetLineStyle  (process->style.lstyle());
+        tempHist.SetMarkerStyle(process->style.marker());
+
+        procHist.hist->Add(&tempHist);
+      }
+
+      procHist.hist->SetLineColor  (process->style.lcolor());
+      procHist.hist->SetMarkerColor(process->style.mcolor());
+      procHist.hist->SetFillColor  (process->style.fcolor());
+      procHist.hist->SetLineWidth  (process->style.lwidth());
+      procHist.hist->SetLineStyle  (process->style.lstyle());
+      procHist.hist->SetMarkerStyle(process->style.marker());
+
+      procHist.yield.value = procHist.hist->IntegralAndError(0, variable.bins()+1, procHist.yield.uncertainty);
+      scale += procHist.yield.value;
+      tempProcInfo.push_back(procHist);
+    }
+
+    if(normalize)
+    {
+      for(auto process = tempProcInfo.begin(); process != tempProcInfo.end(); ++process)
+      {
+        process->hist->Scale(1./scale);
+      }
+    }
+
+    retVal[type->first] = tempProcInfo;
+  }
+
+  return retVal;
 }
 
 void make2D(std::string outDir, std::vector<std::string> plotExt, fileChains files, TCut cut, My2DPlot TwoDPlot, bool correctFiles)
@@ -383,7 +830,7 @@ std::string cleanString(std::string str, std::string illegal, char replacement)
   return str;
 }
 
-THStack* getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles)
+THStack* old_getStack(fileChains files,  TCut cut, MyVariable variable, bool correctFiles)
 {
   std::string name = variable.name();
   std::string expression = variable.expression();
@@ -463,7 +910,7 @@ TH1D* getHist(fileChains files,  TCut cut, MyVariable variable, bool correctFile
   return retVal;
 }
 
-fileChains getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
+fileChains old_getChainsFromJSON(JSONWrapper::Object& json, std::string RootDir, std::string type, std::string treename, std::string customExtension)
 {
   std::vector<std::pair<std::string,std::vector<std::pair<int,TChain*>>>> retVal;
   std::pair<std::string,std::vector<std::pair<int,TChain*>>> tempProcess;
@@ -635,6 +1082,8 @@ std::vector<My2DPlot> get2DPlots(JSONWrapper::Object& json)
     TwoDPlotInfo.xVar_._label = TwoDPlot->getString("xlabel", "");
     TwoDPlotInfo.yVar_._label = TwoDPlot->getString("ylabel", "");
 
+    TwoDPlotInfo.minScale_ = TwoDPlot->getDouble("xminScale", -999);
+
     retVal.push_back(TwoDPlotInfo);
   }
 
@@ -669,6 +1118,7 @@ std::vector<MyVariable> getVariables(JSONWrapper::Object& json)
       std::cout << variableInfo._name << ": maxVal and minVal must be specified and define a valid range of values. Continuing..." << std::endl;
       continue;
     }
+    variableInfo._minScale = variable->getDouble("minScale", -999);
     variableInfo._bins = variable->getInt("bins", 0);
     if(variableInfo._bins <= 0)
     {
@@ -683,6 +1133,120 @@ std::vector<MyVariable> getVariables(JSONWrapper::Object& json)
   return retVal;
 }
 
+dataChains getChainsFromJSON(std::string jsonFile, std::string ttreeName, std::string rootDir, std::string customExtension)
+{
+  dataChains retVal;
+  {
+    std::vector<ProcessFiles> temp;
+    retVal["BG"] = temp;
+    retVal["SIG"] = temp;
+    retVal["Data"] = temp;
+  }
+
+  JSONWrapper::Object json(jsonFile, true);
+  std::vector<JSONWrapper::Object> processes = json["proc"].daughters();
+
+  for(auto process = processes.begin(); process != processes.end(); ++process)
+  {
+    bool isData = (*process)["isdata"].toBool();
+    bool isSig  = !isData && (*process).isTag("spimpose") && (*process)["spimpose"].toBool();
+    bool isMC   = !isData && !isSig;
+
+    std::string type = "Data";
+    if(isMC)
+      type = "BG";
+    if(isSig)
+      type = "SIG";
+
+    ProcessFiles tempProc;
+    tempProc.name = (*process).getString("tag", "Sample");
+
+    tempProc.style.lcolor_ = 1;
+    tempProc.style.mcolor_ = 1;
+    tempProc.style.fcolor_ = 0;
+    tempProc.style.lwidth_ = 1;
+    tempProc.style.lstyle_ = 1;
+    tempProc.style.marker_ = 1;
+    if(process->isTag("color"))
+    {
+      tempProc.style.lcolor_ = process->getInt("color");
+      tempProc.style.mcolor_ = tempProc.style.lcolor_;
+      tempProc.style.fcolor_ = tempProc.style.lcolor_;
+    }
+    if(process->isTag("lcolor"))
+      tempProc.style.lcolor_ = process->getInt("lcolor");
+    if(process->isTag("mcolor"))
+      tempProc.style.mcolor_ = process->getInt("mcolor");
+    if(process->isTag("fcolor"))
+      tempProc.style.fcolor_ = process->getInt("fcolor");
+    if(process->isTag("fill"))
+      tempProc.style.fcolor_ = process->getInt("fill");
+    if(process->isTag("lwidth"))
+      tempProc.style.lwidth_ = process->getInt("lwidth");
+    if(process->isTag("lstyle"))
+      tempProc.style.lstyle_ = process->getInt("lstyle");
+    if(process->isTag("marker"))
+      tempProc.style.marker_ = process->getInt("marker");
+
+    std::string filtExt;
+    if((*process).isTag("mctruthmode"))
+    {
+      std::stringstream buf;
+      buf << "_filt" << (*process)["mctruthmode"].toInt();
+      buf >> filtExt;
+    }
+
+    std::vector<JSONWrapper::Object> samples = (*process)["data"].daughters();
+    for(auto sample = samples.begin(); sample != samples.end(); ++sample)
+    {
+      SampleFiles tempSample;
+      tempSample.nFiles = 0;
+      tempSample.name = (*sample).getString("dtag", "");
+      tempSample.chain = new TChain(ttreeName.c_str(), ((*sample).getString("dtag", "") + (*sample).getString("suffix", "")).c_str());
+      int nFiles = (*sample).getInt("split", 1);
+
+      for(int filen = 0; filen < nFiles; ++filen)
+      {
+        std::string segmentExt;
+        if(nFiles != 1)
+        {
+          std::stringstream buf;
+          buf << "_" << filen;
+          buf >> segmentExt;
+        }
+
+        std::string fileName = rootDir + "/" + (*sample).getString("dtag", "") + (*sample).getString("suffix", "") + segmentExt + filtExt + customExtension + ".root";
+
+        TFile* file = new TFile(fileName.c_str(), "READONLY");
+        bool& fileExists = FileExists[fileName];
+
+        if(!file || file->IsZombie() || !file->IsOpen() || file->TestBit(TFile::kRecovered))
+        {
+          fileExists = false;
+          file->Close();
+          delete file;
+          continue;
+        }
+        else
+        {
+          fileExists = true;
+          file->Close();
+          delete file;
+        }
+
+        tempSample.chain->Add(fileName.c_str());
+        ++(tempSample.nFiles);
+      }
+
+      tempProc.samples.push_back(tempSample);
+    }
+
+    retVal[type].push_back(tempProc);
+  }
+
+  return retVal;
+}
+
 void printHelp()
 {
   std::cout << "makeDistributions help - There are the following options (default values, if any, in parenthesis):" << std::endl << std::endl;
@@ -692,12 +1256,19 @@ void printHelp()
   std::cout << "--inDir            -->  Path to the directory where to find the input files" << std::endl;
   std::cout << "--outDir           -->  Path to the directory where to output plots and tables (will be created if it doesn't exist, default: ./OUT/)" << std::endl;
   std::cout << "--baseSelection    -->  Base selection to apply to the tree to get the selected events (default: selected)" << std::endl;
-  std::cout << "--signalSelection  -->  Extra selection to apply only to signal samples to get the selected events" << std::endl;
   std::cout << "--ttree            -->  Name of the ttree containing the events (default: Events)" << std::endl;
   std::cout << "--customExtension  -->  Custom extension on the files with the ttrees (default: _summary)" << std::endl;
   std::cout << "--plotExt          -->  Extension format with which to save the plots, repeat this command if multiple formats are desired (default: png)" << std::endl;
   std::cout << "--variables        -->  JSON file with the variables which will be plotted" << std::endl;
+  std::cout << "--normalize        -->  If the plots are to be normalized" << std::endl;
+  std::cout << "--unblind          -->  If the data should be plotted and reported as well" << std::endl;
+  std::cout << "--iLumi            -->  The integrated luminosity to be used in the plots" << std::endl;
+  std::cout << "--pointVar         -->  To use a multipoint signal sample, define this value with the \"Draw\" option to use to differentiate signal points" << std::endl;
+  std::cout << "--signalSelection  -->  When using a multipoint signal sample, extra selection to apply only to signal samples to get the selected events" << std::endl;
+  std::cout << "--sigXSec          -->  When using a multipoint signal sample, you must define the signal cross section to use" << std::endl;
+  std::cout << "--sigNInitEvents   -->  When using a multipoint signal sample, the number of initial events for each signal point" << std::endl;
   std::cout << "--extraSignal      -->  A second extra selection to apply only to signal" << std::endl;
+  std::cout << "--noLog            -->  Do not print the vertical axis with logarithmic scale" << std::endl;
 
   std::cout << std::endl << "Example command:" << std::endl << "\tmakeDistributions --json samples.json --outDir ./OUT/ --variables variables.json --inDir /directory" << std::endl;
   return;
