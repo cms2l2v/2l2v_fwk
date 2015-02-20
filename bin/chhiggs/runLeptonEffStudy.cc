@@ -404,7 +404,27 @@ int main (int argc, char *argv[])
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
       if (!tr.isValid ())
         return false;
-      
+
+      std::vector<TString> myTrigNames; myTrigNames.clear();
+
+      myTrigNames.push_back("HLT_IsoMu17_eta2p1_v*"                                 );  // 1000 1 (L1 prescale, HLT prescale) for v1
+      myTrigNames.push_back("HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*"                 );  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu17_eta2p1_MediumIsoPFTau40_Trk1_eta2p1_Reg_v*");  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu20_eta2p1_IterTrk02_v*"                       );  // 1000 0 
+      myTrigNames.push_back("HLT_IsoMu24_eta2p1_IterTrk02_v*"                       );  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu24_eta2p1_LooseIsoPFTau20_v*"                 );  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu27_IterTrk02_v*"                              );  // 1    1 
+      myTrigNames.push_back("HLT_IsoTkMu27_IterTrk02_v*"                            );  // 1    1  
+      myTrigNames.push_back("HLT_Ele22_eta2p1_WP85_Gsf_v*"                          ); // 3000 1 (L1 prescale, HLT prescale) for v1
+      myTrigNames.push_back("HLT_Ele22_eta2p1_WP85_Gsf_LooseIsoPFTau20_v*"          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*"                   ); // 4000 1 
+      myTrigNames.push_back("HLT_Ele27_eta2p1_WP85_Gsf_v*"                          ); // 1000 0 
+      myTrigNames.push_back("HLT_Ele32_eta2p1_WP85_Gsf_v*"                          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele32_eta2p1_WP85_Gsf_LooseIsoPFTau20_v*"          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele35_eta2p1_WP85_Gsf_v*"                          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele40_eta2p1_WP85_Gsf_v*"                          ); // 1    1     
+
+
       std::vector<bool> singleMuonTrigger;     singleMuonTrigger.clear();
       std::vector<bool> singleElectronTrigger; singleElectronTrigger.clear();
 
@@ -440,7 +460,7 @@ int main (int argc, char *argv[])
       fwlite::Handle<edm::TriggerResults> triggerBitsHandle;
       triggerBitsHandle.getByLabel(ev, "TriggerResults","","HLT"); // ?
       if(triggerBitsHandle.isValid()) triggerBits = *triggerBitsHandle;
-      const edm::TriggerNames& names = ev.triggerNames(triggerBits);
+      const edm::TriggerNames& trigNames = ev.triggerNames(triggerBits);
 
       pat::TriggerObjectStandAloneCollection triggerObjects;
       fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
@@ -448,9 +468,12 @@ int main (int argc, char *argv[])
       if(triggerObjectsHandle.isValid()) triggerObjects = *triggerObjectsHandle;
 
       for(pat::TriggerObjectStandAlone obj : triggerObjects){
-        obj.unpackPathNames(names);
-        cout << "Trigger object: pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << endl;
-
+        obj.unpackPathNames(trigNames);
+        for(size_t i=0; i<myTrigNames.size(); ++i)
+          if(utils::passTriggerPatterns(tr, myTrigNames[i].Data())){
+            cout << "Trigger "<< myTrigNames[i] << " both: "<< obj.hasPathName(myTrigNames[i].Data(), true, true) << ", L3: " << obj.hasPathName(myTrigNames[i].Data(), false, true) << ", LF: " << obj.hasPathName(myTrigNames[i].Data(), true, false) << ", none: " << obj.hasPathName(myTrigNames[i].Data(), false, false) <<  " Object: pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << endl;
+          }
+        
       }
 
 
