@@ -436,6 +436,24 @@ int main (int argc, char *argv[])
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
       //load all the objects we will need to access
+      edm::TriggerResults triggerBits;
+      fwlite::Handle<edm::TriggerResults> triggerBitsHandle;
+      triggerBitsHandle.getByLabel(ev, "TriggerResults","","HLT"); // ?
+      if(triggerBitsHandle.isValid()) triggerBits = *triggerBitsHandle;
+      const edm::TriggerNames& names = ev.triggerNames(triggerBits);
+
+      pat::TriggerObjectStandAloneCollection triggerObjects;
+      fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
+      triggerObjectsHandle.getByLabel(ev, "selectedPatTrigger" );
+      if(triggerObjectsHandle.isValid()) triggerObjects = *triggerObjectsHandle;
+
+      for(pat::TriggerObjectStandAlone obj : triggerObjects){
+        obj.unpackPathNames(names);
+        cout << "Trigger object: pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << endl;
+
+      }
+
+
       reco::VertexCollection vtx;
       fwlite::Handle < reco::VertexCollection > vtxHandle;
       vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
@@ -822,12 +840,12 @@ int main (int argc, char *argv[])
       
       // Event classification. Single lepton triggers are first in order to ensure that the lower threshold dilepton triggers do not steal events from the single lepton category. emu trigger is last in order to ensure that it does not break the balance between ee and mumu
       
-      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
-      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
-      else if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
-      else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
-      else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
-      else                                                                 chTags.push_back("unclassified");
+///       if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
+///       else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
+///       else if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
+///       else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
+///       else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
+///       else                                                                 chTags.push_back("unclassified");
       
       // keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
       std::vector < TString > tags (1, "all");
