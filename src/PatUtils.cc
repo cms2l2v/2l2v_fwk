@@ -80,8 +80,114 @@ namespace patUtils
             }
             return false;
    }  
+  
+  bool passId(pat::Photon& photon, double rho, int IdLevel){
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2
+    // CSA14 selection, conditions: 25ns, better detector alignment. 
+    // Used Savvas Kyriacou's slides, mailed from Ilya. 
+    
+    bool elevto = photon.hasPixelSeed();
+    
+    // sigma ieta ieta
+    // full5x5 is not ready in 720 yet 
+    // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
+    // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
+    
+    // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
+    float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
 
+    // H/E 
+    float hoe = photon.hadTowOverEm();
 
+    // isolation
+    double pt=photon.pt();
+    double eta=photon.superCluster()->eta();
+
+    float chIso = photon.chargedHadronIso(); 
+    float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
+
+    float nhIso = photon.neutralHadronIso();
+    float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+
+    float gIso = photon.photonIso();
+    float gArea = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");
+
+    bool barrel = (fabs(eta) <= 1.479);
+    bool endcap = (!barrel && fabs(eta) < 2.5);
+ 
+    switch(IdLevel){
+    case llvvPhotonId::Loose :
+
+      if ( barrel
+	   && !elevto
+	   && hoe < 0.032
+	   && sigmaIetaIeta < 0.0100
+	   && TMath::Max(chIso-chArea*rho,0.0) < 2.94 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 3.16 + 0.0023*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 4.43 + 0.0004*pt )
+	return true; 
+      if ( endcap
+	   && !elevto
+	   && hoe < 0.023
+	   && sigmaIetaIeta < 0.0270
+	   && TMath::Max(chIso-chArea*rho,0.0) < 3.07 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 17.16 + 0.0116*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0037*pt )
+	return true; 
+            
+      break;
+      
+    case llvvPhotonId::Medium :
+
+      if ( barrel
+	   && !elevto
+	   && hoe < 0.020
+	   && sigmaIetaIeta < 0.0099
+	   && TMath::Max(chIso-chArea*rho,0.0) < 2.62 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.69 + 0.0023*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.35 + 0.0004*pt )
+	return true; 
+      if ( endcap
+	   && !elevto
+	   && hoe < 0.011
+	   && sigmaIetaIeta < 0.0269
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.40 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 4.92 + 0.0116*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0037*pt )
+	return true; 
+            
+      break;
+    case llvvPhotonId::Tight :
+
+      if ( barrel
+	   && !elevto
+	   && hoe < 0.012
+	   && sigmaIetaIeta < 0.0098
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.91 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.55 + 0.0023*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.29 + 0.0004*pt )
+	return true; 
+      if ( endcap
+	   && !elevto
+	   && hoe < 0.011
+	   && sigmaIetaIeta < 0.0264
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.26 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.71 + 0.0116*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.91 + 0.0037*pt )
+	return true; 
+            
+      break;
+      
+    default:
+      printf("FIXME PhotonId llvvPhotonId::%i is unkown\n", IdLevel);
+      return false;
+      break;
+      
+    }    
+    
+    return false; 
+  }
+  
    bool passIso(pat::Electron& el, int IsoLevel){
           //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
           float  chIso   = el.pfIsolationVariables().sumChargedHadronPt;
@@ -95,23 +201,23 @@ namespace patUtils
 
           switch(IsoLevel){
                case llvvElecIso::Veto :
-                  if(barrel && relIso>0.3313) return true;
-                  if(endcap && relIso>0.3816) return true;
+                  if(barrel && relIso<0.3313) return true;
+                  if(endcap && relIso<0.3816) return true;
                   break;
 
                case llvvElecIso::Loose :
-                  if(barrel && relIso>0.2400) return true;
-                  if(endcap && relIso>0.3529) return true;
+                  if(barrel && relIso<0.2400) return true;
+                  if(endcap && relIso<0.3529) return true;
                   break;
 
                case llvvElecIso::Medium :
-                  if(barrel && relIso>0.2179) return true;
-                  if(endcap && relIso>0.2540) return true;
+                  if(barrel && relIso<0.2179) return true;
+                  if(endcap && relIso<0.2540) return true;
                   break;
 
                case llvvElecIso::Tight :
-                  if(barrel && relIso>0.1649) return true;
-                  if(endcap && relIso>0.2075) return true;
+                  if(barrel && relIso<0.1649) return true;
+                  if(endcap && relIso<0.2075) return true;
                   break;
 
                default:
@@ -132,11 +238,11 @@ namespace patUtils
 
           switch(IsoLevel){
                case llvvMuonIso::Loose : 
-                  if(relIso>0.20) return true;
+                  if(relIso<0.20) return true;
                   break;
 
                case llvvMuonIso::Tight :
-                  if(relIso>0.12) return true;
+                  if(relIso<0.12) return true;
                   break;
 
                default:
@@ -146,4 +252,75 @@ namespace patUtils
           }
           return false;          
    }
+
+  bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold,
+			 float &triggerPrescale ){
+    edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+    if( !tr.isValid() ) return false;
+
+    bool hasPhotonTrigger(false);
+    // float triggerPrescale(1.0); 
+    // float triggerThreshold(0);
+    triggerPrescale = 1.0; 
+    triggerThreshold = 0.0;
+
+    std::string successfulPath="";
+    if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=300;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon250_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=250;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=160;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=150;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=135;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=120;
+    }
+    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=92;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=77;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=50;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=36;
+    }
+    else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_*")){
+      hasPhotonTrigger=true;
+      triggerThreshold=22;
+    }
+      
+    if(successfulPath!=""){ //get the prescale associated to it
+      fwlite::Handle< pat::PackedTriggerPrescales > prescalesHandle;
+      prescalesHandle.getByLabel(ev, "patTrigger");
+      pat::PackedTriggerPrescales prescales = *prescalesHandle;
+      const edm::TriggerResults& trResults =  prescales.triggerResults();
+      prescales.setTriggerNames( ev.triggerNames(trResults) );
+      triggerPrescale = prescales.getPrescaleForName(successfulPath);
+    }
+
+    return hasPhotonTrigger; 
+  }
+
+
 }
