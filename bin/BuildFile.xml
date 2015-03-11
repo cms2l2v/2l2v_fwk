@@ -18,7 +18,7 @@
  <bin name="runPlotterFWLite"             file="runPlotterFWLite.cc"></bin>
 <!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
   <bin name="runChHiggsAnalysis"          file="chhiggs/runAnalysis.cc"></bin>
-  <bin name="runLeptonEffStudy"              file="chhiggs/runLeptonEffStudy.cc"></bin>
+  <bin name="runLeptonEffStudy"           file="chhiggs/runLeptonEffStudy.cc"></bin>
   
   <bin name="runPhoJetAnalysis"           file="phojet/runPhoJetAnalysis.cc"></bin>
   <bin name="runPhoJetPlotter"            file="phojet/runPhoJetPlotter.cc"></bin>
