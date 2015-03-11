@@ -1,12 +1,46 @@
 {
   "proc":[
     {
-      "tag":"Inclusive top",
+      "tag":"t#bar{t} dileptons",
       "isdata":false,
+      "mctruthmode":1,
       "color":614,
       "lcolor":1,
       "data":[
-        { "dtag":"MC13TeV_TTJets"                           , "split":40, "xsec":809.1       , "br":[ 0.10608049 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_TTJets"                           , "split":200, "xsec":809.1       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} ltau",
+      "label":"t#bar{t}#rightarrow#ell#tau",
+      "isdata":false,
+      "mctruthmode":2,
+      "color":614,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":200, "xsec":809.1       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} ljets",
+      "label":"t#bar{t}#rightarrow#ell+jets",
+      "isdata":false,
+      "mctruthmode":3,
+      "color":614,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":200, "xsec":809.1       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} had",
+      "label":"t#bar{t}#rightarrow hadrons",
+      "isdata":false,
+      "mctruthmode":4,
+      "color":614,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":200, "xsec":809.1       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
       ]
     },
     {
@@ -15,7 +49,7 @@
       "color":831,
       "lcolor":1,
       "data":[
-             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":40, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_13TeV-madgraph-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_13TeV-madgraph-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
       ]
     },
     {   
@@ -24,10 +58,7 @@
       "color":809,
       "lcolor":1,
       "data":[
-        { "dtag":"MC8TeV_QCDPt30to80"                      , "split":40, "xsec":74330000    , "br":[ 0.0621 ]              , "dset":"/QCD_Pt-30to80_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM"        },
-        { "dtag":"MC8TeV_QCDPt80to170"                     , "split":40, "xsec":1191000     , "br":[ 0.1539 ] , "comment":"Missing other QCD samples." , "dset":"/QCD_Pt-80to170_EMEnriched_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_castor_PHYS14_25_V1-v1/MINIAODSIM"        },
-        { "dtag":"MC13TeV_WJets"                            , "split":40, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
-        { "dtag":"MC13TeV_QCDPt15to3000"                    , "split":60, "xsec":9231786    , "br":[ 1.0 ], "comment":"to be removed" , "dset":"/QCD_Pt-15to3000_Tune4C_Flat_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_PHYS14_25_V1-v1/MINIAODSIM"        }
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
       ]
     },
     {
@@ -37,7 +68,21 @@
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_ZZ4l"                             , "split":40, "xsec":15.4       , "br":[ 0.0403896 ]           , "dset":"/ZZTo4L_Tune4C_13TeV-powheg-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_ZZ4l"                             , "split":41, "xsec":15.4       , "br":[ 0.0403896 ]           , "dset":"/ZZTo4L_Tune4C_13TeV-powheg-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Single top",
+      "isdata":false,
+      "color":824,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC8TeV_SingleTbar_tW"                    , "split":1, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleT_tW"                       , "split":1, "xsec":35.6         , "br":[ 1.0 ]                 , "dset":"/T_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleTbar_t"                     , "split":1, "xsec":30.7        , "br":[ 1.0 ]                 , "dset":"/TBarToLeptons_t-channel_Tune4C_CSA14_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleT_t"                        , "split":1, "xsec":103.4        , "br":[ 1.0 ]                 , "dset":"/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleTbar_s"                     , "split":1, "xsec":4.16        , "br":[ 1.0 ]                 , "dset":"/TBarToLeptons_s-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleT_s"                        , "split":1, "xsec":7.20        , "br":[ 1.0 ]                 , "dset":"/TToLeptons_s-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        }
       ]
     }
   ]
