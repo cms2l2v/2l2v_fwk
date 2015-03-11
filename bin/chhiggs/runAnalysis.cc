@@ -341,8 +341,14 @@ int main (int argc, char *argv[])
 
   //MC normalization (to 1/pb)
   double xsecWeight = xsec / totalEntries;
-  if (!isMC) xsecWeight = 1.0;
-
+  if(!isMC) xsecWeight = 1.0;
+  if(debug){
+    cout << "DEBUG: xsec: " << xsec << endl;
+    cout << "DEBUG: xsecWeight: " << xsecWeight << endl;
+    cout << "DEBUG: totalEntries: " << totalEntries << endl;
+  }
+  
+  
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
@@ -531,7 +537,7 @@ int main (int argc, char *argv[])
       if (metsHandle.isValid() ) mets = *metsHandle;
       LorentzVector met = mets[0].p4 ();
 
-      if(debug){
+      if(debug ){
         // MET try:
         double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
         cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
