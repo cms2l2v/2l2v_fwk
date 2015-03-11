@@ -471,7 +471,7 @@ int main (int argc, char *argv[])
         obj.unpackPathNames(trigNames);
         for(size_t i=0; i<myTrigNames.size(); ++i)
           if(utils::passTriggerPatterns(tr, myTrigNames[i].Data())){
-            cout << "Trigger "<< myTrigNames[i] << " both: "<< obj.hasPathName(myTrigNames[i].Data(), true, true) << ", L3: " << obj.hasPathName(myTrigNames[i].Data(), false, true) << ", LF: " << obj.hasPathName(myTrigNames[i].Data(), true, false) << ", none: " << obj.hasPathName(myTrigNames[i].Data(), false, false) <<  " Object: pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << endl;
+            //cout << "Trigger "<< myTrigNames[i] << " both: "<< obj.hasPathName(myTrigNames[i].Data(), true, true) << ", L3: " << obj.hasPathName(myTrigNames[i].Data(), false, true) << ", LF: " << obj.hasPathName(myTrigNames[i].Data(), true, false) << ", none: " << obj.hasPathName(myTrigNames[i].Data(), false, false) <<  " Object: pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << endl;
           }
         
       }
