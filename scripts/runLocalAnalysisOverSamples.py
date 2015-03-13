@@ -90,17 +90,19 @@ for proc in procList :
 
             FileList = [];
             miniAODSamples = getByLabel(d,'miniAOD','')
-            if(("/MINIAOD" in getByLabel(d,'dset','')) or len(getByLabel(d,'miniAOD',''))>0):
-               listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(d,'dset','') + '" --limit=0')[1]
+            isMINIAODDataset = ("/MINIAOD" in getByLabel(d,'dset','')) or  ("amagitte" in getByLabel(d,'dset',''))
+            if(isMINIAODDataset or len(getByLabel(d,'miniAOD',''))>0):
+               instance = ""
+               if(len(getByLabel(d,'dbsURL',''))>0): instance =  "instance="+ getByLabel(d,'dbsURL','')
+               listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(d,'dset','') + ' ' + instance + '" --limit=0')[1]
 
                list = []
                if(localTier in listSites and "CERN" in localTier):
-                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + ' ' + instance + '" --limit=0')[1].split()
                   for i in range(0,len(list)): list[i] = "root://eoscms//eos/cms"+list[i]
                elif(len(getByLabel(d,'miniAOD',''))>0):
                   list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);                  
-               elif("/MINIAODSIM" in getByLabel(d,'dset','')):
-
+               elif(isMINIAODDataset):
                   if(not kInitDone):
                      print "You are going to run on a sample over grid using the AAA protocol, it is therefore needed to initialize your grid certificate"
                      os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
@@ -109,12 +111,15 @@ for proc in procList :
 
 
                   print("Use das_client.py to list files from : " + getByLabel(d,'dset','') )
-                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + '" --limit=0')[1].split()
+                  print ('das_client.py --query="file dataset='+getByLabel(d,'dset','') + ' ' + instance + '" --limit=0')
+                  list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(d,'dset','') + ' ' + instance + '" --limit=0')[1].split()
                   for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i]
                else:
                   list = storeTools.fillFromStore(getByLabel(d,'miniAOD',''),0,-1,True);
 
                ngroup = len(list)/split
+               if (ngroup * split != len(list) ):
+                   ngroup = ngroup+1
                groupList = ''
                i=0;
                while(i <len(list) ):
@@ -122,7 +127,9 @@ for proc in procList :
                   if(i>0 and i%ngroup==0):
                      FileList.append(groupList)
                      groupList=''
-                  i = i+1;                                      
+                  i = i+1;               
+               if groupList != '':
+                   FileList.append(groupList)
             else:
  	       for segment in range(0,split) :
                   if(split==1): 
@@ -132,7 +139,6 @@ for proc in procList :
 
                   if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
                   FileList.append('"'+eventsFile+'"')
-
             for s in range(0,len(FileList)):
                 #create the cfg file
                 eventsFile = FileList[s]
