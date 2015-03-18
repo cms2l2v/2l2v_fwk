@@ -185,15 +185,18 @@ int main (int argc, char *argv[])
   //generator level control : add an underflow entry to make sure the histo is kept
   //((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
 
+  // ensure proper normalization
+  mon.addHistogram(new TH1F("initNorm", ";;Nev", 1,0.,1.));
+
   //event selection
-  TH1F *h = (TH1F *) mon.addHistogram (new TH1F ("eventflow", ";;Events", 6, 0, 6));
+  TH1F* h = (TH1F*) mon.addHistogram (new TH1F ("eventflow", ";;Events", 6, 0, 6));
   h->GetXaxis ()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis ()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis ()->SetBinLabel (3, "#geq 2 jets");
   h->GetXaxis ()->SetBinLabel (4, "E_{T}^{miss}");
   h->GetXaxis ()->SetBinLabel (5, "op. sign");
   h->GetXaxis ()->SetBinLabel (6, "#geq 2 b-tags");
-  h = (TH1F *) mon.addHistogram (new TH1F ("eventflowslep", ";;Events", 6, 0, 6));
+  h = (TH1F*) mon.addHistogram (new TH1F ("eventflowslep", ";;Events", 6, 0, 6));
   h->GetXaxis ()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis ()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis ()->SetBinLabel (3, "E_{T}^{miss}");
@@ -412,6 +415,9 @@ int main (int argc, char *argv[])
           fflush (stdout);
         }
 
+      std::vector < TString > tags (1, "all");
+      mon.fillHisto("initNorm", tags, 0., 1.);
+
       //##############################################   EVENT LOOP STARTS   ##############################################
       ev.to (iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
@@ -581,7 +587,7 @@ int main (int argc, char *argv[])
             }
           
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight = xsecWeight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
+          weight = 1.;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
@@ -644,7 +650,6 @@ int main (int argc, char *argv[])
           //kinematics
           float leta = fabs (lid == 11 ? leptons[ilep].el.superCluster ()->eta() : leptons[ilep].eta());
           
-
           // Dileptons main kin
           if (leptons[ilep].pt () < 20.)                      passKin = false;
           if (leta > (lid == 11 ? 2.5 : 2.4))                passKin = false;
@@ -657,9 +662,7 @@ int main (int argc, char *argv[])
           
           // Single lepton veto kin
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoSingleLepKin = false;
-          
 
-          
           //Cut based identification 
           passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
           passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
@@ -698,8 +701,8 @@ int main (int argc, char *argv[])
           //      if(tau.emFraction() >=2.) continue;
           
           if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
-          //if (!tau.tauID ("againstMuonTight3"))                           continue;
-          //if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
+          if (!tau.tauID ("againstMuonTight3"))                           continue;
+          if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
          
           selTaus.push_back(tau);
           ntaus++;
@@ -830,9 +833,9 @@ int main (int argc, char *argv[])
       else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
       else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
       else                                                                 chTags.push_back("unclassified");
-      
+
       // keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
-      std::vector < TString > tags (1, "all");
+      //std::vector < TString > tags (1, "all");
       for (size_t ich = 0; ich < chTags.size(); ich++)
         {
           tags.push_back (chTags[ich]);
