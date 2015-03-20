@@ -607,7 +607,7 @@ int main(int argc, char* argv[])
        edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
        if(!tr.isValid())return false;
 
-      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*","HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
       bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
       bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
       bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
@@ -764,7 +764,6 @@ int main(int argc, char* argv[])
           }
 
           puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
-          weight            = xsecWeight*puWeight;
           TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
       }
@@ -818,7 +817,7 @@ int main(int argc, char* argv[])
 	}
   
 	//final event weight
-	weight = puWeight * shapeWeight;
+	weight = xsecWeight * puWeight * shapeWeight;
       }
 
       //
