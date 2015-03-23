@@ -993,7 +993,7 @@ int main(int argc, char* argv[])
 	    float dphijmet=fabs(deltaPhi(met.phi(), jets[ijet].phi()));
 	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
 	    if(fabs(jets[ijet].eta())<2.5){
-	      bool hasCSVtag(jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
+	      bool hasCSVtag(jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags")>0.423);
 	      //update according to the SF measured by BTV
 	      if(isMC){
 		  int flavId=jets[ijet].partonFlavour();
@@ -1001,7 +1001,9 @@ int main(int argc, char* argv[])
 		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
 		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
               }
-	      nbtags   += hasCSVtag;
+              
+              if( hasCSVtag ) nbtags++;
+	      //nbtags   += hasCSVtag; 
 	    }
 	  }
 	}
@@ -1074,13 +1076,16 @@ int main(int argc, char* argv[])
       mon.fillHisto("eventflow",  tags,0,weight);
       if(chTags.size()==0) continue;
 
-      //
-      // BASELINE SELECTION
-      //
+      //////////////////////////
+      //                      //
+      //  BASELINE SELECTION  //
+      //                      //
+      //////////////////////////
+
       bool passMass(fabs(boson.mass()-91)<15);
       bool passQt(boson.pt()>55);
       bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
-      bool passBtags(nbtags==0);
+      bool passBtags(nbtags==0); 
       bool passMinDphijmet( njets==0 || mindphijmet>0.5);
       if(runPhotonSelection)
 	{
@@ -1131,7 +1136,7 @@ int main(int argc, char* argv[])
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
 
-	      float csv(selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+	      float csv(selJets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"));
 	      mon.fillHisto( "csv",tags,csv,weight);
 	      if(!isMC) continue;
 	      int flavId=selJets[ijet].partonFlavour();
@@ -1357,7 +1362,7 @@ int main(int argc, char* argv[])
 	  if(!isMC) continue;
 	  if(!varyBtagUp && !varyBtagDown) continue;
 	  int flavId=jets[ijet].partonFlavour();
-	  bool hasCSVtag (jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
+	  bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags")>0.423);
  	  if(varyBtagUp) {
 	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
 	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
