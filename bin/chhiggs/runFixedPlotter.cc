@@ -642,7 +642,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          }
          if(!tmphist)continue;
          cout << "Histo " << tmphist->GetName() << " has integral " << tmphist->Integral() << ", entries " << tmphist->GetEntries() << " and will be weighted " << Weight << ", because lumi is " << iLumi << ", xsec is " << Samples[j]["xsec"].toDouble() << " and init number of events is " << sampleInfo.initialNumberOfEvents << ", yielding " << iLumi*Samples[j]["xsec"].toDouble()/sampleInfo.initialNumberOfEvents << endl;
-         Weight= 184*Weight;
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
