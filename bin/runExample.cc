@@ -160,9 +160,9 @@ int main(int argc, char* argv[])
   double cprime = runProcess.getParameter<double>("cprime");
   double brnew  = runProcess.getParameter<double>("brnew");
   std::vector<std::pair<double, double> > NRparams;
-  NRparams.push_back(std::make_pair<double,double>(1.0, 0));
+  NRparams.push_back(std::make_pair<double,double>(-1.0, -1.0));
 //  NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
-//  if(mctruthmode==125){
+  if(mctruthmode==125){
 //    NRparams.push_back(std::make_pair<double,double>(5, 0));
 //    NRparams.push_back(std::make_pair<double,double>(8, 0));
 //    NRparams.push_back(std::make_pair<double,double>(10,0));
@@ -179,12 +179,12 @@ int main(int argc, char* argv[])
 //    NRparams.push_back(std::make_pair<double,double>(22,0));
 //    NRparams.push_back(std::make_pair<double,double>(25,0));
 //    NRparams.push_back(std::make_pair<double,double>(30,0));
-//  }else if(suffix==""){ //consider the other points only when no suffix is being used    
+  }else if(suffix=="" && (isMC_GG || isMC_VBF)){ //consider the other points only when no suffix is being used    
 //    for(double cp=0.1;cp<=1.0;cp+=0.1){
 //       for(double brn=0.0; brn<=0.5;brn+=0.1){
 //          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
 //    }}
-//  }
+  }
 
 
   std::vector<TGraph *> NRweightsGr;

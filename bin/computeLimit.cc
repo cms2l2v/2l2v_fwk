@@ -712,7 +712,7 @@ void initializeTGraph(){
            sorted_procs.push_back("total");
            procs["total"] = ProcessInfo_t(); //reset
            ProcessInfo_t& procInfo_Bckgs = procs["total"];
-           procInfo_Bckgs.shortName = "data";
+           procInfo_Bckgs.shortName = "total";
            procInfo_Bckgs.isData = false;
            procInfo_Bckgs.isSign = false;
            procInfo_Bckgs.isBckg = true;
@@ -729,8 +729,24 @@ void initializeTGraph(){
         //
         void AllInfo_t::blind(){
            if(procs.find("total")==procs.end())computeTotalBackground();
-           if(procs.find("data")==procs.end())sorted_procs.push_back("data");           
-           procs["data"] =  procs["total"];
+
+
+           if(true){ //always replace data
+           //if(procs.find("data")==procs.end()){ //true only if there is no "data" samples in the json file
+              sorted_procs.push_back("data");           
+              procs["data"] = ProcessInfo_t(); //reset
+              ProcessInfo_t& procInfo_Data = procs["data"];
+              procInfo_Data.shortName = "data";
+              procInfo_Data.isData = true;
+              procInfo_Data.isSign = false;
+              procInfo_Data.isBckg = false;
+              procInfo_Data.xsec   = 0.0;
+              procInfo_Data.br     = 1.0;
+              for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
+                 if(it->first!="total")continue;
+                 addProc(procInfo_Data, it->second);
+              }
+           }
         }
 
         //
@@ -932,6 +948,7 @@ void initializeTGraph(){
                     map_signals [ch->first].push_back(h);
                    
                  }else if(it->first=="data"){
+                    h->SetMarkerColor(1);
                     map_data[ch->first] = h;
                  }
 
@@ -997,8 +1014,9 @@ void initializeTGraph(){
 //           TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
            TPaveText* T = new TPaveText(0.1,0.7,0.9,1.0, "NDC");
            T->SetFillColor(0);  T->SetFillStyle(0);  T->SetLineColor(0); T->SetBorderSize(0);  T->SetTextAlign(22);
-           if(systpostfix.Contains('8')){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
-           }else{                         T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
+                 if(systpostfix.Contains("13")){ T->AddText("CMS preliminary, #sqrt{s}=13.0 TeV");
+           }else if(systpostfix.Contains("8" )){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
+           }else{                                T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
            }T->Draw();
 
            //save canvas
@@ -1388,7 +1406,7 @@ void initializeTGraph(){
                      if(hshape2D){
                         hshape2D->Reset();
                      }else{  //if still no histo, skip this proc...
-                        //printf("Histo %s does not exist for syst:%s\n", histoName.Data(), varName.Data());
+                        printf("For Proc %20s: Histo %s does not exist for syst:%s\n", proc.Data(), histoName.Data(), varName.Data());
                         continue;
                      }
                   }
@@ -1897,7 +1915,7 @@ void initializeTGraph(){
                      unc->second->Scale(sF);
                  }
                  TH1* tmp;
-                 if(!histo){printf("Histo does not exit... skip it \n"); fflush(stdout); continue;}
+                 if(!histo){printf("Histo does not exist... skip it \n"); fflush(stdout); continue;}
                  if(sF<=0){printf("sF has weird values : %f, set it back to one\n", sF); sF=1.0; fflush(stdout);}
                  tmp = (TH1*)histo->Clone(TString("interf_ggH_") + histo->GetName() + "Down"); tmp->Scale(sFDn/sF); shapeInfo.uncShape[string("_CMS_hzz2l2v_interf_") + it->second.shortName+"Down"] = tmp;
                  tmp = (TH1*)histo->Clone(TString("interf_ggH_") + histo->GetName() + "Up"  ); tmp->Scale(sFUp/sF); shapeInfo.uncShape[string("_CMS_hzz2l2v_interf_") + it->second.shortName+"Up"  ] = tmp;
