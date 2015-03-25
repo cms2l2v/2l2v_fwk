@@ -272,15 +272,16 @@ elif(phase == 3 ):
             print 'mH='+str(m)+'\tOption \tR \tmin MET\tMT range' 
             ictr=1
             for c in cut_lines:
-               print '\t #'+ str(ictr) + '\t' + c.split()[2] + '\t' + c.split()[4] + '\t(' + c.split()[5] + '-' + c.split()[6]+ ')'
+               print c
+               print '\t #'+ str(ictr) + '\t' + c.split()[1] + '\t' + c.split()[3] + '\t(' + c.split()[4] + '-' + c.split()[5]+ ')'
                ictr+=1
             print "Which option you want to keep?"
             opt = int(raw_input(">"))-1
 
             #save cut chosen
-            metCut=float(cut_lines[opt].split()[4])
-            mtMinCut=float(cut_lines[opt].split()[5])
-            mtMaxCut=float(cut_lines[opt].split()[6])
+            metCut=float(cut_lines[opt].split()[3])
+            mtMinCut=float(cut_lines[opt].split()[4])
+            mtMaxCut=float(cut_lines[opt].split()[5])
             Gmet .SetPoint(mi, m, metCut);
             Gtmin.SetPoint(mi, m, mtMinCut);
             Gtmax.SetPoint(mi, m, mtMaxCut);
@@ -323,7 +324,7 @@ elif(phase == 3 ):
 
          #run limits for the cuts chosen (for intermediate masses use spline interpolation)
          for m in SUBMASS:
-              index = findCutIndex(Gmet.Eval(m,0,""), cuts1, Gtmin.Eval(m,0,""), cuts2,  Gtmax.Eval(m,0,""), cuts3);
+              index = findCutIndex(Gmet.Eval(m,0,""), cuts1, Gtmin.Eval(m,0,""), cuts1,  Gtmax.Eval(m,0,""), cuts1);
       #        print("mH="+str(m).rjust(3)+ " met>"+str(cuts1.GetBinContent(index)).rjust(5) + " " + str(cuts2.GetBinContent(index)).rjust(5) + "<mt<"+str(cuts3.GetBinContent(index)).rjust(5) )
 
          while True:
@@ -351,10 +352,10 @@ elif(phase == 3 ):
       list = open(OUT+'list.txt',"w")
       listcuts = open(OUT+'cuts.txt',"w")
       for m in SUBMASS:
-           index = findCutIndex(Gmet.Eval(m,0,""), cuts1, Gtmin.Eval(m,0,""), cuts2,  Gtmax.Eval(m,0,""), cuts3);
+           index = findCutIndex(Gmet.Eval(m,0,""), cuts1, Gtmin.Eval(m,0,""), cuts1,  Gtmax.Eval(m,0,""), cuts1);
            SCRIPT = open(OUT+'/script_mass_'+str(m)+'.sh',"w")
            SCRIPT.writelines('cd ' + CMSSW_BASE + ';\n')
-           SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
+           SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc6_amd64_gcc491")+";\n")
            SCRIPT.writelines("eval `scram r -sh`;\n")
            SCRIPT.writelines('cd ' + CWD + ';\n')
            shapeBasedOpt=''
@@ -363,8 +364,8 @@ elif(phase == 3 ):
            SideMasses = findSideMassPoint(m)
            if(not (SideMasses[0]==SideMasses[1])):
               #print "Side Mass for mass " + str(m) + " are " + str(SideMasses[0]) + " and " + str(SideMasses[1])
-              Lindex = findCutIndex(Gmet.Eval(SideMasses[0],0,""), cuts1, Gtmin.Eval(SideMasses[0],0,""), cuts2,  Gtmax.Eval(SideMasses[0],0,""), cuts3);
-              Rindex = findCutIndex(Gmet.Eval(SideMasses[1],0,""), cuts1, Gtmin.Eval(SideMasses[1],0,""), cuts2,  Gtmax.Eval(SideMasses[1],0,""), cuts3);
+              Lindex = findCutIndex(Gmet.Eval(SideMasses[0],0,""), cuts1, Gtmin.Eval(SideMasses[0],0,""), cuts1,  Gtmax.Eval(SideMasses[0],0,""), cuts1);
+              Rindex = findCutIndex(Gmet.Eval(SideMasses[1],0,""), cuts1, Gtmin.Eval(SideMasses[1],0,""), cuts1,  Gtmax.Eval(SideMasses[1],0,""), cuts1);
               #print "cutIndex for sideBand are " + str(Lindex) + " and " + str(Rindex) 
               SideMassesArgs += "--mL " + str(SideMasses[0]) + " --mR " + str(SideMasses[1]) + " --indexL " + str(Lindex) +  " --indexR " + str(Rindex) + " "
 
@@ -404,7 +405,7 @@ elif(phase == 4 ):
       print '# FINAL PLOT for ' + DataCardsDir + '#\n'
       os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*.root > /dev/null")
       if(LandSArg.find('skip')<0):
-         os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 8 , 19.7 )'")
+         os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 13 , 19.7 )'")
       else:
          os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
          os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/StengthBlinded_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, true, 8 , 19.7 )'")
