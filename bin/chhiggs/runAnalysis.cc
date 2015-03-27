@@ -475,7 +475,7 @@ int main (int argc, char *argv[])
         {
           //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
-           
+            // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
             if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
 
             //            cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << endl;
