@@ -1,5 +1,17 @@
 ## Installation
 
+# Phys14
+cmsrel CMSSW_7_2_2 #released used for PHYS14 miniAOD samples  #OUTDATED
+cd CMSSW_7_2_2/src/
+cmsenv
+git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
+git clone git@github.com:quertenmont/2l2v_fwk.git UserCode/llvv_fwk
+cd UserCode/llvv_fwk
+git checkout remotes/origin/72Xfwk #checkout the branch we are interested in
+git checkout -b 72Xfwk_modified #copy the branch to a new one to host future modifications (ease pullrequest and code merging)
+cd ../..
+
+
 export SCRAM_ARCH=slc5_amd64_gcc462
 # For CVS access
 # export CVSROOT :ext:YOURUSERNAME@lxplus.cern.ch:/afs/cern.ch/user/c/cvscmssw/public/CMSSW
