@@ -53,6 +53,32 @@ namespace patUtils
             }
             return false;
    }
+  
+  bool passStdId(pat::Muon& mu,  reco::Vertex& vtx, int IdLevel){
+    //for muon Id look here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#LooseMuon
+    // Twiki says that the muon ID is already implemented out of the box in the following way, and it actually works better imho.
+    switch(IdLevel){
+    case llvvMuonId::Loose :
+      if(mu.isLooseMuon()) return true;
+      break;
+      
+    case llvvMuonId::Soft :
+      if(mu.isSoftMuon(vtx)) return true;
+      break;
+
+    case llvvMuonId::Tight :
+      if(mu.isTightMuon(vtx)) return true;
+      break;
+      
+    default:
+      printf("FIXME MuonId llvvMuonId::%i is unkown\n", IdLevel);
+      return false;
+      break;
+    }
+    return false;
+  }  
+
+
 
    bool passId(pat::Muon& mu,  reco::Vertex& vtx, int IdLevel){
             //for muon Id look here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#LooseMuon

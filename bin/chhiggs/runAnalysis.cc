@@ -674,8 +674,8 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoSingleLepKin = false;
 
           //Cut based identification 
-          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
+          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
           passVetoSingleLepId = passId;
 
           //isolation

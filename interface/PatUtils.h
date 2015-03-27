@@ -55,6 +55,7 @@ namespace patUtils
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
 
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel);
+   bool passStdId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
    bool passIso(pat::Electron& el,  int IsoLevel);
