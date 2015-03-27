@@ -1,7 +1,8 @@
 ## Installation
 
-# Phys14
-cmsrel CMSSW_7_2_2 #released used for PHYS14 miniAOD samples  #OUTDATED
+
+# Phys14 from https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsZZ2l2nu2015
+cmsrel CMSSW_7_2_2 #released used for PHYS14 miniAOD samples
 cd CMSSW_7_2_2/src/
 cmsenv
 git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
@@ -9,7 +10,9 @@ git clone git@github.com:quertenmont/2l2v_fwk.git UserCode/llvv_fwk
 cd UserCode/llvv_fwk
 git checkout remotes/origin/72Xfwk #checkout the branch we are interested in
 git checkout -b 72Xfwk_modified #copy the branch to a new one to host future modifications (ease pullrequest and code merging)
+# edit bin/BuildFile.xml to remove bin/chhiggs/runAnalysis.cc # it uses features available only since CMSSW_7_4_0_pre9
 cd ../..
+scram b -j20
 
 
 export SCRAM_ARCH=slc5_amd64_gcc462

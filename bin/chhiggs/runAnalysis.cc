@@ -487,6 +487,8 @@ int main (int argc, char *argv[])
             }
             if(gen[igen].status()==22) continue; // Now we want only status 1 particles ;)
 
+            if(gen[igen].isPromptFinalState() ) continue;
+
             if(absid==11 || absid==13) ngenLeptonsStatus3++;
             if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
             if(absid<=5              ) ngenQuarksStatus3++;
