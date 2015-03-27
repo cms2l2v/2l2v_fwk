@@ -475,19 +475,20 @@ int main (int argc, char *argv[])
         {
           //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
-            if(gen[igen].status()!=1 && abs(gen[igen].pdgId())!=6) continue;
+           
+            if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
+
             //            cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << endl;
             int absid=abs(gen[igen].pdgId());
-            if(absid==6 && gen[igen].status()==22){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
               hasTop=true;
               //if(isTTbarMC){
               //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
               //  else                        tbarPt=gen[igen].pt();
               //}
             }
-            if(gen[igen].status()==22) continue; // Now we want only status 1 particles ;)
 
-            if(gen[igen].isPromptFinalState() ) continue;
+            if(!gen[igen].isPromptFinalState() ) continue;
 
             if(absid==11 || absid==13) ngenLeptonsStatus3++;
             if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
