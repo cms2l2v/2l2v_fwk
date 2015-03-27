@@ -130,7 +130,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
           //just to make it faster, only consider the first 3 sample of a same kind
           if(isData){if(dataProcessed>=1){continue;}else{dataProcessed++;}}
           if(isSign){if(signProcessed>=2){continue;}else{signProcessed++;}}
-          if(isMC  ){if(bckgProcessed>0) {continue;}else{bckgProcessed++;}}
+          if(isMC  ){if(bckgProcessed>3) {continue;}else{bckgProcessed++;}}
 
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
           //to make it faster only consider the first samples 
