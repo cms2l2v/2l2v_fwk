@@ -1,0 +1,28 @@
+{
+  "proc":[
+    {
+      "tag":"t#bar{t} dileptons",
+      "isdata":false,
+      "mctruthmode":1,
+      "color":614,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":92, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} other",
+      "isdata":false,
+      "mctruthmode":2,
+      "color":822,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":92, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    }
+  ]
+}
+
+
+
+

@@ -205,7 +205,7 @@ void MergeSplittedSamples(JSONWrapper::Object& Root, std::string RootDir)
 	string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
 	toHadd += " " + FileName;
       }
-      TString outName(RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + ".root");
+      TString outName(RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + filtExt + ".root");
       //cout << "hadd -f -k "+ outName + toHadd << endl;
       gSystem->Exec("hadd -f -k "+ outName + toHadd);
     }
