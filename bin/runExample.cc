@@ -508,16 +508,17 @@ int main(int argc, char* argv[])
   //
   // STATISTICAL ANALYSIS
   //
+  //
+  
+
   std::vector<double> optim_Cuts1_met; 
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
-  TProfile* Hoptim_cuts1_met     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut1_met"    , ";cut index;met"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) ) ;
-  mon.addHistogram( new TH1F ("metcount"    , ";E_{T}^{miss} cut [GeV];Total events"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) );
-  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts1_met    ->Fill(index, optim_Cuts1_met[index]);  }
+  TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
+  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
+  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
-  for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
-    {
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
       Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-      
       for(unsigned int nri=0;nri<NRparams.size();nri++){ 
 	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
 	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     

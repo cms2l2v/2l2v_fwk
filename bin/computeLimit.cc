@@ -66,7 +66,6 @@ bool MCclosureTest = false;
 
 bool mergeWWandZZ = false;
 bool skipWW = true;
-bool fast = false;
 bool skipGGH = false;
 bool skipQQH = false;
 bool subDY = false;
@@ -364,7 +363,6 @@ void printHelp()
   printf("--skipQQH   --> use this flag to skip GGH signal)\n");
   printf("--blind     --> use this flag to replace observed data by total predicted background)\n");
   printf("--blindWithSignal --> use this flag to replace observed data by total predicted background+signal)\n");
-  printf("--fast      --> use this flag to only do assymptotic prediction (very fast but inaccurate))\n");
   printf("--postfix    --> use this to specify a postfix that will be added to the process names)\n");
   printf("--systpostfix    --> use this to specify a syst postfix that will be added to the process names)\n");
   printf("--MCRescale    --> use this to rescale the cross-section of all MC processes by a given factor)\n");
@@ -437,7 +435,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--bins")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins are : ");while (pch!=NULL){printf(" %s ",pch); AnalysisBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--MergeBins")!=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins will be merged : ");while (pch!=NULL){printf(" %s ",pch); mergeBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--channels") !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("channels are : ");while (pch!=NULL){printf(" %s ",pch); Channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
-    else if(arg.find("--fast")     !=string::npos) { fast=true; printf("fast = True\n");}
     else if(arg.find("--postfix")   !=string::npos && i+1<argc)  { postfix = argv[i+1]; systpostfix = argv[i+1]; i++;  printf("postfix '%s' will be used\n", postfix.Data());  }
     else if(arg.find("--systpostfix")   !=string::npos && i+1<argc)  { systpostfix = argv[i+1];  i++;  printf("systpostfix '%s' will be used\n", systpostfix.Data());  }
     else if(arg.find("--syst")     !=string::npos) { runSystematics=true; printf("syst = True\n");}
@@ -451,7 +448,10 @@ int main(int argc, char* argv[])
     else if(arg.find("--statBinByBin")    !=string::npos) { sscanf(argv[i+1],"%f",&statBinByBin); i++; printf("statBinByBin = %f\n", statBinByBin);}
     else if(arg.find("--dropBckgBelow")   !=string::npos) { sscanf(argv[i+1],"%lf",&dropBckgBelow); i++; printf("dropBckgBelow = %f\n", dropBckgBelow);}
   }
-  if(jsonFile.IsNull() || inFileUrl.IsNull() || histo.IsNull() || mass==-1) { printHelp(); return -1; }
+  if(jsonFile.IsNull()) { printf("No Json file provided\nrun with '--help' for more details\n"); return -1; }
+  if(inFileUrl.IsNull()){ printf("No Inputfile provided\nrun with '--help' for more details\n"); return -1; }
+  if(histo.IsNull())    { printf("No Histogram provided\nrun with '--help' for more details\n"); return -1; }
+  if(mass==-1)          { printf("No massPoint provided\nrun with '--help' for more details\n"); return -1; }
   if(indexcutV.size()<=0){printf("INDEX CUT SIZE IS NULL\n"); printHelp(); return -1; }
   if(AnalysisBins.size()==0)AnalysisBins.push_back("");
   if(Channels.size()==0){Channels.push_back("ee");Channels.push_back("mumu");}
@@ -792,13 +792,32 @@ void initializeTGraph(){
            }
         }
 
+
+
+
         //
         // Replace the Data process by TotalBackground
         //
         void AllInfo_t::blind(){
            if(procs.find("total")==procs.end())computeTotalBackground();
-           if(procs.find("data")==procs.end())sorted_procs.push_back("data");           
-           procs["data"] =  procs["total"];
+
+
+           if(true){ //always replace data
+           //if(procs.find("data")==procs.end()){ //true only if there is no "data" samples in the json file
+              sorted_procs.push_back("data");           
+              procs["data"] = ProcessInfo_t(); //reset
+              ProcessInfo_t& procInfo_Data = procs["data"];
+              procInfo_Data.shortName = "data";
+              procInfo_Data.isData = true;
+              procInfo_Data.isSign = false;
+              procInfo_Data.isBckg = false;
+              procInfo_Data.xsec   = 0.0;
+              procInfo_Data.br     = 1.0;
+              for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
+                 if(it->first!="total")continue;
+                 addProc(procInfo_Data, it->second);
+              }
+           }
         }
 
         //
