@@ -570,7 +570,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    //TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
    //   TLegend* legA  = new TLegend(0.51,0.93,0.67,0.75, "NDC"); 
    // TLegend* legB  = new TLegend(0.67,0.93,0.83,0.75, "NDC");
-   TLegend *legA = new TLegend(0.15,0.80,0.94,0.94, "NDC");
+   TLegend *legA = new TLegend(0.15,0.80,0.94,0.95, "NDC");
    legA->SetBorderSize(1);
    legA->SetTextFont(62);
    legA->SetTextSize(0.03);
@@ -843,6 +843,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        denRelUnc->Draw("3");
        float yscale = (1.0-0.2)/(0.2);       
        denRelUncH->GetYaxis()->SetTitle("Data/#Sigma MC");
+       denRelUncH->GetXaxis()->SetTitle(""); //drop the tile to gain space
 //       denRelUncH->GetYaxis()->CenterTitle(true);
        denRelUncH->SetMinimum(0.4);
        denRelUncH->SetMaximum(1.6);
