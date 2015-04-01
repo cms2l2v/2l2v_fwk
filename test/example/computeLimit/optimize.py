@@ -153,7 +153,7 @@ for signalSuffix in signalSuffixVec :
           shapeCutMax_ = 9999
           SCRIPT = open(OUT+'script_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.sh',"w")
           SCRIPT.writelines('cd ' + CMSSW_BASE + '/src;\n')
-          SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
+          SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc6_amd64_gcc491")+";\n")
           SCRIPT.writelines("eval `scram r -sh`;\n")
           SCRIPT.writelines('cd -;\n')     
           for j in range(0, 1): #always run 1points per jobs
@@ -170,9 +170,9 @@ for signalSuffix in signalSuffixVec :
                 SCRIPT.writelines('cd ..;\n')
                 #SCRIPT.writelines('mv ' + cardsdir + ' ' + OUT + '/.\n')
                 SCRIPT.writelines('rm -rd ' + cardsdir+';\n')            
-             i = i+1#increment the cut index
           SCRIPT.close()
           LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.sh'])
+          i = i+1#increment the cut index
       FILE.close()
       LaunchOnCondor.SendCluster_Submit()
          
@@ -181,7 +181,7 @@ for signalSuffix in signalSuffixVec :
    ###################################################
    elif(phase == 2):
       print '# SCANNING ALL SETS OF CUTS  for ' + DataCardsDir + ' (you may want to go for a coffee...)#\n'
-      fileName = OUT + "/OPTIM"+signalSuffix+binSuffix
+      fileName = OUT + "/OPTIM"+signalSuffix
       FILE = open(fileName+".txt","w")
       for m in MASS:
          print 'Starting mass ' + str(m)
@@ -229,22 +229,22 @@ for signalSuffix in signalSuffixVec :
 
    elif(phase == 3 ):
       LaunchOnCondor.Jobs_RunHere        = 1
-      print '# FINAL LIMITS  for ' + DataCardsDir + '#\n'
+      print '# CHOOSE BEST SELECTION CUTS  for ' + DataCardsDir + '#\n'
       Gcut  = []
       for c in range(1, cutsH.GetYaxis().GetNbins()+1):
          Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #add a graph for each cut
 	 Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMin
 	 Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax
 
-      fileName = OUT+"/OPTIM"+signalSuffix+binSuffix
+      fileName = OUT+"/OPTIM"+signalSuffix
       fileName+=".txt"
          
       mi=0
       for m in MASS:
          #if you want to display more than 3 options edit -m3 field
          cut_lines=commands.getstatusoutput("cat " + fileName + " | grep 'mH="+str(m)+"' -m20")[1].split('\n')
-         if(len(cut_lines)<=1):continue
-
+         if(len(cut_lines)<1):continue  #make sure that we get some lines
+         if(len(cut_lines[0])<1):continue # make sure the line is not empty
          print 'mH='+str(m)+'\tOption \tR \tLimits and Cuts' 
          ictr=1
          for c in cut_lines: 
@@ -282,18 +282,14 @@ for signalSuffix in signalSuffixVec :
            else:			    sys.exit(0);           
       print 'YES'
 
-      list = open(OUT+'list.txt',"w")
       listcuts = open(OUT+'cuts.txt',"w")
       LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+binSuffix+OUTName[iConf])
       for m in SUBMASS:
            index = findCutIndex(cutsH, Gcut, m);
-
-           list.writelines('H'+str(m)+'_'+str(index)+'\n');
-           listcuts.writelines(str(m)+' ');
+           listcuts.writelines(str(m)+' '+str(index)+' ');
            for c in range(1, cutsH.GetYaxis().GetNbins()+3):
               listcuts.writelines(str(Gcut[c-1].Eval(m,0,""))+' ');
            listcuts.writelines('\n');
-      list.close();
       listcuts.close();
 
 
@@ -316,22 +312,22 @@ for signalSuffix in signalSuffixVec :
 
                INbinSuffix = "_" + bin
                IN = CWD+'/JOBS/'+OUTName[iConf]+signalSuffix+INbinSuffix+'/'
-               list = open(IN+'cuts.txt',"r")
+               listcuts = open(IN+'cuts.txt',"r")
                mi=0
-               for line in list :
+               for line in listcuts :
                   vals=line.split(' ')
                   for c in range(1, cutsH.GetYaxis().GetNbins()+3):
-                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c]));
+                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c+1]));
                   mi+=1
                for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
-               list.close();          
+               listcuts.close();          
 
                #add comma to index string if it is not empty
                if(indexString!=' '):
-                  indexString+=', '
+                  indexString+=','
                   if(not (SideMasses[0]==SideMasses[1])):
-                     indexLString+=', '
-                     indexRString+=', '
+                     indexLString+=','
+                     indexRString+=','
 
                #find the cut index for the current mass point
                indexString += str(findCutIndex(cutsH, Gcut, m));
@@ -348,13 +344,13 @@ for signalSuffix in signalSuffixVec :
 
            SCRIPT = open(OUT+'/script_mass_'+str(m)+'.sh',"w")
            SCRIPT.writelines('cd ' + CMSSW_BASE + ';\n')
-           SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc5_amd64_gcc434")+";\n")
+           SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc6_amd64_gcc491")+";\n")
            SCRIPT.writelines("eval `scram r -sh`;\n")
            SCRIPT.writelines('cd ' + CWD + ';\n')
 
            cardsdir=DataCardsDir+"/"+('%04.0f' % float(m));
            SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
-           SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + "--bins" + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
+           SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("sh combineCards.sh;\n")
 
            #compute pvalue

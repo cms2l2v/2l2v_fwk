@@ -9,6 +9,7 @@
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -709,7 +710,6 @@ int main(int argc, char* argv[])
       }
 
 
-
       //MC crap for photon studies
       if(hasPhotonTrigger && (isWGmc || isZGmc)){
 	int nge(0), ngm(0), ngt(0), ngj(0), ngnu(0);
@@ -748,7 +748,8 @@ int main(int argc, char* argv[])
       //
       // DERIVE WEIGHTS TO APPLY TO SAMPLE
       //
-
+      //
+ 
        //pileup weight
        float weight = 1.0;
        double TotalWeight_plus = 1.0;
@@ -757,7 +758,6 @@ int main(int argc, char* argv[])
 
        if(isMC){          
           int ngenITpu = 0;
-
           fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
           puInfoH.getByLabel(ev, "addPileupInfo");
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
@@ -816,6 +816,13 @@ int main(int argc, char* argv[])
 	    }  
 	  }
 	}
+
+
+       //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
+       fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
+       genEventInfoHandle.getByLabel(ev, "generator");
+       if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
+
   
 	//final event weight
 	weight = xsecWeight * puWeight * shapeWeight;
