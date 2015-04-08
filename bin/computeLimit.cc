@@ -584,11 +584,11 @@ int main(int argc, char* argv[])
   allInfo.showShape(selCh,histo,"plot");
 
   //handle empty bins here, so the Yields is already produced
-  allInfo.HandleEmptyBins(histo.Data());
-  pFile = fopen("YieldsNoEmptyBins.tex","w");
-  allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
-  fclose(pFile);
-  allInfo.showShape(selCh,histo,"plotNoEmptyBins");
+  //allInfo.HandleEmptyBins(histo.Data());
+  //pFile = fopen("YieldsNoEmptyBins.tex","w");
+  //allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
+  //fclose(pFile);
+  //allInfo.showShape(selCh,histo,"plotNoEmptyBins");
 
   //prepare the output
   string limitFile=("hzz2l2v_"+massStr+systpostfix+".root").Data();
@@ -1025,6 +1025,10 @@ void initializeTGraph(){
                     map_signals [ch->first].push_back(h);
                    
                  }else if(it->first=="data"){
+                    h->SetFillStyle(0);
+                    h->SetFillColor(0);
+                    h->SetMarkerStyle(20);
+                    h->SetMarkerColor(1);
                     map_data[ch->first] = h;
                  }
 
@@ -1063,16 +1067,16 @@ void initializeTGraph(){
               axis->Draw();
               p->second->Draw("same");
               map_unc [p->first]->Draw("2 same");
-//              map_data[p->first]->Draw("same");  //comment to blind
               for(unsigned int i=0;i<map_signals[p->first].size();i++){
               map_signals[p->first][i]->Draw("HIST same");
               }
+              map_data[p->first]->Draw("P same");
 
               //print tab channel header
               TPaveText* Label = new TPaveText(0.1,0.81,0.94,0.89, "NDC");
               Label->SetFillColor(0);  Label->SetFillStyle(0);  Label->SetLineColor(0); Label->SetBorderSize(0);  Label->SetTextAlign(31);
               TString LabelText = procs["data"].channels[p->first].channel+"  -  "+procs["data"].channels[p->first].bin;
-              LabelText.ReplaceAll("geq2jets","#geq2jets"); LabelText.ReplaceAll("eq0jets","0jet");  LabelText.ReplaceAll("eq1jets","1jet");
+              LabelText.ReplaceAll("leq","#leq");LabelText.ReplaceAll("geq","#geq"); LabelText.ReplaceAll("eq","=");
               LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
               Label->AddText(LabelText);  Label->Draw();
  
@@ -1089,8 +1093,9 @@ void initializeTGraph(){
 //           TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
            TPaveText* T = new TPaveText(0.1,0.7,0.9,1.0, "NDC");
            T->SetFillColor(0);  T->SetFillStyle(0);  T->SetLineColor(0); T->SetBorderSize(0);  T->SetTextAlign(22);
-           if(systpostfix.Contains('8')){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
-           }else{                         T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
+           if(systpostfix.Contains('3'))      { T->AddText("CMS preliminary, #sqrt{s}=13.0 TeV");
+           }else if(systpostfix.Contains('8')){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
+           }else{                               T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
            }T->Draw();
 
            //save canvas
@@ -1243,6 +1248,7 @@ void initializeTGraph(){
                  double integral = shapeInfo.histo()->Integral();
 
                  //lumi
+                 if(!it->second.isData && systpostfix.Contains('3'))shapeInfo.uncScale["lumi_13TeV"] = integral*0.044;
                  if(!it->second.isData && systpostfix.Contains('8'))shapeInfo.uncScale["lumi_8TeV"] = integral*0.026;
                  if(!it->second.isData && systpostfix.Contains('7'))shapeInfo.uncScale["lumi_7TeV"] = integral*0.022;
 
@@ -1351,7 +1357,7 @@ void initializeTGraph(){
               }
               //observations
               fprintf(pFile, "bin 1\n");
-              fprintf(pFile, "Observation %f\n", procs["data"].channels[C->first].shapes[histoName].histo()->Integral() );
+              fprintf(pFile, "Observation %f\n", round(procs["data"].channels[C->first].shapes[histoName].histo()->Integral()) );
               fprintf(pFile, "-------------------------------\n");
 
               //yields

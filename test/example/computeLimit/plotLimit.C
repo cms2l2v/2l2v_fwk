@@ -204,12 +204,12 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   //this only apply to NarrowResonnance case
   for(unsigned int i=0;i<N;i++){
     if(strengthLimit){
-    ObsLimit[i]  /= XSecScaleFactor;
-    ExpLimitm2[i]/= XSecScaleFactor;
-    ExpLimitm1[i]/= XSecScaleFactor;
-    ExpLimit  [i]/= XSecScaleFactor;
-    ExpLimitp1[i]/= XSecScaleFactor;
-    ExpLimitp2[i]/= XSecScaleFactor;
+       ObsLimit[i]  /= XSecScaleFactor;
+       ExpLimitm2[i]/= XSecScaleFactor;
+       ExpLimitm1[i]/= XSecScaleFactor;
+       ExpLimit  [i]/= XSecScaleFactor;
+       ExpLimitp1[i]/= XSecScaleFactor;
+       ExpLimitp2[i]/= XSecScaleFactor;
     }
     ThXSec[i]    *= XSecScaleFactor;
   }
@@ -279,7 +279,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   LEG->SetFillStyle(0);
   LEG->SetTextFont(42);
   LEG->SetBorderSize(0);
-  if(thxsec)LEG->AddEntry(THXSec  , "SM prediction"  ,"L");
+  if(!strengthLimit)LEG->AddEntry(THXSec  , "SM prediction"  ,"L");
   LEG->AddEntry(TGExpLimit  , "median expected"  ,"L");
   LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
   LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");

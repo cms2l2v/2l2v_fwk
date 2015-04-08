@@ -30,7 +30,7 @@ phase=-1
 
 jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/example/samples.json'
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/example/plotter.root'
-BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
+BESTDISCOVERYOPTIM=False #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
@@ -99,7 +99,7 @@ def findCutIndex(cutsH, Gcut, m):
    for i in range(1, cutsH.GetXaxis().GetNbins()+1):
       passAllCuts=True
       for y in range(1, cutsH.GetYaxis().GetNbins()+1):
-         if( (cutsH.GetYaxis().GetBinLabel(y).find("<") and cutsH.GetBinContent(i,y)>Gcut[y-1].Eval(m,0,"")+0.000001) or (cutsH.GetBinContent(i,y)<Gcut[y-1].Eval(m,0,"")-0.000001)):
+         if( (cutsH.GetYaxis().GetBinLabel(y).find("<")>=0 and cutsH.GetBinContent(i,y)>(Gcut[y-1].Eval(m,0,"")+0.000001)) or (cutsH.GetYaxis().GetBinLabel(y).find(">")>=0 and cutsH.GetBinContent(i,y)<(Gcut[y-1].Eval(m,0,"")-0.000001)) or  (cutsH.GetYaxis().GetBinLabel(y).find("<")==-1 and cutsH.GetYaxis().GetBinLabel(y).find(">")==-1 and cutsH.GetBinContent(i,y)<(Gcut[y-1].Eval(m,0,"")-0.000001)) ):
             passAllCuts=False;
             break;
       if(passAllCuts==True): return i;   
@@ -404,10 +404,10 @@ for signalSuffix in signalSuffixVec :
       else:
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
 
-         os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 13 , 19.8 )'")
-         #os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
-         #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 13 , 19.8 )'")
-         #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/XSec_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  false, false, 13 , 19.8 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 13 , 19.8 )'")
+      #os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
+      #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 13 , 19.8 )'")
+      #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/XSec_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  false, false, 13 , 19.8 )'")
    ######################################################################
 
 

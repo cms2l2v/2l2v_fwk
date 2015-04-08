@@ -27,7 +27,7 @@ Jobs_Seed	  = 0
 Jobs_NEvent	  =-1
 Jobs_Skip         = 0
 Jobs_Queue        = '2nd'
-Jobs_LSFRequirement = '"type==SLC5_64&&pool>30000"'
+Jobs_LSFRequirement = '"type==SLC6_64&&pool>30000"'
 Jobs_Inputs	  = []
 Jobs_FinalCmds    = []
 Jobs_RunHere      = 0
