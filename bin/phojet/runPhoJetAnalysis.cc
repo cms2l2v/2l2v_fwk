@@ -122,20 +122,24 @@ passPhotonSelection(SmartSelectionMonitor mon,
 		    double rho){
 
   pat::PhotonCollection selPhotons;
-  TString tag = "all";  
-  double weight = 1.0;
+  // TString tag = "all";  
+  // double weight = 1.0;
 
   for(size_t ipho=0; ipho<photons.size(); ipho++) {
     pat::Photon photon = photons[ipho]; 
     double pt=photon.pt();
     double eta=photon.superCluster()->eta();
-    mon.fillHisto("phopt", tag, pt, weight);
-    mon.fillHisto("phoeta", tag, eta, weight);
+    // mon.fillHisto("phopt", tag, pt, weight);
+    // mon.fillHisto("phoeta", tag, eta, weight);
 
     if( pt < triggerThreshold || fabs(eta)>1.4442 ) continue;
 
     bool passId = patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight);
-    if(!passId) continue; 
+    if(!passId) continue;
+
+    // mon.fillHisto("phopt", "trg", pt, weight);
+    // mon.fillHisto("phoeta", "trg", eta, weight);
+  
     selPhotons.push_back(photon);
   }
 
@@ -378,13 +382,6 @@ int main(int argc, char* argv[])
     // load the event content from the EDM file
     ev.to(iev);
     
-    //apply trigger and require compatibilitiy of the event with the PD
-    float triggerPrescale(1.0); 
-    float triggerThreshold(0.0); 
-    bool hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
-    
-    // only run on the events that pass our triggers
-    if( !hasPhotonTrigger ) continue; 
     
     //load all the objects we will need to access
     reco::VertexCollection vtx;
@@ -403,8 +400,24 @@ int main(int argc, char* argv[])
     fwlite::Handle< pat::PhotonCollection > photonsHandle;
     photonsHandle.getByLabel(ev, "slimmedPhotons");
     if(photonsHandle.isValid()){ photons = *photonsHandle;}
-    mon.fillHisto("npho", "all", photons.size(), weight);
-
+    // store the slim photon info
+    mon.fillHisto("npho", "slim", photons.size(), weight);
+    for(size_t ipho=0; ipho<photons.size(); ipho++) {
+      mon.fillHisto("phopt", "slim", photons[ipho].pt(), weight);
+      mon.fillHisto("phoeta", "slim", photons[ipho].eta(), weight);
+    }
+    
+    // only run on the events that pass our triggers
+    float triggerPrescale(1.0); 
+    float triggerThreshold(0.0); 
+    bool hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
+    if( !hasPhotonTrigger ) continue; 
+    mon.fillHisto("npho", "trg", photons.size(), weight);
+    for(size_t ipho=0; ipho<photons.size(); ipho++) {
+      mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
+      mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
+    }
+    
     pat::JetCollection jets;
     fwlite::Handle< pat::JetCollection > jetsHandle;
     jetsHandle.getByLabel(ev, "slimmedJets");
@@ -618,7 +631,7 @@ int main(int argc, char* argv[])
       mon.fillHisto( "axialmet",icat,axialMet,iweight);
       double mt=higgs::utils::transverseMass(iboson,met,true);
       mon.fillHisto( "mt",icat,mt,iweight,true);
-      
+
     } // end tags loop 
     
   } // end event loop 
