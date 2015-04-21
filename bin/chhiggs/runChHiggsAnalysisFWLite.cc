@@ -238,13 +238,14 @@ int main(int argc, char* argv[])
   //##############################################
   SmartSelectionMonitor mon;
 
-  TH1 *h=mon.addHistogram( new TH1F ("eventflowsinglelepton", ";;Events", 6,0,6 /*5,0,5*/));
-  h->GetXaxis()->SetBinLabel(1,"1 lep, #geq 3 jets");
-  h->GetXaxis()->SetBinLabel(2,"E_{T}^{miss} #geq 40 GeV");
-  h->GetXaxis()->SetBinLabel(3,"#geq 1 btag");
-  h->GetXaxis()->SetBinLabel(4,"1 #tau_{h} NDM");
-  h->GetXaxis()->SetBinLabel(5/*4*/,"1 #tau_{h} "); 
-  h->GetXaxis()->SetBinLabel(6/*5*/,"OS");
+  TH1 *h=mon.addHistogram( new TH1F ("eventflowsinglelepton", ";;Events", 7,0,7));
+  h->GetXaxis()->SetBinLabel(1,"InitialEv");
+  h->GetXaxis()->SetBinLabel(2,"1 lep, #geq 3 jets");
+  h->GetXaxis()->SetBinLabel(3,"E_{T}^{miss} #geq 40 GeV");
+  h->GetXaxis()->SetBinLabel(4,"#geq 1 btag");
+  h->GetXaxis()->SetBinLabel(5,"1 #tau_{h} NDM");
+  h->GetXaxis()->SetBinLabel(6,"1 #tau_{h} "); 
+  h->GetXaxis()->SetBinLabel(7,"OS");
 
   h=mon.addHistogram( new TH1F ("eventflowdileptons", ";;Events", 6,0,6) );
   h->GetXaxis()->SetBinLabel(1,"2 leptons");
@@ -706,6 +707,15 @@ int main(int argc, char* argv[])
           float relIso( utils::cmssw::relIso(leptons[ilep], rho) );
           if( (lid==11 && relIso>0.15) || (lid==13 && relIso>0.20) ) passIso=false;
           if( (lid==11 && relIso>0.15)  || (lid==13 && relIso>0.12) ) passSingleLepIso=false;
+
+//	  // overlap with taus
+//	  bool overlapWithTaus(false);
+//	  for(int l1=0   ;l1<(int)selSingleLepLeptons.size();l1++){
+//	    if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithTaus=true; break;}
+//	  }
+//	  if(overlapWithTaus)continue;
+
+
 	  
 	  if(passId          && passIso          && passKin         ) selLeptons.push_back(leptons[ilep]);
 	  if(passSingleLepId && passSingleLepIso && passSingleLepKin) selSingleLepLeptons.push_back(leptons[ilep]);
@@ -1150,7 +1160,7 @@ int main(int argc, char* argv[])
       // Single lepton analysis
       // ----------------------
       if(chTags[1] == "singlemu" || chTags[1] == "singlee" ){
-
+	mon.fillHisto("eventflowsinglelepton",chTags,0,weight); // Log number of initial events
 	if(selSingleLepLeptons.size()<1) continue;
 	
 	if(isMC){
@@ -1411,12 +1421,14 @@ int main(int argc, char* argv[])
 	bool passOS(true);
 	if(pass1tau)  passOS = ((selTaus[0].id)*(selSingleLepLeptons[0].id)<0);      
 	
-	if(passLeptonPlusJets)                                               mon.fillHisto("eventflowsinglelepton",chTags,0,weight);
-	if(passLeptonPlusJets && passMet)                                    mon.fillHisto("eventflowsinglelepton",chTags,1,weight);
-	if(passLeptonPlusJets && passMet && pass1bjet)                       mon.fillHisto("eventflowsinglelepton",chTags,2,weight);
-	if(passLeptonPlusJets && passMet && pass1bjet && pass1tauNoDecayMode)mon.fillHisto("eventflowsinglelepton",chTags,3,weight);
-	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau)           mon.fillHisto("eventflowsinglelepton",chTags,4/*3*/,weight);
-	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau && passOS) mon.fillHisto("eventflowsinglelepton",chTags,5/*4*/,weight);
+
+
+	if(passLeptonPlusJets)                                               mon.fillHisto("eventflowsinglelepton",chTags,1,weight);
+	if(passLeptonPlusJets && passMet)                                    mon.fillHisto("eventflowsinglelepton",chTags,2,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet)                       mon.fillHisto("eventflowsinglelepton",chTags,3,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet && pass1tauNoDecayMode)mon.fillHisto("eventflowsinglelepton",chTags,4,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau)           mon.fillHisto("eventflowsinglelepton",chTags,5,weight);
+	if(passLeptonPlusJets && passMet && pass1bjet && pass1tau && passOS) mon.fillHisto("eventflowsinglelepton",chTags,6,weight);
 	
 	
 	if(passLeptonPlusJets){
