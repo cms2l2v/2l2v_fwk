@@ -46,7 +46,12 @@ std::set<TString> systVars;
 std::vector<int> binsToProject;
 std::vector<std::string> channels;
 float lumiUnc(0.027);
-float selEffUnc(0.02);
+float selEffUnc(0.0374); // STILL USED FOR THE TABLE, set to the quadratical sum of the muonid, electronid, trigeff
+float muonidUnc(0.01);
+float electronidUnc(0.02);
+float emuTrigEffUnc(0.03);
+float eeTrigEffUnc(0.03);
+float mumuTrigEffUnc(0.03);
 float iEcm(8);
 bool doPowers = true;
 bool statBinByBin = false;
@@ -128,6 +133,8 @@ TString convertNameForDataCard(TString title)
   if(title=="Single top")                                     return "st";
   if(title=="t#bar{t}V")                                      return "ttv";
   if(title=="t#bar{t}")                                       return "ttbar";
+  if(title=="t#bar{t}+b#bar{b}")                              return "ttbb";
+  if(title=="t#bar{t} dileptons")                             return "ttbar";
   if(title=="#splitline{H^{+}#rightarrow tb}{[180 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
   if(title=="#splitline{H^{+}#rightarrow#tau#nu}{[180 GeV]}") {signalTag = "TBH" ; return "TBH";}   
   if(title=="#splitline{H^{+}#rightarrow tb}{[200 GeV]}")     {signalTag = "HTB" ; return "HTB";}   
@@ -275,6 +282,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
       
       bool isData(Process[i]["isdata"].toBool());
       bool isSignal(Process[i]["issignal"].toBool());
+      bool isInvisible(Process[i]["isinvisible"].toBool());
       int color(1);       if(Process[i].isTag("color" ) ) color  = (int)Process[i]["color" ].toInt();
       int lcolor(color);  if(Process[i].isTag("lcolor") ) lcolor = (int)Process[i]["lcolor"].toInt();
       int mcolor(color);  if(Process[i].isTag("mcolor") ) mcolor = (int)Process[i]["mcolor"].toInt();
@@ -335,50 +343,53 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	      //get alternative shapes for signal from systematics file
 	      if(systF)
 		{
-		  TString signalVars[]={"powheg","q2up","q2down","mepsup","mepsdown"};
+		  TString signalVars[]={"q2up","q2down","mepsup","mepsdown"};
+                  TString ttbarSplit[]={"other t#bar{t}","t#bar{t}+b#bar{b}","t#bar{t} dileptons"};
 		  for(size_t isigvar=0; isigvar<sizeof(signalVars)/sizeof(TString); isigvar++)
 		    {
-		      TH1F *hmcsig=(TH1F *)systF->Get("t#bar{t}syst"+signalVars[isigvar]+"/"+histoName);
-		      // TH1F *normHisto=hshape; 
-		      //if(signalVars[isigvar].Contains("meps") || signalVars[isigvar].Contains("q2"))
-		      //normHisto=(TH1F *)systF->Get("t#bar{t}systspincorrel/"+histoName);
-		      if(hmcsig==0) { cout << "Skipping null variation: " << signalVars[isigvar] << endl;  continue; }
-		      for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
-			if(find(binsToProject.begin(),binsToProject.end(),ibin) != binsToProject.end()) continue;
-			hmcsig->SetBinContent(ibin,0);
-			hmcsig->SetBinError(ibin,0);
-		      }
-		      hmcsig->SetDirectory(0); 
-		      //Double_t sf=hshape->Integral()/hmcsig->Integral();
-		      hmcsig->Scale(hshape->Integral()/hmcsig->Integral()); 
-		      hmcsig->SetName(hmcsig->GetName()+TString("mcsignalup"));
-		      hmcsig->SetTitle(proc);
-
-		      //check this rates from theortical point of view. in prep the variation is very high...
-		      // if(signalVars[isigvar]=="q2up")           shape.rateUncs["q2_rate"]=std::pair<float,float>(sf,sf);
-		      // else if(signalVars[isigvar]=="q2down")    shape.rateUncs["q2_rate"].second=sf;
-		      // if(signalVars[isigvar]=="mepsup")         shape.rateUncs["meps_rate"]=std::pair<float,float>(sf,sf);
-		      // else if(signalVars[isigvar]=="mepsdown")  shape.rateUncs["meps_rate"].second=sf;
-		      
-		      //if variation corresponds already to a signed variation save it directly
-		      //otherwise create an artificial symmetric variation to build the +/- envelope of the nominal shape
-		      if(signalVars[isigvar].EndsWith("up") || signalVars[isigvar].EndsWith("down"))  
-			{
-			  shape.signalVars[signalVars[isigvar]]=hmcsig;
-			}
-		      else
-			{
-			  shape.signalVars[signalVars[isigvar]+"up"]   = hmcsig;
-			  TH1F *hmcsigdown=(TH1F *) hmcsig->Clone(hmcsig->GetName()+TString("mcsignaldown"));
-			  for(int ibin=1; ibin<=hmcsigdown->GetXaxis()->GetNbins();ibin++)
-			    {
-			      float var=hmcsig->GetBinContent(ibin)-hshape->GetBinContent(ibin);
-			      float newVal(hshape->GetBinContent(ibin)-var);
-			      hmcsigdown->SetBinContent(ibin,newVal);
-			    }
-			  shape.signalVars[signalVars[isigvar]+"down"] = hmcsigdown;
-			}
-		    }
+                      for(size_t ittbarSplit=0; ittbarSplit<sizeof(ttbarSplit)/sizeof(TString); ++ittbarSplit){
+                        TH1F *hmcsig=(TH1F *)systF->Get(ttbarSplit[ittbarSplit]+"syst"+signalVars[isigvar]+"/"+histoName);
+                        // TH1F *normHisto=hshape; 
+                        //if(signalVars[isigvar].Contains("meps") || signalVars[isigvar].Contains("q2"))
+                        //normHisto=(TH1F *)systF->Get("t#bar{t}systspincorrel/"+histoName);
+                        if(hmcsig==0) { cout << "Skipping null variation: " << signalVars[isigvar] << endl;  continue; }
+                        for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
+                          if(find(binsToProject.begin(),binsToProject.end(),ibin) != binsToProject.end()) continue;
+                          hmcsig->SetBinContent(ibin,0);
+                          hmcsig->SetBinError(ibin,0);
+                        }
+                        hmcsig->SetDirectory(0); 
+                        //Double_t sf=hshape->Integral()/hmcsig->Integral();
+                        //hmcsig->Scale(hshape->Integral()/hmcsig->Integral()); 
+                        hmcsig->SetName(hmcsig->GetName()+TString("mcsignalup"));
+                        hmcsig->SetTitle(proc);
+                        
+                        //check this rates from theortical point of view. in prep the variation is very high...
+                        // if(signalVars[isigvar]=="q2up")           shape.rateUncs["q2_rate"]=std::pair<float,float>(sf,sf);
+                        // else if(signalVars[isigvar]=="q2down")    shape.rateUncs["q2_rate"].second=sf;
+                        // if(signalVars[isigvar]=="mepsup")         shape.rateUncs["meps_rate"]=std::pair<float,float>(sf,sf);
+                        // else if(signalVars[isigvar]=="mepsdown")  shape.rateUncs["meps_rate"].second=sf;
+                        
+                        //if variation corresponds already to a signed variation save it directly
+                        //otherwise create an artificial symmetric variation to build the +/- envelope of the nominal shape
+                        if(signalVars[isigvar].EndsWith("up") || signalVars[isigvar].EndsWith("down"))  
+                          {
+                            shape.signalVars[signalVars[isigvar]]=hmcsig;
+                          }
+                        else
+                          {
+                            shape.signalVars[signalVars[isigvar]+"up"]   = hmcsig;
+                            TH1F *hmcsigdown=(TH1F *) hmcsig->Clone(hmcsig->GetName()+TString("mcsignaldown"));
+                            for(int ibin=1; ibin<=hmcsigdown->GetXaxis()->GetNbins();ibin++)
+                              {
+                                float var=hmcsig->GetBinContent(ibin)-hshape->GetBinContent(ibin);
+                                float newVal(hshape->GetBinContent(ibin)-var);
+                                hmcsigdown->SetBinContent(ibin,newVal);
+                              }
+                            shape.signalVars[signalVars[isigvar]+"down"] = hmcsigdown;
+                          }
+                      }
+                    }
 		}
             }
 	    else{
@@ -416,26 +427,90 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
 	  // }
 	  //
 	  else{
-	    if(varName==""){
-	      shape.bckg.push_back(hshape);
-	      float thxsec = Process[i]["data"].daughters()[0]["xsec"].toDouble();
-	      float thxsecunc=0;
-	      if(Process[i]["data"].daughters()[0].isTag("xsecunc") )  thxsecunc = Process[i]["data"].daughters()[0]["xsecunc"].toDouble();
+            if(!isInvisible){
+              if(varName==""){
+                shape.bckg.push_back(hshape);
+                float thxsec = Process[i]["data"].daughters()[0]["xsec"].toDouble();
+                float thxsecunc=0;
+                if(Process[i]["data"].daughters()[0].isTag("xsecunc") )  thxsecunc = Process[i]["data"].daughters()[0]["xsecunc"].toDouble();
+                
+                // converter
+                if(proc.Contains("Z#rightarrow ll") || proc.Contains("dy"         )   ) thxsecunc = 0.04*thxsec;
+                if(proc.Contains("VV")              || proc.Contains("vv"	        )   ) thxsecunc = 0.04*thxsec;
+                if(proc.Contains("W,multijets")     || proc.Contains("wjets"      )   ) thxsecunc = 0.04*thxsec;
+                if(proc.Contains("other t#bar{t}")  || proc.Contains("otherttbar" )   ) thxsecunc = 0.;//0.06*thxsec;
+                if(proc.Contains("Single top")      || proc.Contains("st"	        )   ) thxsecunc = 0.0686*thxsec;
+                if(proc.Contains("t#bar{t}")        || proc.Contains("ttbar"      )   ) thxsecunc = 0.;//06*thxsec;
+                
+                
+                shape.crossSections[proc]=std::pair<float,float>(thxsec,thxsecunc);
+	     
+                //get alternative shapes for ttbar background from systematics file
+                if(proc.Contains("t#bar{t}") || proc.Contains("ttbar") )///////systF)
+                  {
+                    TString signalVars[]={"q2up","q2down","mepsup","mepsdown"};
+                    TString ttbarSplit[]={"other t#bar{t}","t#bar{t}+b#bar{b}","t#bar{t} dileptons"};
+                    for(size_t isigvar=0; isigvar<sizeof(signalVars)/sizeof(TString); isigvar++)
+                      {
+                        for(size_t ittbarSplit=0; ittbarSplit<sizeof(ttbarSplit)/sizeof(TString); ++ittbarSplit){
+                          //TH1F *hmcsig=(TH1F *)systF->Get(ttbarSplit[ittbarSplit]+"syst"+signalVars[isigvar]+"/"+histoName);
+                          TH1F *hmcsig=(TH1F *)inF->Get(ttbarSplit[ittbarSplit]+"syst"+signalVars[isigvar]+"/"+histoName);
+                          
+                          // TH1F *normHisto=hshape; 
+                          //if(signalVars[isigvar].Contains("meps") || signalVars[isigvar].Contains("q2"))
+                          //normHisto=(TH1F *)systF->Get("t#bar{t}systspincorrel/"+histoName);
+                          if(hmcsig==0) { cout << "Skipping null variation: " << signalVars[isigvar] << endl;                           cout << "File " << inF->GetName() << ",  try to access: " << ttbarSplit[ittbarSplit]+"syst"+signalVars[isigvar]+"/"+histoName << endl; continue; }
 
-	      // converter
-	      if(proc.Contains("Z#rightarrow ll") || proc.Contains("dy"         )   ) thxsecunc = 0.04*thxsec;
-	      if(proc.Contains("VV")              || proc.Contains("vv"	        )   ) thxsecunc = 0.04*thxsec;
-	      if(proc.Contains("W,multijets")     || proc.Contains("wjets"      )   ) thxsecunc = 0.04*thxsec;
-	      if(proc.Contains("other t#bar{t}")  || proc.Contains("otherttbar" )   ) thxsecunc = 0.06*thxsec;
-	      if(proc.Contains("Single top")      || proc.Contains("st"	        )   ) thxsecunc = 0.08*thxsec;
-	      if(proc.Contains("t#bar{t}")        || proc.Contains("ttbar"      )   ) thxsecunc = 0.06*thxsec;
-	      
+                          if( ttbarSplit[ittbarSplit] != hshape->GetTitle() ) continue;
 
-	      shape.crossSections[proc]=std::pair<float,float>(thxsec,thxsecunc);
-	      
-	    }
-	    else{
-	      shape.bckgVars[proc][varName]=hshape;
+                          cout << "Variation "  << signalVars[isigvar] << ": base " << hshape->GetTitle() << " " << hshape->Integral() << ", varied " << hmcsig->GetTitle() << " " << hmcsig->Integral() << "from directory " << ttbarSplit[ittbarSplit]+"syst"+signalVars[isigvar]+"/"+histoName << endl;
+                          for(int ibin=1; ibin<=hshape->GetXaxis()->GetNbins(); ibin++) { 
+                            if(find(binsToProject.begin(),binsToProject.end(),ibin) != binsToProject.end()) continue;
+                            hmcsig->SetBinContent(ibin,0);
+                            hmcsig->SetBinError(ibin,0);
+                          }
+                          hmcsig->SetDirectory(0); 
+                          //Double_t sf=hshape->Integral()/hmcsig->Integral();
+                          /////////////vvvvvvvvvvhmcsig->Scale(hshape->Integral()/hmcsig->Integral()); 
+                          hmcsig->SetName(proc+signalVars[isigvar]);
+                          hmcsig->SetTitle(proc);
+                          
+                          //check this rates from theortical point of view. in prep the variation is very high...
+                          // if(signalVars[isigvar]=="q2up")           shape.rateUncs["q2_rate"]=std::pair<float,float>(sf,sf);
+                          // else if(signalVars[isigvar]=="q2down")    shape.rateUncs["q2_rate"].second=sf;
+                          // if(signalVars[isigvar]=="mepsup")         shape.rateUncs["meps_rate"]=std::pair<float,float>(sf,sf);
+                          // else if(signalVars[isigvar]=="mepsdown")  shape.rateUncs["meps_rate"].second=sf;
+                          
+                          //if variation corresponds already to a signed variation save it directly
+                          //otherwise create an artificial symmetric variation to build the +/- envelope of the nominal shape
+                          if(signalVars[isigvar].EndsWith("up") || signalVars[isigvar].EndsWith("down"))  
+                            {
+                              //shape.signalVars[signalVars[isigvar]]=hmcsig;
+                              shape.bckgVars[proc][signalVars[isigvar]]=hmcsig;
+                              //shape.bckg.push_back(hmcsig);
+                            }
+                          else
+                            {
+                              //shape.signalVars[signalVars[isigvar]+"up"]   = hmcsig;
+                              shape.bckgVars[proc][signalVars[isigvar]+"up"]   = hmcsig;
+                              TH1F *hmcsigdown=(TH1F *) hmcsig->Clone(hmcsig->GetName()+TString("mcsignaldown"));
+                              for(int ibin=1; ibin<=hmcsigdown->GetXaxis()->GetNbins();ibin++)
+                                {
+                                  float var=hmcsig->GetBinContent(ibin)-hshape->GetBinContent(ibin);
+                                  float newVal(hshape->GetBinContent(ibin)-var);
+                                  hmcsigdown->SetBinContent(ibin,newVal);
+                                }
+                              //shape.signalVars[signalVars[isigvar]+"down"] = hmcsigdown;
+                              shape.bckgVars[proc][signalVars[isigvar]+"down"] = hmcsigdown;
+                              //shape.bckg.push_back(hmcsigdown);
+                            }
+                        }
+                      }
+                  }
+              }
+              else{
+                shape.bckgVars[proc][varName]=hshape;
+              }
 	    }
 	  }
 	}
@@ -472,10 +547,10 @@ void getYieldsFromShapes(const map<TString, Shape_t> &allShapes)
   for(std::vector<int>::iterator bIt = binsToProject.begin(); bIt != binsToProject.end(); bIt++)
     {
 
-      cout << "pointer " << dataTempl << endl;
-      cout << "histo" << dataTempl->GetTitle();
-      cout << ", with " << dataTempl->GetNbinsX();
-      cout << " bins, choosing bin " << (*bIt) << endl;
+//      cout << "pointer " << dataTempl << endl;
+//      cout << "histo" << dataTempl->GetTitle();
+//      cout << ", with " << dataTempl->GetNbinsX();
+//      cout << " bins, choosing bin " << (*bIt) << endl;
  	
       TString cat=dataTempl->GetXaxis()->GetBinLabel(*bIt);
         
@@ -634,6 +709,41 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 	////////////////////////////////////////////////////////
 	
 
+
+        // TEMP FOR ADDITIONAL JET BY JET
+	TString addSystSystName(proc+"_"); 
+	//	if(proc=="signal") statSystName=signalTag+"_";//"ttbar_";
+	addSystSystName+=oDir->GetTitle(); 
+	addSystSystName+="_additional";
+        
+	hc = (TH1*) h->Clone("TMPFORADDITIONALSYST");
+	
+	//bin by bin stat uncertainty
+        BIN=0;
+	for(int ibin=1; ibin<=hc->GetXaxis()->GetNbins(); ibin++){           
+	  if(hc->GetBinContent(ibin)<=0 || hc->GetBinContent(ibin)/hc->Integral()<0.0000001)continue;
+	  //           if(h->GetBinContent(ibin)<=0)continue;
+	  char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+	  TH1* statU=(TH1 *)hc->Clone(TString(hc->GetName())+"AdditionalU"+ibintxt);//  statU->Reset();
+	  TH1* statD=(TH1 *)hc->Clone(TString(hc->GetName())+"AdditionalD"+ibintxt);//  statD->Reset();           
+	  statU->SetBinContent(ibin,1.44*hc->GetBinContent(ibin) );   statU->SetBinError(ibin, 0);
+	  statD->SetBinContent(ibin,0.56*hc->GetBinContent(ibin) );   statD->SetBinError(ibin, 0);
+	  //           statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
+	  //           statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+	  ///	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
+	  ///	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
+	  /*h->SetBinContent(ibin, 0);*/  hc->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
+	  //printf("%s --> %f - %f - %f\n", (prefix+"stat"+suffix+ibintxt+suffix2+"Up").c_str(), statD->Integral(), h->GetBinContent(ibin), statU->Integral() );
+          if(proc=="ttbb"){
+            statU->Write(proc+"_"+proc+ibintxt+"_"+addSystSystName+"Up");
+            statD->Write(proc+"_"+proc+ibintxt+"_"+addSystSystName+"Down");
+          }
+	}
+	
+	////////////////////////////////////////////////////////
+	
+
+
 	
 	
 	
@@ -649,7 +759,7 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
       systName.ReplaceAll("up","Up");
      
       ///      systName.ReplaceAll("topptunc", TString("topptunc")+oDir->GetTitle());
-
+      //cout << "FUCKING SHAPE: " << h->GetName() << endl;
       h->Write(systName);
     }
 }
@@ -730,12 +840,33 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	  }
 	  fprintf(pFile,"\n");
 	}
-	//sel eff
-	fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
-	fprintf(pFile,"%6.3f ",1+selEffUnc);
+	//muon id
+	fprintf(pFile,"%30s_%dTeV %10s","muonid",int(iEcm),"lnN");
+	fprintf(pFile,"%6.3f ",1+muonidUnc);
 	for(size_t j=0; j<shape.bckg.size(); j++) {
 	  if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	  else                                                                                   fprintf(pFile,"%6.3f ",1+selEffUnc);
+	  else                                                                                   fprintf(pFile,"%6.3f ",1+muonidUnc);
+	}
+	fprintf(pFile,"\n");
+	//electron id
+	fprintf(pFile,"%30s_%dTeV %10s","electronid",int(iEcm),"lnN");
+	fprintf(pFile,"%6.3f ",1+electronidUnc);
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+	  else                                                                                   fprintf(pFile,"%6.3f ",1+electronidUnc);
+	}
+	fprintf(pFile,"\n");
+	//trigger efficiency
+        float trigEffUnc(0.);
+        if(ch=="emu")  trigEffUnc=emuTrigEffUnc;
+        if(ch=="mumu") trigEffUnc=mumuTrigEffUnc;
+        if(ch=="ee")   trigEffUnc=eeTrigEffUnc;
+        TString trigefflabel("trigeff_"+ch);
+	fprintf(pFile,"%30s_%dTeV %10s",trigefflabel.Data(),int(iEcm),"lnN");
+	fprintf(pFile,"%6.3f ",1+trigEffUnc);
+	for(size_t j=0; j<shape.bckg.size(); j++) {
+	  if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+	  else                                                                                   fprintf(pFile,"%6.3f ",1+trigEffUnc);
 	}
 	fprintf(pFile,"\n");
 	
@@ -749,22 +880,33 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	//fprintf(pFile,"\n");
 
 	//q2
-	fprintf(pFile,"%35s %10s","q2scale","lnN");
-	fprintf(pFile,"%6.3f ",1.00);
-	for(size_t j=0; j<shape.bckg.size(); j++) {
-	  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	  else                                                           fprintf(pFile,"%6.3f ",1.03);
-	}
-	fprintf(pFile,"\n");
+	///// now shape ///// fprintf(pFile,"%35s %10s","q2scale","lnN");
+	///// now shape ///// fprintf(pFile,"%6.3f ",1.00);
+	///// now shape ///// for(size_t j=0; j<shape.bckg.size(); j++) {
+	///// now shape /////   if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	///// now shape /////   else                                                           fprintf(pFile,"%6.3f ",1.03);
+	///// now shape ///// }
+	///// now shape ///// fprintf(pFile,"\n");
+        ///// now shape ///// 
+	///// now shape ///// //matching
+	///// now shape ///// fprintf(pFile,"%35s %10s","matching","lnN");
+	///// now shape ///// fprintf(pFile,"%6.3f ",1.00);
+	///// now shape ///// for(size_t j=0; j<shape.bckg.size(); j++) {
+	///// now shape /////   if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+	///// now shape /////   else                                                           fprintf(pFile,"%6.3f ",1.01);
+	///// now shape ///// }
+	///// now shape ///// fprintf(pFile,"\n");
 
-	//matching
-	fprintf(pFile,"%35s %10s","matching","lnN");
-	fprintf(pFile,"%6.3f ",1.00);
-	for(size_t j=0; j<shape.bckg.size(); j++) {
-	  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
-	  else                                                           fprintf(pFile,"%6.3f ",1.01);
-	}
-	fprintf(pFile,"\n");
+
+/// 	//matching
+/// 	fprintf(pFile,"%35s %10s","ttbttjj","lnN");
+/// 	fprintf(pFile,"%6.3f ",1.00);
+/// 	for(size_t j=0; j<shape.bckg.size(); j++) {
+/// 	  if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbb") fprintf(pFile,"%6s ","-");
+/// 	  else                                                           fprintf(pFile,"%6.3f ",1.44); // 23./16.
+/// 	}
+/// 	fprintf(pFile,"\n");
+
 
 	////diepton BR
 	//fprintf(pFile,"%35s %10s","br","lnN");
@@ -795,23 +937,51 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	//       }
 	//       fprintf(pFile,"\n");
 	
+        int processedTTlines(0);
 	for(size_t j=0; j<shape.bckg.size(); j++)
 	  {
 	    TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	    //	    if(proc=="ttbar") continue;
-	    std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
-	    if(procXsec.second<=0) continue;
-	    if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
-	    
-	    TString uncName("theoryUncXS_"+proc);
-	    fprintf(pFile,"%35s %10s ", uncName.Data(), "lnN");
-	    fprintf(pFile,"%6s ","-");
-	    for(size_t k=0; k<shape.bckg.size(); k++) {
-	      if(k!=j) fprintf(pFile,"%6s ","-");
-	      else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	      else                                                                                        fprintf(pFile,"%6.3f ",1.0+procXsec.second/procXsec.first);
-	    }
-	    fprintf(pFile,"\n");
+            if(proc.Contains("ttbar") || proc.Contains("ttbb")){
+              if(processedTTlines>0)continue;
+              processedTTlines++;
+              TString uncName("xsect_tt_8TeV_scale" );
+              fprintf(pFile,"%35s %10s ", uncName.Data(), "lnN");
+              fprintf(pFile,"%6s ","-");
+              for(size_t k=0; k<shape.bckg.size(); k++) {
+                TString intProc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+                if(k!=j && !(intProc.Contains("ttbar") || proc.Contains("ttbb"))  ) fprintf(pFile,"%6s ","-");
+                else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+                else                                                                                        fprintf(pFile,"%6s ", "0.9659/1.0253"  );
+              }
+              fprintf(pFile,"\n");
+              uncName= "xsect_tt_8TeV_pdf_alphaS";
+              fprintf(pFile,"%35s %10s ", uncName.Data(), "lnN");
+              fprintf(pFile,"%6s ","-");
+              for(size_t k=0; k<shape.bckg.size(); k++) {
+                TString intProc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+                if(k!=j && !(intProc.Contains("ttbar") || proc.Contains("ttbb")) ) fprintf(pFile,"%6s ","-");
+                else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+                else                                                                                        fprintf(pFile,"%6s ", "1.0463"  );
+              }
+              fprintf(pFile,"\n");
+              
+            }
+            else
+              {
+                std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
+                if(procXsec.second<=0) continue;
+                if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
+                
+                TString uncName("theoryUncXS_"+proc);
+                fprintf(pFile,"%35s %10s ", uncName.Data(), "lnN");
+                fprintf(pFile,"%6s ","-");
+                for(size_t k=0; k<shape.bckg.size(); k++) {
+                  if(k!=j) fprintf(pFile,"%6s ","-");
+                  else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+                  else                                                                                        fprintf(pFile,"%6.3f ",1.0+procXsec.second/procXsec.first);
+                }
+                fprintf(pFile,"\n");
+              }
 	  }
 	
 /// meh /// 	//fakes
@@ -825,11 +995,22 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 /// meh /// 	fprintf(pFile,"\n");
 	
 	//systematics described by shapes
+
+        systVars.insert("dileq2up");
+        systVars.insert("dilemepsup");
+
+        systVars.insert("ttbbq2up");
+        systVars.insert("ttbbmepsup");
+
+        systVars.insert("otheq2up");
+        systVars.insert("othemepsup");
+
 	for(std::set<TString>::iterator it=systVars.begin(); it!=systVars.end(); it++)
 	  {
 	    if(it->EndsWith("down")) continue;
 	    if(it->Contains("leff")) continue;
 	    TString systName(*it);
+            //cout << "1) " << systName;
 	    if(systName.EndsWith("up")) systName.Remove(systName.Length()-2,2);
 	    bool systIsValid(false);
 	    TString systLine("");
@@ -839,25 +1020,45 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	    sprintf(systBuf,"%35s %10s ", systLineName.Data(), "shape");   systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
 	    if(shape.signalVars.find(*it)==shape.signalVars.end())     { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	    else if(shape.signalVars.find(*it)->second->Integral()==0) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	    else 
+            else 
 	      { 
-		systIsValid=true;
-		sprintf(systBuf,"%6s ","1"); 
-		systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
-	      saveShapeForMeasurement(shape.signalVars.find(systName+"up")->second,oDir,systName+"up"); 
-	      saveShapeForMeasurement(shape.signalVars.find(systName+"down")->second,oDir,systName+"down"); 
+                if(systName=="pdf"){ sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );}
+                else{
+
+                  systIsValid=true;
+                  sprintf(systBuf,"%6s ","1"); 
+                  systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
+                  saveShapeForMeasurement(shape.signalVars.find(systName+"up")->second,oDir,systName+"up"); 
+                  saveShapeForMeasurement(shape.signalVars.find(systName+"down")->second,oDir,systName+"down"); 
+                }
 	      }
-	    for(size_t j=0; j<shape.bckg.size(); j++) {
+
+            TString check=systName;
+            for(size_t j=0; j<shape.bckg.size(); j++) {
+              //cout << ", 2) " << systName << ", " << check << endl;
+              if(systName.BeginsWith("ttbb") || systName.BeginsWith("dile") || systName.BeginsWith("othe")) systName.Remove(0,4);               
+              //cout << "CHECK IT " << check << ", " << systName << ", " << shape.bckg[j]->GetTitle() << ", " << shape.bckg[j]->GetName() << endl;
+              
 	      if(shape.bckgVars.find(shape.bckg[j]->GetTitle())==shape.bckgVars.end())                                                                { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	      //else if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end())                                           { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	      else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(*it)==shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.end()) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
-	      else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(*it)->second->Integral()==0)                                        { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
+	      else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")==shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.end()) { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); 
+                //cout << "meh2 title " << shape.bckg[j]->GetTitle() << ", "  << *it  << ", " << systName  << endl;
+              }
+	      else if(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->Integral()==0)                                        { sprintf(systBuf,"%6s ","-"); systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) ); }
 	      else                                                                                                                                  
 		{ 
-		  systIsValid=true;
-		  sprintf(systBuf,"%6s ","1"); 
-		  systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
-
+                  
+                  // Check for filling
+                  if( 
+                     (check.BeginsWith("dile") && !(TString(shape.bckg[j]->GetTitle()).Contains("dileptons"))) ||
+                     (check.BeginsWith("ttbb") && !(TString(shape.bckg[j]->GetTitle()).Contains("b#bar{b}")) ) ||
+                     (check.BeginsWith("othe") && !(TString(shape.bckg[j]->GetTitle()).Contains("other")    ))
+                      ) sprintf(systBuf,"%6s ","-");
+                  else{
+                    systIsValid=true;
+                    sprintf(systBuf,"%6s ","1"); 
+                  }
+                  systLine+=systBuf; memset( systBuf, 0, sizeof(systBuf) );
 
 		  if(systName=="pdf")
 		    {
@@ -870,14 +1071,45 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+TString(oDir->GetName())+"up"); 
 		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+TString(oDir->GetName())+"down"); 
 		    }
+                  else if(check.BeginsWith("dile") && TString(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle()).Contains("dileptons"))
+                    {
+                      //cout << "Dilepton save" << endl;
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,"dile"+systName+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,"dile"+systName+"down"); 
+
+                    }
+                  else if(check.BeginsWith("ttbb") && TString(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle()).Contains("b#bar{b}"))
+                    {
+                      //cout << "ttbb save" << endl;
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,"ttbb"+systName+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,"ttbb"+systName+"down"); 
+
+                    }
+                  else if(check.BeginsWith("othe") && TString(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle()).Contains("other"))
+                    {
+                      //cout << "other save" << endl;
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,"othe"+systName+"up"); 
+		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,"othe"+systName+"down"); 
+
+                    }
 		  else
 		    {
-		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
-		      saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+                      //cout << "ELSE: " << check << ", " << shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle() << endl;
+                      if(
+                         (check.BeginsWith("dile") && !(TString(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle()).Contains("dileptons")) ) ||
+                         (check.BeginsWith("ttbb") && !(TString(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle()).Contains("b#bar{b}") ) ) ||
+                         (check.BeginsWith("othe") && !(TString(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second->GetTitle()).Contains("other")    ) )
+                         )
+                        cout << "do not save for those " << endl;
+                      else
+                        {
+                          saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"up")->second,oDir,systName+"up"); 
+                          saveShapeForMeasurement(shape.bckgVars.find(shape.bckg[j]->GetTitle())->second.find(systName+"down")->second,oDir,systName+"down"); 
+                        }
 		    }
 		}
 	    }
-	    cout << "I arrive here" << endl;
+	    //cout << "I arrive here" << endl;
 	    if(systIsValid) fprintf(pFile,"%s \n",systLine.Data());
 	  }
 
@@ -913,7 +1145,21 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 		//else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
 		else     fprintf(pFile,"%6s ","1");
 	      }
-	    fprintf(pFile,"\n");
+              fprintf(pFile,"\n");
+              
+              if(proc=="ttbb"){
+                fprintf(pFile,"%35s %10s ", (proc+ibintxt+"_"+proc+"_"+ch+"_additional").Data(), "shape");
+                fprintf(pFile,"%6s ","-");
+                for(size_t k=0; k<shape.bckg.size(); k++) {
+                  if(k!=j) fprintf(pFile,"%6s ","-");
+                  //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+                  else     fprintf(pFile,"%6s ","1");
+                }
+                fprintf(pFile,"\n");              
+              }
+
+
+
 	    }
 	  }
 	

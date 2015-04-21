@@ -138,12 +138,12 @@ int main(int argc, char* argv[])
   MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
 
   // Set up mt2
-  mt2_bisect::mt2 mt2_evt;
+  //  mt2_bisect::mt2 mt2_evt;
     // Format: M, px, py
-  double pa[3] = { 0.106, 39.0, 12.0 };
-  double pb[3] = { 0.106, 119.0, -33.0 };
-  double pmiss[3] = { 0, -29.9, 35.9 };
-  double mn    = 0.; // Neutrino mass
+//  double pa[3] = { 0.106, 39.0, 12.0 };
+//  double pb[3] = { 0.106, 119.0, -33.0 };
+//  double pmiss[3] = { 0, -29.9, 35.9 };
+//  double mn    = 0.; // Neutrino mass
 
   
   //pdf info
@@ -280,9 +280,10 @@ int main(int argc, char* argv[])
 
   // MVA histos.
   std::vector<TH1*> tmvaH;
-  for(size_t im=0; im<tmvaMethods.size(); ++im)
-    tmvaH.push_back(controlHistos.addHistogram(tmva::getHistogramForDiscriminator(tmvaMethods[im])));
-  
+  if(useMVA){
+    for(size_t im=0; im<tmvaMethods.size(); ++im)
+      tmvaH.push_back(controlHistos.addHistogram(tmva::getHistogramForDiscriminator(tmvaMethods[im])));
+  }
 
 
 
@@ -319,6 +320,15 @@ int main(int argc, char* argv[])
     finalCutflow2btagsH->GetXaxis()->SetBinLabel(3,"=4 btags");
     finalCutflow2btagsH->GetXaxis()->SetBinLabel(4,"#geq5 btags");
     controlHistos.addHistogram( finalCutflow2btagsH );
+
+    TH1D *finalCutflow2btagsMH = new TH1D("finalevtflow2btagsmerged"+var,";Category;Events",3,2,5); 
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(1,"=2 btags");
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(2,"=3 btags");
+    finalCutflow2btagsH->GetXaxis()->SetBinLabel(3,"#geq4 btags");
+    controlHistos.addHistogram( finalCutflow2btagsMH );
+
+
+
 
     TH1D *finalCutflowH_0 = new TH1D("finalevtflow0"+var,";Category;Events",1,0,1); 
     finalCutflowH_0->GetXaxis()->SetBinLabel(1,"=0 jets");
@@ -500,7 +510,11 @@ int main(int argc, char* argv[])
     if(weightsFile.size()) shapesDir=wFile;
     topPtWgt = new TopPtWeighter(proctag, out, shapesDir, evSummary.getTree() );
   }
-  
+
+
+  //  double n4bjets(0), nOther(0);
+
+ 
   //
   // analyze (puf...)
   //
@@ -531,12 +545,31 @@ int main(int argc, char* argv[])
       double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop 
       bool hasTop(false);
       int ngenLeptonsStatus3(0);
+      int ngenBQuarksStatus23(0);
       float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+	data::PhysicsObjectCollection_t jets=evSummary.getPhysicsObject(DataEventSummaryHandler::JETS);
+	utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,ev.rho,ev.nvtx,isMC);
+
       if(isMC)
 	{
+          for(size_t ijet=0; ijet<jets.size(); ijet++)
+            {
+	    //require to pass the loose id
+	    Int_t idbits=jets[ijet].get("idbits");
+	    bool passPFloose( ((idbits>>0) & 0x1));
+	    if(!passPFloose) continue;
+
+            const data::PhysicsObject_t &bgenJet=jets[ijet].getObject("genJet");
+            int bflavid=abs(bgenJet.info.find("id")->second);
+
+            if(bflavid==5) 
+              ngenBQuarksStatus23++;
+            }
+
+
 	  for(size_t igen=0; igen<gen.size(); igen++){
-	    if(gen[igen].get("status")!=3) continue;
-	    int absid=abs(gen[igen].get("id"));
+            int absid=abs(gen[igen].get("id"));
+            if(gen[igen].get("status")!=3) continue;
 	    if(absid==6){
 	      hasTop=true;
 	      if(isTTbarMC){
@@ -546,10 +579,18 @@ int main(int argc, char* argv[])
 	    }
 	    if(absid!=11 && absid!=13 && absid!=15) continue;
 	    ngenLeptonsStatus3++;
+            //cout << "particle " << igen << " is a " << absid << " and has status " << gen[igen].get("status") << ", ngenquarks: " << ngenBQuarksStatus23 << endl;
 	  }
-	  if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop)) continue;
-	  if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop)) continue;
-	}
+
+          //if(ngenBQuarksStatus3 >= 4) n4bjets++;
+          //else                        nOther++;
+          
+          if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+	  if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+          if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
+          //          cout << "mcTruthMode: " << mcTruthMode << ", ngenLeptonsStatus3: " << ngenLeptonsStatus3 << ", ngenBQuarksStatus3: " << ngenBQuarksStatus23 << endl;
+
+        }
 
       if(tPt>0 && tbarPt>0 && topPtWgt)
 	{
@@ -678,6 +719,7 @@ int main(int argc, char* argv[])
 	else if(abs(ev.cat)==11*13 && emuTrigger)  { chName="emu";                     if(ngenLeptonsStatus3>=2) llScaleFactor*=0.968; }
 	else if(abs(ev.cat)==13*13 && mumuTrigger) { chName="mumu"; isSameFlavor=true; if(ngenLeptonsStatus3>=2) llScaleFactor*=0.955; }
 	else                                       continue;
+        cout << "chName = " << chName << endl;
 	std::vector<TString> ch(1,chName);
 	if(isSameFlavor) ch.push_back("ll");
 
@@ -700,8 +742,8 @@ int main(int argc, char* argv[])
 	//the met
 	data::PhysicsObjectCollection_t recoMet=evSummary.getPhysicsObject(DataEventSummaryHandler::MET);
 	//select the jets
-	data::PhysicsObjectCollection_t jets=evSummary.getPhysicsObject(DataEventSummaryHandler::JETS);
-	utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,ev.rho,ev.nvtx,isMC);
+	//data::PhysicsObjectCollection_t jets=evSummary.getPhysicsObject(DataEventSummaryHandler::JETS);
+	//utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,ev.rho,ev.nvtx,isMC);
 	std::vector<LorentzVector> metVars=utils::cmssw::getMETvariations(recoMet[0],jets,selLeptons,isMC);
 	
 	int metIdx(0);
@@ -712,6 +754,12 @@ int main(int argc, char* argv[])
 	if(var == "umetup")   metIdx=utils::cmssw::UMETUP;
 	if(var == "umetdown") metIdx=utils::cmssw::UMETDOWN;
 	LorentzVector met=metVars[metIdx];
+	// debug // if(var == ""){
+	// debug //   cout << "\t\t\t EVENT " << ev.run << ", " << ev.lumi << endl;
+	// debug //   cout << "MET DOWN " << metVars[utils::cmssw::UMETDOWN].pt() << endl;
+	// debug //   cout << "MET BASE " << metVars[0].pt() << endl;
+	// debug //   cout << "MET UP " << metVars[utils::cmssw::UMETUP].pt() << endl;
+	// debug //     }
 
 	data::PhysicsObjectCollection_t looseJets,selJets,selbJets;
 	for(size_t ijet=0; ijet<jets.size(); ijet++)
@@ -834,6 +882,8 @@ int main(int argc, char* argv[])
 	if(isOS && isZcand          && selJets.size()==1 && passMetSelection  /*&& passBtagSelection*/  )   ctrlCategs.push_back("zeq1jets");
 	if(isOS && isZcand          && passJetSelection  && !passMetSelection /*&& passBtagSelection*/  )  ctrlCategs.push_back("zlowmet");
 	if(isOS && isZcand          && selJets.size()==1 && !passMetSelection /*&& passBtagSelection*/  )  ctrlCategs.push_back("zeq1jetslowmet");
+
+        ctrlCategs.clear();
 	for(size_t icat=0; icat<ctrlCategs.size(); icat++)
 	  {
 	    double ptmin(999999999.);
@@ -884,18 +934,18 @@ int main(int argc, char* argv[])
 	    
 	    // mt2 computation
 	    
-	    pa[0] = selLeptons[0].M();
-	    pa[1] = selLeptons[0].px();
-	    pa[2] = selLeptons[0].py();
-	    pb[0] = selLeptons[1].M();
-	    pb[1] = selLeptons[1].px();
-	    pb[2] = selLeptons[1].py();
-	    pmiss[1] = met.px();
-	    pmiss[2] = met.py();
-	    
-	    mt2_evt.set_momenta(pa,pb,pmiss);
-	    mt2_evt.set_mn(mn);
-	    double mt2 = mt2_evt.get_mt2();
+	    //pa[0] = selLeptons[0].M();
+	    //pa[1] = selLeptons[0].px();
+	    //pa[2] = selLeptons[0].py();
+	    //pb[0] = selLeptons[1].M();
+	    //pb[1] = selLeptons[1].px();
+	    //pb[2] = selLeptons[1].py();
+	    //pmiss[1] = met.px();
+	    //pmiss[2] = met.py();
+	    //
+	    //mt2_evt.set_momenta(pa,pb,pmiss);
+	    //mt2_evt.set_mn(mn);
+	    double mt2 = 0; //mt2_evt.get_mt2();
 
 
 	    controlHistos.fillHisto(ctrlCategs[icat]+"ptmin"+var,        ch, ptmin,           weight);
@@ -991,49 +1041,59 @@ int main(int argc, char* argv[])
 	if(nbtags>=5) controlHistos.fillHisto("finalevtflow5"+var, ch, 0, weight);
 	
 	if(nbtags<2) continue;
+        //cout << "Updated percentage of tt+bb events: " << double(100*n4bjets/nOther) << endl;
 	controlHistos.fillHisto("evtflow"+var, ch, 5, weight);
 
 
 	// Set up the variables to be used in the MVA evaluation
 	LorentzVector globalmt( selLeptons[0] + selLeptons[1] + selbJets[0] + selbJets[1] + met );
-	for(size_t ivar=0; ivar<tmvaVarNames.size(); ++ivar)
-	  {
-	    std::string variable = tmvaVarNames[ivar];
-	    // Cat and weight are for bookkeeping, not needed here.
-	    if(variable=="nbjets")          tmvaVars[ivar] = nbtags;
-	    else if(variable=="leadbjetpt") tmvaVars[ivar] = selbJets[0].pt();
-	    else if(variable=="njets")      tmvaVars[ivar] = selJets.size();
-	    else if(variable=="globalmt")   tmvaVars[ivar] = globalmt.Mt();
-	    else if(variable=="met")        tmvaVars[ivar] = met.pt();
-	    else if(variable=="detajj")     tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
-	    else if(variable=="detall")     tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
-	    else if(variable=="dphill")     tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
-	  }
-	if(tmvaReader)
+        if(useMVA){
+          for(size_t ivar=0; ivar<tmvaVarNames.size(); ++ivar)
+            {            
+              std::string variable = tmvaVarNames[ivar];
+              // Cat and weight are for bookkeeping, not needed here.
+              if(variable=="nbjets")          tmvaVars[ivar] = nbtags;
+              else if(variable=="leadbjetpt") tmvaVars[ivar] = selbJets[0].pt();
+              else if(variable=="njets")      tmvaVars[ivar] = selJets.size();
+              else if(variable=="globalmt")   tmvaVars[ivar] = globalmt.Mt();
+              else if(variable=="met")        tmvaVars[ivar] = met.pt();
+              else if(variable=="detajj")     tmvaVars[ivar] = fabs(selbJets[0].eta()-selbJets[1].eta()); 
+              else if(variable=="detall")     tmvaVars[ivar] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
+              else if(variable=="dphill")     tmvaVars[ivar] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
+            }
+        }
+        if(tmvaReader){
 	  for(size_t im=0; im<tmvaMethods.size(); ++im)
 	    tmvaDiscrVals[im]=tmvaReader->EvaluateMVA( tmvaMethods[im] );
-	
-	// Save for training
-	summaryTupleVars[0] = ev.cat;
-	summaryTupleVars[1] = weight;
-	summaryTupleVars[2] = nbtags;
-	summaryTupleVars[3] = selbJets[0].pt();
-	summaryTupleVars[4] = selJets.size();
-	summaryTupleVars[5] = globalmt.Mt();
-	summaryTupleVars[6] = met.pt();
-	summaryTupleVars[7] = fabs(selbJets[0].eta()-selbJets[1].eta());
-	summaryTupleVars[8] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
-	summaryTupleVars[9] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
-	summaryTuple->Fill(summaryTupleVars);
-	for(size_t im=0; im<tmvaMethods.size(); ++im){
-	  if(var=="") controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
-	  controlHistos.fillHisto(tmvaMethods[im]+"_finalshape"+var, ch, tmvaDiscrVals[im], weight);
-	}
-
+          
+          // Save for training
+          summaryTupleVars[0] = ev.cat;
+          summaryTupleVars[1] = weight;
+          summaryTupleVars[2] = nbtags;
+          summaryTupleVars[3] = selbJets[0].pt();
+          summaryTupleVars[4] = selJets.size();
+          summaryTupleVars[5] = globalmt.Mt();
+          summaryTupleVars[6] = met.pt();
+          summaryTupleVars[7] = fabs(selbJets[0].eta()-selbJets[1].eta());
+          summaryTupleVars[8] = fabs(selLeptons[0].eta()-selLeptons[1].eta());
+          summaryTupleVars[9] = deltaPhi(selLeptons[0].phi(), selLeptons[1].phi());
+          summaryTuple->Fill(summaryTupleVars);
+          for(size_t im=0; im<tmvaMethods.size(); ++im){
+            if(var=="") controlHistos.fillHisto(tmvaMethods[im], ch, tmvaDiscrVals[im], weight);
+            controlHistos.fillHisto(tmvaMethods[im]+"_finalshape"+var, ch, tmvaDiscrVals[im], weight);
+          }
+        }
+        
 	if(nbtags>5)
 	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, 5, weight);	
 	else
 	  controlHistos.fillHisto("finalevtflow2btags"+var, ch, nbtags, weight);
+
+        if(nbtags>4)
+          controlHistos.fillHisto("finalevtflow2btagsmerged"+var, ch, 4, weight);
+        else
+          controlHistos.fillHisto("finalevtflow2btagsmerged"+var, ch, nbtags, weight);
+
 
 	if(spyEvents){
 	  spyEvents->getEvent().cat=ev.cat;
