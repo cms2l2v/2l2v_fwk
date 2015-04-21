@@ -411,6 +411,7 @@ int main (int argc, char *argv[])
   int treeStep (totalEntries / 50);
   //DuplicatesChecker duplicatesChecker;
   //int nDuplicates(0);
+  int nMultiChannel(0);
   for (size_t iev = 0; iev < totalEntries; iev++)
     {
       if (iev % treeStep == 0)
@@ -476,9 +477,11 @@ int main (int argc, char *argv[])
           //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
             // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
+            
+            //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
             if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
 
-            //            cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << endl;
+            
             int absid=abs(gen[igen].pdgId());
             if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
               hasTop=true;
@@ -790,27 +793,29 @@ int main (int argc, char *argv[])
           
           float dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
+          bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
           // Apparently this V2 has the following preliminary operating points:
           // These preliminary operating points were derived from ttbar events:
           //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
           //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
           //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
 
-          //update according to the SF measured by BTV
-          if (isMC)
-            {
-              int flavId = jets[ijet].partonFlavour();
-              if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-              else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-              else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-            }
+          // update according to the SF measured by BTV: NOT YET!
+          /// if (isMC)
+          ///   {
+          ///     int flavId = jets[ijet].partonFlavour();
+          ///     if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+          ///     else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+          ///     else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+          ///   }
           if(!hasCSVtag) continue;
 
           if(minDRlj > 0.4){
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
+          hasCSVtag = jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
+          if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
           
         }
@@ -843,12 +848,20 @@ int main (int argc, char *argv[])
       
       // Event classification. Single lepton triggers are first in order to ensure that the lower threshold dilepton triggers do not steal events from the single lepton category. emu trigger is last in order to ensure that it does not break the balance between ee and mumu
       
-      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
-      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
-      else if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
-      else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
-      else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
-      else                                                                 chTags.push_back("unclassified");
+      bool 
+        isSingleMu(false),
+        isSingleE(false),
+        isDoubleMu(false),
+        isDoubleE(false),
+        isEMu(false),
+        isUnclassified(false);
+      int multiChannel(0);
+      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ){ isSingleMu     = true; multiChannel++; chTags.push_back("singlemu");}//
+      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ){ isSingleE      = true; multiChannel++; chTags.push_back("singlee"); }//
+      if( abs(dilId)==121 && eeTrigger  )                                 { isDoubleE      = true; multiChannel++; chTags.push_back("ee");      }//
+      else if( abs(dilId)==169 && mumuTrigger)                            { isDoubleMu     = true; multiChannel++; chTags.push_back("mumu");    }//
+      else if( abs(dilId)==143 && emuTrigger )                            { isEMu          = true; multiChannel++; chTags.push_back("emu");     }//
+      //else                                                                { isUnclassified = true; multiChannel++;}//chTags.push_back("unclassified");
 
       // keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
       //std::vector < TString > tags (1, "all");
@@ -857,14 +870,15 @@ int main (int argc, char *argv[])
           tags.push_back (chTags[ich]);
           //tags.push_back( chTags[ich]+evCat );
         }
-
-      if (chTags.size() == 0 || chTags.size() >1 ){ cout << "ALARM! chTags.size() == " << chTags.size() << ", and that should NEVER happen!!!" << endl; continue; }// That should never happen ("unclassified" is always present)
+      if(multiChannel>1) nMultiChannel++;
+      //      if (/*chTags.size() == 0 || chTags.size() >1 */ multiChannel>1){ cout << "ALARM! chTags.size() == " << chTags.size() << ", and that should NEVER happen!!!" << endl; /*continue;*/ }// That should never happen ("unclassified" is always present)
       
 
       // Dilepton full analysis
-      if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
+      //if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
+      if( isDoubleE || isEMu || isDoubleMu){
         
-        if(selLeptons.size()!=2) continue; // Save time
+        if(selLeptons.size()<2) continue; // Save time
         // Apply lepton efficiencies
         //for(size_t ilep=0; ilep<2; ++ilep){
         //  int id (abs (selLeptons[ilep].pdgId()));
@@ -977,7 +991,8 @@ int main (int argc, char *argv[])
       
       
       // Single lepton full analysis
-      if(tags[1] == "singlemu" || tags[1] == "singlee"){
+      //if(tags[1] == "singlemu" || tags[1] == "singlee"){
+      if(isSingleMu || isSingleE){
 
         if(selSingleLepLeptons.size()!=1) continue;
         //int id (abs (selSingleLepLeptons[0].pdgId()));
@@ -1160,6 +1175,7 @@ int main (int argc, char *argv[])
           //  }
         }
     }
+  if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
   printf ("\n");
 
   //##############################################
