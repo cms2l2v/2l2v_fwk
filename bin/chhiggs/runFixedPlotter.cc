@@ -27,6 +27,7 @@
 #include "TMultiGraph.h"
 #include "TPaveText.h"
 #include "THStack.h"
+#include "TRandom.h"
 
 #include "UserCode/llvv_fwk/interface/tdrstyle.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
@@ -61,6 +62,7 @@ string cutflowhisto = "all_cutflow";
 bool forceMerge=false;
 bool useMerged=false;
 bool jodorStyle=false;
+bool generatePseudoData=false;
 
 struct stSampleInfo{ double PURescale_up; double PURescale_down; double initialNumberOfEvents;};
 std::unordered_map<string, stSampleInfo> sampleInfoMap;
@@ -356,6 +358,30 @@ void fixExtremities(TH1* h,bool addOverflow, bool addUnderflow)
       h->SetBinError(nbins+1,0);
     }
 }
+
+void GeneratePseudoData(TH1* pseudoData, TH1* mc){
+  //pseudoData = (TH1*) mc->Clone("pseudoData");
+  
+  pseudoData->Reset("ICES"); // Reset Integral, Contents , Errors and Statistics (maintains Maximum ("M") and so on)
+
+  // Add pseudo-data (poisson smearing of the total SM background)
+  for(int xbin=1; xbin<=mc->GetXaxis()->GetNbins(); xbin++){
+    pseudoData->SetBinContent(xbin, gRandom->Poisson(mc->GetBinContent(xbin)));
+    pseudoData->SetBinError(xbin, sqrt(pseudoData->GetBinContent(xbin)));
+  }
+  //for(int i=1; i<=gRandom->Poisson(nexp); i++) hpseudo->Fill(h->GetRandom()); ?
+  //Pietro Vischia
+  //  Hm this fills a random number of times the histogram with a random x value, no? I think I need something like filling each bin with the bin content of the base histo smeared randomly along a poissonian using setbincontwnt
+  //But I am not sure
+  //Pedro Silva
+  //  for(int xbin=1; xbin<=h->GetBins(); xbin++) for(int i=1; i<=gRandom->Poisson(h->GetBinContent(xbin)); i++) hpseudo->Fill( h->GetXaxis()->GetBinCenter(xbin));
+  //can compare both
+  //and see how different they are
+  ///  or simply for(int xbin=1; xbin<=h->GetBins(); xbin++) hpseudo->SetBinContent(xbin, gRandom->Poisson(h->GetBinContent(xbin)) );
+  //as you say
+}
+
+
 
 
 void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties){
@@ -745,9 +771,27 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        data->Draw(canvasIsFilled ? "E1 same" : "E1");
        canvasIsFilled=true;
    }
+   
+   TH1* pseudoData = (TH1*) mc->Clone("pseudoData");
+   pseudoData->Sumw2();
+   if(generatePseudoData){
+     GeneratePseudoData(pseudoData,mc);
+     legA->AddEntry(pseudoData, "pseudo-data", "P");	 
+     if(pseudoData){
+       //pseudoData->SetLineColor(1);
+       pseudoData->SetFillStyle  (0);
+       //pseudoData->SetLineStyle (0);
+       pseudoData->SetMarkerColor(1);
+       pseudoData->SetMarkerStyle(20);
+       pseudoData->Sumw2();
+       pseudoData->Draw(canvasIsFilled ? "PE1 same" : "PE1");
+       canvasIsFilled=true;
+     }
+   }
+   
    for(size_t ip=0; ip<spimpose.size(); ip++){
      TString opt=spimposeOpts[ip];
-     spimpose[ip]->Draw(opt + (canvasIsFilled ? "same": "") );
+    spimpose[ip]->Draw(opt + (canvasIsFilled ? "same": "") );
      canvasIsFilled=true;
    }
 
@@ -1104,7 +1148,8 @@ int main(int argc, char* argv[]){
         printf("--forceMerge --> merge splitted samples\n");
 	printf("--useMerged --> use merged splitted samples\n");
 	printf("--jodorStyle --> use plotting style requested from Jodor");
-
+        printf("--generatePseudoData --> generate pseudo-data by poisson-smearing the total SM MC distribution");
+        
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;
      }
@@ -1137,6 +1182,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--forceMerge")!=string::npos){ forceMerge = true;  useMerged=true;  }
      if(arg.find("--useMerged")!=string::npos){ useMerged = true;    }
      if(arg.find("--jodorStyle")!=string::npos){ jodorStyle = true;  }
+     if(arg.find("--generatePseudoData")!=string::npos){ generatePseudoData = true; }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
      if(arg.find("--logX")!=string::npos){ logX = true;    }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
