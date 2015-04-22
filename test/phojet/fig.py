@@ -22,11 +22,12 @@ def main():
     test = option_exists(args, '-t')
     inDir = 'results/%s/' % label 
     outDir = 'plots/%s' % label 
-    cmd = 'runPhoJetPlotter --inDir %s --outDir %s' % (inDir, outDir)
+    outFile = 'plots/%s/plotter.root' % label 
+    cmd = 'runPhoJetPlotter --inDir %s --outDir %s --outFile %s' % (
+        inDir, outDir, outFile)
     output = proc_cmd(cmd, test=test)
     if output:
         print output
-
 
 # ----------------------------------------------------------
 # Supporting Functions
