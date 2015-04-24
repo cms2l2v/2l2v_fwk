@@ -299,6 +299,8 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "leadjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
       mon.addHistogram (new TH1D (icat + "trailerjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
       mon.addHistogram (new TH1D (icat + "fwdjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
+      mon.addHistogram (new TH1D (icat + "leadjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
+      mon.addHistogram (new TH1D (icat + "trailerjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "cenjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       TH1 *hjets = mon.addHistogram (new TH1D (icat + "njets", ";Jet multiplicity;Events", 5, 0, 5));
       for (int ibin = 1; ibin <= hjets->GetXaxis ()->GetNbins (); ibin++)
@@ -926,11 +928,18 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"yll",          tags, fabs(dileptonSystem.Rapidity()), weight);
           mon.fillHisto(icat+"mll",          tags, dileptonSystem.mass(),           weight);
           mon.fillHisto(icat+"ptll",         tags, dileptonSystem.pt(),             weight);
+          mon.fillHisto(icat+"met",          tags, recoMET.pt(),                    weight);
           mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
           mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
           mon.fillHisto(icat+"mtsum",        tags, mtsum,                           weight);
           mon.fillHisto(icat+"qt",           tags, dileptonSystem.pt(),             weight, true);
           // mon.fillHisto("qtraw",    tags, dileptonSystem.pt(),weight/triggerPrescale,true);                                                                                      
+          if(selJets.size()>0){
+          mon.fillHisto(icat+"leadjetpt",      tags, selJets[0].pt(),         weight);
+          //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
+          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selJets[0].eta()), weight);
+          //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
+          }
 
           double
             ht    (sumpt),
@@ -949,7 +958,10 @@ int main (int argc, char *argv[])
 
           // Tau control ??? 
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                      weight);
-          if(ntaus > 0) mon.fillHisto ("leadtaupt", tags, selTaus[0].pt(), weight);
+          if(ntaus > 0){
+            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(), weight);
+            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(), weight);
+          }
 
           for(size_t ijet=0; ijet<selJets.size(); ++ijet)
             {
@@ -1029,9 +1041,19 @@ int main (int argc, char *argv[])
           mon.fillHisto (icat+"leadeta",    tags, fabs (selSingleLepLeptons[0].eta()), weight);
           mon.fillHisto (icat+"trailereta", tags, fabs (selSingleLepLeptons[1].eta()), weight);
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                               weight);
-          if(ntaus > 0) mon.fillHisto ("leadtaupt", tags, selTaus[0].pt(),             weight);
+          mon.fillHisto (icat+"met",        tags, recoMET.pt(),                    weight);
+          if(selSingleLepJets.size()>0){
+          mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
+          //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
+          mon.fillHisto(icat+"leadjeteta",     tags, fabs (selSingleLepJets[0].eta()), weight);
+          //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
+          }
+          if(ntaus > 0){
+            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(),             weight);
+            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(),             weight);
+          }
 
-
+          mon.fillHisto(icat+"nbjets", tags, selSingleLepBJets.size(), weight);
 // dilepton only           mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
 // dilepton only           mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
 // dilepton only           mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
