@@ -14,7 +14,7 @@
   <bin name="computeLimit"                file="computeLimit.cc"></bin>
   <bin name="runPlotter"                  file="runPlotter.cc"></bin> 
   <bin name="runExample"                  file="runExample.cc"></bin>
-
+  <bin name="runPLRAnalysis"              file="runPLRAnalysis.cc"></bin>
 
 
 <!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
