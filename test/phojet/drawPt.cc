@@ -68,9 +68,12 @@ TCanvas* drawPt(TString label, std::vector<TString> inputFiles){
       return NULL; 
     }
 
+    h->GetXaxis()->SetRangeUser(10,1000);
     h->Draw();
     
   }
+  c->SetLogx();
+  c->SetLogy();
   c->Update(); 
   return c; 
 }
@@ -82,7 +85,7 @@ void print_usage(){
   // printf("\nSYNOPSIS\n\tdrawPt [-t hist-type ] [-opt draw-option]\n "); 
   // printf("\t[-h hist-name ] [-vmax max-value] [-npad num-pad] [-b] input1 input2 ...\n");
   printf("\nOPTIONS\n");
-  printf("\t%-5s  %-40s\n", "label", "options: pho");
+  printf("\t%-5s  %-40s\n", "label", "options: pho, pho2");
   // printf("\t%-5s  %-40s\n", "-t", "hist type [TH1D, TH2D]");
   // printf("\n\t%-5s  %-40s\n", "-opt", "draw option for histgram [colz, surf2]");
   // printf("\n\t%-5s  %-40s\n", "-h", "histogram name");
