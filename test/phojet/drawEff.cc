@@ -92,7 +92,7 @@ TCanvas* drawEff(TString label, std::vector<TString> inputFiles){
   int nbins = h_total->GetSize()-2;
   // printf("Total bins = %d", nbins); 
 
-  TEfficiency* eff = new TEfficiency("eff", ";p_{T};Efficiency", nbins, xlow, xup);
+  TEfficiency* eff = new TEfficiency("eff", ";p_{T} [GeV];Efficiency", nbins, xlow, xup);
 
   for (int bin=1; bin<=nbins; bin++) {
     int iTotal = h_total->GetBinContent(bin); 
@@ -104,7 +104,9 @@ TCanvas* drawEff(TString label, std::vector<TString> inputFiles){
     eff->SetPassedEvents(bin, iPass); 
   }
 
-  eff->Draw(); 
+  eff->Draw();
+  // eff->GetYaxis()->SetRangeUser(0., 1.0);
+
   // c->SetLogx();
   // c->SetLogy();
   c->Update(); 
