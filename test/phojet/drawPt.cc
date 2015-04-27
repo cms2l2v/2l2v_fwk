@@ -51,9 +51,85 @@ void set_root_style(int stat=1110, int grid=0){
   gStyle->SetStatBorderSize(1); 
 }
 
+TH1F * get_hist(TString dir, std::vector<TString> hnames,
+		std::vector<TString> inputFiles) {
+ 
+  TH1F *hall = NULL;
+  for (std::vector<int>:: size_type i = 0; i != inputFiles.size(); i++) {    
+    TFile *f = new TFile(inputFiles[i]);
+    for (std::vector<TString>:: size_type j=0; j!=hnames.size(); j++) {    
+      TString hname = hnames[j]; 
+      TString histName = Form("%s/%s", dir.Data(), hname.Data()); 
+      TH1F *h = (TH1F*)f->Get(histName);
+      if (!h) {
+	std::cout << "Not able to find hist: " << histName << std::endl; 
+	return NULL; 
+      }
+      if (!hall) hall = h;
+      else hall->Add(h); 
+    }
+  }
+  
+  return hall; 
+}
+
+
+TCanvas* drawPt_phojn(std::vector<TString> inputFiles){
+  int ww(1200), wh(400);
+  set_root_style();
+  TCanvas *c = new TCanvas("c", "Transverse momentum", ww, wh);
+  c->Divide(3, 1); 
+  c->cd(1); 
+  TString dir = "#gamma+jets_pT-15to3000";
+
+  std::vector<TString> hnames;
+  hnames.push_back("eeeq0jets_qt");
+  hnames.push_back("mumueq0jets_qt");
+  TH1F *heq0jets = get_hist(dir, hnames, inputFiles);
+  if (!heq0jets) return NULL;
+  heq0jets->SetTitle("eq0 jets"); 
+  heq0jets->Draw();
+  TPad *c_1 = (TPad*) c->GetListOfPrimitives()->FindObject("c_1");
+  c_1->SetLogx();
+  c_1->SetLogy();
+
+  c->cd(2); 
+  hnames.clear();
+  hnames.push_back("eegeq1jets_qt");
+  hnames.push_back("mumugeq1jets_qt");
+  TH1F *hgeq1jets = get_hist(dir, hnames, inputFiles);
+  if (!hgeq1jets) return NULL; 
+  hgeq1jets->SetTitle("geq1 jets"); 
+  hgeq1jets->Draw();
+  TPad *c_2 = (TPad*) c->GetListOfPrimitives()->FindObject("c_2");
+  c_2->SetLogx();
+  c_2->SetLogy();
+
+  
+  c->cd(3); 
+  hnames.clear();
+  hnames.push_back("eevbf_qt");
+  hnames.push_back("mumuvbf_qt");
+  TH1F *hvbf = get_hist(dir, hnames, inputFiles);
+  if (!hvbf) return NULL; 
+  hvbf->SetTitle("VBF"); 
+  hvbf->Draw();
+  TPad *c_3 = (TPad*) c->GetListOfPrimitives()->FindObject("c_3");
+  c_3->SetLogx();
+  c_3->SetLogy();
+
+  c->Update(); 
+  return c; 
+}
+
+
 
 TCanvas* drawPt(TString label, std::vector<TString> inputFiles){
-  if (label == "pho2") printf("label = %s \n", label.Data());
+  if (label == "phojn") {
+    printf("label = %s \n", label.Data());
+    return drawPt_phojn(inputFiles); 
+  }
+  
   int ww(800), wh(800);
   set_root_style();
   TCanvas *c = new TCanvas("c", "Transverse momentum", ww, wh);
@@ -112,11 +188,13 @@ TCanvas* drawPt(TString label, std::vector<TString> inputFiles){
 
 void print_usage(){
   printf("NAME\n\tdrawPt - draw transverse momentum spectrum\n");
-  printf("\nSYNOPSIS\n\tdrawPt label input.root\n "); 
+  printf("\nSYNOPSIS\n\tdrawPt LABEL input.root\n "); 
   // printf("\nSYNOPSIS\n\tdrawPt [-t hist-type ] [-opt draw-option]\n "); 
   // printf("\t[-h hist-name ] [-vmax max-value] [-npad num-pad] [-b] input1 input2 ...\n");
-  printf("\nOPTIONS\n");
-  printf("\t%-5s  %-40s\n", "label", "options: pho, pho2");
+  printf("\nLABEL\n");
+  printf("\t%-5s  %-40s\n", "pho", "photon pT");
+  printf("\t%-5s  %-40s\n", "pho2", "triggered and selected photon pT");
+  printf("\t%-5s  %-40s\n", "phojn", "photon pT with jet multiplicity");
   // printf("\t%-5s  %-40s\n", "-t", "hist type [TH1D, TH2D]");
   // printf("\n\t%-5s  %-40s\n", "-opt", "draw option for histgram [colz, surf2]");
   // printf("\n\t%-5s  %-40s\n", "-h", "histogram name");
