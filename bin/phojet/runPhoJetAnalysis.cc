@@ -16,6 +16,7 @@
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
+#include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 
 #include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
 
@@ -361,6 +362,9 @@ int main(int argc, char* argv[])
   float beff(0.68), sfb(0.99), sfbunc(0.015);
   float leff(0.13), sfl(1.05), sflunc(0.12);
 
+  //lepton efficiencies
+  LeptonEfficiencySF lepEff;
+  
   // make sure that histogram internally produced in 
   // lumireweighting are not destroyed when closing the file
   gROOT->cd();  
@@ -408,16 +412,30 @@ int main(int argc, char* argv[])
     }
     
     // only run on the events that pass our triggers
-    float triggerPrescale(1.0); 
-    float triggerThreshold(0.0); 
-    bool hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
-    if( !hasPhotonTrigger ) continue; 
-    mon.fillHisto("npho", "trg", photons.size(), weight);
-    for(size_t ipho=0; ipho<photons.size(); ipho++) {
-      mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
-      mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
-    }
+
+    //apply trigger and require compatibilitiy of the event with the PD
+    edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+    if(!tr.isValid())return false;
     
+    bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+    bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
+    bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
+    bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+        
+    float triggerPrescale(1.0); 
+    float triggerThreshold(0.0);
+    bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
+    bool hasPhotonTrigger(false); 
+    if (runPhotonSelection) {
+      hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
+      if( !hasPhotonTrigger ) continue; 
+      mon.fillHisto("npho", "trg", photons.size(), weight);
+      for(size_t ipho=0; ipho<photons.size(); ipho++) {
+	mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
+	mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
+      }
+    }
+        
     pat::JetCollection jets;
     fwlite::Handle< pat::JetCollection > jetsHandle;
     jetsHandle.getByLabel(ev, "slimmedJets");
@@ -443,24 +461,26 @@ int main(int argc, char* argv[])
     // below follows the analysis of the main selection with n-1 plots
     tag = "sel";
     
-    // select photons 
-    pat::PhotonCollection selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
-    if ( selPhotons.size() == 0) continue;  
-    mon.fillHisto("npho", tag, selPhotons.size(), weight);
-    mon.fillHisto("nvtx", tag, vtx.size(), weight);
+    // select photons
+    pat::PhotonCollection selPhotons; 
+    if (runPhotonSelection) {
+      selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
+      if ( selPhotons.size() == 0) continue;  
+      mon.fillHisto("npho", tag, selPhotons.size(), weight);
+      mon.fillHisto("nvtx", tag, vtx.size(), weight);
 
-    for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
-      pat::Photon photon = selPhotons[ipho]; 
-      mon.fillHisto("phopt", tag, photon.pt(), weight);
-      mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
+      for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
+	pat::Photon photon = selPhotons[ipho]; 
+	mon.fillHisto("phopt", tag, photon.pt(), weight);
+	mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
       // mon.fillHisto("phor9", tag, photon.r9(), weight);
       // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
-      mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
-      mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
-      // mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
-      mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
+	mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
+	mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
+	// mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
+	mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
+      }
     }
-
 
     // merge electrons and muons
     std::vector<patUtils::GenericLepton> leptons;
@@ -515,15 +535,29 @@ int main(int argc, char* argv[])
     std::vector<TString> chTags;
     int dilId(1);
     LorentzVector boson(0,0,0,0);
-    // only consider the photon selection case  
-    if(hasPhotonTrigger && selPhotons.size()) {
-      dilId=22;
-      chTags.push_back("ee");
-      chTags.push_back("mumu");
-      boson = selPhotons[0].p4();
-      weight *= triggerPrescale;
-    }
 
+    if (!runPhotonSelection && selLeptons.size()==2) { // dilepton case
+      for(size_t ilep=0; ilep<2; ilep++) {
+	dilId *= selLeptons[ilep].pdgId();
+	int id(abs(selLeptons[ilep].pdgId()));
+	weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
+	boson += selLeptons[ilep].p4();
+      }
+      //check the channel
+      if( abs(dilId)==121 && eeTrigger)   chTags.push_back("ee");
+      if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
+      if( abs(dilId)==143 && emuTrigger) chTags.push_back("emu"); 
+
+    } else { // select photon case 
+      if(hasPhotonTrigger && selPhotons.size()) {
+	dilId=22;
+	chTags.push_back("ee");
+	chTags.push_back("mumu");
+	boson = selPhotons[0].p4();
+	weight *= triggerPrescale;
+      }
+    }
+    
     TString evCat=eventCategoryInst.GetCategory(selJets, boson);
     std::vector<TString> tags(1,"all"); // first element init 
     for(size_t ich=0; ich<chTags.size(); ich++){
