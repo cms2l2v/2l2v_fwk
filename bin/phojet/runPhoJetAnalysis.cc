@@ -71,7 +71,11 @@ initHistograms(){
 
 
   // lepton
-  // mon.addHistogram(new TH1F("leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram(new TH1F("leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram(new TH1F("leadeta", ";Pseudo-rapidity;Events", 50,0,2.6) );
+  mon.addHistogram(new TH1F("trailerpt", ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram(new TH1F("trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
+ 
   mon.addHistogram(new TH1F("mindrlg", ";Min #Delta R(lepton, #gamma);Events", 100, 0, 10) );
   mon.addHistogram(new TH1F("nlep", ";Number of leptons;Events", 10, 0, 10) );
   mon.addHistogram(new TH1F("nexlep", ";Number of extra leptons;Events", 10, 0, 10) );
@@ -581,17 +585,26 @@ int main(int argc, char* argv[])
     bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
     bool passBtags(nbtags==0);
     bool passMinDphijmet( njets==0 || mindphijmet>0.5);
+
+    if(runPhotonSelection) {
+      passMass=hasPhotonTrigger;
+      passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
+    }
     
-    passMass=hasPhotonTrigger;
-    passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
-      
     mon.fillHisto("eventflow", tags, 1, weight);
     // mon.fillHisto("nvtxraw", tags, vtx.size(), weight/puWeight);
     mon.fillHisto("nvtx", tags, vtx.size(), weight);
     mon.fillHisto("rho", tags, rho, weight);
     mon.fillHisto("zmass", tags,boson.mass(),weight); 
     mon.fillHisto("zy",    tags,fabs(boson.Rapidity()),weight); 
-  
+
+    if(!runPhotonSelection){
+      mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
+      mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
+      mon.fillHisto("leadeta",     tags,fabs(selLeptons[0].eta()),weight); 
+      mon.fillHisto("trailereta",  tags,fabs(selLeptons[1].eta()),weight); 
+    }
+      
     // "|M-91|<15"  
     if(!passMass) continue; 
     mon.fillHisto("eventflow",tags, 2,weight);
