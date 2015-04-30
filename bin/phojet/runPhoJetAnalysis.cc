@@ -27,8 +27,10 @@
 
 // constants
 
-const int MUON_PDGID = 13;
 const int ELECTRON_PDGID = 11;
+const int MUON_PDGID = 13;
+const int PHOTON_PDGID = 22;
+
 
 
 SmartSelectionMonitor
@@ -544,17 +546,18 @@ int main(int argc, char* argv[])
       for(size_t ilep=0; ilep<2; ilep++) {
 	dilId *= selLeptons[ilep].pdgId();
 	int id(abs(selLeptons[ilep].pdgId()));
-	weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
+	// efficiency need to be updated. 
+	// weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id == ELECTRON_PDGID ? "loose" : "loose" ).first : 1.0;
 	boson += selLeptons[ilep].p4();
       }
       //check the channel
-      if( abs(dilId)==121 && eeTrigger)   chTags.push_back("ee");
-      if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-      if( abs(dilId)==143 && emuTrigger) chTags.push_back("emu"); 
+      if( abs(dilId)==ELECTRON_PDGID*ELECTRON_PDGID && eeTrigger) chTags.push_back("ee");
+      if( abs(dilId)==MUON_PDGID*MUON_PDGID && mumuTrigger) chTags.push_back("mumu"); 
+      if( abs(dilId)==ELECTRON_PDGID*MUON_PDGID && emuTrigger) chTags.push_back("emu"); 
 
     } else { // select photon case 
       if(hasPhotonTrigger && selPhotons.size()) {
-	dilId=22;
+	dilId=PHOTON_PDGID;
 	chTags.push_back("ee");
 	chTags.push_back("mumu");
 	boson = selPhotons[0].p4();
