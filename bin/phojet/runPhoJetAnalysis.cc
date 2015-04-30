@@ -330,6 +330,7 @@ int main(int argc, char* argv[])
   // configure the process
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
   bool debug = runProcess.getParameter<bool>("debug");
+  int maxEvents = runProcess.getParameter<int>("maxevents");
   bool isMC = runProcess.getParameter<bool>("isMC");  
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
@@ -350,8 +351,10 @@ int main(int argc, char* argv[])
   
   // get ready for the event loop
   fwlite::ChainEvent ev(urls);
-  const size_t totalEntries= ev.size();
-
+  size_t totalEntries(0);
+  if (maxEvents == -1) totalEntries = ev.size();
+  else totalEntries = maxEvents;
+  
   //MC normalization (to 1/pb)
   double xsecWeight = xsec/totalEntries;
 
@@ -380,6 +383,7 @@ int main(int argc, char* argv[])
   // ----------------------------------------------------------------------------------------
   // event loop  
   // loop on all the events
+  printf("Total entries to process: %zu \n", totalEntries);
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
   int treeStep(totalEntries/50);
