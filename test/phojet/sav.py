@@ -18,7 +18,6 @@ def main():
         sys.exit()
         
     src = args[0]    
-    test = option_exists(args, '-t')
     dst = args[1]
     shutil.move(src, dst) 
 
