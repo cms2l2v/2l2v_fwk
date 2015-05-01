@@ -151,6 +151,8 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	// loop over all files, follow CRAB convention start with 1 
 	for(int s=1; s<=split; s++){
 	  std::string FileName = get_FileName(RootDir, Samples, id, s);
+	  std::cout << "FileName = " << FileName << std::endl;
+
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
 
@@ -400,7 +402,7 @@ void SavingToFile(JSONWrapper::Object& Root,
 
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
-         for(int s=0;s<split;s++){
+         for(int s=1;s<split;s++){ // crab default 1 
 	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
 	   
            //string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
