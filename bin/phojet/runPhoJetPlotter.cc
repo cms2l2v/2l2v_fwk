@@ -151,7 +151,6 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	// loop over all files, follow CRAB convention start with 1 
 	for(int s=1; s<=split; s++){
 	  std::string FileName = get_FileName(RootDir, Samples, id, s);
-	  std::cout << "FileName = " << FileName << std::endl;
 
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
@@ -470,10 +469,10 @@ void runPlotter(std::string inDir,
   histlist.unique();   
 
   TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
-  printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
-  printf("                             :");
-  int TreeStep = histlist.size()/50;
-  if (TreeStep == 0) TreeStep = 1;
+  // printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
+  // printf("Processing :");
+  int TreeStep = 1; // histlist.size();
+  // if (TreeStep == 0) TreeStep = 1;
   
   int ictr(0);
   for(std::list<NameAndType>::iterator it= histlist.begin();
@@ -481,14 +480,15 @@ void runPlotter(std::string inDir,
     // std::cout << "ictr = " << ictr << std::endl;
     // if (ictr > 1  ) break;
     /// std::cout << "Processing name: " << (*it).name  << std::endl;    
-    if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+    // if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+    // if(ictr%TreeStep==0){printf("%d.", ictr);fflush(stdout);}
     if( it->is1D() ){
       // std::cout << "is 1D" << std::endl;
       // Draw1DHistogram(Root, inDir, *it, outDir);
       SavingToFile(Root, inDir, *it, OutputFile);
     }
   }
-  printf("\n");
+  printf("Saved as: %s\n", outFile.c_str());
   OutputFile->Close();
   
 }
