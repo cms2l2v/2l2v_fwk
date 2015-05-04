@@ -473,26 +473,26 @@ int main(int argc, char* argv[])
     if(muonsHandle.isValid()){ muons = *muonsHandle;}
     
     // below follows the analysis of the main selection with n-1 plots
-    tag = "sel";
+    // tag = "sel";
     
     // select photons
     pat::PhotonCollection selPhotons; 
     if (runPhotonSelection) {
       selPhotons = passPhotonSelection(mon, photons, triggerThreshold, rho);
       if ( selPhotons.size() == 0) continue;  
-      mon.fillHisto("npho", tag, selPhotons.size(), weight);
-      mon.fillHisto("nvtx", tag, vtx.size(), weight);
+      mon.fillHisto("npho", "sel", selPhotons.size(), weight);
+      mon.fillHisto("nvtx", "sel", vtx.size(), weight);
 
       for(size_t ipho=0; ipho<selPhotons.size(); ipho++) {
 	pat::Photon photon = selPhotons[ipho]; 
-	mon.fillHisto("phopt", tag, photon.pt(), weight);
-	mon.fillHisto("phoeta", tag, photon.superCluster()->eta(), weight);
-      // mon.fillHisto("phor9", tag, photon.r9(), weight);
-      // mon.fillHisto("phoiso", tag, photon.photonIso(), weight);
-	mon.fillHisto("phohoe", tag, photon.hadTowOverEm(), weight);
-	mon.fillHisto("elevto", tag, photon.hasPixelSeed(), weight);
-	// mon.fillHisto("sigietaieta", tag, photon.sigmaIetaIeta(), weight);
-	mon.fillHisto("sigietaieta", tag, photon.userFloat("sigmaIetaIeta_NoZS"), weight);
+	mon.fillHisto("phopt", "sel", photon.pt(), weight);
+	mon.fillHisto("phoeta", "sel", photon.superCluster()->eta(), weight);
+      // mon.fillHisto("phor9", "sel", photon.r9(), weight);
+      // mon.fillHisto("phoiso", "sel", photon.photonIso(), weight);
+	mon.fillHisto("phohoe", "sel", photon.hadTowOverEm(), weight);
+	mon.fillHisto("elevto", "sel", photon.hasPixelSeed(), weight);
+	// mon.fillHisto("sigietaieta", "sel", photon.sigmaIetaIeta(), weight);
+	mon.fillHisto("sigietaieta", "sel", photon.userFloat("sigmaIetaIeta_NoZS"), weight);
       }
     }
 
@@ -509,8 +509,8 @@ int main(int argc, char* argv[])
     std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
     std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
 
-    mon.fillHisto("nlep", tag, selLeptons.size(), weight);
-    mon.fillHisto("nexlep", tag, extraLeptons.size(), weight);
+    mon.fillHisto("nlep", "sel", selLeptons.size(), weight);
+    mon.fillHisto("nexlep", "sel", extraLeptons.size(), weight);
   
     // select jets
     pat::JetCollection selJets = passJetSelection(mon, jets, pujetidparas,
@@ -521,8 +521,8 @@ int main(int argc, char* argv[])
 
     for(size_t ijet=0; ijet<selJets.size(); ijet++) {
       pat::Jet jet = selJets[ijet]; 
-      mon.fillHisto("jetpt", tag, jet.pt(), weight);
-      mon.fillHisto("jeteta", tag, jet.eta(), weight);
+      mon.fillHisto("jetpt", "sel", jet.pt(), weight);
+      mon.fillHisto("jeteta", "sel", jet.eta(), weight);
 
       if(jet.pt()>30) {
 	njets++;
@@ -543,7 +543,7 @@ int main(int argc, char* argv[])
     } 
     
     // met
-    mon.fillHisto("met", tag, met.pt(), weight);
+    mon.fillHisto("met", "sel", met.pt(), weight);
 
     // assign channel based on lepton flavors
     std::vector<TString> chTags;
