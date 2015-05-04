@@ -502,7 +502,12 @@ int main(int argc, char* argv[])
     for(size_t l=0;l<muons    .size();l++){leptons.push_back(patUtils::GenericLepton(muons    [l]));}      
     std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
     mon.fillHisto("nlep", "all", leptons.size(), weight);
-    if (leptons.size() > 0 ) mon.fillHisto("leadpt", "all", leptons[0].pt(), weight);
+    if (leptons.size() > 0 ) {
+      mon.fillHisto("leadpt", "all", leptons[0].pt(), weight);
+      if( eeTrigger) mon.fillHisto("leadpt", "eetrg", leptons[0].pt(), weight); 
+      if( mumuTrigger) mon.fillHisto("leadpt", "mumutrg", leptons[0].pt(), weight); 
+      if( emuTrigger) mon.fillHisto("leadpt", "emutrg", leptons[0].pt(), weight); 
+    }
     
     // select leptons
     std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
