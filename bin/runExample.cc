@@ -80,15 +80,17 @@ int main(int argc, char* argv[])
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
 
   TString suffix=runProcess.getParameter<std::string>("suffix");
-  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
-  TString baseDir    = runProcess.getParameter<std::string>("dirName");
+  std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
+//  TString baseDir    = runProcess.getParameter<std::string>("dirName");
   TString url = TString(argv[1]);
-  TString outFileUrl(gSystem->BaseName(url));
-  outFileUrl.ReplaceAll("_cfg.py","");
-  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
-  TString outdir=runProcess.getParameter<std::string>("outdir");
-  TString outUrl( outdir );
-  gSystem->Exec("mkdir -p " + outUrl);
+//  TString outFileUrl(gSystem->BaseName(url));
+//  outFileUrl.ReplaceAll("_cfg.py","");
+//  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
+//  TString outdir=runProcess.getParameter<std::string>("outdir");
+//  TString outUrl( outdir );
+//  gSystem->Exec("mkdir -p " + outUrl);
+
+  TString outUrl = runProcess.getParameter<std::string>("outfile");
 
 
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
@@ -109,7 +111,8 @@ int main(int argc, char* argv[])
   bool isMC_ZZ  = isMC && ( string(url.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_WZ  = isMC && ( string(url.Data()).find("TeV_WZ")  != string::npos);
 
-  TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
+//  TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
+  TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
   printf("TextFile URL = %s\n",outTxtUrl.Data());
@@ -1446,8 +1449,8 @@ int main(int argc, char* argv[])
   //########     SAVING HISTO TO FILE     ########
   //##############################################
   //save control plots to file
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
+//  outUrl += "/";
+//  outUrl += outFileUrl + ".root";
   printf("Results save in %s\n", outUrl.Data());
   
   //save all to the file

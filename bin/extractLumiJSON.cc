@@ -60,8 +60,9 @@ int main(int argc, char* argv[])
   TString url = TString(urls[0]);
   TString outFileUrl(gSystem->BaseName(url));
   outFileUrl.ReplaceAll(".root","");
-  TString outdir=runProcess.getParameter<std::string>("outdir");
-  TString outUrl( outdir );
+//  TString outdir=runProcess.getParameter<std::string>("outdir");
+//  TString outUrl( outdir );
+  TString outUrl = runProcess.getParameter<std::string>("outfile");
 
    std::vector<stRun*> RunMap;
 

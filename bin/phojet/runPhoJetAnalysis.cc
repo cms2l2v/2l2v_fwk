@@ -332,7 +332,8 @@ int main(int argc, char* argv[])
   // TString outUrl( outdir );
   // gSystem->Exec("mkdir -p " + outUrl);
 
-  TString output=runProcess.getParameter<std::string>("output");
+  TString outUrl = runProcess.getParameter<std::string>("outfile");
+
   
   // initiating histograms
   SmartSelectionMonitor mon = initHistograms();
@@ -630,8 +631,8 @@ int main(int argc, char* argv[])
   // printf("Results saved in %s\n", outUrl.Data());
   // TFile *ofile=TFile::Open(outUrl, "recreate");
 
-  printf("Results saved in %s\n", output.Data());
-  TFile *ofile=TFile::Open(output, "recreate");
+  printf("Results saved in %s\n", outUrl.Data());
+  TFile *ofile=TFile::Open(outUrl, "recreate");
 
   mon.Write();
   ofile->Close();

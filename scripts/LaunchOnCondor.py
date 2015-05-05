@@ -14,6 +14,8 @@ CopyRights += '#     Loic.quertenmont@cern.ch     #\n'
 CopyRights += '#            April 2010            #\n'
 CopyRights += '####################################\n'
 
+subTool = '' #will be automatically determined, if empty
+
 Farm_Directories  = []
 Path_Cmd          = ''
 Path_Shell        = ''
@@ -31,10 +33,14 @@ Jobs_LSFRequirement = '"type==SLC6_64&&pool>30000"'
 Jobs_Inputs	  = []
 Jobs_FinalCmds    = []
 Jobs_RunHere      = 0
-Jobs_EmailReport = False
-
-useLSF = True
-useLIP = True
+Jobs_EmailReport  = False
+Jobs_CRABDataset  = '""'
+Jobs_CRABcfgFile  = ''
+Jobs_CRABexe      = "runExample"
+Jobs_CRABStorageSite = 'T2_BE_UCL'
+Jobs_CRABname      = Jobs_CRABexe
+Jobs_CRABInDBS     = "global"
+Jobs_CRABUnitPerJob = 10
 
 
 def natural_sort(l): 
@@ -48,7 +54,7 @@ def usage() :
       print 'LaunchOnCondor [options]'
 #      print '   -j json file with lumi info'
 #      print '   -o output file'
-      print 'is an interface to submit jobs to LSF/Condor batch in a high-level way'
+      print 'is an interface to submit jobs to LSF/Condor/Crab3 batch in a high-level way'
 
 
 def CreateTheConfigFile(argv):
@@ -88,13 +94,15 @@ def CreateTheConfigFile(argv):
 	config_file.write(config_txt)
 	config_file.close()
 
-def CreateTheShellFile(argv):
+def CreateTheShellFile(argv):   
 	global Path_Shell
 	global Path_Cfg
 	global CopyRights	
 	global Jobs_RunHere
 	global Jobs_FinalCmds
         global absoluteShellPath
+        if(subTool=='crab'):return
+
         Path_Shell = Farm_Directories[1]+'script'+Jobs_Index+Jobs_Name+'.sh'
         function_argument=''
         hostname = os.getenv("HOSTNAME", "")
@@ -165,16 +173,11 @@ def CreateTheShellFile(argv):
                 shell_file.write('   .x %s+' % argv[1] + function_argument + '\n')
 	        shell_file.write('   .q\n')
 	        shell_file.write('EOF\n\n')
-        elif argv[0]=='CMSSW':
+        elif argv[0]=='CMSSW' or argv[0]=='LIP':
 		CreateTheConfigFile(argv);
 		if Jobs_RunHere==0:
 			shell_file.write('cd -\n')
 		shell_file.write('cmsRun ' + os.getcwd() + '/'+Path_Cfg + '\n')
-        elif argv[0]=='LIP':        
-                CreateTheConfigFile(argv);
-                if Jobs_RunHere==0:
-                        shell_file.write('cd -\n')
-                shell_file.write('cmsRun ' + os.getcwd() + '/'+Path_Cfg + '\n')
 	else:
 		print #Program to use is not specified... Guess it is bash command		
                 shell_file.write('#Program to use is not specified... Guess it is bash command\n')
@@ -191,45 +194,101 @@ def CreateTheShellFile(argv):
 	os.system("chmod 777 "+Path_Shell)
 
 
+def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
+   global Jobs_CRABDataset
+   global Jobs_CRABcfgFile
+   global Jobs_CRABexe
+   global Jobs_CRABStorageSite
+   global Jobs_CRABname
+   global Jobs_CRABInDBS
+   global Jobs_CRABUnitPerJob
+   
+   os.system("rm -rdf " + crabWorkDir+"/crab_"+Jobs_CRABname) #first delete previous crab directory
+
+   config_file=open(crabConfigPath,'w')
+   config_file.write('from WMCore.Configuration import Configuration\n')
+   config_file.write('import os\n')
+   config_file.write('config = Configuration()\n')
+   config_file.write('\n')
+   config_file.write('config.section_("General")\n')
+   config_file.write('config.General.requestName = "%s"\n' % Jobs_CRABname)
+   config_file.write('config.General.workArea = "%s"\n' % crabWorkDir)
+   config_file.write('config.General.transferOutputs=True\n')
+   config_file.write('#config.General.transferLogs=True\n')
+   config_file.write('\n')
+   config_file.write('config.section_("JobType")\n')
+   config_file.write('config.JobType.pluginName = "Analysis"\n')
+   config_file.write('config.JobType.psetName = "'+Jobs_CRABcfgFile+'"\n')
+   config_file.write('config.JobType.scriptExe = "%s"\n' % exePath)
+   config_file.write('config.JobType.sendPythonFolder = True\n')
+   config_file.write('config.JobType.inputFiles = ["'+os.path.expanduser("~/x509_user_proxy/x509_proxy")+'", os.environ["CMSSW_BASE"]+"/bin/"+os.environ["SCRAM_ARCH"]+"/'+Jobs_CRABexe+'"]\n')
+   config_file.write('config.JobType.outputFiles = ["output.root"]\n')
+   config_file.write('\n')
+   config_file.write('config.section_("Data")\n')
+   config_file.write('config.Data.inputDataset = '+Jobs_CRABDataset+'\n')
+   config_file.write('config.Data.inputDBS = "%s"\n' % Jobs_CRABInDBS)
+   config_file.write('config.Data.splitting = "FileBased"\n')
+   config_file.write('config.Data.unitsPerJob = %d\n' % Jobs_CRABUnitPerJob)
+   config_file.write('config.Data.publication = False\n')
+   config_file.write('#config.Data.publishDBS = \'phys03\'\n')
+   config_file.write('config.Data.ignoreLocality = False\n')
+   config_file.write('#config.Data.outLFN = \'/store/user/<username>/Debug\'\n')
+   config_file.write('\n')
+   config_file.write('config.section_("Site")\n')
+   config_file.write('config.Site.storageSite = "'+Jobs_CRABStorageSite+'"\n')
+   config_file.close()
+
+
+   exe_file=open(exePath,'w')
+   exe_file.write('#!/bin/sh\n')
+   exe_file.write('\n')
+   exe_file.write('# Copy files to lib and bin dir\n')
+   exe_file.write('cp ./lib/$SCRAM_ARCH/* $CMSSW_BASE/lib/$SCRAM_ARCH\n')
+   exe_file.write('cp -rd ./src/* $CMSSW_BASE/src/.\n')
+   exe_file.write('cp -rd ./python/* $CMSSW_BASE/python/.\n')
+   exe_file.write('cp ' + Jobs_CRABexe + ' $CMSSW_BASE/bin/$SCRAM_ARCH\n')
+   exe_file.write('cp x509_proxy $CMSSW_BASE/\n')
+   exe_file.write('export X509_USER_PROXY=$CMSSW_BASE/x509_proxy\n')
+   exe_file.write('\n')
+   exe_file.write('#just needed to create the JobRepport\n')
+   exe_file.write('cmsRun -j FrameworkJobReport.xml debug/originalPSet.py\n')
+   exe_file.write('\n')
+   exe_file.write('#Actually run the script\n')
+   exe_file.write(Jobs_CRABexe + ' debug/originalPSet.py\n')
+   exe_file.close()
+
+
 def CreateTheCmdFile():
-        global useLSF
-        global useLIP
+        global subTool
         global Path_Cmd
         global CopyRights
         Path_Cmd   = Farm_Directories[1]+Jobs_Name+'.cmd'
 	cmd_file=open(Path_Cmd,'w')
-
-	if useLSF:
-		cmd_file.write(CopyRights + '\n')
+	if subTool=='condor':
+           cmd_file.write('Universe                = vanilla\n')
+	   cmd_file.write('Environment             = CONDORJOBID=$(Process)\n')
+	   cmd_file.write('notification            = Error\n')
+	   #site specific code
+  	   if  (commands.getstatusoutput("hostname -f")[1].find("ucl.ac.be" )!=-1): cmd_file.write('requirements            = (CMSFARM=?=True)&&(Memory > 200)\n')
+           elif(commands.getstatusoutput("uname -n"   )[1].find("purdue.edu")!=-1): cmd_file.write('requirements            = (request_memory > 200)\n')
+	   else: 		                                                    cmd_file.write('requirements            = (Memory > 200)\n')
+	   cmd_file.write('should_transfer_files   = YES\n')
+	   cmd_file.write('when_to_transfer_output = ON_EXIT\n')
 	else:
-            if(not useLIP):
-		cmd_file.write('Universe                = vanilla\n')
-		cmd_file.write('Environment             = CONDORJOBID=$(Process)\n')
-		cmd_file.write('notification            = Error\n')
-		#code specific for louvain
-		if(commands.getstatusoutput("hostname -f")[1].find("ucl.ac.be")!=-1):
-        		cmd_file.write('requirements            = (CMSFARM=?=True)&&(Memory > 200)\n')
-                elif(commands.getstatusoutput("uname -n")[1].find("purdue.edu")!=-1):
-        		cmd_file.write('requirements            = (request_memory > 200)\n')
-		else:
-			cmd_file.write('requirements            = (Memory > 200)\n')
-		cmd_file.write('should_transfer_files   = YES\n')
-		cmd_file.write('when_to_transfer_output = ON_EXIT\n')
+ 	   cmd_file.write(CopyRights + '\n')
 	cmd_file.close()
 
 def AddJobToCmdFile():
-        global useLSF
-        global useLIP
+        global subTool
 	global Path_Shell
         global Path_Cmd
         global Path_Out
 	global Path_Log
         global absoluteShellPath
         global Jobs_EmailReport
-        Path_Log   = Farm_Directories[2]+Jobs_Index+Jobs_Name
         Path_Out   = Farm_Directories[3] + Jobs_Index + Jobs_Name
         cmd_file=open(Path_Cmd,'a')
-	if useLSF:
+	if subTool=='bsub':
                absoluteShellPath = Path_Shell;
                if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/"+absoluteShellPath
 	       temp = "bsub -q " + Jobs_Queue + " -R " + Jobs_LSFRequirement + " -J " + Jobs_Name+Jobs_Index
@@ -240,20 +299,24 @@ def AddJobToCmdFile():
 	         temp = temp + " -oo " + absoluteOutPath + ".cout"
 	       temp = temp + " '" + absoluteShellPath + "'\n"
 	       cmd_file.write(temp)
-#               cmd_file.write("bsub -q " + Jobs_Queue + " -J " + Jobs_Name+Jobs_Index + " '" + os.getcwd() + "/"+Path_Shell + " 0 ele'\n")
-	else:
-            if(not useLIP):
+	elif subTool=='qsub':
+                absoluteShellPath = Path_Shell;
+                if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
+                cmd_file.write("qsub " + absoluteShellPath + "\n")
+        elif subTool=='crab':
+                crabWorkDirPath = Farm_Directories[1]
+                crabConfigPath  = Farm_Directories[1]+'crabConfig_'+Jobs_Index+Jobs_Name+'_cfg.py'
+                crabExePath     = Farm_Directories[1]+'crabExe.sh'
+                crabParamPath   = Farm_Directories[1]+'crabParam_'+Jobs_Index+Jobs_Name+'_cfg.py'
+                CreateCrabConfig(crabWorkDirPath, crabConfigPath, crabExePath, crabParamPath)
+                cmd_file.write("crab submit -c " + crabConfigPath + "\n")
+        else:
         	cmd_file.write('\n')
 	        cmd_file.write('Executable              = %s\n'     % Path_Shell)
         	cmd_file.write('output                  = %s.out\n' % Path_Log)
 	        cmd_file.write('error                   = %s.err\n' % Path_Log)
-#        	cmd_file.write('log                     = %s.log\n' % Path_Log)
                 cmd_file.write('log                     = /dev/null\n') 
 	        cmd_file.write('Queue 1\n')
-            else:
-                absoluteShellPath = Path_Shell;
-                if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
-                cmd_file.write("qsub " + absoluteShellPath + "\n")
         cmd_file.close()
 
 def CreateDirectoryStructure(FarmDirectory):
@@ -286,20 +349,20 @@ def SendCluster_LoadInputFiles(path, NJobs):
 			Jobs_Inputs.append("")
 	return JobIndex+1
 
+
 def SendCluster_Create(FarmDirectory, JobName):
-	global useLSF
-        global useLIP
+	global subTool
 	global Jobs_Name
 	global Jobs_Count
         global Farm_Directories
 
-	#determine if the submission system is LSF batch or condor
-	command_out = commands.getstatusoutput("bjobs")[1]
-        command_lip = commands.getstatusoutput("qstat")[1]
-	if(command_out.find("command not found")<0): useLSF = True
-	else:				  	     useLSF = False;
-        if(command_lip.find("command not found")<0): useLIP = True
-        else:                                        useLIP = False;
+	#determine what is the submission system available, or use condor
+        if(subTool==''):
+  	   if(  commands.getstatusoutput("bjobs")[1].find("command not found")<0): subTool = 'bsub'
+           elif(commands.getstatusoutput("qstat")[1].find("command not found")<0): subTool = 'qsub'
+           else:                                                                   subTool = 'condor'
+        if(Jobs_Queue.find('crab')>=0):                                            subTool = 'crab'
+
 	Jobs_Name  = JobName
 	Jobs_Count = 0
 
@@ -327,18 +390,14 @@ def SendCluster_Push(Argv):
 	Jobs_Count = Jobs_Count+1
 
 def SendCluster_Submit():
-        global useLSF
-        global useLIP
+        global subTool
 	global CopyRights
         global Jobs_Count
         global Path_Cmd
 
-	if useLSF:
-		os.system("sh " + Path_Cmd)
-        elif useLIP:
-                os.system("sh " + Path_Cmd)
-	else:
-		os.system("condor_submit " + Path_Cmd)  
+	if subTool=='bsub' or subTool=='qsub': os.system("sh " + Path_Cmd)
+        elif subTool=='crab':                  os.system("sh " + Path_Cmd)
+	else:          	       	               os.system("condor_submit " + Path_Cmd)  
 
 	print '\n'+CopyRights
 	print '%i Job(s) has/have been submitted on the Computing Cluster' % Jobs_Count
@@ -352,8 +411,8 @@ def SendCMSJobs(FarmDirectory, JobName, ConfigFile, InputFiles, NJobs, Argv):
 	SendCluster_Create(FarmDirectory, JobName)
 	NJobs = SendCluster_LoadInputFiles(InputFiles, NJobs)
 	for i in range(NJobs):
-        	LaunchOnCondor.SendCluster_Push  (["CMSSW", ConfigFile])
-	LaunchOnCondor.SendCluster_Submit()
+        	SendCluster_Push  (["CMSSW", ConfigFile])
+	SendCluster_Submit()
 
 
 
