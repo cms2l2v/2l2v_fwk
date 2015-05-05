@@ -149,8 +149,9 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	std::cout << "Split = " << split << std::endl;
 
 	// loop over all files, follow CRAB convention start with 1 
-	for(int s=1; s<=split; s++){
-	  std::string FileName = get_FileName(RootDir, Samples, id, s);
+	for(int s=0; s<split; s++){
+	  // follow CRAB convention start with 1
+	  std::string FileName = get_FileName(RootDir, Samples, id, s+1); 
 
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
@@ -390,6 +391,7 @@ void SavingToFile(JSONWrapper::Object& Root,
   using std::string; 
   std::unordered_map<std::string, bool> FileExist;
 
+  printf("Inside SavingToFile\n");		   
   for(unsigned int i=0;i<Process.size();i++){
       TH1* hist = NULL;
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
@@ -400,22 +402,27 @@ void SavingToFile(JSONWrapper::Object& Root,
 	 if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }	 
 
          int split = Samples[j].getInt("split", 1);
+	 printf("split = %d\n", split);
+	 
          TH1* tmphist = NULL;  int NFiles=0;
-         for(int s=1;s<split;s++){ // crab default 1 
-	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
+         for(int s=0;s<split;s++){ 
+	   //printf("Running on s = %d\n", s);
+	   //string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
 	   
            //string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
-	   std::string FileName = get_FileName(RootDir, Samples, j, s);
-	   
+	   std::string FileName = get_FileName(RootDir, Samples, j, s+1); // crab default 1 
+	   printf("FileName = %s", FileName.c_str());		   
            // if(!FileExist[FileName])continue;
 	   TFile* File = new TFile(FileName.c_str());
            // if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
 	   if ( !isFileExist(File) ) {delete File; continue;}
-	   // printf("FileName = %s", FileName.c_str());	
-	   
+
+
            TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
            if(!tmptmphist){delete File;continue;}            
-           if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName()); checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
+	   // found existing histo: 
+	   std::cout << "Found the histo: " << HistoProperties.name << std::endl;
+	   if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName()); checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
            NFiles++;
 
 	   // printf("NFiles = %i", NFiles);
@@ -485,6 +492,7 @@ void runPlotter(std::string inDir,
     if( it->is1D() ){
       // std::cout << "is 1D" << std::endl;
       // Draw1DHistogram(Root, inDir, *it, outDir);
+      // std::cout << "Processing name: " << (*it).name  << std::endl;    
       SavingToFile(Root, inDir, *it, OutputFile);
     }
   }
