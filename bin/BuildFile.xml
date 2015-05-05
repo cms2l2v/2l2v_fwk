@@ -22,8 +22,6 @@
   <bin name="runLeptonEffStudy"           file="chhiggs/runLeptonEffStudy.cc"></bin>
   <bin name="runFixedPlotter"             file="chhiggs/runFixedPlotter.cc"></bin> 
 
-  <bin name="runTauFakesStudy"            file="taupog/runTauFakesStudy.cc"></bin>
-
   <bin name="runPhoJetAnalysis"           file="phojet/runPhoJetAnalysis.cc"></bin>
   <bin name="runPhoJetPlotter"            file="phojet/runPhoJetPlotter.cc"></bin>
 </environment>
