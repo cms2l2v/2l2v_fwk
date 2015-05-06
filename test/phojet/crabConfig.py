@@ -18,8 +18,8 @@ config.General.workArea = 'crab_phojet'
 config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'phojet_cfg.py'
-config.JobType.scriptExe = 'submit.sh'
-config.JobType.inputFiles = ['FrameworkJobReport.xml', #'x509_proxy',
+config.JobType.scriptExe = 'crabExe.sh'
+config.JobType.inputFiles = [#'FrameworkJobReport.xml', #'x509_proxy',
                              binfile, 'phojet_cfg.py']
 config.JobType.outputFiles = ['output.root']
 

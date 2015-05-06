@@ -246,7 +246,10 @@ namespace utils
   {
     using namespace std;
 
+    bool ValueWasNull = false;
+
     if(value==0.0 && error==0.0)return string("");
+    if(value==0.0){value=error; ValueWasNull=true;}
     
     if(!doPowers){
       char tmpchar[255];
@@ -273,6 +276,9 @@ namespace utils
     }
     int ErrorFloating = ValueFloating;
     
+ 
+    if(ValueWasNull){value=0.0;}
+
     char tmpchar[255];
     if(power!=0){
       if(systError<0){

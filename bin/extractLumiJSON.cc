@@ -58,17 +58,13 @@ int main(int argc, char* argv[])
   if(isMC) return 0;
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
   TString url = TString(urls[0]);
-  TString outFileUrl(gSystem->BaseName(url));
-  outFileUrl.ReplaceAll(".root","");
-  TString outdir=runProcess.getParameter<std::string>("outdir");
-  TString outUrl( outdir );
+  TString outUrl = runProcess.getParameter<std::string>("outfile");
 
    std::vector<stRun*> RunMap;
-
    GetLumiBlocks_Core(urls, RunMap);
 
-   DumpJson(RunMap, (outUrl + "/" + outFileUrl + "_lumi.json").Data());
-   DumpTime(timeMap,(outUrl + "/" + outFileUrl + "_lumi.time").Data());
+   DumpJson(RunMap, (outUrl + ".json").Data());
+   DumpTime(timeMap,(outUrl + ".time").Data());
 }  
 
 

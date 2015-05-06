@@ -31,6 +31,18 @@ git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
 #checkout the 2l2v framework
 git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
 
+
+
+#checkout higgs-combine-tools  
+#(actually officialy unsupported on 72X, but seems to work)
+git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+cd HiggsAnalysis/CombinedLimit
+git remote add upstream  https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git
+git fetch upstream
+git checkout -b slc6-root5.34.17  upstream/slc6-root5.34.17 
+cd ../..
+
+
 scram b -j 20
 
 #test

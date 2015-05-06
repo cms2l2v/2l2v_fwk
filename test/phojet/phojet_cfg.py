@@ -29,7 +29,7 @@ process.source = cms.Source("PoolSource", fileNames = inputFiles)
 
 runProcess = cms.PSet(
     input = inputFiles, 
-    output = cms.string("output.root"),
+    outfile = cms.string("output.root"),
     debug = cms.bool(False),
     isMC = cms.bool(True),
     xsec = cms.double(9999.99),
