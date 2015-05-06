@@ -92,14 +92,12 @@ int main (int argc, char *argv[])
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
   TString baseDir = runProcess.getParameter < std::string > ("dirName");
-  TString url = TString (argv[1]);
-  TString outFileUrl (gSystem->BaseName (url));
-  outFileUrl.ReplaceAll ("_cfg.py", "");
-  if (mctruthmode != 0)
-    {
-      outFileUrl += "_filt";
-      outFileUrl += mctruthmode;
-    }
+  TString dtag=runProcess.getParameter<std::string>("dtag");
+//  if (mctruthmode != 0) //FIXME
+//    {
+//      outFileUrl += "_filt";
+//      outFileUrl += mctruthmode;
+//    }
   TString outUrl = runProcess.getParameter<std::string>("outfile");
   
   bool
@@ -110,19 +108,19 @@ int main (int argc, char *argv[])
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (url.Contains ("DoubleEle")) filterOnlyEE       = true;
-      if (url.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
-      if (url.Contains ("MuEG"))      filterOnlyEMU      = true;
-      if (url.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
-      if (url.Contains ("SingleEle")) filterOnlySINGLEE  = true;
+      if (dtag.Contains ("DoubleEle")) filterOnlyEE       = true;
+      if (dtag.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
+      if (dtag.Contains ("MuEG"))      filterOnlyEMU      = true;
+      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
+      if (dtag.Contains ("SingleEle")) filterOnlySINGLEE  = true;
     }
   
-  bool isSingleMuPD (!isMC && url.Contains ("SingleMu")); // Do I really need this?
-  bool isV0JetsMC (isMC && (url.Contains ("DYJetsToLL_50toInf") || url.Contains ("WJets")));
-  bool isWGmc (isMC && url.Contains ("WG"));
-  bool isZGmc (isMC && url.Contains ("ZG"));
-  bool isMC_ZZ = isMC && (string (url.Data ()).find ("TeV_ZZ") != string::npos);
-  bool isMC_WZ = isMC && (string (url.Data ()).find ("TeV_WZ") != string::npos);
+  bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
+  bool isV0JetsMC (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
+  bool isWGmc (isMC && dtag.Contains ("WG"));
+  bool isZGmc (isMC && dtag.Contains ("ZG"));
+  bool isMC_ZZ = isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos);
+  bool isMC_WZ = isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos);
   
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -338,7 +336,7 @@ int main (int argc, char *argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK5PFchs.txt").Data ());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
+  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, dtag);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;

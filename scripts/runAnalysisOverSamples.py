@@ -17,12 +17,13 @@ def getByLabel(proc,key,defaultVal=None) :
     except KeyError:
         return defaultVal
 
+initialCommand = '';
 def initProxy():
+   global initialCommand
    if(not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')) or ((time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600 and  int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 )):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-
-
+   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
 
 def getFileList(procData):
    FileList = [];
@@ -41,13 +42,14 @@ def getFileList(procData):
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
       elif(isMINIAODDataset):
          initProxy()
-         initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
 
 
          print("Use das_client.py to list files from : " + getByLabel(procData,'dset','') )
          print ('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')
          list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
-         for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i]
+         for i in range(0,len(list)): list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
+#         for i in range(0,len(list)): list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
+#         for i in range(0,len(list)): list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
       else:
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
@@ -107,7 +109,6 @@ if(hostname.find("cern.ch")!=-1)  :localTier = "CERN"
 
 if('crab' in opt.queue): initProxy()
 
-initialCommand = '';
 
 #open the file which describes the sample
 jsonFile = open(opt.samplesDB,'r')

@@ -78,14 +78,12 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
+  TString dtag=runProcess.getParameter<std::string>("dtag");
 
   TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
 //  TString baseDir    = runProcess.getParameter<std::string>("dirName");
-  TString url = TString(argv[1]);
-//  TString outFileUrl(gSystem->BaseName(url));
-//  outFileUrl.ReplaceAll("_cfg.py","");
-//  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
+//  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; } //FIXME
 //  TString outdir=runProcess.getParameter<std::string>("outdir");
 //  TString outUrl( outdir );
 //  gSystem->Exec("mkdir -p " + outUrl);
@@ -96,22 +94,21 @@ int main(int argc, char* argv[])
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
   if(!isMC)
     {
-      if(url.Contains("DoubleEle")) filterOnlyEE=true;
-      if(url.Contains("DoubleMu"))  filterOnlyMUMU=true;
-      if(url.Contains("MuEG"))      filterOnlyEMU=true;
+      if(dtag.Contains("DoubleEle")) filterOnlyEE=true;
+      if(dtag.Contains("DoubleMu"))  filterOnlyMUMU=true;
+      if(dtag.Contains("MuEG"))      filterOnlyEMU=true;
     }
-  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
-  bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
-  bool isWGmc(isMC && url.Contains("WG"));
-  bool isZGmc(isMC && url.Contains("ZG"));
-  bool isMC_GG  = isMC && ( string(url.Data()).find("GG" )  != string::npos);
-  bool isMC_VBF = isMC && ( string(url.Data()).find("VBF")  != string::npos);
+  bool isSingleMuPD(!isMC && dtag.Contains("SingleMu"));  
+  bool isV0JetsMC(false);//isMC && (dtag.Contains("DYJetsToLL_50toInf") || dtag.Contains("_WJets")));  #FIXME should be reactivated as soon as we have exclusive jet samples
+  bool isWGmc(isMC && dtag.Contains("WG"));
+  bool isZGmc(isMC && dtag.Contains("ZG"));
+  bool isMC_GG  = isMC && ( string(dtag.Data()).find("GG" )  != string::npos);
+  bool isMC_VBF = isMC && ( string(dtag.Data()).find("VBF")  != string::npos);
   bool isMC_125OnShell = isMC && (mctruthmode==521);
   if(isMC_125OnShell) mctruthmode=125;
-  bool isMC_ZZ  = isMC && ( string(url.Data()).find("TeV_ZZ")  != string::npos);
-  bool isMC_WZ  = isMC && ( string(url.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
+  bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
 
-//  TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
@@ -200,13 +197,13 @@ int main(int argc, char* argv[])
   double HiggsMass=0; string VBFString = ""; string GGString("");
   TF1 *decayProbPdf=new TF1("relbw","(2*sqrt(2)*[0]*[1]*sqrt(pow([0],2)*(pow([0],2)+pow([1],2)))/(TMath::Pi()*sqrt(pow([0],2)+sqrt(pow([0],2)*(pow([0],2)+pow([1],2))))))/(pow(pow(x,2)-pow([0],2),2)+pow([0]*[1],2))",0,2000);
   if(isMC_GG){  
-    size_t GGStringpos =  string(url.Data()).find("GG");
-    string StringMass = string(url.Data()).substr(GGStringpos+5,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
-    GGString = string(url.Data()).substr(GGStringpos);  
+    size_t GGStringpos =  string(dtag.Data()).find("GG");
+    string StringMass = string(dtag.Data()).substr(GGStringpos+5,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
+    GGString = string(dtag.Data()).substr(GGStringpos);  
   }else if(isMC_VBF){
-    size_t VBFStringpos =  string(url.Data()).find("VBF");
-    string StringMass = string(url.Data()).substr(VBFStringpos+6,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
-    VBFString = string(url.Data()).substr(VBFStringpos);
+    size_t VBFStringpos =  string(dtag.Data()).find("VBF");
+    string StringMass = string(dtag.Data()).substr(VBFStringpos+6,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
+    VBFString = string(dtag.Data()).substr(VBFStringpos);
   }
   if(mctruthmode==125) HiggsMass=124;
   
@@ -323,8 +320,8 @@ int main(int argc, char* argv[])
 		    }
 		  else if(mctruthmode==125){
 		    TString var("");
-		    if(url.Contains("ScaleUp"))   var="up";
-		    if(url.Contains("ScaleDown")) var="down";
+		    if(dtag.Contains("ScaleUp"))   var="up";
+		    if(dtag.Contains("ScaleDown")) var="down";
 		    Double_t nrWgt = higgs::utils::weightToH125Interference(hmass,NRparams[nri].first,nrLineShapesFile,var);
 		    shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
 		    shapeWgtUp     = shapeWgt;
@@ -557,7 +554,7 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
   
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
+  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,dtag);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -706,10 +703,13 @@ int main(int argc, char* argv[])
       if(isV0JetsMC){
          fwlite::Handle< LHEEventProduct > lheEPHandle;
          lheEPHandle.getByLabel(ev, "externalLHEProducer");
-
- 	 mon.fillHisto("nup","",lheEPHandle->hepeup().NUP,1);
- 	 if(lheEPHandle->hepeup().NUP>5) continue;
-	 mon.fillHisto("nupfilt","",lheEPHandle->hepeup().NUP,1);
+         if(lheEPHandle.isValid()){
+   	    mon.fillHisto("nup","",lheEPHandle->hepeup().NUP,1);
+ 	    if(lheEPHandle->hepeup().NUP>5) continue;
+	    mon.fillHisto("nupfilt","",lheEPHandle->hepeup().NUP,1);
+         }else{
+            printf("Handle to externalLHEProducer is invalid --> Can not ignore V0+Jet events from inclusive samples\n");
+         }
       }
 
 
@@ -1449,8 +1449,6 @@ int main(int argc, char* argv[])
   //########     SAVING HISTO TO FILE     ########
   //##############################################
   //save control plots to file
-//  outUrl += "/";
-//  outUrl += outFileUrl + ".root";
   printf("Results save in %s\n", outUrl.Data());
   
   //save all to the file

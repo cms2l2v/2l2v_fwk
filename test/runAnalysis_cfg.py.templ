@@ -16,7 +16,7 @@ datapileup_70300_2012abcd_singleMu=cms.vdouble( 1.74887e-05, 8.41971e-05, 0.0002
  
 
 runProcess = cms.PSet(
-    dtag  = cms.vstring("@dtag"),
+    dtag  = cms.string("@dtag"),
     input = cms.untracked.vstring("@input"),
     outfile = cms.string("@outfile"),
     isMC = cms.bool(@isMC),

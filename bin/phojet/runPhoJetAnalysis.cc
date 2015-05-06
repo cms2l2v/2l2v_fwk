@@ -324,10 +324,9 @@ int main(int argc, char* argv[])
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   edm::ParameterSet pujetidparas = runProcess.getParameter<edm::ParameterSet>("pujetidparas"); 
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
-  // TString url = TString(argv[1]);
-  // TString outFileUrl(gSystem->BaseName(url));
-  // outFileUrl.ReplaceAll("_cfg.py","");
-  // if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
+  TString dtag=runProcess.getParameter<std::string>("dtag");
+
+  // if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; } //FIXME
   // TString outdir=runProcess.getParameter<std::string>("outdir");
   // TString outUrl( outdir );
   // gSystem->Exec("mkdir -p " + outUrl);
