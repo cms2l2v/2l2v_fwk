@@ -15,13 +15,17 @@ GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
 DRAWFLAGS=$(GCCFLAGS) $(ROOTCFLAGS) $(ROOTLIBS) -lHistPainter 
 
 
-all: drawPt 
+all: drawPt drawEff
 	@echo "Build successful."
 
 drawPt: drawPt.cc
 	$(CC) $(DRAWFLAGS) $< -o $@
 
+drawEff: drawEff.cc
+	$(CC) $(DRAWFLAGS) $< -o $@
+
 clean:
 	rm -rf *~  *.dSYM 
-	rm -f drawPt
+	rm -f drawPt drawEff
+
 
