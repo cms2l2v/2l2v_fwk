@@ -146,7 +146,7 @@ void GetListOfObject(JSONWrapper::Object& Root,
       // loop over all samples 
       for(size_t id=0; id<Samples.size(); id++){
 	int split = Samples[id].getInt("split", 1); // default 1 
-	std::cout << "Split = " << split << std::endl;
+	// std::cout << "Split = " << split << std::endl;
 
 	// loop over all files, follow CRAB convention start with 1 
 	for(int s=0; s<split; s++){
@@ -160,7 +160,7 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	  if ( !fileExist ) continue;
  
 	  //do the following only for the first file
-	  if(s>1) continue;
+	  if(s>0) continue;
 
 	  printf("Adding all objects from %25s to the list of considered objects\n",
 		 FileName.c_str());
@@ -391,7 +391,7 @@ void SavingToFile(JSONWrapper::Object& Root,
   using std::string; 
   std::unordered_map<std::string, bool> FileExist;
 
-  printf("Inside SavingToFile\n");		   
+  // printf("Inside SavingToFile\n");		   
   for(unsigned int i=0;i<Process.size();i++){
       TH1* hist = NULL;
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
@@ -402,7 +402,7 @@ void SavingToFile(JSONWrapper::Object& Root,
 	 if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }	 
 
          int split = Samples[j].getInt("split", 1);
-	 printf("split = %d\n", split);
+	 // printf("split = %d\n", split);
 	 
          TH1* tmphist = NULL;  int NFiles=0;
          for(int s=0;s<split;s++){ 
@@ -411,7 +411,7 @@ void SavingToFile(JSONWrapper::Object& Root,
 	   
            //string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
 	   std::string FileName = get_FileName(RootDir, Samples, j, s+1); // crab default 1 
-	   printf("FileName = %s", FileName.c_str());		   
+	   //printf("FileName = %s", FileName.c_str());		   
            // if(!FileExist[FileName])continue;
 	   TFile* File = new TFile(FileName.c_str());
            // if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
@@ -421,7 +421,7 @@ void SavingToFile(JSONWrapper::Object& Root,
            TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
            if(!tmptmphist){delete File;continue;}            
 	   // found existing histo: 
-	   std::cout << "Found the histo: " << HistoProperties.name << std::endl;
+	   // std::cout << "Found the histo: " << HistoProperties.name << std::endl;
 	   if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName()); checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
            NFiles++;
 
