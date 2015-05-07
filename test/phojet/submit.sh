@@ -1,1 +1,2 @@
 runAnalysisOverSamples.py -e runPhoJetAnalysis -j $CMSSW_BASE/src/UserCode/llvv_fwk/test/phojet/samples.json -o $CMSSW_BASE/src/UserCode/llvv_fwk/test/phojet/results -d  /store/group/phys_higgs/cmshzz2l2v/2014_03_20/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s crab 
+
