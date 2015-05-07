@@ -19,6 +19,7 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TTree.h"
+#include "TText.h"
 #include "TF1.h"
 #include "TCutG.h"
 #include "TGraphErrors.h"
@@ -42,6 +43,7 @@ bool showUnc=false;
 double baseRelUnc=0.044;
 bool noLog=false;
 bool isSim=false;
+bool doTree = true;
 bool do2D  = true;
 bool do1D  = true;
 bool doTex = true;
@@ -208,16 +210,30 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 
 void SavingTreeToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties, TFile* OutputFile){
-   std::vector<TObject*> ObjectToDelete;
-
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
-      TList* list = new TList();
+
+      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      OutputFile->cd();
+      TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
+      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
+      subdir->cd();
+
+      // create the first root file with a tree  
+      float plotterWeight = 1.0;
+      TTree* weightTree = new TTree((HistoProperties.name+"_PWeight").c_str(),"plotterWeight");
+      weightTree->Branch("plotterWeight",&plotterWeight,"plotterWeight/F");
+      weightTree->SetDirectory(subdir);
+      
+      TTree* clonedTree = NULL;
+
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
          string filtExt("");
          if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
 
+         unsigned int NFiles = 0;
+         unsigned int NTreeEvents = 0;
          int split = Samples[j].getInt("split", 1);
          for(int s=0;s<split;s++){
            string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
@@ -226,25 +242,29 @@ void SavingTreeToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndTyp
            if(!FileExist[FileName])continue;
            TFile* File = new TFile(FileName.c_str());
            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
+           NFiles++;
 
            TTree* tmptree = (TTree*)GetObjectFromPath(File,HistoProperties.name);
            if(!tmptree){delete File;continue;}
-           list->Add(tmptree);
-           ObjectToDelete.push_back(File);
+
+           if(!clonedTree){
+              subdir->cd();
+              clonedTree =  tmptree->CloneTree(-1, "fast");
+              clonedTree->SetDirectory(subdir);
+           }else{
+              clonedTree->CopyEntries(tmptree, -1, "fast");
+           }
+           NTreeEvents += tmptree->GetEntries();
+           delete File;
          }
+	 plotterWeight=iLumi/NFiles;
+	 //assign weight to each events in the tree
+	 for(unsigned int i=0;i<NTreeEvents;i++){weightTree->Fill();}
       }
-      if(list->GetSize()<=0)continue; //No tree were found
-      gROOT->cd();
-      TTree* tree = TTree::MergeTrees(list);
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
-      OutputFile->cd();
-      TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
-      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
       subdir->cd();
-      tree->SetDirectory(subdir);
-      tree->Write(HistoProperties.name.c_str());      
-      delete tree;
-      for(unsigned int i=0;i<ObjectToDelete.size();i++){delete ObjectToDelete[i];} ObjectToDelete.clear();
+      clonedTree->Write(HistoProperties.name.c_str());      
+      weightTree->Write();
+      delete clonedTree; delete weightTree;
    }
 }
 
@@ -271,11 +291,11 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
            if(!FileExist[FileName])continue;
            TFile* File = new TFile(FileName.c_str());
            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
+           NFiles++;
            
            TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
            if(!tmptmphist){delete File;continue;}            
-           if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName()); checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
-           NFiles++;
+           if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName()); checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}           
            delete tmptmphist;
            delete File;
          }
@@ -302,14 +322,28 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
 
    std::string SaveName = "";
 
-   TPaveText* T = new TPaveText(0.10,0.995,0.85,0.945, "NDC");
-   T->SetFillColor(0);
-   T->SetFillStyle(0);  T->SetLineColor(0);
-   T->SetTextAlign(12);
-   char Buffer[1024]; 
-   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   T->AddText(Buffer);
+   TPaveText* Tcms = new TPaveText(0.1649874,0.877219,0.3853904,0.9482249,"brNDC");
+   Tcms->SetBorderSize(0);
+   Tcms->SetFillColor(0);     Tcms->SetFillStyle(0);  Tcms->SetLineColor(0); 
+   Tcms->SetTextFont(61);     Tcms->SetTextAlign(12); Tcms->SetTextSize(0.04);
+   Tcms->AddText("CMS");
+   Tcms->Draw("same");
+
+   TPaveText* Tpre = new TPaveText(0.1687657,0.8698225,0.2707809,0.8920119,"brNDC");
+   Tpre->SetBorderSize(0);
+   Tpre->SetFillColor(0);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
+   Tpre->SetTextFont(52);     Tpre->SetTextAlign(12); Tpre->SetTextSize(0.03);
+   if(isSim) Tpre->AddText("Simulation");
+   else Tpre->AddText("Preliminary");
+   Tpre->Draw("same");
+
+   char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+   TPaveText* Tlumi = new TPaveText(0.6712847,0.9556213,0.8690177,0.9852071,"brNDC");
+   Tlumi->SetBorderSize(0);
+   Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
+   Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(12); Tlumi->SetTextSize(0.03);
+   Tlumi->AddText(Buffer);
+   Tlumi->Draw("same");
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    std::vector<TObject*> ObjectToDelete;
@@ -336,10 +370,10 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
+            NFiles++;
             TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
             if(!tmptmphist){delete File;continue;}
             if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
-            NFiles++;
             delete tmptmphist;
             delete File;
          }
@@ -365,7 +399,10 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
       leg->Draw("same");
       ObjectToDelete.push_back(leg);
 
-      T->Draw("same");
+      Tcms ->Draw("same");
+      Tpre ->Draw("same");
+      Tlumi->Draw("same");
+
       string SavePath = SaveName + "_" + (Process[i])["tag"].toString();
       while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
       while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
@@ -385,7 +422,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
    }
 
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
-   delete T;
+   delete Tcms;  delete Tpre; delete Tlumi;
 }
 
 
@@ -394,12 +431,25 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 
    std::string SaveName = "";
 
-   TPaveText* T = new TPaveText(0.10,0.995,0.85,0.945, "NDC");
-   T->SetFillColor(0);
-   T->SetFillStyle(0);  T->SetLineColor(0);
-   T->SetTextAlign(12);
-   char Buffer[1024]; sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   T->AddText(Buffer);
+   TPaveText* Tcms = new TPaveText(0.1649874,0.877219,0.3853904,0.9482249,"brNDC");
+   Tcms->SetBorderSize(0);
+   Tcms->SetFillColor(0);     Tcms->SetFillStyle(0);  Tcms->SetLineColor(0); 
+   Tcms->SetTextFont(61);     Tcms->SetTextAlign(12); Tcms->SetTextSize(0.04);
+   Tcms->AddText("CMS");
+
+   TPaveText* Tpre = new TPaveText(0.1687657,0.8698225,0.2707809,0.8920119,"brNDC");
+   Tpre->SetBorderSize(0);
+   Tpre->SetFillColor(0);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
+   Tpre->SetTextFont(52);     Tpre->SetTextAlign(12); Tpre->SetTextSize(0.03);
+   if(isSim) Tpre->AddText("Simulation");
+   else Tpre->AddText("Preliminary");
+
+   char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+   TPaveText* Tlumi = new TPaveText(0.6712847,0.9556213,0.8690177,0.9852071,"brNDC");
+   Tlumi->SetBorderSize(0);
+   Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
+   Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(12); Tlumi->SetTextSize(0.03);
+   Tlumi->AddText(Buffer);
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    int NSampleToDraw = 0;
@@ -438,9 +488,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
+            NFiles++;
             TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
             if(!tmptmphist){delete File;continue;}
-            NFiles++;
             if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
             delete tmptmphist;
             delete File;
@@ -468,7 +518,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       ObjectToDelete.push_back(leg);
    }
    c1->cd(0);
-   //T->Draw("same");
+   Tcms ->Draw("same");
+   Tpre ->Draw("same");
+   Tlumi->Draw("same");
    string SavePath = SaveName;
    while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
    while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
@@ -486,7 +538,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    }
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete c1;
-   delete T;
+   delete Tcms; delete Tpre; delete Tlumi;
 }
 
 
@@ -494,15 +546,40 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    if(HistoProperties.isIndexPlot && cutIndex<0)return;
 
    TCanvas* c1 = new TCanvas("c1","c1",800,800);
-   TPad* t1 = new TPad("t1","t1", 0.0, 0.20, 1.0, 1.0);
+   TPad* t1 = new TPad("t1","t1", 0.0, 0.2, 1.0, 1.0);
+   t1->SetFillColor(0);
+   t1->SetBorderMode(0);
+   t1->SetBorderSize(2);
+   t1->SetLogy();
+   t1->SetTickx(1);
+   t1->SetTicky(1);
+   t1->SetLeftMargin(0.10);
+   t1->SetRightMargin(0.05);
+   t1->SetTopMargin(0.05);
+   t1->SetBottomMargin(0.10);
+   t1->SetFrameFillStyle(0);
+   t1->SetFrameBorderMode(0);
+   t1->SetFrameFillStyle(0);
+   t1->SetFrameBorderMode(0);
+
    t1->Draw();
    t1->cd();
    if(!noLog) t1->SetLogy(true);
    float maximumFound(0);
 
-   TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
+   //TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
    //   TLegend* legA  = new TLegend(0.51,0.93,0.67,0.75, "NDC"); 
    // TLegend* legB  = new TLegend(0.67,0.93,0.83,0.75, "NDC");
+   TLegend *legA = new TLegend(0.15,0.80,0.94,0.95, "NDC");
+   legA->SetBorderSize(1);
+   legA->SetTextFont(62);
+   legA->SetTextSize(0.03);
+   legA->SetLineColor(0);
+   legA->SetLineStyle(1);
+   legA->SetLineWidth(1);
+   legA->SetFillColor(0);
+   legA->SetFillStyle(0);
+
    THStack* stack = new THStack("MC","MC");
    TH1 *     mc   = NULL;
    TH1 *     mcPlusRelUnc = NULL;
@@ -513,91 +590,42 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    std::string SaveName = "";
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    double SignalMin = 5E-2;
-   for(unsigned int i=0;i<Process.size();i++)
-   {
-      if(Process[i]["isinvisible"].toBool())
-         continue;
+   for(unsigned int i=0;i<Process.size();i++){
+      if(Process[i]["isinvisible"].toBool())continue;
       TH1* hist = NULL;
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
-      for(unsigned int j=0;j<Samples.size();j++)
-      {
+      for(unsigned int j=0;j<Samples.size();j++){
          double Weight = 1.0;
-         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() )
-           Weight*= iLumi;
+         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() )Weight*= iLumi;
          string filtExt("");
-         if(Process[i].isTag("mctruthmode") )
-         {
-            char buf[255];
-            sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt());
-            filtExt += buf;
-         }
-
-         bool isStauStau = false;
-         if(Samples[j].getString("dtag").find("TStauStau") != std::string::npos)
-           isStauStau = true;
+         if(Process[i].isTag("mctruthmode") ){ char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
 
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
-         for(int s=0;s<split;s++)
-         {
-            string segmentExt;
-            if(split>1)
-            { 
-               char buf[255];
-               sprintf(buf,"_%i",s);
-               segmentExt += buf;
-            }
+        for(int s=0;s<split;s++){
+           string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
-            if(!FileExist[FileName])
-               continue;
+            if(!FileExist[FileName]){continue;}
             TFile* File = new TFile(FileName.c_str());
-            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )
-               continue;
-            TH1* tmptmphist = NULL; 
-            if(HistoProperties.isIndexPlot && cutIndex>=0)
-            {
-               TH2* tmp2D = (TH2*) GetObjectFromPath(File,HistoProperties.name);
-               if(tmp2D)
-               {
-                  tmptmphist = tmp2D->ProjectionY((string(tmp2D->GetName())+cutIndexStr).c_str(),cutIndex,cutIndex);
-                  delete tmp2D;
-               }
-            }
-            else
-               if(!HistoProperties.isIndexPlot)
-                  tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name);
-            if(!tmptmphist)
-            {
-               delete File;
-               continue;
-            }
-
+            if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){continue;}
             NFiles++;
-            if(!tmphist)
-            {
-               gROOT->cd();
-               tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);
+            TH1* tmptmphist = NULL; 
+            if(HistoProperties.isIndexPlot && cutIndex>=0){
+               TH2* tmp2D = (TH2*) GetObjectFromPath(File,HistoProperties.name);
+               if(tmp2D){tmptmphist = tmp2D->ProjectionY((string(tmp2D->GetName())+cutIndexStr).c_str(),cutIndex,cutIndex); delete tmp2D;}
+            }else if(!HistoProperties.isIndexPlot){
+                  tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name);
             }
-            else
-              tmphist->Add(tmptmphist);
+            if(!tmptmphist){delete File; continue;}
 
+            if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
             delete tmptmphist;
             delete File;
          }
-         if(!tmphist)
-            continue;
-         if(!Process[i]["isdata"].toBool() && !isStauStau)
-            tmphist->Scale(1.0/NFiles);
-         if(!hist)
-         {
-            gROOT->cd();
-            hist = (TH1*)tmphist->Clone(tmphist->GetName());
-            checkSumw2(hist);
-            hist->Scale(Weight);
-         }
-         else
-            hist->Add(tmphist,Weight);
+         if(!tmphist)continue;
+         if(!Process[i]["isdata"].toBool()){tmphist->Scale(1.0/NFiles);}
+         if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }
       if(!hist)continue;
@@ -615,8 +643,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if(Process[i].isTag("lstyle") )hist->SetLineStyle  ((int)Process[i]["lstyle"].toDouble());// else hist->SetLinStyle  (1);
       if(Process[i].isTag("fill"  ) )hist->SetFillColor  ((int)Process[i]["fill"  ].toDouble());
       if(Process[i].isTag("marker") )hist->SetMarkerStyle((int)Process[i]["marker"].toDouble());// else hist->SetMarkerStyle(1);
-      
-      
+            
       fixExtremities(hist,true,true);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
@@ -658,20 +685,30 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    bool canvasIsFilled(false);
    if(stack && stack->GetStack() && stack->GetStack()->GetEntriesFast()>0){
      stack->Draw("");
-     TH1 *hist=(TH1*)stack->GetStack()->At(0);
-     if(stack->GetXaxis())
-       {
+     if(stack->GetXaxis()){
+         TH1 *hist=(TH1*)stack->GetStack()->At(0);
 	 stack->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
 	 stack->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
 	 stack->SetMinimum(hist->GetMinimum());
-	 stack->SetMaximum(maximumFound);
+	 stack->SetMaximum(maximumFound*1E2);
          stack->SetMinimum(SignalMin);
-	 if(noLog)
-	   {
+	 stack->GetXaxis()->SetLabelFont(42);
+	 stack->GetXaxis()->SetLabelOffset(0.007);
+	 stack->GetXaxis()->SetLabelSize(0.03);
+	 stack->GetXaxis()->SetTitleOffset(1.0);
+	 stack->GetXaxis()->SetTitleFont(42);
+         stack->GetXaxis()->SetTitleSize(0.035);
+	 stack->GetYaxis()->SetLabelFont(42);
+	 stack->GetYaxis()->SetLabelOffset(0.007);
+	 stack->GetYaxis()->SetLabelSize(0.03);
+	 stack->GetYaxis()->SetTitleOffset(1.3);
+	 stack->GetYaxis()->SetTitleFont(42);
+         stack->GetYaxis()->SetTitleSize(0.035);
+	 if(noLog){
 	     stack->SetMaximum(maximumFound);
 	     //stack->GetXaxis()->SetRangeUser(hist->GetMinimum(),maximumFound);
-	   }
-       }
+	 }
+     }
      ObjectToDelete.push_back(stack);
      canvasIsFilled=true;
 
@@ -699,8 +736,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    }
 
    //compare data and MC
-   if(showChi2)
-     {
+   if(showChi2){
        TPaveText *pave = new TPaveText(0.6,0.85,0.8,0.9,"NDC");
        pave->SetBorderSize(0);
        pave->SetFillStyle(0);
@@ -727,42 +763,62 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        pave->Draw();
      }
    
-   TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
-   T->SetFillColor(0);
-   T->SetFillStyle(0);  T->SetLineColor(0);
-   T->SetTextAlign(12);
-   char Buffer[1024]; 
-   //if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV", iEcm);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   T->AddText(Buffer);
-   T->Draw("same");
-   T->SetBorderSize(0);
 
-   
+
+     TPaveText* Tcms = new TPaveText(0.10,0.94,0.16,0.99,"brNDC");
+     Tcms->SetBorderSize(0);
+     Tcms->SetFillColor(0);     Tcms->SetFillStyle(0);  Tcms->SetLineColor(0); 
+     Tcms->SetTextFont(62);     Tcms->SetTextAlign(11); Tcms->SetTextSize(0.04);
+     Tcms->AddText("CMS");
+     Tcms->Draw("same");
+
+     TPaveText* Tpre = new TPaveText(0.16,0.94,0.50,0.99,"brNDC" );
+     Tpre->SetBorderSize(0);
+     Tpre->SetFillColor(0);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
+     Tpre->SetTextFont(52);     Tpre->SetTextAlign(11); Tpre->SetTextSize(0.03);
+     if(isSim) Tpre->AddText("Simulation");
+     else Tpre->AddText("Preliminary");
+     Tpre->Draw("same");
+
+     char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+     TPaveText* Tlumi = new TPaveText(0.75,0.94,0.95,0.99,"brNDC");
+     Tlumi->SetBorderSize(0);
+     Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
+     Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(31); Tlumi->SetTextSize(0.03);
+     Tlumi->AddText(Buffer);
+     Tlumi->Draw("same");
+
+   legA->SetNColumns(3);   
    legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);
    legA->SetHeader("");
    legA->Draw("same");
    legA->SetTextFont(42);
-   //    legB->SetFillColor(0); legB->SetFillStyle(0); legB->SetLineColor(0);
-   //    legB->SetHeader("");
-   //    legB->Draw("same");
-   //   legB->SetTextFont(42);
-   
-   //
+
    std::vector<TH1 *> compDists;
    if(data)                   compDists.push_back(data);
    else if(spimpose.size()>0) compDists=spimpose;
    if(mc && compDists.size())
-     {
+   {
        c1->cd();
-       TPad* t2 = new TPad("t2","t2", 0.0, 0.0, 1.0, 0.2);
+       TPad *t2 = new TPad("t2", "t2",0.0,0.0, 1.0,0.2);
+       t2->SetFillColor(0);
+       t2->SetBorderMode(0);
+       t2->SetBorderSize(2);
+       t2->SetGridy();
+       t2->SetTickx(1);
+       t2->SetTicky(1);
+       t2->SetLeftMargin(0.10);
+       t2->SetRightMargin(0.05);
+       t2->SetTopMargin(0.0);
+       t2->SetBottomMargin(0.20);
+       t2->SetFrameFillStyle(0);
+       t2->SetFrameBorderMode(0);
+       t2->SetFrameFillStyle(0);
+       t2->SetFrameBorderMode(0);
        t2->Draw();
        t2->cd();
        t2->SetGridy(true);
        t2->SetPad(0,0.0,1.0,0.2);
-       t2->SetTopMargin(0);
-       t2->SetBottomMargin(0.5);
 
        //mc stats
        TH1D *denRelUncH=0;
@@ -785,22 +841,28 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        denRelUncH->Reset("ICE");       
        denRelUncH->Draw();
        denRelUnc->Draw("3");
-       float yscale = (1.0-0.2)/(0.18-0);       
+       float yscale = (1.0-0.2)/(0.2);       
        denRelUncH->GetYaxis()->SetTitle("Data/#Sigma MC");
+       denRelUncH->GetXaxis()->SetTitle(""); //drop the tile to gain space
+//       denRelUncH->GetYaxis()->CenterTitle(true);
        denRelUncH->SetMinimum(0.4);
        denRelUncH->SetMaximum(1.6);
-       denRelUncH->GetXaxis()->SetTitle("");
        //denRelUncH->SetMinimum(0);
        //denRelUncH->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.10);
-       denRelUncH->GetXaxis()->SetTitleOffset(1.3);
-       denRelUncH->GetXaxis()->SetLabelSize(0.033*yscale);
-       denRelUncH->GetXaxis()->SetTitleSize(0.036*yscale);
-       denRelUncH->GetXaxis()->SetTickLength(0.03*yscale);
+
+       denRelUncH->GetXaxis()->SetLabelFont(42);
+       denRelUncH->GetXaxis()->SetLabelOffset(0.007);
+       denRelUncH->GetXaxis()->SetLabelSize(0.03 * yscale);
+       denRelUncH->GetXaxis()->SetTitleFont(42);
+       denRelUncH->GetXaxis()->SetTitleSize(0.035 * yscale);
+       denRelUncH->GetXaxis()->SetTitleOffset(0.8);
+       denRelUncH->GetYaxis()->SetLabelFont(42);
+       denRelUncH->GetYaxis()->SetLabelOffset(0.007);
+       denRelUncH->GetYaxis()->SetLabelSize(0.03 * yscale);
+       denRelUncH->GetYaxis()->SetTitleFont(42);
+       denRelUncH->GetYaxis()->SetTitleSize(0.035 * yscale);
        denRelUncH->GetYaxis()->SetTitleOffset(0.3);
-       denRelUncH->GetYaxis()->SetNdivisions(5);
-       denRelUncH->GetYaxis()->SetLabelSize(0.033*yscale);
-       denRelUncH->GetYaxis()->SetTitleSize(0.036*yscale);
-       
+      
        //add comparisons
        for(size_t icd=0; icd<compDists.size(); icd++)
 	 {
@@ -840,8 +902,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    delete c1;
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete legA;
-   //   delete legB;
-   delete T;
+   delete Tcms; delete Tpre; delete Tlumi;
 }
 
 
@@ -872,6 +933,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
+            NFiles++;
             TH1* tmptmphist = NULL;
             if(HistoProperties.isIndexPlot && cutIndex>=0){
                TH2* tmp2D = (TH2*) GetObjectFromPath(File,HistoProperties.name);
@@ -881,7 +943,6 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
             }
             if(!tmptmphist){delete File;continue;}
             if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName());checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
-            NFiles++;
             delete tmptmphist;
             delete File;
          }
@@ -902,7 +963,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          while(SavePath.find(")")!=std::string::npos)SavePath.replace(SavePath.find(")"),1,"");
          while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
          while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
-         SavePath = outDir + SavePath;
+         SavePath = outDir + string("/") + SavePath;
          system(string(("rm -f ") + SavePath).c_str());
          pFile = fopen(SavePath.c_str(), "w");
 
@@ -970,6 +1031,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
 
 int main(int argc, char* argv[]){
+   gROOT->LoadMacro("../src/tdrstyle.C");
    setTDRStyle();  
    gStyle->SetPadTopMargin   (0.06);
    gStyle->SetPadBottomMargin(0.12);
@@ -1006,6 +1068,7 @@ int main(int argc, char* argv[]){
 	printf("--noLog   --> use linear scale\n");
         printf("--no1D   --> Skip processing of 1D objects\n");
         printf("--no2D   --> Skip processing of 2D objects\n");
+        printf("--noTree --> Skip processing of Tree objects\n");
         printf("--noTex  --> Do not create latex table (when possible)\n");
         printf("--noPowers --> Do not use powers of 10 for numbers in tables\n");
         printf("--noRoot --> Do not make a summary .root file\n");
@@ -1043,6 +1106,7 @@ int main(int argc, char* argv[]){
      }
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
+     if(arg.find("--noTree"  )!=string::npos){ doTree = false;    }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
      if(arg.find("--no1D"  )!=string::npos){ do1D = false;    }
      if(arg.find("--noTex" )!=string::npos){ doTex= false;    }
@@ -1092,7 +1156,7 @@ int main(int argc, char* argv[]){
       
        if(StoreInFile && do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,*it, OutputFile); }
        if(StoreInFile && do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,*it, OutputFile); }
-       if(StoreInFile && it->isTree()){                                         SavingTreeToFile(Root,inDir,*it, OutputFile); }
+       if(StoreInFile && doTree&& it->isTree()){                                SavingTreeToFile(Root,inDir,*it, OutputFile); }
      }printf("\n");
    if(StoreInFile) OutputFile->Close();
    

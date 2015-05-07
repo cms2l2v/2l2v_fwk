@@ -29,10 +29,12 @@ process.source = cms.Source("PoolSource", fileNames = inputFiles)
 
 runProcess = cms.PSet(
     input = inputFiles, 
-    output = cms.string("output.root"),
-    debug = cms.bool(True),
+    outfile = cms.string("output.root"),
+    debug = cms.bool(False),
     isMC = cms.bool(True),
     xsec = cms.double(9999.99),
-    mctruthmode = cms.int32(22),
+    #mctruthmode = cms.int32(22), # for photon
+    mctruthmode = cms.int32(0), # DY process 
+    maxevents = cms.int32(-1), # set to -1 when running on grid. 
     pujetidparas = cms.PSet(pu_jetid)
 )

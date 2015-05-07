@@ -1,7 +1,7 @@
 //
 // Pietro Vischia, <pietro.vischia@gmail.com>
 //
-// Charged Higgs analysis
+// Lepton trigger/ID/iso efficiency studies, inspired by https://indico.cern.ch/event/367179/contribution/7/3/material/slides/0.pdf
 //
 
 #include <iostream>
@@ -88,11 +88,11 @@ int main (int argc, char *argv[])
   bool isMC = runProcess.getParameter < bool > ("isMC");
   double xsec = runProcess.getParameter < double >("xsec");
   int mctruthmode = runProcess.getParameter < int >("mctruthmode");
-  TString dtag=runProcess.getParameter<std::string>("dtag");
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
   TString baseDir = runProcess.getParameter < std::string > ("dirName");
+  TString dtag=runProcess.getParameter<std::string>("dtag");
 //  if (mctruthmode != 0) //FIXME
 //    {
 //      outFileUrl += "_filt";
@@ -156,22 +156,6 @@ int main (int argc, char *argv[])
   std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
   std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
   
-  //  //shape uncertainties for dibosons
-  //  std::vector<TGraph *> vvShapeUnc;
-  //  if(isMC_ZZ || isMC_WZ)
-  //    {
-  //      TString weightsFile=weightsDir+"/zzQ2unc.root";
-  //      TString dist("zzpt");
-  //      if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
-  //      gSystem->ExpandPathName(weightsFile);
-  //      TFile *q2UncF=TFile::Open(weightsFile);
-  //      if(q2UncF){
-  //    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
-  //    vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
-  //    q2UncF->Close();
-  //      }
-  //    }
-
 
   //##############################################
   //########    INITIATING HISTOGRAMS     ########
@@ -417,23 +401,78 @@ int main (int argc, char *argv[])
       if (!tr.isValid ())
         return false;
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP85_Gsf_v*")                                                                                              );
-      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*")                                                                                     );
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*")                                                                    );
-      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*")                                                                                      );
-      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*") );
+      std::vector<TString> myTrigNames; myTrigNames.clear();
 
-      if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
-      if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
-      if (filterOnlyMUMU)     { eeTrigger = false; emuTrigger = false;                      muTrigger = false; eTrigger = false; }
-      if (filterOnlySINGLEMU) { eeTrigger = false; emuTrigger = false; mumuTrigger = false;                    eTrigger = false; }
-      if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
+      myTrigNames.push_back("HLT_IsoMu17_eta2p1_v*"                                 );  // 1000 1 (L1 prescale, HLT prescale) for v1
+      myTrigNames.push_back("HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*"                 );  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu17_eta2p1_MediumIsoPFTau40_Trk1_eta2p1_Reg_v*");  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu20_eta2p1_IterTrk02_v*"                       );  // 1000 0 
+      myTrigNames.push_back("HLT_IsoMu24_eta2p1_IterTrk02_v*"                       );  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu24_eta2p1_LooseIsoPFTau20_v*"                 );  // 1    1 
+      myTrigNames.push_back("HLT_IsoMu27_IterTrk02_v*"                              );  // 1    1 
+      myTrigNames.push_back("HLT_IsoTkMu27_IterTrk02_v*"                            );  // 1    1  
+      myTrigNames.push_back("HLT_Ele22_eta2p1_WP85_Gsf_v*"                          ); // 3000 1 (L1 prescale, HLT prescale) for v1
+      myTrigNames.push_back("HLT_Ele22_eta2p1_WP85_Gsf_LooseIsoPFTau20_v*"          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*"                   ); // 4000 1 
+      myTrigNames.push_back("HLT_Ele27_eta2p1_WP85_Gsf_v*"                          ); // 1000 0 
+      myTrigNames.push_back("HLT_Ele32_eta2p1_WP85_Gsf_v*"                          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele32_eta2p1_WP85_Gsf_LooseIsoPFTau20_v*"          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele35_eta2p1_WP85_Gsf_v*"                          ); // 1    1 
+      myTrigNames.push_back("HLT_Ele40_eta2p1_WP85_Gsf_v*"                          ); // 1    1     
 
-      //      if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+
+      std::vector<bool> singleMuonTrigger;     singleMuonTrigger.clear();
+      std::vector<bool> singleElectronTrigger; singleElectronTrigger.clear();
+
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_v*"                                 ));  // 1000 1 (L1 prescale, HLT prescale) for v1
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v*"                 ));  // 1    1 
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_MediumIsoPFTau40_Trk1_eta2p1_Reg_v*"));  // 1    1 
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_IterTrk02_v*"                       ));  // 1000 0 
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_IterTrk02_v*"                       ));  // 1    1 
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_LooseIsoPFTau20_v*"                 ));  // 1    1 
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoMu27_IterTrk02_v*"                              ));  // 1    1 
+      singleMuonTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_IsoTkMu27_IterTrk02_v*"                            ));  // 1    1  
+      
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele22_eta2p1_WP85_Gsf_v*"                )); // 3000 1 (L1 prescale, HLT prescale) for v1
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele22_eta2p1_WP85_Gsf_LooseIsoPFTau20_v*")); // 1    1 
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*"         )); // 4000 1 
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP85_Gsf_v*"                )); // 1000 0 
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele32_eta2p1_WP85_Gsf_v*"                )); // 1    1 
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele32_eta2p1_WP85_Gsf_LooseIsoPFTau20_v*")); // 1    1 
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele35_eta2p1_WP85_Gsf_v*"                )); // 1    1 
+      singleElectronTrigger.push_back(utils::passTriggerPatterns (tr, "HLT_Ele40_eta2p1_WP85_Gsf_v*"                )); // 1    1     
+      
+      bool keepevent(false);
+      for(size_t i=0; i<singleMuonTrigger.size(); ++i)
+        if(singleMuonTrigger[i]) keepevent=true;
+      for(size_t i=0; i<singleElectronTrigger.size(); ++i)
+        if(singleElectronTrigger[i]) keepevent=true;
+      if(!keepevent) continue;                                  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
       //load all the objects we will need to access
+      edm::TriggerResults triggerBits;
+      fwlite::Handle<edm::TriggerResults> triggerBitsHandle;
+      triggerBitsHandle.getByLabel(ev, "TriggerResults","","HLT"); // ?
+      if(triggerBitsHandle.isValid()) triggerBits = *triggerBitsHandle;
+      const edm::TriggerNames& trigNames = ev.triggerNames(triggerBits);
+
+      pat::TriggerObjectStandAloneCollection triggerObjects;
+      fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjectsHandle;
+      triggerObjectsHandle.getByLabel(ev, "selectedPatTrigger" );
+      if(triggerObjectsHandle.isValid()) triggerObjects = *triggerObjectsHandle;
+
+      for(pat::TriggerObjectStandAlone obj : triggerObjects){
+        obj.unpackPathNames(trigNames);
+        for(size_t i=0; i<myTrigNames.size(); ++i)
+          if(utils::passTriggerPatterns(tr, myTrigNames[i].Data())){
+            //cout << "Trigger "<< myTrigNames[i] << " both: "<< obj.hasPathName(myTrigNames[i].Data(), true, true) << ", L3: " << obj.hasPathName(myTrigNames[i].Data(), false, true) << ", LF: " << obj.hasPathName(myTrigNames[i].Data(), true, false) << ", none: " << obj.hasPathName(myTrigNames[i].Data(), false, false) <<  " Object: pt " << obj.pt() << ", eta " << obj.eta() << ", phi " << obj.phi() << endl;
+          }
+        
+      }
+
+
       reco::VertexCollection vtx;
       fwlite::Handle < reco::VertexCollection > vtxHandle;
       vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
@@ -533,7 +572,7 @@ int main (int argc, char *argv[])
       if (metsHandle.isValid() ) mets = *metsHandle;
       LorentzVector met = mets[0].p4 ();
 
-      if(debug ){
+      if(debug && false){
         // MET try:
         double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
         cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
@@ -820,12 +859,12 @@ int main (int argc, char *argv[])
       
       // Event classification. Single lepton triggers are first in order to ensure that the lower threshold dilepton triggers do not steal events from the single lepton category. emu trigger is last in order to ensure that it does not break the balance between ee and mumu
       
-      if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
-      else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
-      else if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
-      else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
-      else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
-      else                                                                 chTags.push_back("unclassified");
+///       if(      abs(slepId) == 13 && muTrigger && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlemu");
+///       else if( abs(slepId) == 11 && eTrigger  && nVetoE==0 && nVetoMu==0 ) chTags.push_back("singlee");
+///       else if( abs(dilId)==121 && eeTrigger  )                             chTags.push_back("ee");
+///       else if( abs(dilId)==169 && mumuTrigger)                             chTags.push_back("mumu");
+///       else if( abs(dilId)==143 && emuTrigger )                             chTags.push_back("emu");
+///       else                                                                 chTags.push_back("unclassified");
       
       // keep in mind the eventCategory thingy for more refined categorization // TString evCat=eventCategoryInst.GetCategory(selJets,dileptonSystem);
       std::vector < TString > tags (1, "all");
