@@ -146,7 +146,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  for(size_t id=0; id<Samples.size(); id++){
 	      int split = Samples[id].getInt("split", 1);
               for(int s=0; s<split; s++){
- 	         string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+                 char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
                  string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root";
 	         TFile* File = new TFile(FileName.c_str());
                  bool& fileExist = FileExist[FileName];
@@ -236,7 +236,7 @@ void SavingTreeToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndTyp
          unsigned int NTreeEvents = 0;
          int split = Samples[j].getInt("split", 1);
          for(int s=0;s<split;s++){
-           string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
+           char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
 
            string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
            if(!FileExist[FileName])continue;
@@ -285,7 +285,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
+           char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
 	   
            string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
            if(!FileExist[FileName])continue;
@@ -364,7 +364,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
          for(int s=0;s<split;s++){
-	    string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+            char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
@@ -482,8 +482,8 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL; int NFiles = 0;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
-	    
+            char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
+ 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") +  segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
@@ -603,7 +603,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
         for(int s=0;s<split;s++){
-           string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+            char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
             if(!FileExist[FileName]){continue;}
@@ -927,7 +927,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
          int split = Samples[j].getInt("split", 1);
          TH1* tmphist = NULL;  int NFiles=0;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+            char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + Samples[j].getString("suffix", "") + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
