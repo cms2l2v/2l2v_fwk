@@ -118,12 +118,14 @@ for procBlock in procList :
     #run over processes
     for proc in procBlock[1] :
         #run over items in process
+        if(getByLabel(proc,'interpollation', '')!=''):continue #skip interpollated processes
         isdata=getByLabel(proc,'isdata',False)
         mctruthmode=getByLabel(proc,'mctruthmode',0)
         data = proc['data']
 
         for procData in data :
             origdtag = getByLabel(procData,'dtag','')
+            if(dtag=='') : continue
             dtag = origdtag
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])

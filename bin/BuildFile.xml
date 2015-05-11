@@ -6,6 +6,7 @@
 <use name="UserCode/llvv_fwk"/>
 <use name="TauAnalysis/SVfitStandalone"/>
 <use name="RecoJets/JetProducers"/>
+<use name="HiggsAnalysis/CombinedLimit"/>
 
 <environment>
 <!-- Common tools and examples -->
