@@ -22,7 +22,7 @@
     },
     {
       "tag":"t#bar{t} ltau",
-      "label":"t#bar{t}#rightarrow#ell#tau",
+      "label":"t#bar{t}#rightarrow#it{l}#tau",
       "isdata":false,
       "mctruthmode":3,
       "color":614,
@@ -44,7 +44,7 @@
     },
     {
       "tag":"t#bar{t} ljets",
-      "label":"t#bar{t}#rightarrow#ell+jets",
+      "label":"t#bar{t}#rightarrow#it{l}+jets",
       "isdata":false,
       "mctruthmode":5,
       "color":621,
