@@ -63,6 +63,61 @@
 
 using namespace std;
 
+bool hasLeptonAsDaughter(const reco::GenParticle p)
+{
+  bool foundL(false);
+  if(p.numberOfDaughters()==0) return foundL;
+
+  cout << "Particle " << p.pdgId() << " with status " << p.status() << " and " << p.numberOfDaughters() << endl;
+  const reco::Candidate *part = &p;
+  // loop on the daughter particles to check if it has an e/mu as daughter
+  while ((part->numberOfDaughters()>0)) {
+    const reco::Candidate* DaughterPart = part->daughter(0);
+    cout << "\t\t Daughter: " << DaughterPart->pdgId() << " with status " << DaughterPart->status() << endl;
+    if (fabs(DaughterPart->pdgId()) == 11 || fabs(DaughterPart->pdgId() == 13)){
+      foundL = true;
+      break;
+    }
+    part=DaughterPart;
+  }
+  return foundL;
+}
+
+
+bool hasWasMother(const reco::GenParticle  p)
+{
+  bool foundW(false);
+  if(p.numberOfMothers()==0) return foundW;
+  const reco::Candidate* part =&p; // (p.mother());
+  // loop on the mother particles to check if it has a W as mother
+  while ((part->numberOfMothers()>0)) {
+    const reco::Candidate* MomPart =part->mother();
+    if (fabs(MomPart->pdgId())==24){
+      foundW = true;
+      break;
+    }
+    part = MomPart;
+  }
+  return foundW;
+}
+
+bool hasTauAsMother(const reco::GenParticle  p)
+{
+  bool foundTau(false);
+  if(p.numberOfMothers()==0) return foundTau;
+  const reco::Candidate* part = &p; //(p.mother());
+  // loop on the mother particles to check if it has a tau as mother
+  while ((part->numberOfMothers()>0)) {
+    const reco::Candidate* MomPart =part->mother();
+    if (fabs(MomPart->pdgId())==15)// && MomPart->status() == 2) // Not sure the status check is needed.
+      {
+        foundTau = true;
+        break;
+      }
+    part = MomPart;
+  }
+  return foundTau;
+}
 
 int main (int argc, char *argv[])
 {
@@ -470,6 +525,7 @@ int main (int argc, char *argv[])
       bool hasTop(false);
       int
         ngenLeptonsStatus3(0),
+        ngenLeptonsNonTauSonsStatus3(0),
         ngenTausStatus3(0),
         ngenQuarksStatus3(0);
       //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
@@ -479,26 +535,49 @@ int main (int argc, char *argv[])
           //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
             // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
+            //            if(iev<10){
+            //              if(gen[igen].status() == 1 || gen[igen].status() == 2)
+            //              cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+            //            }
+            //            ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
             
-            //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-            if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
-
-            
+            if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
             int absid=abs(gen[igen].pdgId());
-            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+            // OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
+            //if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+
+
+            //////            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+            if(absid==6 && gen[igen].status()==62){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
               hasTop=true;
               //if(isTTbarMC){
               //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
               //  else                        tbarPt=gen[igen].pt();
               //}
-            }
+            } 
 
-            if(!gen[igen].isPromptFinalState() ) continue;
-
-            if(absid==11 || absid==13) ngenLeptonsStatus3++;
-            if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+          
+            //if(!gen[igen].isPromptFinalState() ) continue;
+            if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
+            
+            if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen])) cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
+            
+            if((absid==11 || absid==13) && gen[igen].status()==1)
+              {
+                ngenLeptonsStatus3++;
+                
+                if(!hasTauAsMother(gen[igen]))
+                  ngenLeptonsNonTauSonsStatus3++;
+              }
+            if(absid==15 && gen[igen].status()==2 )
+              {
+                ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+                //    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
+              }
             if(absid<=5              ) ngenQuarksStatus3++;
           }
+            
+          //if(ngenTausStatus3>0) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
           
           // Dileptons:
           //    ttbar dileptons --> 1
@@ -509,20 +588,30 @@ int main (int argc, char *argv[])
           //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
           //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
           //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-
+          
           // lepton-tau:
           //    ttbar ltau      --> 3
           //    ttbar dileptons --> 4
           //    ttbar ljets     --> 5
           //    ttbar hadrons   --> 6
-          if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
-          if(mctruthmode==4 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
-          if(mctruthmode==5 && (ngenLeptonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-          if(mctruthmode==6 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+          if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
+          if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
+          if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
 
+          bool isHad(false);
+          if( 
+             (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
+             (ngenLeptonsNonTauSonsStatus3!=2                      ) &&
+             (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
+              )
+            isHad=true;
+          
+          //if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+          if(mctruthmode==6 && (!isHad || !hasTop )) continue;
+          
         }
       mon.fillHisto("initNorm", tags, 2., 1.);
-
+      
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
       //        {
       //          topPtWgt->computeWeight(tPt,tbarPt);

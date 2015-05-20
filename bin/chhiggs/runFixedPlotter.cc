@@ -35,6 +35,8 @@
 
 using namespace std;
 
+bool debug=true;
+
 int cutIndex=-1;
 string cutIndexStr="";
 double iLumi = 2007;
@@ -264,8 +266,8 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
 	 double VBFMCRescale = tmphist->GetXaxis()->GetNbins()>5 ? tmphist->GetBinContent(6) / tmphist->GetBinContent(2) : 1.0;
 	 if(VBFMCRescale!=0)          cnorm *= VBFMCRescale;
 	 //printf("VBFMCRescale for sample %s is %f\n", (Samples[j])["dtag"].toString().c_str(), VBFMCRescale );
-         sampleInfo.initialNumberOfEvents = cnorm / PUCentralnnorm;
-         cout << "cnorm: " << cnorm << ", PUCentralnnorm: " << PUCentralnnorm << endl;
+         sampleInfo.initialNumberOfEvents = cnorm; /// FIXME TO BE REACTIVATED ONCE FIXED THE initNorm HISTOGRAM FILLING / PUCentralnnorm;
+         if(debug) cout << "cnorm: " << cnorm << ", PUCentralnnorm: " << PUCentralnnorm << endl;
          delete tmphist;
       }   
    }
@@ -623,7 +625,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
          double Weight = 1.0;
-         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() ){Weight*= iLumi; cout << "Lumi is : " << iLumi << endl; }
+         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() ){Weight*= iLumi; if(debug) cout << "Lumi is : " << iLumi << endl; }
          string filtExt("");
          if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
          if(Samples[j].isTag("xsec")     )Weight*= Samples[j]["xsec"].toDouble();
@@ -667,7 +669,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
             delete File;
          }
          if(!tmphist)continue;
-         cout << "Histo " << tmphist->GetName() << " has integral " << tmphist->Integral() << ", entries " << tmphist->GetEntries() << " and will be weighted " << Weight << ", because lumi is " << iLumi << ", xsec is " << Samples[j]["xsec"].toDouble() << " and init number of events is " << sampleInfo.initialNumberOfEvents << ", yielding " << iLumi*Samples[j]["xsec"].toDouble()/sampleInfo.initialNumberOfEvents << endl;
+         if(debug) cout << "Histo " << tmphist->GetName() << " has integral " << tmphist->Integral() << ", entries " << tmphist->GetEntries() << " and will be weighted " << Weight << ", because lumi is " << iLumi << ", xsec is " << Samples[j]["xsec"].toDouble() << " and init number of events is " << sampleInfo.initialNumberOfEvents << ", yielding " << iLumi*Samples[j]["xsec"].toDouble()/sampleInfo.initialNumberOfEvents << endl;
          if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
          delete tmphist;
       }   
@@ -1129,7 +1131,7 @@ int main(int argc, char* argv[]){
         printf("--outDir  --> path of the directory that will contains the output plots and tables\n");
         printf("--outFile --> path of the output summary .root file\n");
         printf("--json    --> containing list of process (and associated style) to process to process\n");
-        printf("--only    --> processing only the objects containing the following argument in their name\n");
+        printf("--onlyContain    --> processing only the objects containing the following argument in their name\n");
         printf("--onlyStartWith  --> processing only the objects starting with the following argument in their name\n");
         printf("--index   --> will do the projection on that index for histos of type cutIndex\n");
         printf("--chi2    --> show the data/MC chi^2\n"); 
@@ -1163,7 +1165,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--json"   )!=string::npos && i+1<argc){ jsonFile = argv[i+1];  i++;  }
      if(arg.find("--onlyStartWith"   )!=string::npos && i+1<argc){ histoNameMaskStart.push_back(argv[i+1]); printf("Only process Histo starting with '%s'\n", argv[i+1]); i++;  }
-     if(arg.find("--only"   )!=string::npos && i+1<argc)         { histoNameMask.push_back(argv[i+1]); printf("Only process Histo containing '%s'\n", argv[i+1]); i++;  }
+     if(arg.find("--onlyContain"   )!=string::npos && i+1<argc)         { histoNameMask.push_back(argv[i+1]); printf("Only process Histo containing '%s'\n", argv[i+1]); i++;  }
      if(arg.find("--index"  )!=string::npos && i+1<argc)         { sscanf(argv[i+1],"%d",&cutIndex); i++; onlyCutIndex=(cutIndex>=0); printf("index = %i\n", cutIndex);  }
      if(arg.find("--chi2"  )!=string::npos)                      { showChi2 = true;  }
      if(arg.find("--showUnc") != string::npos) { 
