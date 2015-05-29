@@ -139,10 +139,12 @@ int main (int argc, char *argv[])
   // configure the process
   const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
-  bool debug = runProcess.getParameter<bool>("debug");
-  bool isMC = runProcess.getParameter < bool > ("isMC");
-  double xsec = runProcess.getParameter < double >("xsec");
-  int mctruthmode = runProcess.getParameter < int >("mctruthmode");
+  bool debug      = runProcess.getParameter<bool>     ("debug");
+  bool runSystematics = runProcess.getParameter<bool> ("runSystematics");
+  bool isMC       = runProcess.getParameter<bool>     ("isMC");
+  bool isSignal   = runProcess.getParameter<bool>     ("isSignal");
+  double xsec     = runProcess.getParameter<double>   ("xsec");
+  int mctruthmode = runProcess.getParameter<int>      ("mctruthmode");
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
@@ -180,6 +182,7 @@ int main (int argc, char *argv[])
   bool isZGmc (isMC && url.Contains ("ZG"));
   bool isMC_ZZ = isMC && (string (url.Data ()).find ("TeV_ZZ") != string::npos);
   bool isMC_WZ = isMC && (string (url.Data ()).find ("TeV_WZ") != string::npos);
+  bool isTTbarMC(isMC && (url.Contains("TTJets") || url.Contains("_TT_") ));
   
   TString outTxtUrl = outUrl + "/" + outFileUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -190,28 +193,26 @@ int main (int argc, char *argv[])
   TString dirname = runProcess.getParameter < std::string > ("dirName");
   
   //systematics
-  bool runSystematics = runProcess.getParameter < bool > ("runSystematics");
-  std::vector < TString > varNames (1, "");
-  if (runSystematics)
+  std::vector<TString> systVars(1,"");
+  if(runSystematics && isMC)
     {
-      varNames.push_back ("_jerup" ); varNames.push_back ("_jerdown" );
-      varNames.push_back ("_jesup" ); varNames.push_back ("_jesdown" );
-      varNames.push_back ("_umetup"); varNames.push_back ("_umetdown");
-      varNames.push_back ("_lesup" ); varNames.push_back ("_lesdown" );
-      varNames.push_back ("_puup"  ); varNames.push_back ("_pudown"  );
-      varNames.push_back ("_btagup"); varNames.push_back ("_btagdown");
-      if (isMC_ZZ)
-        {
-          varNames.push_back ("_zzptup"); varNames.push_back ("_zzptdown");
-        }
-      if (isMC_WZ)
-        {
-          varNames.push_back ("_wzptup"); varNames.push_back ("_wzptdown");
-        }
-    }
-  
-  size_t nvarsToInclude = varNames.size ();
+      systVars.push_back("jerup" );     systVars.push_back("jerdown"   );
+      systVars.push_back("jesup" );     systVars.push_back("jesdown"   );
+      //systVars.push_back("lesup" );   systVars.push_back("lesdown"   );
+      systVars.push_back("leffup");     systVars.push_back("leffdown"  );
+      systVars.push_back("puup"  );     systVars.push_back("pudown"   );
+      systVars.push_back("umetup");     systVars.push_back("umetdown" );
+      systVars.push_back("btagup");     systVars.push_back("btagdown" );
+      systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
+      if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
+      //      systVars.push_back(); systVars.push_back();
 
+      if(isTTbarMC || isSignal) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
+      cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
+    }
+
+  size_t nSystVars(systVars.size());
+  
   std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
   std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
   
@@ -391,8 +392,8 @@ int main (int argc, char *argv[])
   //
   // STATISTICAL ANALYSIS
   //
-  TH1D *Hoptim_systs = (TH1D *) mon.addHistogram (new TH1D ("optim_systs", ";syst;", nvarsToInclude, 0, nvarsToInclude));
-  for (size_t ivar = 0; ivar < nvarsToInclude; ivar++) Hoptim_systs->GetXaxis ()->SetBinLabel (ivar + 1, varNames[ivar]);
+  TH1D *Hoptim_systs = (TH1D *) mon.addHistogram (new TH1D ("optim_systs", ";syst;", nSystVars, 0, nSystVars));
+  for (size_t ivar = 0; ivar < nSystVars; ivar++) Hoptim_systs->GetXaxis ()->SetBinLabel (ivar + 1, systVars[ivar]);
 
 
 
@@ -800,7 +801,7 @@ int main (int argc, char *argv[])
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selSingleLepLeptons.size();++l1){
-            if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
+            if(reco::deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
           }
           if(overlapWithLepton) continue;
           
@@ -843,16 +844,16 @@ int main (int argc, char *argv[])
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
           
           //cross-clean with selected leptons and photons
-          float minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
+          double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-            minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
+            minDRlj = TMath::Min(minDRlj, reco::deltaR (jets[ijet], selLeptons[ilep]));
           // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
           // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
           //          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
 
           for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
-            minDRljSingleLep = TMath::Min(minDRljSingleLep, deltaR (jets[ijet], selSingleLepLeptons[ilep]));
+            minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jets[ijet], selSingleLepLeptons[ilep]));
 
           //jet id
           bool passPFloose = true;      //FIXME --> Need to be updated according to te latest recipe;
@@ -873,16 +874,16 @@ int main (int argc, char *argv[])
             njets++;
           }
           
-          float minDRtj(9999.);
+          double minDRtj(9999.);
           for(size_t itau=0; itau<selTaus.size(); ++itau)
             {
-              minDRtj = TMath::Min(minDRtj, deltaR(jets[ijet], selTaus[itau]));
+              minDRtj = TMath::Min(minDRtj, reco::deltaR(jets[ijet], selTaus[itau]));
             }
           if(minDRtj >0.4 && minDRljSingleLep >= 0.4) selSingleLepJets.push_back(jets[ijet]);
           
 
           
-          float dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
+          double dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
           bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
           // Apparently this V2 has the following preliminary operating points:
@@ -1010,7 +1011,7 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"leadeta",     tags, fabs (selLeptons[0].eta()), weight);
           mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
 
-          float thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
+          double thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
           double sumpt(selLeptons[0].pt()+selLeptons[1].pt());
           double mtsum(0);///utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[0],met)+utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[1],met));
 
@@ -1174,27 +1175,27 @@ int main (int argc, char *argv[])
       // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
       //
       //Fill histogram for posterior optimization, or for control regions
-      for (size_t ivar = 0; ivar < nvarsToInclude; ivar++)
+      for (size_t ivar = 0; ivar < nSystVars; ivar++)
         {
           double iweight = weight;       //nominal
 
           //energy scale/resolution
-          bool varyJesUp (varNames[ivar] == "_jesup");
-          bool varyJesDown (varNames[ivar] == "_jesdown");
-          bool varyJerUp (varNames[ivar] == "_jerup");
-          bool varyJerDown (varNames[ivar] == "_jerdown");
-          bool varyUmetUp (varNames[ivar] == "_umetup");
-          bool varyUmetDown (varNames[ivar] == "_umetdown");
-          bool varyLesUp (varNames[ivar] == "_lesup");
-          bool varyLesDown (varNames[ivar] == "_lesdown");
+          bool varyJesUp (systVars[ivar] == "_jesup");
+          bool varyJesDown (systVars[ivar] == "_jesdown");
+          bool varyJerUp (systVars[ivar] == "_jerup");
+          bool varyJerDown (systVars[ivar] == "_jerdown");
+          bool varyUmetUp (systVars[ivar] == "_umetup");
+          bool varyUmetDown (systVars[ivar] == "_umetdown");
+          bool varyLesUp (systVars[ivar] == "_lesup");
+          bool varyLesDown (systVars[ivar] == "_lesdown");
 
           //pileup variations
-          if (varNames[ivar] == "_puup")   iweight *= TotalWeight_plus;
-          if (varNames[ivar] == "_pudown") iweight *= TotalWeight_minus;
+          if (systVars[ivar] == "_puup")   iweight *= TotalWeight_plus;
+          if (systVars[ivar] == "_pudown") iweight *= TotalWeight_minus;
 
           //btag
-          bool varyBtagUp (varNames[ivar] == "_btagup");
-          bool varyBtagDown (varNames[ivar] == "_btagdown");
+          bool varyBtagUp (systVars[ivar] == "_btagup");
+          bool varyBtagDown (systVars[ivar] == "_btagdown");
 
           //Here were the Q^2 variations on VV pT spectum
 
@@ -1229,7 +1230,7 @@ int main (int argc, char *argv[])
               //cross-clean with selected leptons and photons
               double minDRlj (9999.), minDRlg (9999.);
               for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-                minDRlj = TMath::Min (minDRlj, deltaR (jets[ijet].p4(), selLeptons[ilep].p4()));
+                minDRlj = TMath::Min (minDRlj, reco::deltaR (jets[ijet].p4(), selLeptons[ilep].p4()));
               // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
               // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
               if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
