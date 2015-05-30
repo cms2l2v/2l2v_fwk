@@ -160,6 +160,8 @@ int main (int argc, char *argv[])
   TString outdir = runProcess.getParameter < std::string > ("outdir");
   TString outUrl (outdir);
   gSystem->Exec ("mkdir -p " + outUrl);
+
+  //TODO: reactivate the pileup weights storage;
   
   bool
     filterOnlyEE       (false),
@@ -1139,8 +1141,8 @@ int main (int argc, char *argv[])
           //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
           }
           if(ntaus > 0){
-            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(),             weight);
-            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(),             weight);
+            mon.fillHisto (icat+"tauleadpt", tags, selTaus[0].pt(),             weight);
+            mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(),             weight);
           }
 
           mon.fillHisto(icat+"nbjets", tags, selSingleLepBJets.size(), weight);
