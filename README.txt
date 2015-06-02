@@ -4,7 +4,7 @@ scramv1 project CMSSW CMSSW_7_4_2
 cd CMSSW_7_4_2/src/
 cmsenv
 
-wget -q -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
+wget -q -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/74Xfwk/TAGS.txt | sh
 
 ### For creating private samples
 # just use official recipe and produce MINIAOD samples in 74X
