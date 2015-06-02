@@ -18,7 +18,6 @@
 #include "TTree.h"
 #include "TF1.h"
 #include "TCutG.h"
-#include "TGraph2D.h"
 #include "TGraphErrors.h"
 #include "TGraphAsymmErrors.h"
 #include "TMultiGraph.h"
@@ -35,7 +34,7 @@ void getXSecXBR(TString inputXSec){
       float mass; double xsec, br;
       if(fscanf(pFile,"%f %lf %lf\n",&mass, &xsec, &br)==EOF)break;
       //printf("%f %f %f\n", mass, xsec, br);
-      xsecXbr[mass] = xsec*br;
+      xsecXbr[mass] = xsec*br*1000;
    }
    fclose(pFile);
 }
@@ -156,10 +155,8 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   double XSecScaleFactor = 1.0;
   if(suffix.find("_cp")!=string::npos){
      sscanf(suffix.c_str()+suffix.find("_cp"), "_cp%lf_brn%lf", &cprime, &brnew);
-     XSecScaleFactor = pow(cprime,2) * (1-brnew);
+//     XSecScaleFactor = pow(cprime,2) * (1-brnew);
   }
-  //XSecScaleFactor = 1.0/1000; //pb to fb
-
  
   //get xsec * br from summary file
   getXSecXBR(inputXSec); 
@@ -183,20 +180,6 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   double* ExpLimitp2 = new double[N];  fillLimitArray(tree,0.975,ExpLimitp2);         if(!strengthLimit)scaleLimitsByXSecXBR(N, MassAxis, ExpLimitp2);
   file->Close();
 
-
-
-  //get the pValue
-  inputs = inputs.ReplaceAll("/LimitTree.root", "/PValueTree.root");
-  file = TFile::Open(inputs);
-  printf("Looping on %s\n",inputs.Data());
-  if(!file) return;
-  if(file->IsZombie()) return;
-  tree = (TTree*)file->Get("limit");
-  tree->GetBranch("limit"           )->SetAddress(&Tlimit   );
-  double* pValue     = new double[N];  fillLimitArray(tree,-1   ,pValue);
-  file->Close();
-
-
   //make TH Cross-sections
   double* ThXSec   = new double[N]; for(unsigned int i=0;i<N;i++){ThXSec[i] = xsecXbr[MassAxis[i]];} 
 
@@ -204,12 +187,12 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   //this only apply to NarrowResonnance case
   for(unsigned int i=0;i<N;i++){
     if(strengthLimit){
-       ObsLimit[i]  /= XSecScaleFactor;
-       ExpLimitm2[i]/= XSecScaleFactor;
-       ExpLimitm1[i]/= XSecScaleFactor;
-       ExpLimit  [i]/= XSecScaleFactor;
-       ExpLimitp1[i]/= XSecScaleFactor;
-       ExpLimitp2[i]/= XSecScaleFactor;
+    ObsLimit[i]  /= XSecScaleFactor;
+    ExpLimitm2[i]/= XSecScaleFactor;
+    ExpLimitm1[i]/= XSecScaleFactor;
+    ExpLimit  [i]/= XSecScaleFactor;
+    ExpLimitp1[i]/= XSecScaleFactor;
+    ExpLimitp2[i]/= XSecScaleFactor;
     }
     ThXSec[i]    *= XSecScaleFactor;
   }
@@ -237,7 +220,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   TGraph* TGExpLimit   = new TGraph(N,MassAxis,ExpLimit);  TGExpLimit->SetLineWidth(2); TGExpLimit->SetLineStyle(2);
   TCutG* TGExpLimit1S  = GetErrorBand("1S", N, MassAxis, ExpLimitm1, ExpLimitp1);  
   TCutG* TGExpLimit2S  = GetErrorBand("2S", N, MassAxis, ExpLimitm2, ExpLimitp2);  TGExpLimit2S->SetFillColor(5);
-  TGraph* THXSec        = new TGraph(N,MassAxis,ThXSec); THXSec->SetLineWidth(2); THXSec->SetLineStyle(2); THXSec->SetLineColor(4);
+  TGraph* THXSec        = new TGraph(N,MassAxis,ThXSec); THXSec->SetLineWidth(2); THXSec->SetLineStyle(1); THXSec->SetLineColor(4);
 
 
   TGExpLimit->SetLineColor(2);  TGExpLimit->SetLineStyle(1);
@@ -258,7 +241,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
 
   TPaveText *pave = new TPaveText(0.1,0.96,0.99,0.99,"NDC");
   char LumiLabel[1024];
-  if(energy<78){  sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%6.1ffb^{-1} - %20s",energy, luminosity,legendName.Data());
+  if(energy<9){  sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%6.1ffb^{-1} - %20s",energy, luminosity,legendName.Data());
   }else{         sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}, #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}",7.0,5.0,8.0,19.7);
   }
   pave->SetBorderSize(0);
@@ -279,13 +262,12 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   LEG->SetFillStyle(0);
   LEG->SetTextFont(42);
   LEG->SetBorderSize(0);
-  if(!strengthLimit)LEG->AddEntry(THXSec  , "SM prediction"  ,"L");
+  LEG->AddEntry(THXSec  , "SM prediction"  ,"L");
   LEG->AddEntry(TGExpLimit  , "median expected"  ,"L");
   LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
   LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");
   if(!blind) LEG->AddEntry(TGObsLimit  , "observed"  ,"LP");
   LEG->Draw();
-  c->RedrawAxis();
   c->SaveAs(outputDir+"Limit.png");
   c->SaveAs(outputDir+"Limit.C");
   c->SaveAs(outputDir+"Limit.pdf"); 
@@ -294,7 +276,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   //save a summary of the limits
   FILE* pFileSum = fopen((outputDir+"LimitSummary").Data(),"w");
   for(int i=0;i<N;i++){
-    fprintf(pFileSum, "$%8.6E$ & $%8.6E$ & $[%8.6E,%8.6E]$ & $[%8.6E,%8.6E]$ & $%8.6E$ & Th=$%8.6E$ & pValue=$%8.6E$\\\\\\hline\n",MassAxis[i], ExpLimit[i], ExpLimitm1[i], ExpLimitp1[i], ExpLimitm2[i],  ExpLimitp2[i], ObsLimit[i], ThXSec[i], pValue[i]);
+    fprintf(pFileSum, "$%8.6E$ & $%8.6E$ & $[%8.6E,%8.6E]$ & $[%8.6E,%8.6E]$ & $%8.6E$ & Th=$%8.6E$\\\\\\hline\n",MassAxis[i], ExpLimit[i], ExpLimitm1[i], ExpLimitp1[i], ExpLimitm2[i],  ExpLimitp2[i], ObsLimit[i], ThXSec[i]);
     if(int(MassAxis[i])%50!=0)continue; printf("%f ",ObsLimit[i]);
   }printf("\n");
   fclose(pFileSum);
@@ -306,6 +288,12 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   if(!blind) { fprintf(pFileSum, "Obs Limits for Model are: "); for(int i=0;i<N;i++){if(int(MassAxis[i])%50!=0)continue; fprintf(pFileSum, "%f ",ObsLimit[i]);}fprintf(pFileSum,"\n"); }
   fclose(pFileSum);
 }
+
+
+
+
+
+
 
 
 
