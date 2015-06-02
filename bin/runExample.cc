@@ -980,7 +980,7 @@ int main(int argc, char* argv[])
 	  TString jetType( genJet && genJet->pt()>0 ? "truejetsid" : "pujetsid" );
 	  
 	  //cross-clean with selected leptons and photons
-	  float minDRlj(9999.),minDRlg(9999.);
+	  double minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
             minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
 	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
