@@ -125,7 +125,7 @@ for procBlock in procList :
 
         for procData in data :
             origdtag = getByLabel(procData,'dtag','')
-            if(dtag=='') : continue
+            if(origdtag=='') : continue
             dtag = origdtag
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])
