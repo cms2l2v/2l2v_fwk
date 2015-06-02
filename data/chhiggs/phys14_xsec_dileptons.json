@@ -1,6 +1,13 @@
 {
   "proc":[
-    {
+     { 
+      "tag":"data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "marker":20
+    },  
+   {
       "tag":"t#bar{t} dileptons",
       "isdata":false,
       "issignal":true,
@@ -14,7 +21,7 @@
     {
       "tag":"t#bar{t} other",
       "isdata":false,
-      "issignal":true,
+      "issignal":false,
       "mctruthmode":2,
       "color":822,
       "lcolor":1,

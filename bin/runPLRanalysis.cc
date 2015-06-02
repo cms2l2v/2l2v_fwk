@@ -112,6 +112,8 @@ int main(int argc, char *argv[])
       if(inFilesUrl[ifile].Contains("_ee"))          chTag="ee";
       if(inFilesUrl[ifile].Contains("_emu"))         chTag="emu";
       if(inFilesUrl[ifile].Contains("_mumu"))        chTag="mumu";
+      if(inFilesUrl[ifile].Contains("_singlemu"))    chTag="singlemu";
+      if(inFilesUrl[ifile].Contains("_singlee"))     chTag="singlee";
       if(inFilesUrl[ifile].Contains("_eq0jets"))     chTag+=" (=0 jets)";
       if(inFilesUrl[ifile].Contains("geq1jets"))     chTag+=" (#geq 1 jets)";
       else if(inFilesUrl[ifile].Contains("eq1jets")) chTag+=" (=1 jets)";
@@ -243,14 +245,14 @@ int main(int argc, char *argv[])
 		  TObject *pobj;
 		  while ((pobj = nextpobj()))
 		    {
-		      if(pobj==0) break;
-		      TString pobjName(pobj->GetName());
-		      if(!pobjName.BeginsWith("nll")) continue;
+		      if(pobj==0){break;}
+                      TString pobjName(pobj->GetName());
+                      if(!pobjName.BeginsWith("nll")) continue;
 		      RooCurve *nllCurve=(RooCurve *)pobj;
 		      TGraph *gr=new TGraph;
 		      for(int ipt=0; ipt<nllCurve->GetN(); ipt++)
 			{
-			  Double_t ix,iy;
+                          Double_t ix,iy;
 			  nllCurve->GetPoint(ipt,ix,iy);
 			  gr->SetPoint(ipt,ix,iy);
 			}		  
@@ -275,7 +277,6 @@ int main(int argc, char *argv[])
 	  delete interval;
 	  inF->Close();
 	}
-
 
       //show the PLR curve and post-fit nuisances
       TString fout("PLR"); fout += (ifile+1);
@@ -369,6 +370,7 @@ void showPLR(std::vector<std::pair<TString,TGraph *> > &plotList, TString fout,T
 
   //plot the PLRs
   Int_t colors[]={kBlue,kGray,kOrange-8,kGreen-7,kMagenta+3,kBlue-10};
+
   for(size_t ipl=0; ipl<orderedPlotList.size(); ipl++)
     {
       TGraph *gr  = orderedPlotList[ipl];

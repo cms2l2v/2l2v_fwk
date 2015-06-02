@@ -65,6 +65,8 @@ bool forceMerge=false;
 bool useMerged=false;
 bool jodorStyle=false;
 bool generatePseudoData=false;
+TH1* myPseudoData=NULL;
+TString myPseudoDataName="";
 
 struct stSampleInfo{ double PURescale_up; double PURescale_down; double initialNumberOfEvents;};
 std::unordered_map<string, stSampleInfo> sampleInfoMap;
@@ -273,6 +275,19 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
    }
 }
 
+
+
+void SavingPseudoDataToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties, TFile* OutputFile){
+  
+  TH1* hist = (TH1*) myPseudoData->Clone(myPseudoDataName);
+  string dirName = "data";
+  OutputFile->cd();
+  TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
+  if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
+  subdir->cd();
+  hist->Write();
+  delete hist;
+}
 
 
 void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType HistoProperties, TFile* OutputFile){
@@ -676,6 +691,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if(!hist)continue;
 
       SaveName = hist->GetName();
+      myPseudoDataName=hist->GetName();
       TString postfix(""); postfix+=i;
       hist->SetName(SaveName+postfix);
       if(Process[i].isTag("color" ) )hist->SetLineColor  ((int)Process[i][ "color"].toDouble()); else hist->SetLineColor  (1);
@@ -709,7 +725,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if((!Process[i].isTag("spimpose") || !Process[i]["spimpose"].toBool()) && !Process[i]["isdata"].toBool()){
          //Add to Stack
 	stack->Add(hist, "HIST");               
-      
 	if(Process[i].isTag("label")) legA->AddEntry(hist, Process[i]["label"].c_str(), "F");	 
 	else                          legA->AddEntry(hist, Process[i]["tag"].c_str(), "F");	 
 	if(!mc){mc = (TH1D*)hist->Clone("mc");checkSumw2(mc);}else{mc->Add(hist);}
@@ -788,6 +803,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        pseudoData->Sumw2();
        pseudoData->Draw(canvasIsFilled ? "PE1 same" : "PE1");
        canvasIsFilled=true;
+       myPseudoData= (TH1*) pseudoData->Clone("globalPseudoData"+myPseudoDataName);
      }
    }
    
@@ -1237,6 +1253,8 @@ int main(int argc, char* argv[]){
       
        if(StoreInFile && do2D  && !it->type){                                  SavingToFile(Root,inDir,*it, OutputFile); }
        if(StoreInFile && do1D  &&  it->type){                                  SavingToFile(Root,inDir,*it, OutputFile); }
+       if(generatePseudoData)                                           SavingPseudoDataToFile(Root,inDir,*it, OutputFile);
+
      }printf("\n");
    if(StoreInFile) OutputFile->Close();
    
