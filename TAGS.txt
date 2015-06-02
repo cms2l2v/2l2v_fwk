@@ -4,6 +4,9 @@ cd HiggsAnalysis/CombinedLimit
 git checkout remotes/origin/74x-root6
 cd ../..
 
+#SVFit package  (optional --> needed only if you plan to use SVfit tau mass reconstruction
+git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
+
 #our framework
 git clone git@github.com:quertenmont/2l2v_fwk.git UserCode/llvv_fwk
 cd UserCode/llvv_fwk
