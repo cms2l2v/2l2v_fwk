@@ -102,6 +102,22 @@
           ]
         },
 	{
+         "tag":"t#bar{t}",
+	 "issignal":false,
+         "isdata":false,
+         "color":"41",
+         "lcolor":1,
+	 "mctruthmode":3,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJetsFullLeptMGDecays",
+                "xsec":245.8,
+		"split":5,
+		"br":[0.10608049]
+                }
+   	   ]
+	},
+	{
          "tag":"other t#bar{t}",
          "isdata":false,
          "color":"822",

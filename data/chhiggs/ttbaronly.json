@@ -1,7 +1,45 @@
 {
     "proc":[
 	{
-         "tag":"t#bar{t}",
+         "tag":"other t#bar{t}",
+         "isdata":false,
+         "color":"822",
+         "lcolor":1,
+	 "mctruthmode":2,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJets_172v5",
+                "xsec":245.8,
+		"split":5
+                },
+                {
+                "dtag":"MC8TeV_TTWJets",
+                "xsec":0.232
+                },
+                {
+                "dtag":"MC8TeV_TTZJets",
+                "xsec":0.208
+		}
+   	   ]
+	},
+	{
+         "tag":"t#bar{t}+b#bar{b}",
+	 "issignal":false,
+         "isdata":false,
+         "color":"41",
+         "lcolor":1,
+	 "mctruthmode":3,
+         "data":[
+		{
+ 	        "dtag":"MC8TeV_TTJetsFullLeptMGDecays",
+                "xsec":245.8,
+		"split":5,
+		"br":[0.10608049]
+                }
+   	   ]
+	},
+	{
+         "tag":"t#bar{t} dileptons",
 	 "issignal":false,
          "isdata":false,
          "color":"614",

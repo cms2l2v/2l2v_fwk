@@ -1173,6 +1173,139 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
     // }
 }      
 
+///void showShape(std::vector<TString>& selCh , TString histoName, TString SaveName)
+///{
+///  int NLegEntry = 0;
+///  std::map<string, THStack*          > map_stack;
+///  std::map<string, TGraphErrors*     > map_unc;
+///  std::map<string, TH1*              > map_data;
+///  std::map<string, std::vector<TH1*> > map_signals;
+///  std::map<string, int               > map_legend;
+///  //           TLegend* legA  = new TLegend(0.6,0.5,0.99,0.85, "NDC");
+///  //           TLegend* legA  = new TLegend(0.03,0.00,0.97,0.70, "NDC");
+///  TLegend* legA  = new TLegend(0.03,0.99,0.97,0.89, "NDC");
+///  
+///  //order the proc first
+///  sortProc();
+///  
+///  //loop on sorted proc
+///  for(unsigned int p=0;p<sorted_procs.size();p++){
+///    string procName = sorted_procs[p];
+///    std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+///    if(it==procs.end())continue;
+///    for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+///      if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
+///      if(ch->second.shapes.find(histoName.Data())==(ch->second.shapes).end())continue;
+///      TH1* h = ch->second.shapes[histoName.Data()].histo();
+///      
+///      if(it->first=="total"){
+///        double Uncertainty = ch->second.shapes[histoName.Data()].getScaleUncertainty() / h->Integral();
+///        double Maximum = 0;
+///        TGraphErrors* errors = new TGraphErrors(h->GetXaxis()->GetNbins());
+///        errors->SetFillStyle(3427);
+///        errors->SetFillColor(kGray+1);
+///        errors->SetLineStyle(1);
+///        errors->SetLineColor(2);
+///        int icutg=0;
+///        for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){
+///          if(h->GetBinContent(ibin)>0)
+///            errors->SetPoint(icutg,h->GetXaxis()->GetBinCenter(ibin), h->GetBinContent(ibin));
+///          errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, sqrt(pow(h->GetBinContent(ibin)*Uncertainty,2) + pow(h->GetBinError(ibin),2) ) );
+///          //                        errors->SetPointError(icutg,h->GetXaxis()->GetBinWidth(ibin)/2.0, 0 );
+///          Maximum =  std::max(Maximum , h->GetBinContent(ibin) + errors->GetErrorYhigh(icutg));
+///          icutg++;
+///        }errors->Set(icutg);
+///        errors->SetMaximum(Maximum);
+///        map_unc[ch->first] = errors;
+///        continue;//otherwise it will fill the legend
+///      }else if(it->second.isBckg){                 
+///        if(map_stack.find(ch->first)==map_stack.end()){
+///          map_stack[ch->first] = new THStack((ch->first+"stack").c_str(),(ch->first+"stack").c_str());                    
+///        }
+///                    map_stack   [ch->first]->Add(h,"HIST");
+///                    
+///      }else if(it->second.isSign){                    
+///        map_signals [ch->first].push_back(h);
+///        
+///      }else if(it->first=="data"){
+///        map_data[ch->first] = h;
+///      }
+///      
+///      if(map_legend.find(it->first)==map_legend.end()){
+///        map_legend[it->first]=1;
+///        legA->AddEntry(h,it->first.c_str(),it->first=="data"?"P":it->second.isSign?"L":"F");
+///        NLegEntry++;
+///      }
+///    }
+///  }
+///  
+///  int NBins = map_data.size()/selCh.size();
+///  TCanvas* c1 = new TCanvas("c1","c1",300*NBins,300*selCh.size());
+///  c1->SetTopMargin(0.00); c1->SetRightMargin(0.00); c1->SetBottomMargin(0.00);  c1->SetLeftMargin(0.00);
+///  TPad* t2 = new TPad("t2","t2", 0.03, 0.90, 1.00, 1.00, -1, 1);  t2->Draw();  c1->cd();
+///  t2->SetTopMargin(0.00); t2->SetRightMargin(0.00); t2->SetBottomMargin(0.00);  t2->SetLeftMargin(0.00);
+///  TPad* t1 = new TPad("t1","t1", 0.03, 0.03, 1.00, 0.90, 4, 1);  t1->Draw();  t1->cd();
+///  t1->SetTopMargin(0.00); t1->SetRightMargin(0.00); t1->SetBottomMargin(0.00);  t1->SetLeftMargin(0.00);
+///  t1->Divide(NBins, selCh.size(), 0, 0);
+///  
+///  int I=1;
+///  for(std::map<string, THStack*>::iterator p = map_stack.begin(); p!=map_stack.end(); p++){
+///    //init tab
+///    TVirtualPad* pad = t1->cd(I);
+///    pad->SetTopMargin(0.06); pad->SetRightMargin(0.03); pad->SetBottomMargin(0.07);  pad->SetLeftMargin(0.06);
+///    pad->SetLogy(true); 
+///    
+///    //print histograms
+///    TH1* axis = (TH1*)map_data[p->first]->Clone("axis");
+///    axis->Reset();      
+///    axis->GetXaxis()->SetRangeUser(0, axis->GetXaxis()->GetXmax());
+///    axis->SetMinimum(1E-2);
+///    double signalHeight=0; for(unsigned int s=0;s<map_signals[p->first].size();s++){signalHeight = std::max(signalHeight, map_signals[p->first][s]->GetMaximum());}
+///    axis->SetMaximum(1.5*std::max(signalHeight , std::max( map_unc[p->first]->GetMaximum(), map_data[p->first]->GetMaximum())));
+///    if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
+///    axis->Draw();
+///    p->second->Draw("same");
+///    map_unc [p->first]->Draw("2 same");
+///    map_data[p->first]->Draw("same");
+///    for(unsigned int i=0;i<map_signals[p->first].size();i++){
+///      map_signals[p->first][i]->Draw("HIST same");
+///    }
+///    
+///    
+///    
+///    //print tab channel header
+///    TPaveText* Label = new TPaveText(0.1,0.81,0.94,0.89, "NDC");
+///    Label->SetFillColor(0);  Label->SetFillStyle(0);  Label->SetLineColor(0); Label->SetBorderSize(0);  Label->SetTextAlign(31);
+///    TString LabelText = procs["data"].channels[p->first].channel+"  -  "+procs["data"].channels[p->first].bin;
+///    LabelText.ReplaceAll("mumu","#mu#mu"); LabelText.ReplaceAll("geq2jets","#geq2jets"); LabelText.ReplaceAll("eq0jets","0jet");  LabelText.ReplaceAll("eq1jets","1jet");
+///    Label->AddText(LabelText);  Label->Draw();
+///    
+///    I++;
+///  }
+///  //print legend
+///  c1->cd(0);
+///  legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);  legA->SetBorderSize(0); legA->SetHeader("");
+///  legA->SetNColumns((NLegEntry/2) + 1);
+///  legA->Draw("same");    legA->SetTextFont(42);
+///  
+///  //print canvas header
+///  t2->cd(0);
+///  //           TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
+///  TPaveText* T = new TPaveText(0.1,0.7,0.9,1.0, "NDC");
+///  T->SetFillColor(0);  T->SetFillStyle(0);  T->SetLineColor(0); T->SetBorderSize(0);  T->SetTextAlign(22);
+///  if(systpostfix.Contains('8')){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
+///  }else{                         T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
+///  }T->Draw();
+///  
+///  //save canvas
+///  c1->SaveAs(SaveName+"_Shape.png");
+///  c1->SaveAs(SaveName+"_Shape.pdf");
+///  c1->SaveAs(SaveName+"_Shape.C");
+///  delete c1;
+///}
+
+
+
 //
 int main(int argc, char* argv[])
 {
