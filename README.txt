@@ -1,10 +1,7 @@
-## Installation
-
-export SCRAM_ARCH=slc5_amd64_gcc462
-# For CVS access
-# export CVSROOT :ext:YOURUSERNAME@lxplus.cern.ch:/afs/cern.ch/user/c/cvscmssw/public/CMSSW
-scramv1 project CMSSW CMSSW_5_3_15
-cd CMSSW_5_3_15/src/
+### Installation
+export SCRAM_ARCH=slc6_amd64_gcc491
+scramv1 project CMSSW CMSSW_7_4_2
+cd CMSSW_7_4_2/src/
 cmsenv
 
 wget -q -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
