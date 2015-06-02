@@ -1,14 +1,17 @@
-#higgs combined tool for 742 is required to performed limit computation or cut optimization
+#higgs combined tool for 722 is required to performed limit computation or cut optimization
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 cd HiggsAnalysis/CombinedLimit
-git checkout remotes/origin/74x-root6
+git checkout remotes/origin/slc6-root5.34.17
 cd ../..
+
+#SVFit package  (optional --> needed only if you plan to use SVfit tau mass reconstruction
+git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
 
 #our framework
 git clone git@github.com:quertenmont/2l2v_fwk.git UserCode/llvv_fwk
 cd UserCode/llvv_fwk
-git checkout remotes/origin/74Xfwk #checkout the branch we are interested in
-git checkout -b 74Xfwk_modified #copy the branch to a new one to host future modifications (ease pullrequest and code merging)
+git checkout remotes/origin/72Xfwk #checkout the branch we are interested in
+git checkout -b 72Xfwk_modified #copy the branch to a new one to host future modifications (ease pullrequest and code merging)
 cd ../..
 
 #compilling all the downloaded things
