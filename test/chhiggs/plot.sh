@@ -3,6 +3,7 @@
 #DIR=~/www/13TeV_topsel_fix/
 #DIR=~/www/13TeV_topsel_fix_ala8/
 DIR=~/www/13TeV_topsel_fix_ala9/
+DIR=~/www/13TeV_topsel_fix_talk/
 #DIR=~/www/13TeV_forinclusivecheck/
 mkdir -p ${DIR}
 rm -rf ${DIR}*
@@ -23,8 +24,10 @@ JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_lepton
 #JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_samples.json
 #JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_samples.json
 INDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar4/
+#ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
+#ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
 ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
-ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
+ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlemu_final --onlyStartWith singlee_final"
 #ONLYDILEPTON=" --onlyContain emu_eventflow --onlyContain ee_eventflow --onlyContain mumu_eventflow "
 #ONLYLEPTAU=" --onlyContain singlemu_eventflowslep --onlyContain singlee_eventflowslep "
 
@@ -32,13 +35,12 @@ ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
 #runPlotterFWLite --iEcm 13 --iLumi 19700 --inDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results/ --outDir ${DIR} --outFile ${DIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot.json --no2D --noPowers --plotExt .png --plotExt .pdf
 
 # Dilepton
-runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
-runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --useMerged --no2D --noPowers --plotExt .png --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
+#runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
+#runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --useMerged --no2D --noPowers --plotExt .png --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
 
 # Leptontau
 runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYLEPTAU}
 runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --useMerged --no2D --noPowers --plotExt .png --generatePseudoData --onlyStartWith optim_systs ${ONLYLEPTAU}
-
 
 # Lessen the burden on the web browser
 

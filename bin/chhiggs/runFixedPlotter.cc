@@ -132,7 +132,6 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
   	  bool isMC   = !isData && !isSign; 
 	  string filtExt("");
 	  if(Process[ip].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip]["mctruthmode"].toInt()); filtExt += buf; }
-
           //just to make it faster, only consider the first 3 sample of a same kind
           if(isData){if(dataProcessed>=1){continue;}else{dataProcessed++;}}
           if(isSign){if(signProcessed>=2){continue;}else{signProcessed++;}}
@@ -146,7 +145,10 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	      if(!useMerged && Samples[id].isTag("split"))split = Samples[id]["split"].toInt();
 
 	      string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
-              string FileName = RootDir + (Samples[id])["dtag"].toString() +  (Samples[id].isTag("suffix")?(Samples[id])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
+              string secondFiltExt=filtExt;
+              if(TString((Samples[id])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
+              if(TString((Samples[id])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
+              string FileName = RootDir + (Samples[id])["dtag"].toString() +  (Samples[id].isTag("suffix")?(Samples[id])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
               printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
 	      TFile* file = new TFile(FileName.c_str());
 	      if(file->IsZombie())
@@ -204,11 +206,14 @@ void MergeSplittedSamples(JSONWrapper::Object& Root, std::string RootDir)
       int split = 1;
       if(Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
       if(split==1) continue;
+      string secondFiltExt=filtExt;
+      if(TString((Samples[j])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
+      if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
 
       TString toHadd("");
       for(int s=0;s<split;s++){
 	string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
-	string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
+	string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
 	toHadd += " " + FileName;
       }
       TString outName(RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + filtExt + ".root");
@@ -230,9 +235,12 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
 	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
 
          TH1* tmphist = NULL;
+         string secondFiltExt=filtExt;
+         if(TString((Samples[j])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
+         if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
-            string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
+            string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             TFile* File = TFile::Open(FileName.c_str());
             bool& fileExist = FileExist[FileName];
 	    if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){fileExist=false;  continue; }else{fileExist=true;}
@@ -315,12 +323,15 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
          int split = 1;
 	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
-         
+         string secondFiltExt=filtExt;
+         if(TString((Samples[j])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
+         if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
+
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
 	   
-            string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
+            string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName])continue;
             TFile* File = new TFile(FileName.c_str());
             if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) )continue;
@@ -651,6 +662,9 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          if(HistoProperties.name.find("puup"  )!=string::npos){Weight *= sampleInfo.PURescale_up  ;}
          if(HistoProperties.name.find("pudown")!=string::npos){Weight *= sampleInfo.PURescale_down;}
          if(HistoProperties.name.find("optim_cut")!=string::npos){Weight=1.0;}
+         string secondFiltExt=filtExt;
+         if(TString((Samples[j])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
+         if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
 
          int split = 1; 
 	 if(!useMerged && Samples[j].isTag("split"))split = Samples[j]["split"].toInt();
@@ -659,7 +673,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
          for(int s=0;s<split;s++){
 	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
-	    string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
+	    string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName]){
               //cout << FileName << " does not exist " << endl;
               continue;}
