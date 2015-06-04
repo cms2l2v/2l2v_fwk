@@ -50,6 +50,27 @@ float flavorUnc(0.001);
 float iEcm(13);
 double iLumi(1000.);
 
+size_t nHardcodedUnc(11);
+std::pair<std::string,double> hardcodedUnc[] = {
+  std::make_pair("trigger", 0.02),
+  std::make_pair("eId", 0.02),
+  std::make_pair("muId", 0.01),
+  std::make_pair("tauId", 0.06),
+  std::make_pair("etaumisid", 0.03), // (only ttbardilepton)
+  std::make_pair("mutaumisid", 0.03), // (only ttbardilepton)
+  std::make_pair("jettaumisid", 0.2), // (only ttbardilepton)
+  std::make_pair("tes", 0.04), //  (2.4 signal)
+  std::make_pair("jes", 0.2), // (1 signal)
+  std::make_pair("jer", 0.1), // (0.1 signal)
+  std::make_pair("met", 0.1), // (0.1 signal)
+  //std::pair<double,double> toppt", 5 5
+  //std::pair<double,double> pileup", 3
+};
+
+//std::pair<double,double> xsec IN JSON
+
+
+
 template <typename T>
 string NumberToString ( T Number )
 {
@@ -246,6 +267,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
     {
       TString procCtr(""); procCtr+=i;
       TString proc=(Process[i])["tag"].toString();
+      //Disable low yield backgrounds fror dileptons if(convertNameForDataCard(proc) == "dy" || convertNameForDataCard(proc) == "vv") continue;
       cout << "Processing process named: " << proc << endl;
       TDirectory *pdir = (TDirectory *)inF->Get(proc);         
       if(pdir==0){ cout << "Directory does not exist for " << proc << endl; continue;}
@@ -609,17 +631,36 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 	//build also the statistical uncertainty shapes
 	//for each bin set content as val +/- statErr (beware however of negative and extremely large values)
 	TString statSystName(proc+"_"); 
-	if(proc=="signal" || proc.Contains("ttbar")) statSystName="ttbar_";
+	//if(proc=="signal" || proc.Contains("ttbar")) statSystName="ttbar_";
 	statSystName+=oDir->GetTitle(); 
 	statSystName+="_stat";
-	TH1* statup   = (TH1 *)h->Clone(statSystName+"Up");
-	TH1* statdown = (TH1 *)h->Clone(statSystName+"Down");
-	for(int ibin=1; ibin<=statup->GetXaxis()->GetNbins(); ibin++){
-	  statup  ->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), statup  ->GetBinContent(ibin) + statup  ->GetBinError(ibin))));
-	  statdown->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), statdown->GetBinContent(ibin) - statdown->GetBinError(ibin))));
-	}
-	statup  ->Write(proc+"_"+statSystName+"Up");
-	statdown->Write(proc+"_"+statSystName+"Down");
+	
+        //TH1* statup   = (TH1 *)h->Clone(statSystName+"Up");
+	//TH1* statdown = (TH1 *)h->Clone(statSystName+"Down");
+	//for(int ibin=1; ibin<=statup->GetXaxis()->GetNbins(); ibin++){
+	//  statup  ->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), statup  ->GetBinContent(ibin) + statup  ->GetBinError(ibin))));
+	//  statdown->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), statdown->GetBinContent(ibin) - statdown->GetBinError(ibin))));
+	//}
+	//statup  ->Write(proc+"_"+statSystName+"Up");
+	//statdown->Write(proc+"_"+statSystName+"Down");
+
+        //bin by bin stat uncertainty
+        int BIN=0;
+        for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
+          if(h->GetBinContent(ibin)<=0 || h->GetBinContent(ibin)/h->Integral()<0.0000001)continue;
+          //           if(h->GetBinContent(ibin)<=0)continue;
+          char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+          TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
+          TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
+          statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
+          statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+          h->SetBinError(ibin, 0);  //remove this bin from shape variation for the other ones
+          statU->Write(proc+"_"+proc+ibintxt+"_"+statSystName+"Up");
+          statD->Write(proc+"_"+proc+ibintxt+"_"+statSystName+"Down");
+        }
+
+
+
       }
     }
   else
@@ -686,36 +727,61 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile, "-------------------------------\n");
       
       //systematics
-      
-      //lumi
-      fprintf(pFile,"%30s_%dTeV %10s","lumi",int(iEcm),"lnN");
-      fprintf(pFile,"%6.3f ",1+lumiUnc);
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	else                                                                                   fprintf(pFile,"%6.3f ",1+lumiUnc);
-      }
-      fprintf(pFile,"\n");
+      // Hardcoded 8TeV values /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      for(size_t iUnc=0; iUnc<nHardcodedUnc; ++iUnc)
+        {
+          string uncName(hardcodedUnc[iUnc].first);
+          double uncValue(hardcodedUnc[iUnc].second);
+          fprintf(pFile,"%30s_%dTeV %10s",uncName.c_str(),int(iEcm),"lnN");
+          if      (uncName=="tes") fprintf(pFile,"%6.3f ",0.024);
+          else if (uncName=="jes") fprintf(pFile,"%6.3f ",0.01);
+          else if (uncName=="jer") fprintf(pFile,"%6.3f ",0.001);
+          else if (uncName=="met") fprintf(pFile,"%6.3f ",0.001);
+          else fprintf(pFile,"%6.3f ",1+uncValue);
+          for(size_t j=0; j<shape.bckg.size(); j++) {
+            if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+            else {
+              if(convertNameForDataCard(shape.bckg[j]->GetTitle())=="ttbarll"){
+                if( uncName=="etaumisid" || uncName=="mutaumisid" || uncName=="jettaumisid" ) fprintf(pFile,"%6.3f ",1+uncValue);
+                else                                                                          fprintf(pFile,"%6s ","-");
+              }
+              else fprintf(pFile,"%6.3f ",1+uncValue);
+            }
+          }
+          fprintf(pFile,"\n");
+        }
 
-      //sel eff
-      fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
-      fprintf(pFile,"%6.3f ",1+selEffUnc);
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	else                                                                                   fprintf(pFile,"%6.3f ",1+selEffUnc);
-      }
-      fprintf(pFile,"\n");
 
-      //pdf unc
-      fprintf(pFile,"%30s_%dTeV %10s","pdf",int(iEcm),"lnN");
-      fprintf(pFile,"%6.3f ",1+pdfUnc);
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
-      fprintf(pFile,"\n");
+      // Old hardcoded ones  
+//      //lumi
+//      fprintf(pFile,"%30s_%dTeV %10s","lumi",int(iEcm),"lnN");
+//      fprintf(pFile,"%6.3f ",1+lumiUnc);
+//      for(size_t j=0; j<shape.bckg.size(); j++) {
+//	if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+//	else                                                                                   fprintf(pFile,"%6.3f ",1+lumiUnc);
+//      }
+//      fprintf(pFile,"\n");
+//
+//      //sel eff
+//      fprintf(pFile,"%30s_%dTeV %10s","seleff",int(iEcm),"lnN");
+//      fprintf(pFile,"%6.3f ",1+selEffUnc);
+//      for(size_t j=0; j<shape.bckg.size(); j++) {
+//	if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+//	else                                                                                   fprintf(pFile,"%6.3f ",1+selEffUnc);
+//      }
+//      fprintf(pFile,"\n");
 
-      //top decay uncertainty (jet flavor)
-      fprintf(pFile,"%30s_%dTeV %10s","topjetflavor",int(iEcm),"lnN");
-      fprintf(pFile,"%6.3f ",1+flavorUnc);
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
-      fprintf(pFile,"\n");
+      ////pdf unc
+      //fprintf(pFile,"%30s_%dTeV %10s","pdf",int(iEcm),"lnN");
+      //fprintf(pFile,"%6.3f ",1+pdfUnc);
+      //for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
+      //fprintf(pFile,"\n");
+      //
+      ////top decay uncertainty (jet flavor)
+      //fprintf(pFile,"%30s_%dTeV %10s","topjetflavor",int(iEcm),"lnN");
+      //fprintf(pFile,"%6.3f ",1+flavorUnc);
+      //for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ","-");
+      //fprintf(pFile,"\n");
 
       //diepton BR
       //fprintf(pFile,"%35s %10s","br","lnN");
@@ -792,9 +858,9 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile,"%35s %10s ", "vvTh","lnN");
       fprintf(pFile,"%6s ","-");
       for(size_t j=0; j<shape.bckg.size(); j++) {
-	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
-	if(name!="vv") fprintf(pFile,"%6s ","-");
-	else           fprintf(pFile,"%6s ","1.050"); 
+        TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+        if(name!="vv") fprintf(pFile,"%6s ","-");
+        else           fprintf(pFile,"%6.3f ", sqrt(0.7*0.7+0.5*0.5)/15.4 ); 
       }
       fprintf(pFile,"\n");
 
@@ -838,31 +904,79 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 	  if(systIsValid) fprintf(pFile,"%s \n",systLine.Data());
 	}
 
+      // CORRELATED BINS
+      ////MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
+      //fprintf(pFile,"%35s %10s ", ("ttbar_"+ch+"_stat").Data(), "shape");
+      //fprintf(pFile,"%6s ","1");
+      //for(size_t j=0; j<shape.bckg.size(); j++) {
+      //  if(!(convertNameForDataCard(shape.bckg[j]->GetTitle()).Contains("ttbar"))) fprintf(pFile,"%6s ","-");
+      //  else                                                           fprintf(pFile,"%6s ","1");
+      //}
+      //fprintf(pFile,"\n");
+      //      for(size_t j=0; j<shape.bckg.size(); j++)
+      //	{
+      //	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+      //	  if(proc.Contains("ttbar")) continue;
+      //	  //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
+      //	  
+      //	  fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
+      //	  fprintf(pFile,"%6s ","-");
+      //	  for(size_t k=0; k<shape.bckg.size(); k++) {
+      //	    if(k!=j) fprintf(pFile,"%6s ","-");
+      //	    //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+      //	    else     fprintf(pFile,"%6s ","1");
+      //	  }
+      //	  fprintf(pFile,"\n");
+      //	}
+      
+
+      // UNCORRELATED BINS
       //MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
-      fprintf(pFile,"%35s %10s ", ("ttbar_"+ch+"_stat").Data(), "shape");
-      fprintf(pFile,"%6s ","1");
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	if(!(convertNameForDataCard(shape.bckg[j]->GetTitle()).Contains("ttbar"))) fprintf(pFile,"%6s ","-");
-	else                                                           fprintf(pFile,"%6s ","1");
+      TString myName=convertNameForDataCard(shape.signal->GetTitle()).Data();
+      int BIN=0;
+      for(int ibin=1; ibin<=shape.signal->GetXaxis()->GetNbins(); ibin++){           
+        if(shape.signal->GetBinContent(ibin)<=0 || shape.signal->GetBinContent(ibin)/shape.signal->Integral()<0.0000001)continue;  
+        char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+        fprintf(pFile,"%35s %10s ", (myName/*signalTag*/+ibintxt+"_"+myName+"_"+ch+"_stat").Data(), "shape");
+        fprintf(pFile,"%6s ","1");
+        for(size_t j=0; j<shape.bckg.size(); j++) {
+          //if(convertNameForDataCard(shape.bckg[j]->GetTitle())!="ttbar") fprintf(pFile,"%6s ","-");
+          //else                                                           fprintf(pFile,"%6s ","1");
+          fprintf(pFile,"%6s","-");
+        }
+        fprintf(pFile,"\n");
       }
-      fprintf(pFile,"\n");
-
       for(size_t j=0; j<shape.bckg.size(); j++)
-	{
-	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
-	  if(proc.Contains("ttbar")) continue;
-	  //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
-	  
-	  fprintf(pFile,"%35s %10s ", (proc+"_"+ch+"_stat").Data(), "shape");
-	  fprintf(pFile,"%6s ","-");
-	  for(size_t k=0; k<shape.bckg.size(); k++) {
-	    if(k!=j) fprintf(pFile,"%6s ","-");
-	    //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
-	    else     fprintf(pFile,"%6s ","1");
-	  }
-	  fprintf(pFile,"\n");
-	}
-
+        {
+          TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+          //  if(proc=="ttbar") continue;
+          //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
+          BIN=0;
+          for(int ibin=1; ibin<=shape.bckg[j]->GetXaxis()->GetNbins(); ibin++){
+            if(shape.bckg[j]->GetBinContent(ibin)<=0 || shape.bckg[j]->GetBinContent(ibin)/shape.bckg[j]->Integral()<0.0000001)continue;  
+            char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN); BIN++;
+            fprintf(pFile,"%35s %10s ", (proc+ibintxt+"_"+proc+"_"+ch+"_stat").Data(), "shape");
+            fprintf(pFile,"%6s ","-");
+            for(size_t k=0; k<shape.bckg.size(); k++) {
+              if(k!=j) fprintf(pFile,"%6s ","-");
+              //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+              else     fprintf(pFile,"%6s ","1");
+            }
+            fprintf(pFile,"\n");
+            
+            if(proc=="ttbb"){
+              fprintf(pFile,"%35s %10s ", (proc+ibintxt+"_"+proc+"_"+ch+"_additional").Data(), "shape");
+              fprintf(pFile,"%6s ","-");
+              for(size_t k=0; k<shape.bckg.size(); k++) {
+                if(k!=j) fprintf(pFile,"%6s ","-");
+                //else if(shape.dataDrivenBckg.find(shape.bckg[k]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
+                else     fprintf(pFile,"%6s ","1");
+              }
+              fprintf(pFile,"\n");              
+            }
+          }
+        }
+      
       //all done
       fprintf(pFile,"\n");
       fclose(pFile);
@@ -931,10 +1045,12 @@ int main(int argc, char* argv[])
   plrAnalysisCmd += outUrl+"DataCard_combined.dat";
   plrAnalysisCmd += " --lumi "+ NumberToString(iLumi);
   plrAnalysisCmd += " --ecm "+NumberToString(iEcm);
+  plrAnalysisCmd += " --cl 0.95 ";
   gSystem->Exec("mv DataCard* " + outUrl);
   gSystem->Exec(combCardCmd.Data());
   cout << "Running: " << plrAnalysisCmd << endl;
-  gSystem->Exec(plrAnalysisCmd.Data());
-  gSystem->Exec("mv PLR* " + outUrl);
+  // Commented out the commands, since it does not print out likelihoods in 71X. Awesome CMSSW.
+  //gSystem->Exec(plrAnalysisCmd.Data());
+  //gSystem->Exec("mv PLR* " + outUrl);
 }
 
