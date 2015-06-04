@@ -267,7 +267,8 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
     {
       TString procCtr(""); procCtr+=i;
       TString proc=(Process[i])["tag"].toString();
-      //Disable low yield backgrounds fror dileptons if(convertNameForDataCard(proc) == "dy" || convertNameForDataCard(proc) == "vv") continue;
+      //Disable low yield backgrounds fror dileptons 
+      if(convertNameForDataCard(proc) == "dy" || convertNameForDataCard(proc) == "vv" || convertNameForDataCard(proc) == "wjets") continue;
       cout << "Processing process named: " << proc << endl;
       TDirectory *pdir = (TDirectory *)inF->Get(proc);         
       if(pdir==0){ cout << "Directory does not exist for " << proc << endl; continue;}
