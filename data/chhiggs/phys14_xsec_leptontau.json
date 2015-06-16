@@ -17,12 +17,14 @@
       ]
     },
     {   
-      "tag":"W,multijets",
+      "tag":"misidentified #tau_{h}",
       "isdata":false,
-      "color":809,
+      "color":799,
       "lcolor":1,
       "data":[
-        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_TTJets_lepjets_filt5"                           , "split":92, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_TTJets_hadrons_filt6"                           , "split":92, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"} 
       ]
     },
     {
@@ -49,7 +51,19 @@
         { "dtag":"MC8TeV_SingleT_s"                        , "split":1, "xsec":7.20        , "br":[ 1.0 ]                 , "dset":"/TToLeptons_s-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        }
       ]
     },
-    {
+     {  
+      "tag":"t#bar{t} dileptons for ltau",
+      "label":"t#bar{t} dileptons",    
+      "isdata":false,
+      "issignal":false,
+      "mctruthmode":4,
+      "color":822,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_dilleptau"                           , "split":92, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        ]
+    },
+   {
       "tag":"t#bar{t} ltau",
       "label":"t#bar{t}#rightarrow#it{l}#tau",
       "isdata":false,
