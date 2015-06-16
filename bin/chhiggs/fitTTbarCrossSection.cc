@@ -50,19 +50,19 @@ float flavorUnc(0.001);
 float iEcm(13);
 double iLumi(1000.);
 
-size_t nHardcodedUnc(11);
+size_t nHardcodedUnc(9);
 std::pair<std::string,double> hardcodedUnc[] = {
   std::make_pair("trigger", 0.02),
   std::make_pair("eId", 0.02),
   std::make_pair("muId", 0.01),
-  std::make_pair("tauId", 0.06),
+  std::make_pair("tauId", 0.01),//6),
   std::make_pair("etaumisid", 0.03), // (only ttbardilepton)
   std::make_pair("mutaumisid", 0.03), // (only ttbardilepton)
-  std::make_pair("jettaumisid", 0.2), // (only ttbardilepton)
-  std::make_pair("tes", 0.04), //  (2.4 signal)
-  std::make_pair("jes", 0.2), // (1 signal)
-  std::make_pair("jer", 0.1), // (0.1 signal)
-  std::make_pair("met", 0.1), // (0.1 signal)
+  //  std::make_pair("jettaumisid", 0.2), // (only ttbardilepton)
+  //std::make_pair("tes", 0.04), //  (2.4 signal)
+  std::make_pair("jes", 0.02), // (1 signal)
+  std::make_pair("jer", 0.01), // (0.1 signal)
+  std::make_pair("met", 0.01), // (0.1 signal)
   //std::pair<double,double> toppt", 5 5
   //std::pair<double,double> pileup", 3
 };
@@ -211,6 +211,7 @@ TString convertNameForDataCard(TString title)
   if(title=="t#bar{t} dileptons for ltau" ) return "ttbarll";
   if(title=="t#bar{t} ljets"              ) return "ttbarljets";
   if(title=="t#bar{t} had"                ) return "ttbarhad";  
+  if(title=="misidentified #tau_{h}"      ) return "taufakes";
   
   if(title=="ZZ")                return "vv";
   
@@ -735,18 +736,30 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
           double uncValue(hardcodedUnc[iUnc].second);
           fprintf(pFile,"%30s_%dTeV %10s",uncName.c_str(),int(iEcm),"lnN");
           if      (uncName=="tes") fprintf(pFile,"%6.3f ",0.024);
-          else if (uncName=="jes") fprintf(pFile,"%6.3f ",0.01);
-          else if (uncName=="jer") fprintf(pFile,"%6.3f ",0.001);
-          else if (uncName=="met") fprintf(pFile,"%6.3f ",0.001);
+          //else if (uncName=="jes") fprintf(pFile,"%6.3f ",0.01);
+          //else if (uncName=="jer") fprintf(pFile,"%6.3f ",0.001);
+          //else if (uncName=="met") fprintf(pFile,"%6.3f ",0.001);
+          else if( uncName=="etaumisid" || uncName=="mutaumisid" || uncName=="jettaumisid" ) fprintf(pFile,"%6s ","-");
           else fprintf(pFile,"%6.3f ",1+uncValue);
           for(size_t j=0; j<shape.bckg.size(); j++) {
             if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) fprintf(pFile,"%6s ","-");
             else {
-              if(convertNameForDataCard(shape.bckg[j]->GetTitle())=="ttbarll"){
-                if( uncName=="etaumisid" || uncName=="mutaumisid" || uncName=="jettaumisid" ) fprintf(pFile,"%6.3f ",1+uncValue);
-                else                                                                          fprintf(pFile,"%6s ","-");
-              }
-              else fprintf(pFile,"%6.3f ",1+uncValue);
+              if( uncName=="etaumisid" || uncName=="mutaumisid" )
+                {
+                  if(convertNameForDataCard(shape.bckg[j]->GetTitle())=="ttbarll") fprintf(pFile,"%6.3f ",1+uncValue);
+                  else                                                             fprintf(pFile,"%6s ","-");
+                }
+              else if (uncName=="jettaumisid")
+                {
+                  if(//convertNameForDataCard(shape.bckg[j]->GetTitle())=="ttbarll"||
+                     convertNameForDataCard(shape.bckg[j]->GetTitle())=="taufakes") fprintf(pFile,"%6.3f ",1+uncValue);
+                  else                                                             fprintf(pFile,"%6s ","-");
+                }
+              else
+                {
+                  if(convertNameForDataCard(shape.bckg[j]->GetTitle())=="taufakes") fprintf(pFile,"%6s ","-");
+                  else fprintf(pFile,"%6.3f ",1+uncValue);
+                }
             }
           }
           fprintf(pFile,"\n");
@@ -856,14 +869,14 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile,"\n");
 
       //dibosons
-      fprintf(pFile,"%35s %10s ", "vvTh","lnN");
-      fprintf(pFile,"%6s ","-");
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-        TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
-        if(name!="vv") fprintf(pFile,"%6s ","-");
-        else           fprintf(pFile,"%6.3f ", sqrt(0.7*0.7+0.5*0.5)/15.4 ); 
-      }
-      fprintf(pFile,"\n");
+//      fprintf(pFile,"%35s %10s ", "vvTh","lnN");
+//      fprintf(pFile,"%6s ","-");
+//      for(size_t j=0; j<shape.bckg.size(); j++) {
+//        TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+//        if(name!="vv") fprintf(pFile,"%6s ","-");
+//        else           fprintf(pFile,"%6.3f ", sqrt(0.7*0.7+0.5*0.5)/15.4 ); 
+//      }
+//      fprintf(pFile,"\n");
 
 
       //systematics described by shapes
@@ -936,7 +949,8 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       TString myName=convertNameForDataCard(shape.signal->GetTitle()).Data();
       int BIN=0;
       for(int ibin=1; ibin<=shape.signal->GetXaxis()->GetNbins(); ibin++){           
-        if(shape.signal->GetBinContent(ibin)<=0 || shape.signal->GetBinContent(ibin)/shape.signal->Integral()<0.0000001)continue;  
+        //if(shape.signal->GetBinContent(ibin)<=0 || shape.signal->GetBinContent(ibin)/shape.signal->Integral()<0.0000001)continue;  
+        if(shape.signal->GetBinContent(ibin)<=0 || shape.signal->GetBinContent(ibin)/shape.signal->Integral()<0.1)continue;  
         char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
         fprintf(pFile,"%35s %10s ", (myName/*signalTag*/+ibintxt+"_"+myName+"_"+ch+"_stat").Data(), "shape");
         fprintf(pFile,"%6s ","1");
