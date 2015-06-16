@@ -18,9 +18,10 @@ namespace patUtils
             bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
             bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
 
+	    // PHYS14 selection 
             switch(IdLevel){
                case llvvElecId::Veto :
-                  if(barrel && dEtaln < 0.0200 && dPhiln < 0.2579 && sigmaletaleta < 0.0125 && hem < 0.2564 && dxy < 0.0250 && dz < 0.5863 && resol < 0.1508 && mHits <=2)return true;
+                  if(barrel && dEtaln < 0.013625 && dPhiln < 0.230374 && sigmaletaleta < 0.011586 && hem < 0.181130 && dxy < 0.094095 && dz < 0.713070 && resol < 0.295751 && mHits <=2)return true;
                   if(endcap && dEtaln < 0.0141 && dPhiln < 0.2591 && sigmaletaleta < 0.0371 && hem < 0.1335 && dxy < 0.2232 && dz < 0.9513 && resol < 0.1542 && mHits <= 2)return true;
                   break;
 
@@ -189,36 +190,46 @@ namespace patUtils
     return false; 
   }
   
-   bool passIso(pat::Electron& el, int IsoLevel){
+  bool passIso(pat::Electron& el, int IsoLevel, double rho){
           //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
           float  chIso   = el.pfIsolationVariables().sumChargedHadronPt;
           float  nhIso   = el.pfIsolationVariables().sumNeutralHadronEt;
           float  gIso    = el.pfIsolationVariables().sumPhotonEt;
-          float  puchIso = el.pfIsolationVariables().sumPUPt; 
-          float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / el.pt();
 
+	  float  relIso = 0.0; 
+	  
+	  if (rho == 0) {
+	    float  puchIso = el.pfIsolationVariables().sumPUPt; 
+	    relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / el.pt();
+	  }
+	  else {
+	    float effArea = utils::cmssw::getEffectiveArea(11,el.superCluster()->eta(),3);
+	    relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / el.pt();
+	  }
+	  
           bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
           bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
 
+	  // PHYS14 selection, conditions: PU20 bx25
           switch(IsoLevel){
                case llvvElecIso::Veto :
-                  if( barrel && relIso < 0.3313 ) return true;
-                  if( endcap && relIso < 0.3816 ) return true;
+                  if( barrel && relIso < 0.158721 ) return true;
+                  if( endcap && relIso < 0.177032 ) return true;
                   break;
 
                case llvvElecIso::Loose :
-                  if( barrel && relIso < 0.2400 ) return true;
-                  if( endcap && relIso < 0.3529 ) return true;
+                  if( barrel && relIso < 0.130136 ) return true;
+                  if( endcap && relIso < 0.163368 ) return true;
                   break;
 
                case llvvElecIso::Medium :
-                  if( barrel && relIso < 0.2179 ) return true;
-                  if( endcap && relIso < 0.2540 ) return true;
+                  if( barrel && relIso < 0.107587 ) return true;
+                  if( endcap && relIso < 0.113254 ) return true;
                   break;
 
                case llvvElecIso::Tight :
-                  if( barrel && relIso < 0.1649 ) return true;
-                  if( endcap && relIso < 0.2075 ) return true;
+                  if( barrel && relIso < 0.069537 ) return true;
+                  if( endcap && relIso < 0.078265 ) return true;
                   break;
 
                default:
