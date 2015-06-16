@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Fit the ttbar cross section using shape
-DIR=~/www/13TeV_topsel_fix_ala9/
+%DIR=~/www/13TeV_topsel_fix_ala9/
+DIR=~/www/13TeV_topsel_fix_talk/
 JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_xsec_dileptons.json
 JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_xsec_leptontau.json
 
@@ -12,6 +13,7 @@ JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_xsec_lepton
 
 for HISTODILEPTON in finalnbjets finalmt eventflow
 do
+    continue
     OUTDILEPTON=~/www/13TeV_xsec/dileptons/${HISTODILEPTON}/
     BINSDILEPTON=""
     BINSLEPTAU=""
@@ -26,7 +28,7 @@ do
 
 done
 
-for HISTOLEPTAU in finaltaur finaltaupolarization finaldphilepmet finaldphitaumet finaldphileptau finaltaupt eventflowslep
+for HISTOLEPTAU in finaltaur finaltaupolarization finaldphilepmet finaldphitaumet finaldphileptau finaltaupt eventflowslep finalnbjets
 do
     OUTLEPTAU=~/www/13TeV_xsec/leptau/${HISTOLEPTAU}/
     BINSDILEPTON=""
