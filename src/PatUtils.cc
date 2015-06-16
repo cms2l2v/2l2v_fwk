@@ -114,25 +114,26 @@ namespace patUtils
 
     bool barrel = (fabs(eta) <= 1.479);
     bool endcap = (!barrel && fabs(eta) < 2.5);
- 
+
+    // PHYS14 selections PU20 bunch crossing 25 ns
     switch(IdLevel){
     case llvvPhotonId::Loose :
-
+        
       if ( barrel
 	   && !elevto
-	   && hoe < 0.032
-	   && sigmaIetaIeta < 0.0100
-	   && TMath::Max(chIso-chArea*rho,0.0) < 2.94 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 3.16 + 0.0023*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 4.43 + 0.0004*pt )
+	   && hoe < 0.028
+	   && sigmaIetaIeta < 0.0107
+	   && TMath::Max(chIso-chArea*rho,0.0) < 2.67 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 7.23 + exp(0.0028*pt + 0.5408) 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0014*pt )
 	return true; 
       if ( endcap
 	   && !elevto
-	   && hoe < 0.023
-	   && sigmaIetaIeta < 0.0270
-	   && TMath::Max(chIso-chArea*rho,0.0) < 3.07 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 17.16 + 0.0116*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0037*pt )
+	   && hoe < 0.093
+	   && sigmaIetaIeta < 0.0272
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.79
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 8.89 + 0.01725*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 3.09 + 0.0091*pt )
 	return true; 
             
       break;
@@ -141,19 +142,19 @@ namespace patUtils
 
       if ( barrel
 	   && !elevto
-	   && hoe < 0.020
-	   && sigmaIetaIeta < 0.0099
-	   && TMath::Max(chIso-chArea*rho,0.0) < 2.62 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.69 + 0.0023*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.35 + 0.0004*pt )
+	   && hoe < 0.012
+	   && sigmaIetaIeta < 0.0100
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.79 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.16 + exp(0.0028*pt+0.5408) 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.90 + 0.0014*pt )
 	return true; 
       if ( endcap
 	   && !elevto
-	   && hoe < 0.011
-	   && sigmaIetaIeta < 0.0269
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.40 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 4.92 + 0.0116*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0037*pt )
+	   && hoe < 0.023
+	   && sigmaIetaIeta < 0.0267
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.09 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 4.31 + 0.0172*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.90 + 0.0091*pt )
 	return true; 
             
       break;
@@ -161,19 +162,19 @@ namespace patUtils
 
       if ( barrel
 	   && !elevto
-	   && hoe < 0.012
-	   && sigmaIetaIeta < 0.0098
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.91 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.55 + 0.0023*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.29 + 0.0004*pt )
+	   && hoe < 0.010
+	   && sigmaIetaIeta < 0.0100
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.66 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.14 + exp(0.0028*pt+0.5408) 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.40 + 0.0014*pt )
 	return true; 
       if ( endcap
 	   && !elevto
-	   && hoe < 0.011
-	   && sigmaIetaIeta < 0.0264
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.26 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.71 + 0.0116*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.91 + 0.0037*pt )
+	   && hoe < 0.015
+	   && sigmaIetaIeta < 0.0265
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.04 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 3.89 + 0.0172*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.40 + 0.0091*pt )
 	return true; 
             
       break;
