@@ -27,7 +27,7 @@ INDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar4/
 #ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
 #ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
 ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
-ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlemu_final --onlyStartWith singlee_final"
+ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlemu_final --onlyStartWith singlee_final --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep "
 #ONLYDILEPTON=" --onlyContain emu_eventflow --onlyContain ee_eventflow --onlyContain mumu_eventflow "
 #ONLYLEPTAU=" --onlyContain singlemu_eventflowslep --onlyContain singlee_eventflowslep "
 
@@ -41,6 +41,7 @@ ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met 
 # Leptontau
 runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYLEPTAU}
 runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --useMerged --no2D --noPowers --plotExt .png --generatePseudoData --onlyStartWith optim_systs ${ONLYLEPTAU}
+runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --useMerged --no2D --noPowers --plotExt .C --generatePseudoData --onlyStartWith optim_systs ${ONLYLEPTAU}
 
 # Lessen the burden on the web browser
 
