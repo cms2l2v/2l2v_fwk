@@ -273,29 +273,29 @@ namespace patUtils
       hasPhotonTrigger=true;
       triggerThreshold=250;
     }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
-      hasPhotonTrigger=true;
-      triggerThreshold=160;
-    }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
-      hasPhotonTrigger=true;
-      triggerThreshold=150;
-    }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
-      hasPhotonTrigger=true;
-      triggerThreshold=135;
-    }
+    // else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
+    //   hasPhotonTrigger=true;
+    //   triggerThreshold=160;
+    // }
+    // else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
+    //   hasPhotonTrigger=true;
+    //   triggerThreshold=150;
+    // }
+    // else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
+    //   hasPhotonTrigger=true;
+    //   triggerThreshold=135;
+    // }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=120;
     }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
-      triggerThreshold=92;
+      triggerThreshold=90;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
-      triggerThreshold=77;
+      triggerThreshold=75;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
