@@ -21,23 +21,95 @@ namespace patUtils
 	    // PHYS14 selection 
             switch(IdLevel){
                case llvvElecId::Veto :
-                  if(barrel && dEtaln < 0.013625 && dPhiln < 0.230374 && sigmaletaleta < 0.011586 && hem < 0.181130 && dxy < 0.094095 && dz < 0.713070 && resol < 0.295751 && mHits <=2)return true;
-                  if(endcap && dEtaln < 0.0141 && dPhiln < 0.2591 && sigmaletaleta < 0.0371 && hem < 0.1335 && dxy < 0.2232 && dz < 0.9513 && resol < 0.1542 && mHits <= 2)return true;
+                  if(barrel                   &&
+		     dEtaln        < 0.013625 &&
+		     dPhiln        < 0.230374 &&
+		     sigmaletaleta < 0.011586 &&
+		     hem           < 0.181130 &&
+		     dxy           < 0.094095 &&
+		     dz            < 0.713070 &&
+		     resol         < 0.295751 &&
+		     mHits         <=2          )
+		    return true;
+                  if(endcap                   &&
+		     dEtaln        < 0.011932 &&
+		     dPhiln        < 0.255450 &&
+		     sigmaletaleta < 0.031849 &&
+		     hem           < 0.223870 &&
+		     dxy           < 0.342293 &&
+		     dz            < 0.953461 &&
+		     resol         < 0.155501 &&
+		     mHits <= 3                )
+		    return true;
                   break;
 
                case llvvElecId::Loose :
-                  if(barrel && dEtaln < 0.0181 && dPhiln < 0.0936 && sigmaletaleta < 0.0123 && hem < 0.141 && dxy < 0.0166 && dz < 0.54342 && resol < 0.1043 && mHits <= 1)return true; 
-                  if(endcap && dEtaln < 0.0124 && dPhiln < 0.0642 && sigmaletaleta < 0.035 && hem < 0.1115 && dxy < 0.0980 && dz < 0.91870 && resol < 0.1443 && mHits <= 1)return true; 
+                  if(barrel                   &&
+		     dEtaln        < 0.009277 &&
+		     dPhiln        < 0.094739 &&
+		     sigmaletaleta < 0.010331 &&
+		     hem           < 0.093068 &&
+		     dxy           < 0.035904 &&
+		     dz            < 0.075496 &&
+		     resol         < 0.189968 &&
+		     mHits         <= 1        )
+		    return true; 
+                  if(endcap                   &&
+		     dEtaln        < 0.009833 &&
+		     dPhiln        < 0.149934 &&
+		     sigmaletaleta < 0.031838 &&
+		     hem           < 0.115754 &&
+		     dxy           < 0.099266 &&
+		     dz            < 0.197897 &&
+		     resol         < 0.140662 &&
+		     mHits         <= 1      )
+		    return true; 
                   break;
 
                 case llvvElecId::Medium :
-                  if(barrel && dEtaln < 0.0106 && dPhiln < 0.0323 && sigmaletaleta < 0.0107 && hem < 0.067 && dxy < 0.0131 && dz < 0.22310 && resol < 0.1043 && mHits <= 1)return true; 
-                  if(endcap && dEtaln < 0.0108 && dPhiln < 0.0455 && sigmaletaleta < 0.0318 && hem < 0.097 && dxy < 0.0845 && dz < 0.75230 && resol < 0.1201 && mHits <= 1)return true; 
+                  if(barrel                     &&
+		     dEtaln          < 0.008925 &&
+		     dPhiln          < 0.035973 &&
+		     sigmaletaleta   < 0.009996 &&
+		     hem             < 0.050537 &&
+		     dxy             < 0.012235 &&
+		     dz              < 0.042020 &&
+		     resol           < 0.091942 &&
+		     mHits           <= 1      )
+		    return true; 
+                  if(endcap                     &&
+		     dEtaln          < 0.007429 &&
+		     dPhiln          < 0.067879 &&
+		     sigmaletaleta   < 0.030135 &&
+		     hem             < 0.086782 &&
+		     dxy             < 0.036719 &&
+		     dz              < 0.138142 &&
+		     resol           < 0.100683 &&
+		     mHits            <= 1)
+		    return true; 
                   break;
   
                case llvvElecId::Tight :
-                  if(barrel && dEtaln < 0.0091 && dPhiln < 0.0310 && sigmaletaleta < 0.0106 && hem < 0.0532 && dxy < 0.0126 && dz < 0.0116 && resol < 0.0609 && mHits <= 1)return true; 
-                  if(endcap && dEtaln < 0.0106 && dPhiln < 0.0359 && sigmaletaleta < 0.0305 && hem < 0.0835 && dxy < 0.0163 && dz < 0.5999 && resol < 0.1126 && mHits <= 1)return true; 
+                  if(barrel                   &&
+		     dEtaln          < 0.006046 &&
+		     dPhiln          < 0.028092 &&
+		     sigmaletaleta   < 0.009947 &&
+		     hem             < 0.045772 &&
+		     dxy             < 0.008790 &&
+		     dz              < 0.021226 &&
+		     resol           < 0.020118 &&
+		     mHits           <= 1      )
+		    return true; 
+                  if(endcap                   &&
+		     dEtaln          < 0.007057 &&
+		     dPhiln          < 0.030159 &&
+		     sigmaletaleta   < 0.028237 &&
+		     hem             < 0.067778 &&
+		     dxy             < 0.027984 &&
+		     dz              < 0.133431 &&
+		     resol           < 0.098919 &&
+		     mHits           <= 1      )
+		    return true; 
                   break;
 
                case llvvElecId::LooseMVA :
