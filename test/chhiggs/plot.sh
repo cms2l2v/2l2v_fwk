@@ -4,6 +4,7 @@
 #DIR=~/www/13TeV_topsel_fix_ala8/
 DIR=~/www/13TeV_topsel_fix_ala9/
 DIR=~/www/13TeV_topsel_fix_talk/
+DIR=~/www/13TeV_topsel_fix_posttalk/
 #DIR=~/www/13TeV_forinclusivecheck/
 mkdir -p ${DIR}
 rm -rf ${DIR}*
@@ -23,7 +24,8 @@ JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_dile
 JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_leptontau.json
 #JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_samples.json
 #JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_samples.json
-INDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar4/
+#INDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar4/
+INDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar5/
 #ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
 #ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
 ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
