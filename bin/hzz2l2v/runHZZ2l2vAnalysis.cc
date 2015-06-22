@@ -947,12 +947,15 @@ int main(int argc, char* argv[])
 	  }
 	  if(leptons[ilep].pt()<20) passKin=false;
 
-          //Cut based identification 
-          passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+	  //Cut based identification
+      passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+	  passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
+      passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft);
 
 	  //isolation
-	  passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
-	  
+      passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
+      passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
+
 	  if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
 	  else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
 
@@ -988,9 +991,9 @@ int main(int argc, char* argv[])
 	  if(minDRlj<0.4 || minDRlg<0.4) continue;
 	  
 	  //jet id
-	  bool passPFloose = true; //FIXME --> Need to be updated according to te latest recipe;
-	  float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-	  bool passLooseSimplePuId = true; //FIXME --> Need to be updated according to the latest recipe
+	  bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
+      float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
+      bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
 	  if(jets[ijet].pt()>30){
 	      mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
 	      if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
