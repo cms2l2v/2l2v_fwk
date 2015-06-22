@@ -407,4 +407,60 @@ namespace patUtils
   }
 
 
+  bool passPFJetID(std::string label,
+                  pat::Jet jet){
+
+    bool passID = false;
+
+    float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+    // Note: All fractions are calculated with the raw/uncorrected energy of the jet (only then they add up to unity). So the PF JetID has to be applied before the jet energy corrections. 
+
+    float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+    float nef( jet.neutralEmEnergy()/rawJetEn );
+    float cef( jet.chargedEmEnergy()/rawJetEn );
+    float chf( jet.chargedHadronEnergy()/rawJetEn );
+    float nch    = jet.chargedMultiplicity();
+    float nconst = jet.numberOfDaughters();
+    float muf( jet.muonEnergy()/rawJetEn);
+
+    //From https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+    if (label == "Loose") passID = ( (nhf<0.99  && nef<0.99 && nconst>1 && muf < 0.8 ) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.99) ) );
+    if (label == "Tight") passID = ( (nhf<0.90  && nef<0.90 && nconst>1 && muf < 0.8 ) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.90) ) );
+
+    return passID;
+  }
+
+  bool passPUJetID(pat::Jet j){
+
+    double jpt = j.pt();
+    double jeta = j.eta();
+
+    //Recommendation of HZZ :https://twiki.cern.ch/twiki/bin/view/CMS/HiggsZZ4l2015#Jets
+    float jpumva=0.;
+    jpumva=j.userFloat("pileupJetId:fullDiscriminant");
+
+    bool passPU = true;
+    if(jpt>20){
+      if(jeta>3.){
+        if(jpumva<=-0.45)passPU=false;
+      }else if(jeta>2.75){
+        if(jpumva<=-0.55)passPU=false;
+      }else if(jeta>2.5){
+        if(jpumva<=-0.6)passPU=false;
+      }else if(jpumva<=-0.63)passPU=false;
+    }else{ //pt<20 : in the 2l2nu analysis, this means 15<pt<20
+      if(jeta>3.){
+        if(jpumva<=-0.95)passPU=false;
+      }else if(jeta>2.75){
+        if(jpumva<=-0.94)passPU=false;
+      }else if(jeta>2.5){
+        if(jpumva<=-0.96)passPU=false;
+      }else if(jpumva<=-0.95)passPU=false;
+    }
+    return passPU;
+  }
+
+
+
+
 }

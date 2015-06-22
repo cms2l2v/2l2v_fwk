@@ -60,7 +60,8 @@ namespace patUtils
    bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0);
    bool passIso(pat::Muon&     mu,  int IsoLevel);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
-
+   bool passPFJetID(std::string label, pat::Jet jet);
+   bool passPUJetID(pat::Jet j);
 }
 
 #endif
