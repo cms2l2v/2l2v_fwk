@@ -18,25 +18,98 @@ namespace patUtils
             bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
             bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
 
+	    // PHYS14 selection 
             switch(IdLevel){
                case llvvElecId::Veto :
-                  if(barrel && dEtaln < 0.0200 && dPhiln < 0.2579 && sigmaletaleta < 0.0125 && hem < 0.2564 && dxy < 0.0250 && dz < 0.5863 && resol < 0.1508 && mHits <=2)return true;
-                  if(endcap && dEtaln < 0.0141 && dPhiln < 0.2591 && sigmaletaleta < 0.0371 && hem < 0.1335 && dxy < 0.2232 && dz < 0.9513 && resol < 0.1542 && mHits <= 2)return true;
+                  if(barrel                   &&
+		     dEtaln        < 0.013625 &&
+		     dPhiln        < 0.230374 &&
+		     sigmaletaleta < 0.011586 &&
+		     hem           < 0.181130 &&
+		     dxy           < 0.094095 &&
+		     dz            < 0.713070 &&
+		     resol         < 0.295751 &&
+		     mHits         <=2          )
+		    return true;
+                  if(endcap                   &&
+		     dEtaln        < 0.011932 &&
+		     dPhiln        < 0.255450 &&
+		     sigmaletaleta < 0.031849 &&
+		     hem           < 0.223870 &&
+		     dxy           < 0.342293 &&
+		     dz            < 0.953461 &&
+		     resol         < 0.155501 &&
+		     mHits <= 3                )
+		    return true;
                   break;
 
                case llvvElecId::Loose :
-                  if(barrel && dEtaln < 0.0181 && dPhiln < 0.0936 && sigmaletaleta < 0.0123 && hem < 0.141 && dxy < 0.0166 && dz < 0.54342 && resol < 0.1043 && mHits <= 1)return true; 
-                  if(endcap && dEtaln < 0.0124 && dPhiln < 0.0642 && sigmaletaleta < 0.035 && hem < 0.1115 && dxy < 0.0980 && dz < 0.91870 && resol < 0.1443 && mHits <= 1)return true; 
+                  if(barrel                   &&
+		     dEtaln        < 0.009277 &&
+		     dPhiln        < 0.094739 &&
+		     sigmaletaleta < 0.010331 &&
+		     hem           < 0.093068 &&
+		     dxy           < 0.035904 &&
+		     dz            < 0.075496 &&
+		     resol         < 0.189968 &&
+		     mHits         <= 1        )
+		    return true; 
+                  if(endcap                   &&
+		     dEtaln        < 0.009833 &&
+		     dPhiln        < 0.149934 &&
+		     sigmaletaleta < 0.031838 &&
+		     hem           < 0.115754 &&
+		     dxy           < 0.099266 &&
+		     dz            < 0.197897 &&
+		     resol         < 0.140662 &&
+		     mHits         <= 1      )
+		    return true; 
                   break;
 
                 case llvvElecId::Medium :
-                  if(barrel && dEtaln < 0.0106 && dPhiln < 0.0323 && sigmaletaleta < 0.0107 && hem < 0.067 && dxy < 0.0131 && dz < 0.22310 && resol < 0.1043 && mHits <= 1)return true; 
-                  if(endcap && dEtaln < 0.0108 && dPhiln < 0.0455 && sigmaletaleta < 0.0318 && hem < 0.097 && dxy < 0.0845 && dz < 0.75230 && resol < 0.1201 && mHits <= 1)return true; 
+                  if(barrel                     &&
+		     dEtaln          < 0.008925 &&
+		     dPhiln          < 0.035973 &&
+		     sigmaletaleta   < 0.009996 &&
+		     hem             < 0.050537 &&
+		     dxy             < 0.012235 &&
+		     dz              < 0.042020 &&
+		     resol           < 0.091942 &&
+		     mHits           <= 1      )
+		    return true; 
+                  if(endcap                     &&
+		     dEtaln          < 0.007429 &&
+		     dPhiln          < 0.067879 &&
+		     sigmaletaleta   < 0.030135 &&
+		     hem             < 0.086782 &&
+		     dxy             < 0.036719 &&
+		     dz              < 0.138142 &&
+		     resol           < 0.100683 &&
+		     mHits            <= 1)
+		    return true; 
                   break;
   
                case llvvElecId::Tight :
-                  if(barrel && dEtaln < 0.0091 && dPhiln < 0.0310 && sigmaletaleta < 0.0106 && hem < 0.0532 && dxy < 0.0126 && dz < 0.0116 && resol < 0.0609 && mHits <= 1)return true; 
-                  if(endcap && dEtaln < 0.0106 && dPhiln < 0.0359 && sigmaletaleta < 0.0305 && hem < 0.0835 && dxy < 0.0163 && dz < 0.5999 && resol < 0.1126 && mHits <= 1)return true; 
+                  if(barrel                   &&
+		     dEtaln          < 0.006046 &&
+		     dPhiln          < 0.028092 &&
+		     sigmaletaleta   < 0.009947 &&
+		     hem             < 0.045772 &&
+		     dxy             < 0.008790 &&
+		     dz              < 0.021226 &&
+		     resol           < 0.020118 &&
+		     mHits           <= 1      )
+		    return true; 
+                  if(endcap                   &&
+		     dEtaln          < 0.007057 &&
+		     dPhiln          < 0.030159 &&
+		     sigmaletaleta   < 0.028237 &&
+		     hem             < 0.067778 &&
+		     dxy             < 0.027984 &&
+		     dz              < 0.133431 &&
+		     resol           < 0.098919 &&
+		     mHits           <= 1      )
+		    return true; 
                   break;
 
                case llvvElecId::LooseMVA :
@@ -140,25 +213,26 @@ namespace patUtils
 
     bool barrel = (fabs(eta) <= 1.479);
     bool endcap = (!barrel && fabs(eta) < 2.5);
- 
+
+    // PHYS14 selections PU20 bunch crossing 25 ns
     switch(IdLevel){
     case llvvPhotonId::Loose :
-
+        
       if ( barrel
 	   && !elevto
-	   && hoe < 0.032
-	   && sigmaIetaIeta < 0.0100
-	   && TMath::Max(chIso-chArea*rho,0.0) < 2.94 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 3.16 + 0.0023*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 4.43 + 0.0004*pt )
+	   && hoe < 0.028
+	   && sigmaIetaIeta < 0.0107
+	   && TMath::Max(chIso-chArea*rho,0.0) < 2.67 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 7.23 + exp(0.0028*pt + 0.5408) 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0014*pt )
 	return true; 
       if ( endcap
 	   && !elevto
-	   && hoe < 0.023
-	   && sigmaIetaIeta < 0.0270
-	   && TMath::Max(chIso-chArea*rho,0.0) < 3.07 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 17.16 + 0.0116*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0037*pt )
+	   && hoe < 0.093
+	   && sigmaIetaIeta < 0.0272
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.79
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 8.89 + 0.01725*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 3.09 + 0.0091*pt )
 	return true; 
             
       break;
@@ -167,19 +241,19 @@ namespace patUtils
 
       if ( barrel
 	   && !elevto
-	   && hoe < 0.020
-	   && sigmaIetaIeta < 0.0099
-	   && TMath::Max(chIso-chArea*rho,0.0) < 2.62 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.69 + 0.0023*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.35 + 0.0004*pt )
+	   && hoe < 0.012
+	   && sigmaIetaIeta < 0.0100
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.79 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.16 + exp(0.0028*pt+0.5408) 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.90 + 0.0014*pt )
 	return true; 
       if ( endcap
 	   && !elevto
-	   && hoe < 0.011
-	   && sigmaIetaIeta < 0.0269
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.40 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 4.92 + 0.0116*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0037*pt )
+	   && hoe < 0.023
+	   && sigmaIetaIeta < 0.0267
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.09 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 4.31 + 0.0172*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.90 + 0.0091*pt )
 	return true; 
             
       break;
@@ -187,19 +261,19 @@ namespace patUtils
 
       if ( barrel
 	   && !elevto
-	   && hoe < 0.012
-	   && sigmaIetaIeta < 0.0098
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.91 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.55 + 0.0023*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.29 + 0.0004*pt )
+	   && hoe < 0.010
+	   && sigmaIetaIeta < 0.0100
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.66 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.14 + exp(0.0028*pt+0.5408) 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.40 + 0.0014*pt )
 	return true; 
       if ( endcap
 	   && !elevto
-	   && hoe < 0.011
-	   && sigmaIetaIeta < 0.0264
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.26 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.71 + 0.0116*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.91 + 0.0037*pt )
+	   && hoe < 0.015
+	   && sigmaIetaIeta < 0.0265
+	   && TMath::Max(chIso-chArea*rho,0.0) < 1.04 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 3.89 + 0.0172*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.40 + 0.0091*pt )
 	return true; 
             
       break;
@@ -214,36 +288,46 @@ namespace patUtils
     return false; 
   }
   
-   bool passIso(pat::Electron& el, int IsoLevel){
+  bool passIso(pat::Electron& el, int IsoLevel, double rho){
           //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
           float  chIso   = el.pfIsolationVariables().sumChargedHadronPt;
           float  nhIso   = el.pfIsolationVariables().sumNeutralHadronEt;
           float  gIso    = el.pfIsolationVariables().sumPhotonEt;
-          float  puchIso = el.pfIsolationVariables().sumPUPt; 
-          float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / el.pt();
 
+	  float  relIso = 0.0; 
+	  
+	  if (rho == 0) {
+	    float  puchIso = el.pfIsolationVariables().sumPUPt; 
+	    relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / el.pt();
+	  }
+	  else {
+	    float effArea = utils::cmssw::getEffectiveArea(11,el.superCluster()->eta(),3);
+	    relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / el.pt();
+	  }
+	  
           bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
           bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
 
+	  // PHYS14 selection, conditions: PU20 bx25
           switch(IsoLevel){
                case llvvElecIso::Veto :
-                  if( barrel && relIso < 0.3313 ) return true;
-                  if( endcap && relIso < 0.3816 ) return true;
+                  if( barrel && relIso < 0.158721 ) return true;
+                  if( endcap && relIso < 0.177032 ) return true;
                   break;
 
                case llvvElecIso::Loose :
-                  if( barrel && relIso < 0.2400 ) return true;
-                  if( endcap && relIso < 0.3529 ) return true;
+                  if( barrel && relIso < 0.130136 ) return true;
+                  if( endcap && relIso < 0.163368 ) return true;
                   break;
 
                case llvvElecIso::Medium :
-                  if( barrel && relIso < 0.2179 ) return true;
-                  if( endcap && relIso < 0.2540 ) return true;
+                  if( barrel && relIso < 0.107587 ) return true;
+                  if( endcap && relIso < 0.113254 ) return true;
                   break;
 
                case llvvElecIso::Tight :
-                  if( barrel && relIso < 0.1649 ) return true;
-                  if( endcap && relIso < 0.2075 ) return true;
+                  if( barrel && relIso < 0.069537 ) return true;
+                  if( endcap && relIso < 0.078265 ) return true;
                   break;
 
                default:
@@ -299,29 +383,29 @@ namespace patUtils
       hasPhotonTrigger=true;
       triggerThreshold=250;
     }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
-      hasPhotonTrigger=true;
-      triggerThreshold=160;
-    }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
-      hasPhotonTrigger=true;
-      triggerThreshold=150;
-    }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
-      hasPhotonTrigger=true;
-      triggerThreshold=135;
-    }
+    // else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){
+    //   hasPhotonTrigger=true;
+    //   triggerThreshold=160;
+    // }
+    // else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){
+    //   hasPhotonTrigger=true;
+    //   triggerThreshold=150;
+    // }
+    // else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){
+    //   hasPhotonTrigger=true;
+    //   triggerThreshold=135;
+    // }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=120;
     }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
-      triggerThreshold=92;
+      triggerThreshold=90;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
-      triggerThreshold=77;
+      triggerThreshold=75;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
@@ -347,6 +431,62 @@ namespace patUtils
 
     return hasPhotonTrigger; 
   }
+
+
+  bool passPFJetID(std::string label,
+                  pat::Jet jet){
+
+    bool passID = false;
+
+    float rawJetEn(jet.correctedJet("Uncorrected").energy() );
+    // Note: All fractions are calculated with the raw/uncorrected energy of the jet (only then they add up to unity). So the PF JetID has to be applied before the jet energy corrections. 
+
+    float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
+    float nef( jet.neutralEmEnergy()/rawJetEn );
+    float cef( jet.chargedEmEnergy()/rawJetEn );
+    float chf( jet.chargedHadronEnergy()/rawJetEn );
+    float nch    = jet.chargedMultiplicity();
+    float nconst = jet.numberOfDaughters();
+    float muf( jet.muonEnergy()/rawJetEn);
+
+    //From https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
+    if (label == "Loose") passID = ( (nhf<0.99  && nef<0.99 && nconst>1 && muf < 0.8 ) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.99) ) );
+    if (label == "Tight") passID = ( (nhf<0.90  && nef<0.90 && nconst>1 && muf < 0.8 ) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.90) ) );
+
+    return passID;
+  }
+
+  bool passPUJetID(pat::Jet j){
+
+    double jpt = j.pt();
+    double jeta = j.eta();
+
+    //Recommendation of HZZ :https://twiki.cern.ch/twiki/bin/view/CMS/HiggsZZ4l2015#Jets
+    float jpumva=0.;
+    jpumva=j.userFloat("pileupJetId:fullDiscriminant");
+
+    bool passPU = true;
+    if(jpt>20){
+      if(jeta>3.){
+        if(jpumva<=-0.45)passPU=false;
+      }else if(jeta>2.75){
+        if(jpumva<=-0.55)passPU=false;
+      }else if(jeta>2.5){
+        if(jpumva<=-0.6)passPU=false;
+      }else if(jpumva<=-0.63)passPU=false;
+    }else{ //pt<20 : in the 2l2nu analysis, this means 15<pt<20
+      if(jeta>3.){
+        if(jpumva<=-0.95)passPU=false;
+      }else if(jeta>2.75){
+        if(jpumva<=-0.94)passPU=false;
+      }else if(jeta>2.5){
+        if(jpumva<=-0.96)passPU=false;
+      }else if(jpumva<=-0.95)passPU=false;
+    }
+    return passPU;
+  }
+
+
 
 
 }

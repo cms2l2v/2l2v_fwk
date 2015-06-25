@@ -152,43 +152,53 @@ namespace utils
     Float_t getEffectiveArea(int id,float eta,int cone,TString isoSum)
     {
       Float_t Aeff(1.0);
-      if(abs(id)==11)
-	{
-	  if(fabs(eta)<1.0)                         Aeff=(cone==3? 0.100 : 0.180);
-	  else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=(cone==3? 0.120 : 0.200);
-	  else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=(cone==3? 0.085 : 0.150);
-	  else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=(cone==3? 0.110 : 0.190);
-	  else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=(cone==3? 0.120 : 0.210);
-	  else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=(cone==3? 0.120 : 0.220);
-	  else Aeff=0.14;
-	}
-      else if(abs(id)==22){
+      if(abs(id)==11){ // electron 
+	// PHYS14  https://indico.cern.ch/event/367861/contribution/2/material/slides/0.pdf 
+	if(fabs(eta)<0.8)                         Aeff=(cone==3? 0.1013 : 0.180);
+	else if(fabs(eta)>0.8 && fabs(eta)<1.3)   Aeff=(cone==3? 0.0988 : 0.200);
+	else if(fabs(eta)>1.3 && fabs(eta)<2.0)   Aeff=(cone==3? 0.0572 : 0.150);
+	else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=(cone==3? 0.0842 : 0.190);
+	else if(fabs(eta)>2.2 && fabs(eta)<2.5)   Aeff=(cone==3? 0.1530 : 0.210);
+      }
+
+      else if(abs(id)==13){ // muon 
+	// PHYS14  https://indico.cern.ch/event/367861/contribution/2/material/slides/0.pdf 
+	if(fabs(eta)<0.8)                         Aeff=(cone==3? 0.0913 : 0.180);
+	else if(fabs(eta)>0.8 && fabs(eta)<1.3)   Aeff=(cone==3? 0.0765 : 0.200);
+	else if(fabs(eta)>1.3 && fabs(eta)<2.0)   Aeff=(cone==3? 0.0546 : 0.150);
+	else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=(cone==3? 0.0728 : 0.190);
+	else if(fabs(eta)>2.2 && fabs(eta)<2.5)   Aeff=(cone==3? 0.1177 : 0.210);
+      }
+      
+      else if(abs(id)==22){ // photon 
+	//https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2#Recipe_for_regular_users_for_74X
+	// Effective areas for the PHYS14, conditions: PU20 bx25 
 	if(isoSum=="chIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.0089;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0062;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0086;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0041;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0113;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0085;
-          else                                      Aeff=0.0039;
+	  if(fabs(eta)<1.0)                         Aeff=0.0234;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0189;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0171;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0129;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0110;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0074;
+          else                                      Aeff=0.0035;
 	}
 	if(isoSum=="nhIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.0049;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0108;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0019;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0037;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0062;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0130;
-          else                                      Aeff=0.1699;
+	  if(fabs(eta)<1.0)                         Aeff=0.0053;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0103;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0057;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0070;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0152;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0232;
+          else                                      Aeff=0.1709;
 	}
 	if(isoSum=="gIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.0894;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0750;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0423;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0561;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0882;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.1144;
-          else                                      Aeff=0.1684;
+	  if(fabs(eta)<1.0)                         Aeff=0.0780;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0629;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0264;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0462;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0740;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0924;
+          else                                      Aeff=0.1484;
 	}
       }
       return Aeff;
