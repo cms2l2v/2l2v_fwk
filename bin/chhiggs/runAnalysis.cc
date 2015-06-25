@@ -177,7 +177,7 @@ int main (int argc, char *argv[])
   TString dtag        = runProcess.getParameter<std::string>("dtag");
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
-  std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
+  std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
   TString baseDir = runProcess.getParameter < std::string > ("dirName");
   //  if (mctruthmode != 0) //FIXME
   //    {
