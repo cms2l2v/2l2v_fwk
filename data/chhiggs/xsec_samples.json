@@ -5,8 +5,10 @@
       "isdata":false,
       "color":831,
       "lcolor":1,
+      "frommcm":"m50 has xsec=5943.2 eff=1, m10to50 has xsec=18610 eff=1",
+      "comment":" Must add the 10to50 with its proper xsec: /DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
       "data":[
-             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-StartupFlat10to50bx50Raw_MCRUN2_74_V8-v1/MINIAODSIM"}
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
       ]
     },
     {   
@@ -24,8 +26,11 @@
       "color":592,
       "lcolor":1,
       "marker":1,
+      "comment":"Cross sections from prepreapproval of dilepton. Must check values",
       "data":[
-        { "dtag":"MC13TeV_ZZ4l"                             , "split":41, "xsec":15.4       , "br":[ 0.0403896 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
+        { "dtag":"MC13TeV_WW"                             , "split":41, "xsec":118.7       , "br":[ 1.0 ]           , "dset":"/WW_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"},
+{ "dtag":"MC13TeV_WZ"                             , "split":41, "xsec":65.9       , "br":[ 1.0 ]           , "dset":"/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"},
+{ "dtag":"MC13TeV_ZZ"                             , "split":41, "xsec":31.8       , "br":[ 1.0 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
       ]
     },
    {
@@ -52,8 +57,7 @@
       "tag":"t#bar{t} inclusive",
       "isdata":false,
       "color":614,
-      "comment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
-      "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_inclusive"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
@@ -64,6 +68,7 @@
       "isdata":false,
       "mctruthmode":1,
       "color":614,
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_dilepton"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
@@ -74,6 +79,7 @@
       "isdata":false,
       "mctruthmode":2,
       "color":822,
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_other"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
@@ -85,6 +91,7 @@
       "isdata":false,
       "mctruthmode":3,
       "color":614,
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_leptau"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
@@ -96,6 +103,7 @@
       "isdata":false,
       "mctruthmode":4,
       "color":822,
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_dilleptau"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
@@ -107,6 +115,7 @@
       "isdata":false,
       "mctruthmode":5,
       "color":621,
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_lepjets"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
@@ -118,6 +127,7 @@
       "isdata":false,
       "mctruthmode":6,
       "color":635,
+      "comment":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM",
       "lcolor":1,
       "data":[
         { "dtag":"MC13TeV_TTJets_hadrons"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
