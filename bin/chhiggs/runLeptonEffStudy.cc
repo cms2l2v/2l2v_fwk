@@ -92,17 +92,13 @@ int main (int argc, char *argv[])
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
   TString baseDir = runProcess.getParameter < std::string > ("dirName");
-  TString url = TString (argv[1]);
-  TString outFileUrl (gSystem->BaseName (url));
-  outFileUrl.ReplaceAll ("_cfg.py", "");
-  if (mctruthmode != 0)
-    {
-      outFileUrl += "_filt";
-      outFileUrl += mctruthmode;
-    }
-  TString outdir = runProcess.getParameter < std::string > ("outdir");
-  TString outUrl (outdir);
-  gSystem->Exec ("mkdir -p " + outUrl);
+  TString dtag=runProcess.getParameter<std::string>("dtag");
+//  if (mctruthmode != 0) //FIXME
+//    {
+//      outFileUrl += "_filt";
+//      outFileUrl += mctruthmode;
+//    }
+  TString outUrl = runProcess.getParameter<std::string>("outfile");
   
   bool
     filterOnlyEE       (false),
@@ -112,21 +108,21 @@ int main (int argc, char *argv[])
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (url.Contains ("DoubleEle")) filterOnlyEE       = true;
-      if (url.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
-      if (url.Contains ("MuEG"))      filterOnlyEMU      = true;
-      if (url.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
-      if (url.Contains ("SingleEle")) filterOnlySINGLEE  = true;
+      if (dtag.Contains ("DoubleEle")) filterOnlyEE       = true;
+      if (dtag.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
+      if (dtag.Contains ("MuEG"))      filterOnlyEMU      = true;
+      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
+      if (dtag.Contains ("SingleEle")) filterOnlySINGLEE  = true;
     }
   
-  bool isSingleMuPD (!isMC && url.Contains ("SingleMu")); // Do I really need this?
-  bool isV0JetsMC (isMC && (url.Contains ("DYJetsToLL_50toInf") || url.Contains ("WJets")));
-  bool isWGmc (isMC && url.Contains ("WG"));
-  bool isZGmc (isMC && url.Contains ("ZG"));
-  bool isMC_ZZ = isMC && (string (url.Data ()).find ("TeV_ZZ") != string::npos);
-  bool isMC_WZ = isMC && (string (url.Data ()).find ("TeV_WZ") != string::npos);
+  bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
+  bool isV0JetsMC (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
+  bool isWGmc (isMC && dtag.Contains ("WG"));
+  bool isZGmc (isMC && dtag.Contains ("ZG"));
+  bool isMC_ZZ = isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos);
+  bool isMC_WZ = isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos);
   
-  TString outTxtUrl = outUrl + "/" + outFileUrl + ".txt";
+  TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
   if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
   printf ("TextFile URL = %s\n", outTxtUrl.Data ());
@@ -340,7 +336,7 @@ int main (int argc, char *argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK5PFchs.txt").Data ());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
+  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, dtag);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -769,7 +765,7 @@ int main (int argc, char *argv[])
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
           
           //cross-clean with selected leptons and photons
-          float minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
+          double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
@@ -799,7 +795,7 @@ int main (int argc, char *argv[])
             njets++;
           }
           
-          float minDRtj(9999.);
+          double minDRtj(9999.);
           for(size_t itau=0; itau<selTaus.size(); ++itau)
             {
               minDRtj = TMath::Min(minDRtj, deltaR(jets[ijet], selTaus[itau]));
@@ -1186,8 +1182,6 @@ int main (int argc, char *argv[])
   //########     SAVING HISTO TO FILE     ########
   //##############################################
   //save control plots to file
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
   printf ("Results save in %s\n", outUrl.Data());
 
   //save all to the file

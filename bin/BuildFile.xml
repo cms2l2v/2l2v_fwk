@@ -6,27 +6,27 @@
 <use name="UserCode/llvv_fwk"/>
 <use name="TauAnalysis/SVfitStandalone"/>
 <use name="RecoJets/JetProducers"/>
+<use name="HiggsAnalysis/CombinedLimit"/>
 
 <environment>
 <!-- Common tools and examples -->
-  <bin name="extractLumiJSON"             file="extractLumiJSON.cc"></bin>
-  <bin name="jsonTools"                   file="jsonTools.cc"></bin>
-  <bin name="computeLimit"                file="computeLimit.cc"></bin>
-  <bin name="runPlotter"                  file="runPlotter.cc"></bin> 
-  <bin name="runExample"                  file="runExample.cc"></bin>
-  <bin name="runPLRanalysis"              file="runPLRanalysis.cc"></bin>
-
+  <bin name="extractLumiJSON"             file="common/extractLumiJSON.cc"></bin>
+  <bin name="jsonTools"                   file="common/jsonTools.cc"></bin>
+  <bin name="computeLimit"                file="common/computeLimit.cc"></bin>
+  <bin name="runPlotter"                  file="common/runPlotter.cc"></bin> 
+  <bin name="runPLRanalysis"              file="common/runPLRanalysis.cc"></bin>
 
 <!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
   <bin name="runChHiggsAnalysis"          file="chhiggs/runAnalysis.cc"></bin>
   <bin name="runLeptonEffStudy"           file="chhiggs/runLeptonEffStudy.cc"></bin>
   <bin name="runFixedPlotter"             file="chhiggs/runFixedPlotter.cc"></bin> 
   <bin name="fitTTbarCrossSection"        file="chhiggs/fitTTbarCrossSection.cc"></bin>
-
 <!--  <bin name="runTtHMuMuAnalysis"          file="tthmumu/runAnalysis.cc"></bin>-->
 
-  <bin name="runPhoJetAnalysis"           file="phojet/runPhoJetAnalysis.cc"></bin>
-  <bin name="runPhoJetPlotter"            file="phojet/runPhoJetPlotter.cc"></bin>
+  <bin name="runPhoJetAnalysis"           file="hzz2l2v/runPhoJetAnalysis.cc"></bin>
+  <bin name="runPhoJetPlotter"            file="hzz2l2v/runPhoJetPlotter.cc"></bin>
+
+  <bin name="runHZZ2l2vAnalysis"          file="hzz2l2v/runHZZ2l2vAnalysis.cc"></bin>
 </environment>
 
 <flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable  -Os"/>

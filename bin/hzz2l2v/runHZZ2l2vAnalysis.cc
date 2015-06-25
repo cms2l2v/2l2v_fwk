@@ -9,6 +9,7 @@
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -77,38 +78,38 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
+  TString dtag=runProcess.getParameter<std::string>("dtag");
 
   TString suffix=runProcess.getParameter<std::string>("suffix");
-  std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
-  TString baseDir    = runProcess.getParameter<std::string>("dirName");
-  TString url = TString(argv[1]);
-  TString outFileUrl(gSystem->BaseName(url));
-  outFileUrl.ReplaceAll("_cfg.py","");
-  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; }
-  TString outdir=runProcess.getParameter<std::string>("outdir");
-  TString outUrl( outdir );
-  gSystem->Exec("mkdir -p " + outUrl);
+  std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
+//  TString baseDir    = runProcess.getParameter<std::string>("dirName");
+//  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; } //FIXME
+//  TString outdir=runProcess.getParameter<std::string>("outdir");
+//  TString outUrl( outdir );
+//  gSystem->Exec("mkdir -p " + outUrl);
+
+  TString outUrl = runProcess.getParameter<std::string>("outfile");
 
 
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
   if(!isMC)
     {
-      if(url.Contains("DoubleEle")) filterOnlyEE=true;
-      if(url.Contains("DoubleMu"))  filterOnlyMUMU=true;
-      if(url.Contains("MuEG"))      filterOnlyEMU=true;
+      if(dtag.Contains("DoubleEle")) filterOnlyEE=true;
+      if(dtag.Contains("DoubleMu"))  filterOnlyMUMU=true;
+      if(dtag.Contains("MuEG"))      filterOnlyEMU=true;
     }
-  bool isSingleMuPD(!isMC && url.Contains("SingleMu"));  
-  bool isV0JetsMC(isMC && (url.Contains("DYJetsToLL_50toInf") || url.Contains("WJets")));
-  bool isWGmc(isMC && url.Contains("WG"));
-  bool isZGmc(isMC && url.Contains("ZG"));
-  bool isMC_GG  = isMC && ( string(url.Data()).find("GG" )  != string::npos);
-  bool isMC_VBF = isMC && ( string(url.Data()).find("VBF")  != string::npos);
+  bool isSingleMuPD(!isMC && dtag.Contains("SingleMu"));  
+  bool isV0JetsMC(false);//isMC && (dtag.Contains("DYJetsToLL_50toInf") || dtag.Contains("_WJets")));  #FIXME should be reactivated as soon as we have exclusive jet samples
+  bool isWGmc(isMC && dtag.Contains("WG"));
+  bool isZGmc(isMC && dtag.Contains("ZG"));
+  bool isMC_GG  = isMC && ( string(dtag.Data()).find("GG" )  != string::npos);
+  bool isMC_VBF = isMC && ( string(dtag.Data()).find("VBF")  != string::npos);
   bool isMC_125OnShell = isMC && (mctruthmode==521);
   if(isMC_125OnShell) mctruthmode=125;
-  bool isMC_ZZ  = isMC && ( string(url.Data()).find("TeV_ZZ")  != string::npos);
-  bool isMC_WZ  = isMC && ( string(url.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
+  bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
 
-  TString outTxtUrl= outUrl + "/" + outFileUrl + ".txt";
+  TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
   printf("TextFile URL = %s\n",outTxtUrl.Data());
@@ -160,9 +161,9 @@ int main(int argc, char* argv[])
   double cprime = runProcess.getParameter<double>("cprime");
   double brnew  = runProcess.getParameter<double>("brnew");
   std::vector<std::pair<double, double> > NRparams;
-  NRparams.push_back(std::make_pair<double,double>(1.0, 0));
+  NRparams.push_back(std::make_pair<double,double>(-1.0, -1.0));
 //  NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
-//  if(mctruthmode==125){
+  if(mctruthmode==125){
 //    NRparams.push_back(std::make_pair<double,double>(5, 0));
 //    NRparams.push_back(std::make_pair<double,double>(8, 0));
 //    NRparams.push_back(std::make_pair<double,double>(10,0));
@@ -179,12 +180,12 @@ int main(int argc, char* argv[])
 //    NRparams.push_back(std::make_pair<double,double>(22,0));
 //    NRparams.push_back(std::make_pair<double,double>(25,0));
 //    NRparams.push_back(std::make_pair<double,double>(30,0));
-//  }else if(suffix==""){ //consider the other points only when no suffix is being used    
+  }else if(suffix=="" && (isMC_GG || isMC_VBF)){ //consider the other points only when no suffix is being used    
 //    for(double cp=0.1;cp<=1.0;cp+=0.1){
 //       for(double brn=0.0; brn<=0.5;brn+=0.1){
 //          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
 //    }}
-//  }
+  }
 
 
   std::vector<TGraph *> NRweightsGr;
@@ -196,13 +197,13 @@ int main(int argc, char* argv[])
   double HiggsMass=0; string VBFString = ""; string GGString("");
   TF1 *decayProbPdf=new TF1("relbw","(2*sqrt(2)*[0]*[1]*sqrt(pow([0],2)*(pow([0],2)+pow([1],2)))/(TMath::Pi()*sqrt(pow([0],2)+sqrt(pow([0],2)*(pow([0],2)+pow([1],2))))))/(pow(pow(x,2)-pow([0],2),2)+pow([0]*[1],2))",0,2000);
   if(isMC_GG){  
-    size_t GGStringpos =  string(url.Data()).find("GG");
-    string StringMass = string(url.Data()).substr(GGStringpos+5,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
-    GGString = string(url.Data()).substr(GGStringpos);  
+    size_t GGStringpos =  string(dtag.Data()).find("GG");
+    string StringMass = string(dtag.Data()).substr(GGStringpos+5,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
+    GGString = string(dtag.Data()).substr(GGStringpos);  
   }else if(isMC_VBF){
-    size_t VBFStringpos =  string(url.Data()).find("VBF");
-    string StringMass = string(url.Data()).substr(VBFStringpos+6,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
-    VBFString = string(url.Data()).substr(VBFStringpos);
+    size_t VBFStringpos =  string(dtag.Data()).find("VBF");
+    string StringMass = string(dtag.Data()).substr(VBFStringpos+6,4);  sscanf(StringMass.c_str(),"%lf",&HiggsMass);
+    VBFString = string(dtag.Data()).substr(VBFStringpos);
   }
   if(mctruthmode==125) HiggsMass=124;
   
@@ -319,8 +320,8 @@ int main(int argc, char* argv[])
 		    }
 		  else if(mctruthmode==125){
 		    TString var("");
-		    if(url.Contains("ScaleUp"))   var="up";
-		    if(url.Contains("ScaleDown")) var="down";
+		    if(dtag.Contains("ScaleUp"))   var="up";
+		    if(dtag.Contains("ScaleDown")) var="down";
 		    Double_t nrWgt = higgs::utils::weightToH125Interference(hmass,NRparams[nri].first,nrLineShapesFile,var);
 		    shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
 		    shapeWgtUp     = shapeWgt;
@@ -508,16 +509,17 @@ int main(int argc, char* argv[])
   //
   // STATISTICAL ANALYSIS
   //
+  //
+  
+
   std::vector<double> optim_Cuts1_met; 
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
-  TProfile* Hoptim_cuts1_met     =  (TProfile*) mon.addHistogram( new TProfile ("optim_cut1_met"    , ";cut index;met"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) ) ;
-  mon.addHistogram( new TH1F ("metcount"    , ";E_{T}^{miss} cut [GeV];Total events"    ,optim_Cuts1_met.size(),0,optim_Cuts1_met.size()) );
-  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts1_met    ->Fill(index, optim_Cuts1_met[index]);  }
+  TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
+  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
+  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
-  for(size_t ivar=0; ivar<nvarsToInclude; ivar++)
-    {
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
       Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
-      
       for(unsigned int nri=0;nri<NRparams.size();nri++){ 
 	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
 	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
@@ -552,7 +554,7 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
   
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,url);
+  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,dtag);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -607,7 +609,7 @@ int main(int argc, char* argv[])
        edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
        if(!tr.isValid())return false;
 
-      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*","HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
       bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
       bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
       bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
@@ -701,12 +703,14 @@ int main(int argc, char* argv[])
       if(isV0JetsMC){
          fwlite::Handle< LHEEventProduct > lheEPHandle;
          lheEPHandle.getByLabel(ev, "externalLHEProducer");
-
- 	 mon.fillHisto("nup","",lheEPHandle->hepeup().NUP,1);
- 	 if(lheEPHandle->hepeup().NUP>5) continue;
-	 mon.fillHisto("nupfilt","",lheEPHandle->hepeup().NUP,1);
+         if(lheEPHandle.isValid()){
+   	    mon.fillHisto("nup","",lheEPHandle->hepeup().NUP,1);
+ 	    if(lheEPHandle->hepeup().NUP>5) continue;
+	    mon.fillHisto("nupfilt","",lheEPHandle->hepeup().NUP,1);
+         }else{
+            printf("Handle to externalLHEProducer is invalid --> Can not ignore V0+Jet events from inclusive samples\n");
+         }
       }
-
 
 
       //MC crap for photon studies
@@ -747,7 +751,8 @@ int main(int argc, char* argv[])
       //
       // DERIVE WEIGHTS TO APPLY TO SAMPLE
       //
-
+      //
+ 
        //pileup weight
        float weight = 1.0;
        double TotalWeight_plus = 1.0;
@@ -756,7 +761,6 @@ int main(int argc, char* argv[])
 
        if(isMC){          
           int ngenITpu = 0;
-
           fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
           puInfoH.getByLabel(ev, "addPileupInfo");
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
@@ -764,7 +768,6 @@ int main(int argc, char* argv[])
           }
 
           puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
-          weight            = xsecWeight*puWeight;
           TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
       }
@@ -816,9 +819,16 @@ int main(int argc, char* argv[])
 	    }  
 	  }
 	}
+
+
+       //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
+       fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
+       genEventInfoHandle.getByLabel(ev, "generator");
+       if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
+
   
 	//final event weight
-	weight = puWeight * shapeWeight;
+	weight = xsecWeight * puWeight * shapeWeight;
       }
 
       //
@@ -970,7 +980,7 @@ int main(int argc, char* argv[])
 	  TString jetType( genJet && genJet->pt()>0 ? "truejetsid" : "pujetsid" );
 	  
 	  //cross-clean with selected leptons and photons
-	  float minDRlj(9999.),minDRlg(9999.);
+	  double minDRlj(9999.),minDRlg(9999.);
           for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
             minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet],selLeptons[ilep]) );
 	  for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
@@ -994,7 +1004,7 @@ int main(int argc, char* argv[])
 	    float dphijmet=fabs(deltaPhi(met.phi(), jets[ijet].phi()));
 	    if(dphijmet<mindphijmet) mindphijmet=dphijmet;
 	    if(fabs(jets[ijet].eta())<2.5){
-	      bool hasCSVtag(jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
+	      bool hasCSVtag(jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags")>0.423);
 	      //update according to the SF measured by BTV
 	      if(isMC){
 		  int flavId=jets[ijet].partonFlavour();
@@ -1002,7 +1012,9 @@ int main(int argc, char* argv[])
 		  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
 		  else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
               }
-	      nbtags   += hasCSVtag;
+              
+              if( hasCSVtag ) nbtags++;
+	      //nbtags   += hasCSVtag; 
 	    }
 	  }
 	}
@@ -1075,13 +1087,16 @@ int main(int argc, char* argv[])
       mon.fillHisto("eventflow",  tags,0,weight);
       if(chTags.size()==0) continue;
 
-      //
-      // BASELINE SELECTION
-      //
+      //////////////////////////
+      //                      //
+      //  BASELINE SELECTION  //
+      //                      //
+      //////////////////////////
+
       bool passMass(fabs(boson.mass()-91)<15);
       bool passQt(boson.pt()>55);
       bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
-      bool passBtags(nbtags==0);
+      bool passBtags(nbtags==0); 
       bool passMinDphijmet( njets==0 || mindphijmet>0.5);
       if(runPhotonSelection)
 	{
@@ -1132,7 +1147,7 @@ int main(int argc, char* argv[])
 	    for(size_t ijet=0; ijet<selJets.size(); ijet++){
 	      if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
 
-	      float csv(selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+	      float csv(selJets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"));
 	      mon.fillHisto( "csv",tags,csv,weight);
 	      if(!isMC) continue;
 	      int flavId=selJets[ijet].partonFlavour();
@@ -1358,7 +1373,7 @@ int main(int argc, char* argv[])
 	  if(!isMC) continue;
 	  if(!varyBtagUp && !varyBtagDown) continue;
 	  int flavId=jets[ijet].partonFlavour();
-	  bool hasCSVtag (jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags")>0.405);
+	  bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags")>0.423);
  	  if(varyBtagUp) {
 	    if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
 	    else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
@@ -1434,8 +1449,6 @@ int main(int argc, char* argv[])
   //########     SAVING HISTO TO FILE     ########
   //##############################################
   //save control plots to file
-  outUrl += "/";
-  outUrl += outFileUrl + ".root";
   printf("Results save in %s\n", outUrl.Data());
   
   //save all to the file

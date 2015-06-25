@@ -13,11 +13,9 @@ ls -lR
 cp ./lib/$SCRAM_ARCH/* $CMSSW_BASE/lib/$SCRAM_ARCH
 cp runPhoJetAnalysis $CMSSW_BASE/bin/$SCRAM_ARCH
 
-# Setup grid proxy
-cp x509_proxy $CMSSW_BASE/
-export X509_USER_PROXY=$CMSSW_BASE/x509_proxy
+# Create the JobRepport
+cmsRun -j FrameworkJobReport.xml phojet_cfg.py
 
-# Now run the analysis
+# Run the analysis
 runPhoJetAnalysis phojet_cfg.py
-
 

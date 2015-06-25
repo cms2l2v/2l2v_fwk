@@ -1,36 +1,18 @@
-#cf. https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATReleaseNotes52X#Add_CSCTightHaloFilter
-git cms-addpkg PhysicsTools/PatAlgos
-git cms-merge-topic cms-analysis-tools:5_3_15-addCSCTightHaloFilter
-git cms-addpkg EgammaAnalysis/ElectronTools
-cd EgammaAnalysis/ElectronTools/data
-cat download.url | xargs wget
-cd -
+#higgs combined tool for 722 is required to performed limit computation or cut optimization
+git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+cd HiggsAnalysis/CombinedLimit
+git checkout remotes/origin/slc6-root5.34.17
+cd ../..
 
-#git cms-addpkg RecoMET/METFilters
-git cms-merge-topic -u cms-met:53X-MVaNoPuMET-20131217-01
-git clone https://github.com/violatingcp/Jets_Short.git
-cp -r Jets_Short/* .
-rm -rf Jets_Short README.md
-
-#btv related algorithms
-git cms-addpkg RecoBTag/SecondaryVertex 
-git cms-addpkg RecoVertex/AdaptiveVertexFinder 
-
-#quark/gluon tagger
-git clone https://github.com/amarini/QuarkGluonTagger.git; cd QuarkGluonTagger ; git checkout v1-2-6; cd -;
-
-#updated Tau object (Run2 Id and boosted taus)
-git cms-merge-topic -u cms-tau-pog:CMSSW_5_3_X_boostedTaus_2013Dec17
-
-cp ~jez/public/forLoic/140313/tauTools.py PhysicsTools/PatAlgos/python/tools/tauTools.py
-#cvs co -r V00-02-03s TauAnalysis/CandidateTools #SV fit.
-# Needs to set up cvsroot as in the readme file or to copy the dir from
-# cp -r /afs/cern.ch/user/v/vischia/public/TauAnalysis_forSVfit/ TauAnalysis
+#SVFit package  (optional --> needed only if you plan to use SVfit tau mass reconstruction
 git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
 
-#checkout the 2l2v framework
-git clone git@github.com:pfs/2l2v_fwk UserCode/llvv_fwk
+#our framework
+git clone git@github.com:quertenmont/2l2v_fwk.git UserCode/llvv_fwk
+cd UserCode/llvv_fwk
+git checkout remotes/origin/72Xfwk #checkout the branch we are interested in
+git checkout -b 72Xfwk_modified #copy the branch to a new one to host future modifications (ease pullrequest and code merging)
+cd ../..
 
-scram b -j 20
-
-#test
+#compilling all the downloaded things
+scramv1 b -j 16

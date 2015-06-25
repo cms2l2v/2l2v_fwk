@@ -20,6 +20,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TLegend.h"
+#include "TLegendEntry.h"
 #include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -43,7 +44,9 @@ struct NameAndType{
    std::string name;
    int type; 
    bool isIndexPlot;
-   NameAndType(std::string name_,  int type_, bool isIndexPlot_){name = name_; type = type_; isIndexPlot = isIndexPlot_;}
+   NameAndType(std::string name_,  int type_, bool isIndexPlot_){
+     name = name_; type = type_; isIndexPlot = isIndexPlot_;
+   }
    bool is1D()  {return type==1;}
    bool is2D()  {return type==2;}
    bool is3D()  {return type==3;}
@@ -57,7 +60,7 @@ void print_usage() {
   printf("--help    --> print this helping text\n");
   printf("--inDir   --> path to the directory containing the .root files to process\n");
   printf("--outDir  --> path of the directory that will contains the output plots and tables\n");
-  //  printf("--outFile --> path of the output summary .root file\n");
+  printf("--outFile --> path of the output summary .root file\n");
   printf("--json    --> containing list of process (and associated style) to process to process\n");
 }
 
@@ -65,25 +68,21 @@ std::string get_FileName(std::string RootDir,
 			 std::vector<JSONWrapper::Object> Samples,
 			 int id,
 			 int s) {
-  // follow CRAB convention, always start with 1 
   std::string segmentExt;
   char buf[255];
   sprintf(buf,"_%i",s);
   segmentExt += buf;
 
-  std::string FileName = RootDir 
-    + Samples[id].getString("dtag", "") + "/"
+  std::string FileName = RootDir + Samples[id].getString("dtag", "") + "/"
     + "output" + Samples[id].getString("suffix","") + segmentExt + ".root";
-  // std::cout << FileName << std::endl;
-  
   return FileName; 
 }
 
+
 bool isFileExist(TFile* File){
-  if(!File || File->IsZombie() || !File->IsOpen() ||
+  if (!File || File->IsZombie() || !File->IsOpen() ||
      File->TestBit(TFile::kRecovered) )
     return false;
-
   else
     return true;
 }
@@ -91,9 +90,7 @@ bool isFileExist(TFile* File){
 
 TObject* GetObjectFromPath(TDirectory* File, std::string Path, bool GetACopy=false)
 {
-  // std::cout << Path << std::endl;
   size_t pos = Path.find("/");
-  // std::cout << ">>> " << pos  << std::endl;
   if(pos < 256){
     std::string firstPart = Path.substr(0,pos);
     std::string endPart   = Path.substr(pos+1,Path.length());
@@ -140,16 +137,14 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	  sprintf(buf, "_filt%d", (int)Process[ip]["mctruthmode"].toInt());
 	  filtExt += buf;
 	}
-    
       std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
       // loop over all samples 
       for(size_t id=0; id<Samples.size(); id++){
 	int split = Samples[id].getInt("split", 1); // default 1 
-	std::cout << "Split = " << split << std::endl;
+	for(int s=0; s<split; s++){
+	  // follow CRAB convention start with 1
+	  std::string FileName = get_FileName(RootDir, Samples, id, s+1); 
 
-	// loop over all files, follow CRAB convention start with 1 
-	for(int s=1; s<=split; s++){
-	  std::string FileName = get_FileName(RootDir, Samples, id, s);
 	  TFile* File = new TFile(FileName.c_str());
 	  bool& fileExist = FileExist[FileName];
 
@@ -157,11 +152,10 @@ void GetListOfObject(JSONWrapper::Object& Root,
 	  if ( !fileExist ) continue;
  
 	  //do the following only for the first file
-	  if(s>1) continue;
+	  if(s>0) continue;
 
 	  printf("Adding all objects from %25s to the list of considered objects\n",
 		 FileName.c_str());
-
 	  //just to make it faster, only consider the first 3 sample of a same kind
 	  if(isData){if(dataProcessed>=1){ File->Close(); continue;}else{dataProcessed++;}}
 	  if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
@@ -179,20 +173,14 @@ void GetListOfObject(JSONWrapper::Object& Root,
       if(!it->second)
 	printf("[INFO] missing or corrupted file:  %s\n", it->first.c_str());
     }
-
     return ; 
-    
   } // end of no parentPath or no dir case
   
   if (dir==NULL) return;
-  // std::cout << "dir = " << dir << std::endl;
-  // std::cout << "parentPath = " << parentPath << std::endl;
-
   TList* list = dir->GetListOfKeys();
 
   // loop over list 
   for(int i=0;i<list->GetSize();i++){
-    // std::cout << list->At(i)->GetName() << std::endl;
     TObject* tmp = GetObjectFromPath(dir,list->At(i)->GetName(),false);
 
     if(tmp->InheritsFrom("TDirectory")){
@@ -239,167 +227,72 @@ TH1* set_hist_style(JSONWrapper::Object proc, TH1* hist) {
   return hist;
 }
 
-void Draw1DHistogram(JSONWrapper::Object& Root,
-		     std::string RootDir,
-		     NameAndType HistoProperties,
-		     std::string outDir){
-
-  std::vector<TObject*> ObjectToDelete;
-  THStack* stack = new THStack("MC","MC");
-  TCanvas* c1 = new TCanvas("c1","c1",800,800);
-  TLegend* legA  = new TLegend(0.7,0.8,0.99, 0.99, "NDC"); 
-
-  std::string SaveName = "";
-   
-  std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-  // loop over procs 
-  for(unsigned int i=0;i<Process.size();i++){
-    TH1* proc_hist = NULL;
-    std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
-    // loop over samples 
-    for(unsigned int j=0;j<Samples.size();j++){
-      double Weight = 1.0; // use 1.0 for now. 
-
-      int split = Samples[j].getInt("split", 1);
-      TH1* samp_hist = NULL;
-      int NFiles=0;
-      // loop over files 
-      for(int s=1;s<=split;s++){
-	TH1* file_hist = NULL; 
-	std::string FileName = get_FileName(RootDir, Samples, j, s);
-
-	// std::cout << FileName << std::endl;
-	TFile* File = new TFile(FileName.c_str());
-	if ( !isFileExist(File) ) {delete File; continue;}
-	// std::cout << ">>>>>" << HistoProperties.name << std::endl;
-	file_hist = (TH1*) GetObjectFromPath(File, HistoProperties.name);  
-	if(!file_hist) {delete File; continue;} 
-
-	// std::cout << "Found hist" << file_hist << std::endl;
-	NFiles++;
-	if(!samp_hist) {
-	  gROOT->cd();
-	  samp_hist = (TH1*)file_hist->Clone(file_hist->GetName());
-	  checkSumw2(samp_hist);
-	}else 
-	  samp_hist->Add(file_hist);
-
-	delete file_hist;
-	delete File;
-
-	// std::cout << ">>> 2 " << std::endl;
-      }// end files loop 
-
-      if(!samp_hist) continue;
-      // Need to check : 
-      // if(!Process[i]["isdata"].toBool())
-      //  tmphist->Scale(1.0/NFiles);      
-
-      // std::cout << ">>> 3 " << std::endl;
-	
-      if(!proc_hist) {
-	gROOT->cd();
-	proc_hist = (TH1*)samp_hist->Clone(samp_hist->GetName());
-	checkSumw2(proc_hist);
-	proc_hist->Scale(Weight);
-      } else
-	proc_hist->Add(samp_hist, Weight);
-      delete samp_hist;
-      
-    } // end samples loop
-    // std::cout << ">>> 4 " << std::endl;
-    if(!proc_hist) continue;
-    SaveName = proc_hist->GetName();
-    ObjectToDelete.push_back(proc_hist);
-
-    proc_hist = set_hist_style(Process[i], proc_hist); 
-    // std::cout << ">>> 5 " << std::endl;
-    //Add to Stack
-    stack->Add(proc_hist, "HIST");   
-    legA->AddEntry(proc_hist, Process[i]["tag"].c_str(), "F");
-
-    // std::cout << ">>> 6 " << std::endl;
-    
-  } // end procs loop 
-
-  // if(! stack || stack->GetStack() || stack->GetStack()->GetEntriesFast()>0)
-  //   return;
-
-
-  std::string SavePath = SaveName;
-  while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
-  while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
-   while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
-   while(SavePath.find("}")!=std::string::npos)SavePath.replace(SavePath.find("}"),1,"");
-   while(SavePath.find("(")!=std::string::npos)SavePath.replace(SavePath.find("("),1,"");
-   while(SavePath.find(")")!=std::string::npos)SavePath.replace(SavePath.find(")"),1,"");
-   while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
-   while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
-   if(outDir.size()) SavePath = outDir +"/"+ SavePath;
- 
-  if(stack && stack->GetStack() && stack->GetStack()->GetEntriesFast()>0){
-
-    // std::cout << ">>> before draw " << std::endl;
-    
-    stack->Draw("");
-    TH1 *hist=(TH1*)stack->GetStack()->At(0);
-    if(stack->GetXaxis()) {
-      stack->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
-      stack->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
-      stack->SetMinimum(hist->GetMinimum());
-
-      // stack->SetMaximum(maximumFound);
-      // stack->SetMinimum(SignalMin);
-    }
-
-    legA->SetFillColor(0);
-    legA->SetFillStyle(0);
-    legA->SetLineColor(0);
-    legA->SetHeader("");
-    legA->Draw("same");
-    legA->SetTextFont(42);
- 
-    ObjectToDelete.push_back(stack);
-    // std::cout << "stack draw done. " << std::endl;
-    // c1->SaveAs("c1.pdf");
-    // std::cout << "c1 saved" << std::endl;
-    system(std::string(("rm -f ") + SavePath + ".pdf").c_str());
-    c1->SaveAs((SavePath + ".pdf").c_str());
-  
-    delete c1;
-  }
-  for(unsigned int d=0;d<ObjectToDelete.size();d++){
-    delete ObjectToDelete[d];
-  }
-  ObjectToDelete.clear();
-  
-}
 
 void SavingToFile(JSONWrapper::Object& Root,
 		  std::string RootDir,
 		  NameAndType HistoProperties,
 		  TFile* OutputFile){
   std::vector<TObject*> ObjectToDelete;
+  std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+
+  using std::string; 
+  std::unordered_map<std::string, bool> FileExist;
+
+  // printf("Inside SavingToFile\n");		   
+  for(unsigned int i=0;i<Process.size();i++){
+      TH1* hist = NULL;
+      std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
+      for(unsigned int j=0;j<Samples.size();j++){
+         double Weight = 1.0;
+	 string filtExt("");
+	 if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }	 
+
+         int split = Samples[j].getInt("split", 1);
+         TH1* tmphist = NULL;  int NFiles=0;
+         for(int s=0;s<split;s++){
+	   // crab default 1 
+	   std::string FileName = get_FileName(RootDir, Samples, j, s+1); 
+	   TFile* File = new TFile(FileName.c_str());
+	   if ( !isFileExist(File) ) {delete File; continue;}
+
+           TH1* tmptmphist = (TH1*) GetObjectFromPath(File,HistoProperties.name); 
+           if(!tmptmphist){delete File;continue;}            
+	   // std::cout << "Found the histo: " << HistoProperties.name << std::endl;
+	   if(!tmphist){gROOT->cd(); tmphist = (TH1*)tmptmphist->Clone(tmptmphist->GetName()); checkSumw2(tmphist);}else{tmphist->Add(tmptmphist);}
+           NFiles++;
+	   
+	   delete tmptmphist;
+           delete File;
+         }
+         if(!tmphist)continue;
+         if(!Process[i]["isdata"].toBool() && HistoProperties.name.find("optim_")==std::string::npos)tmphist->Scale(1.0/NFiles);
+         if(!hist){gROOT->cd(); hist = (TH1*)tmphist->Clone(tmphist->GetName());checkSumw2(hist);hist->Scale(Weight);}else{hist->Add(tmphist,Weight);}
+         delete tmphist;
+      }   
+      if(!hist)continue;      
+
+      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      OutputFile->cd();
+      TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
+      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
+      subdir->cd();
+      hist->Write();
+      delete hist;
+   }
 }
+
 
 
 void runPlotter(std::string inDir,
 		std::string jsonFile,
-		std::string outDir)
+		std::string outDir,
+		std::string outFile)
 {
   setTDRStyle();  
-  // gStyle->SetPadTopMargin   (0.06);
-  // gStyle->SetPadBottomMargin(0.12);
-  // gStyle->SetPadRightMargin (0.16);
-  // gStyle->SetPadLeftMargin  (0.14);
   gStyle->SetTitleSize(0.03, "XYZ");
   gStyle->SetLabelSize(.03, "XY");
   gStyle->SetTitleXOffset(1.1);
   gStyle->SetTitleYOffset(2.1);
-  // gStyle->SetPalette(1);
-  // gStyle->SetNdivisions(505);
-  // TGaxis::SetMaxDigits(4);
- 
 
   JSONWrapper::Object Root(jsonFile, true);
   std::list<NameAndType> histlist;
@@ -408,30 +301,17 @@ void runPlotter(std::string inDir,
   histlist.sort();
   histlist.unique();   
 
-  //TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
-  // printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
-  // printf("                             :");
-  // int TreeStep = histlist.size()/50;
-  // if (TreeStep == 0) TreeStep = 1;
+  TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
   
   int ictr(0);
   for(std::list<NameAndType>::iterator it= histlist.begin();
       it!= histlist.end(); it++, ictr++){
-    // std::cout << "ictr = " << ictr << std::endl;
-    // if (ictr > 1  ) break;
-    /// std::cout << "Processing name: " << (*it).name  << std::endl;    
-    // if(ictr%TreeStep==0){printf(".");fflush(stdout);}
     if( it->is1D() ){
-      // std::cout << "is 1D" << std::endl;
-      Draw1DHistogram(Root, inDir, *it, outDir);
-      // SavingToFile(Root, inDir, *it, OutputFile);
+      SavingToFile(Root, inDir, *it, OutputFile);
     }
-
-
-    
   }
-  
-  // std::cout << "jumped out" << std::endl;
+  printf("Saved as: %s\n", outFile.c_str());
+  OutputFile->Close();
 }
 
 
@@ -441,14 +321,8 @@ int main(int argc, char* argv[])
   std::string inDir   = "results/";
   std::string jsonFile = "../../data/phojet/phys14_samples.json";
   std::string outDir  = "plots/";
-  // std::string outFile = "plotter.root";
+  std::string outFile = "plotter.root";
 
-  // check arguments
-  // if(argc<2){
-  //   print_usage();
-  //   return 0;
-  // }
-  
   for(int i=1;i<argc;i++){
     std::string arg(argv[i]);
     if (arg.find("--help") != std::string::npos){
@@ -462,15 +336,15 @@ int main(int argc, char* argv[])
     if(arg.find("--outDir" )!=std::string::npos && i+1<argc){
       outDir = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());}
 
-    // if(arg.find("--outFile")!=std::string::npos && i+1<argc){
-    //   outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());}
+    if(arg.find("--outFile")!=std::string::npos && i+1<argc){
+      outFile = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str());}
 
     if(arg.find("--json"   )!=std::string::npos && i+1<argc){
       jsonFile = argv[i+1];  i++;}
   }
 
   system( (std::string("mkdir -p ") + outDir).c_str());
-  runPlotter(inDir, jsonFile, outDir); 
+  runPlotter(inDir, jsonFile, outDir, outFile); 
 
 }  
 
