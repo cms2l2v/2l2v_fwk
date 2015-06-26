@@ -178,7 +178,7 @@ int main (int argc, char *argv[])
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
-  TString baseDir = runProcess.getParameter < std::string > ("dirName");
+  //TString baseDir = runProcess.getParameter < std::string > ("dirName");
   //  if (mctruthmode != 0) //FIXME
   //    {
   //      outFileUrl += "_filt";
