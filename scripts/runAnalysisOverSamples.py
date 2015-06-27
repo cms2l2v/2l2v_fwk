@@ -10,7 +10,7 @@ import UserCode.llvv_fwk.storeTools_cff as storeTools
 
 ######################### Stuff needed for getting the filelist while DAS is still fucked up
 # cURL command: please leave the space after GET
-curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
+curlCommand="export X509_USER_PROXY=~/x509_user_proxy/x509_proxy; curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
 dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
 # Remove various residual characters from the filename lines, then remove all the lines not constituted by a filename (=not containing the "store" path)
 sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
@@ -35,7 +35,7 @@ def initProxy():
    initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
 
 def getFileList(procData):
-   myInitialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
+   myInitialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy; setenv X509_USER_PROXY ~/x509_user_proxy/x509_proxy;'
    FileList = [];
    miniAODSamples = getByLabel(procData,'miniAOD','')
    isMINIAODDataset = ("/MINIAOD" in getByLabel(procData,'dset','')) or  ("amagitte" in getByLabel(procData,'dset',''))
@@ -52,6 +52,7 @@ def getFileList(procData):
          #os.system(myInitialCommand)
          #print "Now get the list"
          list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+         #print curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList
          for i in range(0,len(list)): 
              list[i] = "root://eoscms//eos/cms"+list[i]
              #print list[i]
