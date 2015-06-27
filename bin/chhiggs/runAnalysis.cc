@@ -519,7 +519,7 @@ int main (int argc, char *argv[])
       if (iev % treeStep == 0)
         {
           printf (".");
-          fflush (stdout);
+          //fflush (stdout);
         }
 
       std::vector < TString > tags (1, "all");
@@ -531,14 +531,22 @@ int main (int argc, char *argv[])
 
       //apply trigger and require compatibilitiy of the event with the PD
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
-      if (!tr.isValid ())
+      if (!tr.isValid ()){
+        cout << "Trigger is not valid" << endl;
         return false;
+      }
+      if(debug && iev==5 ){
+        cout << "Printing trigger list" << endl;
+        for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+          cout << *trnames << endl;
+        cout << "----------- End of trigger list ----------" << endl;
+      }
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP85_Gsf_v*")                                                                                              );
-      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*")                                                                                     );
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_IterTrk02_v*", "HLT_IsoTkMu24_IterTrk02_v*")                                                                    );
-      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*")                                                                                      );
-      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*") );
+      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")                                                                            );
+      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
+      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
+      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
+      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
 
       if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
       if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
@@ -547,6 +555,7 @@ int main (int argc, char *argv[])
       if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
       
       if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+      if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
       mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
@@ -656,7 +665,7 @@ int main (int argc, char *argv[])
           
         }
       mon.fillHisto("initNorm", tags, 2., 1.);
-      
+      if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
       //        {
       //          topPtWgt->computeWeight(tPt,tbarPt);
