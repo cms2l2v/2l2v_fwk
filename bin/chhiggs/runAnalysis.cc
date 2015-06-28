@@ -555,7 +555,7 @@ int main (int argc, char *argv[])
       if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
       
       if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-      if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
+      //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
       mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
@@ -586,6 +586,7 @@ int main (int argc, char *argv[])
       //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
       if(isMC)
         {
+          // FIXME: WHEN COMPARING THE VARIOUS TTBAR GENERATORS DO NOT FORGET TO ADD A SWITCH FOR PYTHIA6 CODES 
           //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
             // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
@@ -631,8 +632,8 @@ int main (int argc, char *argv[])
             if(absid<=5              ) ngenQuarksStatus3++;
           }
             
-          //if(ngenTausStatus3>0) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
-          
+          if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
+        
           // Dileptons:
           //    ttbar dileptons --> 1
           //    ttbar other     --> 2
