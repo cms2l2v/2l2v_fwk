@@ -98,12 +98,12 @@ bool hasLeptonAsDaughter(const reco::GenParticle p)
   bool foundL(false);
   if(p.numberOfDaughters()==0) return foundL;
 
-  cout << "Particle " << p.pdgId() << " with status " << p.status() << " and " << p.numberOfDaughters() << endl;
+  // cout << "Particle " << p.pdgId() << " with status " << p.status() << " and " << p.numberOfDaughters() << endl;
   const reco::Candidate *part = &p;
   // loop on the daughter particles to check if it has an e/mu as daughter
   while ((part->numberOfDaughters()>0)) {
     const reco::Candidate* DaughterPart = part->daughter(0);
-    cout << "\t\t Daughter: " << DaughterPart->pdgId() << " with status " << DaughterPart->status() << endl;
+    // cout << "\t\t Daughter: " << DaughterPart->pdgId() << " with status " << DaughterPart->status() << endl;
     if (fabs(DaughterPart->pdgId()) == 11 || fabs(DaughterPart->pdgId() == 13)){
       foundL = true;
       break;
@@ -936,7 +936,7 @@ int main (int argc, char *argv[])
           
           double dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
+          bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
           // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
           // Apparently this V2 has the following preliminary operating points:
           // These preliminary operating points were derived from ttbar events:
@@ -958,7 +958,8 @@ int main (int argc, char *argv[])
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
-          hasCSVtag = jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
+          hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
+
           if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
           
@@ -1115,7 +1116,7 @@ int main (int argc, char *argv[])
                   htbnol+=selBJets[ijet].pt();
                 }
               
-              double csv (selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+              double csv (selJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
               mon.fillHisto ("csv", tags, csv, weight);
               if (!isMC) continue;
               int flavId = selJets[ijet].partonFlavour();
@@ -1226,7 +1227,7 @@ int main (int argc, char *argv[])
                     finalSelJets.push_back(jets[ijet]);
 
                     int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
+                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
                     if (varyBtagUp)
                       {
                         if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
@@ -1324,7 +1325,7 @@ int main (int argc, char *argv[])
             {
               if (selSingleLepJets[ijet].pt() < 30 || fabs (selSingleLepJets[ijet].eta()) > 2.5) continue;
               
-              double csv (selSingleLepJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
+              double csv (selSingleLepJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
               mon.fillHisto ("csv", tags, csv, weight);
               if (!isMC) continue;
               int flavId = selSingleLepJets[ijet].partonFlavour();
@@ -1426,7 +1427,7 @@ int main (int argc, char *argv[])
                     finalSelSingleLepJets.push_back(jets[ijet]);
 
                     int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
+                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
 
                     if (varyBtagUp)
                       {
