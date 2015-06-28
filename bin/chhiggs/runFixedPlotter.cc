@@ -35,7 +35,7 @@
 
 using namespace std;
 
-bool debug=true;
+bool debug=false;
 
 int cutIndex=-1;
 string cutIndexStr="";
