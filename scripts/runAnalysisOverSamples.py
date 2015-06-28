@@ -31,8 +31,9 @@ def initProxy():
    global initialCommand
    if(not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')) or ((time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600 and  int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 )):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
-      os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init -voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
+      os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
+   #initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
+   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;'
 
 def getFileList(procData):
    myInitialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy; setenv X509_USER_PROXY ~/x509_user_proxy/x509_proxy;'
@@ -201,7 +202,10 @@ for procBlock in procList :
                        LaunchOnCondor.Jobs_CRABDataset  = FileList[0]
                        LaunchOnCondor.Jobs_CRABcfgFile  = cfgfile
                        LaunchOnCondor.Jobs_CRABexe      = opt.theExecutable
-                       LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
+                       if(commands.getstatusoutput("whoami")[1]=='vischia'):
+                           LaunchOnCondor.Jobs_CRABStorageSite = 'T2_PT_NCG_Lisbon'
+                       else:
+                           LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
                        LaunchOnCondor.Jobs_CRABname     = dtag
                        LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
                        LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
