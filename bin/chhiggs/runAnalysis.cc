@@ -519,7 +519,7 @@ int main (int argc, char *argv[])
       if (iev % treeStep == 0)
         {
           printf (".");
-          //fflush (stdout);
+          if(!debug) fflush (stdout); // Otherwise debug messages are flushed
         }
 
       std::vector < TString > tags (1, "all");
