@@ -155,7 +155,7 @@ for procBlock in procList :
             suffix = str(getByLabel(procData,'suffix' ,""))
             split=getByLabel(procData,'split',1)
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
-            if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
+            ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
                 for ibr in br :  xsec = xsec*ibr
 
