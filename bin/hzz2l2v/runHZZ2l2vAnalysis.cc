@@ -92,6 +92,7 @@ int main(int argc, char* argv[])
 
 
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
+  if( isMC ) std::cout << "Is MC" << std::endl;
   if(!isMC)
     {
       if(dtag.Contains("DoubleEle")) filterOnlyEE=true;
@@ -398,6 +399,7 @@ int main(int argc, char* argv[])
   //########    INITIATING HISTOGRAMS     ########
   //##############################################
   SmartSelectionMonitor mon;
+  printf("Definition of plots");
 
   //generator level control : add an underflow entry to make sure the histo is kept
   ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
@@ -505,6 +507,10 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events",100,0,500) );
 
+  //Debug Plots Alessio
+  mon.addHistogram( new TH1F( "numbereeTrigger",  "Number of event passing the ee Trigger", 2, 0, 2) );
+  mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger", 2, 0, 2) );
+  mon.addHistogram( new TH1F( "numberemuTrigger",  "Number of event passing the emu Trigger", 2, 0, 2) );
 
   //
   // STATISTICAL ANALYSIS
@@ -596,11 +602,13 @@ int main(int argc, char* argv[])
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
   int treeStep(totalEntries/50);
+  //totalEntries;
   //DuplicatesChecker duplicatesChecker;
-  //int nDuplicates(0);
+  //int nDuplicates(0)
   for( size_t iev=0; iev<totalEntries; iev++){
       if(iev%treeStep==0){printf(".");fflush(stdout);}
-
+       std::cout << " " << std::endl;
+       std::cout << "New Event" << std::endl;
        //##############################################   EVENT LOOP STARTS   ##############################################
        ev.to(iev); //load the event content from the EDM file
        //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
@@ -609,14 +617,27 @@ int main(int argc, char* argv[])
        edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
        if(!tr.isValid())return false;
 
-      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*","HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
-      bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
-      bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
-      bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+      bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");
+      bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_Mu34_TrkIsoVVL_v*");
+      bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*"); 
+      bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");
       if(filterOnlyEE)   { mumuTrigger=false; emuTrigger=false;  }
       if(filterOnlyMUMU) { eeTrigger=false;   emuTrigger=false;  }
       if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
       if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
+
+      if( eeTrigger ){ 
+        std::cout << "The Event has passed eeTrigger" << std::endl;
+        mon.fillHisto( "numbereeTrigger", "", 1, 1);
+      }
+      if( mumuTrigger ){ 
+        std::cout << "The Event has passed mumuTrigger" << std::endl;
+        mon.fillHisto( "numbermumuTrigger", "", 1, 1);
+      }
+      if( emuTrigger ){ 
+        std::cout << "The Event has passed emuTrigger" << std::endl;
+        mon.fillHisto( "numberemuTrigger", "", 1, 1);
+      }
 
       bool hasPhotonTrigger(false);
       float triggerPrescale(1.0),triggerThreshold(0);
@@ -648,7 +669,7 @@ int main(int argc, char* argv[])
           }
       }
       if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-
+    
        //##############################################   EVENT PASSED THE TRIGGER   #######################################
 
 
