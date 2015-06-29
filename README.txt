@@ -1,10 +1,10 @@
 ### Installation
-export SCRAM_ARCH=slc6_amd64_gcc481
-scramv1 project CMSSW CMSSW_7_2_2
-cd CMSSW_7_2_2/src/
+export SCRAM_ARCH=slc6_amd64_gcc491
+scramv1 project CMSSW CMSSW_7_4_2
+cd CMSSW_7_4_2/src/
 cmsenv
 
-wget -O - --no-check-certificate https://raw.githubusercontent.com/quertenmont/2l2v_fwk/72Xfwk/TAGS.txt | sh
+wget -O - --no-check-certificate https://raw.githubusercontent.com/quertenmont/2l2v_fwk/74Xfwk/TAGS.txt | sh
 
 ### For creating private samples
 # just use official recipe and produce MINIAOD samples in 74X
