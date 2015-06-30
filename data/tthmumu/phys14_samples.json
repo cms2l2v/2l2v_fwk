@@ -1,0 +1,213 @@
+{
+  "proc":[
+    {
+      "tag":"Z#rightarrow ll (inclusive)",
+      "isdata":false,
+      "color":831,
+      "lcolor":1,
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_13TeV-madgraph-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Z#rightarrow ll (mass-binned)",
+      "isdata":false,
+      "color":831,
+      "lcolor":1,
+      "comment":"in principle I do not want the mass-binned: the energy used for producing high mass dimuon resonances does not leave energy for the jets-> meh",
+      "commentxsec":"weight them by xsec in mcm and then multiply by xsec(NNLO)/sum xsec(mcm)",
+       "frommcm":"cross section ***, filter efficiency ***",
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-120To200"  , "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-120To200_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-1400To2300", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-1400To2300_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-200To400"  , "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-200To400_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-2300To3500", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-2300To3500_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-3500To4500", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-3500To4500_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-400To800"  , "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-400To800_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-4500To6000", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-4500To6000_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-6000To7500", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-6000To7500_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-7500To8500", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-7500To8500_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-800To1400" , "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-800To1400_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-8500To9500", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-8500To9500_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToEEMuMu_M-9500"      , "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/DYJetsToEEMuMu_M-9500_13TeV-madgraph/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Z#rightarrow ll (H_{T} binned)",
+      "isdata":false,
+      "color":831,
+      "lcolor":1,
+      "comment":"I probably want these ones.", 
+      "commentxsec":"weight them by xsec in mcm and then multiply by xsec(NNLO)/sum xsec(mcm)",
+      "frommcm":"cross section ***, filter efficiency ***",
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToLL_M-50_HT-100to200", "split":100, "xsec":1.0, "br":[1.0], "dset":"/DYJetsToLL_M-50_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToLL_M-50_HT-200to400", "split":100, "xsec":1.0, "br":[1.0], "dset":"/DYJetsToLL_M-50_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToLL_M-50_HT-400to600", "split":100, "xsec":1.0, "br":[1.0], "dset":"/DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToLL_M-50_HT-600toInf", "split":100, "xsec":1.0, "br":[1.0], "dset":"/DYJetsToLL_M-50_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {   
+      "tag":"W,multijets (inclusive)",
+      "isdata":false,
+      "color":809,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_13TeV-madgraph-pythia8-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {   
+      "tag":"W,multijets (H_{T} binned)",
+      "isdata":false,
+      "color":809,
+      "lcolor":1,
+      "commentxsec":"weight them by xsec in mcm and then multiply by xsec(NNLO)/sum xsec(mcm)",
+      "frommcm":"cross section ***, filter efficiency ***",
+      "data":[
+        { "dtag":"MC13TeV_WJetsToLNu_HT-100to200", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/WJetsToLNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WJetsToLNu_HT-200to400", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/WJetsToLNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WJetsToLNu_HT-400to600", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WJetsToLNu_HT-600toInf", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/WJetsToLNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Z+jets",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_ZJetsToNuNu_HT-100to200", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/ZJetsToNuNu_HT-100to200_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZJetsToNuNu_HT-200to400", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZJetsToNuNu_HT-400to600", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/ZJetsToNuNu_HT-400to600_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v2/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZJetsToNuNu_HT-600toInf", "split":100, "xsec":1.0, "br":[ 1.0 ], "dset":"/ZJetsToNuNu_HT-600toInf_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        ]
+    },      
+    {
+      "tag":"Diboson",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_ZZTo4L"                             , "split":41, "xsec":15.4       , "br":[ 0.0403896 ]           , "dset":"/ZZTo4L_Tune4C_13TeV-powheg-pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WZJetsTo3LNu"                       , "split":100, "xsec":1.0       , "br":[ 1.0 ]                 , "dset":"/WZJetsTo3LNu_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Single top",
+      "isdata":false,
+      "color":824,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC8TeV_SingleTbar_tW"                    , "split":1, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/Tbar_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleT_tW"                       , "split":1, "xsec":35.6         , "br":[ 1.0 ]                 , "dset":"/T_tW-channel-DR_Tune4C_13TeV-CSA14-powheg-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleTbar_t"                     , "split":1, "xsec":30.7        , "br":[ 1.0 ]                 , "dset":"/TBarToLeptons_t-channel_Tune4C_CSA14_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleT_t"                        , "split":1, "xsec":103.4        , "br":[ 1.0 ]                 , "dset":"/TToLeptons_t-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleTbar_s"                     , "split":1, "xsec":4.16        , "br":[ 1.0 ]                 , "dset":"/TBarToLeptons_s-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        },
+        { "dtag":"MC8TeV_SingleT_s"                        , "split":1, "xsec":7.20        , "br":[ 1.0 ]                 , "dset":"/TToLeptons_s-channel-CSA14_Tune4C_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"        }
+      ]
+    },
+     {
+      "tag":"t#bar{t} inclusive",
+      "isdata":false,
+      "color":614,
+      "comment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU40bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "othercomment":"/TT_Tune4C_13TeV-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        ]
+     },
+     {
+      "tag":"ttV",
+      "isdata":false,
+      "color":614,
+      "lcolor":1,
+      "comment":"Main background"
+      "data":[
+        { "dtag":"MC13TeV_TTWJets"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTWJets_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_TTZJets"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTZJets_Tune4C_13TeV-madgraph-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"}
+        ]
+     },
+     {
+      "tag":"ttH #mu#mu",
+      "issignal":true,
+      "spimpose":false,      
+      "isdata":false,
+      "color":614,
+      "comment":"Signal",
+      "mctruthmode":1,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTbarH_M-125_13TeV_amcatnlo-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v2/MINIAODSIM"}
+        ]
+     },
+     {
+      "tag":"ttH other",
+      "issignal":false,
+      "isdata":false,
+      "color":614,
+      "comment":"Background",
+      "mctruthmode":2,
+      "lcolor":1,
+      "comment":"It should include this one as well, in principle /TTbarH_HToGG_M-125_13TeV_amcaune4C_CSA14_13TeV-aMCatNLO-tauola/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM",
+      "data":[
+        { "dtag":"MC13TeV_TTJets"                           , "split":67, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TTbarH_M-125_13TeV_amcatnlo-pythia8-tauola/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v2/MINIAODSIM"}
+        ]
+     },
+  {  
+      "tag":"QCDMuEnriched",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "destination":"wjets selection",
+      "comment":"this seems the one matching better the one from TAU-14-001. Not sure of why pion kaon decays are explicitly mentioned, though",
+      "frommcm":"cross section 866600000, filter efficiency 0.00044",
+      "data":[        
+            { "dtag":"MC13TeV_QCDMuEnriched", "split":110, "xsec":381304, "br":[ 1.0 ] , "dset":"/QCD_Pt-20toInf_MuEnrichedPt15_PionKaonDecay_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_PHYS14_25_V1-v3/MINIAODSIM"}
+            ]             
+    },
+    {
+      "tag":"QCD",
+      "isdata":false,
+      "color":591,
+      "lcolor":1,
+      "comment":"It should be totally irrelevant (I will select >3 leptons, typically)",
+      "frommcm":"all filter efficiencies are 1",
+      "data":[
+        { "dtag":"QCD_Pt-15to30",     "split":100, "xsec":2237000000, "br":[1.0], "dset":"/QCD_Pt-15to30_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v1/MINIAODSIM" },           
+        { "dtag":"QCD_Pt-30to50",     "split":100, "xsec":161500000,  "br":[1.0], "dset":"/QCD_Pt-30to50_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v1/MINIAODSIM" },    
+        { "dtag":"QCD_Pt-50to80",     "split":100, "xsec":22110000,   "br":[1.0], "dset":"/QCD_Pt-50to80_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" },    
+        { "dtag":"QCD_Pt-80to120",    "split":100, "xsec":3000114.3,  "br":[1.0], "dset":"/QCD_Pt-80to120_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" },   
+        { "dtag":"QCD_Pt-120to170",   "split":100, "xsec":493200,     "br":[1.0], "dset":"/QCD_Pt-120to170_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" },  
+        { "dtag":"QCD_Pt-170to300",   "split":100, "xsec":120300,     "br":[1.0], "dset":"/QCD_Pt-170to300_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" },  
+        { "dtag":"QCD_Pt-300to470",   "split":100, "xsec":7475,       "br":[1.0], "dset":"/QCD_Pt-300to470_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" },  
+        { "dtag":"QCD_Pt-470to600",   "split":100, "xsec":587.1,      "br":[1.0], "dset":"/QCD_Pt-470to600_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" },  
+        { "dtag":"QCD_Pt-600to800",   "split":100, "xsec":167,        "br":[1.0], "dset":"/QCD_Pt-600to800_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v1/MINIAODSIM" },  
+        { "dtag":"QCD_Pt-800to1000",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/QCD_Pt-800to1000_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v2/MINIAODSIM" }, 
+        { "dtag":"QCD_Pt-1000to1400", "split":100, "xsec":8.195,      "br":[1.0], "dset":"/QCD_Pt-1000to1400_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v1/MINIAODSIM" },
+        { "dtag":"QCD_Pt-1400to1800", "split":100, "xsec":0.7346,     "br":[1.0], "dset":"/QCD_Pt-1400to1800_Tune4C_13TeV_pythia8/Phys14DR-PU20bx25_trkalmb_castor_PHYS14_25_V1-v1/MINIAODSIM" }        
+        ]       
+     },
+    {
+      "tag":"Higgs production",
+      "isdata":false,
+      "color":591,
+      "lcolor":1,
+      "frommcm":"take them from mcm",
+      "data":[
+        { "dtag":"MC13TeV_GluGluToHToTauTau_M-125",  "split":100, "xsec":1.0,      "br":[1.0], "dset":"/GluGluToHToTauTau_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_GluGluToHToWWTo2LAndTau2Nu_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/GluGluToHToWWTo2LAndTau2Nu_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_GluGluToHToZZTo4L_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/GluGluToHToZZTo4L_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_VBF_HToBB_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/VBF_HToBB_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_VBF_HToGG_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/VBF_HToGG_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_VBF_HToTauTau_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/VBF_HToTauTau_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v2/MINIAODSIM"},
+        { "dtag":"MC13TeV_VBF_HToWWToLAndTauNuQQ_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/VBF_HToWWToLAndTauNuQQ_M-125_13TeV-powheg-pythia6/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WH_HToBB_WToLNu_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/WH_HToBB_WToLNu_M-125_13TeV_powheg-herwigpp/Phys14DR-PU20bx25_tsg_PHYS14_25_V1-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WH_ZH_HToGG_M-125",  "split":100, "xsec":28.25,      "br":[1.0], "dset":"/WH_ZH_HToGG_M-125_13TeV_pythia6/Phys14DR-PU20bx25_PHYS14_25_V1x-v1/MINIAODSIM"}
+   ]
+}
+
+
+

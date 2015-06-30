@@ -1,7 +1,7 @@
 //
 // Pietro Vischia, <pietro.vischia@gmail.com>
 //
-// ttbar and charged Higgs analyses
+// Charged Higgs analysis
 //
 
 #include <iostream>
@@ -64,91 +64,6 @@
 using namespace std;
 
 
-bool passPFJetID(std::string label,
-                 pat::Jet jet){
-  
-  bool passID(false); 
-  
-  float rawJetEn(jet.correctedJet("Uncorrected").energy() );
-
-  double eta=jet.eta();
- 
-  float nhf( (jet.neutralHadronEnergy() + jet.HFHadronEnergy())/rawJetEn );
-  float nef( jet.neutralEmEnergy()/rawJetEn );
-  float cef( jet.chargedEmEnergy()/rawJetEn );
-  float chf( jet.chargedHadronEnergy()/rawJetEn );
-  float nch    = jet.chargedMultiplicity();
-  float nconst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
-  float muf(jet.muonEnergy()/rawJetEn); 
-
-  // Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
-  if(label=="Loose")
-    passID = ( (nhf<0.99 && nef<0.99 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4) );
-  if(label=="Tight")
-    passID = ( (nhf<0.90 && nef<0.90 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4) );
-  
-  return passID; 
-  
-}
-
-
-
-bool hasLeptonAsDaughter(const reco::GenParticle p)
-{
-  bool foundL(false);
-  if(p.numberOfDaughters()==0) return foundL;
-
-  // cout << "Particle " << p.pdgId() << " with status " << p.status() << " and " << p.numberOfDaughters() << endl;
-  const reco::Candidate *part = &p;
-  // loop on the daughter particles to check if it has an e/mu as daughter
-  while ((part->numberOfDaughters()>0)) {
-    const reco::Candidate* DaughterPart = part->daughter(0);
-    // cout << "\t\t Daughter: " << DaughterPart->pdgId() << " with status " << DaughterPart->status() << endl;
-    if (fabs(DaughterPart->pdgId()) == 11 || fabs(DaughterPart->pdgId() == 13)){
-      foundL = true;
-      break;
-    }
-    part=DaughterPart;
-  }
-  return foundL;
-}
-
-
-bool hasWasMother(const reco::GenParticle  p)
-{
-  bool foundW(false);
-  if(p.numberOfMothers()==0) return foundW;
-  const reco::Candidate* part =&p; // (p.mother());
-  // loop on the mother particles to check if it has a W as mother
-  while ((part->numberOfMothers()>0)) {
-    const reco::Candidate* MomPart =part->mother();
-    if (fabs(MomPart->pdgId())==24){
-      foundW = true;
-      break;
-    }
-    part = MomPart;
-  }
-  return foundW;
-}
-
-bool hasTauAsMother(const reco::GenParticle  p)
-{
-  bool foundTau(false);
-  if(p.numberOfMothers()==0) return foundTau;
-  const reco::Candidate* part = &p; //(p.mother());
-  // loop on the mother particles to check if it has a tau as mother
-  while ((part->numberOfMothers()>0)) {
-    const reco::Candidate* MomPart =part->mother();
-    if (fabs(MomPart->pdgId())==15)// && MomPart->status() == 2) // Not sure the status check is needed.
-      {
-        foundTau = true;
-        break;
-      }
-    part = MomPart;
-  }
-  return foundTau;
-}
-
 int main (int argc, char *argv[])
 {
   //##############################################
@@ -169,22 +84,25 @@ int main (int argc, char *argv[])
   // configure the process
   const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
-  bool debug          = runProcess.getParameter<bool>  ("debug");
-  bool runSystematics = runProcess.getParameter<bool>  ("runSystematics");
-  bool isMC           = runProcess.getParameter<bool>  ("isMC");
-  double xsec         = runProcess.getParameter<double>("xsec");
-  int mctruthmode     = runProcess.getParameter<int>   ("mctruthmode");
-  TString dtag        = runProcess.getParameter<std::string>("dtag");
+  bool debug = runProcess.getParameter<bool>("debug");
+  bool isMC = runProcess.getParameter < bool > ("isMC");
+  double xsec = runProcess.getParameter < double >("xsec");
+  int mctruthmode = runProcess.getParameter < int >("mctruthmode");
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
-  std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
-  //TString baseDir = runProcess.getParameter < std::string > ("dirName");
-  //  if (mctruthmode != 0) //FIXME
-  //    {
-  //      outFileUrl += "_filt";
-  //      outFileUrl += mctruthmode;
-  //    }
-  TString outUrl = runProcess.getParameter<std::string>("outfile");
+  std::vector < std::string > urls = runProcess.getParameter < std::vector < std::string > >("input");
+  TString baseDir = runProcess.getParameter < std::string > ("dirName");
+  TString url = TString (argv[1]);
+  TString outFileUrl (gSystem->BaseName (url));
+  outFileUrl.ReplaceAll ("_cfg.py", "");
+  if (mctruthmode != 0)
+    {
+      outFileUrl += "_filt";
+      outFileUrl += mctruthmode;
+    }
+  TString outdir = runProcess.getParameter < std::string > ("outdir");
+  TString outUrl (outdir);
+  gSystem->Exec ("mkdir -p " + outUrl);
   
   bool
     filterOnlyEE       (false),
@@ -194,22 +112,21 @@ int main (int argc, char *argv[])
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (dtag.Contains ("DoubleEle")) filterOnlyEE       = true;
-      if (dtag.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
-      if (dtag.Contains ("MuEG"))      filterOnlyEMU      = true;
-      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
-      if (dtag.Contains ("SingleEle")) filterOnlySINGLEE  = true;
+      if (url.Contains ("DoubleEle")) filterOnlyEE       = true;
+      if (url.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
+      if (url.Contains ("MuEG"))      filterOnlyEMU      = true;
+      if (url.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
+      if (url.Contains ("SingleEle")) filterOnlySINGLEE  = true;
     }
   
-  bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
-  bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
-  bool isWGmc       (isMC && dtag.Contains ("WG"));
-  bool isZGmc       (isMC && dtag.Contains ("ZG"));
-  bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
-  bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
-  bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
+  bool isSingleMuPD (!isMC && url.Contains ("SingleMu")); // Do I really need this?
+  bool isV0JetsMC (isMC && (url.Contains ("DYJetsToLL_50toInf") || url.Contains ("WJets")));
+  bool isWGmc (isMC && url.Contains ("WG"));
+  bool isZGmc (isMC && url.Contains ("ZG"));
+  bool isMC_ZZ = isMC && (string (url.Data ()).find ("TeV_ZZ") != string::npos);
+  bool isMC_WZ = isMC && (string (url.Data ()).find ("TeV_WZ") != string::npos);
   
-  TString outTxtUrl = outUrl + ".txt";
+  TString outTxtUrl = outUrl + "/" + outFileUrl + ".txt";
   FILE *outTxtFile = NULL;
   if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
   printf ("TextFile URL = %s\n", outTxtUrl.Data ());
@@ -218,26 +135,28 @@ int main (int argc, char *argv[])
   TString dirname = runProcess.getParameter < std::string > ("dirName");
   
   //systematics
-  std::vector<TString> systVars(1,"");
-  if(runSystematics && isMC)
+  bool runSystematics = runProcess.getParameter < bool > ("runSystematics");
+  std::vector < TString > varNames (1, "");
+  if (runSystematics)
     {
-      systVars.push_back("jerup" );     systVars.push_back("jerdown"   );
-      systVars.push_back("jesup" );     systVars.push_back("jesdown"   );
-      //systVars.push_back("lesup" );   systVars.push_back("lesdown"   );
-      systVars.push_back("leffup");     systVars.push_back("leffdown"  );
-      systVars.push_back("puup"  );     systVars.push_back("pudown"   );
-      systVars.push_back("umetup");     systVars.push_back("umetdown" );
-      systVars.push_back("btagup");     systVars.push_back("btagdown" );
-      systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
-      if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
-      //      systVars.push_back(); systVars.push_back();
-
-      if(isTTbarMC) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
-      cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
+      varNames.push_back ("_jerup" ); varNames.push_back ("_jerdown" );
+      varNames.push_back ("_jesup" ); varNames.push_back ("_jesdown" );
+      varNames.push_back ("_umetup"); varNames.push_back ("_umetdown");
+      varNames.push_back ("_lesup" ); varNames.push_back ("_lesdown" );
+      varNames.push_back ("_puup"  ); varNames.push_back ("_pudown"  );
+      varNames.push_back ("_btagup"); varNames.push_back ("_btagdown");
+      if (isMC_ZZ)
+        {
+          varNames.push_back ("_zzptup"); varNames.push_back ("_zzptdown");
+        }
+      if (isMC_WZ)
+        {
+          varNames.push_back ("_wzptup"); varNames.push_back ("_wzptdown");
+        }
     }
-
-  size_t nSystVars(systVars.size());
   
+  size_t nvarsToInclude = varNames.size ();
+
   std::vector < std::string > allWeightsURL = runProcess.getParameter < std::vector < std::string > >("weightsFile");
   std::string weightsDir (allWeightsURL.size ()? allWeightsURL[0] : "");
   
@@ -288,7 +207,8 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
-  
+
+
   // Setting up control categories
   std::vector < TString > controlCats;
   controlCats.clear ();
@@ -410,36 +330,16 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "metcheckpoint", ";Missing transverse energy [GeV];Events", 100, 0, 500));
 
 
-      
-    } // End of loop on controlCats
 
+    }                           // End of loop on controlCats
 
   //
   // STATISTICAL ANALYSIS
   //
-  TH1D *Hoptim_systs = (TH1D *) mon.addHistogram (new TH1D ("optim_systs", ";syst;", nSystVars, 0, nSystVars));
-  for (size_t ivar = 0; ivar < nSystVars; ivar++) Hoptim_systs->GetXaxis ()->SetBinLabel (ivar + 1, systVars[ivar]);
+  TH1D *Hoptim_systs = (TH1D *) mon.addHistogram (new TH1D ("optim_systs", ";syst;", nvarsToInclude, 0, nvarsToInclude));
+  for (size_t ivar = 0; ivar < nvarsToInclude; ivar++) Hoptim_systs->GetXaxis ()->SetBinLabel (ivar + 1, varNames[ivar]);
 
 
-
-  // Final distributions to compute systematics on
-  for(size_t ivar=0; ivar<nSystVars; ++ivar) 
-    {
-      TString var=systVars[ivar];
-      
-      // dilepton or both
-      mon.addHistogram(new TH1D("finalnbjets"         +var, ";b-jet multiplicity;Events", 6,0,6) );        
-      mon.addHistogram(new TH1D("finalmt"             +var, ";Transverse mass;Events", 50, 0., 500.));
-      
-      // lepton-tau
-      mon.addHistogram(new TH1D("finaltaur"           +var, ";R^{#tau};Events", 10, 0., 1.0));
-      mon.addHistogram(new TH1D("finaltaupolarization"+var, ";#eta^{#tau};Events",  40,-1.0,3.0 ));
-      mon.addHistogram(new TH1D("finaldphilepmet"     +var, ";#Delta#phi(#tau_{h}-#it{l});Events", 60, 0., 3.15));
-      mon.addHistogram(new TH1D("finaldphitaumet"     +var, ";#Delta#phi(#tau_{h}-MET);Events", 60, 0., 3.15));
-      mon.addHistogram(new TH1D("finaldphileptau"     +var, ";#Delta#phi(#it{l}-#tau_{h});Events", 60, 0., 3.15));
-      mon.addHistogram(new TH1D("finaltaupt"          +var, ";p_{T}^{#tau};Events", 50,0,500    ));
-    }
-  
 
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
@@ -465,7 +365,7 @@ int main (int argc, char *argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK5PFchs.txt").Data ());
 
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, dtag);
+  MuScleFitCorrector *muCor = getMuonCorrector (jecDir, url);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -519,7 +419,7 @@ int main (int argc, char *argv[])
       if (iev % treeStep == 0)
         {
           printf (".");
-          if(!debug) fflush (stdout); // Otherwise debug messages are flushed
+          fflush (stdout);
         }
 
       std::vector < TString > tags (1, "all");
@@ -531,22 +431,12 @@ int main (int argc, char *argv[])
 
       //apply trigger and require compatibilitiy of the event with the PD
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
-      if (!tr.isValid ()){
-        cout << "Trigger is not valid" << endl;
+      if (!tr.isValid ())
         return false;
-      }
-      if(debug && iev==5 ){
-        cout << "Printing trigger list" << endl;
-        for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-          cout << *trnames << endl;
-        cout << "----------- End of trigger list ----------" << endl;
-      }
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")                                                                            );
-      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
-      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
-      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
+      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*")                                                                                     );
+      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*")                                                                                      );
+      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*") );
 
       if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
       if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
@@ -555,7 +445,6 @@ int main (int argc, char *argv[])
       if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
       
       if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-      //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
       mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
       
@@ -579,61 +468,36 @@ int main (int argc, char *argv[])
       bool hasTop(false);
       int
         ngenLeptonsStatus3(0),
-        ngenLeptonsNonTauSonsStatus3(0),
         ngenTausStatus3(0),
         ngenQuarksStatus3(0);
       //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
       //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
       if(isMC)
         {
-          // FIXME: WHEN COMPARING THE VARIOUS TTBAR GENERATORS DO NOT FORGET TO ADD A SWITCH FOR PYTHIA6 CODES 
           //if(iev != 500) continue;
           for(size_t igen=0; igen<gen.size(); igen++){
             // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
-            //            if(iev<10){
-            //              if(gen[igen].status() == 1 || gen[igen].status() == 2)
-            //              cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-            //            }
-            //            ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
             
-            if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
+            //cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << ", pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+            if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
+
+            
             int absid=abs(gen[igen].pdgId());
-            // OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
-            //if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-
-
-            //////            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
-            if(absid==6 && gen[igen].status()==62){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
+            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
               hasTop=true;
               //if(isTTbarMC){
               //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
               //  else                        tbarPt=gen[igen].pt();
               //}
-            } 
+            }
 
-          
-            //if(!gen[igen].isPromptFinalState() ) continue;
-            if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
-            
-            if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen])) cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-            
-            if((absid==11 || absid==13) && gen[igen].status()==1)
-              {
-                ngenLeptonsStatus3++;
-                
-                if(!hasTauAsMother(gen[igen]))
-                  ngenLeptonsNonTauSonsStatus3++;
-              }
-            if(absid==15 && gen[igen].status()==2 )
-              {
-                ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-                //    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-              }
+            if(!gen[igen].isPromptFinalState() ) continue;
+
+            if(absid==11 || absid==13) ngenLeptonsStatus3++;
+            if(absid==15             ) ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
             if(absid<=5              ) ngenQuarksStatus3++;
           }
-            
-          if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
-        
+          
           // Dileptons:
           //    ttbar dileptons --> 1
           //    ttbar other     --> 2
@@ -643,30 +507,20 @@ int main (int argc, char *argv[])
           //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
           //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
           //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-          
+
           // lepton-tau:
           //    ttbar ltau      --> 3
           //    ttbar dileptons --> 4
           //    ttbar ljets     --> 5
           //    ttbar hadrons   --> 6
-          if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
-          if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
-          if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
+          if(mctruthmode==3 && (ngenLeptonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue;
+          if(mctruthmode==4 && (ngenLeptonsStatus3!=2                        || !hasTop )) continue;
+          if(mctruthmode==5 && (ngenLeptonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
+          if(mctruthmode==6 && (ngenLeptonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
 
-          bool isHad(false);
-          if( 
-             (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
-             (ngenLeptonsNonTauSonsStatus3!=2                      ) &&
-             (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
-              )
-            isHad=true;
-          
-          //if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-          if(mctruthmode==6 && (!isHad || !hasTop )) continue;
-          
         }
       mon.fillHisto("initNorm", tags, 2., 1.);
-      if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
+
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
       //        {
       //          topPtWgt->computeWeight(tPt,tbarPt);
@@ -826,8 +680,8 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoSingleLepKin = false;
 
           //Cut based identification 
-          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdLoose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
+          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
+          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passStdId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
           passVetoSingleLepId = passId;
 
           //isolation
@@ -855,7 +709,7 @@ int main (int argc, char *argv[])
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selSingleLepLeptons.size();++l1){
-            if(reco::deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
+            if(deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
           }
           if(overlapWithLepton) continue;
           
@@ -896,29 +750,31 @@ int main (int argc, char *argv[])
           //mc truth for this jet
           const reco::GenJet * genJet = jets[ijet].genJet();
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
-
+          
           //cross-clean with selected leptons and photons
-          double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
+          float minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-            minDRlj = TMath::Min(minDRlj, reco::deltaR (jets[ijet], selLeptons[ilep]));
+            minDRlj = TMath::Min(minDRlj, deltaR (jets[ijet], selLeptons[ilep]));
           // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
           // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
           //          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
 
           for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
-            minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jets[ijet], selSingleLepLeptons[ilep]));
+            minDRljSingleLep = TMath::Min(minDRljSingleLep, deltaR (jets[ijet], selSingleLepLeptons[ilep]));
 
           //jet id
-          bool passPFloose = passPFJetID("Loose", jets[ijet]); 
-          //if (jets[ijet].pt() > 30)
-          //  {
-          //    mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 0);
-          //    if (passPFloose)                        mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 1);
-          //    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
-          //    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
-          //  }
-          if (!passPFloose || jets[ijet].pt() <30 || fabs(jets[ijet].eta()) > 2.5) continue;
+          bool passPFloose = true;      //FIXME --> Need to be updated according to te latest recipe;
+          float PUDiscriminant = jets[ijet].userFloat ("pileupJetId:fullDiscriminant");
+          bool passLooseSimplePuId = true;      //FIXME --> Need to be updated according to the latest recipe
+          if (jets[ijet].pt() > 30)
+            {
+              mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 0);
+              if (passPFloose)                        mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 1);
+              if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
+              if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
+            }
+          if (!passPFloose || !passLooseSimplePuId || jets[ijet].pt() <30 || fabs(jets[ijet].eta()) > 2.5) continue;
 
 
           if (minDRlj >= 0.4){
@@ -926,19 +782,18 @@ int main (int argc, char *argv[])
             njets++;
           }
           
-          double minDRtj(9999.);
+          float minDRtj(9999.);
           for(size_t itau=0; itau<selTaus.size(); ++itau)
             {
-              minDRtj = TMath::Min(minDRtj, reco::deltaR(jets[ijet], selTaus[itau]));
+              minDRtj = TMath::Min(minDRtj, deltaR(jets[ijet], selTaus[itau]));
             }
           if(minDRtj >0.4 && minDRljSingleLep >= 0.4) selSingleLepJets.push_back(jets[ijet]);
           
 
           
-          double dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
+          float dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
-          // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
+          bool hasCSVtag (jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
           // Apparently this V2 has the following preliminary operating points:
           // These preliminary operating points were derived from ttbar events:
           //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
@@ -959,8 +814,7 @@ int main (int argc, char *argv[])
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
-          hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
-
+          hasCSVtag = jets[ijet].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
           if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
           
@@ -1065,7 +919,7 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"leadeta",     tags, fabs (selLeptons[0].eta()), weight);
           mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
 
-          double thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
+          float thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
           double sumpt(selLeptons[0].pt()+selLeptons[1].pt());
           double mtsum(0);///utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[0],met)+utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[1],met));
 
@@ -1103,8 +957,8 @@ int main (int argc, char *argv[])
           // Tau control ??? 
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                      weight);
           if(ntaus > 0){
-            mon.fillHisto (icat+"tauleadpt", tags, selTaus[0].pt(), weight);
-            mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(), weight);
+            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(), weight);
+            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(), weight);
           }
 
           for(size_t ijet=0; ijet<selJets.size(); ++ijet)
@@ -1117,7 +971,7 @@ int main (int argc, char *argv[])
                   htbnol+=selBJets[ijet].pt();
                 }
               
-              double csv (selJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+              double csv (selJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
               mon.fillHisto ("csv", tags, csv, weight);
               if (!isMC) continue;
               int flavId = selJets[ijet].partonFlavour();
@@ -1142,123 +996,6 @@ int main (int argc, char *argv[])
           
         }
         
-        //
-        // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
-        //
-        //Fill histogram for posterior optimization, or for control regions
-        
-        if(passMllVeto && passOS)
-          {
-            for (size_t ivar = 0; ivar < nSystVars; ivar++)
-              {
-                TString var(systVars[ivar]);
-                
-                double iweight = weight;       //nominal
-                
-                //energy scale/resolution
-                bool varyJesUp (systVars[ivar] == "_jesup");
-                bool varyJesDown (systVars[ivar] == "_jesdown");
-                bool varyJerUp (systVars[ivar] == "_jerup");
-                bool varyJerDown (systVars[ivar] == "_jerdown");
-                bool varyUmetUp (systVars[ivar] == "_umetup");
-                bool varyUmetDown (systVars[ivar] == "_umetdown");
-                bool varyLesUp (systVars[ivar] == "_lesup");
-                bool varyLesDown (systVars[ivar] == "_lesdown");
-                
-                //pileup variations
-                if (systVars[ivar] == "_puup")   iweight *= TotalWeight_plus;
-                if (systVars[ivar] == "_pudown") iweight *= TotalWeight_minus;
-
-                //btag
-                bool varyBtagUp (systVars[ivar] == "_btagup");
-                bool varyBtagDown (systVars[ivar] == "_btagdown");
-                
-                //Here were the Q^2 variations on VV pT spectum
-                
-                
-                //recompute MET/MT if JES/JER was varied
-                LorentzVector newMET = mets[0].p4();
-                
-                if(varyJesUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-                if(varyJesDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
-                if(varyJerUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
-                if(varyJerDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
-                if(varyUmetUp)   newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
-                if(varyUmetDown) newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
-                //if(varyLesUp)    newMET = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
-                //if(varyLesDown)  newMET = met[utils::cmssw::LESDOWN];
-                
-                pat::JetCollection finalSelJets;
-                pat::JetCollection finalSelBJets;
-                bool passLocalBveto (true);///passBtags);
-                for (size_t ijet = 0; ijet < jets.size(); ijet++)
-                  {
-                    
-                    double eta = jets[ijet].eta();
-                    double pt = jets[ijet].pt();
-                    if(isMC)
-                      {
-                        std::vector<float> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
-                        if(varyJesUp)   pt = varPt[0];
-                        if(varyJesDown) pt = varPt[1];
-                        //  smearJER(float pt, float eta, float genPt)
-                        //  float newJERSF(1.0);
-                        //if(isMC)
-                        //  {
-                        //    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-                        //    std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
-                        //    newJERSF=smearJER[0]/jets[ijet].pt();
-                        //    rawJet *= newJERSF;
-                        // if(varyJerUp)    pt=jets[ijet].getVal("jerup");
-                        // if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
-                      }
-                    
-                    if (pt < 30 || fabs(eta) > 2.5) continue;
-                    bool passPFloose = passPFJetID("Loose", jets[ijet]); 
-                    if (!passPFloose) continue;
-                    
-                    //cross-clean with selected leptons and photons
-                    double minDRlj (9999.), minDRlg (9999.);
-                    for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
-                      minDRlj = TMath::Min (minDRlj, reco::deltaR (jets[ijet].p4(), selLeptons[ilep].p4()));
-                    // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-                    // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
-                    if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
-                    
-                    finalSelJets.push_back(jets[ijet]);
-
-                    int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
-                    if (varyBtagUp)
-                      {
-                        if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
-                        else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
-                        else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
-                      }
-                    else if (varyBtagDown)
-                      {
-                        if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
-                        else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
-                        else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
-                      }
-                    if(hasCSVtag)
-                      finalSelBJets.push_back(jets[ijet]);
-                  }
-                std::sort (finalSelJets.begin(),  finalSelJets.end(),  utils::sort_CandidatesByPt);
-                std::sort (finalSelBJets.begin(), finalSelBJets.end(), utils::sort_CandidatesByPt);
-                
-                bool passFinalJetSelection(finalSelJets.size()>1);
-                bool passFinalMetSelection(newMET.pt()>40.);
-                bool passFinalBtagsSelection(finalSelBJets.size()>1);
-
-                if(!passFinalJetSelection || !passFinalMetSelection || !passFinalBtagsSelection) continue;
-                // Here fill stat plots
-                mon.fillHisto("finalnbjets"+var, tags, finalSelBJets.size(), iweight);
-                LorentzVector ttbarSystem(selLeptons[0].p4() + selLeptons[1].p4() + finalSelBJets[0].p4() + finalSelBJets[1].p4());
-                double mt = higgs::utils::transverseMass(ttbarSystem,newMET,false);
-                mon.fillHisto("finalmt"+var, tags, mt, iweight);
-              }
-          } // End stat analysis
 
       } // End dilepton full analysis
       
@@ -1310,8 +1047,8 @@ int main (int argc, char *argv[])
           //mon.fillHisto(icat+"trailereta",  tags, fabs (selLeptons[1].eta()), weight);
           }
           if(ntaus > 0){
-            mon.fillHisto (icat+"tauleadpt", tags, selTaus[0].pt(),             weight);
-            mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(),             weight);
+            mon.fillHisto ("tauleadpt", tags, selTaus[0].pt(),             weight);
+            mon.fillHisto ("tauleadeta", tags, selTaus[0].eta(),             weight);
           }
 
           mon.fillHisto(icat+"nbjets", tags, selSingleLepBJets.size(), weight);
@@ -1326,7 +1063,7 @@ int main (int argc, char *argv[])
             {
               if (selSingleLepJets[ijet].pt() < 30 || fabs (selSingleLepJets[ijet].eta()) > 2.5) continue;
               
-              double csv (selSingleLepJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+              double csv (selSingleLepJets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags"));
               mon.fillHisto ("csv", tags, csv, weight);
               if (!isMC) continue;
               int flavId = selSingleLepJets[ijet].partonFlavour();
@@ -1337,143 +1074,126 @@ int main (int argc, char *argv[])
             }
           
         }
-        //
-        // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
-        //
-        //Fill histogram for posterior optimization, or for control regions
-        
-        if(passTauSelection && passOS)
-          {
-            for (size_t ivar = 0; ivar < nSystVars; ivar++)
-              {
-                TString var(systVars[ivar]);
-                
-                double iweight = weight;       //nominal
-                
-                //energy scale/resolution
-                bool varyJesUp (systVars[ivar] == "_jesup");
-                bool varyJesDown (systVars[ivar] == "_jesdown");
-                bool varyJerUp (systVars[ivar] == "_jerup");
-                bool varyJerDown (systVars[ivar] == "_jerdown");
-                bool varyUmetUp (systVars[ivar] == "_umetup");
-                bool varyUmetDown (systVars[ivar] == "_umetdown");
-                bool varyLesUp (systVars[ivar] == "_lesup");
-                bool varyLesDown (systVars[ivar] == "_lesdown");
-                
-                //pileup variations
-                if (systVars[ivar] == "_puup")   iweight *= TotalWeight_plus;
-                if (systVars[ivar] == "_pudown") iweight *= TotalWeight_minus;
-
-                //btag
-                bool varyBtagUp (systVars[ivar] == "_btagup");
-                bool varyBtagDown (systVars[ivar] == "_btagdown");
-                
-                //Here were the Q^2 variations on VV pT spectum
-                
-                
-                //recompute MET/MT if JES/JER was varied
-                LorentzVector newMET = mets[0].p4();
-                
-                if(varyJesUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-                if(varyJesDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
-                if(varyJerUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
-                if(varyJerDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
-                if(varyUmetUp)   newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
-                if(varyUmetDown) newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
-                //if(varyLesUp)    newMET = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
-                //if(varyLesDown)  newMET = met[utils::cmssw::LESDOWN];
-                
-                pat::JetCollection finalSelSingleLepJets;
-                pat::JetCollection finalSelSingleLepBJets;
-                bool passLocalBveto (true);///passBtags);
-                for (size_t ijet = 0; ijet < jets.size(); ijet++)
-                  {
-                    
-                    double eta = jets[ijet].eta();
-                    double pt = jets[ijet].pt();
-                    if(isMC)
-                      {
-                        std::vector<float> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
-                        if(varyJesUp)   pt = varPt[0];
-                        if(varyJesDown) pt = varPt[1];
-                        //  smearJER(float pt, float eta, float genPt)
-                        //  float newJERSF(1.0);
-                        //if(isMC)
-                        //  {
-                        //    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
-                        //    std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
-                        //    newJERSF=smearJER[0]/jets[ijet].pt();
-                        //    rawJet *= newJERSF;
-                        // if(varyJerUp)    pt=jets[ijet].getVal("jerup");
-                        // if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
-                      }
-                    
-                    if (pt < 30 || fabs(eta) > 2.5) continue;
-                    bool passPFloose = passPFJetID("Loose", jets[ijet]); 
-                    if (!passPFloose) continue;
-                    
-                    //cross-clean with selected leptons and photons
-                    double minDRlj (9999.), minDRlg (9999.);
-                    for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
-                      minDRlj = TMath::Min (minDRlj, reco::deltaR (jets[ijet].p4(), selSingleLepLeptons[ilep].p4()));
-                    // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-                    // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
-                    double minDRtj(9999.);
-                    for(size_t itau=0; itau<selTaus.size(); ++itau)
-                      {
-                        minDRtj = TMath::Min(minDRtj, reco::deltaR(jets[ijet], selTaus[itau]));
-                      }
-                    if (minDRlj < 0.4 || minDRtj<0.4 ) continue;
-                    
-                    finalSelSingleLepJets.push_back(jets[ijet]);
-
-                    int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
-
-                    if (varyBtagUp)
-                      {
-                        if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
-                        else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
-                        else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
-                      }
-                    else if (varyBtagDown)
-                      {
-                        if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
-                        else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
-                        else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
-                      }
-                    if(hasCSVtag)
-                      finalSelSingleLepBJets.push_back(jets[ijet]);
-                  }
-                std::sort (finalSelSingleLepJets.begin(),  finalSelSingleLepJets.end(),  utils::sort_CandidatesByPt);
-                std::sort (finalSelSingleLepBJets.begin(), finalSelSingleLepBJets.end(), utils::sort_CandidatesByPt);
-
-                bool passFinalJetSelection(finalSelSingleLepJets.size()>1);
-                bool passFinalMetSelection(newMET.pt()>40.);
-                bool passFinalBtagsSelection(finalSelSingleLepBJets.size()>0);
-                
-                if(!passFinalJetSelection || !passFinalMetSelection || !passFinalBtagsSelection) continue;
-                // Here fill stat plots
-                pat::Tau & tau = selTaus[0];
-                reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
-                double tauR(leadChargedHadron->p() / tau.energy());  // Sic. It is momentum, not transverse momentum
-                double tauY(2*leadChargedHadron->pt()/tau.et() - 1);
-                //                Y= [ p_T^{trk} - (E_T - p_T^{trk} ]/E_T  = 2p_T^{trk}/E_T  - 1 . Which is practically Y = 2R' -1
-
-                mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
-                mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
-                mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
-                mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selLeptons[0].phi())), iweight);
-                mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
-                mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
-                mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
-                
-              }
-          } // End stat analysis
         
       } // End single lepton full analysis
       
+      continue; // Quick break (statistical analysis will come later)
       
+      //
+      // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
+      //
+      //Fill histogram for posterior optimization, or for control regions
+      for (size_t ivar = 0; ivar < nvarsToInclude; ivar++)
+        {
+          double iweight = weight;       //nominal
+
+          //energy scale/resolution
+          bool varyJesUp (varNames[ivar] == "_jesup");
+          bool varyJesDown (varNames[ivar] == "_jesdown");
+          bool varyJerUp (varNames[ivar] == "_jerup");
+          bool varyJerDown (varNames[ivar] == "_jerdown");
+          bool varyUmetUp (varNames[ivar] == "_umetup");
+          bool varyUmetDown (varNames[ivar] == "_umetdown");
+          bool varyLesUp (varNames[ivar] == "_lesup");
+          bool varyLesDown (varNames[ivar] == "_lesdown");
+
+          //pileup variations
+          if (varNames[ivar] == "_puup")   iweight *= TotalWeight_plus;
+          if (varNames[ivar] == "_pudown") iweight *= TotalWeight_minus;
+
+          //btag
+          bool varyBtagUp (varNames[ivar] == "_btagup");
+          bool varyBtagDown (varNames[ivar] == "_btagdown");
+
+          //Here were the Q^2 variations on VV pT spectum
+
+
+          //recompute MET/MT if JES/JER was varied
+          LorentzVector zvv = mets[0].p4();
+          //FIXME
+          //      if(varyJesUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+          //      if(varyJesDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
+          //      if(varyJerUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
+          //      if(varyJerDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
+          //      if(varyUmetUp)   zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
+          //      if(varyUmetDown) zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
+          //      if(varyLesUp)    zvv = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
+          //      if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
+
+          pat::JetCollection tightVarJets;
+          bool passLocalBveto (true);///passBtags);
+          for (size_t ijet = 0; ijet < jets.size(); ijet++)
+            {
+
+              double eta = jets[ijet].eta();
+              if (fabs (eta) > 4.7) continue;
+              double pt = jets[ijet].pt();
+              //FIXME
+              //        if(varyJesUp)    pt=jets[ijet].getVal("jesup");
+              //        if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
+              //        if(varyJerUp)    pt=jets[ijet].getVal("jerup");
+              //        if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
+              if (pt < 30) continue;
+
+              //cross-clean with selected leptons and photons
+              double minDRlj (9999.), minDRlg (9999.);
+              for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
+                minDRlj = TMath::Min (minDRlj, deltaR (jets[ijet].p4(), selLeptons[ilep].p4()));
+              // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+              // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
+              if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
+
+              //jet id
+              bool passPFloose = true;  //FIXME
+              int simplePuId = true;    //FIXME
+              bool passLooseSimplePuId = true;  //FIXME
+              if (!passPFloose || !passLooseSimplePuId) continue;
+
+              //jet is selected
+              tightVarJets.push_back (jets[ijet]);
+
+              //check b-tag
+              if (pt < 30 || fabs (eta) > 2.5) continue;
+              if (!isMC) continue;
+              if (!varyBtagUp && !varyBtagDown) continue;
+              int flavId = jets[ijet].partonFlavour();
+              bool hasCSVtag (jets[ijet].bDiscriminator("combinedSecondaryVertexBJetTags") > 0.405);
+              if (varyBtagUp)
+                {
+                  if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
+                  else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 + 2*sfbunc, beff);
+                  else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl + sflunc,     leff);
+                }
+              else if (varyBtagDown)
+                {
+                  if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb - sfbunc,     beff);
+                  else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5 - 2*sfbunc, beff);
+                  else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl - sflunc,     leff);
+                }
+              passLocalBveto |= hasCSVtag;
+            }
+
+          bool isZsideBand ((dileptonSystem.mass() > 40 && dileptonSystem.mass() < 70) || (dileptonSystem.mass() > 110 && dileptonSystem.mass() < 200));
+          bool isZsideBandPlus ((dileptonSystem.mass() > 110 && dileptonSystem.mass() < 200));
+          bool passPreselection (true);//passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
+          bool passPreselectionMbvetoMzmass (true);///passQt && passThirdLeptonVeto && passMinDphijmet);
+
+          //re-assign the event category to take migrations into account
+          //      TString evCat  = eventCategoryInst.GetCategory(tightVarJets,dileptonSystem);
+          //for (size_t ich = 0; ich < chTags.size(); ich++)
+          //  {
+          //    
+          //    //TString tags_full = chTags[ich];  //+evCat;
+          //    //double chWeight (iweight);
+          //    
+          //    //update weight and mass for photons
+          //    //LorentzVector idileptonSystem (dileptonSystem);
+          //    
+          //    //updet the transverse mass
+          //    //double mt = higgs::utils::transverseMass (idileptonSystem, zvv, true);
+          //    
+          //  }
+        }
     }
   if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
   printf ("\n");
@@ -1482,6 +1202,8 @@ int main (int argc, char *argv[])
   //########     SAVING HISTO TO FILE     ########
   //##############################################
   //save control plots to file
+  outUrl += "/";
+  outUrl += outFileUrl + ".root";
   printf ("Results save in %s\n", outUrl.Data());
 
   //save all to the file

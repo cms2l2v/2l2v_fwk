@@ -2,157 +2,172 @@
 
 namespace patUtils
 {
-   bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel){
-
-            //for electron Id look here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
-            //for the meaning of the different cuts here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaCutBasedIdentification
-            float dEtaln         = fabs(el.deltaEtaSuperClusterTrackAtVtx());
-            float dPhiln         = fabs(el.deltaPhiSuperClusterTrackAtVtx());
-            float sigmaletaleta  = el.sigmaIetaIeta();
-            float hem            = el.hadronicOverEm();
-            double resol         = fabs((1/el.ecalEnergy())-(el.eSuperClusterOverP()/el.ecalEnergy()));
-            double dxy           = fabs(el.gsfTrack()->dxy(vtx.position()));
-            double dz            = fabs(el.gsfTrack()->dz(vtx.position())); 
-            double mHits         = el.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
-
-            bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
-            bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
-
-	    // PHYS14 selection 
-            switch(IdLevel){
-               case llvvElecId::Veto :
-                  if(barrel                   &&
-		     dEtaln        < 0.013625 &&
-		     dPhiln        < 0.230374 &&
-		     sigmaletaleta < 0.011586 &&
-		     hem           < 0.181130 &&
-		     dxy           < 0.094095 &&
-		     dz            < 0.713070 &&
-		     resol         < 0.295751 &&
-		     mHits         <=2          )
-		    return true;
-                  if(endcap                   &&
-		     dEtaln        < 0.011932 &&
-		     dPhiln        < 0.255450 &&
-		     sigmaletaleta < 0.031849 &&
+  bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel){
+    
+    //for electron Id look here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
+    //for the meaning of the different cuts here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaCutBasedIdentification
+    float dEtaln         = fabs(el.deltaEtaSuperClusterTrackAtVtx());
+    float dPhiln         = fabs(el.deltaPhiSuperClusterTrackAtVtx());
+    float sigmaletaleta  = el.sigmaIetaIeta();
+    float hem            = el.hadronicOverEm();
+    double resol         = fabs((1/el.ecalEnergy())-(el.eSuperClusterOverP()/el.ecalEnergy()));
+    double dxy           = fabs(el.gsfTrack()->dxy(vtx.position()));
+    double dz            = fabs(el.gsfTrack()->dz(vtx.position())); 
+    double mHits         = el.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+    
+    bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
+    bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
+    
+    // PHYS14 selection 
+    switch(IdLevel){
+    case llvvElecId::Veto :
+      if(barrel                   &&
+         dEtaln        < 0.013625 &&
+         dPhiln        < 0.230374 &&
+         sigmaletaleta < 0.011586 &&
+         hem           < 0.181130 &&
+         dxy           < 0.094095 &&
+         dz            < 0.713070 &&
+         resol         < 0.295751 &&
+         mHits         <=2          )
+        return true;
+      if(endcap                   &&
+         dEtaln        < 0.011932 &&
+         dPhiln        < 0.255450 &&
+         sigmaletaleta < 0.031849 &&
 		     hem           < 0.223870 &&
-		     dxy           < 0.342293 &&
-		     dz            < 0.953461 &&
-		     resol         < 0.155501 &&
-		     mHits <= 3                )
-		    return true;
-                  break;
-
-               case llvvElecId::Loose :
-                  if(barrel                   &&
-		     dEtaln        < 0.009277 &&
-		     dPhiln        < 0.094739 &&
-		     sigmaletaleta < 0.010331 &&
-		     hem           < 0.093068 &&
-		     dxy           < 0.035904 &&
-		     dz            < 0.075496 &&
-		     resol         < 0.189968 &&
-		     mHits         <= 1        )
+         dxy           < 0.342293 &&
+         dz            < 0.953461 &&
+         resol         < 0.155501 &&
+         mHits <= 3                )
+        return true;
+      break;
+      
+    case llvvElecId::Loose :
+      if(barrel                   &&
+         dEtaln        < 0.009277 &&
+         dPhiln        < 0.094739 &&
+         sigmaletaleta < 0.010331 &&
+         hem           < 0.093068 &&
+         dxy           < 0.035904 &&
+         dz            < 0.075496 &&
+         resol         < 0.189968 &&
+         mHits         <= 1        )
+        return true; 
+      if(endcap                   &&
+         dEtaln        < 0.009833 &&
+         dPhiln        < 0.149934 &&
+         sigmaletaleta < 0.031838 &&
+         hem           < 0.115754 &&
+         dxy           < 0.099266 &&
+         dz            < 0.197897 &&
+         resol         < 0.140662 &&
+         mHits         <= 1      )
 		    return true; 
-                  if(endcap                   &&
-		     dEtaln        < 0.009833 &&
-		     dPhiln        < 0.149934 &&
-		     sigmaletaleta < 0.031838 &&
-		     hem           < 0.115754 &&
-		     dxy           < 0.099266 &&
-		     dz            < 0.197897 &&
-		     resol         < 0.140662 &&
-		     mHits         <= 1      )
-		    return true; 
-                  break;
-
-                case llvvElecId::Medium :
-                  if(barrel                     &&
-		     dEtaln          < 0.008925 &&
-		     dPhiln          < 0.035973 &&
-		     sigmaletaleta   < 0.009996 &&
-		     hem             < 0.050537 &&
-		     dxy             < 0.012235 &&
-		     dz              < 0.042020 &&
-		     resol           < 0.091942 &&
-		     mHits           <= 1      )
-		    return true; 
-                  if(endcap                     &&
-		     dEtaln          < 0.007429 &&
-		     dPhiln          < 0.067879 &&
-		     sigmaletaleta   < 0.030135 &&
-		     hem             < 0.086782 &&
-		     dxy             < 0.036719 &&
-		     dz              < 0.138142 &&
-		     resol           < 0.100683 &&
-		     mHits            <= 1)
-		    return true; 
-                  break;
+      break;
+      
+    case llvvElecId::Medium :
+      if(barrel                     &&
+         dEtaln          < 0.008925 &&
+         dPhiln          < 0.035973 &&
+         sigmaletaleta   < 0.009996 &&
+         hem             < 0.050537 &&
+         dxy             < 0.012235 &&
+         dz              < 0.042020 &&
+         resol           < 0.091942 &&
+         mHits           <= 1      )
+        return true; 
+      if(endcap                     &&
+         dEtaln          < 0.007429 &&
+         dPhiln          < 0.067879 &&
+         sigmaletaleta   < 0.030135 &&
+         hem             < 0.086782 &&
+         dxy             < 0.036719 &&
+         dz              < 0.138142 &&
+         resol           < 0.100683 &&
+         mHits            <= 1)
+        return true; 
+      break;
   
-               case llvvElecId::Tight :
-                  if(barrel                   &&
-		     dEtaln          < 0.006046 &&
-		     dPhiln          < 0.028092 &&
-		     sigmaletaleta   < 0.009947 &&
-		     hem             < 0.045772 &&
-		     dxy             < 0.008790 &&
-		     dz              < 0.021226 &&
-		     resol           < 0.020118 &&
-		     mHits           <= 1      )
+    case llvvElecId::Tight :
+      if(barrel                   &&
+         dEtaln          < 0.006046 &&
+         dPhiln          < 0.028092 &&
+         sigmaletaleta   < 0.009947 &&
+         hem             < 0.045772 &&
+         dxy             < 0.008790 &&
+         dz              < 0.021226 &&
+         resol           < 0.020118 &&
+         mHits           <= 1      )
+        return true; 
+      if(endcap                   &&
+         dEtaln          < 0.007057 &&
+         dPhiln          < 0.030159 &&
+         sigmaletaleta   < 0.028237 &&
+         hem             < 0.067778 &&
+         dxy             < 0.027984 &&
+         dz              < 0.133431 &&
+         resol           < 0.098919 &&
+         mHits           <= 1      )
 		    return true; 
-                  if(endcap                   &&
-		     dEtaln          < 0.007057 &&
-		     dPhiln          < 0.030159 &&
-		     sigmaletaleta   < 0.028237 &&
-		     hem             < 0.067778 &&
-		     dxy             < 0.027984 &&
-		     dz              < 0.133431 &&
-		     resol           < 0.098919 &&
-		     mHits           <= 1      )
-		    return true; 
+      break;
+      
+    case llvvElecId::LooseMVA :
+    case llvvElecId::MediumMVA :
+    case llvvElecId::TightMVA :
+      printf("FIXME: MVA ID not yet implemented for the electron\n");
+      return false;
                   break;
+                  
+    default:
+      printf("FIXME ElectronId llvvElecId::%i is unkown\n", IdLevel);
+      return false;
+      break;
+    }
+    return false;
+  }
+  
+  bool passId(pat::Muon& mu,  reco::Vertex& vtx, int IdLevel){
+    //for muon Id look here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#LooseMuon
 
-               case llvvElecId::LooseMVA :
-               case llvvElecId::MediumMVA :
-               case llvvElecId::TightMVA :
-                  printf("FIXME: MVA ID not yet implemented for the electron\n");
-                  return false;
-                  break;
-
-               default:
-                  printf("FIXME ElectronId llvvElecId::%i is unkown\n", IdLevel);
-                  return false;
-                  break;
-            }
-            return false;
-   }
-
-   bool passId(pat::Muon& mu,  reco::Vertex& vtx, int IdLevel){
-            //for muon Id look here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#LooseMuon
-            switch(IdLevel){
-
-               case llvvMuonId::Loose :
-   	          if(mu.isPFMuon() && (mu.isGlobalMuon() || mu.isTrackerMuon()))return true;
-                  break;
-
-               case llvvMuonId::Soft :
-                  if(mu.isPFMuon() && mu.isTrackerMuon() && mu.muonID("TMOneStationTight") && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
-                     fabs(mu.innerTrack()->dxy(vtx.position())) < 0.3 && fabs(mu.innerTrack()->dz(vtx.position())) < 20. && mu.innerTrack()->normalizedChi2() < 1.8) return true;
-                  break;
-
-               case llvvMuonId::Tight :
-                  if( mu.isPFMuon() && mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 10. && mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. && mu.numberOfMatchedStations() > 1 &&
-                      fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
-                      mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
-                  break;
-
-               default:
-                  printf("FIXME MuonId llvvMuonId::%i is unkown\n", IdLevel);
-                  return false;
-                  break;
-            }
-            return false;
-   }  
+    // Muon IDs for 74X are supposed to be already implemented in the standard pat::Muon methods (see https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#Muons )
+    // They are added here as "StdLoose", "StdTight" etc
+    switch(IdLevel){
+      
+    case llvvMuonId::Loose :
+      if(mu.isPFMuon() && (mu.isGlobalMuon() || mu.isTrackerMuon()))return true;
+      break;
+      
+    case llvvMuonId::Soft :
+      if(mu.isPFMuon() && mu.isTrackerMuon() && mu.muonID("TMOneStationTight") && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
+         fabs(mu.innerTrack()->dxy(vtx.position())) < 0.3 && fabs(mu.innerTrack()->dz(vtx.position())) < 20. && mu.innerTrack()->normalizedChi2() < 1.8) return true;
+      break;
+      
+    case llvvMuonId::Tight :
+      if( mu.isPFMuon() && mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 10. && mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. && mu.numberOfMatchedStations() > 1 &&
+          fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
+          mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
+      break;
+      
+    case llvvMuonId::StdLoose :
+      if(mu.isLooseMuon()) return true;
+      break;
+      
+    case llvvMuonId::StdSoft :
+      if(mu.isSoftMuon(vtx)) return true;
+      break;
+      
+    case llvvMuonId::StdTight :
+      if(mu.isTightMuon(vtx)) return true;
+      break;
+      
+    default:
+      printf("FIXME MuonId llvvMuonId::%i is unkown\n", IdLevel);
+      return false;
+      break;
+    }
+    return false;
+  }  
   
   bool passId(pat::Photon& photon, double rho, int IdLevel){
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2

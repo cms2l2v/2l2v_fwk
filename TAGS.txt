@@ -14,5 +14,5 @@ git checkout remotes/origin/74Xfwk #checkout the branch we are interested in
 git checkout -b 74Xfwk_modified #copy the branch to a new one to host future modifications (ease pullrequest and code merging)
 cd ../..
 
-#compilling all the downloaded things
+#compiling all the downloaded things
 scramv1 b -j 16

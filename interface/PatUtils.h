@@ -49,7 +49,7 @@ namespace patUtils
    };
 
    namespace llvvElecId { enum ElecId  {Veto, Loose, Medium, Tight, LooseMVA, MediumMVA, TightMVA}; }
-   namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight}; }
+   namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight, StdLoose, StdSoft, StdTight}; }
    namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
