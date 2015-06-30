@@ -169,12 +169,13 @@ int main (int argc, char *argv[])
   // configure the process
   const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
-  bool debug          = runProcess.getParameter<bool>  ("debug");
-  bool runSystematics = runProcess.getParameter<bool>  ("runSystematics");
-  bool isMC           = runProcess.getParameter<bool>  ("isMC");
-  double xsec         = runProcess.getParameter<double>("xsec");
-  int mctruthmode     = runProcess.getParameter<int>   ("mctruthmode");
-  TString dtag        = runProcess.getParameter<std::string>("dtag");
+  bool debug           = runProcess.getParameter<bool>  ("debug");
+  bool runSystematics  = runProcess.getParameter<bool>  ("runSystematics");
+  bool saveSummaryTree = runProcess.getParameter<bool>  ("saveSummaryTree");
+  bool isMC            = runProcess.getParameter<bool>  ("isMC");
+  double xsec          = runProcess.getParameter<double>("xsec");
+  int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
+  TString dtag         = runProcess.getParameter<std::string>("dtag");
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
@@ -444,9 +445,35 @@ int main (int argc, char *argv[])
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
-
   fwlite::ChainEvent ev (urls);
   const size_t totalEntries = ev.size ();
+
+  TFile* summaryFile = NULL;
+  TTree* summaryTree = NULL; //ev->;
+//  
+//  if(saveSummaryTree)
+//    {
+//      TDirectory* cwd = gDirectory;
+//      std::string summaryFileName(outUrl); 
+//      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
+//      
+//      summaryFile = new TFile(summaryFileName.c_str() "recreate");
+//      
+//      summaryTree = new TTree("Events", "Events");
+//    KEY: TTreeMetaData;1
+//                         KEY: TTreeParameterSets;1
+//                                                   KEY: TTreeParentage;1
+//                                                                         KEY: TTreeEvents;1
+//                                                                                            KEY: TTreeLuminosityBlocks;1
+//                                                                                                                         KEY: TTreeRuns;
+//      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
+//      
+//      summmaryTree->Branch(
+//
+//      cwd->cd();
+//    }
+//
+
 
   //MC normalization (to 1/pb)
   double xsecWeight = xsec / totalEntries;
@@ -476,6 +503,25 @@ int main (int argc, char *argv[])
   BTagSFUtil btsfutil;
   double beff (0.68), sfb (0.99), sfbunc (0.015);
   double leff (0.13), sfl (1.05), sflunc (0.12);
+
+  // b-tagging working points
+  // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
+  // Apparently this V2 has the following preliminary operating points:
+  // These preliminary operating points were derived from ttbar events:
+  //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
+  //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
+  //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
+  
+  // New recommendations for 50ns https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X50ns
+  //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
+  //      v2CSVv2L 0.605
+  //      v2CSVv2M 0.890
+  //      v2CSVv2T 0.970
+  double
+    btagLoose(0.605),
+    btagMedium(0.890),
+    btagTight(0.970);
+  
 
   //pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
@@ -937,14 +983,9 @@ int main (int argc, char *argv[])
           
           double dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
-          // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
-          // Apparently this V2 has the following preliminary operating points:
-          // These preliminary operating points were derived from ttbar events:
-          //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
-          //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
-          //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
-
+          bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose);
+          
+          
           // update according to the SF measured by BTV: NOT YET!
           /// if (isMC)
           ///   {
@@ -959,7 +1000,7 @@ int main (int argc, char *argv[])
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
-          hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
+          hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium;
 
           if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
@@ -1228,7 +1269,7 @@ int main (int argc, char *argv[])
                     finalSelJets.push_back(jets[ijet]);
 
                     int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
+                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose);
                     if (varyBtagUp)
                       {
                         if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
@@ -1428,7 +1469,7 @@ int main (int argc, char *argv[])
                     finalSelSingleLepJets.push_back(jets[ijet]);
 
                     int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
+                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
 
                     if (varyBtagUp)
                       {
@@ -1467,14 +1508,32 @@ int main (int argc, char *argv[])
                 mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
-                
+
+                if(saveSummaryTree)
+                  {
+                    TDirectory* cwd = gDirectory;
+                    summaryFile->cd();
+                    summaryTree->Fill();
+                    cwd->cd();
+                  }
               }
           } // End stat analysis
         
       } // End single lepton full analysis
-      
-      
+    
+    } // End event loop
+
+  if(saveSummaryTree)
+    {
+      TDirectory* cwd = gDirectory;
+      summaryFile->cd();
+      summaryTree->Write();
+      summaryFile->Close();
+      delete summaryFile;
+      cwd->cd();
     }
+  
+
   if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
   printf ("\n");
 
