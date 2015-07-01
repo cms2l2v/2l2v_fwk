@@ -105,7 +105,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch,JSONWrapper::Object &Root,TFile 
 void getYieldsFromShapes(const map<TString, Shape_t> &allShapes);
 void convertShapesToDataCards(const map<TString, Shape_t> &allShapes);
 void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst="");
-TString convertNameForDataCard(TString title);
+TString convertNameForDataCard(TString title, TString ch);
 void TLatexToTex(TString &expr);
 float getIntegratedSystematics(TH1F *h,const std::map<TString, TH1F*> &hSysts, std::map<TString,float> &rateSysts);
 std::map<TString,float> getDYUncertainties(TString ch);
@@ -195,7 +195,7 @@ std::pair<TH1F *, TH1F *> generateVariationFrom(TH1F *templ,float relVar,TString
 
 
 //
-TString convertNameForDataCard(TString title)
+TString convertNameForDataCard(TString title, TString ch)
 {
   if(title=="VV")                return "vv";
   if(title=="W,multijets")       return "wjets"; 
@@ -205,16 +205,17 @@ TString convertNameForDataCard(TString title)
   if(title=="t#bar{t}")          return "signal";
 
   
-  if(title=="t#bar{t} dileptons"          ) return "signal";
+  if(title=="t#bar{t} dileptons"          ) return "signal_"+ch;
   if(title=="t#bar{t} other"              ) return "ttbarother";
-  if(title=="t#bar{t} ltau"               ) return "signal";
+  if(title=="t#bar{t} ltau"               ) return "signal_"+ch;
   if(title=="t#bar{t} dileptons for ltau" ) return "ttbarll";
+  if(title=="t#bar{t} dilepton"           ) return "ttbarll"; // Switch back to line above in the plotting json
   if(title=="t#bar{t} ljets"              ) return "ttbarljets";
   if(title=="t#bar{t} had"                ) return "ttbarhad";  
   if(title=="misidentified #tau_{h}"      ) return "taufakes";
   
   if(title=="ZZ")                return "vv";
-  
+  if(title=="Diboson")           return "vv";
   return title;
 }
 
@@ -269,7 +270,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
       TString procCtr(""); procCtr+=i;
       TString proc=(Process[i])["tag"].toString();
       //Disable low yield backgrounds fror dileptons 
-      if(convertNameForDataCard(proc) == "dy" || convertNameForDataCard(proc) == "vv" || convertNameForDataCard(proc) == "wjets") continue;
+      if(convertNameForDataCard(proc,ch) == "dy" || convertNameForDataCard(proc,ch) == "vv" || convertNameForDataCard(proc,ch) == "wjets") continue;
       cout << "Processing process named: " << proc << endl;
       TDirectory *pdir = (TDirectory *)inF->Get(proc);         
       if(pdir==0){ cout << "Directory does not exist for " << proc << endl; continue;}
@@ -623,7 +624,8 @@ void saveShapeForMeasurement(TH1F *h, TDirectory *oDir,TString syst)
 {
   if(h==0 || oDir==0) return;
   oDir->cd();
-  TString proc=convertNameForDataCard(h->GetTitle());
+  TString ch=oDir->GetName();
+  TString proc=convertNameForDataCard(h->GetTitle(), ch);
   if(syst.IsNull())
     {
       if(proc=="data") h->Write("data_obs");
@@ -712,8 +714,8 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile,"\n");
      
       fprintf(pFile,"%30s ", "process");
-      fprintf(pFile,"%6s ", convertNameForDataCard(shape.signal->GetTitle()).Data());
-      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", convertNameForDataCard(shape.bckg[j]->GetTitle()).Data());
+      fprintf(pFile,"%6s ", convertNameForDataCard(shape.signal->GetTitle(),ch).Data());
+      for(size_t j=0; j<shape.bckg.size(); j++) fprintf(pFile,"%6s ", convertNameForDataCard(shape.bckg[j]->GetTitle(),ch).Data());
       fprintf(pFile,"\n");
 
       fprintf(pFile,"%30s ", "process");
@@ -746,18 +748,18 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
             else {
               if( uncName=="etaumisid" || uncName=="mutaumisid" )
                 {
-                  if(convertNameForDataCard(shape.bckg[j]->GetTitle())=="ttbarll") fprintf(pFile,"%6.3f ",1+uncValue);
-                  else                                                             fprintf(pFile,"%6s ","-");
+                  if(convertNameForDataCard(shape.bckg[j]->GetTitle(),ch)=="ttbarll") fprintf(pFile,"%6.3f ",1+uncValue);
+                  else                                                                fprintf(pFile,"%6s ","-");
                 }
               else if (uncName=="jettaumisid")
                 {
                   if(//convertNameForDataCard(shape.bckg[j]->GetTitle())=="ttbarll"||
-                     convertNameForDataCard(shape.bckg[j]->GetTitle())=="taufakes") fprintf(pFile,"%6.3f ",1+uncValue);
-                  else                                                             fprintf(pFile,"%6s ","-");
+                     convertNameForDataCard(shape.bckg[j]->GetTitle(),ch)=="taufakes") fprintf(pFile,"%6.3f ",1+uncValue);
+                  else                                                                 fprintf(pFile,"%6s ","-");
                 }
               else
                 {
-                  if(convertNameForDataCard(shape.bckg[j]->GetTitle())=="taufakes") fprintf(pFile,"%6s ","-");
+                  if(convertNameForDataCard(shape.bckg[j]->GetTitle(),ch)=="taufakes") fprintf(pFile,"%6s ","-");
                   else fprintf(pFile,"%6.3f ",1+uncValue);
                 }
             }
@@ -829,7 +831,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 
       for(size_t j=0; j<shape.bckg.size(); j++)
 	{
-	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+	  TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle(),ch));
 	  if(proc=="ttbar") continue;
 	  std::pair<float,float> procXsec=shape.crossSections.find(shape.bckg[j]->GetTitle())->second;
 	  if(procXsec.second<=0) continue;
@@ -862,7 +864,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       fprintf(pFile,"%35s %10s ", "singletopTh","lnN");
       fprintf(pFile,"%6s ","-");
       for(size_t j=0; j<shape.bckg.size(); j++) {
-	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle());
+	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle(),ch);
 	if(name!="st") fprintf(pFile,"%6s ","-");
 	else           fprintf(pFile,"%6s ","1.068"); 
       }
@@ -946,7 +948,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
 
       // UNCORRELATED BINS
       //MC statistics (is also systematic but written separately, it is saved at the same time as the nominal shape)
-      TString myName=convertNameForDataCard(shape.signal->GetTitle()).Data();
+      TString myName=convertNameForDataCard(shape.signal->GetTitle(),ch).Data();
       int BIN=0;
       for(int ibin=1; ibin<=shape.signal->GetXaxis()->GetNbins(); ibin++){           
         //if(shape.signal->GetBinContent(ibin)<=0 || shape.signal->GetBinContent(ibin)/shape.signal->Integral()<0.0000001)continue;  
@@ -963,7 +965,7 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       }
       for(size_t j=0; j<shape.bckg.size(); j++)
         {
-          TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle()));
+          TString proc(convertNameForDataCard(shape.bckg[j]->GetTitle(),ch));
           //  if(proc=="ttbar") continue;
           //if(shape.dataDrivenBckg.find(shape.bckg[j]->GetTitle()) != shape.dataDrivenBckg.end()) continue;
           BIN=0;
