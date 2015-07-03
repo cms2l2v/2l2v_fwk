@@ -32,48 +32,41 @@ def initProxy():
    if(not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')) or ((time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600 and  int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 )):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-   #initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;'
-   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;'
+   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen; '
 
 def getFileList(procData):
-   myInitialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy; setenv X509_USER_PROXY ~/x509_user_proxy/x509_proxy;'
    FileList = [];
    miniAODSamples = getByLabel(procData,'miniAOD','')
    isMINIAODDataset = ("/MINIAOD" in getByLabel(procData,'dset','')) or  ("amagitte" in getByLabel(procData,'dset',''))
    if(isMINIAODDataset or len(getByLabel(procData,'miniAOD',''))>0):
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
-      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1]
+      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(procData,'dset','') + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
+      IsOnLocalTier=False
+      for site in listSites.split('\n'):
+         if(localTier != "" and localTier in site and '100.00%' in site):
+            IsOnLocalTier=True
+            break
 
       list = []
-      if(localTier != "" and localTier in listSites):
+      if(IsOnLocalTier):
          ## list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
-         print "Dealing with sample ", getByLabel(procData,'dset','')
-         #initProxy()
-         #os.system(myInitialCommand)
-         #print "Now get the list"
+         print "Processing local sample: " + getByLabel(procData,'dset','')
          list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
-         #print curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList
          for i in range(0,len(list)): 
              list[i] = "root://eoscms//eos/cms"+list[i]
-             #print list[i]
       elif(len(getByLabel(procData,'miniAOD',''))>0):
+         print "Processing private local sample: " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
       elif(isMINIAODDataset):
-         print "Dealing with sample ", getByLabel(procData,'dset','')
-         #initProxy()
-         #os.system(myInitialCommand)
-         #print "Now get the list"
-         #print("Use das_client.py to list files from : " + getByLabel(procData,'dset','') )
-         ##print ('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')
-         ## list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
+         print "Processing remote sample ", getByLabel(procData,'dset','')
          list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
          for i in range(0,len(list)): 
              list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
-             #print list[i]
-#         for i in range(0,len(list)): list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
-#         for i in range(0,len(list)): list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
+            #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
+            #list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
       else:
+         print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
       split=getByLabel(procData,'split',1)
@@ -91,6 +84,7 @@ def getFileList(procData):
       if groupList != '':
           FileList.append(groupList)
    else:
+      print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
       for segment in range(0,split) :
          eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
@@ -130,7 +124,6 @@ hostname = commands.getstatusoutput("hostname -f")[1]
 if(hostname.find("ucl.ac.be")!=-1):localTier = "T2_BE_UCL"
 if(hostname.find("cern.ch")!=-1)  :localTier = "CERN"
 
-if('crab' in opt.queue): initProxy()
 initProxy()
 
 #open the file which describes the sample
