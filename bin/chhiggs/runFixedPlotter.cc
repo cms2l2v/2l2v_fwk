@@ -144,7 +144,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	      int split = 1;
 	      if(!useMerged && Samples[id].isTag("split"))split = Samples[id]["split"].toInt();
 
-	      string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
+	      string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
               // TEST // string secondFiltExt=filtExt;
               string secondFiltExt("");
               // TEST // if(TString((Samples[id])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
@@ -214,7 +214,7 @@ void MergeSplittedSamples(JSONWrapper::Object& Root, std::string RootDir)
 
       TString toHadd("");
       for(int s=0;s<split;s++){
-	string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 	string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
 	toHadd += " " + FileName;
       }
@@ -242,7 +242,7 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
          // TEST // if(TString((Samples[j])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
          // TEST // if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             TFile* File = TFile::Open(FileName.c_str());
             bool& fileExist = FileExist[FileName];
@@ -333,7 +333,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
+	   string segmentExt; /*if(split>1)*/{ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
 	   
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName])continue;
@@ -458,7 +458,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
@@ -569,7 +569,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
@@ -676,7 +676,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
 	    string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName]){
@@ -1020,7 +1020,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
