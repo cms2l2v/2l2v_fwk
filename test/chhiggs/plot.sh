@@ -28,8 +28,10 @@ JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_lepton
 INDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
 #ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
 #ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
-ONLYDILEPTON=" --onlyStartWith emu --onlyStartWith ee --onlyStartWith mumu "
-ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlemu_final --onlyStartWith singlee_final --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep "
+ONLYDILEPTON=" --onlyStartWith emu_eventflow --onlyStartWith ee_eventflow --onlyStartWith mumu_eventflow --onlyStartWith emu_step1leadpt --onlyStartWith emu_step1leadeta  --onlyStartWith emu_step3leadjetpt  --onlyStartWith emu_step3leadjeteta  --onlyStartWith emu_step3met  --onlyStartWith emu_step3nbjets --onlyStartWith ee_step1leadpt --onlyStartWith ee_step1leadeta  --onlyStartWith ee_step3leadjetpt  --onlyStartWith ee_step3leadjeteta  --onlyStartWith ee_step3met  --onlyStartWith ee_step3nbjets --onlyStartWith mumu_step1leadpt --onlyStartWith mumu_step1leadeta  --onlyStartWith mumu_step3leadjetpt  --onlyStartWith mumu_step3leadjeteta  --onlyStartWith mumu_step3met  --onlyStartWith mumu_step3nbjets"
+
+ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlemu_final --onlyStartWith singlee_final --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep  --onlyStartWith singlemu_step1leadpt  --onlyStartWith singlemu_step1leadeta --onlyStartWith singlemu_step2leadjetpt --onlyStartWith singlemu_step2leadjeteta --onlyStartWith singlemu_step3met --onlyStartWith singlemu_step3nbjets --onlyStartWith singlee_step1leadpt  --onlyStartWith singlee_step1leadeta --onlyStartWith singlee_step2leadjetpt --onlyStartWith singlee_step2leadjeteta --onlyStartWith singlee_step3met --onlyStartWith singlee_step3nbjets"
+
 #ONLYDILEPTON=" --onlyContain emu_eventflow --onlyContain ee_eventflow --onlyContain mumu_eventflow "
 #ONLYLEPTAU=" --onlyContain singlemu_eventflowslep --onlyContain singlee_eventflowslep "
 
@@ -37,8 +39,9 @@ ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met 
 #runPlotterFWLite --iEcm 13 --iLumi 19700 --inDir $CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results/ --outDir ${DIR} --outFile ${DIR}plotter.root  --json $CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot.json --no2D --noPowers --plotExt .png --plotExt .pdf
 
 # Dilepton
-#runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
-#runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --useMerged --no2D --noPowers --plotExt .png --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
+runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
+runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --useMerged  --no2D --noPowers --plotExt .png --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
+runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --useMerged  --no2D --noPowers --plotExt .C   --generatePseudoData --onlyStartWith optim_systs ${ONLYDILEPTON}
 
 # Leptontau
 runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --forceMerge --no2D --noPowers --plotExt .pdf --generatePseudoData --onlyStartWith optim_systs ${ONLYLEPTAU}
