@@ -2,6 +2,7 @@
   "proc":[
     {
       "tag":"Z#rightarrow ll",
+      "label":"Z#to#it{ll'}",
       "isdata":false,
       "color":831,
       "lcolor":1,
@@ -35,6 +36,7 @@
     },
     {   
       "tag":"misidentified #tau_{h}",
+      "label":"Misidentified #tau_{h}",
       "isdata":false,
       "color":799,
       "lcolor":1,
@@ -58,7 +60,7 @@
     },
     {
       "tag":"t#bar{t} dilepton",
-      "label":"t#bar{t} dilepton",    
+      "label":"t#bar{t}#to#it{ll'}",    
       "isdata":false,
       "issignal":true,
       "mctruthmode":4,

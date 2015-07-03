@@ -2,6 +2,7 @@
   "proc":[
     {
       "tag":"t#bar{t} dileptons",
+      "label":"t#bar{t}#to#it{ll'}",
       "isdata":false,
       "issignal":true,
       "mctruthmode":1,
@@ -13,6 +14,7 @@
     },
     {
       "tag":"t#bar{t} other",
+      "label":"Other t#bar{t}",
       "isdata":false,
       "issignal":true,
       "mctruthmode":2,
@@ -24,6 +26,7 @@
     },
     {
       "tag":"Z#rightarrow ll",
+      "label":"Z#to#it{ll'}",
       "isdata":false,
       "color":831,
       "lcolor":1,
