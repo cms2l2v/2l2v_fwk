@@ -57,12 +57,10 @@
       "isdata":false,
       "color":824,
       "lcolor":1,
+      "comment":"for every tW one it is availabel the correspondning _DS one. What is that, I do not know. Must find out, but I suppose that I do not have to sum them, so for now using the non-_DS one. Also, singleT_t has 5FS and 4FS, but there is no prescription for summing them in the twiki, so I am using 5FS only, for now.",
       "data":[
         { "dtag":"MC8TeV_SingleT_tW_5FS"                   , "split":1, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"          },
-        { "dtag":"MC8TeV_SingleT_tW_5FS_DS"                , "split":1, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_top_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"       },
         { "dtag":"MC8TeV_SingleTbar_tW_5FS"                , "split":1, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"      },
-        { "dtag":"MC8TeV_SingleTbar_tW_5FS_DS"             , "split":1, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"   },
-        { "dtag":"MC8TeV_SingleT_t_4FS"                    , "split":1, "xsec":103.4       , "br":[ 1.0 ]                 , "dset":"/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"        },
         { "dtag":"MC8TeV_SingleT_t_5FS"                    , "split":1, "xsec":103.4       , "br":[ 1.0 ]                 , "dset":"/ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"        } 
       ]
     }
