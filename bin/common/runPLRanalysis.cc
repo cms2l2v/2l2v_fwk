@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
 	  mc->SetNuisanceParameters(*w->set("nuisances"));
 	  mc->SetGlobalObservables(*w->set("globalObservables")); 
 
+
 	  TString test("total");
 	  if(in>=0)
 	    {
@@ -188,6 +189,7 @@ int main(int argc, char *argv[])
 	  LikelihoodInterval* interval = pl.GetInterval();
 	  if(in<=0) profNuis=(RooArgSet *) mc->GetNuisanceParameters()->snapshot();
 	  RooRealVar* firstPOI = (RooRealVar*) mc->GetParametersOfInterest()->first();
+          firstPOI->setConstant(kFALSE); // Necessary with more complex models
 	  float ir=firstPOI->getVal(); 
 	  float irmin=interval->LowerLimit(*firstPOI); 
 	  float irmax=interval->UpperLimit(*firstPOI);
@@ -236,21 +238,22 @@ int main(int argc, char *argv[])
 		  LikelihoodIntervalPlot plot(interval);
 		  //plot.SetRange(0,3.5);
 		  //plot.SetNPoints(100);	      
-		  float maxX(3);
-		  if(fr.rmax>3) maxX=6;
+		  float maxX(2);
+		  if(fr.rmax>2) maxX=6;
 		  plot.SetRange(0,maxX);
 		  plot.SetNPoints(200);
-		  plot.Draw(""); 
-		  TIter nextpobj(c->GetListOfPrimitives());
-		  TObject *pobj;
+		  plot.Draw("");
+                  TIter nextpobj(c->GetListOfPrimitives());
+                  TObject *pobj;
 		  while ((pobj = nextpobj()))
 		    {
 		      if(pobj==0){break;}
+                      pobj=plot.GetPlottedObject();
                       TString pobjName(pobj->GetName());
                       if(!pobjName.BeginsWith("nll")) continue;
-		      RooCurve *nllCurve=(RooCurve *)pobj;
+                      RooCurve *nllCurve=(RooCurve *)pobj;
 		      TGraph *gr=new TGraph;
-		      for(int ipt=0; ipt<nllCurve->GetN(); ipt++)
+                      for(int ipt=0; ipt<nllCurve->GetN(); ipt++)
 			{
                           Double_t ix,iy;
 			  nllCurve->GetPoint(ipt,ix,iy);
