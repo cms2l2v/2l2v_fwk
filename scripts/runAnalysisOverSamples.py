@@ -10,7 +10,7 @@ import UserCode.llvv_fwk.storeTools_cff as storeTools
 
 ######################### Stuff needed for getting the filelist while DAS is still fucked up
 # cURL command: please leave the space after GET
-curlCommand="export X509_USER_PROXY=~/x509_user_proxy/x509_proxy; curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
+curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
 dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
 # Remove various residual characters from the filename lines, then remove all the lines not constituted by a filename (=not containing the "store" path)
 sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
@@ -46,13 +46,16 @@ def getFileList(procData):
       for site in listSites.split('\n'):
          if(localTier != "" and localTier in site and '100.00%' in site):
             IsOnLocalTier=True
+            print ("Sample is found to be on the local grid tier (%s): %s") %(localTier, site)
             break
 
       list = []
       if(IsOnLocalTier):
          ## list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
          print "Processing local sample: " + getByLabel(procData,'dset','')
-         list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+         list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+         print initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList
+         print list
          for i in range(0,len(list)): 
              list[i] = "root://eoscms//eos/cms"+list[i]
       elif(len(getByLabel(procData,'miniAOD',''))>0):
@@ -60,7 +63,7 @@ def getFileList(procData):
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
       elif(isMINIAODDataset):
          print "Processing remote sample ", getByLabel(procData,'dset','')
-         list = commands.getstatusoutput(curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+         list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
          for i in range(0,len(list)): 
              list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
             #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side

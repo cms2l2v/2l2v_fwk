@@ -1,13 +1,13 @@
 {
   "proc":[
     {
-      "tag":"ZZ#rightarrow 4l",
+      "tag":"ZZ",
       "isdata":false,
       "color":592,
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_ZZ4l"                             , "split":40, "xsec":15.4       , "br":[ 0.001133 ]           , "dset":"/ZZTo4L_13TeV_powheg_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_ZZ"                             , "split":40, "xsec":15.4       , "br":[ 1.0 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM "}
       ]
     },
     {
