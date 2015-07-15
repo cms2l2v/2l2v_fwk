@@ -42,7 +42,6 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
-#include "TDirectory.h"
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"

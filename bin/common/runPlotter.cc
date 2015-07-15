@@ -185,12 +185,10 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  //for(size_t id=0; id<Samples.size()&&id<2; id++){
 	  int counter_fileExist = 0;
 	  for(size_t id=0; id<Samples.size(); id++){
-	      int split = Samples[id].getInt("split", 1);
-              std::cout << "Split int: " << split << std::endl;
+	      int split = Samples[id].getInt("split", 1); 
               for(int s=0; s<split; s++){
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
-                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root";
-                 std::cout << "The file name is: " << FileName << std::endl;
+                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root"; 
 	         TFile* File = new TFile(FileName.c_str());
                  bool& fileExist = FileExist[FileName];
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
@@ -1087,17 +1085,14 @@ int main(int argc, char* argv[]){
    int TreeStep = histlist.size()/50;if(TreeStep==0)TreeStep=1;
    string csvFile(outDir +"/histlist.csv");
    system(("echo \"\" > " + csvFile).c_str());
-   int ictr(0);
-   std::cout << "List dimension: " << histlist.size() << std::endl;
+   int ictr(0); 
    for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
        if(ictr%TreeStep==0){printf(".");fflush(stdout);}
-       bool passMasking = false; 
-       for(unsigned int j=0; j<histoNameMask.size();j++ ){ std::cout << "Histo Name: " << histoNameMask[j] << std::endl; }
+       bool passMasking = false;  
        for(unsigned int i=0;i<histoNameMask.size();i++){if(it->name.find(histoNameMask[i])!=std::string::npos)passMasking=true;}
        for(unsigned int i=0;i<histoNameMaskStart.size();i++){if(it->name.find(histoNameMaskStart[i])==0)passMasking=true;}
        if(histoNameMask.size()==0 && histoNameMaskStart.size()==0)passMasking = true;
-       if(!passMasking){ std::cout << "Mask Cut Passed" << std::endl; continue;}
-
+     
        if(do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,OutputFile, *it); }
        if(do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,OutputFile, *it); }
        if(doTree&& it->isTree()){                                SavingToFile    (Root,inDir,OutputFile, *it); }
