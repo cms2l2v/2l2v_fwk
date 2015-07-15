@@ -14,6 +14,9 @@
 #include "DataFormats/FWLite/interface/Run.h"
 #include "DataFormats/Luminosity/interface/LumiSummary.h"
 
+#include "UserCode/llvv_fwk/interface/PatUtils.h"
+
+
 #include "TSystem.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -29,11 +32,10 @@ struct stRun {
 
 std::map<unsigned int, unsigned int> timeMap;
 
-void GetLumiBlocks_Core(vector<string>& fileNames, std::vector<stRun*>& RunMap);
+void GetLumiBlocks_Core(vector<string>& fileNames, std::vector<stRun*>& RunMap, patUtils::GoodLumiFilter& goodLumiFilter);
 void DumpJson(const std::vector<stRun*>& RunMap, string FileName);
 void DumpTime(const std::map<unsigned int, unsigned int>& TimeMap, string FileName);
 void RemoveRunsAfter(unsigned int RunMax, const std::vector<stRun*>& RunMap, std::vector<stRun*>& NewRunMap);
-
 
 
 
@@ -54,6 +56,8 @@ int main(int argc, char* argv[])
   // configure the process
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
 
+  patUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
+
   bool isMC = runProcess.getParameter<bool>("isMC");
   if(isMC) return 0;
   std::vector<std::string> urls=runProcess.getParameter<std::vector<std::string> >("input");
@@ -61,7 +65,7 @@ int main(int argc, char* argv[])
   TString outUrl = runProcess.getParameter<std::string>("outfile");
 
    std::vector<stRun*> RunMap;
-   GetLumiBlocks_Core(urls, RunMap);
+   GetLumiBlocks_Core(urls, RunMap, goodLumiFilter);
 
    DumpJson(RunMap, (outUrl + ".json").Data());
    DumpTime(timeMap,(outUrl + ".time").Data());
@@ -71,7 +75,7 @@ int main(int argc, char* argv[])
 
 
 
-void GetLumiBlocks_Core(vector<string>& fileNames, std::vector<stRun*>& RunMap)
+void GetLumiBlocks_Core(vector<string>& fileNames, std::vector<stRun*>& RunMap, patUtils::GoodLumiFilter& goodLumiFilter)
 {
    printf("Running\n");
    for(unsigned int f=0;f<fileNames.size();f++){
@@ -80,7 +84,8 @@ void GetLumiBlocks_Core(vector<string>& fileNames, std::vector<stRun*>& RunMap)
      TFile *file = TFile::Open(fileNames[f].c_str() );
       fwlite::LuminosityBlock ls( file);
       for(ls.toBegin(); !ls.atEnd(); ++ls){
-          
+        if(!goodLumiFilter.isGoodLumi(ls.luminosityBlockAuxiliary().run(),ls.luminosityBlockAuxiliary().id().value()))continue;
+         
         //printf("Run = %i --> Lumi =%lu\n",ls.luminosityBlockAuxiliary().run(), (unsigned long)ls.luminosityBlockAuxiliary().id().value());
         int RunIndex = -1;
         for(unsigned int r=0;r<RunMap.size();r++){

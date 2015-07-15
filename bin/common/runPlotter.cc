@@ -450,7 +450,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
    else Tpre->AddText("Preliminary");
    Tpre->Draw("same");
 
-   char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+   char Buffer[1024];  sprintf(Buffer, "%.1f %s^{-1} (%.1f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", iEcm);
    TPaveText* Tlumi = new TPaveText(0.6712847,0.9556213,0.8690177,0.9852071,"brNDC");
    Tlumi->SetBorderSize(0);
    Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
@@ -592,6 +592,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    if(HistoProperties.isIndexPlot && cutIndex<0)return;
 
    TCanvas* c1 = new TCanvas("c1","c1",800,800);
+
    TPad* t1 = new TPad("t1","t1", 0.0, 0.2, 1.0, 1.0);
    t1->SetFillColor(0);
    t1->SetBorderMode(0);
@@ -616,8 +617,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    //TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
    //   TLegend* legA  = new TLegend(0.51,0.93,0.67,0.75, "NDC"); 
    // TLegend* legB  = new TLegend(0.67,0.93,0.83,0.75, "NDC");
-   TLegend *legA = new TLegend(0.15,0.80,0.94,0.95, "NDC");
-   legA->SetBorderSize(1);
+   TLegend *legA = new TLegend(0.15,0.82,0.94,0.97, "NDC");
+   legA->SetBorderSize(0);
    legA->SetTextFont(62);
    legA->SetTextSize(0.03);
    legA->SetLineColor(0);
@@ -756,8 +757,9 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        pave->Draw();
    }
    
-   legA->SetNColumns(3);   
-   legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);
+   legA->SetNColumns(4);   
+   legA->SetBorderSize(0);
+   legA->SetFillColor(1); legA->SetFillStyle(0); legA->SetLineColor(0);
    legA->SetHeader("");
    legA->Draw("same");
    legA->SetTextFont(42);
@@ -858,18 +860,21 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    TPaveText* Tpre = new TPaveText(0.163,0.95,0.50,0.995,"brNDC" );
    Tpre->SetBorderSize(0);
-   Tpre->SetFillColor(1.0);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
+   Tpre->SetFillColor(1);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
    Tpre->SetTextFont(52);     Tpre->SetTextAlign(11); Tpre->SetTextSize(0.025);
    if(isSim) Tpre->AddText("Simulation"); else Tpre->AddText("Preliminary");
    Tpre->Draw("same");
 
-   char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+   char Buffer[1024];  sprintf(Buffer, "%.1f %s^{-1} (%.1f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", iEcm);
    TPaveText* Tlumi = new TPaveText(0.75,0.95,0.95,0.995,"brNDC");
    Tlumi->SetBorderSize(0);
-   Tlumi->SetFillColor(0.0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
+   Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
    Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(31); Tlumi->SetTextSize(0.025);
    Tlumi->AddText(Buffer);
    Tlumi->Draw("same");
+
+
+
 
    string SavePath = dropBadCharacters(SaveName);
    if(outDir.size()) SavePath = outDir +"/"+ SavePath;

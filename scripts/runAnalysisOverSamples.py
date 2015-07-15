@@ -7,14 +7,10 @@ import LaunchOnCondor
 import UserCode.llvv_fwk.storeTools_cff as storeTools
 
 
+DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
+#DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
-######################### Stuff needed for getting the filelist while DAS is still fucked up
-# cURL command: please leave the space after GET
-curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
-dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
-# Remove various residual characters from the filename lines, then remove all the lines not constituted by a filename (=not containing the "store" path)
-sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
-#########################
+
 
 """
 Gets the value of a given item
@@ -29,10 +25,16 @@ def getByLabel(proc,key,defaultVal=None) :
 initialCommand = '';
 def initProxy():
    global initialCommand
-   if(not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')) or ((time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600 and  int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 )):
+   validCertificate = True
+   if(validCertificate and (not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')))):validCertificate = False
+   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600): validCertificate = False
+   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+
+   if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
    initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen; '
+
 
 def getFileList(procData):
    FileList = [];
@@ -50,28 +52,36 @@ def getFileList(procData):
             break
 
       list = []
-      if(IsOnLocalTier):
-         ## list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
-         print "Processing local sample: " + getByLabel(procData,'dset','')
-         list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
-         print initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList
-         print list
-         for i in range(0,len(list)): 
-             list[i] = "root://eoscms//eos/cms"+list[i]
+      if(IsOnLocalTier or isMINIAODDataset):
+         list = []
+         if(DatasetFileDB=="DAS"):
+            list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
+         elif(DatasetFileDB=="DBS"):
+            curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
+            dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+            sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
+            list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+
+         list = [x for x in list if ".root" in x] #make sure that we only consider root files
+         for i in range(0,len(list)):              
+            if IsOnLocalTier:
+               list[i] = "root://eoscms//eos/cms"+list[i]
+            else:
+               list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
+              #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
+              #list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
+
       elif(len(getByLabel(procData,'miniAOD',''))>0):
          print "Processing private local sample: " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
-      elif(isMINIAODDataset):
-         print "Processing remote sample ", getByLabel(procData,'dset','')
-         list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
-         for i in range(0,len(list)): 
-             list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
-            #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
-            #list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
       else:
          print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
+
+      list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))
+
+       
       split=getByLabel(procData,'split',1)
       ngroup = len(list)/split
       if (ngroup * split != len(list) ):
@@ -109,8 +119,11 @@ parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='pr
 parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
 parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'      , default='')
 parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, action="store_true")
+parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'  , default=DatasetFileDB)
+
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
+DatasetFileDB                      = opt.db
 
 FarmDirectory                      = opt.outdir+"/FARM"
 JobName                            = opt.theExecutable
@@ -125,7 +138,7 @@ LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
 if(hostname.find("ucl.ac.be")!=-1):localTier = "T2_BE_UCL"
-if(hostname.find("cern.ch")!=-1)  :localTier = "CERN"
+if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 
 initProxy()
 
@@ -172,6 +185,7 @@ for procBlock in procList :
                 sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                 sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
                 sedcmd += 's%@suffix%' +suffix+'%;'
+                sedcmd += 's%@lumiMask%"' +getByLabel(procData,'lumiMask','')+'"%;'
             	if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
                 if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
                 if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params

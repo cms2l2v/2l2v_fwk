@@ -19,6 +19,11 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
+//need for the good lumi filter
+#include "DataFormats/Provenance/interface/LuminosityBlockID.h"
+#include "DataFormats/Provenance/interface/LuminosityBlockRange.h"
+#include "FWCore/Utilities/interface/Algorithms.h"
+
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -33,7 +38,6 @@
 
 namespace patUtils
 {
-
    typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
    //define a generic container to hold information related to pat electrons, muons, taus
@@ -62,6 +66,30 @@ namespace patUtils
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
+
+
+
+   class GoodLumiFilter {
+      public:
+      // constructor
+      ~GoodLumiFilter(){};
+       GoodLumiFilter(std::vector<edm::LuminosityBlockRange> lumisToProcess_){lumisToProcess = lumisToProcess_;  sortAndRemoveOverlaps(lumisToProcess); };
+       bool isGoodLumi(edm::RunNumber_t run, edm::LuminosityBlockNumber_t lumi){
+          if(lumisToProcess.size()==0)return true;
+
+          edm::LuminosityBlockID lumiID = edm::LuminosityBlockID(run, lumi);
+          edm::LuminosityBlockRange lumiRange = edm::LuminosityBlockRange(lumiID, lumiID);
+          bool(*lt)(edm::LuminosityBlockRange const&, edm::LuminosityBlockRange const&) = &edm::lessThan;
+          if(binary_search_all(lumisToProcess, lumiRange, lt))return true;//this is a good lumiBlock
+
+          return false;
+       }
+    
+      private:
+      std::vector<edm::LuminosityBlockRange> lumisToProcess;
+   };
+
+
 }
 
 #endif

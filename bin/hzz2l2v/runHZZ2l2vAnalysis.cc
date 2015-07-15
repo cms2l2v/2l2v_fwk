@@ -90,6 +90,8 @@ int main(int argc, char* argv[])
 
   TString outUrl = runProcess.getParameter<std::string>("outfile");
 
+  //good lumi MASK
+  patUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
   if( isMC ) std::cout << "Is MC" << std::endl;
@@ -607,11 +609,13 @@ int main(int argc, char* argv[])
   //int nDuplicates(0)
   for( size_t iev=0; iev<totalEntries; iev++){
       if(iev%treeStep==0){printf(".");fflush(stdout);}
-       std::cout << " " << std::endl;
-       std::cout << "New Event" << std::endl;
        //##############################################   EVENT LOOP STARTS   ##############################################
        ev.to(iev); //load the event content from the EDM file
        //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+
+
+       //Skip bad lumi
+       if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
 
        //apply trigger and require compatibilitiy of the event with the PD
        edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
@@ -627,15 +631,12 @@ int main(int argc, char* argv[])
       if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
 
       if( eeTrigger ){ 
-        std::cout << "The Event has passed eeTrigger" << std::endl;
         mon.fillHisto( "numbereeTrigger", "", 1, 1);
       }
       if( mumuTrigger ){ 
-        std::cout << "The Event has passed mumuTrigger" << std::endl;
         mon.fillHisto( "numbermumuTrigger", "", 1, 1);
       }
       if( emuTrigger ){ 
-        std::cout << "The Event has passed emuTrigger" << std::endl;
         mon.fillHisto( "numberemuTrigger", "", 1, 1);
       }
 
