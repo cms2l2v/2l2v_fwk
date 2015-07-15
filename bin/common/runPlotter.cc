@@ -183,11 +183,12 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
           //to make it faster only consider the first samples 
 	  //for(size_t id=0; id<Samples.size()&&id<2; id++){
+	  int counter_fileExist = 0;
 	  for(size_t id=0; id<Samples.size(); id++){
-	      int split = Samples[id].getInt("split", 1);
+	      int split = Samples[id].getInt("split", 1); 
               for(int s=0; s<split; s++){
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
-                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root";
+                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root"; 
 	         TFile* File = new TFile(FileName.c_str());
                  bool& fileExist = FileExist[FileName];
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
@@ -195,10 +196,11 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                     continue; 
                  }else{
                     fileExist=true;
+                    ++counter_fileExist;
                  }
 
-                 //do the following only for the first file
-                 if(s>0)continue;
+                 //do the following only for the first existing file
+                 if( counter_fileExist != 1 ) continue;
 
                  printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
 
@@ -976,7 +978,7 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
 
 
 int main(int argc, char* argv[]){
-   gROOT->LoadMacro("../src/tdrstyle.C");
+   gROOT->LoadMacro("../../src/tdrstyle.C");
    setTDRStyle();  
    gStyle->SetPadTopMargin   (0.06);
    gStyle->SetPadBottomMargin(0.12);
@@ -1083,15 +1085,15 @@ int main(int argc, char* argv[]){
    int TreeStep = histlist.size()/50;if(TreeStep==0)TreeStep=1;
    string csvFile(outDir +"/histlist.csv");
    system(("echo \"\" > " + csvFile).c_str());
-   int ictr(0);
+   int ictr(0); 
    for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
        if(ictr%TreeStep==0){printf(".");fflush(stdout);}
-       bool passMasking = false;
+       bool passMasking = false;  
        for(unsigned int i=0;i<histoNameMask.size();i++){if(it->name.find(histoNameMask[i])!=std::string::npos)passMasking=true;}
        for(unsigned int i=0;i<histoNameMaskStart.size();i++){if(it->name.find(histoNameMaskStart[i])==0)passMasking=true;}
        if(histoNameMask.size()==0 && histoNameMaskStart.size()==0)passMasking = true;
        if(!passMasking){ continue;}
-
+ 
        if(do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,OutputFile, *it); }
        if(do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,OutputFile, *it); }
        if(doTree&& it->isTree()){                                SavingToFile    (Root,inDir,OutputFile, *it); }
