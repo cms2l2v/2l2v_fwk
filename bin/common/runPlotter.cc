@@ -1092,7 +1092,8 @@ int main(int argc, char* argv[]){
        for(unsigned int i=0;i<histoNameMask.size();i++){if(it->name.find(histoNameMask[i])!=std::string::npos)passMasking=true;}
        for(unsigned int i=0;i<histoNameMaskStart.size();i++){if(it->name.find(histoNameMaskStart[i])==0)passMasking=true;}
        if(histoNameMask.size()==0 && histoNameMaskStart.size()==0)passMasking = true;
-     
+       if(!passMasking){ continue;}
+ 
        if(do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,OutputFile, *it); }
        if(do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,OutputFile, *it); }
        if(doTree&& it->isTree()){                                SavingToFile    (Root,inDir,OutputFile, *it); }
