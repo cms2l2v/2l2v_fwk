@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
   TString outUrl = runProcess.getParameter<std::string>("outfile");
 
   //good lumi MASK
-  patUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
+  lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
   if( isMC ) std::cout << "Is MC" << std::endl;
@@ -1494,5 +1494,11 @@ int main(int argc, char* argv[])
   ofile->Close();
 
   if(outTxtFile)fclose(outTxtFile);
+
+  //Now that everything is done, dump the list of lumiBlock that we processed in this job
+  if(!isMC){
+     goodLumiFilter.FindLumiInFiles(urls);
+     goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
+  }
 }  
 

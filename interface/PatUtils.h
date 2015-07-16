@@ -29,6 +29,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/LumiUtils.h"
 
 #include <vector>
 #include "TVector3.h"
@@ -66,30 +67,6 @@ namespace patUtils
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
-
-
-
-   class GoodLumiFilter {
-      public:
-      // constructor
-      ~GoodLumiFilter(){};
-       GoodLumiFilter(std::vector<edm::LuminosityBlockRange> lumisToProcess_){lumisToProcess = lumisToProcess_;  sortAndRemoveOverlaps(lumisToProcess); };
-       bool isGoodLumi(edm::RunNumber_t run, edm::LuminosityBlockNumber_t lumi){
-          if(lumisToProcess.size()==0)return true;
-
-          edm::LuminosityBlockID lumiID = edm::LuminosityBlockID(run, lumi);
-          edm::LuminosityBlockRange lumiRange = edm::LuminosityBlockRange(lumiID, lumiID);
-          bool(*lt)(edm::LuminosityBlockRange const&, edm::LuminosityBlockRange const&) = &edm::lessThan;
-          if(binary_search_all(lumisToProcess, lumiRange, lt))return true;//this is a good lumiBlock
-
-          return false;
-       }
-    
-      private:
-      std::vector<edm::LuminosityBlockRange> lumisToProcess;
-   };
-
-
 }
 
 #endif

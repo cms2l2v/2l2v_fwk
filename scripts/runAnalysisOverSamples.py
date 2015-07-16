@@ -78,10 +78,7 @@ def getFileList(procData):
          print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
-
-      list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))
-
-       
+      list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
       split=getByLabel(procData,'split',1)
       ngroup = len(list)/split
       if (ngroup * split != len(list) ):
@@ -102,9 +99,7 @@ def getFileList(procData):
          eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
          FileList.append('"'+eventsFile+'"')
-
    return FileList
-
 
 #configure
 usage = 'usage: %prog [options]'
@@ -131,8 +126,8 @@ LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
 LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.Jobs_EmailReport    = opt.report
-
-LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName)
+LaunchOnCondor.Jobs_InitCmds       = ['ulimit -c 0;']  #disable production of core dump in case of job crash
+LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 
 #define local site
 localTier = ""
@@ -170,6 +165,8 @@ for procBlock in procList :
 
             FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
             if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
+
+            LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
             for s in range(0,len(FileList)):
                 #create the cfg file
                 eventsFile = FileList[s]
@@ -219,6 +216,11 @@ for procBlock in procList :
                        LaunchOnCondor.Jobs_CRABname     = dtag
                        LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
                        LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
-                    LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
+                    LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
 
-LaunchOnCondor.SendCluster_Submit()
+            LaunchOnCondor.SendCluster_Submit()
+
+
+
+
+
