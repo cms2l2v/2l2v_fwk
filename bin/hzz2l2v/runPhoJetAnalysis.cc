@@ -14,6 +14,7 @@
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
+#include "UserCode/llvv_fwk/interface/TrigUtils.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
@@ -31,7 +32,7 @@ const int ELECTRON_PDGID = 11;
 const int MUON_PDGID = 13;
 const int PHOTON_PDGID = 22;
 
-
+using namespace trigUtils;
 
 SmartSelectionMonitor
 initHistograms(){
@@ -55,6 +56,10 @@ initHistograms(){
   mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 100, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
+  mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 100, 0., 1.5) );
+  mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 1000, 0., 50.) );
+  mon.addHistogram(new TH1F("elevto", ";Photon has pixel seed;Events", 100, 0., 10.) );
+  mon.addHistogram(new TH1F("sigietaieta", ";Photon sigma ietaieta;Events", 1000, 0., 50.) );
   
   // jet 
   mon.addHistogram(new TH1F("njet", ";Number of Jets;Events", 100, 0, 100) );
@@ -331,7 +336,8 @@ int main(int argc, char* argv[])
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
   bool debug = runProcess.getParameter<bool>("debug");
   int maxEvents = runProcess.getParameter<int>("maxevents");
-  bool isMC = runProcess.getParameter<bool>("isMC");  
+  bool isMC = runProcess.getParameter<bool>("isMC");
+  bool photonTriggerStudy = runProcess.getParameter<bool>("triggerstudy");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
   edm::ParameterSet pujetidparas = runProcess.getParameter<edm::ParameterSet>("pujetidparas"); 
@@ -372,7 +378,7 @@ int main(int argc, char* argv[])
   float leff(0.13), sfl(1.05), sflunc(0.12);
 
   //lepton efficiencies
-  LeptonEfficiencySF lepEff;
+  // LeptonEfficiencySF lepEff;
   
   // make sure that histogram internally produced in 
   // lumireweighting are not destroyed when closing the file
@@ -395,7 +401,15 @@ int main(int argc, char* argv[])
     if(iev%treeStep==0){printf(".");fflush(stdout);}
     // load the event content from the EDM file
     ev.to(iev);
-    
+
+
+    // fwlite::Handle<edm::TriggerResults> triggerBits;
+    // fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
+    // fwlite::Handle<pat::PackedTriggerPrescales> triggerPrescales;
+
+    // triggerBits.getByLabel(ev,"bits");
+    // triggerObjects.getByLabel(ev,"objects");
+    // triggerPrescales.getByLabel(ev,"prescales");
     
     //load all the objects we will need to access
     reco::VertexCollection vtx;
@@ -421,35 +435,6 @@ int main(int argc, char* argv[])
       mon.fillHisto("phoeta", "slim", photons[ipho].eta(), weight);
     }
     
-    // only run on the events that pass our triggers
-
-    //apply trigger and require compatibilitiy of the event with the PD
-    edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
-    if(!tr.isValid())return false;
-
-    // Trigger menu with /dev/CMSSW_7_2_0/GRun/V15 
-    // bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
-    bool eeTrigger = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
-    // bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
-    bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_IterTrk02_v*"); // HLT_IsoMu20_eta2p1_IterTrk02_v1, HLT_IsoMu24_IterTrk02_v1 
-    bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
-    // bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
-    bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*");
-        
-    float triggerPrescale(1.0); 
-    float triggerThreshold(0.0);
-    bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
-    bool hasPhotonTrigger(false); 
-    if (runPhotonSelection) {
-      hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
-      if( !hasPhotonTrigger ) continue; 
-      mon.fillHisto("npho", "trg", photons.size(), weight);
-      for(size_t ipho=0; ipho<photons.size(); ipho++) {
-	mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
-	mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
-      }
-    }
-        
     pat::JetCollection jets;
     fwlite::Handle< pat::JetCollection > jetsHandle;
     jetsHandle.getByLabel(ev, "slimmedJets");
@@ -472,6 +457,39 @@ int main(int argc, char* argv[])
     muonsHandle.getByLabel(ev, "slimmedMuons");
     if(muonsHandle.isValid()){ muons = *muonsHandle;}
     
+    // only run on the events that pass our triggers
+
+    //apply trigger and require compatibilitiy of the event with the PD
+    edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+    if(!tr.isValid())return false;
+
+    // Trigger menu with /dev/CMSSW_7_2_0/GRun/V15 
+    // bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+    bool eeTrigger = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
+    // bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
+    bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_IterTrk02_v*"); // HLT_IsoMu20_eta2p1_IterTrk02_v1, HLT_IsoMu24_IterTrk02_v1 
+    bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
+    // bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+    bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*");
+        
+    float triggerPrescale(1.0); 
+    float triggerThreshold(0.0);
+    bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
+    bool hasPhotonTrigger(false); 
+    if (runPhotonSelection) {
+      hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
+
+      // For PHoton trigger studies , do not apply the PHoton trigger on top of the Analysis:
+      if (!photonTriggerStudy ) {
+	if( !hasPhotonTrigger ) continue;
+      }
+      mon.fillHisto("npho", "trg", photons.size(), weight);
+      for(size_t ipho=0; ipho<photons.size(); ipho++) {
+	mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
+	mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
+      }
+    }
+        
     // below follows the analysis of the main selection with n-1 plots
     // tag = "sel";
     
@@ -487,7 +505,7 @@ int main(int argc, char* argv[])
 	pat::Photon photon = selPhotons[ipho]; 
 	mon.fillHisto("phopt", "sel", photon.pt(), weight);
 	mon.fillHisto("phoeta", "sel", photon.superCluster()->eta(), weight);
-      // mon.fillHisto("phor9", "sel", photon.r9(), weight);
+	mon.fillHisto("phor9", "sel", photon.r9(), weight);
       // mon.fillHisto("phoiso", "sel", photon.photonIso(), weight);
 	mon.fillHisto("phohoe", "sel", photon.hadTowOverEm(), weight);
 	mon.fillHisto("elevto", "sel", photon.hasPixelSeed(), weight);
@@ -590,7 +608,44 @@ int main(int argc, char* argv[])
     mon.fillHisto("eventflow", tags, 0, weight);
     if(chTags.size()==0) continue;
 
-    // baseline selection
+
+    // Trigger efficiencies
+    // Must be run without the hasPhotonTrigger requirement on top of of the Analysis.
+    if (photonTriggerStudy && runPhotonSelection && selPhotons.size() ) {
+
+      tag="trigger";
+      
+      // met
+      // mon.fillHisto("met", tag, met.pt(), weight);
+      
+      // for (pat::TriggerObjectStandAlone obj : *triggerObjects) { // note: not "const &" since we want to call unpackPathNames
+      // 	if (obj.collection()=="hltL1extraParticles:MET:HLT") {
+      // 	  mon.fillHisto("met", tag+"_hlt", obj.pt(), weight);
+      // 	  if ( obj.pt()>40.) { mon.fillHisto("met", tag+"_met40", met.pt(), weight); }
+      // 	}
+      // }
+      
+      pat::Photon iphoton = selPhotons[0];
+      
+      mon.fillHisto("phopt", tag, iphoton.pt(),weight);
+      mon.fillHisto("phoeta", tag, iphoton.eta(), weight);
+      trigUtils::photonControlSample(ev, iphoton, mon, tag);
+      trigUtils::photonControlEff(ev, iphoton, mon, tag);
+
+      for(size_t itag=0; itag<tags.size(); itag++){		
+    	//update the weight
+    	TString icat=tags[itag];
+    	mon.fillHisto("phopt", icat, iphoton.pt(),weight);
+    	mon.fillHisto("phoeta", icat, iphoton.eta(),weight);
+	trigUtils::photonControlSample(ev, iphoton, mon, icat);
+	trigUtils::photonControlEff(ev, iphoton, mon, icat);
+      }
+      
+      
+    } // end Trigger efficiencies
+
+    
+    // Baseline selection
     bool passMass(fabs(boson.mass()-91)<15);
     bool passQt(boson.pt()>55);
     bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
