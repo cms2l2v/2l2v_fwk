@@ -24,13 +24,13 @@ bool applyPrescale(float prop) {
   return hasPhotonTrigger;
 }
 
- bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold,
-			float &triggerPrescale, bool &prescale_on ){
+ bool passPhotonTriggerMC(fwlite::ChainEvent& ev, float &triggerThreshold,
+			float &triggerPrescale, bool &prescale ){
    
    edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
    if( !tr.isValid() ) return false;
 
-   //prescale_on=false;
+   //prescale=false;
    
     bool hasPhotonTrigger(false);
     triggerPrescale = 1.0; 
@@ -44,7 +44,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=300;
       triggerPrescale=1;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -54,7 +54,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=250;
       triggerPrescale=1;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -64,7 +64,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=160;
       triggerPrescale=1;
    
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -75,7 +75,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=150;
       triggerPrescale=1;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -85,7 +85,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=135;
       triggerPrescale=1;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -95,7 +95,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=120;
       triggerPrescale=1;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -105,7 +105,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=90;
       triggerPrescale=3;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -115,7 +115,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=75;
       triggerPrescale=6;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -125,7 +125,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=50;
       triggerPrescale=17;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -135,7 +135,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=36;
       triggerPrescale=700;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -145,7 +145,7 @@ bool applyPrescale(float prop) {
       triggerThreshold=22;
       triggerPrescale=4000;
 
-      if (prescale_on) {
+      if (prescale) {
 	prop=(1./triggerPrescale);
 	hasPhotonTrigger=applyPrescale(prop);
       }
@@ -155,8 +155,8 @@ bool applyPrescale(float prop) {
  }
 
 // Plot selPhoton pT spectra for each Photon trigger of the Control region
-  void photonControlSample(fwlite::ChainEvent iEvent, pat::Photon& photon,
-			    SmartSelectionMonitor mon, TString tag
+  void photonControlSample(fwlite::ChainEvent& iEvent, pat::Photon& photon,
+			    SmartSelectionMonitor& mon, TString tag
 			    ) {
   
   // pat::PhotonCollection selPhotons;
@@ -242,8 +242,8 @@ bool applyPrescale(float prop) {
   }
 }
 
-  void photonControlEff(fwlite::ChainEvent iEvent, pat::Photon& photon, 
-			    SmartSelectionMonitor mon, TString tag
+  void photonControlEff(fwlite::ChainEvent& iEvent, pat::Photon& photon, 
+			    SmartSelectionMonitor& mon, TString tag
 			    ) {
   
 

@@ -28,12 +28,13 @@ namespace trigUtils
 {
   
   bool applyPrescale(float prop);
-  bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold,
-			 float &triggerPrescale, bool &prescale_on );
-  void photonControlSample(fwlite::ChainEvent iEvent, pat::Photon& photon,
-			  SmartSelectionMonitor mon, TString tag);
-  void photonControlEff(fwlite::ChainEvent iEvent, pat::Photon& photon, 
-			SmartSelectionMonitor mon, TString tag);
+
+  bool passPhotonTriggerMC(fwlite::ChainEvent& ev, float &triggerThreshold,
+			 float &triggerPrescale, bool &prescale);
+  void photonControlSample(fwlite::ChainEvent& iEvent, pat::Photon& photon,
+			  SmartSelectionMonitor& mon, TString tag);
+  void photonControlEff(fwlite::ChainEvent& iEvent, pat::Photon& photon, 
+			SmartSelectionMonitor& mon, TString tag);
   
 }
 
