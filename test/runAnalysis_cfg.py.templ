@@ -26,6 +26,7 @@ runProcess = cms.PSet(
     input = cms.untracked.vstring("@input"),
     outfile = cms.string("@outfile"),
     isMC = cms.bool(@isMC),
+    triggerstudy = cms.bool(True),
     xsec = cms.double(@xsec),
     suffix = cms.string("@suffix"), 
     cprime = cms.double(@cprime),	
@@ -46,6 +47,7 @@ runProcess = cms.PSet(
     debug = cms.bool(False),
     lumisToProcess = LumiList.LumiList(filename = @lumiMask).getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),
+    maxevents = cms.int32(-1) # set to -1 when running on grid. 
 )
 
 
