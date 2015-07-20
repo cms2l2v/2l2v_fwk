@@ -56,6 +56,18 @@
       "data":[
              { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":40, "xsec":4016.8     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"}
       ]
+    },
+    {
+      "tag":"data",
+      "isdata":true,
+      "color":1,
+      "fill":0,
+      "marker":20,
+      "data":[
+        { "dtag":"Data8TeV_DoubleElectron2015B"            , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleEG/Run2015B-PromptReco-v1/MINIAOD"   ,  "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt"   },
+        { "dtag":"Data8TeV_DoubleMu2015B"                  , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuon/Run2015B-PromptReco-v1/MINIAOD" ,  "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt"   },
+        { "dtag":"Data8TeV_MuEG2015B"                      , "split":20, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuonEG/Run2015B-PromptReco-v1/MINIAOD"     ,  "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt"   }
+      ]
     }
   ]
 }

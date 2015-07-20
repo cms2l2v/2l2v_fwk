@@ -19,11 +19,17 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 
+//need for the good lumi filter
+#include "DataFormats/Provenance/interface/LuminosityBlockID.h"
+#include "DataFormats/Provenance/interface/LuminosityBlockRange.h"
+#include "FWCore/Utilities/interface/Algorithms.h"
+
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/LumiUtils.h"
 
 #include <vector>
 #include "TVector3.h"
@@ -33,7 +39,6 @@
 
 namespace patUtils
 {
-
    typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 
    //define a generic container to hold information related to pat electrons, muons, taus
