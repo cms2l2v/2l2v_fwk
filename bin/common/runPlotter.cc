@@ -183,11 +183,12 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
           //to make it faster only consider the first samples 
 	  //for(size_t id=0; id<Samples.size()&&id<2; id++){
+	  int counter_fileExist = 0;
 	  for(size_t id=0; id<Samples.size(); id++){
-	      int split = Samples[id].getInt("split", 1);
+	      int split = Samples[id].getInt("split", 1); 
               for(int s=0; s<split; s++){
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;
-                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root";
+                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt + ".root"; 
 	         TFile* File = new TFile(FileName.c_str());
                  bool& fileExist = FileExist[FileName];
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
@@ -195,10 +196,11 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                     continue; 
                  }else{
                     fileExist=true;
+                    ++counter_fileExist;
                  }
 
-                 //do the following only for the first file
-                 if(s>0)continue;
+                 //do the following only for the first existing file
+                 if( counter_fileExist != 1 ) continue;
 
                  printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
 
@@ -450,7 +452,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
    else Tpre->AddText("Preliminary");
    Tpre->Draw("same");
 
-   char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+   char Buffer[1024];  sprintf(Buffer, "%.1f %s^{-1} (%.1f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", iEcm);
    TPaveText* Tlumi = new TPaveText(0.6712847,0.9556213,0.8690177,0.9852071,"brNDC");
    Tlumi->SetBorderSize(0);
    Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
@@ -592,6 +594,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    if(HistoProperties.isIndexPlot && cutIndex<0)return;
 
    TCanvas* c1 = new TCanvas("c1","c1",800,800);
+
    TPad* t1 = new TPad("t1","t1", 0.0, 0.2, 1.0, 1.0);
    t1->SetFillColor(0);
    t1->SetBorderMode(0);
@@ -616,8 +619,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    //TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
    //   TLegend* legA  = new TLegend(0.51,0.93,0.67,0.75, "NDC"); 
    // TLegend* legB  = new TLegend(0.67,0.93,0.83,0.75, "NDC");
-   TLegend *legA = new TLegend(0.15,0.80,0.94,0.95, "NDC");
-   legA->SetBorderSize(1);
+   TLegend *legA = new TLegend(0.15,0.82,0.94,0.97, "NDC");
+   legA->SetBorderSize(0);
    legA->SetTextFont(62);
    legA->SetTextSize(0.03);
    legA->SetLineColor(0);
@@ -756,8 +759,9 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        pave->Draw();
    }
    
-   legA->SetNColumns(3);   
-   legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);
+   legA->SetNColumns(4);   
+   legA->SetBorderSize(0);
+   legA->SetFillColor(1); legA->SetFillStyle(0); legA->SetLineColor(0);
    legA->SetHeader("");
    legA->Draw("same");
    legA->SetTextFont(42);
@@ -858,18 +862,21 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    TPaveText* Tpre = new TPaveText(0.163,0.95,0.50,0.995,"brNDC" );
    Tpre->SetBorderSize(0);
-   Tpre->SetFillColor(1.0);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
+   Tpre->SetFillColor(1);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
    Tpre->SetTextFont(52);     Tpre->SetTextAlign(11); Tpre->SetTextSize(0.025);
    if(isSim) Tpre->AddText("Simulation"); else Tpre->AddText("Preliminary");
    Tpre->Draw("same");
 
-   char Buffer[1024];  sprintf(Buffer, "%.1f fb^{-1} (%.1f TeV)", iLumi/1000, iEcm);
+   char Buffer[1024];  sprintf(Buffer, "%.1f %s^{-1} (%.1f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", iEcm);
    TPaveText* Tlumi = new TPaveText(0.75,0.95,0.95,0.995,"brNDC");
    Tlumi->SetBorderSize(0);
-   Tlumi->SetFillColor(0.0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
+   Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
    Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(31); Tlumi->SetTextSize(0.025);
    Tlumi->AddText(Buffer);
    Tlumi->Draw("same");
+
+
+
 
    string SavePath = dropBadCharacters(SaveName);
    if(outDir.size()) SavePath = outDir +"/"+ SavePath;
@@ -971,7 +978,7 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
 
 
 int main(int argc, char* argv[]){
-   gROOT->LoadMacro("../src/tdrstyle.C");
+   gROOT->LoadMacro("../../src/tdrstyle.C");
    setTDRStyle();  
    gStyle->SetPadTopMargin   (0.06);
    gStyle->SetPadBottomMargin(0.12);
@@ -1078,15 +1085,15 @@ int main(int argc, char* argv[]){
    int TreeStep = histlist.size()/50;if(TreeStep==0)TreeStep=1;
    string csvFile(outDir +"/histlist.csv");
    system(("echo \"\" > " + csvFile).c_str());
-   int ictr(0);
+   int ictr(0); 
    for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
        if(ictr%TreeStep==0){printf(".");fflush(stdout);}
-       bool passMasking = false;
+       bool passMasking = false;  
        for(unsigned int i=0;i<histoNameMask.size();i++){if(it->name.find(histoNameMask[i])!=std::string::npos)passMasking=true;}
        for(unsigned int i=0;i<histoNameMaskStart.size();i++){if(it->name.find(histoNameMaskStart[i])==0)passMasking=true;}
        if(histoNameMask.size()==0 && histoNameMaskStart.size()==0)passMasking = true;
        if(!passMasking){ continue;}
-
+ 
        if(do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,OutputFile, *it); }
        if(do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,OutputFile, *it); }
        if(doTree&& it->isTree()){                                SavingToFile    (Root,inDir,OutputFile, *it); }

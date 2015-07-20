@@ -31,6 +31,7 @@ Jobs_Skip         = 0
 Jobs_Queue        = '2nd'
 Jobs_LSFRequirement = '"type==SLC6_64&&pool>30000"'
 Jobs_Inputs	  = []
+Jobs_InitCmds    = []
 Jobs_FinalCmds    = []
 Jobs_RunHere      = 0
 Jobs_EmailReport  = False
@@ -65,6 +66,7 @@ def CreateTheConfigFile(argv):
 	global Jobs_Skip
 	global Jobs_NEvent
 	global Jobs_Inputs
+        global Jobs_InitCmds
         global Jobs_FinalCmds
 	global Path_Cfg
 	global CopyRights
@@ -99,11 +101,12 @@ def CreateTheShellFile(argv):
 	global Path_Cfg
 	global CopyRights	
 	global Jobs_RunHere
+	global Jobs_InitCmds
 	global Jobs_FinalCmds
         global absoluteShellPath
         if(subTool=='crab'):return
 
-        Path_Shell = Farm_Directories[1]+'script'+Jobs_Index+Jobs_Name+'.sh'
+        Path_Shell = Farm_Directories[1]+Jobs_Index+Jobs_Name+Jobs_Index+'.sh'
         function_argument=''
         hostname = os.getenv("HOSTNAME", "")
         
@@ -122,7 +125,7 @@ def CreateTheShellFile(argv):
             shell_file.write('source /grp/cms/tools/glite/setup.sh\n')
 
 	shell_file.write('export SCRAM_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
-        shell_file.write('export BUILD_ARCH='+os.getenv("BUILD_ARCH","slc5_amd64_gcc462")+'\n')
+        shell_file.write('export BUILD_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
 
         if 'purdue.edu' in hostname:
             shell_file.write('export VO_CMS_SW_DIR=/apps/osg/cmssoft/cms\n')
@@ -132,6 +135,10 @@ def CreateTheShellFile(argv):
 
 	shell_file.write('cd ' + os.getcwd() + '\n')
 	shell_file.write('eval `scramv1 runtime -sh`\n')
+
+        for i in range(len(Jobs_InitCmds)):
+                #shell_file.write('echo ' + Jobs_InitCmds[i]+'\n')
+		shell_file.write(Jobs_InitCmds[i]+'\n')
 
 	if   argv[0]=='BASH':                 
 		if Jobs_RunHere==0:
