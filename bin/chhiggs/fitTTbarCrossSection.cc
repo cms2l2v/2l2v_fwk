@@ -205,9 +205,11 @@ TString convertNameForDataCard(TString title, TString ch)
   if(title=="t#bar{t}")          return "signal";
 
   
-  if(title=="t#bar{t} dileptons"          ) return "signal_"+ch;
+  //if(title=="t#bar{t} dileptons"          ) return "signal_"+ch;
+  if(title=="t#bar{t} dileptons"          ) return "signal";
   if(title=="t#bar{t} other"              ) return "ttbarother";
-  if(title=="t#bar{t} ltau"               ) return "signal_"+ch;
+  //if(title=="t#bar{t} ltau"               ) return "signal_"+ch;
+  if(title=="t#bar{t} ltau"               ) return "signal";
   if(title=="t#bar{t} dileptons for ltau" ) return "ttbarll";
   if(title=="t#bar{t} dilepton"           ) return "ttbarll"; // Switch back to line above in the plotting json
   if(title=="t#bar{t} ljets"              ) return "ttbarljets";
@@ -270,7 +272,7 @@ Shape_t getShapeFromFile(TFile* inF, TString ch, JSONWrapper::Object &Root, TFil
       TString procCtr(""); procCtr+=i;
       TString proc=(Process[i])["tag"].toString();
       //Disable low yield backgrounds fror dileptons 
-      if(convertNameForDataCard(proc,ch) == "dy" || convertNameForDataCard(proc,ch) == "vv" || convertNameForDataCard(proc,ch) == "wjets") continue;
+      if(convertNameForDataCard(proc,ch) == "dy" || convertNameForDataCard(proc,ch) == "vv" || convertNameForDataCard(proc,ch) == "wjets" || convertNameForDataCard(proc,ch) == "st" ) continue;
       cout << "Processing process named: " << proc << endl;
       TDirectory *pdir = (TDirectory *)inF->Get(proc);         
       if(pdir==0){ cout << "Directory does not exist for " << proc << endl; continue;}
@@ -861,14 +863,14 @@ void convertShapesToDataCards(const map<TString, Shape_t> &allShapes)
       //fprintf(pFile,"\n");
 
       //single top
-      fprintf(pFile,"%35s %10s ", "singletopTh","lnN");
-      fprintf(pFile,"%6s ","-");
-      for(size_t j=0; j<shape.bckg.size(); j++) {
-	TString name=convertNameForDataCard(shape.bckg[j]->GetTitle(),ch);
-	if(name!="st") fprintf(pFile,"%6s ","-");
-	else           fprintf(pFile,"%6s ","1.068"); 
-      }
-      fprintf(pFile,"\n");
+      //fprintf(pFile,"%35s %10s ", "singletopTh","lnN");
+      //fprintf(pFile,"%6s ","-");
+      //for(size_t j=0; j<shape.bckg.size(); j++) {
+      //  TString name=convertNameForDataCard(shape.bckg[j]->GetTitle(),ch);
+      //  if(name!="st") fprintf(pFile,"%6s ","-");
+      //  else           fprintf(pFile,"%6s ","1.068"); 
+      //}
+      //fprintf(pFile,"\n");
 
       //dibosons
 //      fprintf(pFile,"%35s %10s ", "vvTh","lnN");
@@ -1062,7 +1064,7 @@ int main(int argc, char* argv[])
   plrAnalysisCmd += outUrl+"DataCard_combined.dat";
   plrAnalysisCmd += " --lumi "+ NumberToString(iLumi);
   plrAnalysisCmd += " --ecm "+NumberToString(iEcm);
-  plrAnalysisCmd += " --cl 0.95 ";
+  plrAnalysisCmd += " --cl 0.68 ";
   gSystem->Exec("mv DataCard* " + outUrl);
   gSystem->Exec(combCardCmd.Data());
   cout << "Running: " << plrAnalysisCmd << endl;
