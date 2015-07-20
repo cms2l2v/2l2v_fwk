@@ -395,8 +395,9 @@ int main(int argc, char* argv[])
   int treeStep(totalEntries/50);
   
   TString tag("all");
-  double weight(1.0); // for testing now. 
-
+  //double weight(1.0); // for testing now. 
+  double weight(xsecWeight);
+ 
   for( size_t iev=0; iev<totalEntries; iev++){
     if(iev%treeStep==0){printf(".");fflush(stdout);}
     // load the event content from the EDM file
@@ -404,12 +405,22 @@ int main(int argc, char* argv[])
 
 
     // fwlite::Handle<edm::TriggerResults> triggerBits;
-    // fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
+    // //    fwlite::Handle<pat::TriggerObjectStandAloneCollection> triggerObjects;
     // fwlite::Handle<pat::PackedTriggerPrescales> triggerPrescales;
 
-    // triggerBits.getByLabel(ev,"bits");
-    // triggerObjects.getByLabel(ev,"objects");
-    // triggerPrescales.getByLabel(ev,"prescales");
+    // triggerBits.getByLabel(ev,"TriggerResults::HLT");
+    // //  triggerObjects.getByLabel(ev,"selectedPatTrigger");
+    // triggerPrescales.getByLabel(ev,"patTrigger");
+
+    // const edm::TriggerNames &names = ev.triggerNames(*triggerBits);
+    // std::cout << "\n === TRIGGER PATHS === " << std::endl;
+    // for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i) {
+    //   std::cout << "Trigger " << names.triggerName(i) << 
+    // 	", prescale " << triggerPrescales->getPrescaleForIndex(i) <<
+    // 	": " << (triggerBits->accept(i) ? "PASS" : "fail (or not run)") 
+    // 		<< std::endl;
+    // }
+
     
     //load all the objects we will need to access
     reco::VertexCollection vtx;
@@ -465,12 +476,13 @@ int main(int argc, char* argv[])
 
     // Trigger menu with /dev/CMSSW_7_2_0/GRun/V15 
     // bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
-    bool eeTrigger = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
-    // bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
-    bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_IterTrk02_v*"); // HLT_IsoMu20_eta2p1_IterTrk02_v1, HLT_IsoMu24_IterTrk02_v1 
-    bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_v*", "HLT_Mu17_TkMu8_v*"); 
-    // bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
-    bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*");
+    bool eeTrigger = utils::passTriggerPatterns(tr,"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"); // "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
+    bool muTrigger = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
+    //bool muTrigger = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_IterTrk02_v*"); // HLT_IsoMu20_eta2p1_IterTrk02_v1, HLT_IsoMu24_IterTrk02_v1 
+    bool mumuTrigger = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_DZ_v*", "HLT_Mu17_TkMu8_DZ_v*"); 
+    bool emuTrigger = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*");
+						 //"HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+    //  bool emuTrigger = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*");
         
     float triggerPrescale(1.0); 
     float triggerThreshold(0.0);
