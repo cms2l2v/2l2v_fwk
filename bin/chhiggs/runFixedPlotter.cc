@@ -426,10 +426,18 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
    T->SetFillStyle(0);  T->SetLineColor(0);
    T->SetTextAlign(12);
    char Buffer[1024]; 
-   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   if(iLumi>100)
+     {
+       if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm,  iLumi/1000);
+       else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+     }
+   else
+     {
+       if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm,  iLumi);
+       else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
+     }
    T->AddText(Buffer);
-
+   
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
@@ -526,7 +534,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    T->SetFillColor(0);
    T->SetFillStyle(0);  T->SetLineColor(0);
    T->SetTextAlign(12);
-   char Buffer[1024]; sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   char Buffer[1024];
+   if(iLumi>100) sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   else          sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
    T->AddText(Buffer);
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
@@ -724,8 +734,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if(Process[i].isTag("fill"  ) )hist->SetFillColor  ((int)Process[i]["fill"  ].toDouble());
       if(Process[i].isTag("marker") )hist->SetMarkerStyle((int)Process[i]["marker"].toDouble());// else hist->SetMarkerStyle(1);
       
-      if(std::string(hist->GetName()).find("eventflow") == std::string::npos )
-        fixExtremities(hist,true,true);
+      fixExtremities(hist,true,true);
+      //if(std::string(hist->GetName()).find("eventflow") == std::string::npos )
+      //  fixExtremities(hist,true,true);
+      //else
+      //  fixExtremities(hist,true,false);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
       if( jodorStyle){
@@ -809,7 +822,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    }
    
    TH1* pseudoData = (TH1*) mc->Clone("pseudoData");
-   pseudoData->Sumw2();
+   checkSumw2(pseudoData);
    if(generatePseudoData){
      GeneratePseudoData(pseudoData,mc);
      legA->AddEntry(pseudoData, "pseudo-data", "P");	 
@@ -819,7 +832,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        //pseudoData->SetLineStyle (0);
        pseudoData->SetMarkerColor(1);
        pseudoData->SetMarkerStyle(20);
-       pseudoData->Sumw2();
+       checkSumw2(pseudoData);
        pseudoData->Draw(canvasIsFilled ? "PE1 same" : "PE1");
        canvasIsFilled=true;
        myPseudoData= (TH1*) pseudoData->Clone("globalPseudoData"+myPseudoDataName);
@@ -868,7 +881,10 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    char Buffer[1024]; 
    //if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
    if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV", iEcm);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   else{
+     if(iLumi>100) sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+     else          sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
+   }
    T->AddText(Buffer);
    T->Draw("same");
    T->SetBorderSize(0);
