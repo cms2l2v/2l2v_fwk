@@ -187,6 +187,9 @@ int main (int argc, char *argv[])
   //    }
   TString outUrl = runProcess.getParameter<std::string>("outfile");
   
+  // Good lumi mask
+  lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
+
   bool
     filterOnlyEE       (false),
     filterOnlyMUMU     (false),
@@ -572,8 +575,12 @@ int main (int argc, char *argv[])
       mon.fillHisto("initNorm", tags, 0., 1.);
 
       //##############################################   EVENT LOOP STARTS   ##############################################
-      ev.to (iev);              //load the event content from the EDM file
+      ev.to(iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+
+      // Skip bad lumi
+      if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+
 
       //apply trigger and require compatibilitiy of the event with the PD
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
@@ -1550,4 +1557,11 @@ int main (int argc, char *argv[])
 
   if (outTxtFile)
     fclose (outTxtFile);
+
+  // Now that everything is done, dump the list of lumiBlock that we processed in this job
+  if(!isMC){
+    goodLumiFilter.FindLumiInFiles(urls);
+    goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
+  }
+  
 }
