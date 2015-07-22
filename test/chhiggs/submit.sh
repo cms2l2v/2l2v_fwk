@@ -3,8 +3,8 @@
 # test JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_test.json
 ### JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_samples.json
 JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples.json
-JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_ttbaronly_samples.json
-JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/data_samples.json
+#JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_ttbaronly_samples.json
+#JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/data_samples.json
 #JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_ttbar.json
 #JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_allhad.json
 # test OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar3
