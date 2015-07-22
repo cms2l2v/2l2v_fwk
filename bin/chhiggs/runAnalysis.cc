@@ -15,6 +15,8 @@
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -44,6 +46,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
+
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
@@ -278,14 +281,14 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (4, "Base");
 
   //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0, 6));
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (5, "op. sign");
   h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram (new TH1D ("eventflowslep", ";;Events", 6, 0, 6));
+  h = (TH1D*) mon.addHistogram (new TH1D ("eventflowslep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
@@ -380,8 +383,8 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "csvothers", ";Combined Secondary Vertex;Jets", 50, 0., 1.));
       TH1 *hbtags = mon.addHistogram (new TH1D (icat + "nbtags", ";b-tag multiplicity;Events", 5, 0, 5));
       TH1 *hbtagsJP = mon.addHistogram (new TH1D (icat + "nbtagsJP", ";b-tag multiplicity;Events", 5, 0, 5));
-      mon.addHistogram (new TH1D (icat + "leadjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
-      mon.addHistogram (new TH1D (icat + "trailerjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
+      mon.addHistogram (new TH1D (icat + "leadjetpt", ";Transverse momentum [GeV];Events", 100, 0, 1000));
+      mon.addHistogram (new TH1D (icat + "trailerjetpt", ";Transverse momentum [GeV];Events", 100, 0, 1000));
       mon.addHistogram (new TH1D (icat + "fwdjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "leadjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "trailerjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
@@ -623,6 +626,35 @@ int main (int argc, char *argv[])
       rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
       if (rhoHandle.isValid() ) rho = *rhoHandle;
 
+      if(false && isMC)
+        {
+          double weightGen(0.);
+          double weightLhe(0.);
+          
+          fwlite::Handle<GenEventInfoProduct> evt;
+          evt.getByLabel(ev, "generator");
+          if(evt.isValid())
+            {
+              weightGen=evt->weight();
+              
+            }
+
+          fwlite::Handle<LHEEventProduct> lheEvtProd;
+          lheEvtProd.getByLabel(ev, "externalLHEProducer");
+          if(lheEvtProd.isValid())
+            {
+              weightLhe=lheEvtProd->originalXWGTUP();
+              
+             //for(unsigned int i=0; i<evet->weights().size();i++){
+             //  double asdde=evet->weights()[i].wgt;
+             //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
+             //  EventInfo.ttbar_nw++;
+             //}
+            }
+          cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
+
+        }
+
       reco::GenParticleCollection gen;
       fwlite::Handle < reco::GenParticleCollection > genHandle;
       genHandle.getByLabel (ev, "prunedGenParticles");
@@ -727,10 +759,8 @@ int main (int argc, char *argv[])
       //          wgtTopPtUp /= wgtTopPt;
       //          wgtTopPtDown /= wgtTopPt;
       //        }
-      
 
-
-
+     
 
       pat::MuonCollection muons;
       fwlite::Handle < pat::MuonCollection > muonsHandle;
