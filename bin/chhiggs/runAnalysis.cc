@@ -598,7 +598,7 @@ int main (int argc, char *argv[])
         cout << "----------- End of trigger list ----------" << endl;
       }
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")                                                                            );
+      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )                                        );
       bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
       bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
       bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
