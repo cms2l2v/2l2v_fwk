@@ -10,12 +10,15 @@ def lfn_to_pfn(f):
                             stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     pfn = out.strip()
-    if '/mnt/hadoop' in pfn:
-        pfn = 'file:'+pfn
+    #if '/mnt/hadoop' in pfn:
+    #    pfn = 'file:'+pfn
     return pfn
 
 inputFiles = cms.untracked.vstring("file:input.root")
 try:
+    import os
+    import sys
+    sys.path.append(os.getcwd())
     import PSet
     print "loading from PSet..."
     fnames = list(PSet.process.source.fileNames)
@@ -23,7 +26,7 @@ try:
     inputFiles =  cms.untracked.vstring(fnames)                
 except:
     print "No PSet found, using local file..."
-    inputFiles =  cms.untracked.vstring('file:input.root')  
+    inputFiles =  cms.untracked.vstring('file:input.root')
 
 print inputFiles
 
@@ -35,6 +38,7 @@ runProcess = cms.PSet(
     debug = cms.bool(False),
     isMC = cms.bool(True),
     xsec = cms.double(9999.99),
+    triggerstudy = cms.bool(False), 
     mctruthmode = cms.int32(22), # for photon
     #mctruthmode = cms.int32(0), # DY process 
     maxevents = cms.int32(-1), # set to -1 when running on grid. 

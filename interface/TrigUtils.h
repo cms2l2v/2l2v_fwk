@@ -35,7 +35,14 @@ namespace trigUtils
 			  SmartSelectionMonitor& mon, TString tag);
   void photonControlEff(fwlite::ChainEvent& iEvent, pat::Photon& photon, 
 			SmartSelectionMonitor& mon, TString tag);
-  
+
+  bool passPhotonTriggerMC(fwlite::Event& ev, float &triggerThreshold,
+			 float &triggerPrescale, bool &prescale);
+  void photonControlSample(fwlite::Event& iEvent, pat::Photon& photon,
+			  SmartSelectionMonitor& mon, TString tag);
+  void photonControlEff(fwlite::Event& iEvent, pat::Photon& photon, 
+			SmartSelectionMonitor& mon, TString tag);
+
 }
 
 #endif

@@ -354,9 +354,17 @@ int main(int argc, char* argv[])
   
   // initiating histograms
   SmartSelectionMonitor mon = initHistograms();
-  
+
+  // Loop over files for reliable performance on CRAB
+  for(unsigned int iFile=0; iFile<urls.size(); ++iFile){
+    // open input file
+    TFile* inFile = TFile::Open(urls[iFile].c_str());
+    if (!inFile) continue; 
+    
   // get ready for the event loop
-  fwlite::ChainEvent ev(urls);
+  // fwlite::ChainEvent ev(urls);
+    fwlite::Event ev(inFile); 
+
   size_t totalEntries(0);
   if (maxEvents == -1) totalEntries = ev.size();
   else totalEntries = maxEvents;
@@ -389,7 +397,7 @@ int main(int argc, char* argv[])
   // ----------------------------------------------------------------------------------------
   // event loop  
   // loop on all the events
-  printf("Total entries to process: %zu \n", totalEntries);
+  printf("\nTotal entries to process: %zu \n", totalEntries);
   printf("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
   printf("Scanning the ntuple :");
   int treeStep(totalEntries/50);
@@ -754,7 +762,8 @@ int main(int argc, char* argv[])
 
     } // end tags loop 
     
-  } // end event loop 
+  } // end event loop
+  } // end files loop 
   printf(" done.\n"); 
   
   //save control plots to file
