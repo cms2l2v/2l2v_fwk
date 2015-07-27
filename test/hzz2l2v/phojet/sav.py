@@ -36,7 +36,7 @@ def main():
         
     src = args[0]    
     dst = args[1]
-    shutil.move(src, dst) 
+    shutil.copy2(src, dst) 
 
 
 # ----------------------------------------------------------
