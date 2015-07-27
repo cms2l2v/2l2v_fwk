@@ -18,6 +18,7 @@
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
+#include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 #include "RecoJets/JetProducers/interface/PileupJetIdAlgo.h"
 
@@ -54,7 +55,7 @@ initHistograms(){
   // photon 
   mon.addHistogram(new TH1F("rho", ";Average energy density (#rho);Events", 100, 0, 100) ); 
   mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
-  mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 100, 0, 1000) ); 
+  mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   mon.addHistogram(new TH1F("phor9", ";Photon R9;Events", 100, 0., 1.5) );
   mon.addHistogram(new TH1F("phohoe", ";Photon H/E;Events", 1000, 0., 50.) );
@@ -76,7 +77,7 @@ initHistograms(){
 
 
   // lepton
-  mon.addHistogram(new TH1F("leadpt", ";Transverse momentum [GeV];Events", 50,0,500) );
+  mon.addHistogram(new TH1F("leadpt", ";Transverse momentum [GeV];Events", 500,0,1000) );
   mon.addHistogram(new TH1F("leadeta", ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram(new TH1F("trailerpt", ";Transverse momentum [GeV];Events", 50,0,500) );
   mon.addHistogram(new TH1F("trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
@@ -86,7 +87,7 @@ initHistograms(){
   mon.addHistogram(new TH1F("nexlep", ";Number of extra leptons;Events", 10, 0, 10) );
   mon.addHistogram(new TH1F("zmass", ";Mass [GeV];Events", 100, 40, 250) );
   mon.addHistogram(new TH1F("zy", ";Rapidity;Events", 50, 0, 3) );
-  mon.addHistogram(new TH1F("zpt", ";Transverse momentum [GeV];Events", 100, 0, 1500));
+  mon.addHistogram(new TH1F("zpt", ";Transverse momentum [GeV];Events", 750, 0, 1500));
   mon.addHistogram(new TH1F("qt", ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
   mon.addHistogram(new TH1F("qtraw", ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
 
@@ -351,6 +352,11 @@ int main(int argc, char* argv[])
 
   TString outUrl = runProcess.getParameter<std::string>("outfile");
 
+  // std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
+  // std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
+
+  GammaWeightsHandler *gammaWgtHandler=0;
+  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,"",true);
   
   // initiating histograms
   SmartSelectionMonitor mon = initHistograms();
@@ -475,13 +481,13 @@ int main(int argc, char* argv[])
     if(!tr.isValid())return false;
 
     // Trigger menu with /dev/CMSSW_7_2_0/GRun/V15 
-    // bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
-    bool eeTrigger = utils::passTriggerPatterns(tr,"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"); // "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
+    // bool eeTrigger = utils::passTriggerPatterns(tr, "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+    bool eeTrigger = utils::passTriggerPatterns(tr,"HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*"); // "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v*");
     bool muTrigger = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_v*");
     //bool muTrigger = utils::passTriggerPatterns(tr, "HLT_IsoMu24_eta2p1_IterTrk02_v*"); // HLT_IsoMu20_eta2p1_IterTrk02_v1, HLT_IsoMu24_IterTrk02_v1 
     bool mumuTrigger = utils::passTriggerPatterns(tr, "HLT_Mu17_Mu8_DZ_v*", "HLT_Mu17_TkMu8_DZ_v*"); 
     bool emuTrigger = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*");
-						 //"HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
+	 //"HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*", "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v*");
     //  bool emuTrigger = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v*", "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v*");
         
     float triggerPrescale(1.0); 
@@ -737,8 +743,35 @@ int main(int argc, char* argv[])
     std::vector<LorentzVector> massiveBoson(tags.size(),boson);
     std::vector<float> photonWeights(tags.size(),1.0);
 
-    //  Todo: gammaWgtHandler  
+    //  Todo: gammaWgtHandler
 
+    if(gammaWgtHandler!=0) { // we are in runPhotonSelection
+      float lastPhotonWeight(1.0), totalPhotonWeight(0.0);
+      LorentzVector lastMassiveBoson(boson);
+      for(size_t itag=0; itag<tags.size(); itag++){
+	size_t idx(tags.size()-itag-1);
+	std::vector<Float_t> photonVars;
+	photonVars.push_back(boson.pt());
+	//photonVars.push_back(met.pt()/boson.pt());
+	float photonWeight=gammaWgtHandler->getWeightFor(photonVars,tags[idx]);
+	if(tags[idx]=="all")       { 
+	  photonWeights[idx]=(totalPhotonWeight==0? 1.0:totalPhotonWeight); 
+	}
+	else if(photonWeight!=1.0) { 
+	  photonWeights[idx]=photonWeight; 
+	  massiveBoson[idx]=gammaWgtHandler->getMassiveP4(boson,tags[idx]);
+	  totalPhotonWeight+=photonWeight; 
+	  lastPhotonWeight=photonWeight; 
+	  lastMassiveBoson=massiveBoson[idx];
+	}
+	else                       { 
+	  photonWeights[idx]=lastPhotonWeight; 
+	  massiveBoson[idx]=lastMassiveBoson;
+	}
+      }
+    }
+    
+    
     for(size_t itag=0; itag<tags.size(); itag++){		
       //update the weight
       TString icat=tags[itag];
