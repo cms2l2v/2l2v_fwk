@@ -17,7 +17,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
   TString massType( isMC ? "mczmass" : "zmass");
     
   //categories to consider, add more if needed but keep these ones 
-  TString cats[]   =  {"eq0jets","eq1jets","eq2jets","geq3jets","vbf","geq1jets","novbf","mjjq100","mjjq092","mjjq083","mjjq066","mjjq049","mjjq033","mjjq016"};
+  TString cats[]   =  {"eq0jets","geq1jets","eq2jets","geq3jets","vbf","geq1jets","novbf","mjjq100","mjjq092","mjjq083","mjjq066","mjjq049","mjjq033","mjjq016"};
   dilCats_.push_back("ee"); dilCats_.push_back("mumu");
   
   //retrieve from file
@@ -43,7 +43,6 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
 		  TGraph *h = (TGraph *) fwgt->Get(hname);
 		  if(h) iwgts.push_back(h);
 		  
-	      
 		  //mass shape
 		  if(iw>0) continue;
 		  hname= key+"_"+massType;
