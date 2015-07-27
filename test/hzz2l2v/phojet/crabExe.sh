@@ -14,7 +14,7 @@ cp ./lib/$SCRAM_ARCH/* $CMSSW_BASE/lib/$SCRAM_ARCH
 cp runPhoJetAnalysis $CMSSW_BASE/bin/$SCRAM_ARCH
 
 # Create the JobRepport
-cmsRun -j FrameworkJobReport.xml phojet_cfg.py
+cmsRun -j FrameworkJobReport.xml -p PSet.py
 
 # Run the analysis
 runPhoJetAnalysis phojet_cfg.py
