@@ -598,7 +598,12 @@ int main (int argc, char *argv[])
         cout << "----------- End of trigger list ----------" << endl;
       }
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )                                        );
+      bool eTrigger    (
+                        isMC ? 
+                        utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
+                        :
+                        utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
+                        );
       bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
       bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
       bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
@@ -620,6 +625,10 @@ int main (int argc, char *argv[])
       fwlite::Handle < reco::VertexCollection > vtxHandle;
       vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
       if (vtxHandle.isValid() ) vtx = *vtxHandle;
+      
+      // At least one primary vertex reconstructed in the event (it should have no effect because of miniAOD production, afaik)
+      ///// FIXME if(vtx.size() == 0) continue;
+      
 
       double rho = 0;
       fwlite::Handle < double >rhoHandle;
@@ -910,7 +919,7 @@ int main (int argc, char *argv[])
 
           //Cut based identification 
           passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdLoose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
+          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
           passVetoSingleLepId = passId;
 
           //isolation
@@ -951,7 +960,20 @@ int main (int argc, char *argv[])
           if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
           if (!tau.tauID ("againstMuonTight3"))                           continue;
           if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
-         
+          
+          // Pixel hits cut (will be available out of the box in new MINIAOD production)
+          {
+            int nChHadPixelHits = 0;
+            reco::CandidatePtrVector chCands = tau.signalChargedHadrCands();
+            for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++){
+              pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
+              int pixelHits = packedCand->numberOfPixelHits();
+              if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
+            }
+            ////// FIXME if(nChHadPixelHits==0) continue;
+          }
+          /////
+          
           selTaus.push_back(tau);
           ntaus++;
         }
