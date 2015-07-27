@@ -1,6 +1,7 @@
 #!/bin/bash
 
-JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples.json
+#JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples.json
+JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
 
 OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
 
@@ -10,6 +11,14 @@ QUEUE="8nh"
 mkdir -p ${OUTDIR}
 
 if [ "${1}" = "submit" ]; then 
+
+    if [ "${2}" = "all" ]; then 
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples.json
+    elif [ "${2}" = "data" ]; then 
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/data_samples.json
+    elif [ "${2}" = "ttbar" ]; then 
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
+    fi
     
     runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s ${QUEUE}
 
@@ -43,21 +52,17 @@ elif [ "${1}" = "plot" ]; then
     
 #for LUMI in 500 1000 5000 10000
 # 14.559
-    for LUMI in 56.830
+    for LUMI in 46.209
     do
         DIR="${BASEDIR}${LUMI}/"
         mkdir -p ${DIR}
         cp ~/www/HIG-13-026/index.php ${DIR}
 
         # Dilepton
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .png ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .C   ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
+        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
         
         # Leptontau
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYLEPTAU}
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --no2D --noPowers --plotExt .png ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYLEPTAU}
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --no2D --noPowers --plotExt .C   ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYLEPTAU}
+        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYLEPTAU}
         
     done
    
