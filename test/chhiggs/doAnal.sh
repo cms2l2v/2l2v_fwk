@@ -24,7 +24,7 @@ if [ "${1}" = "submit" ]; then
 
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
-    cp test/chhiggs/results_ttbar/*SingleMuon*.json > myjson.json
+    cat test/chhiggs/results_ttbar/*SingleMuon*.json > myjson.json
     echo "myjson.json has been recreated."
     echo "Now please edit myjson.json to remove the additional \"}{\" characters"
     echo "After that, please run:"
