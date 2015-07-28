@@ -64,7 +64,7 @@ def option_exists(args, key):
 
 def convert_dstname(f, dtag, mctruthmode):
     jobId = int(f.split('.')[0].split('_')[1])
-    dstname = '%s_%s_filt%s.root' %(dtag, jobId+1, mctruthmode)
+    dstname = '%s_%s_filt%s.root' %(dtag, jobId-1, mctruthmode)
     return dstname 
 
 def make_tmpfile(f):
