@@ -215,6 +215,8 @@ int main (int argc, char *argv[])
   bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
   bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
+  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
+
   
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -581,6 +583,9 @@ int main (int argc, char *argv[])
       ev.to(iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
 
+      // Orthogonalize PromptReco+17Jul15 mix
+      if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+          
       // Skip bad lumi
       if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
 
@@ -619,6 +624,45 @@ int main (int argc, char *argv[])
       //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
       mon.fillHisto("initNorm", tags, 1., 1.);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
+
+
+      // ------------ Apply MET filters ------------
+
+      // Print out MET filters list
+      // edm::TriggerResultsByName metFiltersPat = ev.triggerResultsByName ("PAT");
+      // if(debug && iev==57 ){
+      //   cout << "Printing MET filters list" << endl;
+      //   for(edm::TriggerNames::Strings::const_iterator imetFilter = metFiltersPat.triggerNames().begin(); imetFilter!=metFiltersPat.triggerNames().end(); ++imetFilter)
+      //     cout << *imetFilter << endl;
+      //   cout << "----------- End of MET filters  ----------" << endl;
+      // }
+      // -------------------------------------------
+
+      // -------- Full MET filters list ------------------
+      // Flag_trackingFailureFilter
+      // Flag_goodVertices
+      // Flag_CSCTightHaloFilter
+      // Flag_trkPOGFilters
+      // Flag_trkPOG_logErrorTooManyClusters
+      // Flag_EcalDeadCellTriggerPrimitiveFilter
+      // Flag_ecalLaserCorrFilter
+      // Flag_trkPOG_manystripclus53X
+      // Flag_eeBadScFilter
+      // Flag_METFilters
+      // Flag_HBHENoiseFilter
+      // Flag_trkPOG_toomanystripclus53X
+      // Flag_hcalLaserEventFilter
+      //
+      // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
+      // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
+      // - For Run2015B PromptReco Data, the process name is RECO.
+      // - For Run2015B re-MiniAOD Data 17Jul2015, the process name is PAT.
+      // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
+      // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
+      // -------------------------------------------------
+      
+      if( !patUtils::passMetFilters(ev, isPromptReco)) continue;
+
       
       //load all the objects we will need to access
       reco::VertexCollection vtx;
@@ -824,10 +868,10 @@ int main (int argc, char *argv[])
       //
 
       //pileup weight
-      double weight = 1.0;
-      double TotalWeight_plus = 1.0;
-      double TotalWeight_minus = 1.0;
-      double puWeight (1.0);
+      double weight           (1.0);
+      double TotalWeight_plus (1.0);
+      double TotalWeight_minus(1.0);
+      double puWeight         (1.0);
 
       if(isMC)
         {
@@ -841,7 +885,7 @@ int main (int argc, char *argv[])
             }
           
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight = 1.;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
+          weight *= puWeight;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
