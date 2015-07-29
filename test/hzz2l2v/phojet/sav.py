@@ -41,7 +41,7 @@ def main():
     dtag = ''
     if 'GJet_Pt-15To6000' in src:
         mctruthmode = 22
-        dtag = 'MC13TeV_GJets_15To6000'
+        dtag = 'MC13TeV_GJet_Pt-15To6000'
     
     #shutil.copy2(src, dst) 
     for root, dirs, files in os.walk(src):
