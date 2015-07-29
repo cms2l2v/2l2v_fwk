@@ -15,6 +15,8 @@
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "GeneratorInterface/LHEInterface/interface/LHEEvent.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
@@ -44,6 +46,7 @@
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
+
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
@@ -169,12 +172,13 @@ int main (int argc, char *argv[])
   // configure the process
   const edm::ParameterSet & runProcess = edm::readPSetsFrom (argv[1])->getParameter < edm::ParameterSet > ("runProcess");
 
-  bool debug          = runProcess.getParameter<bool>  ("debug");
-  bool runSystematics = runProcess.getParameter<bool>  ("runSystematics");
-  bool isMC           = runProcess.getParameter<bool>  ("isMC");
-  double xsec         = runProcess.getParameter<double>("xsec");
-  int mctruthmode     = runProcess.getParameter<int>   ("mctruthmode");
-  TString dtag        = runProcess.getParameter<std::string>("dtag");
+  bool debug           = runProcess.getParameter<bool>  ("debug");
+  bool runSystematics  = runProcess.getParameter<bool>  ("runSystematics");
+  bool saveSummaryTree = runProcess.getParameter<bool>  ("saveSummaryTree");
+  bool isMC            = runProcess.getParameter<bool>  ("isMC");
+  double xsec          = runProcess.getParameter<double>("xsec");
+  int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
+  TString dtag         = runProcess.getParameter<std::string>("dtag");
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
@@ -186,6 +190,9 @@ int main (int argc, char *argv[])
   //    }
   TString outUrl = runProcess.getParameter<std::string>("outfile");
   
+  // Good lumi mask
+  lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
+
   bool
     filterOnlyEE       (false),
     filterOnlyMUMU     (false),
@@ -274,14 +281,14 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (4, "Base");
 
   //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0, 6));
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (5, "op. sign");
   h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram (new TH1D ("eventflowslep", ";;Events", 6, 0, 6));
+  h = (TH1D*) mon.addHistogram (new TH1D ("eventflowslep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
@@ -376,8 +383,8 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "csvothers", ";Combined Secondary Vertex;Jets", 50, 0., 1.));
       TH1 *hbtags = mon.addHistogram (new TH1D (icat + "nbtags", ";b-tag multiplicity;Events", 5, 0, 5));
       TH1 *hbtagsJP = mon.addHistogram (new TH1D (icat + "nbtagsJP", ";b-tag multiplicity;Events", 5, 0, 5));
-      mon.addHistogram (new TH1D (icat + "leadjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
-      mon.addHistogram (new TH1D (icat + "trailerjetpt", ";Transverse momentum [GeV];Events", 50, 0, 1000));
+      mon.addHistogram (new TH1D (icat + "leadjetpt", ";Transverse momentum [GeV];Events", 100, 0, 1000));
+      mon.addHistogram (new TH1D (icat + "trailerjetpt", ";Transverse momentum [GeV];Events", 100, 0, 1000));
       mon.addHistogram (new TH1D (icat + "fwdjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "leadjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "trailerjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
@@ -444,9 +451,35 @@ int main (int argc, char *argv[])
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
-
   fwlite::ChainEvent ev (urls);
   const size_t totalEntries = ev.size ();
+
+  TFile* summaryFile = NULL;
+  TTree* summaryTree = NULL; //ev->;
+//  
+//  if(saveSummaryTree)
+//    {
+//      TDirectory* cwd = gDirectory;
+//      std::string summaryFileName(outUrl); 
+//      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
+//      
+//      summaryFile = new TFile(summaryFileName.c_str() "recreate");
+//      
+//      summaryTree = new TTree("Events", "Events");
+//    KEY: TTreeMetaData;1
+//                         KEY: TTreeParameterSets;1
+//                                                   KEY: TTreeParentage;1
+//                                                                         KEY: TTreeEvents;1
+//                                                                                            KEY: TTreeLuminosityBlocks;1
+//                                                                                                                         KEY: TTreeRuns;
+//      summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
+//      
+//      summmaryTree->Branch(
+//
+//      cwd->cd();
+//    }
+//
+
 
   //MC normalization (to 1/pb)
   double xsecWeight = xsec / totalEntries;
@@ -476,6 +509,25 @@ int main (int argc, char *argv[])
   BTagSFUtil btsfutil;
   double beff (0.68), sfb (0.99), sfbunc (0.015);
   double leff (0.13), sfl (1.05), sflunc (0.12);
+
+  // b-tagging working points
+  // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
+  // Apparently this V2 has the following preliminary operating points:
+  // These preliminary operating points were derived from ttbar events:
+  //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
+  //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
+  //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
+  
+  // New recommendations for 50ns https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X50ns
+  //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
+  //      v2CSVv2L 0.605
+  //      v2CSVv2M 0.890
+  //      v2CSVv2T 0.970
+  double
+    btagLoose(0.605),
+    btagMedium(0.890),
+    btagTight(0.970);
+  
 
   //pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
@@ -526,8 +578,12 @@ int main (int argc, char *argv[])
       mon.fillHisto("initNorm", tags, 0., 1.);
 
       //##############################################   EVENT LOOP STARTS   ##############################################
-      ev.to (iev);              //load the event content from the EDM file
+      ev.to(iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+
+      // Skip bad lumi
+      if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+
 
       //apply trigger and require compatibilitiy of the event with the PD
       edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
@@ -542,7 +598,12 @@ int main (int argc, char *argv[])
         cout << "----------- End of trigger list ----------" << endl;
       }
 
-      bool eTrigger    (utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")                                                                            );
+      bool eTrigger    (
+                        isMC ? 
+                        utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
+                        :
+                        utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
+                        );
       bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
       bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
       bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
@@ -564,11 +625,44 @@ int main (int argc, char *argv[])
       fwlite::Handle < reco::VertexCollection > vtxHandle;
       vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
       if (vtxHandle.isValid() ) vtx = *vtxHandle;
+      
+      // At least one primary vertex reconstructed in the event (it should have no effect because of miniAOD production, afaik)
+      ///// FIXME if(vtx.size() == 0) continue;
+      
 
       double rho = 0;
       fwlite::Handle < double >rhoHandle;
       rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
       if (rhoHandle.isValid() ) rho = *rhoHandle;
+
+      if(false && isMC)
+        {
+          double weightGen(0.);
+          double weightLhe(0.);
+          
+          fwlite::Handle<GenEventInfoProduct> evt;
+          evt.getByLabel(ev, "generator");
+          if(evt.isValid())
+            {
+              weightGen=evt->weight();
+              
+            }
+
+          fwlite::Handle<LHEEventProduct> lheEvtProd;
+          lheEvtProd.getByLabel(ev, "externalLHEProducer");
+          if(lheEvtProd.isValid())
+            {
+              weightLhe=lheEvtProd->originalXWGTUP();
+              
+             //for(unsigned int i=0; i<evet->weights().size();i++){
+             //  double asdde=evet->weights()[i].wgt;
+             //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
+             //  EventInfo.ttbar_nw++;
+             //}
+            }
+          cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
+
+        }
 
       reco::GenParticleCollection gen;
       fwlite::Handle < reco::GenParticleCollection > genHandle;
@@ -674,10 +768,8 @@ int main (int argc, char *argv[])
       //          wgtTopPtUp /= wgtTopPt;
       //          wgtTopPtDown /= wgtTopPt;
       //        }
-      
 
-
-
+     
 
       pat::MuonCollection muons;
       fwlite::Handle < pat::MuonCollection > muonsHandle;
@@ -827,7 +919,7 @@ int main (int argc, char *argv[])
 
           //Cut based identification 
           passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdLoose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
+          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
           passVetoSingleLepId = passId;
 
           //isolation
@@ -868,7 +960,20 @@ int main (int argc, char *argv[])
           if (!tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")) continue;
           if (!tau.tauID ("againstMuonTight3"))                           continue;
           if (!tau.tauID ("againstElectronMediumMVA5"))                   continue;
-         
+          
+          // Pixel hits cut (will be available out of the box in new MINIAOD production)
+          {
+            int nChHadPixelHits = 0;
+            reco::CandidatePtrVector chCands = tau.signalChargedHadrCands();
+            for(reco::CandidatePtrVector::const_iterator iter = chCands.begin(); iter != chCands.end(); iter++){
+              pat::PackedCandidate const* packedCand = dynamic_cast<pat::PackedCandidate const*>(iter->get());
+              int pixelHits = packedCand->numberOfPixelHits();
+              if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
+            }
+            ////// FIXME if(nChHadPixelHits==0) continue;
+          }
+          /////
+          
           selTaus.push_back(tau);
           ntaus++;
         }
@@ -937,14 +1042,9 @@ int main (int argc, char *argv[])
           
           double dphijmet = fabs (deltaPhi (met.phi(), jets[ijet].phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
-          bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
-          // TODO: in 74X switch to pfCombined.... (based on pf candidates instead of tracks) (recommended)
-          // Apparently this V2 has the following preliminary operating points:
-          // These preliminary operating points were derived from ttbar events:
-          //   - Loose : 0.423 (corresponding to 10.1716% DUSG mistag efficiency)
-          //   - Medium : 0.814 (corresponding to 1.0623% DUSG mistag efficiency)
-          //   - Tight : 0.941 (corresponding to 0.1144% DUSG mistag efficiency)
-
+          bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose);
+          
+          
           // update according to the SF measured by BTV: NOT YET!
           /// if (isMC)
           ///   {
@@ -959,7 +1059,7 @@ int main (int argc, char *argv[])
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
-          hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814;
+          hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium;
 
           if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
@@ -1228,7 +1328,7 @@ int main (int argc, char *argv[])
                     finalSelJets.push_back(jets[ijet]);
 
                     int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.423);
+                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose);
                     if (varyBtagUp)
                       {
                         if (abs (flavId) == 5)      btsfutil.modifyBTagsWithSF(hasCSVtag, sfb + sfbunc,     beff);
@@ -1428,7 +1528,7 @@ int main (int argc, char *argv[])
                     finalSelSingleLepJets.push_back(jets[ijet]);
 
                     int flavId = jets[ijet].partonFlavour();
-                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > 0.814);
+                    bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
 
                     if (varyBtagUp)
                       {
@@ -1467,14 +1567,32 @@ int main (int argc, char *argv[])
                 mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
-                
+
+                if(saveSummaryTree)
+                  {
+                    TDirectory* cwd = gDirectory;
+                    summaryFile->cd();
+                    summaryTree->Fill();
+                    cwd->cd();
+                  }
               }
           } // End stat analysis
         
       } // End single lepton full analysis
-      
-      
+    
+    } // End event loop
+
+  if(saveSummaryTree)
+    {
+      TDirectory* cwd = gDirectory;
+      summaryFile->cd();
+      summaryTree->Write();
+      summaryFile->Close();
+      delete summaryFile;
+      cwd->cd();
     }
+  
+
   if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
   printf ("\n");
 
@@ -1491,4 +1609,11 @@ int main (int argc, char *argv[])
 
   if (outTxtFile)
     fclose (outTxtFile);
+
+  // Now that everything is done, dump the list of lumiBlock that we processed in this job
+  if(!isMC){
+    goodLumiFilter.FindLumiInFiles(urls);
+    goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
+  }
+  
 }

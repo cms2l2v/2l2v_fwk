@@ -58,7 +58,7 @@ bool onlyCutIndex = false;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
-string plotExt = ".png";
+std::vector<string> plotExt;
 string outFile = "plotter.root";
 string cutflowhisto = "all_cutflow";
 bool forceMerge=false;
@@ -144,7 +144,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	      int split = 1;
 	      if(!useMerged && Samples[id].isTag("split"))split = Samples[id]["split"].toInt();
 
-	      string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
+	      string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",0); segmentExt += buf; }
               // TEST // string secondFiltExt=filtExt;
               string secondFiltExt("");
               // TEST // if(TString((Samples[id])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
@@ -214,7 +214,7 @@ void MergeSplittedSamples(JSONWrapper::Object& Root, std::string RootDir)
 
       TString toHadd("");
       for(int s=0;s<split;s++){
-	string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 	string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
 	toHadd += " " + FileName;
       }
@@ -242,7 +242,7 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
          // TEST // if(TString((Samples[j])["dtag"].toString()).Contains("filt5")) secondFiltExt="_filt5";
          // TEST // if(TString((Samples[j])["dtag"].toString()).Contains("filt6")) secondFiltExt="_filt6";
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             TFile* File = TFile::Open(FileName.c_str());
             bool& fileExist = FileExist[FileName];
@@ -333,7 +333,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1){ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
+	   string segmentExt; /*if(split>1)*/{ char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf;}
 	   
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName])continue;
@@ -426,10 +426,18 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
    T->SetFillStyle(0);  T->SetLineColor(0);
    T->SetTextAlign(12);
    char Buffer[1024]; 
-   if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   if(iLumi>100)
+     {
+       if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm,  iLumi/1000);
+       else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+     }
+   else
+     {
+       if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm,  iLumi);
+       else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
+     }
    T->AddText(Buffer);
-
+   
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
@@ -458,7 +466,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
@@ -497,7 +505,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
 
       T->Draw("same");
 
-      string SavePath = SaveName + "_" + (Process[i])["tag"].toString() + plotExt;
+      string SavePath = SaveName + "_" + (Process[i])["tag"].toString();
       while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
       while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
       while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
@@ -507,8 +515,14 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, std::string RootDir, 
       while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
       while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
       if(outDir.size()) SavePath = outDir +"/"+ SavePath;
-      system(string(("rm -f ") + SavePath).c_str());
-      c1->SaveAs(SavePath.c_str());
+      
+      for(size_t iext=0; iext<plotExt.size(); ++iext)
+        {
+          string finalPath = SavePath + plotExt[iext];
+          system(string(("rm -f ") + finalPath).c_str());
+          c1->SaveAs(finalPath.c_str());
+        }
+
       delete c1;
    }
 
@@ -526,7 +540,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    T->SetFillColor(0);
    T->SetFillStyle(0);  T->SetLineColor(0);
    T->SetTextAlign(12);
-   char Buffer[1024]; sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   char Buffer[1024];
+   if(iLumi>100) sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   else          sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
    T->AddText(Buffer);
 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
@@ -569,7 +585,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; } 
 	    
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
@@ -608,7 +624,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    }
    c1->cd(0);
    //T->Draw("same");
-   string SavePath = SaveName + plotExt;
+   string SavePath = SaveName;
    while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
    while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
    while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
@@ -618,8 +634,14 @@ void Draw2DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
    while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
    if(outDir.size()) SavePath = outDir +"/"+ SavePath; 
-   system(string(("rm -f ") + SavePath).c_str());
-   c1->SaveAs(SavePath.c_str());
+
+   for(size_t iext=0; iext<plotExt.size(); ++iext)
+     {
+       string finalPath = SavePath + plotExt[iext];
+       system(string(("rm -f ") + finalPath).c_str());
+       c1->SaveAs(finalPath.c_str());
+     }
+   
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete c1;
    delete T;
@@ -676,7 +698,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
 	    string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + secondFiltExt + ".root";
             if(!FileExist[FileName]){
@@ -724,8 +746,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if(Process[i].isTag("fill"  ) )hist->SetFillColor  ((int)Process[i]["fill"  ].toDouble());
       if(Process[i].isTag("marker") )hist->SetMarkerStyle((int)Process[i]["marker"].toDouble());// else hist->SetMarkerStyle(1);
       
+      //fixExtremities(hist,true,true);
       if(std::string(hist->GetName()).find("eventflow") == std::string::npos )
         fixExtremities(hist,true,true);
+      //else
+      //  fixExtremities(hist,true,false);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
       if( jodorStyle){
@@ -809,7 +834,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    }
    
    TH1* pseudoData = (TH1*) mc->Clone("pseudoData");
-   pseudoData->Sumw2();
+   checkSumw2(pseudoData);
    if(generatePseudoData){
      GeneratePseudoData(pseudoData,mc);
      legA->AddEntry(pseudoData, "pseudo-data", "P");	 
@@ -819,7 +844,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
        //pseudoData->SetLineStyle (0);
        pseudoData->SetMarkerColor(1);
        pseudoData->SetMarkerStyle(20);
-       pseudoData->Sumw2();
+       checkSumw2(pseudoData);
        pseudoData->Draw(canvasIsFilled ? "PE1 same" : "PE1");
        canvasIsFilled=true;
        myPseudoData= (TH1*) pseudoData->Clone("globalPseudoData"+myPseudoDataName);
@@ -868,7 +893,10 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    char Buffer[1024]; 
    //if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.1f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
    if(isSim) sprintf(Buffer, "CMS simulation, #sqrt{s}=%.0f TeV", iEcm);
-   else      sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+   else{
+     if(iLumi>100) sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f fb^{-1}", iEcm, iLumi/1000);
+     else          sprintf(Buffer, "CMS preliminary, #sqrt{s}=%.0f TeV, #scale[0.5]{#int} L=%.1f pb^{-1}", iEcm, iLumi);
+   }
    T->AddText(Buffer);
    T->Draw("same");
    T->SetBorderSize(0);
@@ -966,7 +994,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    c1->Modified();
    c1->Update();
    c1->cd();
-   string SavePath = SaveName + plotExt;
+   string SavePath = SaveName;
    while(SavePath.find("*")!=std::string::npos)SavePath.replace(SavePath.find("*"),1,"");
    while(SavePath.find("#")!=std::string::npos)SavePath.replace(SavePath.find("#"),1,"");
    while(SavePath.find("{")!=std::string::npos)SavePath.replace(SavePath.find("{"),1,"");
@@ -976,8 +1004,14 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
    while(SavePath.find("^")!=std::string::npos)SavePath.replace(SavePath.find("^"),1,"");
    while(SavePath.find("/")!=std::string::npos)SavePath.replace(SavePath.find("/"),1,"-");
    if(outDir.size()) SavePath = outDir +"/"+ SavePath;
-   system(string(("rm -f ") + SavePath).c_str());
-   c1->SaveAs(SavePath.c_str());
+
+   for(size_t iext=0; iext<plotExt.size(); ++iext)
+     {
+       string finalPath = SavePath + plotExt[iext];
+       system(string(("rm -f ") + finalPath).c_str());
+       c1->SaveAs(finalPath.c_str());
+     }
+   
    delete c1;
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete legA;
@@ -1020,7 +1054,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
          TH1* tmphist = NULL;
          for(int s=0;s<split;s++){
-	   string segmentExt; if(split>1) { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
+	   string segmentExt; /*if(split>1)*/ { char buf[255]; sprintf(buf,"_%i",s); segmentExt += buf; }
 
             string FileName = RootDir + (Samples[j])["dtag"].toString() + ((Samples[j].isTag("suffix"))?(Samples[j])["suffix"].toString():string("")) + filtExt + segmentExt + filtExt + ".root";
             if(!FileExist[FileName])continue;
@@ -1152,6 +1186,7 @@ int main(int argc, char* argv[]){
    std::vector<string> histoNameMaskStart;
    std::vector<string> dtagstokeep;
 
+
    for(int i=1;i<argc;i++){
      string arg(argv[i]);
      //printf("--- %i - %s\n",i,argv[i]);
@@ -1228,10 +1263,13 @@ int main(int argc, char* argv[]){
      if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
-     if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt   = argv[i+1];  i++;  printf("saving plots as = %s\n", plotExt.c_str());  }
+     if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", plotExt[plotExt.size()-1].c_str());  }
      if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
-   } 
+   }
+
+   if(plotExt.size() == 0) plotExt.push_back(".png");
+
    system( (string("mkdir -p ") + outDir).c_str());
 
    char buf[255];
