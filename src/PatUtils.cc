@@ -1,5 +1,7 @@
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
+#include "DataFormats/METReco/interface/HcalNoiseSummary.h"
+
 namespace patUtils
 {
   bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel){
@@ -535,5 +537,81 @@ namespace patUtils
 
 
 
+  bool passMetFilters(const fwlite::ChainEvent& ev, const bool& isPromptReco){
+    bool passMetFilter(false);
+
+    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+    
+    bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
+    bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
+    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
+    // bool HBHE(    utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )); // Needs to be rerun for both data (prompt+reReco) and MC, for now.
+    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
+    bool HBHE(false);
+    HcalNoiseSummary summary;
+    fwlite::Handle <HcalNoiseSummary> summaryHandle;
+    summaryHandle.getByLabel(ev, "hcalnoise");
+    if(summaryHandle.isValid()) summary=*summaryHandle;
+    bool failCommon(
+                    summary.maxHPDHits() >= 17  ||
+                    summary.maxHPDNoOtherHits() >= 10 ||
+                    summary.maxZeros() >= 9e9
+                    );
+    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
+    HBHE = !(failCommon || summary.HasBadRBXTS4TS5());
+    
+    if(!HBHE || !CSC || !GoodVtx) passMetFilter=false;
+    else                          passMetFilter=true;
+    
+    return passMetFilter;
+    // Documentation:    
+    // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
+    // Flag_trackingFailureFilter
+    // Flag_goodVertices        -------> Recommended by PAG
+    // Flag_CSCTightHaloFilter  -------> Recommended by PAG
+    // Flag_trkPOGFilters
+    // Flag_trkPOG_logErrorTooManyClusters
+    // Flag_EcalDeadCellTriggerPrimitiveFilter
+    // Flag_ecalLaserCorrFilter
+    // Flag_trkPOG_manystripclus53X
+    // Flag_eeBadScFilter
+    // Flag_METFilters
+    // Flag_HBHENoiseFilter     -------> Recommended by PAG
+    // Flag_trkPOG_toomanystripclus53X
+    // Flag_hcalLaserEventFilter
+    //
+    // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
+    // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
+    // - For Run2015B PromptReco Data, the process name is RECO.
+    // - For Run2015B re-MiniAOD Data 17Jul2015, the process name is PAT.
+    // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
+    // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
+    // -------------------------------------------------
+      
+    
+  }
+
+  bool exclusiveDataEventFilter(const double& run, const bool& isMC, const bool& isPromptReco)
+  {
+    bool passExclusiveDataEventFilter(false);
+    
+    if(isMC)
+      passExclusiveDataEventFilter=true;
+    else
+      {
+        bool isForPromptReco(run<215162 || run>215562);
+        if(isPromptReco)  // Prompt reco keeps events outside of that range
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=true;
+            else                passExclusiveDataEventFilter=false;
+          }
+        else // 17Jul15 ReReco keeps event inside that range
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=false;
+            else                passExclusiveDataEventFilter=true;
+          }
+      }
+    return passExclusiveDataEventFilter;
+  }
 
 }
