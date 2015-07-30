@@ -599,7 +599,7 @@ namespace patUtils
       passExclusiveDataEventFilter=true;
     else
       {
-        bool isForPromptReco(run<215162 || run>215562);
+        bool isForPromptReco(run<251162 || run>251562);
         if(isPromptReco)  // Prompt reco keeps events outside of that range
           {
             if(isForPromptReco) passExclusiveDataEventFilter=true;
