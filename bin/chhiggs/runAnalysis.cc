@@ -438,7 +438,7 @@ int main (int argc, char *argv[])
       
       // dilepton or both
       mon.addHistogram(new TH1D("finalnbjets"         +var, ";b-jet multiplicity;Events", 6,0,6) );        
-      mon.addHistogram(new TH1D("finalmt"             +var, ";Transverse mass;Events", 50, 0., 500.));
+      mon.addHistogram(new TH1D("finalmt"             +var, ";Transverse mass [GeV];Events", 50, 0., 500.));
       
       // lepton-tau
       mon.addHistogram(new TH1D("finaltaur"           +var, ";R^{#tau};Events", 10, 0., 1.0));
@@ -446,8 +446,10 @@ int main (int argc, char *argv[])
       mon.addHistogram(new TH1D("finaldphilepmet"     +var, ";#Delta#phi(#tau_{h}-#it{l});Events", 60, 0., 3.15));
       mon.addHistogram(new TH1D("finaldphitaumet"     +var, ";#Delta#phi(#tau_{h}-MET);Events", 60, 0., 3.15));
       mon.addHistogram(new TH1D("finaldphileptau"     +var, ";#Delta#phi(#it{l}-#tau_{h});Events", 60, 0., 3.15));
-      mon.addHistogram(new TH1D("finaltaupt"          +var, ";p_{T}^{#tau};Events", 50,0,500    ));
-    }
+      mon.addHistogram(new TH1D("finaltaupt"          +var, ";p_{T}^{#tau} [GeV];Events", 50,0,500    ));
+      mon.addHistogram(new TH1D("finalmutaumass"      +var, ";M_{#mu#tau_{h}} [GeV];Events", 50,0.,500 ));
+
+}
   
 
   //##############################################
@@ -1604,13 +1606,19 @@ int main (int argc, char *argv[])
                 double tauY(2*leadChargedHadron->pt()/tau.et() - 1);
                 //                Y= [ p_T^{trk} - (E_T - p_T^{trk} ]/E_T  = 2p_T^{trk}/E_T  - 1 . Which is practically Y = 2R' -1
 
+                
+                LorentzVector mutauSystem (0, 0, 0, 0);
+                mutauSystem += selSingleLepLeptons[0].p4();
+                mutauSystem += tau.p4();
+                
                 mon.fillHisto("finalnbjets"         +var, tags, finalSelSingleLepBJets.size(), iweight);
                 mon.fillHisto("finaltaur"           +var, tags, tauR, iweight);
                 mon.fillHisto("finaltaupolarization"+var, tags, tauY, iweight);
-                mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selLeptons[0].phi())), iweight);
+                mon.fillHisto("finaldphilepmet"     +var, tags, fabs(deltaPhi(newMET.phi(), selSingleLepLeptons[0].phi())), iweight);
                 mon.fillHisto("finaldphitaumet"     +var, tags, fabs(deltaPhi(newMET.phi(), selTaus[0].phi())), iweight);
-                mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selLeptons[0].phi(), selTaus[0].phi())), iweight);
+                mon.fillHisto("finaldphileptau"     +var, tags, fabs(deltaPhi(selSingleLepLeptons[0].phi(), selTaus[0].phi())), iweight);
                 mon.fillHisto("finaltaupt"          +var, tags, selTaus[0].pt(), iweight);
+                mon.fillHisto("finalmutaumass"      +var, tags, mutauSystem.mass(), iweight);
 
                 if(saveSummaryTree)
                   {

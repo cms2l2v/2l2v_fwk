@@ -109,10 +109,13 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-            { "dtag":"Data13TeV_SingleMuon2015B", "split":47, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" },
-            { "dtag":"Data13TeV_SingleE2015B",  "split":20, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-PromptReco-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" },
-            { "dtag":"Data13TeV_MuonEG2015B",   "split":20, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY_Run2015B.txt" }
-            ]             
+        { "dtag":"Data13TeV_MuonEG2015BPromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
+        { "dtag":"Data13TeV_DoubleMuon2015BPromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
+        { "dtag":"Data13TeV_DoubleEG2015PromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
+        { "dtag":"Data13TeV_MuonEG2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
+        { "dtag":"Data13TeV_DoubleMuon2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
+        { "dtag":"Data13TeV_DoubleEG2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " }
+      ]             
     }    
   ]
 }
