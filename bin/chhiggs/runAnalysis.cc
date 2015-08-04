@@ -216,7 +216,7 @@ int main (int argc, char *argv[])
   bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
-
+  bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
   
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -297,6 +297,12 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
+
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup", ";;Events", 50, 0., 50.) );
+  
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 50, 0., 50.) );
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup",  ";;Events", 50, 0., 50.) );
+
   
   // Setting up control categories
   std::vector < TString > controlCats;
@@ -412,7 +418,7 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "axialmet", ";Axial missing transvere energy [GeV];Events", 50, -100, 400));
       mon.addHistogram (new TH1D (icat + "axialmetNM1", ";Axial missing transvere energy [GeV];Events", 50, -100, 400));
       mon.addHistogram (new TH1D (icat + "met", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
-      mon.addHistogram (new TH1D (icat + "recoMet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
+      mon.addHistogram (new TH1D (icat + "recomet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
       mon.addHistogram (new TH1D (icat + "mt", ";Transverse mass;Events", 50, 0., 500.));
       mon.addHistogram (new TH1D (icat + "mtresponse", ";Transverse mass response;Events", 100, 0, 2));
       mon.addHistogram (new TH1D (icat + "mtcheckpoint", ";Transverse mass [GeV];Events", 160, 150, 1750));
@@ -577,17 +583,48 @@ int main (int argc, char *argv[])
           printf (".");
           if(!debug) fflush (stdout); // Otherwise debug messages are flushed
         }
+      
+      
+      double weightGen(1.);
+      if(isNLOMC)
+        {
+          //double weightGen(0.);
+          //double weightLhe(0.);
+          
+          fwlite::Handle<GenEventInfoProduct> evt;
+          evt.getByLabel(ev, "generator");
+          if(evt.isValid())
+            {
+              weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+            }
+          
+          //fwlite::Handle<LHEEventProduct> lheEvtProd;
+          //lheEvtProd.getByLabel(ev, "externalLHEProducer");
+          //if(lheEvtProd.isValid())
+          //  {
+          //    weightLhe=lheEvtProd->originalXWGTUP();
+          //    
+          //   //for(unsigned int i=0; i<evet->weights().size();i++){
+          //   //  double asdde=evet->weights()[i].wgt;
+          //   //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
+          //   //  EventInfo.ttbar_nw++;
+          //   //}
+          //  }
+          //cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
+
+        }
 
       std::vector < TString > tags (1, "all");
-      mon.fillHisto("initNorm", tags, 0., 1.);
+      mon.fillHisto("initNorm", tags, 0., weightGen);
 
       //##############################################   EVENT LOOP STARTS   ##############################################
       ev.to(iev);              //load the event content from the EDM file
       //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
 
       // Orthogonalize PromptReco+17Jul15 mix
+      if(debug) cout << "Run: " << ev.eventAuxiliary().run() << " isMC: " << isMC << ", isPromptReco: " << isPromptReco << ", decision word: " << patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) << endl;
       if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          
+
       // Skip bad lumi
       if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
 
@@ -616,6 +653,15 @@ int main (int argc, char *argv[])
       bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
       bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
 
+      reco::VertexCollection vtx;
+      fwlite::Handle < reco::VertexCollection > vtxHandle;
+      vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
+      if (vtxHandle.isValid() ) vtx = *vtxHandle;
+
+
+      if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, vtx.size(), 1.);
+      if(!isMC && eTrigger)  mon.fillHisto("nvts_singlee_pileup", tags, vtx.size(), 1.);
+      
       if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
       if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
       if (filterOnlyMUMU)     { eeTrigger = false; emuTrigger = false;                      muTrigger = false; eTrigger = false; }
@@ -624,7 +670,7 @@ int main (int argc, char *argv[])
       
       if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
       //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
-      mon.fillHisto("initNorm", tags, 1., 1.);
+      mon.fillHisto("initNorm", tags, 1., weightGen);
       //##############################################   EVENT PASSED THE TRIGGER   #######################################
 
 
@@ -667,10 +713,6 @@ int main (int argc, char *argv[])
 
       
       //load all the objects we will need to access
-      reco::VertexCollection vtx;
-      fwlite::Handle < reco::VertexCollection > vtxHandle;
-      vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
-      if (vtxHandle.isValid() ) vtx = *vtxHandle;
       
       // At least one primary vertex reconstructed in the event (it should have no effect because of miniAOD production, afaik)
       ///// FIXME if(vtx.size() == 0) continue;
@@ -681,34 +723,6 @@ int main (int argc, char *argv[])
       rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
       if (rhoHandle.isValid() ) rho = *rhoHandle;
 
-      if(false && isMC)
-        {
-          double weightGen(0.);
-          double weightLhe(0.);
-          
-          fwlite::Handle<GenEventInfoProduct> evt;
-          evt.getByLabel(ev, "generator");
-          if(evt.isValid())
-            {
-              weightGen=evt->weight();
-              
-            }
-
-          fwlite::Handle<LHEEventProduct> lheEvtProd;
-          lheEvtProd.getByLabel(ev, "externalLHEProducer");
-          if(lheEvtProd.isValid())
-            {
-              weightLhe=lheEvtProd->originalXWGTUP();
-              
-             //for(unsigned int i=0; i<evet->weights().size();i++){
-             //  double asdde=evet->weights()[i].wgt;
-             //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
-             //  EventInfo.ttbar_nw++;
-             //}
-            }
-          cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
-
-        }
 
       reco::GenParticleCollection gen;
       fwlite::Handle < reco::GenParticleCollection > genHandle;
@@ -805,7 +819,7 @@ int main (int argc, char *argv[])
           if(mctruthmode==6 && (!isHad || !hasTop )) continue;
           
         }
-      mon.fillHisto("initNorm", tags, 2., 1.);
+      mon.fillHisto("initNorm", tags, 2., weightGen);
       if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
       //      if(tPt>0 && tbarPt>0 && topPtWgt)
       //        {
@@ -875,6 +889,9 @@ int main (int argc, char *argv[])
       double TotalWeight_minus(1.0);
       double puWeight         (1.0);
 
+      if(isNLOMC)
+        weight *= weightGen;
+
       if(isMC)
         {
           int ngenITpu = 0;
@@ -887,7 +904,7 @@ int main (int argc, char *argv[])
             }
           
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight *= puWeight;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
+          weight *= puWeight;//Weight; //* puWeight;
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
@@ -993,7 +1010,7 @@ int main (int argc, char *argv[])
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selSingleLepLeptons.size();++l1){
-            if(reco::deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
+            if(reco::deltaR(tau, selSingleLepLeptons[l1])<0.4){overlapWithLepton=true; break;}
           }
           if(overlapWithLepton) continue;
           
@@ -1169,6 +1186,8 @@ int main (int argc, char *argv[])
       // Dilepton full analysis
       //if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
       if( isDoubleE || isEMu || isDoubleMu){
+
+        mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
         
         if(selLeptons.size()<2) continue; // Save time
         // Apply lepton efficiencies
@@ -1180,7 +1199,7 @@ int main (int argc, char *argv[])
         // Event selection booleans
         bool passMllVeto(tags[1] == "emu" ? dileptonSystem.mass()>12. : (fabs(dileptonSystem.mass()-91.)>15 && dileptonSystem.mass()>12. ) );
         bool passJetSelection(selJets.size()>1);
-        bool passMetSelection(recoMET.pt()>40.);
+        bool passMetSelection(met.pt()>40.);
         bool passOS(selLeptons[0].pdgId() * selLeptons[1].pdgId() < 0 );
         bool passBtagsSelection(selBJets.size()>1);
        
@@ -1197,11 +1216,11 @@ int main (int argc, char *argv[])
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
-          
           TString icat(ctrlCats[k]);
-
-          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
+          double raww(weight/puWeight);
+          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 raww);
           mon.fillHisto(icat+"nvtx",       tags, vtx.size(),                 weight);
+          continue; // FIXME
           mon.fillHisto(icat+"rho",        tags, rho,                        weight);
 
 
@@ -1218,7 +1237,8 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"yll",          tags, fabs(dileptonSystem.Rapidity()), weight);
           mon.fillHisto(icat+"mll",          tags, dileptonSystem.mass(),           weight);
           mon.fillHisto(icat+"ptll",         tags, dileptonSystem.pt(),             weight);
-          mon.fillHisto(icat+"met",          tags, recoMET.pt(),                    weight);
+          mon.fillHisto(icat+"met",          tags, met.pt(),                        weight);
+          mon.fillHisto(icat+"recomet",      tags, recoMET.pt(),                    weight);
           mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
           mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
           mon.fillHisto(icat+"mtsum",        tags, mtsum,                           weight);
@@ -1293,8 +1313,9 @@ int main (int argc, char *argv[])
         //
         //Fill histogram for posterior optimization, or for control regions
         
-        if(passMllVeto && passOS)
+        if(false && passMllVeto && passOS) // FIXME
           {
+
             for (size_t ivar = 0; ivar < nSystVars; ivar++)
               {
                 TString var(systVars[ivar]);
@@ -1413,13 +1434,15 @@ int main (int argc, char *argv[])
       //if(tags[1] == "singlemu" || tags[1] == "singlee"){
       if(isSingleMu || isSingleE){
 
+        mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
+        
         if(selSingleLepLeptons.size()!=1) continue;
         //int id (abs (selSingleLepLeptons[0].pdgId()));
         //weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
         
         // Event selection booleans
         bool passJetSelection(selSingleLepJets.size()>1);
-        bool passMetSelection(recoMET.pt()>40.);
+        bool passMetSelection(met.pt()>40.);
         bool passBtagsSelection(selSingleLepBJets.size()>0);
         bool passTauSelection(selTaus.size()==1);
         bool passOS(selTaus.size()>0 ? selSingleLepLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
@@ -1439,16 +1462,18 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-
-          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          weight/puWeight);
+          double raww(weight/puWeight);
+          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          raww);
           mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
+          continue; // FIXME
           mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
           mon.fillHisto (icat+"leadpt",     tags, selSingleLepLeptons[0].pt(),         weight);
           mon.fillHisto (icat+"trailerpt",  tags, selSingleLepLeptons[1].pt(),         weight);
           mon.fillHisto (icat+"leadeta",    tags, fabs (selSingleLepLeptons[0].eta()), weight);
           mon.fillHisto (icat+"trailereta", tags, fabs (selSingleLepLeptons[1].eta()), weight);
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                               weight);
-          mon.fillHisto (icat+"met",        tags, recoMET.pt(),                    weight);
+          mon.fillHisto (icat+"met",        tags, met.pt(),                    weight);
+          mon.fillHisto (icat+"recomet",    tags, recoMET.pt(),                    weight);
           if(selSingleLepJets.size()>0){
           mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
           //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
@@ -1488,7 +1513,7 @@ int main (int argc, char *argv[])
         //
         //Fill histogram for posterior optimization, or for control regions
         
-        if(passTauSelection && passOS)
+        if(false && passTauSelection && passOS) // FIXME
           {
             for (size_t ivar = 0; ivar < nSystVars; ivar++)
               {

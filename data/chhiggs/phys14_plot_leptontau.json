@@ -1,5 +1,86 @@
 {
   "proc":[
+     {
+      "tag":"t#bar{t} inclusive",
+      "isdata":false,
+      "color":614,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_inclusive"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v4/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} ltau",
+      "label":"t#bar{t}#rightarrow#it{l}#tau",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "mctruthmode":3,
+      "color":614,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_leptau"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} dilepton",
+      "label":"t#bar{t}#rightarrow#it{ll}",    
+      "isdata":false,
+      "isinvisible":true,
+      "issignal":true,
+      "mctruthmode":4,
+      "color":822,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_dilleptau"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Single top",
+      "isdata":false,
+      "color":824,
+      "lcolor":1,
+      "comment":"for every tW one it is availabel the correspondning _DS one. What is that, I do not know. Must find out, but I suppose that I do not have to sum them, so for now using the non-_DS one. Also, singleT_t has 5FS and 4FS, but there is no prescription for summing them in the twiki, so I am using 5FS only, for now.",
+      "data":[
+        { "dtag":"MC13TeV_SingleT_tW_5FS"                   , "split":10, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"          },
+        { "dtag":"MC13TeV_SingleTbar_tW_5FS"                , "split":10, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"      }
+      ]
+    },
+    {   
+      "tag":"misidentified #tau_{h}",
+      "label":"Misidentified #tau_{h}",
+      "isdata":false,
+      "color":799,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_lepjets"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"},
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9      , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_TTJets_hadrons"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Z#rightarrow ll",
+      "label":"Z#rightarrow#it{ll}",
+      "isdata":false,
+      "color":831,
+      "lcolor":1,
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Diboson",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_WW"                             , "split":41, "xsec":118.7       , "br":[ 1.0 ]           , "dset":"/WW_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_WZ"                             , "split":41, "xsec":65.9       , "br":[ 1.0 ]           , "dset":"/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZZ"                             , "split":41, "xsec":31.8       , "br":[ 1.0 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
+      ]
+    },
     { 
       "tag":"QCDMuEnriched",
       "isdata":false,
@@ -34,76 +115,6 @@
         { "dtag":"MC13TeV_QCD_Pt-1400to1800", "split":100, "xsec":0.7346,     "br":[1.0], "dset":"/QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM" }         
         ]       
      },
-    {
-      "tag":"Z#rightarrow ll",
-      "label":"Z#rightarrow#it{ll}",
-      "isdata":false,
-      "color":831,
-      "lcolor":1,
-      "data":[
-             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
-      ]
-    },
-    {
-      "tag":"Diboson",
-      "isdata":false,
-      "color":592,
-      "lcolor":1,
-      "marker":1,
-      "data":[
-        { "dtag":"MC13TeV_WW"                             , "split":41, "xsec":118.7       , "br":[ 1.0 ]           , "dset":"/WW_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"},
-{ "dtag":"MC13TeV_WZ"                             , "split":41, "xsec":65.9       , "br":[ 1.0 ]           , "dset":"/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"},
-{ "dtag":"MC13TeV_ZZ"                             , "split":41, "xsec":31.8       , "br":[ 1.0 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"}
-      ]
-    },
-    {
-      "tag":"Single top",
-      "isdata":false,
-      "color":824,
-      "lcolor":1,
-      "comment":"for every tW one it is availabel the correspondning _DS one. What is that, I do not know. Must find out, but I suppose that I do not have to sum them, so for now using the non-_DS one. Also, singleT_t has 5FS and 4FS, but there is no prescription for summing them in the twiki, so I am using 5FS only, for now.",
-      "data":[
-        { "dtag":"MC13TeV_SingleT_tW_5FS"                   , "split":10, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"          },
-        { "dtag":"MC13TeV_SingleTbar_tW_5FS"                , "split":10, "xsec":35.6        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"      },
-        { "dtag":"MC13TeV_SingleT_t_5FS"                    , "split":10, "xsec":103.4       , "br":[ 1.0 ]                 , "dset":"/ST_t-channel_5f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v2/MINIAODSIM"        } 
-      ]
-    },
-    {   
-      "tag":"misidentified #tau_{h}",
-      "label":"Misidentified #tau_{h}",
-      "isdata":false,
-      "color":799,
-      "lcolor":1,
-      "data":[
-        { "dtag":"MC13TeV_TTJets_lepjets"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"},
-        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":61526.7      , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"},
-        { "dtag":"MC13TeV_TTJets_hadrons"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
-      ]
-    },
-    {
-      "tag":"t#bar{t} ltau",
-      "label":"t#bar{t}#rightarrow#it{l}#tau",
-      "isdata":false,
-      "issignal":true,
-      "mctruthmode":3,
-      "color":614,
-      "lcolor":1,
-      "data":[
-        { "dtag":"MC13TeV_TTJets_leptau"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
-      ]
-    },
-    {
-      "tag":"t#bar{t} dilepton",
-      "label":"t#bar{t}#rightarrow#it{ll}",    
-      "isdata":false,
-      "issignal":true,
-      "mctruthmode":4,
-      "color":822,
-      "lcolor":1,
-      "data":[
-        { "dtag":"MC13TeV_TTJets_dilleptau"                           , "split":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM"}
-      ]
-    },
  { 
       "tag":"data",
       "isdata":true,
@@ -112,10 +123,10 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015BPromptReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_SingleElectron2015BPromptReco",  "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-PromptReco-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_SingleMuon2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_SingleElectron2015BReReco",  "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " }
+        { "dtag":"Data13TeV_SingleMuon2015BPromptReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015BPromptReco",  "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-PromptReco-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015BReReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-17Jul2015-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015BReReco",  "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-17Jul2015-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" }
             ]             
     }    
   ]
