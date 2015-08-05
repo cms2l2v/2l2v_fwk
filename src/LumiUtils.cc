@@ -22,10 +22,7 @@ namespace lumiUtils
 
    void GoodLumiFilter::FindLumiInFiles(vector<string>& fileNames)
    {
-      printf("Running\n");
       for(unsigned int f=0;f<fileNames.size();f++){
-        std::cout << fileNames[f].c_str() << std::endl;
-        //TFile file(fileNames[f].c_str() );
         TFile *file = TFile::Open(fileNames[f].c_str() );
          fwlite::LuminosityBlock ls( file);
          for(ls.toBegin(); !ls.atEnd(); ++ls){
