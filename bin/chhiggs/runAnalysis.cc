@@ -1189,7 +1189,7 @@ int main (int argc, char *argv[])
 
         mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
         
-        if(selLeptons.size()<2) continue; // Save time
+        if(selLeptons.size()<2 || vtx.size() == 0) continue; // Save time
         // Apply lepton efficiencies
         //for(size_t ilep=0; ilep<2; ++ilep){
         //  int id (abs (selLeptons[ilep].pdgId()));
@@ -1220,7 +1220,6 @@ int main (int argc, char *argv[])
           double raww(weight/puWeight);
           mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 raww);
           mon.fillHisto(icat+"nvtx",       tags, vtx.size(),                 weight);
-          continue; // FIXME
           mon.fillHisto(icat+"rho",        tags, rho,                        weight);
 
 
@@ -1313,7 +1312,7 @@ int main (int argc, char *argv[])
         //
         //Fill histogram for posterior optimization, or for control regions
         
-        if(false && passMllVeto && passOS) // FIXME
+        if(passMllVeto && passOS)
           {
 
             for (size_t ivar = 0; ivar < nSystVars; ivar++)
@@ -1436,7 +1435,7 @@ int main (int argc, char *argv[])
 
         mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
         
-        if(selSingleLepLeptons.size()!=1) continue;
+        if(selSingleLepLeptons.size()!=1 || vtx.size()==0) continue;
         //int id (abs (selSingleLepLeptons[0].pdgId()));
         //weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
         
@@ -1465,7 +1464,6 @@ int main (int argc, char *argv[])
           double raww(weight/puWeight);
           mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          raww);
           mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
-          continue; // FIXME
           mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
           mon.fillHisto (icat+"leadpt",     tags, selSingleLepLeptons[0].pt(),         weight);
           mon.fillHisto (icat+"trailerpt",  tags, selSingleLepLeptons[1].pt(),         weight);
@@ -1513,7 +1511,7 @@ int main (int argc, char *argv[])
         //
         //Fill histogram for posterior optimization, or for control regions
         
-        if(false && passTauSelection && passOS) // FIXME
+        if(passTauSelection && passOS)
           {
             for (size_t ivar = 0; ivar < nSystVars; ivar++)
               {
