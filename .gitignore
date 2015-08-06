@@ -6,6 +6,8 @@
 *.log
 *.pdf
 LSFJOB*
+*.sh.e*
+*.sh.o*
 # no python compiled files:
 *pyc
 # no python init file
