@@ -133,6 +133,7 @@ LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
 if(hostname.find("ucl.ac.be")!=-1):localTier = "T2_BE_UCL"
+if(hostname.find("iihe.ac.be")!=-1):localTier = "T2_BE_IIHE"
 if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 
 initProxy()
