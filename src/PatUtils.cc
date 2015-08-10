@@ -486,6 +486,7 @@ namespace patUtils
     
     bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
     bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
+    bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     ));
     // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
     // bool HBHE(    utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )); // Needs to be rerun for both data (prompt+reReco) and MC, for now.
     // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
@@ -502,8 +503,8 @@ namespace patUtils
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
     HBHE = !(failCommon || summary.HasBadRBXTS4TS5());
     
-    if(!HBHE || !CSC || !GoodVtx) passMetFilter=false;
-    else                          passMetFilter=true;
+    if(!HBHE || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
+    else                                      passMetFilter=true;
     
     return passMetFilter;
     // Documentation:    
@@ -516,7 +517,7 @@ namespace patUtils
     // Flag_EcalDeadCellTriggerPrimitiveFilter
     // Flag_ecalLaserCorrFilter
     // Flag_trkPOG_manystripclus53X
-    // Flag_eeBadScFilter
+    // Flag_eeBadScFilter       -------> Recommended by PAG
     // Flag_METFilters
     // Flag_HBHENoiseFilter     -------> Recommended by PAG
     // Flag_trkPOG_toomanystripclus53X
