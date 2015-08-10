@@ -26,14 +26,33 @@ initialCommand = '';
 def initProxy():
    global initialCommand
    validCertificate = True
-   if(validCertificate and (not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')))):validCertificate = False
-   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600): validCertificate = False
-   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+   hostname = commands.getstatusoutput("hostname -f")[1]
+   if(hostname.find("iihe.ac.be")!=-1): #At iihe, to be able to run with the cluster, everything needs to be in /localgrid/$USER
+      if(commands.getstatusoutput("whoami")[1]=='hdelanno'): #for some reason my username and my directory are different; thus the special condition
+         if(validCertificate and (not os.path.isfile(os.path.expanduser('/localgrid/delannoy/x509_user_proxy/x509_proxy')))):validCertificate = False
+         if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('/localgrid/delannoy/x509_user_proxy/x509_proxy')))>600): validCertificate = False
+         if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=/localgrid/delannoy/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+      else:
+         if(validCertificate and (not os.path.isfile(os.path.expanduser('/localgrid/$USER/x509_user_proxy/x509_proxy')))):validCertificate = False
+         if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('/localgrid/$USER/x509_user_proxy/x509_proxy')))>600): validCertificate = False
+         if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=/localgrid/$USER/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+   else:
+      if(validCertificate and (not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')))):validCertificate = False
+      if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600): validCertificate = False
+      if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
 
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
-      os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen; '
+      if(hostname.find("iihe.ac.be")!=-1):
+         if(commands.getstatusoutput("whoami")[1]=='hdelanno'): #for some reason my username and my directory are different; thus the special condition
+            os.system('mkdir -p /localgrid/delannoy/x509_user_proxy; voms-proxy-init --voms cms:/cms/becms --valid 192:00 --out /localgrid/delannoy/x509_user_proxy/x509_proxy')
+            initialCommand = 'export X509_USER_PROXY=/localgrid/delannoy/x509_user_proxy;voms-proxy-init --noregen; '
+         else:
+            os.system('mkdir -p /localgrid/$USER/x509_user_proxy; voms-proxy-init --voms cms:/cms/becms --valid 192:00 --out /localgrid/$USER/x509_user_proxy/x509_proxy')
+            initialCommand = 'export X509_USER_PROXY=/localgrid/$USER/x509_user_proxy;voms-proxy-init --noregen; '
+      else:
+         os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
+         initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen; '
 
 
 def getFileList(procData):
@@ -65,7 +84,10 @@ def getFileList(procData):
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               list[i] = "root://eoscms//eos/cms"+list[i]
+               if(hostname.find("iihe.ac.be")!=-1):
+                  list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
+               else:
+                  list[i] = "root://eoscms//eos/cms"+list[i]
             else:
                list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side

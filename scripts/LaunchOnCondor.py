@@ -123,6 +123,8 @@ def CreateTheShellFile(argv):
         if 'purdue.edu' in hostname:
             shell_file.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
             shell_file.write('source /grp/cms/tools/glite/setup.sh\n')
+        elif 'iihe.ac.be' in hostname:
+            shell_file.write('source $VO_CMS_SW_DIR/cmsset_default.sh\n')
 
 	shell_file.write('export SCRAM_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
         shell_file.write('export BUILD_ARCH='+os.getenv("SCRAM_ARCH","slc5_amd64_gcc462")+'\n')
@@ -308,7 +310,7 @@ def AddJobToCmdFile():
 	       cmd_file.write(temp)
 	elif subTool=='qsub':
                 queue = ""
-                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )<0): queue = ' -q localgrid@cream02 '
+                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )!=0): queue = ' -q localgrid@cream02 '
 
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
