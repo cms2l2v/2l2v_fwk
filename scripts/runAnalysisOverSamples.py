@@ -133,6 +133,7 @@ LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
 if(hostname.find("ucl.ac.be")!=-1):localTier = "T2_BE_UCL"
+if(hostname.find("iihe.ac.be")!=-1):localTier = "T2_BE_IIHE"
 if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 
 initProxy()
@@ -191,6 +192,7 @@ for procBlock in procList :
             	if(opt.params.find('@runSystematics')<0) :  opt.params = '@runSystematics=False '  + opt.params
                 if(opt.params.find('@jacknife')<0) :        opt.params = '@jacknife=-1 ' + opt.params
                 if(opt.params.find('@jacks')<0) :           opt.params = '@jacks=-1 '    + opt.params
+                if(opt.params.find('@trig')<0) :            opt.params = '@trig=False ' + opt.params
             	if(len(opt.params)>0) :
                     extracfgs = opt.params.split(' ')
                     for icfg in extracfgs :
