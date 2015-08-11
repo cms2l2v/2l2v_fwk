@@ -80,19 +80,12 @@ def getFileList(procData):
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
       split=getByLabel(procData,'split',1)
-      ngroup = len(list)/split
-      if (ngroup * split != len(list) ):
-          ngroup = ngroup+1
-      groupList = ''
-      i=0;
-      while(i <len(list) ):
-         groupList += '"'+list[i]+'",\\n';
-         if(i>0 and i%ngroup==0):
-            FileList.append(groupList)
-            groupList=''
-         i = i+1;               
-      if groupList != '':
-          FileList.append(groupList)
+      for g in range(0, len(list), split):
+         groupList = ''
+         for f in list[g:g+n]
+            groupList += '"'+list[i]+'",\\n';
+         FileList.append(groupList)
+
    else:
       print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
       for segment in range(0,split) :

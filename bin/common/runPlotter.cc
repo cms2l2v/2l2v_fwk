@@ -183,7 +183,6 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
           //to make it faster only consider the first samples 
 	  //for(size_t id=0; id<Samples.size()&&id<2; id++){
-	  int counter_fileExist = 0;
 	  for(size_t id=0; id<Samples.size(); id++){
 	      int split = Samples[id].getInt("split", 1); 
               for(int s=0; s<split; s++){
@@ -196,19 +195,14 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                     continue; 
                  }else{
                     fileExist=true;
-                    ++counter_fileExist;
                  }
 
-                 //do the following only for the first existing file
-                 if( counter_fileExist != 1 ) continue;
+                 //just to make it faster, only consider the first 3 sample of a same kind
+                 if(isData){if(dataProcessed>=2){ File->Close(); continue;}else{dataProcessed++;}}
+                 if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
+                 if(isMC  ){if(bckgProcessed>=2){ File->Close(); continue;}else{bckgProcessed++;}}
 
                  printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
-
-                 //just to make it faster, only consider the first 3 sample of a same kind
-                 if(isData){if(dataProcessed>=1){ File->Close(); continue;}else{dataProcessed++;}}
-                 if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
-                 if(isMC  ){if(bckgProcessed>0) { File->Close(); continue;}else{bckgProcessed++;}}
-
 	         GetListOfObject(Root,RootDir,histlist,(TDirectory*)File,"" );
 	         File->Close();
                }

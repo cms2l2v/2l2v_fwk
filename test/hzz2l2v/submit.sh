@@ -31,9 +31,13 @@ fi
 
 #extract integrated luminosity of the processed lumi blocks
 if [[ $step -eq 2 ]]; then
-   echo "COMPUTE INTEGRATED LUMINOSITY"
+   echo "MISSING LUMI WILL APPEAR AS DIFFERENCE LUMI ONLY IN in.json"
    mergeJSON.py --output=processedData.json   results/Data*.json
-   python /afs/cern.ch/user/m/marlow/public/lcr2/lcr2.py -i processedData.json >> results/LUMI.txt
+   mergeJSON.py --output=in.json  Cert_*.txt
+   compareJSON.py --diff in.json processedData.json 
+
+   echo "COMPUTE INTEGRATED LUMINOSITY"
+   python /afs/cern.ch/user/m/marlow/public/lcr2/lcr2.py -i processedData.json > results/LUMI.txt
    cat results/LUMI.txt  
 fi
 
