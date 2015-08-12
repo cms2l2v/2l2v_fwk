@@ -201,11 +201,11 @@ int main (int argc, char *argv[])
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (dtag.Contains ("DoubleEle")) filterOnlyEE       = true;
-      if (dtag.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
-      if (dtag.Contains ("MuEG"))      filterOnlyEMU      = true;
-      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
-      if (dtag.Contains ("SingleEle")) filterOnlySINGLEE  = true;
+      if (dtag.Contains ("DoubleEle"))  filterOnlyEE       = true;
+      if (dtag.Contains ("DoubleMu"))   filterOnlyMUMU     = true;
+      if (dtag.Contains ("MuEG"))       filterOnlyEMU      = true;
+      if (dtag.Contains ("SingleMuon")) filterOnlySINGLEMU = true;
+      if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
     }
   
   bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
@@ -298,10 +298,10 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
 
-  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup", ";;Events", 50, 0., 50.) );
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup", ";;Events", 100, 0., 100.) );
   
-  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 50, 0., 50.) );
-  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup",  ";;Events", 50, 0., 50.) );
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 100, 0., 100.) );
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup",  ";;Events", 100, 0., 100.) );
 
   
   // Setting up control categories
@@ -319,8 +319,8 @@ int main (int argc, char *argv[])
       TString icat (controlCats[k]);
 
       //pu control to be completed
-      mon.addHistogram (new TH1D (icat+"nvtx", ";Vertices;Events", 50, 0, 50));
-      mon.addHistogram (new TH1D (icat+"nvtxraw", ";Vertices;Events", 50, 0, 50));
+      mon.addHistogram (new TH1D (icat+"nvtx",    ";Vertices;Events", 100, 0, 100));
+      mon.addHistogram (new TH1D (icat+"nvtxraw", ";Vertices;Events", 100, 0, 100));
       mon.addHistogram (new TH1D (icat+"rho", ";#rho;Events", 50, 0, 25));
       
 
@@ -533,6 +533,12 @@ int main (int argc, char *argv[])
   //      v2CSVv2L 0.605
   //      v2CSVv2M 0.890
   //      v2CSVv2T 0.970
+
+  // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
+  sfb = 0.861;
+  // sbbunc =;
+  beff = 0.559;
+
   double
     btagLoose(0.605),
     btagMedium(0.890),
@@ -1107,15 +1113,13 @@ int main (int argc, char *argv[])
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
           bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose);
           
-          
-          // update according to the SF measured by BTV: NOT YET!
-          /// if (isMC)
-          ///   {
-          ///     int flavId = jets[ijet].partonFlavour();
-          ///     if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-          ///     else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-          ///     else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-          ///   }
+          if (isMC)
+            {
+              int flavId = jets[ijet].partonFlavour();
+              if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+              else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+              else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+            }
           if(!hasCSVtag) continue;
 
           if(minDRlj > 0.4){
@@ -1123,6 +1127,13 @@ int main (int argc, char *argv[])
             selBJets.push_back(jets[ijet]);
           }
           hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium;
+          if (isMC)
+            {
+              int flavId = jets[ijet].partonFlavour();
+              if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+              else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+              else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+            }
 
           if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
