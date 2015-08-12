@@ -357,7 +357,7 @@ namespace utils
       for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
          if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
       }
-      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!\n"); mcpileup.resize(ngenITpu+1);}
       mcpileup[ngenITpu]++;
     }
   }
