@@ -82,8 +82,8 @@ def getFileList(procData):
       split=getByLabel(procData,'split',1)
       for g in range(0, len(list), split):
          groupList = ''
-         for f in list[g:g+n]
-            groupList += '"'+list[i]+'",\\n';
+         for f in list[g:g+split]:
+            groupList += '"'+f+'",\\n';
          FileList.append(groupList)
 
    else:
