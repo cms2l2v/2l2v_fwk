@@ -80,9 +80,10 @@ def getFileList(procData):
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
       split=getByLabel(procData,'split',1)
-      for g in range(0, len(list), split):
+      NFilesPerJob = max(1,len(list)/split)
+      for g in range(0, len(list), NFilesPerJob):
          groupList = ''
-         for f in list[g:g+split]:
+         for f in list[g:g+NFilesPerJob]:
             groupList += '"'+f+'",\\n';
          FileList.append(groupList)
 
