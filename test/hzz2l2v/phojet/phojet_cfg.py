@@ -14,7 +14,7 @@ def lfn_to_pfn(f):
     #    pfn = 'file:'+pfn
     return pfn
 
-inputFiles = cms.untracked.vstring("file:input.root")
+
 try:
     import os
     import sys
@@ -39,8 +39,9 @@ runProcess = cms.PSet(
     isMC = cms.bool(True),
     xsec = cms.double(9999.99),
     triggerstudy = cms.bool(False), 
-    mctruthmode = cms.int32(22), # for photon
-    #mctruthmode = cms.int32(0), # DY process 
-    maxevents = cms.int32(-1), # set to -1 when running on grid. 
+    #mctruthmode = cms.int32(22), # for photon
+    mctruthmode = cms.int32(0), # DY process 
+    maxevents = cms.int32(1000), # set to -1 when running on grid.
+    weightsFile = cms.vstring(), 
     pujetidparas = cms.PSet(pu_jetid)
 )

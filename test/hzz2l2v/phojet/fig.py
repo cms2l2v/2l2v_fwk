@@ -12,8 +12,8 @@ import os
 import subprocess
 
 label_json_dict = {
-    'pho': '../../data/phojet/phys14_samples.json',
-    'dy': '../../data/phojet/phys14_dy_samples.json'
+    'pho': '../../../data/phojet/phys14_samples.json',
+    'dy': '../../../data/phojet/phys14_dy_samples.json'
     }
 
 options_dict = {
@@ -51,10 +51,10 @@ def main():
     version = args[1] 
     inDir = 'results/%s/' % version 
     outDir = 'plots/%s' % version 
-    outFile = 'plots/%s/plotter_%s.root' % (version, label)
+    outFile = 'plots/%s/summary_%s.root' % (version, label)
     json = label_json_dict[label]
     
-    cmd = 'runPhoJetPlotter --inDir %s --outDir %s --outFile %s --json %s' % (
+    cmd = 'runPlotter --inDir %s --outDir %s --outFile %s --json %s --noPlot' % (
         inDir, outDir, outFile, json)
     output = proc_cmd(cmd, test=test)
     if output:
