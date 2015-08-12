@@ -6,7 +6,7 @@ import commands
 import LaunchOnCondor
 import UserCode.llvv_fwk.storeTools_cff as storeTools
 
-
+PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
@@ -26,17 +26,14 @@ initialCommand = '';
 def initProxy():
    global initialCommand
    validCertificate = True
-   if(validCertificate and (not os.path.isfile(os.path.expanduser('results/FARM/inputs/x509_user_proxy/x509_proxy')))):validCertificate = False
-   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('results/FARM/inputs/x509_user_proxy/x509_proxy')))>600): validCertificate = False
-   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=results/FARM/inputs/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+   if(validCertificate and (not os.path.isfile(os.path.expanduser(PROXYDIR+'/x509_proxy')))):validCertificate = False
+   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser(PROXYDIR+'/x509_proxy')))>600): validCertificate = False
+   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
 
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
-      if(hostname.find("iihe.ac.be")!=-1):
-         os.system('mkdir -p results/FARM/inputs/x509_user_proxy; voms-proxy-init --voms cms:/cms/becms -valid 192:00 --out results/FARM/inputs/x509_user_proxy/x509_proxy')
-      else:
-         os.system('mkdir -p results/FARM/inputs/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out results/FARM/inputs/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-   initialCommand = 'export X509_USER_PROXY=results/FARM/inputs/x509_user_proxy/x509_proxy;voms-proxy-init --noregen; '
+      os.system('mkdir -p '+PROXYDIR+'/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out results/FARM/inputs/x509_user_proxy/x509_proxy')
+   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --noregen; '
 
 
 def getFileList(procData):
@@ -68,10 +65,8 @@ def getFileList(procData):
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               if(hostname.find("iihe.ac.be")!=-1):
-                  list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
-               else:
-                  list[i] = "root://eoscms//eos/cms"+list[i]            
+               if(hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
+               else:                                list[i] = "root://eoscms//eos/cms"+list[i]            
             else:
                list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
@@ -121,6 +116,7 @@ scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysis
 DatasetFileDB                      = opt.db
 
 FarmDirectory                      = opt.outdir+"/FARM"
+PROXYDIR                           = FarmDirectory+"/inputs/" 
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
