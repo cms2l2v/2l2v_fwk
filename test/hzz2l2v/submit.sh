@@ -18,7 +18,7 @@ if [[ $# -ge 2 ]]; then echo "Additional arguments will be considered: "$argumen
 #analysis cleanup
 if [[ $step -eq 0 ]]; then
    echo "CLEANING UP"
-   rm -rdf results plots LSFJOB_* core.*
+   rm -rdf results plots LSFJOB_* core.* *.sh.e* *.sh.o*
 fi   
 
 #submit jobs for 2l2v analysis
