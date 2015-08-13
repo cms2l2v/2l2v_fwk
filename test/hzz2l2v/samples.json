@@ -79,7 +79,7 @@
       "color":831,
       "lcolor":1,
       "data":[
-             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":40, "xsec":4016.8     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"}
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":40, "xsec":6025.3     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"}
       ]
     },
     {
