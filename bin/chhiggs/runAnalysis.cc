@@ -86,9 +86,11 @@ bool passPFJetID(std::string label,
 
   // Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
   if(label=="Loose")
-    passID = ( (nhf<0.99 && nef<0.99 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4) );
+    passID = ( ((nhf<0.99 && nef<0.99 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4)) && abs(eta)<=3.0 );
   if(label=="Tight")
-    passID = ( (nhf<0.90 && nef<0.90 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4) );
+    passID = ( ((nhf<0.90 && nef<0.90 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4)) && abs(eta) <=3.0);
+  
+  // Should be added the abs(eta)>3.0 part, but we never consider such jets, so... Meh!
   
   return passID; 
   
@@ -1039,7 +1041,7 @@ int main (int argc, char *argv[])
               int pixelHits = packedCand->numberOfPixelHits();
               if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
             }
-            ////// FIXME if(nChHadPixelHits==0) continue;
+            if(nChHadPixelHits==0) continue;
           }
           /////
           
@@ -1065,7 +1067,7 @@ int main (int argc, char *argv[])
       double mindphijmet (9999.);
       for (size_t ijet = 0; ijet < jets.size(); ijet++)
         {
-          if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 4.7) continue;
+          if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 3.0) continue; // Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.5)
           
           //mc truth for this jet
           const reco::GenJet * genJet = jets[ijet].genJet();
@@ -1082,7 +1084,7 @@ int main (int argc, char *argv[])
 
           for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
             minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jets[ijet], selSingleLepLeptons[ilep]));
-
+          
           //jet id
           bool passPFloose = passPFJetID("Loose", jets[ijet]); 
           //if (jets[ijet].pt() > 30)
@@ -1092,9 +1094,9 @@ int main (int argc, char *argv[])
           //    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
           //    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
           //  }
-          if (!passPFloose || jets[ijet].pt() <30 || fabs(jets[ijet].eta()) > 2.5) continue;
+          if (!passPFloose || jets[ijet].pt() <30. || fabs(jets[ijet].eta()) > 2.5) continue;
 
-
+          
           if (minDRlj >= 0.4){
             selJets.push_back(jets[ijet]);
             njets++;
