@@ -28,12 +28,12 @@ def initProxy():
    validCertificate = True
    if(validCertificate and (not os.path.isfile(os.path.expanduser('~/x509_user_proxy/x509_proxy')))):validCertificate = False
    if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser('~/x509_user_proxy/x509_proxy')))>600): validCertificate = False
-   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --voms cms --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
 
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       os.system('mkdir -p ~/x509_user_proxy; voms-proxy-init --voms cms -valid 192:00 --out ~/x509_user_proxy/x509_proxy')#all must be done in the same command to avoid environement problems.  Note that the first sourcing is only needed in Louvain
-   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --noregen; '
+   initialCommand = 'export X509_USER_PROXY=~/x509_user_proxy/x509_proxy;voms-proxy-init --voms cms --noregen; '
 
 
 def getFileList(procData):
@@ -164,9 +164,9 @@ for procBlock in procList :
                 for ibr in br :  xsec = xsec*ibr
 
             FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
+            LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
             if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
 
-            LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
             for s in range(0,len(FileList)):
                 #create the cfg file
                 eventsFile = FileList[s]
@@ -216,7 +216,7 @@ for procBlock in procList :
                        LaunchOnCondor.Jobs_CRABname     = dtag
                        LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
                        LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
-                    LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
+                    LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
             LaunchOnCondor.SendCluster_Submit()
 
