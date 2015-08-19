@@ -1120,9 +1120,8 @@ int main (int argc, char *argv[])
               else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
               else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
             }
-          if(!hasCSVtag) continue;
 
-          if(minDRlj > 0.4){
+          if(hasCSVtag && minDRlj > 0.4){
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
