@@ -57,10 +57,9 @@ elif [ "${1}" = "plot" ]; then
     PSEUDODATA=" "
     
 #for LUMI in 500 1000 5000 10000
-#   29.539 16.670 
-    for LUMI in 40.054
+    for LUMI in 40.99
     do
-        DIR="${BASEDIR}${LUMI}/"
+        DIR="${BASEDIR}${LUMI}_2/"
         mkdir -p ${DIR}
         cp ~/www/HIG-13-026/index.php ${DIR}
 
