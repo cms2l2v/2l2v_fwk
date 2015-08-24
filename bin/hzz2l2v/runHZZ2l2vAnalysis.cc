@@ -1397,7 +1397,7 @@ int main(int argc, char* argv[])
 
              //check b-tag
              if( pt < 30 || fabs(eta) > 2.5 ) continue;
-             if(!isMC) continue;
+             if(!isMC && ivar>0 ) continue;
              //if(!varyBtagUp && !varyBtagDown) continue;
              int flavId=jets[ijet].partonFlavour();
              bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>0.423);
