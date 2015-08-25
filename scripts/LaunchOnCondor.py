@@ -70,7 +70,7 @@ def CreateTheConfigFile(argv):
         global Jobs_FinalCmds
 	global Path_Cfg
 	global CopyRights
-        Path_Cfg   = Farm_Directories[1]+Jobs_Index+Jobs_Name+'_cfg.py'
+        Path_Cfg   = Farm_Directories[1]+'job'+Jobs_Index+Jobs_Name+'_cfg.py'
 
 	config_file=open(argv[1],'r')
 	config_txt   = '\n\n' + CopyRights + '\n\n'
@@ -106,7 +106,7 @@ def CreateTheShellFile(argv):
         global absoluteShellPath
         if(subTool=='crab'):return
 
-        Path_Shell = Farm_Directories[1]+Jobs_Index+Jobs_Name+Jobs_Index+'.sh'
+        Path_Shell = Farm_Directories[1]+'job'+Jobs_Index+Jobs_Name+Jobs_Index+'.sh'
         function_argument=''
         hostname = os.getenv("HOSTNAME", "")
         
