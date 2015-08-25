@@ -163,8 +163,8 @@ for procBlock in procList :
                 for ibr in br :  xsec = xsec*ibr
 
             FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
-            LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
             if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
+            LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
 
             for s in range(0,len(FileList)):
                 #create the cfg file
