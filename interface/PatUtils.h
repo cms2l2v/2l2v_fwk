@@ -65,10 +65,11 @@ namespace patUtils
    bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0);
    bool passIso(pat::Muon&     mu,  int IsoLevel);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
+   bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale); 
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
-   bool passMetFilters(const fwlite::ChainEvent& ev, const bool& isPromptReco);
+   bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco);
    
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
 

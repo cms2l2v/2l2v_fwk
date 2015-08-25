@@ -342,9 +342,53 @@ namespace utils
 	}
 
 
+  int getTotalNumberOfEvents(std::vector<std::string>& urls, bool fast)
+  {
+    int toReturn = 0;
+    for(unsigned int f=0;f<urls.size();f++){
+       TFile* file = TFile::Open(urls[f].c_str() );
+       fwlite::Event ev(file);
+       if(fast){
+          toReturn += ev.size();          
+       }else{
+          for(ev.toBegin(); !ev.atEnd(); ++ev){
+             fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
+             genEventInfoHandle.getByLabel(ev, "generator");
+             if(genEventInfoHandle.isValid() && genEventInfoHandle->weight()<0){toReturn--;}else{toReturn++;}
+          }
+       }
+       delete file;
+     }
+     return toReturn;
+  }
 
+
+  void getMCPileupDistributionFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup)
+  {
+    mcpileup.clear();
+    mcpileup.resize(Npu);
+    for(unsigned int f=0;f<urls.size();f++){
+       TFile* file = TFile::Open(urls[f].c_str() );
+       fwlite::Event ev(file);
+       for(ev.toBegin(); !ev.atEnd(); ++ev){
+          fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+          puInfoH.getByLabel(ev, "addPileupInfo");
+          if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
+          unsigned int ngenITpu = 0;
+          for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+             if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
+          }
+          if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+          mcpileup[ngenITpu]++;
+       }
+       delete file;
+     }
+  }
+ 
+  //This function will be removed soon as it is not behaving properly with xrootd
   void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
   {
+    #warning THE FOLLOWING FUNCTION WILL BE REMOVED SOON: void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev   , unsigned int Npu, std::vector<float>& mcpileup)',\n IF YOU USE IT REPLACE IT BY THIS ONE :DEPRECATED METHOD USED by 'void getMCPileupDistributionFromMiniAOD(std::vector<string>& urls, unsigned int Npu, std::vector<float>& mcpileup)'
     mcpileup.clear();
     mcpileup.resize(Npu);
     for(Long64_t ientry=0;ientry<ev.size();ientry++){

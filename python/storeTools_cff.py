@@ -224,7 +224,8 @@ def keepOnlyFilesFromGoodRun(fileList, jsonPath):
       #   if(not IsGoodRun(int(run))):continue
       #   for lumi in commands.getstatusoutput('das_client.py --limit=0 --query "lumi file='+f+'"')[1].replace('[','').replace(']','').split(','):
       #      if(IsGoodLumi(run, lumi)):return True
-       
+
+      
       #FASTER technique only based on run number and file name parsing
       if '/00000/' in F:
           Fsplit = F.split('/00000/')[0].split('/')

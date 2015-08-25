@@ -24,8 +24,6 @@
 <!--  <bin name="runTtHMuMuAnalysis"          file="tthmumu/runAnalysis.cc"></bin>-->
 
   <bin name="runPhoJetAnalysis"           file="hzz2l2v/runPhoJetAnalysis.cc"></bin>
-  <bin name="runPhoJetPlotter"            file="hzz2l2v/runPhoJetPlotter.cc"></bin>
-
   <bin name="runHZZ2l2vAnalysis"          file="hzz2l2v/runHZZ2l2vAnalysis.cc"></bin>
 </environment>
 

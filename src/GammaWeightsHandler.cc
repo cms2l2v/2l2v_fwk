@@ -43,7 +43,6 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
 		  TGraph *h = (TGraph *) fwgt->Get(hname);
 		  if(h) iwgts.push_back(h);
 		  
-	      
 		  //mass shape
 		  if(iw>0) continue;
 		  hname= key+"_"+massType;
