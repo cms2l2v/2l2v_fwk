@@ -219,7 +219,7 @@ TCanvas* drawPt(TString label, std::vector<TString> inputFiles){
 
   for (std::vector<int>:: size_type i = 0; i != inputFiles.size(); i++) {    
     TFile *f = new TFile(inputFiles[i]);
-    TString dir = "#gamma+jets_pT-15to3000"; 
+    TString dir = "#gamma+jets_pT-15To6000"; 
     TString histName = Form("%s/qt", dir.Data()); 
     h = (TH1F*)f->Get(histName);
     if (!h) {
