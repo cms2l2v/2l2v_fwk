@@ -10,15 +10,15 @@ namespace utils
     FactorizedJetCorrector *getJetCorrector(TString baseDir, bool isMC)
     {
       gSystem->ExpandPathName(baseDir);
-      TString pf(isMC ? "MC" : "Data");
+      TString pf(isMC ? "MC" : "DATA");
       
       //order matters: L1 -> L2 -> L3 (-> Residuals)
       std::vector<std::string> jetCorFiles;
-      std::cout << baseDir+"/"+pf+"_L1FastJet_AK5PFchs.txt" << std::endl;
-      jetCorFiles.push_back((baseDir+"/"+pf+"_L1FastJet_AK5PFchs.txt").Data());
-      jetCorFiles.push_back((baseDir+"/"+pf+"_L2Relative_AK5PFchs.txt").Data());
-      jetCorFiles.push_back((baseDir+"/"+pf+"_L3Absolute_AK5PFchs.txt").Data());
-      if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK5PFchs.txt").Data());
+      std::cout << baseDir+"/"+pf+"_L1FastJet_AK4PFchs.txt" << std::endl;
+      jetCorFiles.push_back((baseDir+"/"+pf+"_L1FastJet_AK4PFchs.txt").Data());
+      jetCorFiles.push_back((baseDir+"/"+pf+"_L2Relative_AK4PFchs.txt").Data());
+      jetCorFiles.push_back((baseDir+"/"+pf+"_L3Absolute_AK4PFchs.txt").Data());
+      if(!isMC) jetCorFiles.push_back((baseDir+"/"+pf+"_L2L3Residual_AK4PFchs.txt").Data());
       
       //init the parameters for correction
       std::vector<JetCorrectorParameters> corSteps;
