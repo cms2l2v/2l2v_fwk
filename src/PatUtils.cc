@@ -537,7 +537,7 @@ namespace patUtils
 
 
 
-  bool passMetFilters(const fwlite::ChainEvent& ev, const bool& isPromptReco){
+  bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco){
     bool passMetFilter(false);
 
     edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
