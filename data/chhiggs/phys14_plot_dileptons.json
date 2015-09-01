@@ -74,7 +74,7 @@
       "color":809,
       "lcolor":1,
       "data":[
-        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":61526.7       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WJets"                            , "split":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM"}
       ]
     },
     {
@@ -109,12 +109,12 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_MuonEG2015BPromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_DoubleMuon2015BPromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_DoubleEG2015PromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_MuonEG2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_DoubleMuon2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " },
-        { "dtag":"Data13TeV_DoubleEG2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251642_13TeV_PromptReco_Collisions15_JSON_v2.txt " }
+        { "dtag":"Data13TeV_MuonEG2015BPromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_DoubleMuon2015BPromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_DoubleEG2015PromptReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015B-PromptReco-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_MuonEG2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_DoubleMuon2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" },
+        { "dtag":"Data13TeV_DoubleEG2015BReReco",   "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON.txt" }
       ]             
     }    
   ]

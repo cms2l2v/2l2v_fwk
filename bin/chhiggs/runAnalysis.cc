@@ -66,7 +66,156 @@
 
 using namespace std;
 
+namespace utils
+{
+  namespace cmssw
+  {
+    std::vector<double> smearJER(double pt, double eta, double genPt)
+    {
+      std::vector<double> toReturn(3,pt);
+      if(genPt<=0) return toReturn;
+      
+      // FIXME: These are the 8 TeV values.
+      //
+      eta=fabs(eta);
+      double ptSF(1.0), ptSF_err(0.06);
+      if(eta<0.5)                  { ptSF=1.052; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.062+0.061),2)); }
+      else if(eta>=0.5 && eta<1.1) { ptSF=1.057; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.056+0.055),2)); }
+      else if(eta>=1.1 && eta<1.7) { ptSF=1.096; ptSF_err=sqrt(pow(0.017,2)+pow(0.5*(0.063+0.062),2)); }
+      else if(eta>=1.7 && eta<2.3) { ptSF=1.134; ptSF_err=sqrt(pow(0.035,2)+pow(0.5*(0.087+0.085),2)); }
+      else if(eta>=2.3 && eta<5.0) { ptSF=1.288; ptSF_err=sqrt(pow(0.127,2)+pow(0.5*(0.155+0.153),2)); }
+      
+      toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
+      toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
+      toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
+      return toReturn;
+    }
 
+    //
+    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
+    {
+      jecUnc->setJetEta(eta);
+      jecUnc->setJetPt(pt);
+      double relShift=fabs(jecUnc->getUncertainty(true));
+      std::vector<double> toRet;
+      toRet.push_back((1.0+relShift)*pt);
+      toRet.push_back((1.0-relShift)*pt);
+      return toRet;
+    }
+    
+    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
+    {
+      for(size_t ijet=0; ijet<jets.size(); ijet++)
+        {
+          pat::Jet jet = jets[ijet];
+          //correct JES
+          LorentzVector rawJet = jet.correctedP4("Uncorrected");
+          //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
+          //LorentzVector rawJet(jet*toRawSF);
+          jesCor->setJetEta(rawJet.eta());
+          jesCor->setJetPt(rawJet.pt());
+          jesCor->setJetA(jet.jetArea());
+          jesCor->setRho(rho);
+          jesCor->setNPV(nvtx);
+          double newJECSF=jesCor->getCorrection();
+          rawJet *= newJECSF;
+          //jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
+          jet.setP4(rawJet);
+
+          //smear JER
+          double newJERSF(1.0);
+          if(isMC)
+            {
+              const reco::GenJet* genJet=jet.genJet();
+              double genjetpt( genJet ? genJet->pt(): 0.);
+              std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
+              newJERSF=smearJER[0]/jet.pt();
+              rawJet *= newJERSF;
+              //jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
+              jet.setP4(rawJet);
+              // FIXME: change the way this is stored (to not storing it)
+              // //set the JER up/down alternatives 
+              // jets[ijet].setVal("jerup",   smearJER[1] );
+              // jets[ijet].setVal("jerdown", smearJER[2] );
+            }
+      
+          // FIXME: change the way this is stored (to not storing it)
+          ////set the JES up/down pT alternatives
+          //std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+          //jets[ijet].setVal("jesup",    ptUnc[0] );
+          //jets[ijet].setVal("jesdown",  ptUnc[1] );
+      
+          // FIXME: this is not to be re-set. Check that this is a desired non-feature.
+          // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine. 
+          //to get the raw jet again
+          //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));  
+        }
+    }
+
+    enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };    
+    //
+    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
+    {
+      std::vector<LorentzVector> newMetsP4(9,rawMETP4);
+      if(!isMC) return newMetsP4;
+      
+      LorentzVector nullP4(0,0,0,0);
+      //recompute the clustered and unclustered fluxes with energy variations
+      for(size_t ivar=1; ivar<=8; ivar++)
+        {
+          
+          //leptonic flux
+          LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
+          for(size_t ilep=0; ilep<leptons.size(); ilep++) {
+            LorentzVector lepton = leptons[ilep].p4();
+            double varSign( (ivar==LESUP ? 1.0 : (ivar==LESDOWN ? -1.0 : 0.0) ) );
+            int id( abs(leptons[ilep].pdgId()) );
+            double sf(1.0);
+            if(id==13) sf=(1.0+varSign*0.01);
+            if(id==11) {
+              if(fabs(leptons[ilep].eta())<1.442) sf=(1.0+varSign*0.02);
+              else                                sf=(1.0-varSign*0.05);
+            }
+            leptonFlux += lepton;
+            lepDiff += (sf-1)*lepton;
+          }
+      
+          //clustered flux
+          LorentzVector jetDiff(nullP4), clusteredFlux(nullP4);
+          for(size_t ijet=0; ijet<jets.size(); ijet++)
+            {
+              if(jets[ijet].pt()==0) continue;
+              double jetsf(1.0);
+              // FIXME: change the way this is stored (to not storing it)              
+              /// if(ivar==JERUP)   jetsf=jets[ijet].getVal("jerup")/jets[ijet].pt();
+              /// if(ivar==JERDOWN) jetsf=jets[ijet].getVal("jerdown")/jets[ijet].pt();
+              /// if(ivar==JESUP)   jetsf=jets[ijet].getVal("jesup")/jets[ijet].pt();
+              /// if(ivar==JESDOWN) jetsf=jets[ijet].getVal("jesdown")/jets[ijet].pt();
+              //LorentzVector newJet( jets[ijet] ); newJet *= jetsf;
+              LorentzVector newJet = jets[ijet].p4(); newJet *= jetsf;
+              jetDiff       += (newJet-jets[ijet].p4());
+              clusteredFlux += jets[ijet].p4();
+            }
+          LorentzVector iMet=rawMETP4-jetDiff-lepDiff;
+
+          //unclustered flux
+          if(ivar==UMETUP || ivar==UMETDOWN)
+            {
+              LorentzVector unclusteredFlux=-(iMet+clusteredFlux+leptonFlux);
+              unclusteredFlux *= (ivar==UMETUP ? 1.1 : 0.9); 
+              iMet = -clusteredFlux -leptonFlux - unclusteredFlux;
+            }
+      
+          //save new met
+          newMetsP4[ivar]=iMet;
+        }
+  
+      //all done here
+      return newMetsP4;
+    }
+
+}
+}
 bool passPFJetID(std::string label,
                  pat::Jet jet){
   
@@ -86,9 +235,11 @@ bool passPFJetID(std::string label,
 
   // Set of cuts from the POG group: https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
   if(label=="Loose")
-    passID = ( (nhf<0.99 && nef<0.99 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4) );
+    passID = ( ((nhf<0.99 && nef<0.99 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.99) || abs(eta)>2.4)) && abs(eta)<=3.0 );
   if(label=="Tight")
-    passID = ( (nhf<0.90 && nef<0.90 && nconst>1 && muf<0.8) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4) );
+    passID = ( ((nhf<0.90 && nef<0.90 && nconst>1) && ((abs(eta)<=2.4 && chf>0 && nch>0 && cef<0.90) || abs(eta)>2.4)) && abs(eta) <=3.0);
+  
+  // Should be added the abs(eta)>3.0 part, but we never consider such jets, so... Meh!
   
   return passID; 
   
@@ -201,11 +352,11 @@ int main (int argc, char *argv[])
     filterOnlySINGLEMU (false);
   if (!isMC)
     {
-      if (dtag.Contains ("DoubleEle")) filterOnlyEE       = true;
-      if (dtag.Contains ("DoubleMu"))  filterOnlyMUMU     = true;
-      if (dtag.Contains ("MuEG"))      filterOnlyEMU      = true;
-      if (dtag.Contains ("SingleMu"))  filterOnlySINGLEMU = true;
-      if (dtag.Contains ("SingleEle")) filterOnlySINGLEE  = true;
+      if (dtag.Contains ("DoubleEle"))  filterOnlyEE       = true;
+      if (dtag.Contains ("DoubleMu"))   filterOnlyMUMU     = true;
+      if (dtag.Contains ("MuEG"))       filterOnlyEMU      = true;
+      if (dtag.Contains ("SingleMuon")) filterOnlySINGLEMU = true;
+      if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
     }
   
   bool isSingleMuPD (!isMC && dtag.Contains ("SingleMu")); // Do I really need this?
@@ -216,7 +367,7 @@ int main (int argc, char *argv[])
   bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco"));
-
+  bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
   
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
@@ -297,6 +448,12 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
+
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup", ";;Events", 100, 0., 100.) );
+  
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 100, 0., 100.) );
+  h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup",  ";;Events", 100, 0., 100.) );
+
   
   // Setting up control categories
   std::vector < TString > controlCats;
@@ -313,8 +470,8 @@ int main (int argc, char *argv[])
       TString icat (controlCats[k]);
 
       //pu control to be completed
-      mon.addHistogram (new TH1D (icat+"nvtx", ";Vertices;Events", 50, 0, 50));
-      mon.addHistogram (new TH1D (icat+"nvtxraw", ";Vertices;Events", 50, 0, 50));
+      mon.addHistogram (new TH1D (icat+"nvtx",    ";Vertices;Events", 100, 0, 100));
+      mon.addHistogram (new TH1D (icat+"nvtxraw", ";Vertices;Events", 100, 0, 100));
       mon.addHistogram (new TH1D (icat+"rho", ";#rho;Events", 50, 0, 25));
       
 
@@ -412,7 +569,7 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "axialmet", ";Axial missing transvere energy [GeV];Events", 50, -100, 400));
       mon.addHistogram (new TH1D (icat + "axialmetNM1", ";Axial missing transvere energy [GeV];Events", 50, -100, 400));
       mon.addHistogram (new TH1D (icat + "met", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
-      mon.addHistogram (new TH1D (icat + "recoMet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
+      mon.addHistogram (new TH1D (icat + "recomet", ";Missing transverse energy [GeV];Events", 50, 0., 1000.));
       mon.addHistogram (new TH1D (icat + "mt", ";Transverse mass;Events", 50, 0., 500.));
       mon.addHistogram (new TH1D (icat + "mtresponse", ";Transverse mass response;Events", 100, 0, 2));
       mon.addHistogram (new TH1D (icat + "mtcheckpoint", ";Transverse mass [GeV];Events", 160, 150, 1750));
@@ -455,8 +612,8 @@ int main (int argc, char *argv[])
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
-  fwlite::ChainEvent ev (urls);
-  const size_t totalEntries = ev.size ();
+  //  fwlite::ChainEvent ev (urls);
+  size_t totalEntries(0);// = ev.size ();
 
   TFile* summaryFile = NULL;
   TTree* summaryTree = NULL; //ev->;
@@ -486,12 +643,12 @@ int main (int argc, char *argv[])
 
 
   //MC normalization (to 1/pb)
-  double xsecWeight = xsec / totalEntries;
+  double xsecWeight = xsec; //// totalEntries;
   if(!isMC) xsecWeight = 1.0;
   if(debug){
     cout << "DEBUG: xsec: " << xsec << endl;
     cout << "DEBUG: xsecWeight: " << xsecWeight << endl;
-    cout << "DEBUG: totalEntries: " << totalEntries << endl;
+    //cout << "DEBUG: totalEntries: " << totalEntries << endl;
   }
   
   
@@ -499,7 +656,7 @@ int main (int argc, char *argv[])
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
   FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK5PFchs.txt").Data ());
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
 
   //muon energy scale and uncertainties
   MuScleFitCorrector *muCor = getMuonCorrector (jecDir, dtag);
@@ -527,6 +684,12 @@ int main (int argc, char *argv[])
   //      v2CSVv2L 0.605
   //      v2CSVv2M 0.890
   //      v2CSVv2T 0.970
+
+  // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
+  sfb = 0.861;
+  // sbbunc =;
+  beff = 0.559;
+
   double
     btagLoose(0.605),
     btagMedium(0.890),
@@ -546,7 +709,7 @@ int main (int argc, char *argv[])
           dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
         }
       std::vector < float >mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD (ev, dataPileupDistribution.size (), mcPileupDistribution);
+      utils::getMCPileupDistributionFromMiniAOD (urls, dataPileupDistribution.size (), mcPileupDistribution);
       while (mcPileupDistribution.size () < dataPileupDistribution.size ()) mcPileupDistribution.push_back (0.0);
       while (mcPileupDistribution.size () > dataPileupDistribution.size ()) dataPileupDistribution.push_back (0.0);
       gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -565,268 +728,284 @@ int main (int argc, char *argv[])
   //##############################################
   //loop on all the events
   printf ("Progressing Bar     :0%%       20%%       40%%       60%%       80%%       100%%\n");
-  printf ("Scanning the ntuple :");
-  int treeStep (totalEntries / 50);
-  //DuplicatesChecker duplicatesChecker;
-  //int nDuplicates(0);
+
   int nMultiChannel(0);
-  for (size_t iev = 0; iev < totalEntries; iev++)
-    {
-      if (iev % treeStep == 0)
-        {
-          printf (".");
-          if(!debug) fflush (stdout); // Otherwise debug messages are flushed
-        }
 
-      std::vector < TString > tags (1, "all");
-      mon.fillHisto("initNorm", tags, 0., 1.);
-
-      //##############################################   EVENT LOOP STARTS   ##############################################
-      ev.to(iev);              //load the event content from the EDM file
-      //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
-
-      // Orthogonalize PromptReco+17Jul15 mix
-      if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          
-      // Skip bad lumi
-      if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
-
-
-      //apply trigger and require compatibilitiy of the event with the PD
-      edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
-      if (!tr.isValid ()){
-        cout << "Trigger is not valid" << endl;
-        return false;
-      }
-      if(debug && iev==5 ){
-        cout << "Printing trigger list" << endl;
-        for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
-          cout << *trnames << endl;
-        cout << "----------- End of trigger list ----------" << endl;
-      }
-
-      bool eTrigger    (
-                        isMC ? 
-                        utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
-                        :
-                        utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
-                        );
-      bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
-      bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
-      bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
-      bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
-
-      if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
-      if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
-      if (filterOnlyMUMU)     { eeTrigger = false; emuTrigger = false;                      muTrigger = false; eTrigger = false; }
-      if (filterOnlySINGLEMU) { eeTrigger = false; emuTrigger = false; mumuTrigger = false;                    eTrigger = false; }
-      if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
-      
-      if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-      //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
-      mon.fillHisto("initNorm", tags, 1., 1.);
-      //##############################################   EVENT PASSED THE TRIGGER   #######################################
-
-
-      // ------------ Apply MET filters ------------
-
-      // Print out MET filters list
-      // edm::TriggerResultsByName metFiltersPat = ev.triggerResultsByName ("PAT");
-      // if(debug && iev==57 ){
-      //   cout << "Printing MET filters list" << endl;
-      //   for(edm::TriggerNames::Strings::const_iterator imetFilter = metFiltersPat.triggerNames().begin(); imetFilter!=metFiltersPat.triggerNames().end(); ++imetFilter)
-      //     cout << *imetFilter << endl;
-      //   cout << "----------- End of MET filters  ----------" << endl;
-      // }
-      // -------------------------------------------
-
-      // -------- Full MET filters list ------------------
-      // Flag_trackingFailureFilter
-      // Flag_goodVertices
-      // Flag_CSCTightHaloFilter
-      // Flag_trkPOGFilters
-      // Flag_trkPOG_logErrorTooManyClusters
-      // Flag_EcalDeadCellTriggerPrimitiveFilter
-      // Flag_ecalLaserCorrFilter
-      // Flag_trkPOG_manystripclus53X
-      // Flag_eeBadScFilter
-      // Flag_METFilters
-      // Flag_HBHENoiseFilter
-      // Flag_trkPOG_toomanystripclus53X
-      // Flag_hcalLaserEventFilter
-      //
-      // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
-      // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
-      // - For Run2015B PromptReco Data, the process name is RECO.
-      // - For Run2015B re-MiniAOD Data 17Jul2015, the process name is PAT.
-      // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
-      // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
-      // -------------------------------------------------
-      
-      if( !patUtils::passMetFilters(ev, isPromptReco)) continue;
-
-      
-      //load all the objects we will need to access
-      reco::VertexCollection vtx;
-      fwlite::Handle < reco::VertexCollection > vtxHandle;
-      vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
-      if (vtxHandle.isValid() ) vtx = *vtxHandle;
-      
-      // At least one primary vertex reconstructed in the event (it should have no effect because of miniAOD production, afaik)
-      ///// FIXME if(vtx.size() == 0) continue;
-      
-
-      double rho = 0;
-      fwlite::Handle < double >rhoHandle;
-      rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
-      if (rhoHandle.isValid() ) rho = *rhoHandle;
-
-      if(false && isMC)
-        {
-          double weightGen(0.);
-          double weightLhe(0.);
-          
-          fwlite::Handle<GenEventInfoProduct> evt;
-          evt.getByLabel(ev, "generator");
-          if(evt.isValid())
-            {
-              weightGen=evt->weight();
-              
-            }
-
-          fwlite::Handle<LHEEventProduct> lheEvtProd;
-          lheEvtProd.getByLabel(ev, "externalLHEProducer");
-          if(lheEvtProd.isValid())
-            {
-              weightLhe=lheEvtProd->originalXWGTUP();
-              
-             //for(unsigned int i=0; i<evet->weights().size();i++){
-             //  double asdde=evet->weights()[i].wgt;
-             //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
-             //  EventInfo.ttbar_nw++;
-             //}
-            }
-          cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
-
-        }
-
-      reco::GenParticleCollection gen;
-      fwlite::Handle < reco::GenParticleCollection > genHandle;
-      genHandle.getByLabel (ev, "prunedGenParticles");
-      if (genHandle.isValid() ) gen = *genHandle;
-
-      // Save time and don't load the rest of the objects when selecting by mctruthmode :)
-      bool hasTop(false);
-      int
-        ngenLeptonsStatus3(0),
-        ngenLeptonsNonTauSonsStatus3(0),
-        ngenTausStatus3(0),
-        ngenQuarksStatus3(0);
-      //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
-      //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
-      if(isMC)
-        {
-          // FIXME: WHEN COMPARING THE VARIOUS TTBAR GENERATORS DO NOT FORGET TO ADD A SWITCH FOR PYTHIA6 CODES 
-          //if(iev != 500) continue;
-          for(size_t igen=0; igen<gen.size(); igen++){
-            // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
-            //            if(iev<10){
-            //              if(gen[igen].status() == 1 || gen[igen].status() == 2)
-            //              cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-            //            }
-            //            ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
-            
-            if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
-            int absid=abs(gen[igen].pdgId());
-            // OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
-            //if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
-
-
-            //////            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
-            if(absid==6 && gen[igen].status()==62){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
-              hasTop=true;
-              //if(isTTbarMC){
-              //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
-              //  else                        tbarPt=gen[igen].pt();
-              //}
-            } 
-
-          
-            //if(!gen[igen].isPromptFinalState() ) continue;
-            if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
-            
-            if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen])) cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-            
-            if((absid==11 || absid==13) && gen[igen].status()==1)
-              {
-                ngenLeptonsStatus3++;
-                
-                if(!hasTauAsMother(gen[igen]))
-                  ngenLeptonsNonTauSonsStatus3++;
-              }
-            if(absid==15 && gen[igen].status()==2 )
-              {
-                ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
-                //    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
-              }
-            if(absid<=5              ) ngenQuarksStatus3++;
+  for(size_t f=0; f<urls.size();++f){
+    TFile* file = TFile::Open(urls[f].c_str());
+    fwlite::Event ev(file);
+    printf ("Scanning the ntuple %2lu/%2lu :",f+1, urls.size());
+    int iev(0);
+    int treeStep (ev.size() / 50);
+    //DuplicatesChecker duplicatesChecker;
+    //int nDuplicates(0);
+    for (ev.toBegin(); !ev.atEnd(); ++ev)
+      {
+        iev++;
+        totalEntries++;
+        if (iev % treeStep == 0)
+          {
+            printf (".");
+            if(!debug) fflush (stdout); // Otherwise debug messages are flushed
           }
-            
-          if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
         
-          // Dileptons:
-          //    ttbar dileptons --> 1
-          //    ttbar other     --> 2
-          if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
-          if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
-          // FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
-          //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-          //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
-          //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
-          
-          // lepton-tau:
-          //    ttbar ltau      --> 3
-          //    ttbar dileptons --> 4
-          //    ttbar ljets     --> 5
-          //    ttbar hadrons   --> 6
-          if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
-          if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
-          if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
-
-          bool isHad(false);
-          if( 
-             (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
-             (ngenLeptonsNonTauSonsStatus3!=2                      ) &&
-             (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
-              )
-            isHad=true;
-          
-          //if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
-          if(mctruthmode==6 && (!isHad || !hasTop )) continue;
-          
+        
+        double weightGen(1.);
+        if(isNLOMC)
+          {
+            //double weightGen(0.);
+            //double weightLhe(0.);
+            
+            fwlite::Handle<GenEventInfoProduct> evt;
+            evt.getByLabel(ev, "generator");
+            if(evt.isValid())
+              {
+                weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+              }
+            
+            //fwlite::Handle<LHEEventProduct> lheEvtProd;
+            //lheEvtProd.getByLabel(ev, "externalLHEProducer");
+            //if(lheEvtProd.isValid())
+            //  {
+            //    weightLhe=lheEvtProd->originalXWGTUP();
+            //    
+            //   //for(unsigned int i=0; i<evet->weights().size();i++){
+            //   //  double asdde=evet->weights()[i].wgt;
+            //   //  EventInfo.ttbar_w[EventInfo.ttbar_nw]=EventInfo.ttbar_w[0]*asdde/asdd;
+            //   //  EventInfo.ttbar_nw++;
+            //   //}
+            //  }
+            //cout << "Event " << iev << " has genweight: " << weightGen << " and LHE weight " << weightLhe << endl;
+            
+          }
+        
+        std::vector < TString > tags (1, "all");
+        mon.fillHisto("initNorm", tags, 0., weightGen);
+        
+        //##############################################   EVENT LOOP STARTS   ##############################################
+        // Not needed anymore with the current way of looping. ev.to(iev);              //load the event content from the EDM file
+        //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+        
+        // Orthogonalize PromptReco+17Jul15 mix
+        if(debug) cout << "Run: " << ev.eventAuxiliary().run() << " isMC: " << isMC << ", isPromptReco: " << isPromptReco << ", decision word: " << patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) << endl;
+        if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+        
+        // Skip bad lumi
+        if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
+        
+        
+        //apply trigger and require compatibilitiy of the event with the PD
+        edm::TriggerResultsByName tr = ev.triggerResultsByName ("HLT");
+        if (!tr.isValid ()){
+          cout << "Trigger is not valid" << endl;
+          return false;
         }
-      mon.fillHisto("initNorm", tags, 2., 1.);
-      if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
-      //      if(tPt>0 && tbarPt>0 && topPtWgt)
-      //        {
-      //          topPtWgt->computeWeight(tPt,tbarPt);
-      //          topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
-      //          wgtTopPtUp /= wgtTopPt;
-      //          wgtTopPtDown /= wgtTopPt;
-      //        }
-
-     
-
-      pat::MuonCollection muons;
-      fwlite::Handle < pat::MuonCollection > muonsHandle;
-      muonsHandle.getByLabel (ev, "slimmedMuons");
-      if (muonsHandle.isValid() ) muons = *muonsHandle;
-
-      pat::ElectronCollection electrons;
-      fwlite::Handle < pat::ElectronCollection > electronsHandle;
-      electronsHandle.getByLabel (ev, "slimmedElectrons");
-      if (electronsHandle.isValid() ) electrons = *electronsHandle;
-
+        if(debug && iev==5 ){
+          cout << "Printing trigger list" << endl;
+          for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
+            cout << *trnames << endl;
+          cout << "----------- End of trigger list ----------" << endl;
+        }
+        
+        bool eTrigger    (
+                          isMC ? 
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
+                          :
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
+                          );
+        bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
+        bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
+        bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
+        bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
+        
+        reco::VertexCollection vtx;
+        fwlite::Handle < reco::VertexCollection > vtxHandle;
+        vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
+        if (vtxHandle.isValid() ) vtx = *vtxHandle;
+        
+        
+        if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, vtx.size(), 1.);
+        if(!isMC && eTrigger)  mon.fillHisto("nvts_singlee_pileup", tags, vtx.size(), 1.);
+        
+        if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
+        if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
+        if (filterOnlyMUMU)     { eeTrigger = false; emuTrigger = false;                      muTrigger = false; eTrigger = false; }
+        if (filterOnlySINGLEMU) { eeTrigger = false; emuTrigger = false; mumuTrigger = false;                    eTrigger = false; }
+        if (filterOnlySINGLEE)  { eeTrigger = false; emuTrigger = false; mumuTrigger = false; muTrigger = false;                   }
+        
+        if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+        //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
+        mon.fillHisto("initNorm", tags, 1., weightGen);
+        //##############################################   EVENT PASSED THE TRIGGER   #######################################
+        
+        
+        // ------------ Apply MET filters ------------
+        
+        // Print out MET filters list
+        // edm::TriggerResultsByName metFiltersPat = ev.triggerResultsByName ("PAT");
+        // if(debug && iev==57 ){
+        //   cout << "Printing MET filters list" << endl;
+        //   for(edm::TriggerNames::Strings::const_iterator imetFilter = metFiltersPat.triggerNames().begin(); imetFilter!=metFiltersPat.triggerNames().end(); ++imetFilter)
+        //     cout << *imetFilter << endl;
+        //   cout << "----------- End of MET filters  ----------" << endl;
+        // }
+        // -------------------------------------------
+        
+        // -------- Full MET filters list ------------------
+        // Flag_trackingFailureFilter
+        // Flag_goodVertices
+        // Flag_CSCTightHaloFilter
+        // Flag_trkPOGFilters
+        // Flag_trkPOG_logErrorTooManyClusters
+        // Flag_EcalDeadCellTriggerPrimitiveFilter
+        // Flag_ecalLaserCorrFilter
+        // Flag_trkPOG_manystripclus53X
+        // Flag_eeBadScFilter
+        // Flag_METFilters
+        // Flag_HBHENoiseFilter
+        // Flag_trkPOG_toomanystripclus53X
+        // Flag_hcalLaserEventFilter
+        //
+        // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
+        // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
+        // - For Run2015B PromptReco Data, the process name is RECO.
+        // - For Run2015B re-MiniAOD Data 17Jul2015, the process name is PAT.
+        // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
+        // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
+        // -------------------------------------------------
+        
+        if( !patUtils::passMetFilters(ev, isPromptReco)) continue;
+        
+        
+        //load all the objects we will need to access
+        
+        // At least one primary vertex reconstructed in the event (it should have no effect because of miniAOD production, afaik)
+        ///// FIXME if(vtx.size() == 0) continue;
+        
+        
+        double rho = 0;
+        fwlite::Handle < double >rhoHandle;
+        rhoHandle.getByLabel (ev, "fixedGridRhoFastjetAll");
+        if (rhoHandle.isValid() ) rho = *rhoHandle;
+        
+        
+        reco::GenParticleCollection gen;
+        fwlite::Handle < reco::GenParticleCollection > genHandle;
+        genHandle.getByLabel (ev, "prunedGenParticles");
+        if (genHandle.isValid() ) gen = *genHandle;
+        
+        // Save time and don't load the rest of the objects when selecting by mctruthmode :)
+        bool hasTop(false);
+        int
+          ngenLeptonsStatus3(0),
+          ngenLeptonsNonTauSonsStatus3(0),
+          ngenTausStatus3(0),
+          ngenQuarksStatus3(0);
+        //double tPt(0.), tbarPt(0.); // top pt reweighting - dummy value results in weight equal to 1 if not set in loop
+        //float wgtTopPt(1.0), wgtTopPtUp(1.0), wgtTopPtDown(1.0);
+        if(isMC)
+          {
+            // FIXME: WHEN COMPARING THE VARIOUS TTBAR GENERATORS DO NOT FORGET TO ADD A SWITCH FOR PYTHIA6 CODES 
+            //if(iev != 500) continue;
+            for(size_t igen=0; igen<gen.size(); igen++){
+              // Following the new status scheme from: https://github.com/cms-sw/cmssw/pull/7791
+              //            if(iev<10){
+              //              if(gen[igen].status() == 1 || gen[igen].status() == 2)
+              //              cout << "Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+              //            }
+              //            ////// if(!gen[igen].isHardProcess() && !gen[igen].isPromptFinalState()) continue;
+              
+              if(gen[igen].status() != 1 &&  gen[igen].status() !=2 && gen[igen].status() !=62 ) continue;
+              int absid=abs(gen[igen].pdgId());
+              // OK, so taus should be checked as status 2, and quarks as 71 or 23. More testing needed
+              //if( absid==15 && hasWasMother(gen[igen]) ) cout << "Event " << iev << ", Particle " << igen << " has " << gen[igen].numberOfDaughters() << " daughters, pdgId " << gen[igen].pdgId() << " and status " << gen[igen].status() << ", mothers " << gen[igen].numberOfMothers() << ", pt " << gen[igen].pt() << ", eta " << gen[igen].eta() << ", phi " << gen[igen].phi() << ". isHardProcess is " << gen[igen].isHardProcess() << ", and isPromptFinalState is " << gen[igen].isPromptFinalState() << endl;
+              
+              
+              //////            if(absid==6 && gen[igen].isHardProcess()){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass)
+              if(absid==6 && gen[igen].status()==62){ // particles of the hardest subprocess 22 : intermediate (intended to have preserved mass). Josh says 62 (last in chain)
+                hasTop=true;
+                //if(isTTbarMC){
+                //  if(gen[igen].get("id") > 0) tPt=gen[igen].pt();
+                //  else                        tbarPt=gen[igen].pt();
+                //}
+              } 
+              
+              
+              //if(!gen[igen].isPromptFinalState() ) continue;
+              if( (gen[igen].status() != 1 && gen[igen].status()!= 2 ) || !hasWasMother(gen[igen])) continue;
+              
+              if((absid==11 || absid==13) && hasLeptonAsDaughter(gen[igen])) cout << "Electron or muon " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
+              
+              if((absid==11 || absid==13) && gen[igen].status()==1)
+                {
+                  ngenLeptonsStatus3++;
+                  
+                  if(!hasTauAsMother(gen[igen]))
+                    ngenLeptonsNonTauSonsStatus3++;
+                }
+              if(absid==15 && gen[igen].status()==2 )
+                {
+                  ngenTausStatus3++; // This should be summed to ngenLeptonsStatus3 for the dilepton final states, not summed for the single lepton final states.
+                  //    if(hasLeptonAsDaughter(gen[igen])) cout << "Tau " << igen << " has " << gen[igen].numberOfDaughters() << " daughter which is a lepton." << endl;
+                }
+              if(absid<=5              ) ngenQuarksStatus3++;
+            }
+            
+            if(debug && (ngenTausStatus3==1 && ngenLeptonsStatus3==1 )  ) cout << "Event: " << iev << ". Leptons: " << ngenLeptonsStatus3 << ". Leptons notaus: " << ngenLeptonsNonTauSonsStatus3 << ". Taus: " << ngenTausStatus3 << ". Quarks: " << ngenQuarksStatus3 << endl;
+            
+            // Dileptons:
+            //    ttbar dileptons --> 1
+            //    ttbar other     --> 2
+            if(mctruthmode==1 && (ngenLeptonsStatus3+ngenTausStatus3!=2 || !hasTop )) continue;
+            if(mctruthmode==2 && (ngenLeptonsStatus3+ngenTausStatus3==2 || !hasTop )) continue;
+            // FIXME: port tt+bb splitting from 8 TeV (check the reference to the matched genjet)
+            //if(mcTruthMode==1 && (ngenLeptonsStatus3!=2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+            //if(mcTruthMode==2 && (ngenLeptonsStatus3==2 || !hasTop || ngenBQuarksStatus23>=4)) continue;
+            //if(mcTruthMode==3 && (ngenBQuarksStatus23<4 || !hasTop))                           continue;
+            
+            // lepton-tau:
+            //    ttbar ltau      --> 3
+            //    ttbar dileptons --> 4
+            //    ttbar ljets     --> 5
+            //    ttbar hadrons   --> 6
+            if(mctruthmode==3 && (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1  || !hasTop )) continue; // This is bugged, as it is obvious
+            if(mctruthmode==4 && (ngenLeptonsNonTauSonsStatus3!=2                        || !hasTop )) continue;
+            if(mctruthmode==5 && (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1        || !hasTop )) continue;
+            
+            bool isHad(false);
+            if( 
+               (ngenLeptonsNonTauSonsStatus3!=1 || ngenTausStatus3!=1 ) &&
+               (ngenLeptonsNonTauSonsStatus3!=2                      ) &&
+               (ngenLeptonsNonTauSonsStatus3+ngenTausStatus3!=1      ) 
+                )
+              isHad=true;
+            
+            //if(mctruthmode==6 && (ngenLeptonsNonTauSonsStatus3!=0 || ngenTausStatus3!=0  || !hasTop )) continue;
+            if(mctruthmode==6 && (!isHad || !hasTop )) continue;
+            
+          }
+        mon.fillHisto("initNorm", tags, 2., weightGen);
+        if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
+        //      if(tPt>0 && tbarPt>0 && topPtWgt)
+        //        {
+        //          topPtWgt->computeWeight(tPt,tbarPt);
+        //          topPtWgt->getEventWeight(wgtTopPt, wgtTopPtUp, wgtTopPtDown);
+        //          wgtTopPtUp /= wgtTopPt;
+        //          wgtTopPtDown /= wgtTopPt;
+        //        }
+        
+        
+        
+        pat::MuonCollection muons;
+        fwlite::Handle < pat::MuonCollection > muonsHandle;
+        muonsHandle.getByLabel (ev, "slimmedMuons");
+        if (muonsHandle.isValid() ) muons = *muonsHandle;
+        
+        pat::ElectronCollection electrons;
+        fwlite::Handle < pat::ElectronCollection > electronsHandle;
+        electronsHandle.getByLabel (ev, "slimmedElectrons");
+        if (electronsHandle.isValid() ) electrons = *electronsHandle;
+        
       pat::JetCollection jets;
       fwlite::Handle < pat::JetCollection > jetsHandle;
       jetsHandle.getByLabel (ev, "slimmedJets");
@@ -875,10 +1054,13 @@ int main (int argc, char *argv[])
       double TotalWeight_minus(1.0);
       double puWeight         (1.0);
 
+      if(isNLOMC)
+        weight *= weightGen;
+
       if(isMC)
         {
           int ngenITpu = 0;
-          
+          if(debug) cout << "Now evaluating the pileup weight... ";
           fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
           puInfoH.getByLabel (ev, "addPileupInfo");
           for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
@@ -887,7 +1069,8 @@ int main (int argc, char *argv[])
             }
           
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          weight *= puWeight;//Weight; //* puWeight; // Temporarily disabled PU reweighing, it's wrong to scale to the 2012 data distribution.
+          if(debug) cout << "Pileup weight: " << puWeight;
+          weight *= puWeight;//Weight; //* puWeight;
           TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
           TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
         }
@@ -993,7 +1176,7 @@ int main (int argc, char *argv[])
           
           bool overlapWithLepton(false);
           for(int l1=0; l1<(int)selSingleLepLeptons.size();++l1){
-            if(reco::deltaR(tau, selSingleLepLeptons[l1])<0.1){overlapWithLepton=true; break;}
+            if(reco::deltaR(tau, selSingleLepLeptons[l1])<0.4){overlapWithLepton=true; break;}
           }
           if(overlapWithLepton) continue;
           
@@ -1016,7 +1199,7 @@ int main (int argc, char *argv[])
               int pixelHits = packedCand->numberOfPixelHits();
               if(pixelHits > nChHadPixelHits) nChHadPixelHits = pixelHits;
             }
-            ////// FIXME if(nChHadPixelHits==0) continue;
+            if(nChHadPixelHits==0) continue;
           }
           /////
           
@@ -1030,9 +1213,13 @@ int main (int argc, char *argv[])
       //
       //JET/MET ANALYSIS
       //
+      if(debug) cout << "Now update Jet Energy Corrections" << endl;
       //add scale/resolution uncertainties and propagate to the MET      
-      //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);  //FIXME if still needed
-      //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
+      utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);
+      if(debug) cout << "Update also MET" << endl;
+      std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
+      met=newMet[utils::cmssw::METvariations::NOMINAL];
+      if(debug) cout << "Jet Energy Corrections updated" << endl;
       
       //select the jets
       pat::JetCollection
@@ -1042,7 +1229,7 @@ int main (int argc, char *argv[])
       double mindphijmet (9999.);
       for (size_t ijet = 0; ijet < jets.size(); ijet++)
         {
-          if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 4.7) continue;
+          if (jets[ijet].pt() < 15 || fabs (jets[ijet].eta()) > 3.0) continue; // Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.5)
           
           //mc truth for this jet
           const reco::GenJet * genJet = jets[ijet].genJet();
@@ -1059,7 +1246,7 @@ int main (int argc, char *argv[])
 
           for (size_t ilep = 0; ilep < selSingleLepLeptons.size(); ilep++)
             minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jets[ijet], selSingleLepLeptons[ilep]));
-
+          
           //jet id
           bool passPFloose = passPFJetID("Loose", jets[ijet]); 
           //if (jets[ijet].pt() > 30)
@@ -1069,9 +1256,9 @@ int main (int argc, char *argv[])
           //    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
           //    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
           //  }
-          if (!passPFloose || jets[ijet].pt() <30 || fabs(jets[ijet].eta()) > 2.5) continue;
+          if (!passPFloose || jets[ijet].pt() <30. || fabs(jets[ijet].eta()) > 2.5) continue;
 
-
+          
           if (minDRlj >= 0.4){
             selJets.push_back(jets[ijet]);
             njets++;
@@ -1090,22 +1277,26 @@ int main (int argc, char *argv[])
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
           bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagLoose);
           
-          
-          // update according to the SF measured by BTV: NOT YET!
-          /// if (isMC)
-          ///   {
-          ///     int flavId = jets[ijet].partonFlavour();
-          ///     if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-          ///     else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-          ///     else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-          ///   }
-          if(!hasCSVtag) continue;
+          if (isMC)
+            {
+              int flavId = jets[ijet].partonFlavour();
+              if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+              else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+              else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+            }
 
-          if(minDRlj > 0.4){
+          if(hasCSVtag && minDRlj > 0.4){
             nbtags++;
             selBJets.push_back(jets[ijet]);
           }
           hasCSVtag = jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium;
+          if (isMC)
+            {
+              int flavId = jets[ijet].partonFlavour();
+              if      (abs (flavId) == 5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+              else if (abs (flavId) == 4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+              else                        btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+            }
 
           if(!hasCSVtag) continue;
           if(minDRtj >0.4 && minDRljSingleLep>0.4) selSingleLepBJets.push_back(jets[ijet]);
@@ -1169,8 +1360,10 @@ int main (int argc, char *argv[])
       // Dilepton full analysis
       //if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
       if( isDoubleE || isEMu || isDoubleMu){
+
+        mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
         
-        if(selLeptons.size()<2) continue; // Save time
+        if(selLeptons.size()<2 || vtx.size() == 0) continue; // Save time
         // Apply lepton efficiencies
         //for(size_t ilep=0; ilep<2; ++ilep){
         //  int id (abs (selLeptons[ilep].pdgId()));
@@ -1180,7 +1373,7 @@ int main (int argc, char *argv[])
         // Event selection booleans
         bool passMllVeto(tags[1] == "emu" ? dileptonSystem.mass()>12. : (fabs(dileptonSystem.mass()-91.)>15 && dileptonSystem.mass()>12. ) );
         bool passJetSelection(selJets.size()>1);
-        bool passMetSelection(recoMET.pt()>40.);
+        bool passMetSelection(met.pt()>40.);
         bool passOS(selLeptons[0].pdgId() * selLeptons[1].pdgId() < 0 );
         bool passBtagsSelection(selBJets.size()>1);
        
@@ -1197,10 +1390,9 @@ int main (int argc, char *argv[])
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
-          
           TString icat(ctrlCats[k]);
-
-          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 weight/puWeight);
+          double raww(weight/puWeight);
+          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 raww);
           mon.fillHisto(icat+"nvtx",       tags, vtx.size(),                 weight);
           mon.fillHisto(icat+"rho",        tags, rho,                        weight);
 
@@ -1218,7 +1410,8 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"yll",          tags, fabs(dileptonSystem.Rapidity()), weight);
           mon.fillHisto(icat+"mll",          tags, dileptonSystem.mass(),           weight);
           mon.fillHisto(icat+"ptll",         tags, dileptonSystem.pt(),             weight);
-          mon.fillHisto(icat+"met",          tags, recoMET.pt(),                    weight);
+          mon.fillHisto(icat+"met",          tags, met.pt(),                        weight);
+          mon.fillHisto(icat+"recomet",      tags, recoMET.pt(),                    weight);
           mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
           mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
           mon.fillHisto(icat+"mtsum",        tags, mtsum,                           weight);
@@ -1295,6 +1488,7 @@ int main (int argc, char *argv[])
         
         if(passMllVeto && passOS)
           {
+
             for (size_t ivar = 0; ivar < nSystVars; ivar++)
               {
                 TString var(systVars[ivar]);
@@ -1344,7 +1538,7 @@ int main (int argc, char *argv[])
                     double pt = jets[ijet].pt();
                     if(isMC)
                       {
-                        std::vector<float> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+                        std::vector<double> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
                         if(varyJesUp)   pt = varPt[0];
                         if(varyJesDown) pt = varPt[1];
                         //  smearJER(float pt, float eta, float genPt)
@@ -1413,13 +1607,15 @@ int main (int argc, char *argv[])
       //if(tags[1] == "singlemu" || tags[1] == "singlee"){
       if(isSingleMu || isSingleE){
 
-        if(selSingleLepLeptons.size()!=1) continue;
+        mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
+        
+        if(selSingleLepLeptons.size()!=1 || vtx.size()==0) continue;
         //int id (abs (selSingleLepLeptons[0].pdgId()));
         //weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
         
         // Event selection booleans
         bool passJetSelection(selSingleLepJets.size()>1);
-        bool passMetSelection(recoMET.pt()>40.);
+        bool passMetSelection(met.pt()>40.);
         bool passBtagsSelection(selSingleLepBJets.size()>0);
         bool passTauSelection(selTaus.size()==1);
         bool passOS(selTaus.size()>0 ? selSingleLepLeptons[0].pdgId() * selTaus[0].pdgId() < 0 : 0);
@@ -1439,8 +1635,8 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
           TString icat(ctrlCats[k]);
-
-          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          weight/puWeight);
+          double raww(weight/puWeight);
+          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          raww);
           mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
           mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
           mon.fillHisto (icat+"leadpt",     tags, selSingleLepLeptons[0].pt(),         weight);
@@ -1448,7 +1644,8 @@ int main (int argc, char *argv[])
           mon.fillHisto (icat+"leadeta",    tags, fabs (selSingleLepLeptons[0].eta()), weight);
           mon.fillHisto (icat+"trailereta", tags, fabs (selSingleLepLeptons[1].eta()), weight);
           mon.fillHisto (icat+"ntaus",      tags, ntaus,                               weight);
-          mon.fillHisto (icat+"met",        tags, recoMET.pt(),                    weight);
+          mon.fillHisto (icat+"met",        tags, met.pt(),                    weight);
+          mon.fillHisto (icat+"recomet",    tags, recoMET.pt(),                    weight);
           if(selSingleLepJets.size()>0){
           mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
           //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
@@ -1539,7 +1736,7 @@ int main (int argc, char *argv[])
                     double pt = jets[ijet].pt();
                     if(isMC)
                       {
-                        std::vector<float> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+                        std::vector<double> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
                         if(varyJesUp)   pt = varPt[0];
                         if(varyJesDown) pt = varPt[1];
                         //  smearJER(float pt, float eta, float genPt)
@@ -1631,9 +1828,12 @@ int main (int argc, char *argv[])
           } // End stat analysis
         
       } // End single lepton full analysis
-    
-    } // End event loop
 
+      } // End single file event loop 
+    printf("\n");
+    delete file;
+  } // End loop on files
+  
   if(saveSummaryTree)
     {
       TDirectory* cwd = gDirectory;

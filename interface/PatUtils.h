@@ -69,7 +69,7 @@ namespace patUtils
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
-   bool passMetFilters(const fwlite::ChainEvent& ev, const bool& isPromptReco);
+   bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco);
    
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
 

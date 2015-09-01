@@ -1,3 +1,5 @@
+# MET recommended tag
+git cms-merge-topic -u cms-met:METCorUnc74X
 #higgs combined tool for 742 is required to performed limit computation or cut optimization
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 cd HiggsAnalysis/CombinedLimit
