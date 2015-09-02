@@ -709,7 +709,7 @@ int main (int argc, char *argv[])
           dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
         }
       std::vector < float >mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD (urls, dataPileupDistribution.size (), mcPileupDistribution);
+      utils::getMCPileupDistributionFromMiniAODtemp(urls, dataPileupDistribution.size (), mcPileupDistribution);
       while (mcPileupDistribution.size () < dataPileupDistribution.size ()) mcPileupDistribution.push_back (0.0);
       while (mcPileupDistribution.size () > dataPileupDistribution.size ()) dataPileupDistribution.push_back (0.0);
       gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -788,7 +788,8 @@ int main (int argc, char *argv[])
         
         // Orthogonalize PromptReco+17Jul15 mix
         if(debug) cout << "Run: " << ev.eventAuxiliary().run() << " isMC: " << isMC << ", isPromptReco: " << isPromptReco << ", decision word: " << patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) << endl;
-        if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+        
+        /// FIXME TEST if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
         
         // Skip bad lumi
         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
@@ -874,7 +875,7 @@ int main (int argc, char *argv[])
         // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
         // -------------------------------------------------
         
-        if( !patUtils::passMetFilters(ev, isPromptReco)) continue;
+        /// FIXME TEST if( !patUtils::passMetFilters(ev, isPromptReco)) continue;
         
         
         //load all the objects we will need to access
@@ -1060,14 +1061,15 @@ int main (int argc, char *argv[])
       if(isMC)
         {
           int ngenITpu = 0;
-          if(debug) cout << "Now evaluating the pileup weight... ";
-          fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-          puInfoH.getByLabel (ev, "addPileupInfo");
-          for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-            {
-              if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-            }
-          
+          // if(debug) cout << "Now evaluating the pileup weight... ";
+          // fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+          // puInfoH.getByLabel (ev, "addPileupInfo");
+          // for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+          //   {
+          //     if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+          //   }
+          //
+          ngenITpu = vtx.size();
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
           if(debug) cout << "Pileup weight: " << puWeight;
           weight *= puWeight;//Weight; //* puWeight;
