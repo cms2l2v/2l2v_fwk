@@ -576,7 +576,9 @@ int main(int argc, char* argv[])
           std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
           std::vector<float> dataPileupDistribution; for(unsigned int i=0;i<dataPileupDistributionDouble.size();i++){dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);}
           std::vector<float> mcPileupDistribution;
-          utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
+          // Temporary hack for nvtx-based pileup
+	  //utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
+          utils::getMCPileupDistributionFromMiniAODtemp(urls,dataPileupDistribution.size(), mcPileupDistribution);
           while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
           while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
           gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -780,13 +782,15 @@ int main(int argc, char* argv[])
           float puWeight(1.0);
 
           if(isMC){          
-             int ngenITpu = 0;
-             fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-             puInfoH.getByLabel(ev, "addPileupInfo");
-             for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-                if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
-             }
-
+	    int ngenITpu = 0;
+            // Temporary hack for nvtx-based pileup
+	    // fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+             // puInfoH.getByLabel(ev, "addPileupInfo");
+             // for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+             //    if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
+             // }
+	     ngenITpu = vtx.size();
+	     
              puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
              TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
              TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
