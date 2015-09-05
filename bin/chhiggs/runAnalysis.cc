@@ -815,7 +815,7 @@ int main (int argc, char *argv[])
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
                           );
         bool eeTrigger   (utils::passTriggerPatterns (tr, "HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_v*")                                                               );
-        bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu24_eta2p1_v*")                                                                                   );
+        bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_v*")                                                                                   );
         bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
         bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
         
@@ -1051,6 +1051,7 @@ int main (int argc, char *argv[])
 
       //pileup weight
       double weight           (1.0);
+      double rawWeight        (1.0);
       double TotalWeight_plus (1.0);
       double TotalWeight_minus(1.0);
       double puWeight         (1.0);
@@ -1136,7 +1137,7 @@ int main (int argc, char *argv[])
           double leta = fabs (lid == 11 ? leptons[ilep].el.superCluster ()->eta() : leptons[ilep].eta());
           
           // Dileptons main kin
-          if (leptons[ilep].pt () < 20.)                      passKin = false;
+          if (leptons[ilep].pt () < 20.)                     passKin = false;
           if (leta > (lid == 11 ? 2.5 : 2.4))                passKin = false;
           if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
           
