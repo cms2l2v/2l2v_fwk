@@ -1156,7 +1156,7 @@ int main (int argc, char *argv[])
           if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) { passSingleLepKin = false; passVetoSingleLepKin = false; } // Crack veto
           
           // Single lepton veto kin
-          if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoSingleLepKin = false;
+          if (leptons[ilep].pt () < (lid==11 ? 20. : 20.))   passVetoSingleLepKin = false;
 
           //Cut based identification 
           passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdLoose);
