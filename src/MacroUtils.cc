@@ -526,6 +526,16 @@ namespace utils
      }
   }
  
+  bool isGoodVertex(reco::Vertex& vtx)
+  {
+    if(vtx.ndof() <= 4)         return false;
+    if(abs(vtx.z())>24)         return false;
+    if(vtx.position().Rho() >2) return false;
+    // else
+    return true;
+  }
+  
+
 
   void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup)
   {

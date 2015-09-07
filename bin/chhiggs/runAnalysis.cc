@@ -820,13 +820,22 @@ int main (int argc, char *argv[])
         bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
         
         reco::VertexCollection vtx;
+        reco::Vertex goodPV;
+        unsigned int nGoodPV(0);
         fwlite::Handle < reco::VertexCollection > vtxHandle;
         vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
         if (vtxHandle.isValid() ) vtx = *vtxHandle;
+        for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
+          {
+            if(utils::isGoodVertex(vtx[ivtx]))
+              {
+                if(nGoodPV==0) goodPV=vtx[ivtx];
+                nGoodPV++;
+              }
+          }
         
-        
-        if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, vtx.size(), 1.);
-        if(!isMC && eTrigger)  mon.fillHisto("nvts_singlee_pileup", tags, vtx.size(), 1.);
+        if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
+        if(!isMC && eTrigger)  mon.fillHisto("nvts_singlee_pileup", tags, nGoodPV, 1.);
         
         if (filterOnlyEE)       {                    emuTrigger = false; mumuTrigger = false; muTrigger = false; eTrigger = false; } 
         if (filterOnlyEMU)      { eeTrigger = false;                     mumuTrigger = false; muTrigger = false; eTrigger = false; }
@@ -881,7 +890,7 @@ int main (int argc, char *argv[])
         //load all the objects we will need to access
         
         // At least one primary vertex reconstructed in the event (it should have no effect because of miniAOD production, afaik)
-        ///// FIXME if(vtx.size() == 0) continue;
+        ///// FIXME if(nGoodPV == 0) continue;
         
         
         double rho = 0;
@@ -1070,7 +1079,7 @@ int main (int argc, char *argv[])
           //     if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
           //   }
           //
-          ngenITpu = vtx.size();
+          ngenITpu = nGoodPV;
           puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
           if(debug) cout << "Pileup weight: " << puWeight;
           weight *= puWeight;//Weight; //* puWeight;
@@ -1150,8 +1159,8 @@ int main (int argc, char *argv[])
           if (leptons[ilep].pt () < (lid==11 ? 20. : 10.))   passVetoSingleLepKin = false;
 
           //Cut based identification 
-          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdLoose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::StdTight);
+          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdLoose);
+          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, goodPV, patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
           passVetoSingleLepId = passId;
 
           //isolation
@@ -1218,7 +1227,7 @@ int main (int argc, char *argv[])
       //
       if(debug) cout << "Now update Jet Energy Corrections" << endl;
       //add scale/resolution uncertainties and propagate to the MET      
-      utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);
+      utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
       if(debug) cout << "Update also MET" << endl;
       std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
       met=newMet[utils::cmssw::METvariations::NOMINAL];
@@ -1364,9 +1373,9 @@ int main (int argc, char *argv[])
       //if( tags[1] == "ee"|| tags[1] == "emu" || tags[1] == "mumu"){
       if( isDoubleE || isEMu || isDoubleMu){
 
-        mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
+        mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
         
-        if(selLeptons.size()<2 || vtx.size() == 0) continue; // Save time
+        if(selLeptons.size()<2 || nGoodPV == 0) continue; // Save time
         // Apply lepton efficiencies
         //for(size_t ilep=0; ilep<2; ++ilep){
         //  int id (abs (selLeptons[ilep].pdgId()));
@@ -1395,8 +1404,8 @@ int main (int argc, char *argv[])
         for(size_t k=0; k<ctrlCats.size(); ++k){
           TString icat(ctrlCats[k]);
           double raww(weight/puWeight);
-          mon.fillHisto(icat+"nvtxraw",    tags, vtx.size(),                 raww);
-          mon.fillHisto(icat+"nvtx",       tags, vtx.size(),                 weight);
+          mon.fillHisto(icat+"nvtxraw",    tags, nGoodPV,                 raww);
+          mon.fillHisto(icat+"nvtx",       tags, nGoodPV,                 weight);
           mon.fillHisto(icat+"rho",        tags, rho,                        weight);
 
 
@@ -1610,9 +1619,9 @@ int main (int argc, char *argv[])
       //if(tags[1] == "singlemu" || tags[1] == "singlee"){
       if(isSingleMu || isSingleE){
 
-        mon.fillHisto("nvtx_pileup", tags, vtx.size(), weight);
+        mon.fillHisto("nvtx_pileup", tags, nGoodPV, weight);
         
-        if(selSingleLepLeptons.size()!=1 || vtx.size()==0) continue;
+        if(selSingleLepLeptons.size()!=1 || nGoodPV==0) continue;
         //int id (abs (selSingleLepLeptons[0].pdgId()));
         //weight *= isMC ? lepEff.getLeptonEfficiency(selSingleLepLeptons[0].pt(), selSingleLepLeptons[0].eta(), id, id == 11 ? "loose" : "tight").first : 1.0;        
         
@@ -1639,8 +1648,8 @@ int main (int argc, char *argv[])
           
           TString icat(ctrlCats[k]);
           double raww(weight/puWeight);
-          mon.fillHisto (icat+"nvtxraw",    tags, vtx.size(),                          raww);
-          mon.fillHisto (icat+"nvtx",       tags, vtx.size(),                          weight);
+          mon.fillHisto (icat+"nvtxraw",    tags, nGoodPV,                          raww);
+          mon.fillHisto (icat+"nvtx",       tags, nGoodPV,                          weight);
           mon.fillHisto (icat+"rho",        tags, rho,                                 weight);
           mon.fillHisto (icat+"leadpt",     tags, selSingleLepLeptons[0].pt(),         weight);
           mon.fillHisto (icat+"trailerpt",  tags, selSingleLepLeptons[1].pt(),         weight);
