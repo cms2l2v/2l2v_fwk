@@ -3,10 +3,11 @@
 #JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples.json
 JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
 
-#OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
-OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar_2/
+OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
+## Electrons OK: OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar_2/
+###OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar_crab/
 
-QUEUE="8nh"
+QUEUE="1nh"
 #QUEUE="crab"
 
 mkdir -p ${OUTDIR}
@@ -27,12 +28,20 @@ if [ "${1}" = "submit" ]; then
 
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
-    cat test/chhiggs/results_ttbar/*SingleMuon*.json > myjson.json
-    echo "myjson.json has been recreated."
-    echo "Now please edit myjson.json to remove the additional \"}{\" characters"
-    echo "After that, please run:"
-    echo "python scripts/lumi/lcr2/lcr2.py -i myjson.json"
+    #cat ${OUTDIR}/*SingleMuon*.json > myjson.json
+    cat ${OUTDIR}/Data13TeV_SingleMuon2015BPromptReco*.json > myjson.json
 
+    sed -i -e "s#}{#, #g" myjson.json; 
+    sed -i -e "s#, ,#, #g" myjson.json;
+    echo "myjson.json has been recreated and the additional \"}{\" have been fixed."
+    echo "Now running brilcalc according to the luminosity group recommendation:"
+    echo "brilcalc lumi -i myjson.json -n 0.962"
+    export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
+    brilcalc lumi -i myjson.json -n 0.962
+    echo "To be compared with the output of the full json:"
+    echo "brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt -n 0.962"
+    brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-254349_13TeV_PromptReco_Collisions15_JSON_v2.txt -n 0.962
+    
 elif [ "${1}" = "plot" ]; then 
 
     BASEDIR=~/www/13TeV_xsec_plots/
@@ -57,9 +66,9 @@ elif [ "${1}" = "plot" ]; then
     PSEUDODATA=" "
     
 #for LUMI in 500 1000 5000 10000
-    for LUMI in 40.99
+    for LUMI in 42.6
     do
-        DIR="${BASEDIR}${LUMI}_2/"
+        DIR="${BASEDIR}${LUMI}/"
         mkdir -p ${DIR}
         cp ~/www/HIG-13-026/index.php ${DIR}
 
