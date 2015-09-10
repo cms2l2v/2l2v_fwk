@@ -8,6 +8,7 @@ OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
 ###OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar_crab/
 
 QUEUE="1nh"
+QUEUE="8nm"
 #QUEUE="crab"
 
 mkdir -p ${OUTDIR}
@@ -60,7 +61,13 @@ elif [ "${1}" = "plot" ]; then
     INDIR=${OUTDIR}
     ONLYDILEPTON=" --onlyStartWith emu_eventflow --onlyStartWith ee_eventflow --onlyStartWith mumu_eventflow --onlyStartWith emu_step1leadpt --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith emu_step1leadeta  --onlyStartWith emu_step3leadjetpt  --onlyStartWith emu_step3leadjeteta  --onlyStartWith emu_step3met  --onlyStartWith emu_step3nbjets --onlyStartWith ee_step1leadpt --onlyStartWith ee_step1leadeta  --onlyStartWith ee_step3leadjetpt  --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith ee_step3leadjeteta  --onlyStartWith ee_step3met  --onlyStartWith ee_step3nbjets --onlyStartWith mumu_step1leadpt  --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith mumu_step1leadeta  --onlyStartWith mumu_step3leadjetpt  --onlyStartWith mumu_step3leadjeteta  --onlyStartWith mumu_step3met  --onlyStartWith mumu_step3nbjets "
     
-    ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt  --onlyStartWith singlemu_step6tauleadeta --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlee_step6tauleadeta --onlyStartWith singlemu_final --onlyStartWith singlee_final --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep  --onlyStartWith singlemu_step1leadpt  --onlyStartWith singlemu_step1leadeta --onlyStartWith singlemu_step2leadjetpt --onlyStartWith singlemu_step2leadjeteta --onlyStartWith singlemu_step3met --onlyStartWith singlemu_step3nbjets --onlyStartWith singlee_step1leadpt  --onlyStartWith singlee_step1leadeta --onlyStartWith singlee_step2leadjetpt --onlyStartWith singlee_step2leadjeteta --onlyStartWith singlee_step3met --onlyStartWith singlee_step3nbjets --onlyStartWith singlemu_step1nvtx --onlyStartWith singlemu_step1nvtxraw --onlyStartWith singlee_step1nvtx --onlyStartWith singlee_step1nvtxraw "
+    ONLYLEPTAU=" --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt  --onlyStartWith singlemu_step6tauleadeta --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlee_step6tauleadeta --onlyStartWith singlemu_final --onlyStartWith singlee_final --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep  --onlyStartWith singlemu_step1leadpt  --onlyStartWith singlemu_step1leadeta --onlyStartWith singlemu_step2leadjetpt --onlyStartWith singlemu_step2leadjeteta --onlyStartWith singlemu_step3met --onlyStartWith singlemu_step3nbjets --onlyStartWith singlee_step1leadpt  --onlyStartWith singlee_step1leadeta --onlyStartWith singlee_step2leadjetpt --onlyStartWith singlee_step2leadjeteta --onlyStartWith singlee_step3met --onlyStartWith singlee_step3nbjets --onlyStartWith singlemu_step1nvtx --onlyStartWith singlemu_step1nvtxraw --onlyStartWith singlee_step1nvtx --onlyStartWith singlee_step1nvtxraw  --onlyStartWith singlemu_step2leadpt  --onlyStartWith singlemu_step2leadeta   --onlyStartWith singlemu_step3leadpt  --onlyStartWith singlemu_step3leadeta  --onlyStartWith singlemu_step4leadpt  --onlyStartWith singlemu_step4leadeta  --onlyStartWith singlemu_step5leadpt  --onlyStartWith singlemu_step5leadeta  --onlyStartWith singlemu_step6leadpt  --onlyStartWith singlemu_step6leadeta  --onlyStartWith singlee_step2leadpt  --onlyStartWith singlee_step2leadeta   --onlyStartWith singlee_step3leadpt  --onlyStartWith singlee_step3leadeta  --onlyStartWith singlee_step4leadpt  --onlyStartWith singlee_step4leadeta  --onlyStartWith singlee_step5leadpt  --onlyStartWith singlee_step5leadeta  --onlyStartWith singlee_step6leadpt  --onlyStartWith singlee_step6leadeta --onlyStartWith singlemu_step4met --onlyStartWith singlemu_step5met --onlyStartWith singlee_step4met --onlyStartWith singlee_step5met "
+
+    ONLYSYSLIST=" --onlyStartWith optim_systs "
+    if [ "${2}" = "all" ]; then 
+        ONLYDILEPTON=" --onlyStartWith ee --onlyStartWith mumu --onlyStartWith emu "
+        ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
+    fi
 #    ONLYLEPTAU=" --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep"
     PSEUDODATA=" --generatePseudoData "
     PSEUDODATA=" "
@@ -73,10 +80,10 @@ elif [ "${1}" = "plot" ]; then
         cp ~/www/HIG-13-026/index.php ${DIR}
 
         # Dilepton
-        #runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
+        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
         
         # Leptontau
-        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYLEPTAU}
+        runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_ltau.root  --json ${JSONFILELEPTAU} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} ${ONLYSYSLIST} ${ONLYLEPTAU}
         
     done
    
