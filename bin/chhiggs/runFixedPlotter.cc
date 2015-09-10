@@ -279,7 +279,7 @@ void GetInitialNumberOfEvents(JSONWrapper::Object& Root, std::string RootDir, Na
 	 double VBFMCRescale = tmphist->GetXaxis()->GetNbins()>5 ? tmphist->GetBinContent(6) / tmphist->GetBinContent(2) : 1.0;
 	 if(VBFMCRescale!=0)          cnorm *= VBFMCRescale;
 	 //printf("VBFMCRescale for sample %s is %f\n", (Samples[j])["dtag"].toString().c_str(), VBFMCRescale );
-         sampleInfo.initialNumberOfEvents = cnorm; /// FIXME TO BE REACTIVATED ONCE FIXED THE initNorm HISTOGRAM FILLING / PUCentralnnorm;
+         sampleInfo.initialNumberOfEvents = cnorm / PUCentralnnorm;
          if(debug) cout << "cnorm: " << cnorm << ", PUCentralnnorm: " << PUCentralnnorm << endl;
          delete tmphist;
       }   
@@ -751,7 +751,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
         fixExtremities(hist,true,true);
       //else
       //  fixExtremities(hist,true,false);
-      hist->SetTitle("");
+            hist->SetTitle("");
       hist->SetStats(kFALSE);
       if( jodorStyle){
 	//hist->SetMinimum(5e-2);
@@ -1037,6 +1037,7 @@ void ConvertToTex(JSONWrapper::Object& Root, std::string RootDir, NameAndType Hi
 
       for(unsigned int j=0;j<Samples.size();j++){
          double Weight = 1.0;
+         if(Process[i]["isinvisible"].toBool())continue;
          if(!Process[i]["isdata"].toBool()  && !Process[i]["isdatadriven"].toBool())Weight*= iLumi;
          string filtExt("");
          // TEST // if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }

@@ -427,11 +427,12 @@ int main (int argc, char *argv[])
   //((TH1F*)mon.addHistogram( new TH1D( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
 
   // ensure proper normalization
-  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Nev", 4,0.,4.));
+  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Nev", 5,0.,5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
-  normhist->GetXaxis()->SetBinLabel (2, "Trigger");
-  normhist->GetXaxis()->SetBinLabel (3, "Truthmode");
-  normhist->GetXaxis()->SetBinLabel (4, "Base");
+  normhist->GetXaxis()->SetBinLabel (2, "Events");
+  normhist->GetXaxis()->SetBinLabel (3, "PU central");
+  normhist->GetXaxis()->SetBinLabel (4, "PU up");
+  normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
   //event selection
   TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0., 6.));
@@ -530,9 +531,6 @@ int main (int argc, char *argv[])
       mon.addHistogram( new TH1D(icat+"metnotoppt",";Missing transverse energy [GeV];Events",50,0,500) );
 
 
-      // Jet controls to be completed
-      mon.addHistogram( new TH1D(icat+"nbjets",      ";b-jet multiplicity;Events", 6,0,6) );
-
       //extra leptons in the event
       // third lepton pt etc
 
@@ -548,7 +546,7 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "leadjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "trailerjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
       mon.addHistogram (new TH1D (icat + "cenjeteta", ";Pseudo-rapidity;Events", 25, 0, 5));
-      TH1 *hjets = mon.addHistogram (new TH1D (icat + "njets", ";Jet multiplicity;Events", 5, 0, 5));
+      TH1* hjets = mon.addHistogram (new TH1D (icat + "njets", ";Jet multiplicity;Events", 6, 0, 6));
       for (int ibin = 1; ibin <= hjets->GetXaxis ()->GetNbins (); ibin++)
         {
           TString label ("");
@@ -775,8 +773,64 @@ int main (int argc, char *argv[])
           }
         
         std::vector < TString > tags (1, "all");
-        mon.fillHisto("initNorm", tags, 0., weightGen);
+
+
+
+        //
+      // DERIVE WEIGHTS TO APPLY TO SAMPLE
+      //
         
+      //pileup weight
+      double weight           (1.0);
+      double rawWeight        (1.0);
+      double TotalWeight_plus (1.0);
+      double TotalWeight_minus(1.0);
+      double puWeight         (1.0);
+
+      if(isNLOMC)
+        weight *= weightGen;
+      
+      reco::VertexCollection vtx;
+      reco::Vertex goodPV;
+      unsigned int nGoodPV(0);
+      fwlite::Handle < reco::VertexCollection > vtxHandle;
+      vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
+      if (vtxHandle.isValid() ) vtx = *vtxHandle;
+      for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
+        {
+          if(utils::isGoodVertex(vtx[ivtx]))
+            {
+              if(nGoodPV==0) goodPV=vtx[ivtx];
+              nGoodPV++;
+            }
+        }
+      
+      if(isMC)
+        {
+          int ngenITpu = 0;
+          // if(debug) cout << "Now evaluating the pileup weight... ";
+          // fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+          // puInfoH.getByLabel (ev, "addPileupInfo");
+          // for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+          //   {
+          //     if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+          //   }
+          //
+          ngenITpu = nGoodPV;
+          puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
+          if(debug) cout << "Pileup weight: " << puWeight;
+          weight *= puWeight;//Weight; //* puWeight;
+          TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
+          TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
+        }
+      
+
+        mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+        mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
+        mon.fillHisto("initNorm", tags, 2, puWeight);
+        mon.fillHisto("initNorm", tags, 3, TotalWeight_plus);
+        mon.fillHisto("initNorm", tags, 4, TotalWeight_minus);
+
         //##############################################   EVENT LOOP STARTS   ##############################################
         // Not needed anymore with the current way of looping. ev.to(iev);              //load the event content from the EDM file
         //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
@@ -814,20 +868,6 @@ int main (int argc, char *argv[])
         bool mumuTrigger (utils::passTriggerPatterns (tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*")                            );
         bool emuTrigger  (utils::passTriggerPatterns (tr, "HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*") ); // UHM. Different thresholds for the electron perhaps are not a good idea. 
         
-        reco::VertexCollection vtx;
-        reco::Vertex goodPV;
-        unsigned int nGoodPV(0);
-        fwlite::Handle < reco::VertexCollection > vtxHandle;
-        vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
-        if (vtxHandle.isValid() ) vtx = *vtxHandle;
-        for(size_t ivtx=0; ivtx<vtx.size(); ++ivtx)
-          {
-            if(utils::isGoodVertex(vtx[ivtx]))
-              {
-                if(nGoodPV==0) goodPV=vtx[ivtx];
-                nGoodPV++;
-              }
-          }
         
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
         if(!isMC && eTrigger)  mon.fillHisto("nvts_singlee_pileup", tags, nGoodPV, 1.);
@@ -840,7 +880,6 @@ int main (int argc, char *argv[])
         
         if (!(eTrigger || eeTrigger || muTrigger || mumuTrigger || emuTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
         //if(debug) cout << "DEBUG: Event " << iev << " has at least one trigger of interest" << endl;
-        mon.fillHisto("initNorm", tags, 1., weightGen);
         //##############################################   EVENT PASSED THE TRIGGER   #######################################
         
         
@@ -989,7 +1028,6 @@ int main (int argc, char *argv[])
             if(mctruthmode==6 && (!isHad || !hasTop )) continue;
             
           }
-        mon.fillHisto("initNorm", tags, 2., weightGen);
         if(debug) cout << "DEBUG: Event was not stopped by the ttbar sample categorization (either success, or it was not ttbar)" << endl;      
         //      if(tPt>0 && tbarPt>0 && topPtWgt)
         //        {
@@ -1040,47 +1078,15 @@ int main (int argc, char *argv[])
       tausHandle.getByLabel (ev, "slimmedTaus");
       if (tausHandle.isValid() ) taus = *tausHandle;
 
-      if (isV0JetsMC)
-        {
-          fwlite::Handle < LHEEventProduct > lheEPHandle;
-          lheEPHandle.getByLabel (ev, "externalLHEProducer");
-          mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-          if (lheEPHandle->hepeup ().NUP > 5)  continue;
-          mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
-        }
-      
-      //
-      // DERIVE WEIGHTS TO APPLY TO SAMPLE
-      //
-
-      //pileup weight
-      double weight           (1.0);
-      double rawWeight        (1.0);
-      double TotalWeight_plus (1.0);
-      double TotalWeight_minus(1.0);
-      double puWeight         (1.0);
-
-      if(isNLOMC)
-        weight *= weightGen;
-
-      if(isMC)
-        {
-          int ngenITpu = 0;
-          // if(debug) cout << "Now evaluating the pileup weight... ";
-          // fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-          // puInfoH.getByLabel (ev, "addPileupInfo");
-          // for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-          //   {
-          //     if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-          //   }
-          //
-          ngenITpu = nGoodPV;
-          puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-          if(debug) cout << "Pileup weight: " << puWeight;
-          weight *= puWeight;//Weight; //* puWeight;
-          TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
-          TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
-        }
+      // Reactivate when you will use exclusive W+jets and DY+Jets samples, in order to correctly merge the exclusive ones with the inclusive one
+      // if (isV0JetsMC)
+      //   {
+      //     fwlite::Handle < LHEEventProduct > lheEPHandle;
+      //     lheEPHandle.getByLabel (ev, "externalLHEProducer");
+      //     mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
+      //     if (lheEPHandle->hepeup ().NUP > 5)  continue;
+      //     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
+      //   }
       
       
       //
@@ -1387,7 +1393,7 @@ int main (int argc, char *argv[])
 
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
-                                                                                                 { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight);       mon.fillHisto("initNorm", tags, 3., 1.);}
+                                                                                                 { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight); }
         if(passMllVeto   )                                                                       { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", tags, 1, weight); }
         if(passMllVeto && passJetSelection )                                                     { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight); }
         if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight); }
@@ -1483,8 +1489,8 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"htnol",  tags, htnol,           weight);
           mon.fillHisto(icat+"htbnol", tags, htbnol,          weight);
           
-          mon.fillHisto(icat+"nbjets", tags, selBJets.size(), weight);
-          
+          mon.fillHisto(icat+"nbtags", tags, selBJets.size(), weight);
+          mon.fillHisto(icat+"njets",  tags, selJets.size(), weight);
           
         }
         
@@ -1630,7 +1636,7 @@ int main (int argc, char *argv[])
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight);       mon.fillHisto("initNorm", tags, 3., 1.);}
+                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight); }
         if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight); }
         if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight); }
         if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("eventflowslep", tags, 3, weight); }
@@ -1664,7 +1670,8 @@ int main (int argc, char *argv[])
             mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(),             weight);
           }
           
-          mon.fillHisto(icat+"nbjets", tags, selSingleLepBJets.size(), weight);
+          mon.fillHisto(icat+"nbtags", tags, selSingleLepBJets.size(), weight);
+          mon.fillHisto(icat+"njets", tags, selSingleLepJets.size(), weight);
           // dilepton only           mon.fillHisto (icat+"zmass", tags, dileptonSystem.mass(),           weight);
           // dilepton only           mon.fillHisto (icat+"zy",    tags, fabs(dileptonSystem.Rapidity()), weight);
           // dilepton only           mon.fillHisto (icat+"zpt",   tags, dileptonSystem.pt(),             weight);
