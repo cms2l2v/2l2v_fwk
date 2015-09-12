@@ -747,7 +747,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, std::string RootDir, NameAndType
       if(Process[i].isTag("marker") )hist->SetMarkerStyle((int)Process[i]["marker"].toDouble());// else hist->SetMarkerStyle(1);
       
       //fixExtremities(hist,true,true);
-      if(std::string(hist->GetName()).find("eventflow") == std::string::npos )
+      if(std::string(hist->GetName()).find("eventflow") == std::string::npos && std::string(hist->GetName()).find("nbjets") == std::string::npos && std::string(hist->GetName()).find("nbtags") == std::string::npos && std::string(hist->GetName()).find("njets") == std::string::npos  )
         fixExtremities(hist,true,true);
       //else
       //  fixExtremities(hist,true,false);
