@@ -449,6 +449,14 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
+  h = (TH1D*) mon.addHistogram(new TH1D("alteventflowslep", ";;Events", 7, 0., 7.));
+  h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
+  h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (3, "1 #tau");
+  h->GetXaxis()->SetBinLabel (4, "op. sign");
+  h->GetXaxis()->SetBinLabel (5, "= 0 b-tag");
+  h->GetXaxis()->SetBinLabel (6, "= 1 b-tag");
+  h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tag");
 
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup", ";;Events", 100, 0., 100.) );
   
@@ -466,6 +474,14 @@ int main (int argc, char *argv[])
   controlCats.push_back("step5");
   controlCats.push_back("step6");
   
+  controlCats.push_back("altstep1");
+  controlCats.push_back("altstep2");
+  controlCats.push_back("altstep3");
+  controlCats.push_back("altstep4");
+  controlCats.push_back("altstep5");
+  controlCats.push_back("altstep6");
+  controlCats.push_back("altstep7");
+
   for (size_t k = 0; k < controlCats.size (); ++k)
     {
       TString icat (controlCats[k]);
@@ -1644,6 +1660,18 @@ int main (int argc, char *argv[])
         if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("eventflowslep", tags, 5, weight); }
         
 
+        bool passBtagsSelection_0(selSingleLepBJets.size()==0);
+        bool passBtagsSelection_1(selSingleLepBJets.size()==1);
+        bool passBtagsSelection_2(selSingleLepBJets.size()>1);
+
+                                                                                    { ctrlCats.push_back("altstep1"); mon.fillHisto("alteventflowslep", tags, 0, weight); }
+        if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("alteventflowslep", tags, 1, weight); }
+        if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("alteventflowslep", tags, 2, weight); }
+        if(passMetSelection && passTauSelection && passOS)                          { ctrlCats.push_back("altstep4"); mon.fillHisto("alteventflowslep", tags, 3, weight); }
+        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("alteventflowslep", tags, 4, weight); }
+        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflowslep", tags, 5, weight); }
+        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("alteventflowslep", tags, 6, weight); }
+
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){
           
@@ -1669,6 +1697,7 @@ int main (int argc, char *argv[])
             mon.fillHisto (icat+"tauleadpt", tags, selTaus[0].pt(),             weight);
             mon.fillHisto (icat+"tauleadeta", tags, selTaus[0].eta(),             weight);
           }
+         
           
           mon.fillHisto(icat+"nbtags", tags, selSingleLepBJets.size(), weight);
           mon.fillHisto(icat+"njets", tags, selSingleLepJets.size(), weight);
