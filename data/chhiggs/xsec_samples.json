@@ -42,8 +42,8 @@
       "frommcm":"m50 has xsec=5943.2 eff=1, m10to50 has xsec=18610 eff=1",
       "comment":" Must add the 10to50 with its proper xsec: /DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
       "data":[
-             { "dtag":"MC13TeV_DYJetsToLL_10to50"               , "split":59, "xsec":11111111111.  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"} 
-             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"} 
+             { "dtag":"MC13TeV_DYJetsToLL_10to50"               , "split":59, "xsec":18610.0  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM" }, 
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"    } 
       ]
     },
     {   
