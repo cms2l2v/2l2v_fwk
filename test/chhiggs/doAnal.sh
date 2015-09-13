@@ -22,6 +22,8 @@ if [ "${1}" = "submit" ]; then
         JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/mc_samples.json
     elif [ "${2}" = "ttbar" ]; then 
         JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
+    elif [ "${2}" = "chhiggs" ]; then
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
     fi
     
     runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s ${QUEUE}
