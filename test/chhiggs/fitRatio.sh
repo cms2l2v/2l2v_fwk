@@ -1,6 +1,7 @@
 #!/bin/bash
 
-for LUMI in 500 1000 5000 10000
+#500 1000 5000 10000
+for LUMI in 16.1
 do
     OUTRATIO=~/www/13TeV_xsec/${LUMI}/ratio/
     DEMU="${OUTRATIO}eventflow/DataCard_emu.dat"
