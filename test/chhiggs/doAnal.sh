@@ -50,17 +50,11 @@ elif [ "${1}" = "plot" ]; then
     mkdir -p ${BASEDIR}
     cp ~/www/HIG-13-026/index.php ${BASEDIR}
 
-    JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/test/phys14_plot_dileptons.json
-    JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/test/phys14_plot_leptontau.json
-    
-    JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_dileptons.json
-    JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_leptontau.json
+    JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot_xsec_dileptons.json
+    JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot_xsec_leptontau.json
 
-    #JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_dileptons_inclusivetop.json
-    #JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_plot_leptontau_inclusivetop.json
-    
     INDIR=${OUTDIR}
-    ONLYDILEPTON=" --onlyStartWith emu_eventflow --onlyStartWith ee_eventflow --onlyStartWith mumu_eventflow --onlyStartWith emu_step1leadpt --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith emu_step1leadeta  --onlyStartWith emu_step3leadjetpt  --onlyStartWith emu_step3leadjeteta  --onlyStartWith emu_step3met  --onlyStartWith emu_step3nbjets --onlyStartWith ee_step1leadpt --onlyStartWith ee_step1leadeta  --onlyStartWith ee_step3leadjetpt  --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith ee_step3leadjeteta  --onlyStartWith ee_step3met  --onlyStartWith ee_step3nbjets --onlyStartWith mumu_step1leadpt  --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith mumu_step1leadeta  --onlyStartWith mumu_step3leadjetpt  --onlyStartWith mumu_step3leadjeteta  --onlyStartWith mumu_step3met  --onlyStartWith mumu_step3nbjets "
+    ONLYDILEPTON=" --onlyStartWith emu_eventflow --onlyStartWith ee_eventflow --onlyStartWith mumu_eventflow --onlyStartWith emu_alteventflow --onlyStartWith ee_alteventflow --onlyStartWith mumu_alteventflow --onlyStartWith emu_step1leadpt --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith emu_step1leadeta  --onlyStartWith emu_step3leadjetpt  --onlyStartWith emu_step3leadjeteta  --onlyStartWith emu_step3met  --onlyStartWith emu_step3nbjets --onlyStartWith ee_step1leadpt --onlyStartWith ee_step1leadeta  --onlyStartWith ee_step3leadjetpt  --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith ee_step3leadjeteta  --onlyStartWith ee_step3met  --onlyStartWith ee_step3nbjets --onlyStartWith mumu_step1leadpt  --onlyStartWith emu_step6leadpt  --onlyStartWith emu_step6met --onlyStartWith mumu_step1leadeta  --onlyStartWith mumu_step3leadjetpt  --onlyStartWith mumu_step3leadjeteta  --onlyStartWith mumu_step3met  --onlyStartWith mumu_step3nbjets "
     
     ONLYLEPTAU=" --onlyStartWith singlemu_alteventflowslep --onlyStartWith singlee_alteventflowslep --onlyStartWith singlemu_altstep5met --onlyStartWith singlemu_altstep6met --onlyStartWith singlemu_altstep7met --onlyStartWith singlemu_altstep5nbtags --onlyStartWith singlemu_altstep6nbtags --onlyStartWith singlemu_altstep7nbtags --onlyStartWith singlemu_step3nbtags --onlyStartWith singlee_step3nbtags --onlyStartWith singlemu_step6nbtags --onlyStartWith singlee_step6nbtags --onlyStartWith singlemu_step3njets --onlyStartWith singlee_step3njets  --onlyStartWith singlemu_step6met --onlyStartWith singlee_step6met  --onlyStartWith singlemu_step6tauleadpt  --onlyStartWith singlemu_step6tauleadeta --onlyStartWith singlee_step6tauleadpt --onlyStartWith singlee_step6tauleadeta --onlyStartWith singlemu_final --onlyStartWith singlee_final --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep  --onlyStartWith singlemu_step1leadpt  --onlyStartWith singlemu_step1leadeta --onlyStartWith singlemu_step2leadjetpt --onlyStartWith singlemu_step2leadjeteta --onlyStartWith singlemu_step3met --onlyStartWith singlemu_step3nbjets --onlyStartWith singlee_step1leadpt  --onlyStartWith singlee_step1leadeta --onlyStartWith singlee_step2leadjetpt --onlyStartWith singlee_step2leadjeteta --onlyStartWith singlee_step3met --onlyStartWith singlee_step3nbjets --onlyStartWith singlemu_step1nvtx --onlyStartWith singlemu_step1nvtxraw --onlyStartWith singlee_step1nvtx --onlyStartWith singlee_step1nvtxraw  --onlyStartWith singlemu_step2leadpt  --onlyStartWith singlemu_step2leadeta   --onlyStartWith singlemu_step3leadpt  --onlyStartWith singlemu_step3leadeta  --onlyStartWith singlemu_step4leadpt  --onlyStartWith singlemu_step4leadeta  --onlyStartWith singlemu_step5leadpt  --onlyStartWith singlemu_step5leadeta  --onlyStartWith singlemu_step6leadpt  --onlyStartWith singlemu_step6leadeta  --onlyStartWith singlee_step2leadpt  --onlyStartWith singlee_step2leadeta   --onlyStartWith singlee_step3leadpt  --onlyStartWith singlee_step3leadeta  --onlyStartWith singlee_step4leadpt  --onlyStartWith singlee_step4leadeta  --onlyStartWith singlee_step5leadpt  --onlyStartWith singlee_step5leadeta  --onlyStartWith singlee_step6leadpt  --onlyStartWith singlee_step6leadeta --onlyStartWith singlemu_step4met --onlyStartWith singlemu_step5met --onlyStartWith singlee_step4met --onlyStartWith singlee_step5met "
 
@@ -77,6 +71,10 @@ elif [ "${1}" = "plot" ]; then
         
         JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
         JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
+
+        JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot_chhiggs_dileptons.json
+        JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot_chhiggs_leptontau.json
+
     fi
     
 
@@ -92,7 +90,7 @@ elif [ "${1}" = "plot" ]; then
             DIR="${DIR}/chhiggs/"
             LUMI=45000
         fi
-        LUMI=${3}
+        #LUMI=${3}
         mkdir -p ${DIR}
         cp ~/www/HIG-13-026/index.php ${DIR}
 
