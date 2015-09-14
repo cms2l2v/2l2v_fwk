@@ -68,7 +68,18 @@ elif [ "${1}" = "plot" ]; then
     if [ "${2}" = "all" ]; then 
         ONLYDILEPTON=" --onlyStartWith ee --onlyStartWith mumu --onlyStartWith emu "
         ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
+    elif [ "${2}" = "evtflows" ]; then
+        ONLYDILEPTON=" --onlyStartWith ee_eventflow --onlyStartWith emu_eventflow --onlyStartWith mumu_eventflow "
+        ONLYLEPTAU=" --onlyStartWith singlee_eventflow --onlyStartWith singlemu_eventflow "
+    elif [ "${2}" = "chhiggs" ]; then
+        ONLYDILEPTON=" --onlyStartWith ee_eventflow --onlyStartWith emu_eventflow --onlyStartWith mumu_eventflow "
+        ONLYLEPTAU=" --onlyStartWith singlee_eventflow --onlyStartWith singlemu_eventflow "
+        
+        JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
+        JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
     fi
+    
+
 #    ONLYLEPTAU=" --onlyStartWith singlee_eventflowslep --onlyStartWith singlemu_eventflowslep"
     PSEUDODATA=" --generatePseudoData "
     PSEUDODATA=" "
@@ -77,6 +88,11 @@ elif [ "${1}" = "plot" ]; then
     for LUMI in 16.1
     do
         DIR="${BASEDIR}${LUMI}/"
+        if [ "${2}" = "chhiggs" ]; then
+            DIR="${DIR}/chhiggs/"
+            LUMI=45000
+        fi
+        LUMI=${3}
         mkdir -p ${DIR}
         cp ~/www/HIG-13-026/index.php ${DIR}
 
