@@ -310,7 +310,7 @@ def AddJobToCmdFile():
 	       cmd_file.write(temp)
 	elif subTool=='qsub':
                 queue = ""
-                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )!=0): queue = ' -q localgrid@cream02 '
+                # if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )!=0): queue = ' -q localgrid@cream02 '
 
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
