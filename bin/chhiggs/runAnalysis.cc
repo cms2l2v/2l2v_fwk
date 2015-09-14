@@ -442,6 +442,15 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (5, "op. sign");
   h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
+  h = (TH1D*) mon.addHistogram (new TH1D ("alteventflow", ";;Events", 8, 0., 8.));
+  h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
+  h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
+  h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
+  h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (5, "op. sign");
+  h->GetXaxis()->SetBinLabel (6, "= 0 b-tags");
+  h->GetXaxis()->SetBinLabel (7, "= 1 b-tags");
+  h->GetXaxis()->SetBinLabel (8, "#geq 2 b-tags");
   h = (TH1D*) mon.addHistogram (new TH1D ("eventflowslep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
@@ -454,9 +463,9 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (3, "1 #tau");
   h->GetXaxis()->SetBinLabel (4, "op. sign");
-  h->GetXaxis()->SetBinLabel (5, "= 0 b-tag");
-  h->GetXaxis()->SetBinLabel (6, "= 1 b-tag");
-  h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tag");
+  h->GetXaxis()->SetBinLabel (5, "= 0 b-tags");
+  h->GetXaxis()->SetBinLabel (6, "= 1 b-tags");
+  h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
 
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup", ";;Events", 100, 0., 100.) );
   
@@ -481,6 +490,7 @@ int main (int argc, char *argv[])
   controlCats.push_back("altstep5");
   controlCats.push_back("altstep6");
   controlCats.push_back("altstep7");
+  controlCats.push_back("altstep8");
 
   for (size_t k = 0; k < controlCats.size (); ++k)
     {
@@ -1404,7 +1414,7 @@ int main (int argc, char *argv[])
         bool passJetSelection(selJets.size()>1);
         bool passMetSelection(met.pt()>40.);
         bool passOS(selLeptons[0].pdgId() * selLeptons[1].pdgId() < 0 );
-        bool passBtagsSelection(selBJets.size()>1);
+        bool passBtagsSelection(selBJets.size()>2);
        
 
         // Setting up control categories and fill up event flow histo
@@ -1415,6 +1425,21 @@ int main (int argc, char *argv[])
         if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight); }
         if(passMllVeto && passJetSelection && passMetSelection && passOS )                       { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight); }
         if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection ) { ctrlCats.push_back("step6"); mon.fillHisto("eventflow", tags, 5, weight); }
+
+
+        bool passBtagsSelection_0(selBJets.size()==0);
+        bool passBtagsSelection_1(selBJets.size()==1);
+        bool passBtagsSelection_2(selBJets.size()>1);
+
+
+                                                                                                   { ctrlCats.push_back("altstep1"); mon.fillHisto("alteventflow", tags, 0, weight); }
+        if(passMllVeto   )                                                                         { ctrlCats.push_back("altstep2"); mon.fillHisto("alteventflow", tags, 1, weight); }
+        if(passMllVeto && passJetSelection )                                                       { ctrlCats.push_back("altstep3"); mon.fillHisto("alteventflow", tags, 2, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection )                                   { ctrlCats.push_back("altstep4"); mon.fillHisto("alteventflow", tags, 3, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS )                         { ctrlCats.push_back("altstep5"); mon.fillHisto("alteventflow", tags, 4, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_0 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflow", tags, 5, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_1 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflow", tags, 5, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_2 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflow", tags, 5, weight); }
         
 
         // Fill the control plots
