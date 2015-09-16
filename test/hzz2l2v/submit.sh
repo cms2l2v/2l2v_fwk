@@ -37,13 +37,14 @@ if [[ $step -eq 2 ]]; then
    compareJSON.py --diff in.json processedData.json 
 
    echo "COMPUTE INTEGRATED LUMINOSITY"
-   python /afs/cern.ch/user/m/marlow/public/lcr2/lcr2.py -i processedData.json > results/LUMI.txt
-   cat results/LUMI.txt  
+   export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH
+   pip install --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
+   brilcalc lumi -i processedData.json -n 0.962 -u /pb -o results/LUMI.txt
+   tail -n 3 results/LUMI.txt  
 fi
 
-
 if [[ $step -eq 3 ]]; then
-   INTLUMI=`grep 'recorded=' results/LUMI.txt | cut -d ' ' -f 10`
+   INTLUMI=`tail -n 1 results/LUMI.txt | cut -d ',' -f 6`
    echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
    runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $PWD/results/ --outDir $PWD/plots/ --outFile $PWD/plotter.root  --json $PWD/samples.json --no2D $arguments
 fi

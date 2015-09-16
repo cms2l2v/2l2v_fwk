@@ -28,14 +28,14 @@ phase=-1
 ###################################################
 
 
-jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/example/samples.json'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/example/plotter.root'
+jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
 BESTDISCOVERYOPTIM=False #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-MASS = [400,600]
-SUBMASS = [400,600]
+MASS = [400,600, 1000]
+SUBMASS = [400,600, 1000]
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
@@ -283,7 +283,7 @@ for signalSuffix in signalSuffixVec :
       print 'YES'
 
       listcuts = open(OUT+'cuts.txt',"w")
-      LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+binSuffix+OUTName[iConf])
+      #LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+binSuffix+OUTName[iConf])
       for m in SUBMASS:
            index = findCutIndex(cutsH, Gcut, m);
            listcuts.writelines(str(m)+' '+str(index)+' ');

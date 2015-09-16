@@ -166,8 +166,8 @@ class ShapeData_t
            TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
            TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
            if(h->GetBinContent(ibin)>0){
-              statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
-              statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+              statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0.0);
+              statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0.0);
 //            statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
 //            statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
            }else{
@@ -570,6 +570,8 @@ int main(int argc, char* argv[])
   //turn to CC analysis eventually
   if(!shape)allInfo.turnToCC(histo.Data());
 
+  allInfo.HandleEmptyBins(histo.Data()); //needed for negative bin content --> May happens due to NLO interference for instance
+
   //print event yields from the mt shapes
   pFile = fopen("Yields.tex","w");
   allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
@@ -582,13 +584,6 @@ int main(int argc, char* argv[])
 
   //produce a plot
   allInfo.showShape(selCh,histo,"plot");
-
-  //handle empty bins here, so the Yields is already produced
-  //allInfo.HandleEmptyBins(histo.Data());
-  //pFile = fopen("YieldsNoEmptyBins.tex","w");
-  //allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
-  //fclose(pFile);
-  //allInfo.showShape(selCh,histo,"plotNoEmptyBins");
 
   //prepare the output
   string limitFile=("hzz2l2v_"+massStr+systpostfix+".root").Data();
@@ -1357,7 +1352,7 @@ void initializeTGraph(){
               }
               //observations
               fprintf(pFile, "bin 1\n");
-              fprintf(pFile, "Observation %f\n", round(procs["data"].channels[C->first].shapes[histoName].histo()->Integral()) );
+              fprintf(pFile, "Observation %f\n", procs["data"].channels[C->first].shapes[histoName].histo()->Integral());
               fprintf(pFile, "-------------------------------\n");
 
               //yields
@@ -2258,20 +2253,29 @@ void initializeTGraph(){
          void AllInfo_t::HandleEmptyBins(string histoName){
            for(unsigned int p=0;p<sorted_procs.size();p++){
               string procName = sorted_procs[p];
-              if(procName!="FakeLep")continue; //only do this for the FakeLepbackground right now
+              //if(procName!="FakeLep")continue; //only do this for the FakeLepbackground right now
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end())continue;
+              if(it->second.isData)continue; //only do this for MC
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];
                  TH1* histo = (TH1*)shapeInfo.histo();
                  if(!histo){printf("Histo does not exit... skip it \n"); fflush(stdout); continue;}
 
                  double StartIntegral = histo->Integral();
                  for(int binx=1;binx<=histo->GetNbinsX();binx++){
-                    if(histo->GetBinContent(binx)<=0){histo->SetBinContent(binx, 1E-6); }; //histo->SetBinError(binx, 1.8);  }
+                    if(histo->GetBinContent(binx)<=0){histo->SetBinContent(binx, 1E-6); histo->SetBinError(binx, 1E-6);  }
                  }
                  double EndIntegral = histo->Integral();                 
                  shapeInfo.rescaleScaleUncertainties(StartIntegral, EndIntegral);
+
+
+                 for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
+                    for(int binx=1;binx<=unc->second->GetNbinsX();binx++){
+                       if(unc->second->GetBinContent(binx)<=0){unc->second->SetBinContent(binx, 1E-6); }; //histo->SetBinError(binx, 1.8);  }
+                    }
+                 }
               }
            }
 
