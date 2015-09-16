@@ -1,0 +1,175 @@
+{
+  "proc":[
+        { 
+        "tag":"ChargedHiggs_HplusTB_HplusToTauNu_M-180",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[180 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-180", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-180_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"ChargedHiggs_HplusTB_HplusToTauNu_M-200",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[200 GeV]}",
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-200", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-200_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"ChargedHiggs_HplusTB_HplusToTauNu_M-220",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[220 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-220", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-220_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"ChargedHiggs_HplusTB_HplusToTauNu_M-300",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[300 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-300", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-300_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"ChargedHiggs_HplusTB_HplusToTauNu_M-350",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[350 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-350", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-350_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"ChargedHiggs_HplusTB_HplusToTauNu_M-500",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[500 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-500", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-500_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-100",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[100 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-100", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-100_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-140",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[140 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-140", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-140_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-150",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[150 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-150", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-150_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-155",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[155 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-155", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-155_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-160",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[160 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-160", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-160_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-80",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[80 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-80", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-80_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+        "tag":"TTToHplusBWB_HplusToTauNu_M-90",
+        "label":"#splitline{H^{+}#rightarrow#tau#nu [1pb]}{[90 GeV]}",
+        "isdata":false,
+        "issignal":true,
+        "spimpose":true,
+        "color":2,
+        "lcolor":2,
+        "comment":"taunu decay mode only",
+        "data":[        
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-90", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-90_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+      ]
+    }
+  ]
+}
+
+
+
+

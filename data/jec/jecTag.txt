@@ -1,1 +1,2 @@
-Summer15_50nsV5
+50ns: Summer15_50nsV5
+25ns: Summer15_25nsV2

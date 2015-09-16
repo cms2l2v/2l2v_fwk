@@ -9,7 +9,8 @@ JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/phys14_xsec_lepton
 # histo choices for leptau: finaltaur, finaltaupolarization, finaldphilepmet, finaldphitaumet, finaldphileptau, finaltaupt, eventflowslep(bin6)
 # Remember to blank the BINS* variables when not using eventflow histograms ;)
 
-for LUMI in 500 1000 5000 10000
+###500 1000 5000 10000
+for LUMI in 16.1
 do
     DIR=${BASEDIR}${LUMI}/
     for HISTODILEPTON in  eventflow
