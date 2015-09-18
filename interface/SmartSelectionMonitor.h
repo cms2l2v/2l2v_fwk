@@ -88,9 +88,9 @@ public:
 	  if(!(h->second)){printf("histo = %30s %15s IS NULL",it->first.Data(), h->first.Data());continue;}
 	  if(h->second->GetEntries()>0)neverFilled = false;
 
+          if(h->first=="all"){h->second->SetName(h->first+"_"+h->second->GetName());}
           //printf("histo = %30s tag = %15s Name = %s\n",it->first.Data(), h->first.Data(),  h->second->GetName());
-          if(h->first=="all"){h->second->Write(h->first+"_"+h->second->GetName());
-          }else{              h->second->Write();}
+          h->second->Write();
         }
 
         if(neverFilled){printf("SmartSelectionMonitor: histo = '%s' is empty for all categories, you may want to cleanup your project to remove this histogram\n",it->first.Data());}

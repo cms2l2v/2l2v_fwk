@@ -556,7 +556,9 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
   
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,dtag);
+  TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
+  gSystem->ExpandPathName(muscleDir);
+  MuScleFitCorrector *muCor=getMuonCorrector(muscleDir,dtag);
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -631,13 +633,13 @@ int main(int argc, char* argv[])
          if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
 
          if( eeTrigger ){ 
-           mon.fillHisto( "numbereeTrigger", "", 1, 1);
+           mon.fillHisto( "numbereeTrigger", "all", 1, 1);
          }
          if( mumuTrigger ){ 
-           mon.fillHisto( "numbermumuTrigger", "", 1, 1);
+           mon.fillHisto( "numbermumuTrigger", "all", 1, 1);
          }
          if( emuTrigger ){ 
-           mon.fillHisto( "numberemuTrigger", "", 1, 1);
+           mon.fillHisto( "numberemuTrigger", "all", 1, 1);
          }
 
          bool hasPhotonTrigger(false);

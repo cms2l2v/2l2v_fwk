@@ -35,8 +35,7 @@ def initProxy():
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
       else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 720:00 --out '+PROXYDIR+'/x509_proxy')
-   # --voms cms?
-   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; '
+   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
 def getFileList(procData):
    FileList = [];
