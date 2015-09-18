@@ -514,18 +514,23 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "numberemuTrigger",  "Number of event passing the emu Trigger", 2, 0, 2) );
 
   //
-  // STATISTICAL ANALYSIS
+  // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
   //
+
+  //NEED FOR ALL OPTIMIZATION
+  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
+  }
+ 
   
   std::vector<double> optim_Cuts1_met; 
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
   TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
   Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
-  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
       for(unsigned int nri=0;nri<NRparams.size();nri++){ 
 	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
 	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
@@ -539,6 +544,27 @@ int main(int argc, char* argv[])
       }
     }
 
+
+
+
+
+  std::vector<std::vector<double>> optim_Cuts_VBF; 
+  for(double jet2Pt=20    ;jet2Pt<50;jet2Pt+=5) { 
+     for(double jet1Pt=jet2Pt;jet1Pt<50;jet1Pt+=5) {
+        for(double deta=2.0     ;deta<5.0;deta+=0.25) { 
+           for(double mjj=100.0    ;mjj<1000;mjj+=50) {
+              optim_Cuts_VBF.push_back( std::vector<double>{jet1Pt, jet2Pt, deta, mjj} );
+  }}}}
+   
+  TH2F* Hoptim_cuts_VBF  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut_VBF",      ";cut index;variable",       optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 4, 0, 4)) ;
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(1, "jet1 p_{T}>");
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(2, "jet2 p_{T}>");
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(3, "d#eta>");
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(4, "M_{jj}>");
+  for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){ for(unsigned int cut=0;cut<4;cut++){ Hoptim_cuts_VBF    ->Fill(index, float(cut), optim_Cuts_VBF[index][cut]); }  }
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+     mon.addHistogram( new TH2F (TString("vbf_shapes")+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 1, 0, 2500) );     
+  }
 
      
   //##############################################
@@ -1018,8 +1044,8 @@ int main(int argc, char* argv[])
              
              //jet id
              bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
-         float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-         bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
+             float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
+             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
              if(jets[ijet].pt()>30){
                  mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
                  if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
@@ -1296,6 +1322,19 @@ int main(int argc, char* argv[])
            }        
          }
 
+         //HISTO FOR VBF THRESHOLD OPTIMIZATION
+         for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){          
+             if(selJets.size()<2)continue; //at least 2 selected jets (pT>15)
+             if(selJets[0].pt()<optim_Cuts_VBF[index][0])continue;
+             if(selJets[1].pt()<optim_Cuts_VBF[index][1])continue;
+             float deta=fabs(selJets[0].eta()-selJets[1].eta());
+             if(deta           <optim_Cuts_VBF[index][2])continue;
+             LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
+             if(dijet.mass()   <optim_Cuts_VBF[index][3])continue;
+             for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+                mon.fillHisto(TString("vbf_shapes")+varNames[ivar],"all",index, 1.0, weight);
+             }
+         }
 
 
          //

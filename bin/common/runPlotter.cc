@@ -685,7 +685,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
          TH1 *hist=(TH1*)stack->GetStack()->At(0);
 	 stack->GetXaxis()->SetTitle(hist->GetXaxis()->GetTitle());
 	 stack->GetYaxis()->SetTitle(hist->GetYaxis()->GetTitle());
-	 stack->SetMinimum(std::max(0, std::min(SignalMin, hist->GetMinimum()))); //important when there are negative content
+	 stack->SetMinimum(std::max(0.0, std::min(SignalMin, hist->GetMinimum()))); //important when there are negative content
 	 stack->SetMaximum(maximumFound*1E2);
 	 stack->GetXaxis()->SetLabelFont(42);
 	 stack->GetXaxis()->SetLabelOffset(0.007);
