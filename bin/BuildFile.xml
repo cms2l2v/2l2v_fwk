@@ -15,6 +15,7 @@
   <bin name="computeLimit"                file="common/computeLimit.cc"></bin>
   <bin name="runPlotter"                  file="common/runPlotter.cc"></bin> 
   <bin name="runPLRanalysis"              file="common/runPLRanalysis.cc"></bin>
+  <bin name="computeLeptonEfficency"      file="common/computeLeptonEfficency.cc"></bin>
 
 <!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
   <bin name="runChHiggsAnalysis"          file="chhiggs/runAnalysis.cc"></bin>
