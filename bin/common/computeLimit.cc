@@ -1487,8 +1487,8 @@ void initializeTGraph(){
                }               
 
                //Loop on all channels, bins and shape to load and store them in memory structure
-               TH1* syst = (TH1*)pdir->Get("optim_systs");
-               if(syst==NULL){syst=new TH1F("optim_systs","optim_systs",1,0,1);syst->GetXaxis()->SetBinLabel(1,"");}
+               TH1* syst = (TH1*)pdir->Get("all_optim_systs");
+               if(syst==NULL){syst=new TH1F("all_optim_systs","all_optim_systs",1,0,1);syst->GetXaxis()->SetBinLabel(1,"");}
                for(unsigned int c=0;c<channelsAndShapes.size();c++){
                TString chName    = (channelsAndShapes[c].substr(0,channelsAndShapes[c].find(";"))).c_str();
                TString binName   = (channelsAndShapes[c].substr(channelsAndShapes[c].find(";")+1, channelsAndShapes[c].rfind(";")-channelsAndShapes[c].find(";")-1)).c_str();
@@ -1510,8 +1510,8 @@ void initializeTGraph(){
 
                   TH2* hshape2D = (TH2*)pdir->Get(histoName );
                   if(!hshape2D){
-                     if(shapeName==histo && histoVBF!="" && ch.Contains("vbf")){   hshape2D = (TH2*)pdir->Get(histoVBF+(isSignal?signalSufix:"")+varName);
-                     }else{                                                        hshape2D = (TH2*)pdir->Get(shapeName+varName);
+                     if(shapeName==histo && histoVBF!="" && ch.Contains("vbf")){   hshape2D = (TH2*)pdir->Get(TString("all_")+histoVBF+(isSignal?signalSufix:"")+varName);
+                     }else{                                                        hshape2D = (TH2*)pdir->Get(TString("all_")+shapeName+varName);
                      }
                                 
                      if(hshape2D){

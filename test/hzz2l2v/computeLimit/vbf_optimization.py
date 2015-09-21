@@ -30,31 +30,31 @@ phase=-1
 
 jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json'
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
-BESTDISCOVERYOPTIM=False #Set to True for best discovery optimization, Set to False for best limit optimization
+BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
-BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
+BINS = ["eq0jets,geq1jets,vbf --inclusive"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
 MASS = [400,600, 1000]
 SUBMASS = [400,600, 1000]
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
-LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
+LandSArgCommonOptions=" --blind --dropBckgBelow 0.00001 "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
-for shape in ["mt_shapes --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
+for shape in ["vbf_shapes "]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
    for bin in BINS:
       #Run limit for Cut&Count GG+VBF
       signalSuffixVec += [ "" ]
-      OUTName         += ["CC13TeV"]
+      OUTName         += ["VBFOPTIM13TeV"]
       LandSArgOptions += [" --histo " + shape + " --systpostfix _13TeV "]
       BIN             += [bin]
 
       #Run limit for ShapeBased GG+VBF
-      signalSuffixVec += [ "" ]
-      OUTName         += ["SB13TeV"]
-      LandSArgOptions += [" --histo " + shape + "  --systpostfix _13TeV --shape "]
-      BIN             += [bin]
+#      signalSuffixVec += [ "" ]
+#      OUTName         += ["SB13TeV"]
+#      LandSArgOptions += [" --histo " + shape + "  --systpostfix _13TeV --shape "]
+#      BIN             += [bin]
 
 
 ###################################################
@@ -121,12 +121,13 @@ iConf = -1
 for signalSuffix in signalSuffixVec :
    iConf+=1;
 
-   if(phase<=3 and ',' in BIN[iConf]):continue #only need individual bin for these phases
+   if(phase<=3 and ',' in BIN[iConf] and "--inclusive" not in BIN[iConf]):continue #only need individual bin for these phases
 
    LandSArg = LandSArgCommonOptions + ' ' + LandSArgOptions[iConf];
    if(signalSuffix != ""):LandSArg+=' --signalSufix \"' + signalSuffix +'\" '
    binSuffix = ""
-   if(',' not in BIN[iConf]):binSuffix="_"+ BIN[iConf]   
+   if("--inclusive" in BIN[iConf]): binSuffix="_inc"      
+   elif(',' not in BIN[iConf]):binSuffix="_"+ BIN[iConf]   
 
    DataCardsDir='cards_'+OUTName[iConf]+signalSuffix+binSuffix
 
@@ -136,7 +137,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('Z#rightarrow ll/all_optim_cut') 
+   cutsH = file.Get('Z#rightarrow ll/all_optim_cut_VBF') 
       
    ###################################################
    ##   OPTIMIZATION LOOP                           ##
@@ -145,7 +146,8 @@ for signalSuffix in signalSuffixVec :
    if( phase == 1 ):
       print '# RUN LIMITS FOR ALL POSSIBLE CUTS  for ' + DataCardsDir + '#\n'
       LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+binSuffix+OUTName[iConf])
-
+      
+      for m in MASS: os.system('rm ' + OUT+str(m)+'.log')
       FILE = open(OUT+"/LIST.txt","w")
       i = 1
       while (i<cutsH.GetXaxis().GetNbins()+1):                   
@@ -162,11 +164,18 @@ for signalSuffix in signalSuffixVec :
                 SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
                 SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " --syst " + " --index " + str(i)     + " --json " + jsonUrl + " --shapeMin " + str(shapeCutMin_) + " --shapeMax " + str(shapeCutMax_) + " " + LandSArg + " --bins " + BIN[iConf] + " ;\n")
                 SCRIPT.writelines("sh combineCards.sh;\n")
-                SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat > LIMIT.log;\n") #limit computation
-                SCRIPT.writelines("combine -M ProfileLikelihood  -m " +  str(m) + " --significance -t -1 --expectSignal=1 card_combined.dat  > SIGN.log;\n") #apriori significance computation
-                SCRIPT.writelines('tail -n 100 LIMIT.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.log;\n')
-                SCRIPT.writelines('tail -n 100 SIGN.log >> ' +OUT+str(m)+'_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.log;\n')
-                SCRIPT.writelines('cat LIMIT.log; cat SIGN.log\n')
+                SCRIPT.writelines('echo "######CUTS_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'" > SUMMARY;\n')
+                SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " --run expected card_combined.dat | tail -n 100 >> SUMMARY;\n") #limit computation
+                SCRIPT.writelines("combine -M ProfileLikelihood  -m " +  str(m) + " --significance -t -1 --expectSignal=1 card_combined.dat| tail -n 100 >> SUMMARY;\n") #apriori significance computation
+#                SCRIPT.writelines('tail -n 100 LIMIT.log > ' +OUT+str(m)+'_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.log;\n')
+#                SCRIPT.writelines('tail -n 100 SIGN.log >> ' +OUT+str(m)+'_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.log;\n')
+#                SCRIPT.writelines('echo "######CUTS_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'" >> ' +OUT+str(m)+'.log;\n')
+#                SCRIPT.writelines('tail -n 100 LIMIT.log >> ' +OUT+str(m)+'.log;\n')
+#                SCRIPT.writelines('tail -n 100 SIGN.log >> ' +OUT+str(m)+'.log;\n')
+#                SCRIPT.writelines('cat LIMIT.log; cat SIGN.log\n')
+#                SCRIPT.writelines('echo "######CUTS_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'" > SUMMARY;\n')
+#                SCRIPT.writelines('tail -n 100 LIMIT.log >> SUMMARY;\n')
+                SCRIPT.writelines('cat SUMMARY >> ' +OUT+str(m)+'.log;\n')
                 SCRIPT.writelines('cd ..;\n')
                 #SCRIPT.writelines('mv ' + cardsdir + ' ' + OUT + '/.\n')
                 SCRIPT.writelines('rm -rd ' + cardsdir+';\n')            
@@ -187,32 +196,59 @@ for signalSuffix in signalSuffixVec :
          print 'Starting mass ' + str(m)
          FILE.writelines("------------------------------------------------------------------------------------\n")
          BestLimit = []
-         fileList = commands.getstatusoutput("find " + OUT +" -name " + str(m)+"_*.log")[1].split();           
-         for f in fileList:
-            try:
-               value = -1.0;
-               if(BESTDISCOVERYOPTIM==True):
-                  exp = commands.getstatusoutput("cat " + f + " | grep \"Significance:\"")[1]; 
-                  if(len(exp)<=0):continue
-                  value = exp.split()[1]
+         optimFile = open(OUT+str(m)+'.log')
+         CurrentCuts = []
+         try:
+            for line in optimFile:
+               value=-1.0
+               if("######CUTS" in line):
+                  CurrentCuts = line.split('_')[1:]
+                  continue
+               elif(BESTDISCOVERYOPTIM==True and "Significance:" in line):
+                  value = line.split()[1]
+                  if(float(value)>1000.0):continue #too high for a significance --> something is going wrong here
+               elif(BESTDISCOVERYOPTIM==False and "Expected 50.0%" in line):
+                  value = line.split()[4]
                else:
-                  exp = commands.getstatusoutput("cat " + f + " | grep \"Expected 50.0%\"")[1];  
-                  if(len(exp)<=0):continue
-                  value = exp.split()[4]
+                  continue;
 
                if(value=='matches'):continue             
                if(float(value)<=0.0):continue
-               if(BESTDISCOVERYOPTIM and float(value)>1000.0):continue #too high for a significance --> something is going wrong here
-               f = f.replace(".log","")
-               fields = f.split('_')
-               N = len(fields)
-               index = fields[N-3] 
+               N = len(CurrentCuts)
+               index = CurrentCuts[0] 
                Cuts = ''
                for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
                   Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
-               BestLimit.append("mH="+str(m)+ " --> Limit/Significance=" + ('%010.6f' % float(value)) + "  Index: " + str(index)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
-            except:
-               print "File %s does not contain a valid limit" % f
+               BestLimit.append("mH="+str(m)+ " --> Limit/Significance=" + ('%010.6f' % float(value)) + "  Index: " + str(index)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(CurrentCuts[1]).rjust(5) + " " + str(CurrentCuts[2]).rjust(5))
+         except:
+            print "File %s does not contain a valid limit" % OUT+str(m)+'.log'
+
+#         fileList = commands.getstatusoutput("find " + OUT +" -name " + str(m)+"_*.log")[1].split();           
+#         for f in fileList:
+#            try:
+#               value = -1.0;
+#               if(BESTDISCOVERYOPTIM==True):
+#                  exp = commands.getstatusoutput("cat " + f + " | grep \"Significance:\"")[1]; 
+#                  if(len(exp)<=0):continue
+#                  value = exp.split()[1]
+#               else:
+#                  exp = commands.getstatusoutput("cat " + f + " | grep \"Expected 50.0%\"")[1];  
+#                  if(len(exp)<=0):continue
+#                  value = exp.split()[4]
+#
+#               if(value=='matches'):continue             
+#               if(float(value)<=0.0):continue
+#               if(BESTDISCOVERYOPTIM and float(value)>1000.0):continue #too high for a significance --> something is going wrong here
+#               f = f.replace(".log","")
+#               fields = f.split('_')
+#               N = len(fields)
+#               index = fields[N-3] 
+#               Cuts = ''
+#               for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
+#                  Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
+#               BestLimit.append("mH="+str(m)+ " --> Limit/Significance=" + ('%010.6f' % float(value)) + "  Index: " + str(index)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(fields[N-2]).rjust(5) + " " + str(fields[N-1]).rjust(5))
+#            except:
+#               print "File %s does not contain a valid limit" % f
 
          #sort the limits for this mass
          BestLimit.sort(reverse=BESTDISCOVERYOPTIM)
@@ -308,7 +344,7 @@ for signalSuffix in signalSuffixVec :
                for c in range(1, cutsH.GetYaxis().GetNbins()+1):
                  Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #add a graph for each cut
                Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMin
-               Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax
+               Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax                
 
                INbinSuffix = "_" + bin
                IN = CWD+'/JOBS/'+OUTName[iConf]+signalSuffix+INbinSuffix+'/'

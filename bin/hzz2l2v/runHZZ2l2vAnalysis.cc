@@ -1332,7 +1332,7 @@ int main(int argc, char* argv[])
              LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
              if(dijet.mass()   <optim_Cuts_VBF[index][3])continue;
              for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-                mon.fillHisto(TString("vbf_shapes")+varNames[ivar],"all",index, 1.0, weight);
+                mon.fillHisto(TString("vbf_shapes")+varNames[ivar],tags,index, 1.0, weight);
              }
          }
 

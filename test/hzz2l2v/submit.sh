@@ -15,7 +15,7 @@ if [[ $# -ge 2 ]]; then echo "Additional arguments will be considered: "$argumen
 
 
 #GLOBAL VARIABLES
-SUFFIX=_2015_09_17
+SUFFIX=_2015_09_18
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
 RESULTSDIR=$MAINDIR/results$SUFFIX
@@ -65,5 +65,5 @@ if [[ $step -eq 3 ]]; then
    INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
    echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
    runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --no2D $arguments
-   ln -s $PLOTTER.root $MAINDIR/plotter.root
+   ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 fi
