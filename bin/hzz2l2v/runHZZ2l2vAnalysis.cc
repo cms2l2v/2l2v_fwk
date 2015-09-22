@@ -498,6 +498,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "axialmetNM1",   ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
   Double_t metaxis[]={0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,125,150,175,200,250,300,400,500};
   Int_t nmetAxis=sizeof(metaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "metpuppi",          ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "metNM1",        ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
   Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,2000};
@@ -744,6 +745,12 @@ int main(int argc, char* argv[])
           metsHandle.getByLabel(ev, "slimmedMETs");
           if(metsHandle.isValid()){ mets = *metsHandle;}
           LorentzVector met = mets[0].p4(); 
+
+          pat::METCollection puppimets;
+          fwlite::Handle< pat::METCollection > puppimetsHandle;
+          puppimetsHandle.getByLabel(ev, "slimmedMETsPuppi");
+          if(puppimetsHandle.isValid()){ puppimets = *puppimetsHandle;}
+          LorentzVector puppimet = puppimets[0].p4(); 
 
           pat::TauCollection taus;
           fwlite::Handle< pat::TauCollection > tausHandle;
@@ -1268,6 +1275,7 @@ int main(int argc, char* argv[])
 
                      mon.fillHisto( "njets",icat,njets,iweight);
                      mon.fillHisto( "met",icat,met.pt(),iweight,true);
+                     mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
                      mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
                      TVector2 met2(met.px(),met.py());
                      TVector2 boson2(iboson.px(), iboson.py());

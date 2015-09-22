@@ -66,8 +66,9 @@ def getFileList(procData):
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               if(hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
-               else:                                list[i] = "root://eoscms//eos/cms"+list[i]            
+               if  (hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
+               elif(hostname.find("ucl.ac.be" )!=-1): list[i] = "/storage/data/cms"+list[i]
+               else:                                  list[i] = "root://eoscms//eos/cms"+list[i]            
             else:
                list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side

@@ -82,10 +82,6 @@ bool doInterf = false;
 double minSignalYield = 0;
 float statBinByBin = -1;
 
-bool doInclusive=false;
-
-std::vector<string> mergeBins;
-
 bool dirtyFix1 = false;
 bool dirtyFix2 = false;
 
@@ -318,9 +314,6 @@ class AllInfo_t
         // Rescale signal sample for the effect of the interference and propagate the uncertainty 
         void RescaleForInterference(string histoName);
 
-        // Merge Bins to make an inclusive analysis 
-        void TurnToInclusiveAnalysis();
-
         //Merge bins together
         void mergeBins(std::vector<string>& binsToMerge, string NewName);
 
@@ -424,7 +417,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--index" )   !=string::npos && i+1<argc)   { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutV .push_back(C);  pch = strtok(NULL,",");} i++; printf("index  = "); for(unsigned int i=0;i<indexcutV .size();i++)printf(" %i ", indexcutV [i]);printf("\n");}
     else if(arg.find("--indexL")    !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutVL.push_back(C);  pch = strtok(NULL,",");} i++; printf("indexL = "); for(unsigned int i=0;i<indexcutVL.size();i++)printf(" %i ", indexcutVL[i]);printf("\n");}
     else if(arg.find("--indexR")    !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutVR.push_back(C);  pch = strtok(NULL,",");} i++; printf("indexR = "); for(unsigned int i=0;i<indexcutVR.size();i++)printf(" %i ", indexcutVR[i]);printf("\n");}
-    else if(arg.find("--inclusive") !=string::npos) { doInclusive=true; printf("doInclusive = True\n");}
     else if(arg.find("--in")       !=string::npos && i+1<argc)  { inFileUrl = argv[i+1];  i++;  printf("in = %s\n", inFileUrl.Data());  }
     else if(arg.find("--json")     !=string::npos && i+1<argc)  { jsonFile  = argv[i+1];  i++;  printf("json = %s\n", jsonFile.Data()); }
     else if(arg.find("--histoVBF") !=string::npos && i+1<argc)  { histoVBF  = argv[i+1];  i++;  printf("histoVBF = %s\n", histoVBF.Data()); }
@@ -433,7 +425,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--mR")       !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&massR ); i++; printf("massR = %i\n", massR);}
     else if(arg.find("--m")        !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&mass ); i++; printf("mass = %i\n", mass);}
     else if(arg.find("--bins")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins are : ");while (pch!=NULL){printf(" %s ",pch); AnalysisBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
-    else if(arg.find("--MergeBins")!=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins will be merged : ");while (pch!=NULL){printf(" %s ",pch); mergeBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--channels") !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("channels are : ");while (pch!=NULL){printf(" %s ",pch); Channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--postfix")   !=string::npos && i+1<argc)  { postfix = argv[i+1]; systpostfix = argv[i+1]; i++;  printf("postfix '%s' will be used\n", postfix.Data());  }
     else if(arg.find("--systpostfix")   !=string::npos && i+1<argc)  { systpostfix = argv[i+1];  i++;  printf("systpostfix '%s' will be used\n", systpostfix.Data());  }
@@ -453,7 +444,7 @@ int main(int argc, char* argv[])
   if(histo.IsNull())    { printf("No Histogram provided\nrun with '--help' for more details\n"); return -1; }
   if(mass==-1)          { printf("No massPoint provided\nrun with '--help' for more details\n"); return -1; }
   if(indexcutV.size()<=0){printf("INDEX CUT SIZE IS NULL\n"); printHelp(); return -1; }
-  if(AnalysisBins.size()==0)AnalysisBins.push_back("");
+  if(AnalysisBins.size()==0)AnalysisBins.push_back("all");
   if(Channels.size()==0){Channels.push_back("ee");Channels.push_back("mumu");}
 
   //make sure that the index vector are well filled
@@ -463,6 +454,33 @@ int main(int argc, char* argv[])
   while(indexcutVL.size()<AnalysisBins.size()){indexcutVL.push_back(indexcutVL[0]);}
   while(indexcutVR.size()<AnalysisBins.size()){indexcutVR.push_back(indexcutVR[0]);}
   if(indexvbf>=0){for(unsigned int i=0;i<AnalysisBins.size();i++){if(AnalysisBins[i].find("vbf")!=string::npos){indexcutV[i]=indexvbf; indexcutVL[i]=indexvbf; indexcutVR[i]=indexvbf;} }}
+
+
+  //handle merged bins
+  std::vector<std::vector<string> > binsToMerge;
+  for(unsigned int b=0;b<AnalysisBins.size();b++){
+     if(AnalysisBins[b].find('+')!=std::string::npos){
+        std::vector<string> subBins;
+        char* pch = strtok(&AnalysisBins[b][0],"+"); 
+        while (pch!=NULL){
+           indexcutV.push_back(indexcutV[b]);
+           indexcutVL.push_back(indexcutVL[b]);
+           indexcutVR.push_back(indexcutVR[b]);
+           AnalysisBins.push_back(pch);
+           subBins.push_back(pch);
+           pch = strtok(NULL,"+");
+        }
+        binsToMerge.push_back(subBins);
+        AnalysisBins.erase(AnalysisBins.begin()+b);
+        indexcutV .erase(indexcutV .begin()+b);
+        indexcutVL.erase(indexcutVL.begin()+b);
+        indexcutVR.erase(indexcutVR.begin()+b);
+        b--;
+     }
+  }
+
+
+
   //fill the index map
   for(unsigned int i=0;i<AnalysisBins.size();i++){indexcutM[AnalysisBins[i]] = indexcutV[i]; indexcutML[AnalysisBins[i]] = indexcutVL[i]; indexcutMR[AnalysisBins[i]] = indexcutVR[i];}
 
@@ -559,13 +577,12 @@ int main(int argc, char* argv[])
   //drop control channels
   allInfo.dropCtrlChannels(selCh);
 
-  //merge bins
-  if(doInclusive)allInfo.TurnToInclusiveAnalysis();
-
-  if(mergeBins.size()>0){
-     std::string NewBinName = mergeBins.back();  mergeBins.pop_back();
-     allInfo.mergeBins(mergeBins,NewBinName);
+  //merge bins  
+  for(unsigned int B=0;B<binsToMerge.size();B++){
+     std::string NewBinName = string("["); binsToMerge[B][0];  for(unsigned int b=1;b<binsToMerge[B].size();b++){NewBinName += "+"+binsToMerge[B][b];} NewBinName+="]";
+     allInfo.mergeBins(binsToMerge[B],NewBinName);
   }
+
 
   //turn to CC analysis eventually
   if(!shape)allInfo.turnToCC(histo.Data());
@@ -2202,30 +2219,6 @@ void initializeTGraph(){
          //
          // merge histograms from different bins together... but keep the channel separated 
          //
-         void AllInfo_t::TurnToInclusiveAnalysis(){
-           printf("Merge all bins of the same channel together\n");
-           for(unsigned int p=0;p<sorted_procs.size();p++){
-              string procName = sorted_procs[p];
-              std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
-              if(it==procs.end())continue;
-              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
-                 for(std::map<string, ChannelInfo_t>::iterator ch2 = ch; ch2!=it->second.channels.end(); ch2++){
-                    if(ch->second.channel != ch2->second.channel)continue; //make sure we merge bin in the same channel
-                    if(ch->second.bin     == ch2->second.bin    )continue; //make sure we do not merge with itself
-                    addChannel(ch->second, ch2->second);
-                    it->second.channels.erase(ch2);  
-                    ch2=ch;
-                 }
-//                 ch->first      = ch->second.channel;
-                 ch->second.bin = "Inc";
-              }
-           }
-         }
-
-
-         //
-         // merge histograms from different bins together... but keep the channel separated 
-         //
          void AllInfo_t::mergeBins(std::vector<string>& binsToMerge, string NewName){
            printf("Merge the following bins of the same channel together: "); for(unsigned int i=0;i<binsToMerge.size();i++){printf("%s ", binsToMerge[i].c_str());}
            printf("The resulting bin will be called %s\n", NewName.c_str());
@@ -2233,19 +2226,26 @@ void initializeTGraph(){
               string procName = sorted_procs[p];
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end())continue;
+
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 if(find(binsToMerge.begin(), binsToMerge.end(), ch ->second.bin)==binsToMerge.end())continue;  //make sure this bin should be merged
                  for(std::map<string, ChannelInfo_t>::iterator ch2 = ch; ch2!=it->second.channels.end(); ch2++){
                     if(ch->second.channel != ch2->second.channel)continue; //make sure we merge bin in the same channel
                     if(ch->second.bin     == ch2->second.bin    )continue; //make sure we do not merge with itself
-                    if(find(binsToMerge.begin(), binsToMerge.end(), ch ->second.bin)==binsToMerge.end())continue;  //make sure this bin should be merged
                     if(find(binsToMerge.begin(), binsToMerge.end(), ch2->second.bin)==binsToMerge.end())continue;  //make sure this bin should be merged
                     addChannel(ch->second, ch2->second);
                     it->second.channels.erase(ch2);  
                     ch2=ch;
                  }
-//                 ch->first      = ch->second.channel;
                  ch->second.bin = NewName;
               }
+
+              //also update the map keys
+              std::map<string, ChannelInfo_t> newMap;
+              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 newMap[ch->second.channel+ch->second.bin] = ch->second;
+              }
+              it->second.channels = newMap;
            }
          }
 

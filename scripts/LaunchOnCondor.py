@@ -371,7 +371,7 @@ def SendCluster_Create(FarmDirectory, JobName):
 	#determine what is the submission system available, or use condor
         if(subTool==''):
   	   if(  commands.getstatusoutput("bjobs"      )[1].find("command not found")<0): subTool = 'bsub'
-           elif(commands.getstatusoutput("qstat"      )[1].find("command not found")<0): subTool = 'qsub'
+           elif(commands.getstatusoutput("qsub"       )[1].find("command not found")<0): subTool = 'qsub'
            else:                                                                         subTool = 'condor'
         if(Jobs_Queue.find('crab')>=0):                                                  subTool = 'crab'
 
