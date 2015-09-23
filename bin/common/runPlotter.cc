@@ -215,6 +215,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
       printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
       for(std::unordered_map<string, std::vector<string> >::iterator it = MissingFiles.begin(); it!=MissingFiles.end(); it++){
+         if(it->second.size()<=0)continue;
          printf("Missing file in dataset %s:\n", it->first.c_str());
          for(unsigned int f=0;f<it->second.size();f++){
             printf("\t %s\n", it->second[f].c_str());
@@ -377,10 +378,6 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
          int split = Samples[j].getInt("split", -1);
          TH1* tmphist = NULL;
          std::vector<string>& fileList = DSetFiles[(Samples[j])["dtag"].toString()];
-
-         printf("\nfiles for sample %s :\n", (Samples[j])["dtag"].toString().c_str());
-         for(int f=0;f<fileList.size();f++){ printf("   %s\n", fileList[f].c_str()); }
-
 
          for(int f=0;f<fileList.size();f++){
            TFile* File = new TFile(fileList[f].c_str());
