@@ -1348,14 +1348,16 @@ void initializeTGraph(){
            TString combinedcard = "";
 
            for(std::map<string, bool>::iterator C=allChannels.begin(); C!=allChannels.end();C++){
-              TString dcName=url;
+              TString dcName=url;              
               dcName.ReplaceAll(".root","_"+TString(C->first.c_str())+".dat");
 
               combinedcard += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("ee"  )!=string::npos)eecard   += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("mumu")!=string::npos)mumucard += (C->first+"=").c_str()+dcName+" ";
 
-
+              dcName.ReplaceAll("[", "");
+              dcName.ReplaceAll("]", "");
+              dcName.ReplaceAll("+", "");
 
               FILE* pFile = fopen(dcName.Data(),"w");
               //header

@@ -82,8 +82,11 @@ def getFileList(procData):
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
-      split=getByLabel(procData,'split',1)
-      NFilesPerJob = max(1,len(list)/split)
+      split=getByLabel(procData,'split',-1)
+      if(split>0):
+         NFilesPerJob = max(1,len(list)/split)
+      else:
+         NFilesPerJob = 10
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
          for f in list[g:g+NFilesPerJob]:
