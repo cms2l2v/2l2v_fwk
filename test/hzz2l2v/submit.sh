@@ -15,7 +15,7 @@ if [[ $# -ge 2 ]]; then echo "Additional arguments will be considered: "$argumen
 
 
 #GLOBAL VARIABLES
-SUFFIX=_2015_09_23
+SUFFIX=_2015_09_25
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
 RESULTSDIR=$MAINDIR/results$SUFFIX

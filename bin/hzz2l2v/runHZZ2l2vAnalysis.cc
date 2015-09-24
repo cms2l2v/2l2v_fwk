@@ -424,6 +424,11 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(8,"E_{T}^{miss}>80");
 
   //pu control
+  mon.addHistogram( new TH1F( "nvtxA",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxB",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxC",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxD",";Vertices;Events",50,0,50) ); 
+
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
@@ -571,10 +576,9 @@ int main(int argc, char* argv[])
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
-  int totalEntries = utils::getTotalNumberOfEvents(urls); 
   //MC normalization (to 1/pb)
-  double xsecWeight = xsec/totalEntries;
-  if(!isMC) xsecWeight=1.0;
+  double xsecWeight = 1.0;
+  if(isMC) xsecWeight=xsec/utils::getTotalNumberOfEvents(urls, false);//need to use the slow method in order to take NLO negative events into account
 
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
@@ -585,7 +589,7 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
-  MuScleFitCorrector *muCor=getMuonCorrector(muscleDir,dtag);
+  MuScleFitCorrector* muCor=NULL;//getMuonCorrector(muscleDir,dtag); //FIXME Not yet updated for run2
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -812,6 +816,7 @@ int main(int argc, char* argv[])
     
           //pileup weight
           float weight = 1.0;
+          float shapeWeight = 1.0;
           double TotalWeight_plus = 1.0;
           double TotalWeight_minus = 1.0;
           float puWeight(1.0);
@@ -836,25 +841,24 @@ int main(int argc, char* argv[])
          float lShapeWeights[3]={1.0,1.0,1.0};
          for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
          if(isMC){
+/*
+           if(isMC_VBF || isMC_GG || mctruthmode==125){
+		   LorentzVector higgs(0,0,0,0);
+		   LorentzVector totLeptons(0,0,0,0);
+		   for(size_t igen=0; igen<gen.size(); igen++){
+		     if(gen[igen].status()!=3) continue;
+		     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
+		     if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
+		   }
+		   if(mctruthmode==125) {
+		     higgs=totLeptons;
+		     if(isMC_125OnShell && higgs.mass()>180) continue;
+		     if(!isMC_125OnShell && higgs.mass()<=180) continue;
+		   }
 
-           LorentzVector higgs(0,0,0,0);
-           LorentzVector totLeptons(0,0,0,0);
-           for(size_t igen=0; igen<gen.size(); igen++){
-             if(gen[igen].status()!=3) continue;
-             if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
-             if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
-           }
-           if(mctruthmode==125) {
-             higgs=totLeptons;
-             if(isMC_125OnShell && higgs.mass()>180) continue;
-             if(!isMC_125OnShell && higgs.mass()<=180) continue;
-           }
-           float shapeWeight(1.0);
-           if((isMC_VBF || isMC_GG) && higgs.pt()>0){
-             {
+
                //Line shape weights 
-               if(isMC_VBF || isMC_GG)
-                 {
+               if((isMC_VBF || isMC_GG) && higgs.pt()>0){
                    std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
                    for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++)
                      {
@@ -876,9 +880,8 @@ int main(int argc, char* argv[])
                  float iweight = puWeight * NRweights[nri];
                  mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
                }  
-             }
            }
-
+*/
 
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
@@ -1120,14 +1123,14 @@ int main(int argc, char* argv[])
                {
                  dilId *= selLeptons[ilep].pdgId();
                  int id(abs(selLeptons[ilep].pdgId()));
-                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
+//                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
                  boson += selLeptons[ilep].p4();
                }
         
              //check the channel
-             if( abs(dilId)==121 && eeTrigger)   chTags.push_back("ee");
-             if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-             if( abs(dilId)==143 && emuTrigger) chTags.push_back("emu"); 
+             if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
+             if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
+             if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }
            }
          else{
            if(hasPhotonTrigger && selPhotons.size()) {
@@ -1146,8 +1149,6 @@ int main(int argc, char* argv[])
            tags.push_back( chTags[ich]+evCat );
          }
 
-         mon.fillHisto("eventflow",  tags,0,weight);
-         if(chTags.size()==0) continue;
 
          //////////////////////////
          //                      //
@@ -1166,10 +1167,18 @@ int main(int argc, char* argv[])
              passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
            }
 
-         mon.fillHisto("eventflow",  tags,1,weight);
-         mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
+         mon.fillHisto("eventflow",  tags,0,weight);
+         mon.fillHisto("nvtxA",  tags,vtx.size(),1);
+         mon.fillHisto("nvtxB",  tags,vtx.size(),xsecWeight);
+         mon.fillHisto("nvtxC",  tags,vtx.size(),xsecWeight * puWeight);
+         mon.fillHisto("nvtxD",  tags,vtx.size(),xsecWeight * puWeight * shapeWeight);
+
+         mon.fillHisto("nvtxraw",  tags,vtx.size(),xsecWeight * shapeWeight);
          mon.fillHisto("nvtx",  tags,vtx.size(),weight);
          mon.fillHisto("rho",  tags,rho,weight);
+
+         if(chTags.size()==0) continue;
+         mon.fillHisto("eventflow",  tags,1,weight);
          if(!runPhotonSelection){
            mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
            mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 

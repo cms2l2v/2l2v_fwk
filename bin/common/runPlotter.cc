@@ -343,6 +343,87 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, NameAndType& Hi
 }
 
 
+void SavingToFileNew(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputFile, std::list<NameAndType>& histlist){
+   std::vector<TObject*> ObjectToDelete;
+   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+
+   int IndexFiles = 0;
+   int NFilesStep = 0;   for(std::unordered_map<string, std::vector<string> >::iterator it = DSetFiles.begin(); it!=DSetFiles.end(); it++){NFilesStep+=it->second.size();} NFilesStep=std::max(1, NFilesStep/50);
+   printf("Processing input root files  :");
+
+   for(unsigned int i=0;i<Process.size();i++){
+      if(Process[i].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
+      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      OutputFile->cd();
+      TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
+      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
+      subdir->cd();
+
+      float  Weight = 1.0;     
+      std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
+      for(unsigned int j=0;j<Samples.size();j++){
+         std::vector<string>& fileList = DSetFiles[(Samples[j])["dtag"].toString()];
+         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool()){Weight= iLumi/fileList.size();}else{Weight=1.0;}
+
+         for(int f=0;f<fileList.size();f++){
+           if(IndexFiles%NFilesStep==0){printf(".");fflush(stdout);} IndexFiles++;
+           TFile* File = new TFile(fileList[f].c_str());
+
+           for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){
+              NameAndType& HistoProperties = *it;
+
+              TObject* inobj  = GetObjectFromPath(File,HistoProperties.name);  if(!inobj)continue;
+              TObject* outobj = GetObjectFromPath(subdir,HistoProperties.name);
+             
+              if(HistoProperties.isTree()){
+                 TTree* outtree = (TTree*)outobj;
+                 if(!outtree){ //tree not yet in file, so need to add it
+                    subdir->cd();
+                    outtree =  ((TTree*)inobj)->CloneTree(-1, "fast");
+                    outtree->SetDirectory(subdir);
+
+                    TTree* weightTree = new TTree((HistoProperties.name+"_PWeight").c_str(),"plotterWeight");
+                    weightTree->Branch("plotterWeight",&weightTree,"plotterWeight/F");
+                    weightTree->SetDirectory(subdir);
+                    for(unsigned int i=0;i<((TTree*)inobj)->GetEntries();i++){weightTree->Fill();}                       
+                 }else{
+                    outtree->CopyEntries(((TTree*)inobj), -1, "fast");
+                    TTree* weightTree = (TTree*)GetObjectFromPath(subdir,HistoProperties.name+"_PWeight");
+                    for(unsigned int i=0;i<((TTree*)inobj)->GetEntries();i++){weightTree->Fill();} 
+                 }
+              }else{        
+                 if(HistoProperties.name.find("optim_")==std::string::npos) ((TH1*)inobj)->Scale(Weight);
+                 TH1* outhist = (TH1*)outobj;
+                 if(!outhist){ //histogram not yet in file, so need to add it
+                    subdir->cd();
+                    outhist = (TH1*)(inobj)->Clone(inobj->GetName());
+                    setStyle(Process[i], outhist);
+                    checkSumw2(outhist);
+                 }else{
+                    outhist->Add((TH1*)inobj);
+                 }
+              }
+           }
+           delete File;         
+         }   
+      }
+      subdir->cd();
+      subdir->Write();
+   }printf("\n");
+
+
+   int ictr = 0;
+   int TreeStep = std::max(1,(int)(histlist.size()/50));
+   printf("Sample Interpolation         :");
+   for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
+       if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+      NameAndType& HistoProperties = *it;
+      if(!HistoProperties.isTree())InterpollateProcess(Root, OutputFile, HistoProperties);
+   }printf("\n");
+}
+
+
+
 void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputFile, NameAndType& HistoProperties){
    std::vector<TObject*> ObjectToDelete;
 
@@ -375,7 +456,6 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
          unsigned int NFiles = 0;
          unsigned int NTreeEvents = 0;
 
-         int split = Samples[j].getInt("split", -1);
          TH1* tmphist = NULL;
          std::vector<string>& fileList = DSetFiles[(Samples[j])["dtag"].toString()];
 
@@ -988,6 +1068,8 @@ int main(int argc, char* argv[]){
    gStyle->SetPalette(1);
    gStyle->SetNdivisions(505);
 
+   gErrorIgnoreLevel = kWarning; //supress info message
+
    std::vector<string> histoNameMask;
    std::vector<string> histoNameMaskStart;
 
@@ -1079,23 +1161,32 @@ int main(int argc, char* argv[]){
    TFile* OutputFile = NULL;
    OutputFile = new TFile(outFile.c_str(),"RECREATE");
    printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
-   printf("                             :");
-   int TreeStep = histlist.size()/50;if(TreeStep==0)TreeStep=1;
    string csvFile(outDir +"/histlist.csv");
    system(("echo \"\" > " + csvFile).c_str());
-   int ictr(0); 
-   for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
-       if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+
+   std::list<NameAndType>::iterator it= histlist.begin();
+   while(it!= histlist.end()){
        bool passMasking = false;  
        for(unsigned int i=0;i<histoNameMask.size();i++){if(it->name.find(histoNameMask[i])!=std::string::npos)passMasking=true;}
        for(unsigned int i=0;i<histoNameMaskStart.size();i++){if(it->name.find(histoNameMaskStart[i])==0)passMasking=true;}
        if(histoNameMask.size()==0 && histoNameMaskStart.size()==0)passMasking = true;
-       if(!passMasking){ continue;}
- 
-       if(do2D  &&(it->is2D() || it->is3D())){                   SavingToFile    (Root,inDir,OutputFile, *it); }
-       if(do1D  && it->is1D()){                                  SavingToFile    (Root,inDir,OutputFile, *it); }
-       if(doTree&& it->isTree()){                                SavingToFile    (Root,inDir,OutputFile, *it); }
+       if(!passMasking){it=histlist.erase(it); continue; }
+       if(!do2D   &&(it->is2D() || it->is3D())){it=histlist.erase(it); continue;}
+       if(!do1D   && it->is1D()){it=histlist.erase(it); continue;}
+       if(!doTree && it->isTree()){it=histlist.erase(it); continue;}
+       it++;
+   }
 
+
+   SavingToFileNew(Root,inDir,OutputFile, histlist);
+       
+
+   int ictr =0;
+   int TreeStep = std::max(1,(int)(histlist.size()/50));
+   printf("Plotting                     :");
+   for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
+       if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+   
        if(doTex && (it->name.find("eventflow")!=std::string::npos || it->name.find("evtflow")!=std::string::npos) && it->name.find("optim_eventflow")==std::string::npos){    ConvertToTex(Root,OutputFile,*it); }
        if(doPlot && do2D  && it->is2D()){                      if(!splitCanvas){Draw2DHistogram(Root,OutputFile,*it); }else{Draw2DHistogramSplitCanvas(Root,OutputFile,*it);}}
        if(doPlot && do1D  && it->is1D()){                                       Draw1DHistogram(Root,OutputFile,*it); }

@@ -169,7 +169,7 @@ for procBlock in procList :
             if(opt.resubmit==False):
                FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
                LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
-               if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, opt.NFile)
+               if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
 
 
                for s in range(0,len(FileList)):
