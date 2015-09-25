@@ -1123,7 +1123,7 @@ int main(int argc, char* argv[])
                {
                  dilId *= selLeptons[ilep].pdgId();
                  int id(abs(selLeptons[ilep].pdgId()));
-//                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
+                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
                  boson += selLeptons[ilep].p4();
                }
         
