@@ -200,6 +200,7 @@ for signalSuffix in signalSuffixVec :
          CurrentCuts = []
          try:
             for line in optimFile:
+               line = line.replace('\n','')
                value=-1.0
                if("######CUTS" in line):
                   CurrentCuts = line.split('_')[1:]
@@ -219,7 +220,7 @@ for signalSuffix in signalSuffixVec :
                Cuts = ''
                for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
                   Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
-               BestLimit.append("mH="+str(m)+ " --> Limit/Significance=" + ('%010.6f' % float(value)) + "  Index: " + str(index)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(CurrentCuts[1]).rjust(5) + " " + str(CurrentCuts[2]).rjust(5))
+               BestLimit.append("mH="+str(m)+ " --> Limit/Significance=" + ('%010.6f' % float(value)) + "  Index: " + str(index).rjust(5)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(CurrentCuts[1]).rjust(5) + " " + str(CurrentCuts[2]).rjust(5))
          except:
             print "File %s does not contain a valid limit" % OUT+str(m)+'.log'
 
