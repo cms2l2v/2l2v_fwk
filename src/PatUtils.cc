@@ -496,14 +496,21 @@ namespace patUtils
     float chf( jet.chargedHadronEnergy()/rawJetEn );
     float nch    = jet.chargedMultiplicity();
     float nconst = jet.numberOfDaughters();
-    float muf( jet.muonEnergy()/rawJetEn);
+    //float muf( jet.muonEnergy()/rawJetEn);
+    float NumNeutralParticles = jet.neutralMultiplicity();
 
     //From https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID#Recommendations_for_13_TeV_data
-    if (label == "Loose") passID = ( (nhf<0.99  && nef<0.99 && nconst>1 && muf < 0.8 ) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.99) ) );
-    if (label == "Tight") passID = ( (nhf<0.90  && nef<0.90 && nconst>1 && muf < 0.8 ) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.90) ) );
-
+    if (label == "Loose"){
+      if( fabs(jet.eta()) <= 3.0) passID = ( (nhf<0.99  && nef<0.99 && nconst>1) && ( fabs(jet.eta())>2.4 || (fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.99) ) );
+      if( fabs(jet.eta()) > 3.0) passID = ( nef<0.90 && NumNeutralParticles > 10);
+    }
+    if (label == "Tight"){ 
+      if( fabs(jet.eta()) <= 3.0) passID = ( (nhf<0.90  && nef<0.90 && nconst>1) && ( fabs(jet.eta())>2.4||(fabs(jet.eta()) <= 2.4 && chf>0 && nch>0 && cef<0.99) ) );
+      if( fabs(jet.eta()) > 3.0) passID = ( nef<0.90 && NumNeutralParticles > 10 );
+    }
     return passID;
   }
+
 
   bool passPUJetID(pat::Jet j){
 

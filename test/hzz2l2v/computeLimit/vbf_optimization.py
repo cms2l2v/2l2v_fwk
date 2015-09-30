@@ -30,16 +30,16 @@ phase=-1
 
 jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json'
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
-BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
+BESTDISCOVERYOPTIM=False #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
-BINS = ["eq0jets,geq1jets,vbf --inclusive"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
+BINS = ["eq0jets+geq1jets+vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
 MASS = [400,600, 1000]
 SUBMASS = [400,600, 1000]
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
-LandSArgCommonOptions=" --blind --dropBckgBelow 0.00001 "
+LandSArgCommonOptions=" --blind --dropBckgBelow 0.00001 --signalTag qqH --signalRescale 1000.0 "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
 for shape in ["vbf_shapes "]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
@@ -198,7 +198,8 @@ for signalSuffix in signalSuffixVec :
          BestLimit = []
          optimFile = open(OUT+str(m)+'.log')
          CurrentCuts = []
-         try:
+#         try:
+         if(True):
             for line in optimFile:
                line = line.replace('\n','')
                value=-1.0
@@ -216,13 +217,15 @@ for signalSuffix in signalSuffixVec :
                if(value=='matches'):continue             
                if(float(value)<=0.0):continue
                N = len(CurrentCuts)
+               if(N>3):continue   #parsing error
                index = CurrentCuts[0] 
                Cuts = ''
                for c in range(1, cutsH.GetYaxis().GetNbins()+1): 
                   Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
                BestLimit.append("mH="+str(m)+ " --> Limit/Significance=" + ('%010.6f' % float(value)) + "  Index: " + str(index).rjust(5)   + "  Cuts: " + Cuts + "   CutsOnShape: " + str(CurrentCuts[1]).rjust(5) + " " + str(CurrentCuts[2]).rjust(5))
-         except:
-            print "File %s does not contain a valid limit" % OUT+str(m)+'.log'
+#         except:
+#            print "File %s does not contain a valid limit" % OUT+str(m)+'.log'
+         optimFile.close()
 
 #         fileList = commands.getstatusoutput("find " + OUT +" -name " + str(m)+"_*.log")[1].split();           
 #         for f in fileList:
