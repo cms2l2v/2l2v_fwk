@@ -270,7 +270,7 @@ class AllInfo_t
         void blind();
 
         // Print the Yield table
-         void getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName);
+         void getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc=NULL);
 
         // Dump efficiencies
         void getEffFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName);
@@ -590,9 +590,9 @@ int main(int argc, char* argv[])
   allInfo.HandleEmptyBins(histo.Data()); //needed for negative bin content --> May happens due to NLO interference for instance
 
   //print event yields from the mt shapes
-  pFile = fopen("Yields.tex","w");
-  allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
-  fclose(pFile);
+  pFile = fopen("Yields.tex","w");  FILE* pFileInc = fopen("YieldsInc.tex","w");
+  allInfo.getYieldsFromShape(pFile, selCh, histo.Data(), pFileInc);
+  fclose(pFile); fclose(pFileInc);
 
   //print signal efficiency
   pFile = fopen("Efficiency.tex","w");
@@ -835,7 +835,9 @@ void initializeTGraph(){
         //
         // Print the Yield table
         //
-         void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName){
+         void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc){
+           if!(pFileInc)pFileInc=pFile;
+
            std::map<string, string> rows;
            std::map<string, string> rowsBin;
            string rows_header = "\\begin{tabular}{|c|";
@@ -894,18 +896,16 @@ void initializeTGraph(){
            }
            fprintf(pFile,"\\hline\n");
            fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
-           fprintf(pFile,"\n\n\n\n");
 
            //All Bins
-           fprintf(pFile,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
-           fprintf(pFile, "%s}\\\\\n", rows_header.c_str());
-           fprintf(pFile, "%s\\\\\n", rows_title .c_str());
+           fprintf(pFileInc,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+           fprintf(pFileInc, "%s}\\\\\n", rows_header.c_str());
+           fprintf(pFileInc, "%s\\\\\n", rows_title .c_str());
            for(std::map<string, string>::iterator row = rowsBin.begin(); row!= rowsBin.end(); row++){
-              fprintf(pFile, "%s\\\\\n", row->second.c_str());
+              fprintf(pFileInc, "%s\\\\\n", row->second.c_str());
            }
-           fprintf(pFile,"\\hline\n");
-           fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
-           fprintf(pFile,"\n\n\n\n");
+           fprintf(pFileInc,"\\hline\n");
+           fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
          }
 
         //
