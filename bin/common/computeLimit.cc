@@ -836,7 +836,7 @@ void initializeTGraph(){
         // Print the Yield table
         //
          void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc){
-           if!(pFileInc)pFileInc=pFile;
+           if(!pFileInc)pFileInc=pFile;
 
            std::map<string, string> rows;
            std::map<string, string> rowsBin;
