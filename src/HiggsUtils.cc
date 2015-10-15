@@ -90,7 +90,7 @@ namespace higgs{
 
     
     //
-    double transverseMass(LorentzVector &visible, LorentzVector &invisible, bool assumeSameMass){
+    double transverseMass(const LorentzVector &visible, const LorentzVector &invisible, bool assumeSameMass){
       if(assumeSameMass){
 	LorentzVector sum=visible+invisible;
 	double tMass = pow(sqrt(pow(visible.pt(),2)+pow(visible.mass(),2))+sqrt(pow(invisible.pt(),2)+pow(visible.mass(),2)),2);
