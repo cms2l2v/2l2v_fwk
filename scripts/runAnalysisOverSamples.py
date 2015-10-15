@@ -83,6 +83,8 @@ def getFileList(procData):
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
       split=getByLabel(procData,'split',1)
+      if opt.forcesplit != 0:
+          split=opt.forcesplit
       NFilesPerJob = max(1,len(list)/split)
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
@@ -101,17 +103,18 @@ def getFileList(procData):
 #configure
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
-parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='excecutable'                           , default='')
-parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'    , default='8nh')
-parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'           , default='pool>30000')
-parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                     , default='')
-parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'   , default='aoddir')
-parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                      , default='')
-parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag', default='all')
-parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
-parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'      , default='')
-parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, action="store_true")
-parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'  , default=DatasetFileDB)
+parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='excecutable'                            , default='')
+parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'     , default='8nh')
+parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'            , default='pool>30000')
+parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                      , default='')
+parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'    , default='aoddir')
+parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                       , default='')
+parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag' , default='all')
+parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'           , default='')
+parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'       , default='')
+parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email' , default=False, action="store_true")
+parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'   , default=DatasetFileDB)
+parser.add_option('-f', "--forcesplit" ,    dest='forcesplit'         , help='Use this split (ignore split from json)', default=0, type="int")
 
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
@@ -157,6 +160,8 @@ for procBlock in procList :
             br = getByLabel(procData,'br',[])
             suffix = str(getByLabel(procData,'suffix' ,""))
             split=getByLabel(procData,'split',1)
+            if opt.forcesplit != 0:
+                split=opt.forcesplit
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
             ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
@@ -220,6 +225,9 @@ for procBlock in procList :
                     LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
             LaunchOnCondor.SendCluster_Submit()
+
+if(LaunchOnCondor.subTool=='criminal'):
+    LaunchOnCondor.SendCluster_CriminalSubmit()
 
 
 
