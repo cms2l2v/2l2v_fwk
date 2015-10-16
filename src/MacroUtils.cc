@@ -489,14 +489,17 @@ namespace utils
     for(unsigned int f=0;f<urls.size();f++){
        TFile* file = TFile::Open(urls[f].c_str() );
        fwlite::Event ev(file);
-       if(fast){
-          toReturn += ev.size();          
-       }else{
+       if(!fast){
           for(ev.toBegin(); !ev.atEnd(); ++ev){
              fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
              genEventInfoHandle.getByLabel(ev, "generator");
-             if(genEventInfoHandle.isValid() && genEventInfoHandle->weight()<0){toReturn--;}else{toReturn++;}
+             if(!genEventInfoHandle.isValid()){fast=true; break;} //if this object is missing, it's likely missing for the entire sample, move to the fast method
+             if(genEventInfoHandle->weight()<0){toReturn--;}else{toReturn++;}
           }
+       }
+
+       if(fast){
+          toReturn += ev.size();          
        }
        delete file;
      }

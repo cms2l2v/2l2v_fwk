@@ -11,7 +11,6 @@ DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
 
-
 """
 Gets the value of a given item
 (if not available a default value is returned)
@@ -34,11 +33,10 @@ def initProxy():
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
-      else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 720:00 --out '+PROXYDIR+'/x509_proxy')
-   # --voms cms?
-   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; '
+      else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
-def getFileList(procData):
+def getFileList(procData,DefaultNFilesPerJob):
    FileList = [];
    miniAODSamples = getByLabel(procData,'miniAOD','')
    isMINIAODDataset = ("/MINIAOD" in getByLabel(procData,'dset','')) or  ("amagitte" in getByLabel(procData,'dset',''))
@@ -67,8 +65,9 @@ def getFileList(procData):
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               if(hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
-               else:                                list[i] = "root://eoscms//eos/cms"+list[i]            
+               if  (hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
+               elif(hostname.find("ucl.ac.be" )!=-1): list[i] = "/storage/data/cms"+list[i]
+               else:                                  list[i] = "root://eoscms//eos/cms"+list[i]            
             else:
                list[i] = "root://cms-xrd-global.cern.ch/"+list[i] #works worldwide
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
@@ -82,10 +81,11 @@ def getFileList(procData):
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
-      split=getByLabel(procData,'split',1)
-      if opt.forcesplit != 0:
-          split=opt.forcesplit
-      NFilesPerJob = max(1,len(list)/split)
+      split=getByLabel(procData,'split',-1)
+      if(split>0):
+         NFilesPerJob = max(1,len(list)/split)
+      else:
+         NFilesPerJob = DefaultNFilesPerJob
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
          for f in list[g:g+NFilesPerJob]:
@@ -103,18 +103,19 @@ def getFileList(procData):
 #configure
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
-parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='excecutable'                            , default='')
-parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'     , default='8nh')
-parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'            , default='pool>30000')
-parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                      , default='')
-parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'    , default='aoddir')
-parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                       , default='')
-parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag' , default='all')
-parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'           , default='')
-parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'       , default='')
-parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email' , default=False, action="store_true")
-parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'   , default=DatasetFileDB)
-parser.add_option('-f', "--forcesplit" ,    dest='forcesplit'         , help='Use this split (ignore split from json)', default=0, type="int")
+parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='executable'                            , default='')
+parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'    , default='8nh')
+parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'           , default='pool>30000')
+parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                     , default='')
+parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'   , default='aoddir')
+parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                      , default='')
+parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag', default='all')
+parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
+parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'      , default='')
+parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, action="store_true")
+parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'  , default=DatasetFileDB)
+parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'             , default=False, action="store_true")
+parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)', default=5)
 
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
@@ -159,77 +160,86 @@ for procBlock in procList :
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])
             suffix = str(getByLabel(procData,'suffix' ,""))
-            split=getByLabel(procData,'split',1)
-            if opt.forcesplit != 0:
-                split=opt.forcesplit
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
             ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
                 for ibr in br :  xsec = xsec*ibr
 
-            FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
-            LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
-            if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData)
+
+            if(opt.resubmit==False):
+               FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
+               LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
+               if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
 
 
-            for s in range(0,len(FileList)):
-                #create the cfg file
-                eventsFile = FileList[s]
-                eventsFile = eventsFile.replace('?svcClass=default', '')
-                prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s)
-            	sedcmd = 'sed \''
-                sedcmd += 's%"@dtag"%"' + dtag +'"%;'
-            	sedcmd += 's%"@input"%' + eventsFile+'%;'
-            	sedcmd += 's%@outfile%' + prodfilepath+'.root%;'
-            	sedcmd += 's%@isMC%' + str(not isdata)+'%;'
-            	sedcmd += 's%@mctruthmode%'+str(mctruthmode)+'%;'
-            	sedcmd += 's%@xsec%'+str(xsec)+'%;'
-                sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
-                sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
-                sedcmd += 's%@suffix%' +suffix+'%;'
-                sedcmd += 's%@lumiMask%"' +getByLabel(procData,'lumiMask','')+'"%;'
-            	if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
-                if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
-                if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
-                if(opt.params.find('@evEnd')<0) :           opt.params = '@evEnd=-1 '     + opt.params
-            	if(opt.params.find('@saveSummaryTree')<0) : opt.params = '@saveSummaryTree=False ' + opt.params
-            	if(opt.params.find('@runSystematics')<0) :  opt.params = '@runSystematics=False '  + opt.params
-                if(opt.params.find('@jacknife')<0) :        opt.params = '@jacknife=-1 ' + opt.params
-                if(opt.params.find('@jacks')<0) :           opt.params = '@jacks=-1 '    + opt.params
-                if(opt.params.find('@trig')<0) :            opt.params = '@trig=False ' + opt.params
-            	if(len(opt.params)>0) :
-                    extracfgs = opt.params.split(' ')
-                    for icfg in extracfgs :
+               for s in range(0,len(FileList)):
+                   #create the cfg file
+                   eventsFile = FileList[s]
+                   eventsFile = eventsFile.replace('?svcClass=default', '')
+                   prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s)
+               	   sedcmd = 'sed \''
+                   sedcmd += 's%"@dtag"%"' + dtag +'"%;'
+                   sedcmd += 's%"@input"%' + eventsFile+'%;'
+            	   sedcmd += 's%@outfile%' + prodfilepath+'.root%;'
+            	   sedcmd += 's%@isMC%' + str(not isdata)+'%;'
+            	   sedcmd += 's%@mctruthmode%'+str(mctruthmode)+'%;'
+            	   sedcmd += 's%@xsec%'+str(xsec)+'%;'
+                   sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
+                   sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
+                   sedcmd += 's%@suffix%' +suffix+'%;'
+                   sedcmd += 's%@lumiMask%"' +getByLabel(procData,'lumiMask','')+'"%;'
+              	   if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
+                   if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
+                   if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
+                   if(opt.params.find('@evEnd')<0) :           opt.params = '@evEnd=-1 '     + opt.params
+            	   if(opt.params.find('@saveSummaryTree')<0) : opt.params = '@saveSummaryTree=False ' + opt.params
+            	   if(opt.params.find('@runSystematics')<0) :  opt.params = '@runSystematics=False '  + opt.params
+                   if(opt.params.find('@jacknife')<0) :        opt.params = '@jacknife=-1 ' + opt.params
+                   if(opt.params.find('@jacks')<0) :           opt.params = '@jacks=-1 '    + opt.params
+                   if(opt.params.find('@trig')<0) :            opt.params = '@trig=False ' + opt.params
+            	   if(len(opt.params)>0) :
+                      extracfgs = opt.params.split(' ')
+                      for icfg in extracfgs :
                         varopt=icfg.split('=')
                         if(len(varopt)<2) : continue
                         sedcmd += 's%' + varopt[0] + '%' + varopt[1] + '%;'
-            	sedcmd += '\''
-                cfgfile=prodfilepath + '_cfg.py'
-                os.system('cat ' + opt.cfg_file + ' | ' + sedcmd + ' > ' + cfgfile)
+            	   sedcmd += '\''
+                   cfgfile=prodfilepath + '_cfg.py'
+                   os.system('cat ' + opt.cfg_file + ' | ' + sedcmd + ' > ' + cfgfile)
 
-                #run the job
-                if len(opt.queue)==0 :
-                    os.system(opt.theExecutable + ' ' + cfgfile)
-                else:
-                    if(LaunchOnCondor.subTool=='crab'):
-                       LaunchOnCondor.Jobs_CRABDataset  = FileList[0]
-                       LaunchOnCondor.Jobs_CRABcfgFile  = cfgfile
-                       LaunchOnCondor.Jobs_CRABexe      = opt.theExecutable
-                       if(commands.getstatusoutput("whoami")[1]=='vischia'):
-                           LaunchOnCondor.Jobs_CRABStorageSite = 'T2_PT_NCG_Lisbon'
-                       else:
-                           LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
-                       LaunchOnCondor.Jobs_CRABname     = dtag
-                       LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
-                       LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
-                    LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
+                   #run the job
+                   if len(opt.queue)==0 :
+                       os.system(opt.theExecutable + ' ' + cfgfile)
+                   else:
+                       if(LaunchOnCondor.subTool=='crab'):
+                          LaunchOnCondor.Jobs_CRABDataset  = FileList[0]
+                          LaunchOnCondor.Jobs_CRABcfgFile  = cfgfile
+                          LaunchOnCondor.Jobs_CRABexe      = opt.theExecutable
+                          if(commands.getstatusoutput("whoami")[1]=='vischia'):
+                              LaunchOnCondor.Jobs_CRABStorageSite = 'T2_PT_NCG_Lisbon'
+                          else:
+                              LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
+                          LaunchOnCondor.Jobs_CRABname     = dtag
+                          LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
+                          LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
+                       LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
-            LaunchOnCondor.SendCluster_Submit()
+               LaunchOnCondor.SendCluster_Submit()
+
+            else:
+               configList = commands.getstatusoutput('ls ' + opt.outdir +'/'+ dtag + suffix + '*_cfg.py')[1].split('\n')
+               failedList = []
+               for cfgfile in configList:
+                  if( not os.path.isfile( cfgfile.replace('_cfg.py','.root'))):
+                     failedList+= [cfgfile]
+
+               if(len(failedList)>0):
+                  LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
+                  for cfgfile in failedList:                  
+                     LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
+                  LaunchOnCondor.SendCluster_Submit()
+
 
 if(LaunchOnCondor.subTool=='criminal'):
     LaunchOnCondor.SendCluster_CriminalSubmit()
-
-
-
-
 

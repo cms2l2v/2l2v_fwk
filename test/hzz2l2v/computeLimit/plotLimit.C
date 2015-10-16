@@ -224,7 +224,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-  framework->GetYaxis()->SetRangeUser(1E-2,80);
+  framework->GetYaxis()->SetRangeUser(1E-1,1E4);
   c->SetLogy(true);
   }else{
   framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");

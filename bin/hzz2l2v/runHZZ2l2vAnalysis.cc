@@ -424,6 +424,11 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(8,"E_{T}^{miss}>80");
 
   //pu control
+  mon.addHistogram( new TH1F( "nvtxA",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxB",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxC",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxD",";Vertices;Events",50,0,50) ); 
+
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
@@ -498,6 +503,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "axialmetNM1",   ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
   Double_t metaxis[]={0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,125,150,175,200,250,300,400,500};
   Int_t nmetAxis=sizeof(metaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "metpuppi",          ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "metNM1",        ";Missing transverse energy [GeV];Events",nmetAxis-1,metaxis) ); //50,0,1000) );
   Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,2000};
@@ -514,18 +520,23 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "numberemuTrigger",  "Number of event passing the emu Trigger", 2, 0, 2) );
 
   //
-  // STATISTICAL ANALYSIS
+  // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
   //
+
+  //NEED FOR ALL OPTIMIZATION
+  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
+  }
+ 
   
   std::vector<double> optim_Cuts1_met; 
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
   TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
   Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
-  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
       for(unsigned int nri=0;nri<NRparams.size();nri++){ 
 	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
 	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
@@ -540,14 +551,34 @@ int main(int argc, char* argv[])
     }
 
 
+
+
+
+  std::vector<std::vector<double>> optim_Cuts_VBF; 
+  for(double jet2Pt=20    ;jet2Pt<50;jet2Pt+=5) { 
+     for(double jet1Pt=jet2Pt;jet1Pt<50;jet1Pt+=5) {
+        for(double deta=2.0     ;deta<5.0;deta+=0.25) { 
+           for(double mjj=100.0    ;mjj<1000;mjj+=50) {
+              optim_Cuts_VBF.push_back( std::vector<double>{jet1Pt, jet2Pt, deta, mjj} );
+  }}}}
+   
+  TH2F* Hoptim_cuts_VBF  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut_VBF",      ";cut index;variable",       optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 4, 0, 4)) ;
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(1, "jet1 p_{T}>");
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(2, "jet2 p_{T}>");
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(3, "d#eta>");
+  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(4, "M_{jj}>");
+  for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){ for(unsigned int cut=0;cut<4;cut++){ Hoptim_cuts_VBF    ->Fill(index, float(cut), optim_Cuts_VBF[index][cut]); }  }
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+     mon.addHistogram( new TH2F (TString("vbf_shapes")+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 1, 0, 2500) );     
+  }
+
      
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
-  int totalEntries = utils::getTotalNumberOfEvents(urls); 
   //MC normalization (to 1/pb)
-  double xsecWeight = xsec/totalEntries;
-  if(!isMC) xsecWeight=1.0;
+  double xsecWeight = 1.0;
+  if(isMC) xsecWeight=xsec/utils::getTotalNumberOfEvents(urls, false);//need to use the slow method in order to take NLO negative events into account
 
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
@@ -556,7 +587,9 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
   
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,dtag);
+  TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
+  gSystem->ExpandPathName(muscleDir);
+  MuScleFitCorrector* muCor=NULL;//getMuonCorrector(muscleDir,dtag); //FIXME Not yet updated for run2
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -631,13 +664,13 @@ int main(int argc, char* argv[])
          if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
 
          if( eeTrigger ){ 
-           mon.fillHisto( "numbereeTrigger", "", 1, 1);
+           mon.fillHisto( "numbereeTrigger", "all", 1, 1);
          }
          if( mumuTrigger ){ 
-           mon.fillHisto( "numbermumuTrigger", "", 1, 1);
+           mon.fillHisto( "numbermumuTrigger", "all", 1, 1);
          }
          if( emuTrigger ){ 
-           mon.fillHisto( "numberemuTrigger", "", 1, 1);
+           mon.fillHisto( "numberemuTrigger", "all", 1, 1);
          }
 
          bool hasPhotonTrigger(false);
@@ -717,6 +750,12 @@ int main(int argc, char* argv[])
           if(metsHandle.isValid()){ mets = *metsHandle;}
           LorentzVector met = mets[0].p4(); 
 
+          pat::METCollection puppimets;
+          fwlite::Handle< pat::METCollection > puppimetsHandle;
+          puppimetsHandle.getByLabel(ev, "slimmedMETsPuppi");
+          if(puppimetsHandle.isValid()){ puppimets = *puppimetsHandle;}
+          LorentzVector puppimet = puppimets[0].p4(); 
+
           pat::TauCollection taus;
           fwlite::Handle< pat::TauCollection > tausHandle;
           tausHandle.getByLabel(ev, "slimmedTaus");
@@ -777,6 +816,7 @@ int main(int argc, char* argv[])
     
           //pileup weight
           float weight = 1.0;
+          float shapeWeight = 1.0;
           double TotalWeight_plus = 1.0;
           double TotalWeight_minus = 1.0;
           float puWeight(1.0);
@@ -801,25 +841,24 @@ int main(int argc, char* argv[])
          float lShapeWeights[3]={1.0,1.0,1.0};
          for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
          if(isMC){
+/*
+           if(isMC_VBF || isMC_GG || mctruthmode==125){
+		   LorentzVector higgs(0,0,0,0);
+		   LorentzVector totLeptons(0,0,0,0);
+		   for(size_t igen=0; igen<gen.size(); igen++){
+		     if(gen[igen].status()!=3) continue;
+		     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
+		     if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
+		   }
+		   if(mctruthmode==125) {
+		     higgs=totLeptons;
+		     if(isMC_125OnShell && higgs.mass()>180) continue;
+		     if(!isMC_125OnShell && higgs.mass()<=180) continue;
+		   }
 
-           LorentzVector higgs(0,0,0,0);
-           LorentzVector totLeptons(0,0,0,0);
-           for(size_t igen=0; igen<gen.size(); igen++){
-             if(gen[igen].status()!=3) continue;
-             if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
-             if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
-           }
-           if(mctruthmode==125) {
-             higgs=totLeptons;
-             if(isMC_125OnShell && higgs.mass()>180) continue;
-             if(!isMC_125OnShell && higgs.mass()<=180) continue;
-           }
-           float shapeWeight(1.0);
-           if((isMC_VBF || isMC_GG) && higgs.pt()>0){
-             {
+
                //Line shape weights 
-               if(isMC_VBF || isMC_GG)
-                 {
+               if((isMC_VBF || isMC_GG) && higgs.pt()>0){
                    std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
                    for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++)
                      {
@@ -841,9 +880,8 @@ int main(int argc, char* argv[])
                  float iweight = puWeight * NRweights[nri];
                  mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
                }  
-             }
            }
-
+*/
 
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
@@ -1016,8 +1054,8 @@ int main(int argc, char* argv[])
              
              //jet id
              bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
-         float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-         bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
+             float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
+             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
              if(jets[ijet].pt()>30){
                  mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
                  if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
@@ -1090,9 +1128,9 @@ int main(int argc, char* argv[])
                }
         
              //check the channel
-             if( abs(dilId)==121 && eeTrigger)   chTags.push_back("ee");
-             if( abs(dilId)==169 && mumuTrigger) chTags.push_back("mumu"); 
-             if( abs(dilId)==143 && emuTrigger) chTags.push_back("emu"); 
+             if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
+             if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
+             if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }
            }
          else{
            if(hasPhotonTrigger && selPhotons.size()) {
@@ -1111,8 +1149,6 @@ int main(int argc, char* argv[])
            tags.push_back( chTags[ich]+evCat );
          }
 
-         mon.fillHisto("eventflow",  tags,0,weight);
-         if(chTags.size()==0) continue;
 
          //////////////////////////
          //                      //
@@ -1131,10 +1167,18 @@ int main(int argc, char* argv[])
              passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
            }
 
-         mon.fillHisto("eventflow",  tags,1,weight);
-         mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
+         mon.fillHisto("eventflow",  tags,0,weight);
+         mon.fillHisto("nvtxA",  tags,vtx.size(),1);
+         mon.fillHisto("nvtxB",  tags,vtx.size(),xsecWeight);
+         mon.fillHisto("nvtxC",  tags,vtx.size(),xsecWeight * puWeight);
+         mon.fillHisto("nvtxD",  tags,vtx.size(),xsecWeight * puWeight * shapeWeight);
+
+         mon.fillHisto("nvtxraw",  tags,vtx.size(),xsecWeight * shapeWeight);
          mon.fillHisto("nvtx",  tags,vtx.size(),weight);
          mon.fillHisto("rho",  tags,rho,weight);
+
+         if(chTags.size()==0) continue;
+         mon.fillHisto("eventflow",  tags,1,weight);
          if(!runPhotonSelection){
            mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
            mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
@@ -1240,6 +1284,7 @@ int main(int argc, char* argv[])
 
                      mon.fillHisto( "njets",icat,njets,iweight);
                      mon.fillHisto( "met",icat,met.pt(),iweight,true);
+                     mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
                      mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
                      TVector2 met2(met.px(),met.py());
                      TVector2 boson2(iboson.px(), iboson.py());
@@ -1294,6 +1339,19 @@ int main(int argc, char* argv[])
            }        
          }
 
+         //HISTO FOR VBF THRESHOLD OPTIMIZATION
+         for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){          
+             if(selJets.size()<2)continue; //at least 2 selected jets (pT>15)
+             if(selJets[0].pt()<optim_Cuts_VBF[index][0])continue;
+             if(selJets[1].pt()<optim_Cuts_VBF[index][1])continue;
+             float deta=fabs(selJets[0].eta()-selJets[1].eta());
+             if(deta           <optim_Cuts_VBF[index][2])continue;
+             LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
+             if(dijet.mass()   <optim_Cuts_VBF[index][3])continue;
+             for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+                mon.fillHisto(TString("vbf_shapes")+varNames[ivar],tags,index, 1.0, weight);
+             }
+         }
 
 
          //

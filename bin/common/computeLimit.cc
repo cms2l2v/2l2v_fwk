@@ -82,10 +82,6 @@ bool doInterf = false;
 double minSignalYield = 0;
 float statBinByBin = -1;
 
-bool doInclusive=false;
-
-std::vector<string> mergeBins;
-
 bool dirtyFix1 = false;
 bool dirtyFix2 = false;
 
@@ -166,8 +162,8 @@ class ShapeData_t
            TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
            TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
            if(h->GetBinContent(ibin)>0){
-              statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
-              statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
+              statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0.0);
+              statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.01*h->GetBinContent(ibin), h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0.0);
 //            statU->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) + h->GetBinError(ibin))));   statU->SetBinError(ibin, 0);
 //            statD->SetBinContent(ibin,std::min(2*h->GetBinContent(ibin), std::max(0.0, h->GetBinContent(ibin) - h->GetBinError(ibin))));   statD->SetBinError(ibin, 0);
            }else{
@@ -274,7 +270,7 @@ class AllInfo_t
         void blind();
 
         // Print the Yield table
-         void getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName);
+         void getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc=NULL);
 
         // Dump efficiencies
         void getEffFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName);
@@ -317,9 +313,6 @@ class AllInfo_t
 
         // Rescale signal sample for the effect of the interference and propagate the uncertainty 
         void RescaleForInterference(string histoName);
-
-        // Merge Bins to make an inclusive analysis 
-        void TurnToInclusiveAnalysis();
 
         //Merge bins together
         void mergeBins(std::vector<string>& binsToMerge, string NewName);
@@ -424,7 +417,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--index" )   !=string::npos && i+1<argc)   { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutV .push_back(C);  pch = strtok(NULL,",");} i++; printf("index  = "); for(unsigned int i=0;i<indexcutV .size();i++)printf(" %i ", indexcutV [i]);printf("\n");}
     else if(arg.find("--indexL")    !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutVL.push_back(C);  pch = strtok(NULL,",");} i++; printf("indexL = "); for(unsigned int i=0;i<indexcutVL.size();i++)printf(" %i ", indexcutVL[i]);printf("\n");}
     else if(arg.find("--indexR")    !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");while (pch!=NULL){int C;  sscanf(pch,"%i",&C); indexcutVR.push_back(C);  pch = strtok(NULL,",");} i++; printf("indexR = "); for(unsigned int i=0;i<indexcutVR.size();i++)printf(" %i ", indexcutVR[i]);printf("\n");}
-    else if(arg.find("--inclusive") !=string::npos) { doInclusive=true; printf("doInclusive = True\n");}
     else if(arg.find("--in")       !=string::npos && i+1<argc)  { inFileUrl = argv[i+1];  i++;  printf("in = %s\n", inFileUrl.Data());  }
     else if(arg.find("--json")     !=string::npos && i+1<argc)  { jsonFile  = argv[i+1];  i++;  printf("json = %s\n", jsonFile.Data()); }
     else if(arg.find("--histoVBF") !=string::npos && i+1<argc)  { histoVBF  = argv[i+1];  i++;  printf("histoVBF = %s\n", histoVBF.Data()); }
@@ -433,7 +425,6 @@ int main(int argc, char* argv[])
     else if(arg.find("--mR")       !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&massR ); i++; printf("massR = %i\n", massR);}
     else if(arg.find("--m")        !=string::npos && i+1<argc)  { sscanf(argv[i+1],"%i",&mass ); i++; printf("mass = %i\n", mass);}
     else if(arg.find("--bins")     !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins are : ");while (pch!=NULL){printf(" %s ",pch); AnalysisBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
-    else if(arg.find("--MergeBins")!=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("bins will be merged : ");while (pch!=NULL){printf(" %s ",pch); mergeBins.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--channels") !=string::npos && i+1<argc)  { char* pch = strtok(argv[i+1],",");printf("channels are : ");while (pch!=NULL){printf(" %s ",pch); Channels.push_back(pch);  pch = strtok(NULL,",");}printf("\n"); i++; }
     else if(arg.find("--postfix")   !=string::npos && i+1<argc)  { postfix = argv[i+1]; systpostfix = argv[i+1]; i++;  printf("postfix '%s' will be used\n", postfix.Data());  }
     else if(arg.find("--systpostfix")   !=string::npos && i+1<argc)  { systpostfix = argv[i+1];  i++;  printf("systpostfix '%s' will be used\n", systpostfix.Data());  }
@@ -453,7 +444,7 @@ int main(int argc, char* argv[])
   if(histo.IsNull())    { printf("No Histogram provided\nrun with '--help' for more details\n"); return -1; }
   if(mass==-1)          { printf("No massPoint provided\nrun with '--help' for more details\n"); return -1; }
   if(indexcutV.size()<=0){printf("INDEX CUT SIZE IS NULL\n"); printHelp(); return -1; }
-  if(AnalysisBins.size()==0)AnalysisBins.push_back("");
+  if(AnalysisBins.size()==0)AnalysisBins.push_back("all");
   if(Channels.size()==0){Channels.push_back("ee");Channels.push_back("mumu");}
 
   //make sure that the index vector are well filled
@@ -463,6 +454,33 @@ int main(int argc, char* argv[])
   while(indexcutVL.size()<AnalysisBins.size()){indexcutVL.push_back(indexcutVL[0]);}
   while(indexcutVR.size()<AnalysisBins.size()){indexcutVR.push_back(indexcutVR[0]);}
   if(indexvbf>=0){for(unsigned int i=0;i<AnalysisBins.size();i++){if(AnalysisBins[i].find("vbf")!=string::npos){indexcutV[i]=indexvbf; indexcutVL[i]=indexvbf; indexcutVR[i]=indexvbf;} }}
+
+
+  //handle merged bins
+  std::vector<std::vector<string> > binsToMerge;
+  for(unsigned int b=0;b<AnalysisBins.size();b++){
+     if(AnalysisBins[b].find('+')!=std::string::npos){
+        std::vector<string> subBins;
+        char* pch = strtok(&AnalysisBins[b][0],"+"); 
+        while (pch!=NULL){
+           indexcutV.push_back(indexcutV[b]);
+           indexcutVL.push_back(indexcutVL[b]);
+           indexcutVR.push_back(indexcutVR[b]);
+           AnalysisBins.push_back(pch);
+           subBins.push_back(pch);
+           pch = strtok(NULL,"+");
+        }
+        binsToMerge.push_back(subBins);
+        AnalysisBins.erase(AnalysisBins.begin()+b);
+        indexcutV .erase(indexcutV .begin()+b);
+        indexcutVL.erase(indexcutVL.begin()+b);
+        indexcutVR.erase(indexcutVR.begin()+b);
+        b--;
+     }
+  }
+
+
+
   //fill the index map
   for(unsigned int i=0;i<AnalysisBins.size();i++){indexcutM[AnalysisBins[i]] = indexcutV[i]; indexcutML[AnalysisBins[i]] = indexcutVL[i]; indexcutMR[AnalysisBins[i]] = indexcutVR[i];}
 
@@ -559,21 +577,22 @@ int main(int argc, char* argv[])
   //drop control channels
   allInfo.dropCtrlChannels(selCh);
 
-  //merge bins
-  if(doInclusive)allInfo.TurnToInclusiveAnalysis();
-
-  if(mergeBins.size()>0){
-     std::string NewBinName = mergeBins.back();  mergeBins.pop_back();
-     allInfo.mergeBins(mergeBins,NewBinName);
+  //merge bins  
+  for(unsigned int B=0;B<binsToMerge.size();B++){
+     std::string NewBinName = string("["); binsToMerge[B][0];  for(unsigned int b=1;b<binsToMerge[B].size();b++){NewBinName += "+"+binsToMerge[B][b];} NewBinName+="]";
+     allInfo.mergeBins(binsToMerge[B],NewBinName);
   }
+
 
   //turn to CC analysis eventually
   if(!shape)allInfo.turnToCC(histo.Data());
 
+  allInfo.HandleEmptyBins(histo.Data()); //needed for negative bin content --> May happens due to NLO interference for instance
+
   //print event yields from the mt shapes
-  pFile = fopen("Yields.tex","w");
-  allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
-  fclose(pFile);
+  pFile = fopen("Yields.tex","w");  FILE* pFileInc = fopen("YieldsInc.tex","w");
+  allInfo.getYieldsFromShape(pFile, selCh, histo.Data(), pFileInc);
+  fclose(pFile); fclose(pFileInc);
 
   //print signal efficiency
   pFile = fopen("Efficiency.tex","w");
@@ -582,13 +601,6 @@ int main(int argc, char* argv[])
 
   //produce a plot
   allInfo.showShape(selCh,histo,"plot");
-
-  //handle empty bins here, so the Yields is already produced
-  //allInfo.HandleEmptyBins(histo.Data());
-  //pFile = fopen("YieldsNoEmptyBins.tex","w");
-  //allInfo.getYieldsFromShape(pFile, selCh, histo.Data());
-  //fclose(pFile);
-  //allInfo.showShape(selCh,histo,"plotNoEmptyBins");
 
   //prepare the output
   string limitFile=("hzz2l2v_"+massStr+systpostfix+".root").Data();
@@ -823,7 +835,9 @@ void initializeTGraph(){
         //
         // Print the Yield table
         //
-         void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName){
+         void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc){
+           if(!pFileInc)pFileInc=pFile;
+
            std::map<string, string> rows;
            std::map<string, string> rowsBin;
            string rows_header = "\\begin{tabular}{|c|";
@@ -882,18 +896,16 @@ void initializeTGraph(){
            }
            fprintf(pFile,"\\hline\n");
            fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
-           fprintf(pFile,"\n\n\n\n");
 
            //All Bins
-           fprintf(pFile,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
-           fprintf(pFile, "%s}\\\\\n", rows_header.c_str());
-           fprintf(pFile, "%s\\\\\n", rows_title .c_str());
+           fprintf(pFileInc,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+           fprintf(pFileInc, "%s}\\\\\n", rows_header.c_str());
+           fprintf(pFileInc, "%s\\\\\n", rows_title .c_str());
            for(std::map<string, string>::iterator row = rowsBin.begin(); row!= rowsBin.end(); row++){
-              fprintf(pFile, "%s\\\\\n", row->second.c_str());
+              fprintf(pFileInc, "%s\\\\\n", row->second.c_str());
            }
-           fprintf(pFile,"\\hline\n");
-           fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
-           fprintf(pFile,"\n\n\n\n");
+           fprintf(pFileInc,"\\hline\n");
+           fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
          }
 
         //
@@ -1336,14 +1348,16 @@ void initializeTGraph(){
            TString combinedcard = "";
 
            for(std::map<string, bool>::iterator C=allChannels.begin(); C!=allChannels.end();C++){
-              TString dcName=url;
+              TString dcName=url;              
               dcName.ReplaceAll(".root","_"+TString(C->first.c_str())+".dat");
 
               combinedcard += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("ee"  )!=string::npos)eecard   += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("mumu")!=string::npos)mumucard += (C->first+"=").c_str()+dcName+" ";
 
-
+              dcName.ReplaceAll("[", "");
+              dcName.ReplaceAll("]", "");
+              dcName.ReplaceAll("+", "");
 
               FILE* pFile = fopen(dcName.Data(),"w");
               //header
@@ -1357,7 +1371,7 @@ void initializeTGraph(){
               }
               //observations
               fprintf(pFile, "bin 1\n");
-              fprintf(pFile, "Observation %f\n", round(procs["data"].channels[C->first].shapes[histoName].histo()->Integral()) );
+              fprintf(pFile, "Observation %f\n", procs["data"].channels[C->first].shapes[histoName].histo()->Integral());
               fprintf(pFile, "-------------------------------\n");
 
               //yields
@@ -1492,8 +1506,8 @@ void initializeTGraph(){
                }               
 
                //Loop on all channels, bins and shape to load and store them in memory structure
-               TH1* syst = (TH1*)pdir->Get("optim_systs");
-               if(syst==NULL){syst=new TH1F("optim_systs","optim_systs",1,0,1);syst->GetXaxis()->SetBinLabel(1,"");}
+               TH1* syst = (TH1*)pdir->Get("all_optim_systs");
+               if(syst==NULL){syst=new TH1F("all_optim_systs","all_optim_systs",1,0,1);syst->GetXaxis()->SetBinLabel(1,"");}
                for(unsigned int c=0;c<channelsAndShapes.size();c++){
                TString chName    = (channelsAndShapes[c].substr(0,channelsAndShapes[c].find(";"))).c_str();
                TString binName   = (channelsAndShapes[c].substr(channelsAndShapes[c].find(";")+1, channelsAndShapes[c].rfind(";")-channelsAndShapes[c].find(";")-1)).c_str();
@@ -1515,8 +1529,8 @@ void initializeTGraph(){
 
                   TH2* hshape2D = (TH2*)pdir->Get(histoName );
                   if(!hshape2D){
-                     if(shapeName==histo && histoVBF!="" && ch.Contains("vbf")){   hshape2D = (TH2*)pdir->Get(histoVBF+(isSignal?signalSufix:"")+varName);
-                     }else{                                                        hshape2D = (TH2*)pdir->Get(shapeName+varName);
+                     if(shapeName==histo && histoVBF!="" && ch.Contains("vbf")){   hshape2D = (TH2*)pdir->Get(TString("all_")+histoVBF+(isSignal?signalSufix:"")+varName);
+                     }else{                                                        hshape2D = (TH2*)pdir->Get(TString("all_")+shapeName+varName);
                      }
                                 
                      if(hshape2D){
@@ -2207,30 +2221,6 @@ void initializeTGraph(){
          //
          // merge histograms from different bins together... but keep the channel separated 
          //
-         void AllInfo_t::TurnToInclusiveAnalysis(){
-           printf("Merge all bins of the same channel together\n");
-           for(unsigned int p=0;p<sorted_procs.size();p++){
-              string procName = sorted_procs[p];
-              std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
-              if(it==procs.end())continue;
-              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
-                 for(std::map<string, ChannelInfo_t>::iterator ch2 = ch; ch2!=it->second.channels.end(); ch2++){
-                    if(ch->second.channel != ch2->second.channel)continue; //make sure we merge bin in the same channel
-                    if(ch->second.bin     == ch2->second.bin    )continue; //make sure we do not merge with itself
-                    addChannel(ch->second, ch2->second);
-                    it->second.channels.erase(ch2);  
-                    ch2=ch;
-                 }
-//                 ch->first      = ch->second.channel;
-                 ch->second.bin = "Inc";
-              }
-           }
-         }
-
-
-         //
-         // merge histograms from different bins together... but keep the channel separated 
-         //
          void AllInfo_t::mergeBins(std::vector<string>& binsToMerge, string NewName){
            printf("Merge the following bins of the same channel together: "); for(unsigned int i=0;i<binsToMerge.size();i++){printf("%s ", binsToMerge[i].c_str());}
            printf("The resulting bin will be called %s\n", NewName.c_str());
@@ -2238,19 +2228,26 @@ void initializeTGraph(){
               string procName = sorted_procs[p];
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end())continue;
+
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 if(find(binsToMerge.begin(), binsToMerge.end(), ch ->second.bin)==binsToMerge.end())continue;  //make sure this bin should be merged
                  for(std::map<string, ChannelInfo_t>::iterator ch2 = ch; ch2!=it->second.channels.end(); ch2++){
                     if(ch->second.channel != ch2->second.channel)continue; //make sure we merge bin in the same channel
                     if(ch->second.bin     == ch2->second.bin    )continue; //make sure we do not merge with itself
-                    if(find(binsToMerge.begin(), binsToMerge.end(), ch ->second.bin)==binsToMerge.end())continue;  //make sure this bin should be merged
                     if(find(binsToMerge.begin(), binsToMerge.end(), ch2->second.bin)==binsToMerge.end())continue;  //make sure this bin should be merged
                     addChannel(ch->second, ch2->second);
                     it->second.channels.erase(ch2);  
                     ch2=ch;
                  }
-//                 ch->first      = ch->second.channel;
                  ch->second.bin = NewName;
               }
+
+              //also update the map keys
+              std::map<string, ChannelInfo_t> newMap;
+              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 newMap[ch->second.channel+ch->second.bin] = ch->second;
+              }
+              it->second.channels = newMap;
            }
          }
 
@@ -2258,20 +2255,29 @@ void initializeTGraph(){
          void AllInfo_t::HandleEmptyBins(string histoName){
            for(unsigned int p=0;p<sorted_procs.size();p++){
               string procName = sorted_procs[p];
-              if(procName!="FakeLep")continue; //only do this for the FakeLepbackground right now
+              //if(procName!="FakeLep")continue; //only do this for the FakeLepbackground right now
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end())continue;
+              if(it->second.isData)continue; //only do this for MC
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];
                  TH1* histo = (TH1*)shapeInfo.histo();
                  if(!histo){printf("Histo does not exit... skip it \n"); fflush(stdout); continue;}
 
                  double StartIntegral = histo->Integral();
                  for(int binx=1;binx<=histo->GetNbinsX();binx++){
-                    if(histo->GetBinContent(binx)<=0){histo->SetBinContent(binx, 1E-6); }; //histo->SetBinError(binx, 1.8);  }
+                    if(histo->GetBinContent(binx)<=0){histo->SetBinContent(binx, 1E-6); histo->SetBinError(binx, 1E-6);  }
                  }
                  double EndIntegral = histo->Integral();                 
                  shapeInfo.rescaleScaleUncertainties(StartIntegral, EndIntegral);
+
+
+                 for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
+                    for(int binx=1;binx<=unc->second->GetNbinsX();binx++){
+                       if(unc->second->GetBinContent(binx)<=0){unc->second->SetBinContent(binx, 1E-6); }; //histo->SetBinError(binx, 1.8);  }
+                    }
+                 }
               }
            }
 
