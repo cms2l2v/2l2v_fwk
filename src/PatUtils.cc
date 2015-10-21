@@ -518,23 +518,26 @@ namespace patUtils
     double jeta = j.eta();
 
     //Recommendation of HZZ :https://twiki.cern.ch/twiki/bin/view/CMS/HiggsZZ4l2015#Jets
+    //FIXME recommendation of HZZ are oudated (run 1)--->update them
+    //FIXME Progress: Partially done (removed the cuts at eta>2.75) but have to wait for improvements from JetMET group
+    //FIXME In miniAOD V2, the variable used is bugged ! Please avoir using it!
     float jpumva=0.;
     jpumva=j.userFloat("pileupJetId:fullDiscriminant");
 
     bool passPU = true;
     if(jpt>20){
       if(jeta>3.){
-        if(jpumva<=-0.45)passPU=false;
+        //if(jpumva<=-0.45)passPU=false;
       }else if(jeta>2.75){
-        if(jpumva<=-0.55)passPU=false;
+        //if(jpumva<=-0.55)passPU=false;
       }else if(jeta>2.5){
         if(jpumva<=-0.6)passPU=false;
       }else if(jpumva<=-0.63)passPU=false;
     }else{ //pt<20 : in the 2l2nu analysis, this means 15<pt<20
       if(jeta>3.){
-        if(jpumva<=-0.95)passPU=false;
+        //if(jpumva<=-0.95)passPU=false;
       }else if(jeta>2.75){
-        if(jpumva<=-0.94)passPU=false;
+        //if(jpumva<=-0.94)passPU=false;
       }else if(jeta>2.5){
         if(jpumva<=-0.96)passPU=false;
       }else if(jpumva<=-0.95)passPU=false;
