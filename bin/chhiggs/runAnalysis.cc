@@ -47,7 +47,6 @@
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
-
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
 
@@ -330,6 +329,11 @@ int main (int argc, char *argv[])
   double xsec          = runProcess.getParameter<double>("xsec");
   int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
   TString dtag         = runProcess.getParameter<std::string>("dtag");
+  
+  const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
+  const edm::ParameterSet& myVidElectronIdWPConf = myVidElectronIdConf.getParameterSet("tight");
+  
+  VersionedGsfElectronSelector electronVidId(myVidElectronIdWPConf);
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
@@ -744,7 +748,8 @@ int main (int argc, char *argv[])
             printf (".");
             if(!debug) fflush (stdout); // Otherwise debug messages are flushed
           }
-        
+
+        edm::EventBase const & myEvent = ev;
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
         double weightGen(1.);
         if(isNLOMC)
@@ -871,7 +876,7 @@ int main (int argc, char *argv[])
                           isMC ? 
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
                           :
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_WPLoose_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )  
                           );
         bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_v*")                                                                                   );
         
@@ -1120,7 +1125,17 @@ int main (int argc, char *argv[])
           if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
           
           //Cut based identification 
-          passId          = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
+          
+          //std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
+
+          bool passMyId = electronVidId(leptons[ilep].el, myEvent);   //patUtils::passId(electronVidId, myEvent, leptons[ilep].el);
+
+          cout << "ID IS " << passMyId << endl;
+
+          
+          passId = lid == 11 ? patUtils::passId(electronVidId, myEvent, leptons[ilep].el) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
+
+            //passId          = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
           passVetoId      = lid == 11 ? (leptons[ilep].el.electronID(electronIdVetoTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
           //isolation
