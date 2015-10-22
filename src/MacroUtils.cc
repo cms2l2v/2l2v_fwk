@@ -567,7 +567,7 @@ namespace utils
   //This function will be removed soon as it is not behaving properly with xrootd
   void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
   {
-    #warning THE FOLLOWING FUNCTION WILL BE REMOVED SOON: void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev   , unsigned int Npu, std::vector<float>& mcpileup)',\n IF YOU USE IT REPLACE IT BY THIS ONE :DEPRECATED METHOD USED by 'void getMCPileupDistributionFromMiniAOD(std::vector<string>& urls, unsigned int Npu, std::vector<float>& mcpileup)'
+    #warning 'THE FOLLOWING FUNCTION WILL BE REMOVED SOON: void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev   , unsigned int Npu, std::vector<float>& mcpileup)',\n IF YOU USE IT REPLACE IT BY THIS ONE :DEPRECATED METHOD USED by 'void getMCPileupDistributionFromMiniAOD(std::vector<string>& urls, unsigned int Npu, std::vector<float>& mcpileup)'
     mcpileup.clear();
     mcpileup.resize(Npu);
     for(Long64_t ientry=0;ientry<ev.size();ientry++){
