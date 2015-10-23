@@ -32,7 +32,7 @@
 #include "UserCode/llvv_fwk/interface/LumiUtils.h"
 
 // Electron ID
-#include "RecoEgamma/ElectronIdentification/interface/VersionedGsfElectronSelector.h"
+#include "RecoEgamma/ElectronIdentification/interface/VersionedPatElectronSelector.h"
 
 #include <vector>
 #include "TVector3.h"
@@ -62,10 +62,11 @@ namespace patUtils
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
 
-   bool passId (VersionedGsfElectronSelector id, edm::EventBase const & event, pat::Electron& el);
+   bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel); // Old PHYS14 ID
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
+   bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
    bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0); // Old PHYS15 Iso
    bool passIso(pat::Muon&     mu,  int IsoLevel);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
