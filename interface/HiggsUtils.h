@@ -51,7 +51,7 @@ namespace higgs{
     double weightToH125Interference(double mass,double width,TFile *intFile,TString var); 
 
     //transverse mass
-    double transverseMass(LorentzVector &visible, LorentzVector &invisible, bool assumeSameMass);
+    double transverseMass(const LorentzVector &visible, const LorentzVector &invisible, bool assumeSameMass);
 
   }  
 }

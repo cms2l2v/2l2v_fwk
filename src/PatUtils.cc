@@ -4,6 +4,13 @@
 
 namespace patUtils
 {
+
+  bool passId (VersionedGsfElectronSelector id, edm::EventBase const & event, pat::Electron& el){
+    // This assumes an object to be created ( *before the event loop* ):
+    // VersionedGsfElectronSelector loose_id("some_VID_tag_including_the_WP");
+    return id(el, event);
+  }
+  
   bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel){
     
     //for electron Id look here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
@@ -278,6 +285,13 @@ namespace patUtils
     
     return false; 
   }
+
+  bool passIso (VersionedGsfElectronSelector id, pat::Electron& el){
+    // This assumes an object to be created ( *before the event loop* ):
+    // VersionedGsfElectronSelector loose_id("some_VID_tag_including_the_WP");
+    return true; // Isolation is now embedded into the ID.
+  }
+
   
   bool passIso(pat::Electron& el, int IsoLevel, double rho){
           //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2

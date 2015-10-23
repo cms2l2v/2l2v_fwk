@@ -10,6 +10,24 @@ LumiList.LumiList().getVLuminosityBlockRange()
 process.source = cms.Source("PoolSource", fileNames =  cms.untracked.vstring('') )
 from RecoJets.JetProducers.PileupJetIDParams_cfi import cutbased as pu_jetid
 
+
+###### Electron VID
+from RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff import *
+
+if hasattr(cutBasedElectronID_Spring15_25ns_V1_standalone_loose,'isPOGApproved'):
+    del cutBasedElectronID_Spring15_25ns_V1_standalone_loose.isPOGApproved
+if hasattr(cutBasedElectronID_Spring15_25ns_V1_standalone_medium,'isPOGApproved'):
+    del cutBasedElectronID_Spring15_25ns_V1_standalone_medium.isPOGApproved
+if hasattr(cutBasedElectronID_Spring15_25ns_V1_standalone_tight,'isPOGApproved'):
+    del cutBasedElectronID_Spring15_25ns_V1_standalone_tight.isPOGApproved
+
+myVidElectronId = cms.PSet(
+    loose = cutBasedElectronID_Spring15_25ns_V1_standalone_loose,
+    medium = cutBasedElectronID_Spring15_25ns_V1_standalone_medium,
+    tight = cutBasedElectronID_Spring15_25ns_V1_standalone_tight
+)
+#######
+
 #from UserCode.llvv_fwk.mvaConfig_cfi import ewkzp2jFullNoQG as mySignalMVA
 from UserCode.llvv_fwk.mvaConfig_cfi import ewkzp2jFull as mySignalMVA
 #from UserCode.llvv_fwk.mvaConfig_cfi import ewkzp2jBase as mySignalMVA
@@ -54,6 +72,7 @@ runProcess = cms.PSet(
     debug = cms.bool(False),
     lumisToProcess = LumiList.LumiList(filename = @lumiMask).getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),
+    electronidparas = cms.PSet(myVidElectronId),
     maxevents = cms.int32(-1) # set to -1 when running on grid. 
 )
 

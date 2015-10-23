@@ -103,7 +103,7 @@ def getFileList(procData,DefaultNFilesPerJob):
 #configure
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
-parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='excecutable'                           , default='')
+parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='executable'                            , default='')
 parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'    , default='8nh')
 parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'           , default='pool>30000')
 parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                     , default='')
@@ -238,3 +238,8 @@ for procBlock in procList :
                   for cfgfile in failedList:                  
                      LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
                   LaunchOnCondor.SendCluster_Submit()
+
+
+if(LaunchOnCondor.subTool=='criminal'):
+    LaunchOnCondor.SendCluster_CriminalSubmit()
+

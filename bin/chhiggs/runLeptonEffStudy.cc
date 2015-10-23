@@ -1,3 +1,4 @@
+
 //
 // Pietro Vischia, <pietro.vischia@gmail.com>
 //
@@ -348,6 +349,11 @@ int main (int argc, char *argv[])
   float beff (0.68), sfb (0.99), sfbunc (0.015);
   float leff (0.13), sfl (1.05), sflunc (0.12);
 
+
+  TString
+    electronIdMainTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
+    electronIdVetoTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+
   //pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
@@ -640,6 +646,10 @@ int main (int argc, char *argv[])
       for(size_t l = 0; l < muons.size (); l++)     leptons.push_back (patUtils::GenericLepton (muons[l]     ));
       std::sort (leptons.begin (), leptons.end (), utils::sort_CandidatesByPt);
 
+      // Acquire electron ID
+      patUtils::ElectronId elIdTight(ev, patUtils::llvvElecId::Tight);
+      patUtils::ElectronId elIdLoose(ev, patUtils::llvvElecId::Loose);
+
       LorentzVector muDiff (0, 0, 0, 0);
       std::vector < patUtils::GenericLepton > selLeptons, selSingleLepLeptons; // Different main lepton definitions
       double nVetoE(0), nVetoMu(0);
@@ -696,13 +706,13 @@ int main (int argc, char *argv[])
 
           
           //Cut based identification 
-          passId          = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
-          passSingleLepId = lid == 11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+          passId          = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
+          passSingleLepId = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId (leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
           passVetoSingleLepId = passId;
 
           //isolation
-          passIso          = lid == 11 ? patUtils::passIso (leptons[ilep].el, patUtils::llvvElecIso::Loose) : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Loose); // Try tight iso for dilepton
-          passSingleLepIso = lid == 11 ? patUtils::passIso (leptons[ilep].el, patUtils::llvvElecIso::Tight) : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Tight); // Try tight iso for dilepton
+          passIso          = lid == 11 ? true : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Loose); // Try tight iso for dilepton
+          passSingleLepIso = lid == 11 ? true : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Tight); // Try tight iso for dilepton
           passVetoSingleLepIso = passIso;
           
           if (passKin          && passId          && passIso)          selLeptons.push_back(leptons[ilep]);

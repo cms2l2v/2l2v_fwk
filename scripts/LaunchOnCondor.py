@@ -42,7 +42,7 @@ Jobs_CRABStorageSite = 'T2_BE_UCL'
 Jobs_CRABname      = Jobs_CRABexe
 Jobs_CRABInDBS     = "global"
 Jobs_CRABUnitPerJob = 10
-
+Jobs_List = []
 
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
@@ -295,6 +295,7 @@ def AddJobToCmdFile():
 	global Path_Log
         global absoluteShellPath
         global Jobs_EmailReport
+        global Jobs_List
         Path_Out   = Farm_Directories[3] + Jobs_Index + Jobs_Name
         cmd_file=open(Path_Cmd,'a')
 	if subTool=='bsub':
@@ -322,6 +323,10 @@ def AddJobToCmdFile():
                 crabParamPath   = Farm_Directories[1]+'crabParam_'+Jobs_Index+Jobs_Name+'_cfg.py'
                 CreateCrabConfig(crabWorkDirPath, crabConfigPath, crabExePath, crabParamPath)
                 cmd_file.write("crab submit -c " + crabConfigPath + "\n")
+        elif subTool=='criminal':
+                absoluteShellPath = Path_Shell;
+                if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/"+absoluteShellPath
+                Jobs_List.extend([absoluteShellPath])
         else:
         	cmd_file.write('\n')
 	        cmd_file.write('Executable              = %s\n'     % Path_Shell)
@@ -374,7 +379,7 @@ def SendCluster_Create(FarmDirectory, JobName):
            elif(commands.getstatusoutput("qsub"       )[1].find("command not found")<0): subTool = 'qsub'
            else:                                                                         subTool = 'condor'
         if(Jobs_Queue.find('crab')>=0):                                                  subTool = 'crab'
-
+        if(Jobs_Queue.find('criminal')>=0):                                              subTool = 'criminal'
 	Jobs_Name  = JobName
 	Jobs_Count = 0
 
@@ -401,18 +406,35 @@ def SendCluster_Push(Argv):
         AddJobToCmdFile()
 	Jobs_Count = Jobs_Count+1
 
+def ShellRun(InputFileName):
+    try:
+        return os.system('sh ' + InputFileName)
+    except:
+        print 50*'<'
+        print "  Problem  (%s) with %s continuing without"%(sys.exc_info()[1],InputFileName)
+        print 50*'<'
+        return False
+
 def SendCluster_Submit():
         global subTool
 	global CopyRights
         global Jobs_Count
         global Path_Cmd
+        global Jobs_List
 
 	if subTool=='bsub' or subTool=='qsub': os.system("sh " + Path_Cmd)
         elif subTool=='crab':                  os.system("sh " + Path_Cmd)
+        elif subTool=='criminal':              print "Added jobs to global list"        
 	else:          	       	               os.system("condor_submit " + Path_Cmd)  
-
+        
 	print '\n'+CopyRights
 	print '%i Job(s) has/have been submitted on the Computing Cluster' % Jobs_Count
+
+def SendCluster_CriminalSubmit():
+    from multiprocessing import Pool
+    pool = Pool(8)
+    pool.map(ShellRun, Jobs_List)
+
 
 def SendSingleJob(FarmDirectory, JobName, Argv):
 	SendCluster_Create(FarmDirectory, JobName, Argv)
