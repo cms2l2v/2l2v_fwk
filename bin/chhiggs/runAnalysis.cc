@@ -865,7 +865,7 @@ int main (int argc, char *argv[])
           cout << "Trigger is not valid" << endl;
           return false;
         }
-        if(debug && iev==5 ){
+        if(debug && iev==1 ){
           cout << "Printing trigger list" << endl;
           for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
             cout << *trnames << endl;
@@ -876,7 +876,7 @@ int main (int argc, char *argv[])
                           isMC ? 
                           utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
                           :
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_WPLoose_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )  
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_WPLoose_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v1" )
                           );
         bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_v*")                                                                                   );
         
