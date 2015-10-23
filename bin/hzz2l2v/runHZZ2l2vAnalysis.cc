@@ -1055,14 +1055,14 @@ int main(int argc, char* argv[])
              //jet id
              bool passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
              float PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
+             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
              if(jets[ijet].pt()>30){
                  mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
                  if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
                  if(passLooseSimplePuId)                mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),2);
                  if(passPFloose && passLooseSimplePuId) mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),3);
              }
-             if(!passPFloose || !passLooseSimplePuId) continue;
+             if(!passPFloose /*|| !passLooseSimplePuId*/) continue; //FIXME PUJetID is broken in miniAOD V2 : waiting for JetMET fix (Hugo)
              selJets.push_back(jets[ijet]);
              if(jets[ijet].pt()>30) {
                njets++;
