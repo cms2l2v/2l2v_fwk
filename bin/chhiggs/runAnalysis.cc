@@ -333,7 +333,7 @@ int main (int argc, char *argv[])
   const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
   const edm::ParameterSet& myVidElectronIdWPConf = myVidElectronIdConf.getParameterSet("tight");
   
-  VersionedGsfElectronSelector electronVidId(myVidElectronIdWPConf);
+  VersionedPatElectronSelector electronVidId(myVidElectronIdWPConf);
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
@@ -694,8 +694,8 @@ int main (int argc, char *argv[])
 
 
   TString
-    electronIdMainTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-    electronIdVetoTag("egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+    electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
+    electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
 
   //pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
@@ -1127,15 +1127,11 @@ int main (int argc, char *argv[])
           //Cut based identification 
           
           //std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
-
-          bool passMyId = electronVidId(leptons[ilep].el, myEvent);   //patUtils::passId(electronVidId, myEvent, leptons[ilep].el);
-
-          cout << "ID IS " << passMyId << endl;
-
+          
           
           passId = lid == 11 ? patUtils::passId(electronVidId, myEvent, leptons[ilep].el) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
 
-            //passId          = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
+          //passId          = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
           passVetoId      = lid == 11 ? (leptons[ilep].el.electronID(electronIdVetoTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
           //isolation
