@@ -838,7 +838,6 @@ int main (int argc, char *argv[])
         if(isMC)
           {
             int ngenITpu = 0;
-            if(debug) cout << "Now evaluating the pileup weight... ";
             fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
             puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
             for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
@@ -848,7 +847,6 @@ int main (int argc, char *argv[])
             
             //ngenITpu = nGoodPV; // based on nvtx
             puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-            if(debug) cout << "Pileup weight: " << puWeight;
             weight *= puWeight;//Weight; //* puWeight;
             TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
@@ -866,7 +864,7 @@ int main (int argc, char *argv[])
         //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
         
         
-        if(debug) cout << "Run: " << ev.eventAuxiliary().run() << " isMC: " << isMC << ", isPromptReco: " << isPromptReco << ", decision word: " << patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) << endl;
+        //if(debug) cout << "Run: " << ev.eventAuxiliary().run() << " isMC: " << isMC << ", isPromptReco: " << isPromptReco << ", decision word: " << patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) << endl;
         
         // Orthogonalize Run2015B PromptReco+17Jul15 mix
         if(isRun2015B)
@@ -883,33 +881,29 @@ int main (int argc, char *argv[])
           cout << "Trigger is not valid" << endl;
           return false;
         }
+        
         if(debug){
           cout << "Printing trigger list" << endl;
           for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
             cout << *trnames << endl;
           cout << "----------- End of trigger list ----------" << endl;
+          return 0;
         }
-        
+
+        // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         bool eTrigger    (
                           isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
+                          utils::passTriggerPatterns (tr, "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*")
                           :
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_WPLoose_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v*" )
+                          utils::passTriggerPatterns (tr, "HLT_Ele23_WPLoose_Gsf_v*")
                           );
-        bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_v*")                                                                                   );
+        bool muTrigger   (
+                          isMC ? 
+                          utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_v*")
+                          :
+                          utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*")
+                          );
 
-//      electron:
-//        data HLT_Ele23_WPLoose_Gsf_v2
-//        mc
-//      muon:
-//        data HLT_IsoMu18_v1
-//        mc
-//
-//        he ntuple  1/ 1 :Run: 257613 isMC: 0, isPromptReco: 0, decision word: 0
-//
-
-
-        
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
         if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
         
