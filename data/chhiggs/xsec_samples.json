@@ -79,7 +79,7 @@
         { "dtag":"MC13TeV_SingleTbar_tW_5FS"                , "split_NoUse_TestingAutomaticOne":10, "xsec":35.85        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"      },
         { "dtag":"MC13TeV_SingleTbar_tW_5FS_DS"             , "split_NoUse_TestingAutomaticOne":10, "xsec":35.85        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"   },
         { "dtag":"MC13TeV_SingleT_t_4FS_leptonicDecays",     "split_NoUse_TestingAutomaticOne":10, "xsec":136.02, "br":[ 1.0 ] , "dset":"/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },
-        { "dtag":"MC13TeV_/SingleTbar_t_4FS_leptonicDecays", "split_NoUse_TestingAutomaticOne":10, "xsec":80.95, "br":[ 1.0 ]  , "dset":"/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" }
+        { "dtag":"MC13TeV_SingleTbar_t_4FS_leptonicDecays", "split_NoUse_TestingAutomaticOne":10, "xsec":80.95, "br":[ 1.0 ]  , "dset":"/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" }
       ]
      },
      {
@@ -174,7 +174,12 @@
         { "dtag":"Data13TeV_SingleElectron2015D_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-05Oct2015-v1/MINIAOD", "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
         { "dtag":"Data13TeV_MuonEG2015D_05Oct2015",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015D-05Oct2015-v1/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
         { "dtag":"Data13TeV_DoubleMuon2015D_05Oct2015",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_DoubleEG2015D_05Oct2015",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
+        { "dtag":"Data13TeV_DoubleEG2015D_05Oct2015",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD",       "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015D_PromptReco",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-PromptReco-v4/MINIAOD", "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_MuonEG2015D_PromptReco",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_DoubleMuon2015D_PromptReco",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_DoubleEG2015D_PromptReco",   "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD",         "lumiMask":"Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
       ]             
     }    
   ]
