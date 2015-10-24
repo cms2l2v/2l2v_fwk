@@ -332,7 +332,7 @@ int main (int argc, char *argv[])
   
   const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
   const edm::ParameterSet& myVidElectronMainIdWPConf = myVidElectronIdConf.getParameterSet("tight");
-  const edm::ParameterSet& myVidElectronVetoIdWPConf = myVidElectronIdConf.getParameterSet("veto");
+  const edm::ParameterSet& myVidElectronVetoIdWPConf = myVidElectronIdConf.getParameterSet("loose");
   
   VersionedPatElectronSelector electronVidMainId(myVidElectronMainIdWPConf);
   VersionedPatElectronSelector electronVidVetoId(myVidElectronVetoIdWPConf);
