@@ -43,6 +43,7 @@ Jobs_CRABname      = Jobs_CRABexe
 Jobs_CRABInDBS     = "global"
 Jobs_CRABUnitPerJob = 10
 Jobs_List = []
+Jobs_LocalNJobs = 8
 
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
@@ -432,7 +433,7 @@ def SendCluster_Submit():
 
 def SendCluster_CriminalSubmit():
     from multiprocessing import Pool
-    pool = Pool(8)
+    pool = Pool(Jobs_LocalNJobs)
     pool.map(ShellRun, Jobs_List)
 
 

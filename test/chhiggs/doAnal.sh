@@ -5,8 +5,8 @@ JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
 
 OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
 
-#QUEUE="1nh"
-QUEUE="criminal"
+QUEUE="1nh"
+#QUEUE="criminal"
 #QUEUE="8nm"
 #QUEUE="crab"
 
