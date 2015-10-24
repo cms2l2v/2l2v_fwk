@@ -426,22 +426,22 @@ int main (int argc, char *argv[])
   //((TH1F*)mon.addHistogram( new TH1D( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
   
   // ensure proper normalization
-  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Nev", 5, 0., 5.));
+  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
   normhist->GetXaxis()->SetBinLabel (2, "Events");
   normhist->GetXaxis()->SetBinLabel (3, "PU central");
   normhist->GetXaxis()->SetBinLabel (4, "PU up");
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
-  //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0., 6.));
+  //event selection - charged Higgs
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("chhiggseventflowdilep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (5, "op. sign");
   h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram(new TH1D ("alteventflow", ";;Events", 8, 0., 8.));
+  h = (TH1D*) mon.addHistogram(new TH1D ("chhiggsalteventflowdilep", ";;Events", 8, 0., 8.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
@@ -450,14 +450,14 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (6, "= 0 b-tags");
   h->GetXaxis()->SetBinLabel (7, "= 1 b-tags");
   h->GetXaxis()->SetBinLabel (8, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram(new TH1D ("eventflowslep", ";;Events", 6, 0., 6.));
+  h = (TH1D*) mon.addHistogram(new TH1D ("chhiggseventflowslep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
-  h = (TH1D*) mon.addHistogram(new TH1D("alteventflowslep", ";;Events", 7, 0., 7.));
+  h = (TH1D*) mon.addHistogram(new TH1D("chhiggsalteventflowslep", ";;Events", 7, 0., 7.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (3, "1 #tau");
@@ -466,12 +466,30 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (6, "= 1 b-tags");
   h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
 
+  // event selection - cross section
+  h = (TH1D*) mon.addHistogram(new TH1D ("xseceventflow", ";;Events", 6, 0., 6.));
+  h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
+  h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
+  h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
+  h->GetXaxis()->SetBinLabel (5, "1 #tau");
+  h->GetXaxis()->SetBinLabel (6, "op. sign");
+  h = (TH1D*) mon.addHistogram(new TH1D("xsecalteventflow", ";;Events", 7, 0., 7.));
+  h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
+  h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (3, "1 #tau");
+  h->GetXaxis()->SetBinLabel (4, "op. sign");
+  h->GetXaxis()->SetBinLabel (5, "= 0 b-tags");
+  h->GetXaxis()->SetBinLabel (6, "= 1 b-tags");
+  h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
+
+
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup"         , ";;Events", 100, 0., 100.));
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 100, 0., 100.));
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup" , ";;Events", 100, 0., 100.));
 
   
-  // Setting up control categories
+  // Setting up control categories to be analyzed
   std::vector < TString > controlCats;
   controlCats.clear ();
   controlCats.push_back("step1");
@@ -820,15 +838,15 @@ int main (int argc, char *argv[])
         if(isMC)
           {
             int ngenITpu = 0;
-            // if(debug) cout << "Now evaluating the pileup weight... ";
-            // fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-            // puInfoH.getByLabel (ev, "addPileupInfo");
-            // for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-            //   {
-            //     if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-            //   }
-            //
-            ngenITpu = nGoodPV;
+            if(debug) cout << "Now evaluating the pileup weight... ";
+            fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+            puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
+            for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+              {
+                if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+              }
+            
+            //ngenITpu = nGoodPV; // based on nvtx
             puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
             if(debug) cout << "Pileup weight: " << puWeight;
             weight *= puWeight;//Weight; //* puWeight;
@@ -865,7 +883,7 @@ int main (int argc, char *argv[])
           cout << "Trigger is not valid" << endl;
           return false;
         }
-        if(debug && iev==1 ){
+        if(debug){
           cout << "Printing trigger list" << endl;
           for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
             cout << *trnames << endl;
@@ -879,6 +897,18 @@ int main (int argc, char *argv[])
                           utils::passTriggerPatterns (tr, "HLT_Ele27_WPLoose_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v*" )
                           );
         bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_v*")                                                                                   );
+
+//      electron:
+//        data HLT_Ele23_WPLoose_Gsf_v2
+//        mc
+//      muon:
+//        data HLT_IsoMu18_v1
+//        mc
+//
+//        he ntuple  1/ 1 :Run: 257613 isMC: 0, isPromptReco: 0, decision word: 0
+//
+
+
         
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
         if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
