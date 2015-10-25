@@ -83,7 +83,7 @@ elif [ "${1}" = "plot" ]; then
     PSEUDODATA=" "
     
 #for LUMI in 500 1000 5000 10000
-    for LUMI in 16.1
+    for LUMI in 1280
     do
         DIR="${BASEDIR}${LUMI}/"
         if [ "${2}" = "chhiggs" ]; then
