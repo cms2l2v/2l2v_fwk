@@ -312,7 +312,7 @@ def AddJobToCmdFile():
 	       cmd_file.write(temp)
 	elif subTool=='qsub':
                 queue = ""
-                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )!=0): queue = ' -q localgrid@cream02 '
+                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0): queue = ' -q localgrid@cream02 '
 
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
@@ -375,9 +375,10 @@ def SendCluster_Create(FarmDirectory, JobName):
         global Farm_Directories
 
 	#determine what is the submission system available, or use condor
+        print "Checking tool for subtool: ", subTool
         if(subTool==''):
   	   if(  commands.getstatusoutput("bjobs"      )[1].find("command not found")<0): subTool = 'bsub'
-           elif(commands.getstatusoutput("qsub"       )[1].find("command not found")<0): subTool = 'qsub'
+           elif(commands.getstatusoutput("qstat"       )[1].find("command not found")<0): subTool = 'qsub'
            else:                                                                         subTool = 'condor'
         if(Jobs_Queue.find('crab')>=0):                                                  subTool = 'crab'
         if(Jobs_Queue.find('criminal')>=0):                                              subTool = 'criminal'
