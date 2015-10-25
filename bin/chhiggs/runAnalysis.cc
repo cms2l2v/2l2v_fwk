@@ -582,7 +582,6 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D(icat+"cenjeteta",     ";Pseudo-rapidity;Events",            60, 0.,    3. ));
       
       TH1* hbtags   = mon.addHistogram(new TH1D(icat+"nbtags",   ";b-tag multiplicity;Events", 5, 0., 5. ));
-      TH1* hbtagsJP = mon.addHistogram(new TH1D(icat+"nbtagsJP", ";b-tag multiplicity;Events", 5, 0., 5. ));
       TH1* hjets    = mon.addHistogram(new TH1D(icat+"njets",    ";Jet multiplicity;Events",   6, 0., 6. ));
       for (int ibin = 1; ibin <= hjets->GetXaxis ()->GetNbins (); ibin++)
         {
@@ -594,7 +593,6 @@ int main (int argc, char *argv[])
           label += (ibin - 1);
           hjets   ->GetXaxis()->SetBinLabel(ibin, label);
           hbtags  ->GetXaxis()->SetBinLabel(ibin, label);
-          hbtagsJP->GetXaxis()->SetBinLabel(ibin, label);
         }
      
       mon.addHistogram (new TH1D (icat + "mindphijmet",    ";min #Delta#phi(jet,E_{T}^{miss});Events",     40,    0.,    4.  ));
@@ -1222,7 +1220,6 @@ int main (int argc, char *argv[])
       // Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
       pat::JetCollection
         selJets, selBJets;
-      int njets (0), nbtags (0), nbtagsJP (0);
       double mindphijmet (9999.);
       for (size_t ijet = 0; ijet < jets.size(); ++ijet)
         {
@@ -1260,7 +1257,6 @@ int main (int argc, char *argv[])
           if (minDRlj < 0.4) continue;
           
           selJets.push_back(jet);
-          njets++;
           
           double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
@@ -1275,7 +1271,6 @@ int main (int argc, char *argv[])
             }
           
           if(!hasCSVtag) continue;
-          nbtags++;
           selBJets.push_back(jet);
         }
 
