@@ -25,8 +25,13 @@ if [ "${1}" = "submit" ]; then
     elif [ "${2}" = "chhiggs" ]; then
         JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
     fi
-    
-    runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -f 8 -s ${QUEUE}
+
+    RESUBMIT=""
+    if [ "${3}" = "resubmit" ]; then
+        RESUBMIT=" -F "
+    fi
+
+    runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 -s ${QUEUE}
 
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
