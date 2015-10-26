@@ -51,6 +51,7 @@ runProcess = cms.PSet(
     dtag  = cms.string("@dtag"),
     input = cms.untracked.vstring("@input"),
     outfile = cms.string("@outfile"),
+    summaryfile = cms.string(""),    
     isMC = cms.bool(@isMC),
     triggerstudy = cms.bool(@trig),
     xsec = cms.double(@xsec),
@@ -94,6 +95,7 @@ try:
     print inputFilesPfn
     runProcess.input = inputFilesPfn
     runProcess.outfile = cms.string("output.root")
+    runProcess.summaryfile = cms.string("minievents.root")
     process.source.fileNames = PSet.process.source.fileNames
 except:
     pass

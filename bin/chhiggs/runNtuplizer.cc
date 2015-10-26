@@ -343,7 +343,7 @@ int main (int argc, char *argv[])
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
 
   TString outUrl = runProcess.getParameter<std::string>("outfile");
-  
+ 
   // Good lumi mask
   lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
@@ -434,6 +434,8 @@ int main (int argc, char *argv[])
   if(saveSummaryTree)
     {
       TDirectory* cwd = gDirectory;
+      TString outSummaryUrl = runProcess.getParameter<std::string>("summaryfile");
+      if(outSummaryUrl=="") outSummaryUrl=outUrl;
       std::string summaryFileName(outUrl); 
       summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
       
