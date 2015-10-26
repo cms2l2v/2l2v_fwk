@@ -246,7 +246,7 @@ def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
    if Jobs_CRABLFN == '':
        config_file.write('#config.Data.outLFNDirBase = \'/store/user/<username>/Debug\'\n')
    else:
-       config_file.write('config.Data.outLFNDirBase = \'/store/user/<username>/'+Jobs_CRABLFN+'\'\n')
+       config_file.write('config.Data.outLFNDirBase = \'/store/user/'+commands.getstatusoutput("whoami")[1]+'/'+Jobs_CRABLFN+'\'\n')
    config_file.write('\n')
    config_file.write('config.section_("Site")\n')
    config_file.write('config.Site.storageSite = "'+Jobs_CRABStorageSite+'"\n')
