@@ -135,6 +135,7 @@ LaunchOnCondor.Jobs_InitCmds       = ['ulimit -c 0;']  #disable production of co
 LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 LaunchOnCondor.Jobs_LocalNJobs     = opt.localnfiles
 LaunchOnCondor.Jobs_CRABLFN        = opt.crablfn
+LaunchOnCondor.Jobs_ProxyDir       = FarmDirectory+"/inputs/" 
 #define local site
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
