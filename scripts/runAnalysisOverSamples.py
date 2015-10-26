@@ -164,6 +164,7 @@ for procBlock in procList :
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])
             suffix = str(getByLabel(procData,'suffix' ,""))
+            split=getByLabel(procData,'split',-1)
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
             ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
@@ -228,7 +229,7 @@ for procBlock in procList :
                           if(split>0):
                               LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
                           else:
-                              LaunchOnCondor.Jobs_CRABUnitPerJob = DefaultNFilesPerJob
+                              LaunchOnCondor.Jobs_CRABUnitPerJob = int(opt.NFile)
                        LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
                LaunchOnCondor.SendCluster_Submit()
