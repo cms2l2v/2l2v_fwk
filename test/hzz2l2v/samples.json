@@ -169,7 +169,7 @@
       "data":[
         { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.288      , "br":[0.272, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
-    }
+    },
     {
       "tag":"ggH(1000)#rightarrow ZZ",
       "isinvisible":false,
