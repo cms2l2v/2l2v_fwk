@@ -42,7 +42,9 @@ Jobs_CRABStorageSite = 'T2_BE_UCL'
 Jobs_CRABname      = Jobs_CRABexe
 Jobs_CRABInDBS     = "global"
 Jobs_CRABUnitPerJob = 10
+Jobs_CRABLFN = ''
 Jobs_List = []
+Jobs_LocalNJobs = 8
 
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
@@ -230,8 +232,8 @@ def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
    config_file.write('config.JobType.psetName = "'+Jobs_CRABcfgFile+'"\n')
    config_file.write('config.JobType.scriptExe = "%s"\n' % exePath)
    config_file.write('config.JobType.sendPythonFolder = True\n')
-   config_file.write('config.JobType.inputFiles = ["'+os.path.expanduser("~/x509_user_proxy/x509_proxy")+'", os.environ["CMSSW_BASE"]+"/bin/"+os.environ["SCRAM_ARCH"]+"/'+Jobs_CRABexe+'"]\n')
-   config_file.write('config.JobType.outputFiles = ["output.root"]\n')
+   config_file.write('config.JobType.inputFiles = ["'+os.path.expanduser(Jobs_ProxyDir+"/x509_proxy")+'", os.environ["CMSSW_BASE"]+"/bin/"+os.environ["SCRAM_ARCH"]+"/'+Jobs_CRABexe+'"]\n')
+   config_file.write('config.JobType.outputFiles = ["output.root","minievents.root"]\n')
    config_file.write('\n')
    config_file.write('config.section_("Data")\n')
    config_file.write('config.Data.inputDataset = '+Jobs_CRABDataset+'\n')
@@ -241,7 +243,11 @@ def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
    config_file.write('config.Data.publication = False\n')
    config_file.write('#config.Data.publishDBS = \'phys03\'\n')
    config_file.write('config.Data.ignoreLocality = False\n')
-   config_file.write('#config.Data.outLFN = \'/store/user/<username>/Debug\'\n')
+   if Jobs_CRABLFN == '':
+       config_file.write('#config.Data.outLFNDirBase = \'/store/user/<username>/Debug\'\n')
+   else:
+       config_file.write('config.Data.outLFNDirBase = \'/store/user/'+commands.getstatusoutput("whoami")[1]+'/'+Jobs_CRABLFN+'\'\n')
+       print 'config.Data.outLFNDirBase = \'/store/user/'+commands.getstatusoutput("whoami")[1]+'/'+Jobs_CRABLFN+'\'\n'
    config_file.write('\n')
    config_file.write('config.section_("Site")\n')
    config_file.write('config.Site.storageSite = "'+Jobs_CRABStorageSite+'"\n')
@@ -311,7 +317,7 @@ def AddJobToCmdFile():
 	       cmd_file.write(temp)
 	elif subTool=='qsub':
                 queue = ""
-                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )!=0): queue = ' -q localgrid@cream02 '
+                if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0): queue = ' -q localgrid@cream02 '
 
                 absoluteShellPath = Path_Shell;
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/" + absoluteShellPath
@@ -375,8 +381,11 @@ def SendCluster_Create(FarmDirectory, JobName):
 
 	#determine what is the submission system available, or use condor
         if(subTool==''):
-  	   if(  commands.getstatusoutput("bjobs"      )[1].find("command not found")<0): subTool = 'bsub'
-           elif(commands.getstatusoutput("qsub"       )[1].find("command not found")<0): subTool = 'qsub'
+           qbatchTestCommand="qsub"
+           if( commands.getstatusoutput("ls /gstore/t3cms" )[1].find("store")==0): qbatchTestCommand="qstat"
+
+  	   if(  commands.getstatusoutput("bjobs"          )[1].find("command not found")<0): subTool = 'bsub'
+           elif(commands.getstatusoutput(qbatchTestCommand)[1].find("command not found")<0): subTool = 'qsub'
            else:                                                                         subTool = 'condor'
         if(Jobs_Queue.find('crab')>=0):                                                  subTool = 'crab'
         if(Jobs_Queue.find('criminal')>=0):                                              subTool = 'criminal'
@@ -432,7 +441,7 @@ def SendCluster_Submit():
 
 def SendCluster_CriminalSubmit():
     from multiprocessing import Pool
-    pool = Pool(8)
+    pool = Pool(Jobs_LocalNJobs)
     pool.map(ShellRun, Jobs_List)
 
 

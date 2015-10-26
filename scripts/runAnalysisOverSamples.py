@@ -86,6 +86,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          NFilesPerJob = max(1,len(list)/split)
       else:
          NFilesPerJob = DefaultNFilesPerJob
+
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
          for f in list[g:g+NFilesPerJob]:
@@ -116,6 +117,8 @@ parser.add_option('-r', "--report"     ,    dest='report'             , help='If
 parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'  , default=DatasetFileDB)
 parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'             , default=False, action="store_true")
 parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)', default=5)
+parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally', default=8)
+parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'  , default='')
 
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
@@ -130,7 +133,9 @@ LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.Jobs_EmailReport    = opt.report
 LaunchOnCondor.Jobs_InitCmds       = ['ulimit -c 0;']  #disable production of core dump in case of job crash
 LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
-
+LaunchOnCondor.Jobs_LocalNJobs     = opt.localnfiles
+LaunchOnCondor.Jobs_CRABLFN        = opt.crablfn
+LaunchOnCondor.Jobs_ProxyDir       = FarmDirectory+"/inputs/" 
 #define local site
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
@@ -160,6 +165,7 @@ for procBlock in procList :
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])
             suffix = str(getByLabel(procData,'suffix' ,""))
+            split=getByLabel(procData,'split',-1)
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
             ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
@@ -221,7 +227,10 @@ for procBlock in procList :
                               LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
                           LaunchOnCondor.Jobs_CRABname     = dtag
                           LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
-                          LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
+                          if(split>0):
+                              LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
+                          else:
+                              LaunchOnCondor.Jobs_CRABUnitPerJob = int(opt.NFile)
                        LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
                LaunchOnCondor.SendCluster_Submit()

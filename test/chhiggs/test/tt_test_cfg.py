@@ -10,7 +10,6 @@ LumiList.LumiList().getVLuminosityBlockRange()
 process.source = cms.Source("PoolSource", fileNames =  cms.untracked.vstring('') )
 from RecoJets.JetProducers.PileupJetIDParams_cfi import cutbased as pu_jetid
 
-
 ###### Electron VID
 from RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Spring15_25ns_V1_cff import *
 
@@ -37,7 +36,7 @@ datapileup_70300_2012abcd=cms.vdouble(8.09479e-06,5.64253e-05,0.000234438,0.0007
 datapileup_70300_2012abcd_singleMu=cms.vdouble( 1.74887e-05, 8.41971e-05, 0.000287341, 0.000803268, 0.00187968, 0.00377078, 0.0066576, 0.0105832, 0.0154249, 0.0209121, 0.0266813, 0.0323481, 0.0375723, 0.0421003, 0.0457791, 0.0485477, 0.0504145, 0.0514311, 0.0516703, 0.0512103, 0.0501269, 0.0484915, 0.046373, 0.0438405, 0.0409668, 0.0378292, 0.0345099, 0.0310934, 0.0276634, 0.0242989, 0.0210703, 0.0180364, 0.015242, 0.0127175, 0.0104787, 0.00852824, 0.00685803, 0.00545122, 0.00428495, 0.00333277, 0.00256669, 0.00195893, 0.00148318, 0.00111545, 0.00083458, 0.000622389, 0.000463664, 0.000345947, 0.000259249, 0.000195714, 0.000149271, 0.000115306, 9.03708e-05, 7.19217e-05, 5.81115e-05, 4.76144e-05, 3.94894e-05, 3.30754e-05, 2.79112e-05, 2.36762e-05, 2.01478e-05, 1.71707e-05, 1.4635e-05, 1.24614e-05, 1.05913e-05, 8.97977e-06, 7.59119e-06, 6.39635e-06, 5.37056e-06, 4.49252e-06, 3.74351e-06, 3.10699e-06, 2.56822e-06, 2.1141e-06, 1.73297e-06, 1.4145e-06, 1.14958e-06, 9.30199e-07, 7.49367e-07, 6.01001e-07, 4.79843e-07, 3.81374e-07, 3.01728e-07, 2.37618e-07, 1.86267e-07, 1.45337e-07, 1.12875e-07, 8.72566e-08, 6.71403e-08, 5.1423e-08, 3.9204e-08, 2.97519e-08, 2.24765e-08, 1.69039e-08, 1.26565e-08, 9.43474e-09, 7.00267e-09, 5.17537e-09, 3.80882e-09, 2.79153e-09)
 
 
-datapileup_200pb_2015bcd_ll_Preliminary = cms.vdouble(0, 169, 538, 1562, 3650, 7094, 11435, 16000, 19857, 21999, 22816, 22006, 19766, 17567, 14740, 12202, 10001, 8014, 6423, 4908, 3735, 2803, 2061, 1484, 1037, 688, 435, 293, 174, 117, 82, 39, 25, 14, 11, 5, 2, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  )
+datapileup_6pb_2015b_doubleMu_plus_doubleEl_LoicPreliminary = cms.vdouble(0.000000, 0.001143, 0.001715, 0.004573, 0.006573, 0.018005, 0.035153, 0.059446, 0.083167, 0.108317, 0.114033, 0.114033, 0.105744, 0.098600, 0.073450, 0.056588, 0.042584, 0.027436, 0.022578, 0.012003, 0.007431, 0.004001, 0.001429, 0.001143, 0.000000, 0.000857, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000, 0.000000)
 
 
 datapileup_40pb_2015b_singlemu_PietroPreliminary = cms.vdouble(0, 0.000810074, 0.000608754, 0.00108809, 0.00249253, 0.00551713, 0.0105118, 0.0185071, 0.0286402, 0.041285, 0.0545865, 0.066728, 0.0771487, 0.0843004, 0.0874832, 0.0865053, 0.0815586, 0.0744261, 0.0637849, 0.054203, 0.0435427, 0.0336157, 0.0249877, 0.0184448, 0.0129276, 0.00930386, 0.00608754, 0.00412227, 0.00258361, 0.00155783, 0.00104015, 0.000613547, 0.00038826, 0.000282807, 0.000139007, 8.14867e-05, 3.35533e-05, 3.35533e-05, 1.91733e-05, 4.79334e-06, 4.79334e-06, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -48,30 +47,30 @@ datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble( 3.9990
 
 
 runProcess = cms.PSet(
-    dtag  = cms.string("@dtag"),
-    input = cms.untracked.vstring("@input"),
-    outfile = cms.string("@outfile"),
-    summaryfile = cms.string(""),    
-    isMC = cms.bool(@isMC),
-    triggerstudy = cms.bool(@trig),
-    xsec = cms.double(@xsec),
-    suffix = cms.string("@suffix"), 
-    cprime = cms.double(@cprime),	
-    brnew = cms.double(@brnew),	
-    mctruthmode = cms.int32(@mctruthmode),
-    jacknife = cms.vint32(@jacknife,@jacks),
-    saveSummaryTree = cms.bool(@saveSummaryTree),
-    runSystematics = cms.bool(@runSystematics),
-    weightsFile = cms.vstring("@weightsFile"),
+    dtag  = cms.string("MC13TeV_TTJets_inclusive"),
+    input = cms.untracked.vstring("file:/afs/cern.ch/work/v/vischia/private/code/TT_TuneCUETP8M1_13TeV-powheg-pythia8_MINIAODSIM_74X_mcRun2_asymptotic_v2-v1_40000_021CEA7F-4672-E511-A487-B499BAAC04F0.root"),
+    outfile = cms.string("/afs/cern.ch/work/v/vischia/private/code/CMSSW_7_4_14/src/UserCode/llvv_fwk/Test_Data_RunD.root"),
+    isMC = cms.bool(True),
+    triggerstudy = cms.bool(False),
+    xsec = cms.double(831.76),
+    suffix = cms.string(""), 
+    cprime = cms.double(-1),	
+    brnew = cms.double(-1),	
+    mctruthmode = cms.int32(0),
+    jacknife = cms.vint32(0,0),
+    saveSummaryTree = cms.bool(False),
+    runSystematics = cms.bool(False),
+    weightsFile = cms.vstring(""),
+    muscleDir = cms.string("${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/"),
     dirName = cms.string("dataAnalyzer"),
-    useMVA = cms.bool(@useMVA),
+    useMVA = cms.bool(False),
     tmvaInput = mySignalMVA,
-    muscleDir =  cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/'),
-    jecDir = cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/25ns/'),
-    datapileup = datapileup_200pb_2015bcd_ll_Preliminary, 
+    jecDir = cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/25ns'),
+    #datapileup = datapileup_6pb_2015b_doubleMu_plus_doubleEl_LoicPreliminary,
+    datapileup = datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary, 
     datapileupSingleLep = datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary,
-    debug = cms.bool(False),
-    lumisToProcess = LumiList.LumiList(filename = @lumiMask).getVLuminosityBlockRange(),
+    debug = cms.bool(True),
+    lumisToProcess = LumiList.LumiList(filename = "").getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),
     electronidparas = cms.PSet(myVidElectronId),
     maxevents = cms.int32(-1) # set to -1 when running on grid. 
@@ -95,7 +94,6 @@ try:
     print inputFilesPfn
     runProcess.input = inputFilesPfn
     runProcess.outfile = cms.string("output.root")
-    runProcess.summaryfile = cms.string("minievents.root")
     process.source.fileNames = PSet.process.source.fileNames
 except:
     pass

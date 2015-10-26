@@ -331,9 +331,11 @@ int main (int argc, char *argv[])
   TString dtag         = runProcess.getParameter<std::string>("dtag");
   
   const edm::ParameterSet& myVidElectronIdConf = runProcess.getParameterSet("electronidparas");
-  const edm::ParameterSet& myVidElectronIdWPConf = myVidElectronIdConf.getParameterSet("tight");
+  const edm::ParameterSet& myVidElectronMainIdWPConf = myVidElectronIdConf.getParameterSet("tight");
+  const edm::ParameterSet& myVidElectronVetoIdWPConf = myVidElectronIdConf.getParameterSet("loose");
   
-  VersionedPatElectronSelector electronVidId(myVidElectronIdWPConf);
+  VersionedPatElectronSelector electronVidMainId(myVidElectronMainIdWPConf);
+  VersionedPatElectronSelector electronVidVetoId(myVidElectronVetoIdWPConf);
   
   TString suffix = runProcess.getParameter < std::string > ("suffix");
   std::vector < std::string > urls = runProcess.getUntrackedParameter < std::vector < std::string > >("input");
@@ -426,22 +428,22 @@ int main (int argc, char *argv[])
   //((TH1F*)mon.addHistogram( new TH1D( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,1500) ))->Fill(-1.0,0.0001);
   
   // ensure proper normalization
-  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Nev", 5, 0., 5.));
+  TH1D* normhist = (TH1D*) mon.addHistogram(new TH1D("initNorm", ";;Events", 5, 0., 5.));
   normhist->GetXaxis()->SetBinLabel (1, "Gen. Events");
   normhist->GetXaxis()->SetBinLabel (2, "Events");
   normhist->GetXaxis()->SetBinLabel (3, "PU central");
   normhist->GetXaxis()->SetBinLabel (4, "PU up");
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
-  //event selection
-  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("eventflow", ";;Events", 6, 0., 6.));
+  //event selection - charged Higgs
+  TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("chhiggseventflowdilep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (5, "op. sign");
   h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram(new TH1D ("alteventflow", ";;Events", 8, 0., 8.));
+  h = (TH1D*) mon.addHistogram(new TH1D ("chhiggsalteventflowdilep", ";;Events", 8, 0., 8.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
@@ -450,14 +452,14 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (6, "= 0 b-tags");
   h->GetXaxis()->SetBinLabel (7, "= 1 b-tags");
   h->GetXaxis()->SetBinLabel (8, "#geq 2 b-tags");
-  h = (TH1D*) mon.addHistogram(new TH1D ("eventflowslep", ";;Events", 6, 0., 6.));
+  h = (TH1D*) mon.addHistogram(new TH1D ("chhiggseventflowslep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
-  h = (TH1D*) mon.addHistogram(new TH1D("alteventflowslep", ";;Events", 7, 0., 7.));
+  h = (TH1D*) mon.addHistogram(new TH1D("chhiggsalteventflowslep", ";;Events", 7, 0., 7.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (3, "1 #tau");
@@ -466,12 +468,30 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (6, "= 1 b-tags");
   h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
 
+  // event selection - cross section
+  h = (TH1D*) mon.addHistogram(new TH1D ("xseceventflow", ";;Events", 6, 0., 6.));
+  h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
+  h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
+  h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
+  h->GetXaxis()->SetBinLabel (5, "1 #tau");
+  h->GetXaxis()->SetBinLabel (6, "op. sign");
+  h = (TH1D*) mon.addHistogram(new TH1D("xsecalteventflow", ";;Events", 7, 0., 7.));
+  h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
+  h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (3, "1 #tau");
+  h->GetXaxis()->SetBinLabel (4, "op. sign");
+  h->GetXaxis()->SetBinLabel (5, "= 0 b-tags");
+  h->GetXaxis()->SetBinLabel (6, "= 1 b-tags");
+  h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
+
+
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup"         , ";;Events", 100, 0., 100.));
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 100, 0., 100.));
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup" , ";;Events", 100, 0., 100.));
 
   
-  // Setting up control categories
+  // Setting up control categories to be analyzed
   std::vector < TString > controlCats;
   controlCats.clear ();
   controlCats.push_back("step1");
@@ -562,7 +582,6 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D(icat+"cenjeteta",     ";Pseudo-rapidity;Events",            60, 0.,    3. ));
       
       TH1* hbtags   = mon.addHistogram(new TH1D(icat+"nbtags",   ";b-tag multiplicity;Events", 5, 0., 5. ));
-      TH1* hbtagsJP = mon.addHistogram(new TH1D(icat+"nbtagsJP", ";b-tag multiplicity;Events", 5, 0., 5. ));
       TH1* hjets    = mon.addHistogram(new TH1D(icat+"njets",    ";Jet multiplicity;Events",   6, 0., 6. ));
       for (int ibin = 1; ibin <= hjets->GetXaxis ()->GetNbins (); ibin++)
         {
@@ -574,7 +593,6 @@ int main (int argc, char *argv[])
           label += (ibin - 1);
           hjets   ->GetXaxis()->SetBinLabel(ibin, label);
           hbtags  ->GetXaxis()->SetBinLabel(ibin, label);
-          hbtagsJP->GetXaxis()->SetBinLabel(ibin, label);
         }
      
       mon.addHistogram (new TH1D (icat + "mindphijmet",    ";min #Delta#phi(jet,E_{T}^{miss});Events",     40,    0.,    4.  ));
@@ -667,30 +685,31 @@ int main (int argc, char *argv[])
   LeptonEfficiencySF lepEff;
   
   // b-tagging 
-  // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X50ns
-  
-  //b-tagging: beff and leff must be derived from the MC sample using the discriminator vs flavor
-  //the scale factors are taken as average numbers from the pT dependent curves see:
-  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
-  BTagSFUtil btsfutil;
-  double beff(0.68), sfb(0.99), sfbunc(0.015);
-  double leff(0.13), sfl(1.05), sflunc(0.12);
+  // Prescriptions taken from: https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation74X
 
   // b-tagging working points for 50ns 
   //   (pfC|c)ombinedInclusiveSecondaryVertexV2BJetTags
   //      v2CSVv2L 0.605
   //      v2CSVv2M 0.890
   //      v2CSVv2T 0.970
+  double
+    btagLoose(0.605),
+    btagMedium(0.890),
+    btagTight(0.970);
+
+  //b-tagging: scale factors
+  //beff and leff must be derived from the MC sample using the discriminator vs flavor
+  //the scale factors are taken as average numbers from the pT dependent curves see:
+  //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript
+  BTagSFUtil btsfutil;
+  double beff(0.68), sfb(0.99), sfbunc(0.015);
+  double leff(0.13), sfl(1.05), sflunc(0.12);
+
 
   // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
   sfb = 0.861;
   // sbbunc =;
   beff = 0.559;
-
-  double
-    btagLoose(0.605),
-    btagMedium(0.890),
-    btagTight(0.970);
 
 
   TString
@@ -820,17 +839,15 @@ int main (int argc, char *argv[])
         if(isMC)
           {
             int ngenITpu = 0;
-            // if(debug) cout << "Now evaluating the pileup weight... ";
-            // fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
-            // puInfoH.getByLabel (ev, "addPileupInfo");
-            // for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
-            //   {
-            //     if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
-            //   }
-            //
-            ngenITpu = nGoodPV;
+            fwlite::Handle < std::vector < PileupSummaryInfo > >puInfoH;
+            puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
+            for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
+              {
+                if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+              }
+            
+            //ngenITpu = nGoodPV; // based on nvtx
             puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
-            if(debug) cout << "Pileup weight: " << puWeight;
             weight *= puWeight;//Weight; //* puWeight;
             TotalWeight_plus =  PuShifters[utils::cmssw::PUUP]  ->Eval (ngenITpu) * (PUNorm[2]/PUNorm[0]);
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
@@ -844,12 +861,7 @@ int main (int argc, char *argv[])
         mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
         
         //##############################################   EVENT LOOP STARTS   ##############################################
-        // Not needed anymore with the current way of looping. ev.to(iev);              //load the event content from the EDM file
-        //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
-        
-        
-        if(debug) cout << "Run: " << ev.eventAuxiliary().run() << " isMC: " << isMC << ", isPromptReco: " << isPromptReco << ", decision word: " << patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) << endl;
-        
+
         // Orthogonalize Run2015B PromptReco+17Jul15 mix
         if(isRun2015B)
           {
@@ -865,21 +877,29 @@ int main (int argc, char *argv[])
           cout << "Trigger is not valid" << endl;
           return false;
         }
-        if(debug && iev==1 ){
+        
+        if(debug){
           cout << "Printing trigger list" << endl;
           for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
             cout << *trnames << endl;
           cout << "----------- End of trigger list ----------" << endl;
+          return 0;
         }
-        
+
+        // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         bool eTrigger    (
                           isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
+                          utils::passTriggerPatterns (tr, "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*")
                           :
-                          utils::passTriggerPatterns (tr, "HLT_Ele27_WPLoose_Gsf_v*", "HLT_Ele27_eta2p1_WPLoose_Gsf_v*" )
+                          utils::passTriggerPatterns (tr, "HLT_Ele23_WPLoose_Gsf_v*")
                           );
-        bool muTrigger   (utils::passTriggerPatterns (tr, "HLT_IsoMu20_eta2p1_v*")                                                                                   );
-        
+        bool muTrigger   (
+                          isMC ? 
+                          utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_v*")
+                          :
+                          utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*")
+                          );
+
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
         if(!isMC && eTrigger)  mon.fillHisto("nvtx_singlee_pileup",  tags, nGoodPV, 1.);
         
@@ -1071,36 +1091,34 @@ int main (int argc, char *argv[])
         for(size_t l=0; l<electrons.size(); ++l) leptons.push_back(patUtils::GenericLepton (electrons[l] ));
         for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
         std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
-        
-        //// Acquire electron ID
-        //patUtils::ElectronId elMainId(ev, patUtils::llvvElecId::Tight);
-        //patUtils::ElectronId elVetoId(ev, patUtils::llvvElecId::Loose);
-        
+
         LorentzVector muDiff(0., 0., 0., 0.);
         std::vector<patUtils::GenericLepton> selLeptons;
         unsigned int nVetoE(0), nVetoMu(0);
         for(size_t ilep=0; ilep<leptons.size (); ++ilep)
           {
+            patUtils::GenericLepton& lepton = leptons[ilep];
+
             bool 
               passKin(true),     passId(true),     passIso(true),
               passVetoKin(true), passVetoId(true), passVetoIso(true);
             
-            int lid(leptons[ilep].pdgId());
+            int lid(lepton.pdgId());
             
             //apply muon corrections
             if(abs(lid) == 13)
             {
               if(muCor)
                 {
-                  TLorentzVector p4(leptons[ilep].px(), leptons[ilep].py(), leptons[ilep].pz(), leptons[ilep].energy());
+                  TLorentzVector p4(lepton.px(), lepton.py(), lepton.pz(), lepton.energy());
                   muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
                   if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
-                  muDiff -= leptons[ilep].p4();
-                  leptons[ilep].setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
-                  muDiff += leptons[ilep].p4();
+                  muDiff -= lepton.p4();
+                  lepton.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
+                  muDiff += lepton.p4();
                 }
             }
-          
+            
           //no need for charge info any longer
           lid = abs(lid);
           TString lepStr(lid == 13 ? "mu" : "e");
@@ -1112,15 +1130,15 @@ int main (int argc, char *argv[])
           // no need to mess with photon ID // if(minDRlg<0.1) continue;
           
           //kinematics
-          double leta(fabs(lid==11 ? leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta()));
+          double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
           
           // Main leptons kin
-          if(leptons[ilep].pt() < 30.)                      passKin = false;
+          if(lepton.pt() < 30.)                      passKin = false;
           if(leta > 2.1)                                    passKin = false;
           if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
           
           // Veto leptons kin
-          if (leptons[ilep].pt () < 20)                      passVetoKin = false;
+          if (lepton.pt () < 20)                      passVetoKin = false;
           if (leta > 2.1)                                    passVetoKin = false;
           if (lid == 11 && (leta > 1.4442 && leta < 1.5660)) passVetoKin = false; // Crack veto
           
@@ -1129,16 +1147,14 @@ int main (int argc, char *argv[])
           //std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
           
           
-          passId = lid == 11 ? patUtils::passId(electronVidId, myEvent, leptons[ilep].el) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
-
-          //passId          = lid == 11 ? (leptons[ilep].el.electronID(electronIdMainTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdTight);
-          passVetoId      = lid == 11 ? (leptons[ilep].el.electronID(electronIdVetoTag)==7) : patUtils::passId(leptons[ilep].mu, goodPV, patUtils::llvvMuonId::StdLoose);
+          passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+          passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
           //isolation
-          passIso     = lid == 11 ? true : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
-          passVetoIso = lid == 11 ? true : patUtils::passIso (leptons[ilep].mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
+          passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
+          passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
 
-          if     (passKin     && passId     && passIso)     selLeptons.push_back(leptons[ilep]);
+          if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
           else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
           
         }
@@ -1151,7 +1167,7 @@ int main (int argc, char *argv[])
       int ntaus (0);
       for (size_t itau = 0; itau < taus.size(); ++itau)
         {
-          pat::Tau & tau = taus[itau];
+          pat::Tau& tau = taus[itau];
           if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
           
           bool overlapWithLepton(false);
@@ -1168,7 +1184,7 @@ int main (int argc, char *argv[])
           if(tau.tauID("decayModeFindingNewDMs")<0.5) continue; // High pt tau. Otherwise, OldDMs
           // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
           // Consequently, there might be a small bias due to events that are cut by the OldDM and would not be cut by the NewDM
-          if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue;
+          if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue; // See whether to us the new byMediumPileupWeightedIsolation3Hits that is available only for dynamic strip reconstruction (default in CMSSW_7_4_14)
           if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
           if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
           
@@ -1204,11 +1220,10 @@ int main (int argc, char *argv[])
       // Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
       pat::JetCollection
         selJets, selBJets;
-      int njets (0), nbtags (0), nbtagsJP (0);
       double mindphijmet (9999.);
       for (size_t ijet = 0; ijet < jets.size(); ++ijet)
         {
-          pat::Jet jet = jets[ijet];
+          pat::Jet& jet = jets[ijet];
           
           if (jet.pt() < 15 || fabs (jet.eta()) > 3.0) continue; // Was 4.7 in eta. Tightened for computing time. 3.0 ensures that we don't cut associations with leptons (0.4 from 2.4)
           
@@ -1242,7 +1257,6 @@ int main (int argc, char *argv[])
           if (minDRlj < 0.4) continue;
           
           selJets.push_back(jet);
-          njets++;
           
           double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
@@ -1257,7 +1271,6 @@ int main (int argc, char *argv[])
             }
           
           if(!hasCSVtag) continue;
-          nbtags++;
           selBJets.push_back(jet);
         }
 
@@ -1285,7 +1298,7 @@ int main (int argc, char *argv[])
       if(selLeptons.size()>0)
         slepId=selLeptons[0].pdgId();
       
-      // Event classification. Single lepton triggers are used for offline selection of dilepton events.
+      // Event classification. Single lepton triggers are used for offline selection of dilepton events. The "else if"s guarantee orthogonality
       bool 
         isSingleMu(false),
         isSingleE(false),
@@ -1330,26 +1343,26 @@ int main (int argc, char *argv[])
        
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats; ctrlCats.clear ();
-                                                                                                 { ctrlCats.push_back("step1"); mon.fillHisto("eventflow", tags, 0, weight); }
-        if(passMllVeto   )                                                                       { ctrlCats.push_back("step2"); mon.fillHisto("eventflow", tags, 1, weight); }
-        if(passMllVeto && passJetSelection )                                                     { ctrlCats.push_back("step3"); mon.fillHisto("eventflow", tags, 2, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back("step4"); mon.fillHisto("eventflow", tags, 3, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS )                       { ctrlCats.push_back("step5"); mon.fillHisto("eventflow", tags, 4, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection ) { ctrlCats.push_back("step6"); mon.fillHisto("eventflow", tags, 5, weight); }
+                                                                                                 { ctrlCats.push_back("step1"); mon.fillHisto("xseceventflowdilep", tags, 0, weight); mon.fillHisto("chhiggseventflowdilep", tags, 0, weight); }
+        if(passMllVeto   )                                                                       { ctrlCats.push_back("step2"); mon.fillHisto("xseceventflowdilep", tags, 1, weight); mon.fillHisto("chhiggseventflowdilep", tags, 1, weight); }
+        if(passMllVeto && passJetSelection )                                                     { ctrlCats.push_back("step3"); mon.fillHisto("xseceventflowdilep", tags, 2, weight); mon.fillHisto("chhiggseventflowdilep", tags, 2, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection )                                 { ctrlCats.push_back("step4"); mon.fillHisto("xseceventflowdilep", tags, 3, weight); mon.fillHisto("chhiggseventflowdilep", tags, 3, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS )                       { ctrlCats.push_back("step5"); mon.fillHisto("xseceventflowdilep", tags, 4, weight); mon.fillHisto("chhiggseventflowdilep", tags, 4, weight); }
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection ) { ctrlCats.push_back("step6"); mon.fillHisto("xseceventflowdilep", tags, 5, weight); mon.fillHisto("chhiggseventflowdilep", tags, 5, weight); }
         
 
         bool passBtagsSelection_0(selBJets.size()==0);
         bool passBtagsSelection_1(selBJets.size()==1);
         bool passBtagsSelection_2(selBJets.size()>1);
 
-                                                                                                   { ctrlCats.push_back("altstep1"); mon.fillHisto("alteventflow", tags, 0, weight); }
-        if(passMllVeto   )                                                                         { ctrlCats.push_back("altstep2"); mon.fillHisto("alteventflow", tags, 1, weight); }
-        if(passMllVeto && passJetSelection )                                                       { ctrlCats.push_back("altstep3"); mon.fillHisto("alteventflow", tags, 2, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection )                                   { ctrlCats.push_back("altstep4"); mon.fillHisto("alteventflow", tags, 3, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS )                         { ctrlCats.push_back("altstep5"); mon.fillHisto("alteventflow", tags, 4, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_0 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflow", tags, 5, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_1 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflow", tags, 5, weight); }
-        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_2 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflow", tags, 5, weight); }
+                                                                                                   { ctrlCats.push_back("altstep1"); mon.fillHisto("xsecalteventflowdilep", tags, 0, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 0, weight);}
+        if(passMllVeto   )                                                                         { ctrlCats.push_back("altstep2"); mon.fillHisto("xsecalteventflowdilep", tags, 1, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 1, weight);}
+        if(passMllVeto && passJetSelection )                                                       { ctrlCats.push_back("altstep3"); mon.fillHisto("xsecalteventflowdilep", tags, 2, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 2, weight);}
+        if(passMllVeto && passJetSelection && passMetSelection )                                   { ctrlCats.push_back("altstep4"); mon.fillHisto("xsecalteventflowdilep", tags, 3, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 3, weight);}
+        if(passMllVeto && passJetSelection && passMetSelection && passOS )                         { ctrlCats.push_back("altstep5"); mon.fillHisto("xsecalteventflowdilep", tags, 4, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 4, weight);}
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_0 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowdilep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 5, weight);}
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_1 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowdilep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 5, weight);}
+        if(passMllVeto && passJetSelection && passMetSelection && passOS && passBtagsSelection_2 ) { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowdilep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowdilep", tags, 5, weight);}
         
 
         // Fill the control plots
@@ -1619,25 +1632,25 @@ int main (int argc, char *argv[])
         // Setting up control categories and fill up event flow histo
         std::vector < TString > ctrlCats;
         ctrlCats.clear ();
-                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("eventflowslep", tags, 0, weight); }
-        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("eventflowslep", tags, 1, weight); }
-        if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("eventflowslep", tags, 2, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("eventflowslep", tags, 3, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("eventflowslep", tags, 4, weight); }
-        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("eventflowslep", tags, 5, weight); }
+                                                                                                      { ctrlCats.push_back ("step1"); mon.fillHisto("xseceventflowslep", tags, 0, weight); mon.fillHisto("chhiggseventflowslep", tags, 0, weight); }
+        if(passJetSelection   )                                                                       { ctrlCats.push_back ("step2"); mon.fillHisto("xseceventflowslep", tags, 1, weight); mon.fillHisto("chhiggseventflowslep", tags, 1, weight); }
+        if(passJetSelection && passMetSelection )                                                     { ctrlCats.push_back ("step3"); mon.fillHisto("xseceventflowslep", tags, 2, weight); mon.fillHisto("chhiggseventflowslep", tags, 2, weight); }
+        if(passJetSelection && passMetSelection && passBtagsSelection )                               { ctrlCats.push_back ("step4"); mon.fillHisto("xseceventflowslep", tags, 3, weight); mon.fillHisto("chhiggseventflowslep", tags, 3, weight); }
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection )           { ctrlCats.push_back ("step5"); mon.fillHisto("xseceventflowslep", tags, 4, weight); mon.fillHisto("chhiggseventflowslep", tags, 4, weight); }
+        if(passJetSelection && passMetSelection && passBtagsSelection && passTauSelection && passOS ) { ctrlCats.push_back ("step6"); mon.fillHisto("xseceventflowslep", tags, 5, weight); mon.fillHisto("chhiggseventflowslep", tags, 5, weight); }
         
 
         bool passBtagsSelection_0(selSingleLepBJets.size()==0);
         bool passBtagsSelection_1(selSingleLepBJets.size()==1);
         bool passBtagsSelection_2(selSingleLepBJets.size()>1);
 
-                                                                                    { ctrlCats.push_back("altstep1"); mon.fillHisto("alteventflowslep", tags, 0, weight); }
-        if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("alteventflowslep", tags, 1, weight); }
-        if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("alteventflowslep", tags, 2, weight); }
-        if(passMetSelection && passTauSelection && passOS)                          { ctrlCats.push_back("altstep4"); mon.fillHisto("alteventflowslep", tags, 3, weight); }
-        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("alteventflowslep", tags, 4, weight); }
-        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("alteventflowslep", tags, 5, weight); }
-        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("alteventflowslep", tags, 6, weight); }
+                                                                                    { ctrlCats.push_back("altstep1"); mon.fillHisto("xsecalteventflowslep", tags, 0, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 0, weight); }
+        if(passMetSelection)                                                        { ctrlCats.push_back("altstep2"); mon.fillHisto("xsecalteventflowslep", tags, 1, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 1, weight); }
+        if(passMetSelection && passTauSelection)                                    { ctrlCats.push_back("altstep3"); mon.fillHisto("xsecalteventflowslep", tags, 2, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 2, weight); }
+        if(passMetSelection && passTauSelection && passOS)                          { ctrlCats.push_back("altstep4"); mon.fillHisto("xsecalteventflowslep", tags, 3, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 3, weight); }
+        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_0)  { ctrlCats.push_back("altstep5"); mon.fillHisto("xsecalteventflowslep", tags, 4, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 4, weight); }
+        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_1)  { ctrlCats.push_back("altstep6"); mon.fillHisto("xsecalteventflowslep", tags, 5, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 5, weight); }
+        if(passMetSelection && passTauSelection && passOS && passBtagsSelection_2)  { ctrlCats.push_back("altstep7"); mon.fillHisto("xsecalteventflowslep", tags, 6, weight); mon.fillHisto("chhiggsalteventflowslep", tags, 6, weight); }
 
         // Fill the control plots
         for(size_t k=0; k<ctrlCats.size(); ++k){

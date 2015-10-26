@@ -5,8 +5,8 @@ JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
 
 OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/results_ttbar/
 
-#QUEUE="1nh"
-QUEUE="criminal"
+QUEUE="1nh"
+#QUEUE="criminal"
 #QUEUE="8nm"
 #QUEUE="crab"
 
@@ -24,10 +24,25 @@ if [ "${1}" = "submit" ]; then
         JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/ttbar_samples.json
     elif [ "${2}" = "chhiggs" ]; then
         JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
+    elif [ "${2}" = "ntuplizer" ]; then
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples.json
+    fi
+
+    RESUBMIT=""
+    if [ "${3}" = "resubmit" ]; then
+        RESUBMIT=" -F "
     fi
     
-    runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -f 8 -s ${QUEUE}
-
+    if [ "${2}" = "ntuplizer" ]; then
+        OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_ttbar/
+        mkdir -p ${OUTDIR}
+        QUEUE="crab"
+        LFNDIRBASE="ntuples_2015-10-26/"
+        runAnalysisOverSamples.py -e runNtuplizer -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -l ${LFNDIRBASE} -f 8 -s ${QUEUE}
+    else
+        runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 -s ${QUEUE}
+    fi
+    
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
     #cat ${OUTDIR}/*SingleMuon*.json > myjson.json
@@ -83,7 +98,7 @@ elif [ "${1}" = "plot" ]; then
     PSEUDODATA=" "
     
 #for LUMI in 500 1000 5000 10000
-    for LUMI in 16.1
+    for LUMI in 1280
     do
         DIR="${BASEDIR}${LUMI}/"
         if [ "${2}" = "chhiggs" ]; then
