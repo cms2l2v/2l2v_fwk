@@ -1,13 +1,13 @@
 {
   "proc":[
     {
-      "tag":"ZZ",
+      "tag":"ZZ#rightarrow 2l2#nu",
       "isdata":false,
       "color":592,
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_ZZ"                          ,  "xsec":15.4             , "br":[ 1.0 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"}
       ]
     },
     {
@@ -17,7 +17,17 @@
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_WW2l2nu"                      ,  "xsec":118.7       , "br":[ 0.01179 ]           , "dset":"/WWTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WW2l2nu"                      ,  "xsec":12.178       , "br":[ 1 ]           , "dset":"/WWTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    { 
+      "tag":"WZ#rightarrow 3l#nu",
+      "isdata":false,
+      "color":594,
+      "lcolor":1,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_WZ3lnu"                      ,  "xsec":4.42965       , "br":[ 1 ]           , "dset":"/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     { 
@@ -158,6 +168,33 @@
       "marker":1,
       "data":[
         { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.288      , "br":[0.272, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"ggH(1000)#rightarrow ZZ",
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":868,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.189      , "br":[0.272, 0.0135]    , "dset":"/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"qqH(1000)#rightarrow ZZ",
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":868,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,      "marker":1,      "data":[
+        { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.066      , "br":[0.311, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     }
   ]
