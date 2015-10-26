@@ -42,6 +42,7 @@ Jobs_CRABStorageSite = 'T2_BE_UCL'
 Jobs_CRABname      = Jobs_CRABexe
 Jobs_CRABInDBS     = "global"
 Jobs_CRABUnitPerJob = 10
+Jobs_CRABLFN = ''
 Jobs_List = []
 Jobs_LocalNJobs = 8
 
@@ -242,7 +243,10 @@ def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
    config_file.write('config.Data.publication = False\n')
    config_file.write('#config.Data.publishDBS = \'phys03\'\n')
    config_file.write('config.Data.ignoreLocality = False\n')
-   config_file.write('#config.Data.outLFN = \'/store/user/<username>/Debug\'\n')
+   if Jobs_CRABLFN == '':
+       config_file.write('#config.Data.outLFN = \'/store/user/<username>/Debug\'\n')
+   else:
+       config_file.write('config.Data.outLFN = \'/store/user/<username>/'+Jobs_CRABLFN+'\'\n')
    config_file.write('\n')
    config_file.write('config.section_("Site")\n')
    config_file.write('config.Site.storageSite = "'+Jobs_CRABStorageSite+'"\n')

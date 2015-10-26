@@ -117,6 +117,7 @@ parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB
 parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'             , default=False, action="store_true")
 parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)', default=5)
 parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally', default=8)
+parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'  , default='')
 
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
@@ -132,6 +133,7 @@ LaunchOnCondor.Jobs_EmailReport    = opt.report
 LaunchOnCondor.Jobs_InitCmds       = ['ulimit -c 0;']  #disable production of core dump in case of job crash
 LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 LaunchOnCondor.Jobs_LocalNJobs     = opt.localnfiles
+LaunchOnCondor.Jobs_CRABLFN        = opt.crablfn
 #define local site
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
