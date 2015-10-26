@@ -86,6 +86,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          NFilesPerJob = max(1,len(list)/split)
       else:
          NFilesPerJob = DefaultNFilesPerJob
+
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
          for f in list[g:g+NFilesPerJob]:
@@ -224,7 +225,10 @@ for procBlock in procList :
                               LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
                           LaunchOnCondor.Jobs_CRABname     = dtag
                           LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
-                          LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
+                          if(split>0):
+                              LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
+                          else:
+                              LaunchOnCondor.Jobs_CRABUnitPerJob = DefaultNFilesPerJob
                        LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
 
                LaunchOnCondor.SendCluster_Submit()
