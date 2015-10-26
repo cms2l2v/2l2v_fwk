@@ -381,8 +381,11 @@ def SendCluster_Create(FarmDirectory, JobName):
 
 	#determine what is the submission system available, or use condor
         if(subTool==''):
-  	   if(  commands.getstatusoutput("bjobs"      )[1].find("command not found")<0): subTool = 'bsub'
-           elif(commands.getstatusoutput("qstat"       )[1].find("command not found")<0): subTool = 'qsub'
+           qbatchTestCommand="qsub"
+           if( commands.getstatusoutput("ls /gstore/t3cms" )[1].find("store")==0): qbatchTestCommand="qstat"
+
+  	   if(  commands.getstatusoutput("bjobs"          )[1].find("command not found")<0): subTool = 'bsub'
+           elif(commands.getstatusoutput(qbatchTestCommand)[1].find("command not found")<0): subTool = 'qsub'
            else:                                                                         subTool = 'condor'
         if(Jobs_Queue.find('crab')>=0):                                                  subTool = 'crab'
         if(Jobs_Queue.find('criminal')>=0):                                              subTool = 'criminal'
