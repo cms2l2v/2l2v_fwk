@@ -4,6 +4,13 @@
 
 namespace patUtils
 {
+
+  bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el){
+    // This assumes an object to be created ( *before the event loop* ):
+    // VersionedPatElectronSelector loose_id("some_VID_tag_including_the_WP");
+    return id(el, event);
+  }
+  
   bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel){
     
     //for electron Id look here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
@@ -278,6 +285,13 @@ namespace patUtils
     
     return false; 
   }
+
+  bool passIso (VersionedPatElectronSelector id, pat::Electron& el){
+    // This assumes an object to be created ( *before the event loop* ):
+    // VersionedPatElectronSelector loose_id("some_VID_tag_including_the_WP");
+    return true; // Isolation is now embedded into the ID.
+  }
+
   
   bool passIso(pat::Electron& el, int IsoLevel, double rho){
           //https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2
@@ -518,23 +532,26 @@ namespace patUtils
     double jeta = j.eta();
 
     //Recommendation of HZZ :https://twiki.cern.ch/twiki/bin/view/CMS/HiggsZZ4l2015#Jets
+    //FIXME recommendation of HZZ are oudated (run 1)--->update them
+    //FIXME Progress: Partially done (removed the cuts at eta>2.75) but have to wait for improvements from JetMET group
+    //FIXME In miniAOD V2, the variable used is bugged ! Please avoir using it!
     float jpumva=0.;
     jpumva=j.userFloat("pileupJetId:fullDiscriminant");
 
     bool passPU = true;
     if(jpt>20){
       if(jeta>3.){
-        if(jpumva<=-0.45)passPU=false;
+        //if(jpumva<=-0.45)passPU=false;
       }else if(jeta>2.75){
-        if(jpumva<=-0.55)passPU=false;
+        //if(jpumva<=-0.55)passPU=false;
       }else if(jeta>2.5){
         if(jpumva<=-0.6)passPU=false;
       }else if(jpumva<=-0.63)passPU=false;
     }else{ //pt<20 : in the 2l2nu analysis, this means 15<pt<20
       if(jeta>3.){
-        if(jpumva<=-0.95)passPU=false;
+        //if(jpumva<=-0.95)passPU=false;
       }else if(jeta>2.75){
-        if(jpumva<=-0.94)passPU=false;
+        //if(jpumva<=-0.94)passPU=false;
       }else if(jeta>2.5){
         if(jpumva<=-0.96)passPU=false;
       }else if(jpumva<=-0.95)passPU=false;

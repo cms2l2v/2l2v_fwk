@@ -531,9 +531,12 @@ namespace utils
  
   bool isGoodVertex(reco::Vertex& vtx)
   {
-    if(vtx.ndof() <= 4)         return false;
-    if(abs(vtx.z())>24)         return false;
-    if(vtx.position().Rho() >2) return false;
+
+    if(vtx.chi2()==0 && vtx.ndof()==0) return false; // Corresponds to the AOD method vtx->isFake()  
+
+    if(vtx.ndof() < 4)            return false;
+    if(abs(vtx.z())>24.)          return false;
+    if(vtx.position().Rho() >2.0) return false;
     // else
     return true;
   }

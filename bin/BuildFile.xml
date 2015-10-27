@@ -7,6 +7,7 @@
 <use name="TauAnalysis/SVfitStandalone"/>
 <use name="RecoJets/JetProducers"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
+<use name="RecoEgamma/ElectronIdentification"/>
 
 <environment>
 <!-- Common tools and examples -->
@@ -16,10 +17,12 @@
   <bin name="runPlotter"                  file="common/runPlotter.cc"></bin> 
   <bin name="runPLRanalysis"              file="common/runPLRanalysis.cc"></bin>
   <bin name="computeLeptonEfficency"      file="common/computeLeptonEfficency.cc"></bin>
+  <bin name="runEfficencyMiniAODExample"  file="common/runEfficencyMiniAODExample.cc"></bin>
 
 <!-- Analysis specific code (please keep that in subdirectories and refer to test/<subdir> for instructions) -->
+  <bin name="runNtuplizer"                file="chhiggs/runNtuplizer.cc"></bin>
   <bin name="runChHiggsAnalysis"          file="chhiggs/runAnalysis.cc"></bin>
-  <bin name="runLeptonEffStudy"           file="chhiggs/runLeptonEffStudy.cc"></bin>
+<!--  <bin name="runLeptonEffStudy"           file="chhiggs/runLeptonEffStudy.cc"></bin> temporarily deactivated-->
   <bin name="runFixedPlotter"             file="chhiggs/runFixedPlotter.cc"></bin> 
   <bin name="fitTTbarCrossSection"        file="chhiggs/fitTTbarCrossSection.cc"></bin>
 <!--  <bin name="runTtHMuMuAnalysis"          file="tthmumu/runAnalysis.cc"></bin>-->
