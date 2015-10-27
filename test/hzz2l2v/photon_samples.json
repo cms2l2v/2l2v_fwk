@@ -1,0 +1,27 @@
+{
+  "proc":[
+    {
+    "tag":"Z#rightarrow ll",    
+    "mctruthmode":0,
+    "isdata":false,  
+    "color":831,                                                                                                                         
+    "lcolor":1,                                                                                                                    
+    "data":[ { "dtag":"MC13TeV_DYJetsToLL_50toInf", "xsec":4016.8 , "br":[ 1.0 ] , 
+               "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+    ]
+    },     
+    {                                                                                                                                       
+    "tag":"G+jet",
+    "mctruthmode":22,
+    "isdata":false,                                                                                                                         
+    "color":390,                                                                                                                            
+    "lcolor":1,      
+    "marker":1,                                                                                                                             
+    "data":[                                                                                                                                
+      { "dtag":"MC13TeV_GJet_Pt-15To6000", "xsec":365896 , "br":[ 1.0 ],                                                                
+        "dset":"/GJet_Pt-15To6000_TuneCUETP8M1-Flat_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+    ]
+    }																	    
+
+  ]
+}
