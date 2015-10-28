@@ -20,12 +20,10 @@ We have decided to use pull-request mode for our master development.
 > git remote add upstream git@github.com:cms2l2v/2l2v_fwk.git
 > git remote update
 > git merge upstream/master
-
 3. Make your own change and commit
 
 > git commit -a -m "Added feature A, B, C"
 > git push
-
 4. Make a pull request agains the cms2l2v:
    	https://help.github.com/articles/using-pull-requests/
 
