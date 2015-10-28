@@ -233,7 +233,7 @@ def CreateCrabConfig(crabWorkDir, crabConfigPath, exePath, cfgPath):
    config_file.write('config.JobType.scriptExe = "%s"\n' % exePath)
    config_file.write('config.JobType.sendPythonFolder = True\n')
    config_file.write('config.JobType.inputFiles = ["'+os.path.expanduser(Jobs_ProxyDir+"/x509_proxy")+'", os.environ["CMSSW_BASE"]+"/bin/"+os.environ["SCRAM_ARCH"]+"/'+Jobs_CRABexe+'"]\n')
-   config_file.write('config.JobType.outputFiles = ["output.root","minievents.root"]\n')
+   config_file.write('config.JobType.outputFiles = ["output.root"]\n')
    config_file.write('\n')
    config_file.write('config.section_("Data")\n')
    config_file.write('config.Data.inputDataset = '+Jobs_CRABDataset+'\n')

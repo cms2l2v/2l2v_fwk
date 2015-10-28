@@ -469,14 +469,30 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
 
   // event selection - cross section
-  h = (TH1D*) mon.addHistogram(new TH1D ("xseceventflow", ";;Events", 6, 0., 6.));
+  h = (TH1D*) mon.addHistogram (new TH1D ("chhiggseventflowdilep", ";;Events", 6, 0., 6.));
+  h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
+  h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
+  h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
+  h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (5, "op. sign");
+  h->GetXaxis()->SetBinLabel (6, "#geq 2 b-tags");
+  h = (TH1D*) mon.addHistogram(new TH1D ("xsecalteventflowdilep", ";;Events", 8, 0., 8.));
+  h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
+  h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
+  h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
+  h->GetXaxis()->SetBinLabel (4, "E_{T}^{miss}");
+  h->GetXaxis()->SetBinLabel (5, "op. sign");
+  h->GetXaxis()->SetBinLabel (6, "= 0 b-tags");
+  h->GetXaxis()->SetBinLabel (7, "= 1 b-tags");
+  h->GetXaxis()->SetBinLabel (8, "#geq 2 b-tags");
+  h = (TH1D*) mon.addHistogram(new TH1D ("xseceventflowslep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "#geq 2 jets");
   h->GetXaxis()->SetBinLabel (3, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (4, "#geq 1 b-tag");
   h->GetXaxis()->SetBinLabel (5, "1 #tau");
   h->GetXaxis()->SetBinLabel (6, "op. sign");
-  h = (TH1D*) mon.addHistogram(new TH1D("xsecalteventflow", ";;Events", 7, 0., 7.));
+  h = (TH1D*) mon.addHistogram(new TH1D("xsecalteventflowslep", ";;Events", 7, 0., 7.));
   h->GetXaxis()->SetBinLabel (1, "1 iso lepton");
   h->GetXaxis()->SetBinLabel (2, "E_{T}^{miss}");
   h->GetXaxis()->SetBinLabel (3, "1 #tau");
@@ -484,7 +500,6 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (5, "= 0 b-tags");
   h->GetXaxis()->SetBinLabel (6, "= 1 b-tags");
   h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
-
 
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_pileup"         , ";;Events", 100, 0., 100.));
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 100, 0., 100.));

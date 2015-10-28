@@ -78,11 +78,11 @@ elif [ "${1}" = "plot" ]; then
         ONLYDILEPTON=" --onlyStartWith ee --onlyStartWith mumu --onlyStartWith emu "
         ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
     elif [ "${2}" = "evtflows" ]; then
-        ONLYDILEPTON=" --onlyStartWith ee_eventflow --onlyStartWith emu_eventflow --onlyStartWith mumu_eventflow "
-        ONLYLEPTAU=" --onlyStartWith singlee_eventflow --onlyStartWith singlemu_eventflow "
+        ONLYDILEPTON=" --onlyStartWith ee_xseceventflowdilep --onlyStartWith ee_chhiggseventflowdilep --onlyStartWith emu_xseceventflowdilep --onlyStartWith emu_chhiggseventflowdilep --onlyStartWith mumu_xseceventflowdilep --onlyStartWith mumu_chhiggseventflowdilep  "
+        ONLYLEPTAU=" --onlyStartWith singlee_xseceventflowslep --onlyStartWidh singlee_chhiggseventflowslep --onlyStartWith singlemu_xseceventflowslep --onlyStartWith singlemu_chhiggseventflowslep "
     elif [ "${2}" = "chhiggs" ]; then
-        ONLYDILEPTON=" --onlyStartWith ee_eventflow --onlyStartWith emu_eventflow --onlyStartWith mumu_eventflow "
-        ONLYLEPTAU=" --onlyStartWith singlee_eventflow --onlyStartWith singlemu_eventflow "
+        ONLYDILEPTON=" --onlyStartWith ee_xseceventflowdilep --onlyStartWith ee_chhiggseventflowdilep --onlyStartWith emu_xseceventflowdilep --onlyStartWith emu_chhiggseventflowdilep --onlyStartWith mumu_xseceventflowdilep --onlyStartWith mumu_chhiggseventflowdilep  "
+        ONLYLEPTAU=" --onlyStartWith singlee_xseceventflowslep --onlyStartWidh singlee_chhiggseventflowslep --onlyStartWith singlemu_xseceventflowslep --onlyStartWith singlemu_chhiggseventflowslep "
         
         JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
         JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/chhiggs_samples.json
@@ -101,14 +101,23 @@ elif [ "${1}" = "plot" ]; then
     for LUMI in 1280
     do
         DIR="${BASEDIR}${LUMI}/"
-        if [ "${2}" = "chhiggs" ]; then
-            DIR="${DIR}/chhiggs/"
-            LUMI=45000
-        fi
+        #if [ "${2}" = "chhiggs" ]; then
+        #    DIR="${DIR}/chhiggs/"
+        #    LUMI=45000
+        #fi
         #LUMI=${3}
         mkdir -p ${DIR}
         cp ~/www/HIG-13-026/index.php ${DIR}
 
+        echo ${LUMI}
+	echo ${INDIR}
+	echo ${DIR}
+	echo ${JSONFILEDILEPTON}
+	echo ${JSONFILELEPTAU}
+	echo ${PSEUDODATA}
+	echo ${ONLYSYSLIST}
+	echo ${ONLYDILEPTON}
+	echo ${ONLYLEPTAU}
         # Dilepton
         runFixedPlotter --iEcm 13 --iLumi ${LUMI} --inDir ${INDIR} --outDir ${DIR} --outFile ${DIR}plotter_dilepton.root  --json ${JSONFILEDILEPTON} --cutflow all_initNorm --no2D --noPowers --plotExt .pdf --plotExt .png --plotExt .C ${PSEUDODATA} --onlyStartWith optim_systs ${ONLYDILEPTON}
         

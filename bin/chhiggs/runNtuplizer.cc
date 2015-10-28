@@ -427,20 +427,21 @@ int main (int argc, char *argv[])
   //##############################################
   size_t totalEntries(0);
 
-  TFile* summaryFile = NULL;
+  TFile *ofile = TFile::Open (outUrl, "recreate");
+  
+  //TFile* summaryFile = NULL;
   TTree* summaryTree = NULL; //ev->;
   MiniEvent_t miniEvent;
 
   if(saveSummaryTree)
     {
       TDirectory* cwd = gDirectory;
-      TString outSummaryUrl = runProcess.getParameter<std::string>("summaryfile");
-      if(outSummaryUrl=="") outSummaryUrl=outUrl;
-      std::string summaryFileName(outUrl); 
-      summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
+      //TString outSummaryUrl = runProcess.getParameter<std::string>("summaryfile");
+      //if(outSummaryUrl=="") outSummaryUrl=outUrl;
+      //std::string summaryFileName(outUrl); 
+      //summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
       
-      summaryFile = new TFile(summaryFileName.c_str(), "recreate");
-      
+      //summaryFile = new TFile(summaryFileName.c_str(), "recreate");
       summaryTree = new TTree("minievents", "minievents");
 
       createMiniEventTree(summaryTree, miniEvent);
@@ -1213,7 +1214,7 @@ int main (int argc, char *argv[])
       if(saveSummaryTree && selLeptons.size() > 0 && selJets.size()>2)
         {
           TDirectory* cwd = gDirectory;
-          summaryFile->cd();
+          ofile->cd();
           summaryTree->Fill();
           cwd->cd();
         }
@@ -1222,16 +1223,6 @@ int main (int argc, char *argv[])
     printf("\n");
     delete file;
   } // End loop on files
-  
-  if(saveSummaryTree)
-    {
-      TDirectory* cwd = gDirectory;
-      summaryFile->cd();
-      summaryTree->Write();
-      summaryFile->Close();
-      delete summaryFile;
-      cwd->cd();
-    }
   
 
   if(nMultiChannel>0) cout << "Warning! There were " << nMultiChannel << " multi-channel events out of " << totalEntries << " events!" << endl;
@@ -1243,11 +1234,17 @@ int main (int argc, char *argv[])
   //save control plots to file
   printf ("Results save in %s\n", outUrl.Data());
 
-  //save all to the file
-  TFile *ofile = TFile::Open (outUrl, "recreate");
-  mon.Write();
-  ofile->Close();
 
+
+  //save all to the file
+  TDirectory* cwd = gDirectory;
+  ofile->cd();
+  mon.Write();
+  if(saveSummaryTree)  summaryTree->Write();
+  ofile->Close();
+  delete ofile;
+  cwd->cd();
+  
   if (outTxtFile)
     fclose (outTxtFile);
 

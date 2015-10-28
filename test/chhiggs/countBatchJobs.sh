@@ -24,9 +24,9 @@ while true ;
 	     if [ "${USER}" = "stalker" ]
 	     then
 		 echo "You are running in stalker mode, jajajajajajajajajaja"
-		 echo "Vischia( run " `qstat -u vischia | grep " r " | wc -l` ", tot: " `qstat -u vischia | grep ingrid.pt | wc -l`  "). Cris( run " `qstat -u cbeiraod | grep " r " | wc -l` ", tot: " `qstat -u cbeiraod | grep ingrid.pt | wc -l` "). Bargassa( run " `qstat -u bargassa | grep " r " | wc -l` ", tot: " `qstat -u bargassa | grep ingrid.pt | wc -l` ")"
+		 echo "Vischia( run: " `qstat -u vischia | grep " r " | wc -l` ", wait: " `qstat -u vischia | grep " qw " | wc -l`  "). Cris( run: " `qstat -u cbeiraod | grep " r " | wc -l` ", wait: " `qstat -u cbeiraod | grep " qw " | wc -l` "). Bargassa( run: " `qstat -u bargassa | grep " r " | wc -l` ", wait: " `qstat -u bargassa | grep " qw " | wc -l` ")"
 	     else
-		 echo "running: " `qstat -u ${USER} | grep " r " | wc -l` "    total: " `qstat -u ${USER} | wc -l` 
+		 echo "running: " `qstat -u ${USER} | grep " r " | wc -l` "    waiting: " `qstat -u ${USER} | grep " qw " | wc -l` 
 	     fi
 	 else
 	     echo "RUNNING: `bjobs | grep RUN | wc -l`            PENDING: `bjobs | grep PEND | wc -l`"
