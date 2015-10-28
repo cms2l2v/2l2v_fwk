@@ -48,12 +48,13 @@
       "color":8,
       "lcolor":1,
       "data":[
-        { "dtag":"MC13TeV_TT2l2nu"                           ,  "xsec":76.69      , "br":[ 1 ] , "dset":"/TTTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_TT2l2nu"                           ,  "xsec":87.31      , "br":[ 1 ] , "dset":"/TTTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
         { "dtag":"MC13TeV_SingleT_s"                         ,  "xsec":7.20       , "br":[ 1 ] , "dset":"/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
         { "dtag":"MC13TeV_SingleT_t"                         ,  "xsec":136.02     , "br":[ 1 ] , "dset":"/ST_t-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2_ext1-v1/MINIAODSIM"},
         { "dtag":"MC13TeV_SingleT_atW"                       ,  "xsec":35.6       , "br":[ 1 ] , "dset":"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
-        { "dtag":"MC13TeV_SingleT_tW"                        ,  "xsec":38.9        , "br":[ 1 ] , "dset":"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
-        { "dtag":"MC13TeV_TTWJetslnu"                        ,  "xsec":1.903e-01  , "br":[ 1 ] , "dset":"/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_SingleT_tW"                        ,  "xsec":35.6        , "br":[ 1 ] , "dset":"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
+        { "dtag":"MC13TeV_TTWJetslnu"                        ,  "xsec":2.043e-01  , "br":[ 1 ] , "dset":"/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_TTZJets2l2nu"                      ,  "xsec":2.529e-01  , "br":[ 1 ] , "dset":"/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"}
       ]
     },
     {
