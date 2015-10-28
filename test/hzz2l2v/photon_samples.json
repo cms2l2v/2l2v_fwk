@@ -1,27 +1,89 @@
 {
   "proc":[
+   {
+   "tag":"Ztoll_M-10to50",                                                                                                         
+   "mctruthmode":22,                                                                                                               
+   "isdata":false,
+   "color":831,
+    "lcolor":1,                                                                                                                   
+   "data":[ { "dtag":"MC13TeV_DYJetsToLL_M-10to50", "split":40, "xsec":20657.1 , "br":[ 1.0 ] ,                                        
+   "dset":"/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"} 
+    ]
+    },
     {
-    "tag":"Z#rightarrow ll",    
-    "mctruthmode":0,
+    "tag":"Ztoll_M-50",    
+    "mctruthmode":22,
     "isdata":false,  
     "color":831,                                                                                                                         
     "lcolor":1,                                                                                                                    
-    "data":[ { "dtag":"MC13TeV_DYJetsToLL_50toInf", "xsec":4016.8 , "br":[ 1.0 ] , 
-               "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-    ]
-    },     
-    {                                                                                                                                       
-    "tag":"G+jet",
+    "data":[ { "dtag":"MC13TeV_DYJetsToLL_50toInf", "split":40, "xsec":6025.3 , "br":[ 1.0 ] , 
+    	       "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"}
+     ]
+    },
+      {
+    "tag":"GJets_HT-40to100",
     "mctruthmode":22,
-    "isdata":false,                                                                                                                         
-    "color":390,                                                                                                                            
-    "lcolor":1,      
-    "marker":1,                                                                                                                             
-    "data":[                                                                                                                                
-      { "dtag":"MC13TeV_GJet_Pt-15To6000", "xsec":365896 , "br":[ 1.0 ],                                                                
-        "dset":"/GJet_Pt-15To6000_TuneCUETP8M1-Flat_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+    "isdata":false,
+    "color":390,
+    "lcolor":1,
+     "data":[                                                                     
+      { "dtag":"MC13TeV_GJet_HT-40to100", "split":40, "xsec":23080.0, "br":[ 1.0 ],
+      "dset":"/GJets_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM"}
+      ]
+    },
+   {
+    "tag":"GJets_HT-100to200",
+    "mctruthmode":22,
+    "isdata":false,
+    "color":390,
+    "lcolor":1,
+    "data":[
+	{ "dtag":"MC13TeV_GJet_HT-100to200", "split":40, "xsec":9110.0, "br":[ 1.0 ],
+	  "dset":"/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM"}
     ]
-    }																	    
-
-  ]
+   },
+   {                                                                                                                                                                  
+    "tag":"GJets_HT-200to400",
+    "mctruthmode":22,
+    "isdata":false,
+    "color":390,
+    "lcolor":1,	
+    "data":[ 
+    { "dtag":"MC13TeV_GJet_HT-200to400", "split":40, "xsec":2281.0, "br":[ 1.0 ],
+    "dset":"/GJets_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v2/MINIAODSIM"}
+    ]
+    },
+   {
+    "tag":"GJets_HT-400to600",
+    "mctruthmode":22,
+    "isdata":false,
+    "color":390,
+    "lcolor":1,
+    "data":[ {"dtag":"MC13TeV_GJet_HT-400to600", "split":40, "xsec":273.0, "br":[ 1.0 ],
+	    "dset":"/GJets_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+        ]
+   },
+   {
+    "tag":"GJets_HT-600toInf",
+    "mctruthmode":22,
+    "isdata":false,
+    "color":390,
+    "lcolor":1,
+    "data":[{"dtag":"MC13TeV_GJet_HT-600toInf", "split":40, "xsec": 94.5   , "br":[ 1.0 ],             
+	    "dset":"/GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+       ]
+   } ,
+    {
+      "tag":"W#rightarrow l#nu",
+      "isdata":false,
+      "mctruthmode":22, 
+      "color":809,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_WJets"                            ,  "xsec":41017.8       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+       ]
+     }
+    ]
 }
+   
+ 
