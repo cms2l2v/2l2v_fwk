@@ -11,19 +11,23 @@
 We have decided to use pull-request mode for our master development.
 
 1. Fork the code with your personal github ID.
-https://help.github.com/articles/fork-a-repo/
+		https://help.github.com/articles/fork-a-repo/
 2. Make a clean git clone in the UserCode directory
+
 > cd path/to/CMSSW_7_4_14/src/UserCode 
 > git clone git@github.com:yourgithubid/2l2v_fwk.git llvv_fwk
 > cd llvv_fwk
 > git remote add upstream git@github.com:cms2l2v/2l2v_fwk.git
 > git remote update
 > git merge upstream/master
+
 3. Make your own change and commit
+
 > git commit -a -m "Added feature A, B, C"
 > git push
+
 4. Make a pull request agains the cms2l2v:
-https://help.github.com/articles/using-pull-requests/
+   	https://help.github.com/articles/using-pull-requests/
 
 
 # For creating private samples
