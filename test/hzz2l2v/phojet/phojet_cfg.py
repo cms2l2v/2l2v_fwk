@@ -41,7 +41,7 @@ runProcess = cms.PSet(
     triggerstudy = cms.bool(False), 
     #mctruthmode = cms.int32(22), # for photon
     mctruthmode = cms.int32(0), # DY process 
-    maxevents = cms.int32(1000), # set to -1 when running on grid.
+    maxevents = cms.int32(-1), # set to -1 when running on grid.
     weightsFile = cms.vstring(), 
     pujetidparas = cms.PSet(pu_jetid)
 )
