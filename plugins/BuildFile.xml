@@ -31,7 +31,6 @@
 <use name="RecoEgamma/EgammaTools"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="EgammaAnalysis/ElectronTools"/>
-<use name="RecoJets/JetProducers"/>
 <use name="root"/>
 <use name="roottmva"/>
 <use name="rootrflx"/>

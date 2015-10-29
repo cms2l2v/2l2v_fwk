@@ -3,7 +3,7 @@
 
 #include "DataFormats/FWLite/interface/Handle.h"
 #include "DataFormats/FWLite/interface/Event.h"
-#include "DataFormats/FWLite/interface/ChainEvent.h"
+//#include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
 //Load here all the dataformat that we will need
@@ -41,6 +41,7 @@
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
+#include "UserCode/llvv_fwk/interface/TrigUtils.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -77,6 +78,7 @@ int main(int argc, char* argv[])
   bool isMC = runProcess.getParameter<bool>("isMC");
   double xsec = runProcess.getParameter<double>("xsec");
   int mctruthmode=runProcess.getParameter<int>("mctruthmode");
+  bool photonTriggerStudy = runProcess.getParameter<bool>("triggerstudy");
   TString dtag=runProcess.getParameter<std::string>("dtag");
 
   TString suffix=runProcess.getParameter<std::string>("suffix");
@@ -445,6 +447,12 @@ int main(int argc, char* argv[])
       htaus->GetXaxis()->SetBinLabel(ibin,label);
     } 
 
+  // photon control
+  mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
+  mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
+
+  
   //lepton control
   mon.addHistogram( new TH1F( "leadpt",     ";Transverse momentum [GeV];Events", 50,0,500) );
   mon.addHistogram( new TH1F( "leadeta",    ";Pseudo-rapidity;Events", 50,0,2.6) );
@@ -679,29 +687,9 @@ int main(int argc, char* argv[])
          if(runPhotonSelection){
              eeTrigger=false; mumuTrigger=false;
              // printf("Running photon selection... ");
-             std::string successfulPath="";
-             if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){ hasPhotonTrigger=true; triggerThreshold=300; }
-             else if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon250_*")){ hasPhotonTrigger=true; triggerThreshold=250; }
-             else if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon160_*")){ hasPhotonTrigger=true; triggerThreshold=160; }
-             else if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon150_*")){ hasPhotonTrigger=true; triggerThreshold=150; }
-             else if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon135_*")){ hasPhotonTrigger=true; triggerThreshold=135; }
-             else if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_*")){ hasPhotonTrigger=true; triggerThreshold=120; }
-             else if(     utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_*")){ hasPhotonTrigger=true; triggerThreshold=92; }
-             else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_*")){ hasPhotonTrigger=true; triggerThreshold=77; }
-             else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_*")){ hasPhotonTrigger=true; triggerThreshold=50; }
-             else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_*")){ hasPhotonTrigger=true; triggerThreshold=36; }
-             else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_*")){ hasPhotonTrigger=true; triggerThreshold=22; }
-
-             
-             if(successfulPath!=""){ //get the prescale associated to it
-                fwlite::Handle< pat::PackedTriggerPrescales > prescalesHandle;
-                prescalesHandle.getByLabel(ev, "patTrigger");
-                pat::PackedTriggerPrescales prescales = *prescalesHandle;
-                const edm::TriggerResults& trResults =  prescales.triggerResults();
-                prescales.setTriggerNames( ev.triggerNames(trResults) );
-                triggerPrescale = prescales.getPrescaleForName(successfulPath);
-             }
+	     hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
          }
+	 
          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
        
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
@@ -902,9 +890,20 @@ int main(int argc, char* argv[])
          //
          // photon selection
          //
+ 
          pat::PhotonCollection selPhotons;
          if(runPhotonSelection)
            {
+	     // For PHoton trigger studies , do not apply the PHoton trigger on top of the Analysis:
+	     if (!photonTriggerStudy ) {
+	       if( !hasPhotonTrigger ) continue;
+	     }
+	     mon.fillHisto("npho", "trg", photons.size(), weight);
+	     for(size_t ipho=0; ipho<photons.size(); ipho++) {
+	       mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
+	       mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
+	     }
+	     
              //filter out number of prompt photons to avoid double counting
             //  int ngenpho(0);
              // 	  for(size_t igen=0; igen<gen.size(); igen++)
@@ -920,34 +919,17 @@ int main(int argc, char* argv[])
              //select the photons
              for(size_t ipho=0; ipho<photons.size(); ipho++)
                {
+		 pat::Photon photon = photons[ipho]; 
                  double pt=photons[ipho].pt();
                  double eta=photons[ipho].superCluster()->eta();
 
                  //if systematics are active loosen the selection to the medium working point
                  //std::vector<std::pair<std::string, bool> > phid =  photons[ipho].photonIDs() ;   for(size_t PHIDI = 0 ; PHIDI<phid.size(); PHIDI++){ printf("%i   %s  %i\n", (int)PHIDI, phid[PHIDI].first.c_str(), phid[PHIDI].second?1:0);  }  //print available photon ID
-                 bool hasTightPhotonId = true;// photons[ipho].photonID("pidTight")>1.0;//FIXME not sure what the cut should be
-                 bool passId = (photons[ipho].r9()>=0.9 && hasTightPhotonId); 
 
-                 //isolation 
-                 //FIXME: Currently using straight the iso from PAT, not sure it's equivalent to what we were doing (just below)
-                 bool passIso(true);    
-                 float relIso = photons[ipho].particleIso() / photons[ipho].pt();  
-                 if(relIso<0.4)passIso = true;
-   //	      double gIso    = photons[ipho].getVal("gIso03");
-   //	      double gArea   = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");	      
-   //	      double chIso   = photons[ipho].getVal("chIso03");
-   //	      double chArea  = utils::cmssw::getEffectiveArea(22,eta,3,"chIso");
-   //	      double nhIso   = photons[ipho].getVal("nhIso03");
-   //	      double nhArea  = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
-   //	      passIso &= (TMath::Max(chIso-chArea*rho,0.0) < 0.7); 
-   //	      passIso &= (TMath::Max(nhIso-nhArea*rho,0.0) < 0.4+0.04*pt); 
-   //	      passIso &= (TMath::Max(gIso-gArea*rho,  0.0) < 0.5+0.005*pt); 
-         
-                 //select the photon
                  if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
-                 if(!passId) continue;
-                 if(!passIso) continue; 
-                 selPhotons.push_back(photons[ipho]);
+		 bool passId = patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight);
+		 if(!passId) continue;
+                 selPhotons.push_back(photon);
                }
            }
 
@@ -1148,6 +1130,27 @@ int main(int argc, char* argv[])
            tags.push_back( chTags[ich] );
            tags.push_back( chTags[ich]+evCat );
          }
+
+	 // Photon trigger efficiencies
+	 // Must be run without the hasPhotonTrigger requirement on top of of the Analysis.
+	 if (photonTriggerStudy && runPhotonSelection && selPhotons.size() ) {
+	   TString tag="trigger";
+	   pat::Photon iphoton = selPhotons[0];
+      
+	   mon.fillHisto("phopt", tag, iphoton.pt(),weight);
+	   mon.fillHisto("phoeta", tag, iphoton.eta(), weight);
+	   trigUtils::photonControlSample(ev, iphoton, mon, tag);
+	   trigUtils::photonControlEff(ev, iphoton, mon, tag);
+
+	   for(size_t itag=0; itag<tags.size(); itag++){		
+	     //update the weight
+	     TString icat=tags[itag];
+	     mon.fillHisto("phopt", icat, iphoton.pt(),weight);
+	     mon.fillHisto("phoeta", icat, iphoton.eta(),weight);
+	     trigUtils::photonControlSample(ev, iphoton, mon, icat);
+	     trigUtils::photonControlEff(ev, iphoton, mon, icat);
+	   }
+	 } // end Trigger efficiencies
 
 
          //////////////////////////
