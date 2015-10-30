@@ -180,7 +180,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
           bool isSign ( !isData &&  Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool());
   	  bool isMC   = !isData && !isSign; 
 	  string filtExt("");
-	  if(Process[ip].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip]["mctruthmode"].toInt()); filtExt += buf; }
+	  //if(Process[ip].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip]["mctruthmode"].toInt()); filtExt += buf; }
 
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
 	  for(size_t id=0; id<Samples.size(); id++){
@@ -451,7 +451,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
          double Weight = 1.0;
          if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool() && HistoProperties.name.find("optim_")==std::string::npos )Weight*= iLumi;
 	 string filtExt("");
-	 if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }	 
+	 //if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }	 
 
          unsigned int NFiles = 0;
          unsigned int NTreeEvents = 0;
@@ -544,7 +544,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
    for(unsigned int i=0;i<Process.size();i++){
       if(Process[i]["isinvisible"].toBool())continue;
       string filtExt("");
-      if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
+      //if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
 
       TCanvas* c1 = new TCanvas("c1","c1",500,500);
       c1->SetLogz(true);
