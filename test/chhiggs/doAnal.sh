@@ -37,7 +37,7 @@ if [ "${1}" = "submit" ]; then
         OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_ttbar/
         mkdir -p ${OUTDIR}
         QUEUE="crab"
-        LFNDIRBASE="ntuples_2015-10-26/"
+        LFNDIRBASE="ntuples_pietro_2015-10-26/"
         runAnalysisOverSamples.py -e runNtuplizer -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -l ${LFNDIRBASE} -f 8 -s ${QUEUE}
     else
         runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 -s ${QUEUE}
@@ -46,19 +46,19 @@ if [ "${1}" = "submit" ]; then
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
     #cat ${OUTDIR}/*SingleMuon*.json > myjson.json
-    cat ${OUTDIR}/Data13TeV_SingleMuon2015CPromptReco*.json > myjson.json
+    cat ${OUTDIR}/Data13TeV_SingleMuon2015D_*.json > myjson.json
 
     sed -i -e "s#}{#, #g" myjson.json; 
     sed -i -e "s#, ,#, #g" myjson.json;
     echo "myjson.json has been recreated and the additional \"}{\" have been fixed."
     echo "Now running brilcalc according to the luminosity group recommendation:"
-    echo "brilcalc lumi -i myjson.json -n 0.962"
+    echo "brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json"
     export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
-    brilcalc lumi -i myjson.json -n 0.962
+    brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json
     echo "To be compared with the output of the full json:"
-    echo "brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt -n 0.962"
-    brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt -n 0.962
-    
+    echo "brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    #brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt -n 0.962
+    brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt
 elif [ "${1}" = "plot" ]; then 
 
     BASEDIR=~/www/13TeV_xsec_plots/
@@ -77,6 +77,9 @@ elif [ "${1}" = "plot" ]; then
     if [ "${2}" = "all" ]; then 
         ONLYDILEPTON=" --onlyStartWith ee --onlyStartWith mumu --onlyStartWith emu "
         ONLYLEPTAU=" --onlyStartWith singlemu --onlyStartWith singlee "
+        JSONFILEDILEPTON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot_chhiggs_dileptons.json
+        JSONFILELEPTAU=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/plot_chhiggs_leptontau.json
+
     elif [ "${2}" = "evtflows" ]; then
         ONLYDILEPTON=" --onlyStartWith ee_xseceventflowdilep --onlyStartWith ee_chhiggseventflowdilep --onlyStartWith emu_xseceventflowdilep --onlyStartWith emu_chhiggseventflowdilep --onlyStartWith mumu_xseceventflowdilep --onlyStartWith mumu_chhiggseventflowdilep  "
         ONLYLEPTAU=" --onlyStartWith singlee_xseceventflowslep --onlyStartWidh singlee_chhiggseventflowslep --onlyStartWith singlemu_xseceventflowslep --onlyStartWith singlemu_chhiggseventflowslep "
