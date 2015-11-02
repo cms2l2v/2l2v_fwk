@@ -73,7 +73,22 @@
 	    "dset":"/GJets_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
        ]
    } ,
-    {
+  {   
+       "tag":"photondata",                                                                                                                                           
+       "isdata":true,                                                                                                                                               
+       "mctruthmode":22,                                                                                                                                             
+       "color":1,                                                                                                                                                   
+       "fill":0,                                                                                                                                                    
+       "marker":20,                                                                                                                                                  
+       "data":[                                                                                                                                                       
+       
+       { "dtag":"Data13TeV_SinglePhoton2015B17jul15"    ,  "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SinglePhoton/Run2015B-17Jul2015-v1/MINIAOD",         "lumiMask":"Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },                                                                       
+       { "dtag":"Data13TeV_SinglePhoton2015B"           ,  "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SinglePhoton/Run2015B-PromptReco-v1/MINIAOD"
+    	,  "lumiMask":"Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },                                                                            
+       { "dtag":"Data13TeV_SinglePhoton2015C"           ,  "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SinglePhoton/Run2015C-PromptReco-v1/MINIAOD"       ,  "lumiMask":"Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },                                                                                
+       { "dtag":"Data13TeV_SinglePhoton2015D"           ,  "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SinglePhoton/Run2015D-PromptReco-v3/MINIAOD"       ,  "lumiMask":"Cert_246908-258159_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }                                                                                
+      ]                                                                                                                                                                     },                                                                                                                                                            
+      {
       "tag":"W#rightarrow l#nu",
       "isdata":false,
       "mctruthmode":22, 
