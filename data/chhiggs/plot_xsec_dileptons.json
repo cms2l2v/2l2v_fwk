@@ -2,6 +2,7 @@
   "proc":[
     { 
       "tag":"QCDMuEnriched",
+      "isinvisible":true,       
       "isdata":false,
       "color":592,
       "lcolor":1,
