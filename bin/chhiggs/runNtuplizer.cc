@@ -705,11 +705,12 @@ int main (int argc, char *argv[])
         
         //##############################################   EVENT LOOP STARTS   ##############################################
 
-        // Orthogonalize Run2015B PromptReco+17Jul15 mix
-        if(isRun2015B)
-          {
-            if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          }
+	// Not needed anymore if you run on 08Oct2015
+        ///// Orthogonalize Run2015B PromptReco+17Jul15 mix
+        ///if(isRun2015B)
+        ///  {
+        ///    if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
+        ///  }
         
         // Skip bad lumi
         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
@@ -991,8 +992,6 @@ int main (int argc, char *argv[])
           
           //Cut based identification 
           
-          //std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
-          
           passId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
           //isolation
@@ -1150,7 +1149,7 @@ int main (int argc, char *argv[])
           //    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
           //    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
           //  }
-          if (!passPFloose || jet.pt() <20. || fabs(jet.eta()) > 2.5) continue;
+          if (!passPFloose || jet.pt() <25. || fabs(jet.eta()) > 2.5) continue;
           if (minDRlj < 0.4) continue;
           
           selJets.push_back(jet);
@@ -1159,14 +1158,16 @@ int main (int argc, char *argv[])
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
           bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
           
-          if (isMC)
+	  // Leave btags status update for the offline analysis
+          /*
+	    if (isMC)
             {
               int flavId = jet.partonFlavour();
               if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
               else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
               else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
             }
-          
+	  */
           if(!hasCSVtag) continue;
           selBJets.push_back(jet);
         }
@@ -1194,13 +1195,16 @@ int main (int argc, char *argv[])
               miniEvent.genj_eta[miniEvent.nj]=genJet ? genJet->eta() : 0;
               miniEvent.genj_phi[miniEvent.nj]=genJet ?  genJet->phi() : 0;
               bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-              if (isMC)
+              // Leave b-tag status update to the offline offline analysis
+	      /*
+if (isMC)
                 {
                   int flavId = jet.partonFlavour();
                   if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
                   else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
                   else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
                 }
+	      */
               miniEvent.j_csv[miniEvent.nj]=jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
               miniEvent.j_isbtag    [miniEvent.nj]= int(hasCSVtag);
               miniEvent.j_flav      [miniEvent.nj]=jet.partonFlavour();
@@ -1208,8 +1212,7 @@ int main (int argc, char *argv[])
               miniEvent.j_pid       [miniEvent.nj]=genParton ? genParton->pdgId() : 0;
               miniEvent.nj++;
             }
-        
-        }
+	}
 
       if(saveSummaryTree && selLeptons.size() > 0 && selJets.size()>2)
         {
