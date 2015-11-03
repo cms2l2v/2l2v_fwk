@@ -469,7 +469,7 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
 
   // event selection - cross section
-  h = (TH1D*) mon.addHistogram (new TH1D ("chhiggseventflowdilep", ";;Events", 6, 0., 6.));
+  h = (TH1D*) mon.addHistogram (new TH1D ("xseceventflowdilep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
