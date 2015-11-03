@@ -14,6 +14,7 @@ if [[ $# -eq 0 ]]; then
     printf "\n\t%-5s  %-40s\n"  "1.1"  "run 'runHZZ2l2vAnalysis' on photon_samples.json" 
     printf "\n\t%-5s  %-40s\n"  "2"  "compute integrated luminosity from processed samples" 
     printf "\n\t%-5s  %-40s\n"  "3"  "make plots and combine root files" 
+    printf "\n\t%-5s  %-40s\n"  "3.1"  "make plots for photon_smaples" 
 fi
 
 step=$1   #variable that store the analysis step to run
@@ -26,7 +27,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_09_25
+SUFFIX=_2015_11_03
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
@@ -96,6 +97,14 @@ case $step in
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
 	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --no2D $arguments
 	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
+	;; 
+
+    3.1)  # make plots and combine root files for photon + jet study
+	JSON=$MAINDIR/photon_samples.json
+	#INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
+	runPlotter --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --noPlot 
+	#ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;; 
 esac
 
