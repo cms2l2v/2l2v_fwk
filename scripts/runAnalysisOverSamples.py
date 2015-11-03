@@ -167,7 +167,8 @@ for procBlock in procList :
             suffix = str(getByLabel(procData,'suffix' ,""))
             split=getByLabel(procData,'split',-1)
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
-            ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
+            filt=''
+            if mctruthmode!=0 : filt='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
                 for ibr in br :  xsec = xsec*ibr
 
@@ -182,7 +183,7 @@ for procBlock in procList :
                    #create the cfg file
                    eventsFile = FileList[s]
                    eventsFile = eventsFile.replace('?svcClass=default', '')
-                   prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s)
+                   prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + filt
                	   sedcmd = 'sed \''
                    sedcmd += 's%"@dtag"%"' + dtag +'"%;'
                    sedcmd += 's%"@input"%' + eventsFile+'%;'
