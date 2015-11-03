@@ -83,12 +83,13 @@ int main(int argc, char* argv[])
 
   TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
+//  TString baseDir    = runProcess.getParameter<std::string>("dirName");
+//  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; } //FIXME
+//  TString outdir=runProcess.getParameter<std::string>("outdir");
+//  TString outUrl( outdir );
+//  gSystem->Exec("mkdir -p " + outUrl);
 
   TString outUrl = runProcess.getParameter<std::string>("outfile");
-  if(mctruthmode!=0) {
-    TString new_suffix = Form("_filt%d.root", mctruthmode); 
-    outUrl.ReplaceAll(".root", new_suffix); 
-  } 
 
   //good lumi MASK
   lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));

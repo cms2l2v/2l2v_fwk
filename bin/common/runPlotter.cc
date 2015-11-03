@@ -187,14 +187,12 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	      int split = Samples[id].getInt("split", -1);               
               for(int s=0; s<(split>0?split:999); s++){
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;                 
-                 //string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt; 
-                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt; 
+                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt; 
                  if(split<0){ //autosplitting --> check if there is a cfg file before checking if there is a .root file
                     FILE* pFile = fopen((FileName+"_cfg.py").c_str(), "r");
                     if(!pFile){break;}else{fclose(pFile);}
                  }
-                 //FileName += ".root";
-                 FileName += filtExt+".root";
+                 FileName += ".root";
 	         TFile* File = new TFile(FileName.c_str());                                 
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
                     MissingFiles[Samples[id].getString("dtag")].push_back(FileName);
