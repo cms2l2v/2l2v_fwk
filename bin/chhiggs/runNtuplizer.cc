@@ -414,6 +414,13 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (3, "PU central");
   normhist->GetXaxis()->SetBinLabel (4, "PU up");
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
+  
+  for(Int_t igenjet=0; igenjet<5; igenjet++)
+    {
+      TString fidtag("fidcounter"); fidtag+=igenjet;
+      mon.addHistogram(new TH1D(fidtag, ";Variation;Events", 200, 0., 200.)); 
+    }
+  
 
 
   //
@@ -561,7 +568,7 @@ int main (int argc, char *argv[])
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
         double weightGen(1.);
 
-
+        std::vector < TString > tags (1, "all"); // Inclusive inclusiveness
 
         //GENERATOR LEVEL INFO
         miniEvent.isFiducial = true;  
@@ -570,8 +577,10 @@ int main (int argc, char *argv[])
         miniEvent.ngenj=0;
         miniEvent.ttbar_genId=0;
 
+        
         if(isNLOMC)
           {
+            int ngenJets(-1);
             //double weightGen(0.);
             //double weightLhe(0.);
             if(saveSummaryTree)
@@ -579,6 +588,42 @@ int main (int argc, char *argv[])
                 fwlite::Handle<int> genTtbarIdHandle;
                 genTtbarIdHandle.getByLabel(ev, "categorizeGenTtbar", "genTtbarId");
                 if(genTtbarIdHandle.isValid()) miniEvent.ttbar_genId=*genTtbarIdHandle;
+
+
+                fwlite::Handle<reco::GenParticleCollection> genParticlesHandle;
+                genParticlesHandle.getByLabel(ev, "prunedGenParticles");
+                
+                //require only one lepton (can be from tau, if tau not from hadron)
+                int nLeptons(0);
+                float lphi(0), leta(0);
+                for (size_t ipart = 0; ipart < genParticlesHandle->size(); ++ipart) {
+                  const reco::GenParticle & genIt = (*genParticlesHandle)[ipart];
+                  if(!genIt.isPromptFinalState() && !genIt.isDirectPromptTauDecayProductFinalState()) continue;
+                  int ID = abs(genIt.pdgId());
+                  if(ID!=11 && ID!=13) continue;
+                  if(genIt.pt()<20 || fabs(genIt.eta())>2.5) continue;
+                  nLeptons++;
+                  lphi=genIt.phi();
+                  leta=genIt.eta();
+                }
+                if(nLeptons!=1) ngenJets=0;
+                
+                //require 1 jets not overlapping with lepton
+                fwlite::Handle<std::vector<reco::GenJet> > genJetsHandle;
+                genJetsHandle.getByLabel(ev, "ak4GenJetsCustom");
+                for(std::vector<reco::GenJet>::const_iterator genJet=genJetsHandle->begin(); genJet!=genJetsHandle->end(); genJet++)
+                  {
+                    if(genJet->pt()<20 || fabs(genJet->eta())>2.5) continue;
+                    float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
+                    if(dR<0.4) continue;
+                    miniEvent.genj_pt  [miniEvent.ngenj]=genJet->pt();
+                    miniEvent.genj_eta [miniEvent.ngenj]=genJet->eta();
+                    miniEvent.genj_phi [miniEvent.ngenj]=genJet->phi();
+                    miniEvent.genj_mass[miniEvent.ngenj]=genJet->mass();
+                    miniEvent.ngenj++;
+                  }
+                ngenJets = miniEvent.ngenj;
+                
               }
             
             fwlite::Handle<GenEventInfoProduct> evt;
@@ -598,7 +643,6 @@ int main (int argc, char *argv[])
             
             if(saveSummaryTree)
               {
-                // FIXME: this is for PDF uncertainties, must reactivate it at some point.
                 fwlite::Handle<LHEEventProduct> lheEvtProd;
                 lheEvtProd.getByLabel(ev, "externalLHEProducer");
                 if(lheEvtProd.isValid())
@@ -624,12 +668,21 @@ int main (int argc, char *argv[])
                         miniEvent.me_np++;
                       }
                   }
+                
+                for(Int_t igenjet=0; igenjet<5; igenjet++)
+                  {
+                    TString fidtag("fidcounter"); fidtag+=igenjet;
+                    mon.fillHisto(fidtag, tags, 0., miniEvent.ttbar_w[0]);
+                    if(igenjet<=ngenJets)
+                      {
+                        for(Int_t iw=1; iw<miniEvent.ttbar_nw; iw++)
+                          mon.fillHisto(fidtag, tags, double(iw), miniEvent.ttbar_w[iw]);
+                      }
+                  }
               }
             
           }
         
-        
-        std::vector < TString > tags (1, "all"); // Inclusive inclusiveness
         
         //
         // DERIVE WEIGHTS TO APPLY TO SAMPLE
