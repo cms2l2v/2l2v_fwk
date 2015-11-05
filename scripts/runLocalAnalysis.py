@@ -10,9 +10,9 @@ from UserCode.llvv_fwk.storeTools import *
 Wrapper to be used when run in parallel
 """
 def RunMethodPacked(args):
-    inF,outF,channel,charge,wgt,isTT,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr=args
+    inF,outF,channel,charge,wgt,isTT,debug,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr=args
     try:
-        ROOT.ReadTree(str(inF),str(outF),channel,charge,wgt,isTT,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr)
+        ROOT.ReadTree(str(inF),str(outF),channel,charge,wgt,isTT,debug,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr)
     except :
         print 50*'<'
         print "  Problem  (%s) with %s continuing without"%(sys.exc_info()[1],inF)
@@ -45,6 +45,8 @@ def main():
     parser.add_option(      '--isTT',        dest='isTT',        help='ttbar sample (for single files)',            default=False,      action='store_true')
     parser.add_option(      '--genWgtMode',  dest='genWgtMode',  help='gen level wgts 0=none, 1=gen weight (for single files)',     default=0,        type=int)
     parser.add_option('-n', '--njobs',       dest='njobs',       help='# jobs to run in parallel',    default=0,           type='int')
+    parser.add_option('-d', '--debug',       dest='debug',       help='Run in debug mode: verbosity verbosity verbosity', default=False, action='store_true')
+
     (opt, args) = parser.parse_args()
 
     onlyList=[]
@@ -62,7 +64,7 @@ def main():
         if '/store/' in opt.input: opt.input='root://eoscms//eos/cms'+opt.input
         print opt.input
         outF=os.path.join(opt.outDir,os.path.basename(opt.input))
-        task_list.append( (opt.input,outF,opt.channel,opt.charge,None,opt.isTT,opt.flav,opt.genWgtMode,None,None,None) )
+        task_list.append( (opt.input,outF,opt.channel,opt.charge,None,opt.isTT,opt.debug,opt.flav,opt.genWgtMode,None,None,None) )
     else:
         #read list of samples
         jsonFile = open(opt.json,'r')
@@ -112,20 +114,20 @@ def main():
                 puWgtGr,puUpWgtGr,puDownWgtGr=puWgts[tag]
             except:
                 pass
-            input_list=getEOSlslist(directory=opt.input+'/'+tag)
+            input_list=getEOSlslist(directory=opt.input, tag=tag)
             for ifctr in xrange(0,len(input_list)):
                 inF=input_list[ifctr]
                 outF=os.path.join(opt.outDir,'%s_%d.root' % (tag,ifctr) )
                 if doFlavourSplitting:
                     for flav in [0,1,4,5]:
-                        task_list.append( (inF,outF,opt.channel,opt.charge,wgt,isTT,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr) )                
+                        task_list.append( (inF,outF,opt.channel,opt.charge,wgt,isTT,opt.debug,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr) )                
                 else:
-                    task_list.append( (inF,outF,opt.channel,opt.charge,wgt,isTT,0,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr) )                
+                    task_list.append( (inF,outF,opt.channel,opt.charge,wgt,isTT,opt.debug,0,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr) )                
 
     #run the analysis jobs
     if opt.njobs == 0:
-        for inF,outF,channel,charge,wgt,isTT,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr in task_list:      
-            ROOT.ReadTree(str(inF),str(outF),channel,charge,wgt,isTT,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr)
+        for inF,outF,channel,charge,wgt,isTT,debug,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr in task_list:      
+            ROOT.ReadTree(str(inF),str(outF),channel,charge,wgt,isTT,debug,flav,genWgtMode,puWgtGr,puUpWgtGr,puDownWgtGr)
     else:
         from multiprocessing import Pool
         pool = Pool(opt.njobs)

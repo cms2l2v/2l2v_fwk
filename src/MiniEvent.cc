@@ -99,6 +99,8 @@ void attachToMiniEventTree(TTree *t,MiniEvent_t &ev)
   t->SetBranchAddress("event",     &ev.event);
   t->SetBranchAddress("lumi",      &ev.lumi);
 
+  t->SetBranchAddress("weight",    &ev.weight);
+
   t->SetBranchAddress("isFiducial",       &ev.isFiducial);
   t->SetBranchAddress("muTrigger",        &ev.muTrigger);
   t->SetBranchAddress("elTrigger",        &ev.elTrigger);

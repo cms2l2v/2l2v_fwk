@@ -43,6 +43,7 @@ void ReadTree(TString filename,
 	      Int_t chargeSelection, 
 	      TH1D *normH, 
 	      Bool_t isTTbar,
+	      Bool_t debug,
 	      FlavourSplitting flavourSplitting,
 	      GenWeightMode genWgtMode,
 	      TGraph* puWgtGr, TGraph* puUpWgtGr, TGraph* puDownWgtGr)
@@ -113,7 +114,7 @@ void ReadTree(TString filename,
       allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(12,"4j,#geq2b");
 
 
-      allPlots["eventflowold_"+systs[i]] = new TH1D("eventflowbase_"+systs[i],";;Events", 6, 0., 6.); 
+      allPlots["eventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 6, 0., 6.); 
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 iso lepton");
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "#geq 2 jets");
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "E_{T}^{miss}");
@@ -121,7 +122,7 @@ void ReadTree(TString filename,
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
       
-      allPlots["eventflownocat_"+systs[i]] = new TH1D("eventflowcat_"+systs[i], ";;Events", 5, 0., 5.);
+      allPlots["eventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 5, 0., 5.);
       allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 iso lepton");
       allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "#geq 2 jets");
       allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "E_{T}^{miss}");
@@ -147,9 +148,8 @@ void ReadTree(TString filename,
 
   for (auto& it : allPlots) { it.second->Sumw2(); it.second->SetDirectory(0); }
 
-
   //jet uncertainty parameterization
-  TString jecUncUrl("${CMSSW_BASE}/src/TopLJets2015/TopAnalysis/data/Summer15_25nsV5_DATA_Uncertainty_AK4PFchs.txt");
+  TString jecUncUrl("${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/25ns/DATA_Uncertainty_AK4PFchs.txt");
   gSystem->ExpandPathName(jecUncUrl);
   JetCorrectionUncertainty* jecUnc = new JetCorrectionUncertainty(jecUncUrl.Data());
   
@@ -164,7 +164,7 @@ void ReadTree(TString filename,
   BTagCalibrationReader btagSFlupReader  (&btvcalib, BTagEntry::OP_MEDIUM, "comb"  , "up"      );
   BTagCalibrationReader btagSFldownReader(&btvcalib, BTagEntry::OP_MEDIUM, "comb"  , "down"    ); 
 
-  TString btagEffExpUrl("${CMSSW_BASE}/src/TopLJets2015/TopAnalysis/data/expTageff.root");
+  TString btagEffExpUrl("${CMSSW_BASE}/src/UserCode/llvv_fwk/data/expTageff.root");
   gSystem->ExpandPathName(btagEffExpUrl);
   TFile* beffIn=TFile::Open(btagEffExpUrl);
   TGraphAsymmErrors* expEff_b   =(TGraphAsymmErrors*) beffIn->Get("b"   );
@@ -175,9 +175,10 @@ void ReadTree(TString filename,
   //read tree from file
   MiniEvent_t ev;
   TFile *f = TFile::Open(filename);
-  TTree *t = (TTree*)f->Get("analysis/data");
+  TTree *t = (TTree*)f->Get("minievents");
   attachToMiniEventTree(t,ev);
 
+  cout << "loop over events" << endl;
   //loop over events
   Int_t nentries(t->GetEntriesFast());
   cout << "...producing " << outname << " from " << nentries << " events" << endl;
@@ -194,6 +195,8 @@ void ReadTree(TString filename,
       size_t theLep(0);
       double theLepPt(-1.);
       // Select leptons
+      
+      if(debug) cout << "Event: " << i << endl;
       for (int ilep=0; ilep<ev.nl;++ilep)
 	{
           
@@ -211,15 +214,14 @@ void ReadTree(TString filename,
           double leta(fabs(ilp4.Eta()));
 
           if(ilp4.Pt() < 30.) passKin=false;
-          if(leta<2.4)      { passKin=false; passVetoKin=false;}
+          if(leta>2.4)      { passKin=false; passVetoKin=false;}
          
           if(ilp4.Pt() < 20.) passVetoKin=false;
           
-          if(!ev.l_tightId[ilep])  passId=false;
-          if(!ev.l_tightIso[ilep]) passIso=false;
+          if(ev.l_tightId[ilep] == 0)  passId=false;
+          if(ev.l_tightIso[ilep]== 0) passIso=false;
           // Veto ID and Iso are already applied
 
-          
           if(passKin && passId && passIso){        
             nMainLeptons++;
             if(ilp4.Pt()>theLepPt) // Redundant: they should be already sorted, so it is OK to take the first one passing the requirements.
@@ -230,24 +232,27 @@ void ReadTree(TString filename,
           }
           else if(passVetoKin && passVetoId && passVetoIso)
             nVetoLeptons++; // "else if" excludes main leptons from veto leptons
-          
+	  
         } // End loop on leptons
 
       // One tight lepton, no additional leptons
+      
       if(nMainLeptons!=1 || nVetoLeptons>0) continue;
       
       TLorentzVector lp4;
       lp4.SetPtEtaPhiM(ev.l_pt[theLep], ev.l_eta[theLep], ev.l_phi[theLep], ev.l_mass[theLep]);
 
       // Select according to the lepton id (charge is not needed right now)
-      if(channelSelection!=0)
-	{
-	  if(abs(ev.l_id[theLep])!=abs(channelSelection)) continue;
-	}
+      //      if(channelSelection!=0)
+      //	{
+      //	  if(abs(ev.l_id[theLep])!=abs(channelSelection)) continue;
+      //	}
       
       //apply trigger requirement
       if(abs(ev.l_id[theLep]) == 13 && ev.muTrigger) continue;
       if(abs(ev.l_id[theLep]) == 11 && ev.elTrigger) continue;
+
+      if(debug) cout << "\t\t Event passed trigger" << endl;
       
       // FILL HISTFLOW 1
       
@@ -391,6 +396,7 @@ void ReadTree(TString filename,
 	}
       
 
+      if(debug) cout << "\t\t event passed jets loop " << endl; 
       // Select taus
       // Taus are already selected
 
@@ -417,16 +423,21 @@ void ReadTree(TString filename,
 	  else if(flavourSplitting==FlavourSplitting::UDSGSPLITTING) { if(nudsgJets==0 || ncJets!=0 || nbJets!=0) continue; }
 	}
 
+      if(debug) cout << "\t\t event passed MET and MT variations " << endl;
+
       //generator level weights to apply
       std::vector<double> lepSF=getLeptonSelectionScaleFactor(ev.l_id[theLep],ev.l_pt[theLep], ev.l_eta[theLep],ev.isData);
       std::vector<double> puWeight(3,1.0);
+      if(debug) cout << "\t\t lepton scale factors acquired " << endl;
       if(!ev.isData && puWgtGr)
 	{
 	  puWeight[0]=puWgtGr->Eval(ev.putrue);  puWeight[1]=puUpWgtGr->Eval(ev.putrue); puWeight[2]=puDownWgtGr->Eval(ev.putrue);
 	}
+      if(debug) cout << "\t\t pileup acquired" << endl;
 
       double norm=normH ? normH->GetBinContent(1) : 1.0;
       double wgt          (norm*lepSF[0]                                *puWeight[0]);
+      if(debug) cout << "\t\t wgt = norm*lepSF*puweight[0] , i.e. " << wgt << "=" << norm << "*" << lepSF[0] << "*" <<puWeight[0] << endl;
       double wgtPuUp      (norm*lepSF[0]                                *puWeight[1]);
       double wgtPuDown    (norm*lepSF[0]                                *puWeight[2]);
       double wgtMuEffUp   (norm*(abs(ev.l_id[theLep])==13 ? lepSF[1] : lepSF[0])*puWeight[0]);
@@ -434,6 +445,7 @@ void ReadTree(TString filename,
       double wgtElEffUp   (norm*(abs(ev.l_id[theLep])==11 ? lepSF[1] : lepSF[0])*puWeight[0]);
       double wgtElEffDown (norm*(abs(ev.l_id[theLep])==11 ? lepSF[2] : lepSF[0])*puWeight[0]);
       double wgtQCDScaleLo(wgt),wgtQCDScaleHi(wgt);
+      if(debug) cout << "\t\t only ttbar weight is missing " << endl;
       if(genWgtMode!=NOGENWGT && !ev.isData) 
 	{
 	  wgt           *= ev.ttbar_w[0];
@@ -445,13 +457,16 @@ void ReadTree(TString filename,
 	  wgtElEffDown  *= ev.ttbar_w[0];
 	  wgtQCDScaleLo *= ev.ttbar_w[0];
 	  wgtQCDScaleHi *= ev.ttbar_w[0];
+	  if(debug) cout << "\t\t weight has been multiplied by ev.ttbar_w[0]=" << ev.ttbar_w[0] << ", yielding wgt=" << wgt << endl;
 	}
+      if(debug) cout << "\t\t acquiring normalization from normH histogram, which has pointer: " << normH << endl;
       if(isTTbar)
 	{
 	  wgtQCDScaleLo   = wgt*(normH->GetBinContent(10)/norm)*(ev.ttbar_w[9]/ev.ttbar_w[0]);
 	  wgtQCDScaleHi   = wgt*(normH->GetBinContent(6)/norm)*(ev.ttbar_w[5]/ev.ttbar_w[0]);	 
 	}
 
+      if(debug) cout << "\t\t event passed genevent stuff" << endl;
       //nominal selection
       if(nJets>=1)
 	{
@@ -583,7 +598,7 @@ void ReadTree(TString filename,
 	  allPlots["njetsnbtags_mistagUp"]->Fill(binToFill,wgt); 
 	}
 
-      
+      if(debug) cout << "\t\t Now nominal selection starts" << endl;
       // Nominal selection
 
       // One lepton requirement already applied
@@ -597,8 +612,11 @@ void ReadTree(TString filename,
         passCat0btag(nBtags==0),
         passCat1btag(nBtags==1),
         passCat2btag(nBtags>1);
-      
-      
+
+      if(debug) cout << "\t\t Event categorization: pass2Jets " << pass2Jets << ", passMet " << passMet << ", pass1btag " << pass1btag << ", pass1tau " << pass1tau << ", passOS " << passOS << ", passCat0btag " << passCat0btag << ", passCat1btag " << passCat1btag << ", passCat2btag " << passCat2btag << endl;
+
+      if(debug) cout << "\t\t Event weight: " << wgt << endl;
+
       
                                                                   allPlots["eventflowold_nom"]->Fill(0., wgt);
       if(pass2Jets)                                               allPlots["eventflowold_nom"]->Fill(1., wgt);
@@ -626,7 +644,7 @@ void ReadTree(TString filename,
       if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots["btagcat_nom"]->Fill(1., wgt);
       if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) allPlots["btagcat_nom"]->Fill(2., wgt);
 
-
+      if(debug) cout << "Event analyzed fully " << endl;
 
     }
   
