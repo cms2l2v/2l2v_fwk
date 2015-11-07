@@ -614,8 +614,8 @@ int main (int argc, char *argv[])
                 for(std::vector<reco::GenJet>::const_iterator genJet=genJetsHandle->begin(); genJet!=genJetsHandle->end(); genJet++)
                   {
                     if(genJet->pt()<20 || fabs(genJet->eta())>2.5) continue;
-                    float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
-                    if(dR<0.4) continue;
+                    //float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
+                    //if(dR<0.4) continue;
                     miniEvent.genj_pt  [miniEvent.ngenj]=genJet->pt();
                     miniEvent.genj_eta [miniEvent.ngenj]=genJet->eta();
                     miniEvent.genj_phi [miniEvent.ngenj]=genJet->phi();
@@ -1096,11 +1096,11 @@ int main (int argc, char *argv[])
           pat::Tau& tau = taus[itau];
           if (tau.pt() < 20. || fabs (tau.eta()) > 2.3) continue;
           
-          bool overlapWithLepton(false);
-          for(int l=0; l<(int)selLeptons.size();++l){
-            if(reco::deltaR(tau, selLeptons[l])<0.4){overlapWithLepton=true; break;}
-          }
-          if(overlapWithLepton) continue;
+          //bool overlapWithLepton(false);
+          //for(int l=0; l<(int)selLeptons.size();++l){
+          //  if(reco::deltaR(tau, selLeptons[l])<0.4){overlapWithLepton=true; break;}
+          //}
+          //if(overlapWithLepton) continue;
           
           //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
@@ -1203,7 +1203,7 @@ int main (int argc, char *argv[])
           //    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
           //  }
           if (!passPFloose || jet.pt() <25. || fabs(jet.eta()) > 2.5) continue;
-          if (minDRlj < 0.4) continue;
+          //if (minDRlj < 0.4) continue;
           
           selJets.push_back(jet);
           
