@@ -47,6 +47,10 @@ datapileup_42pb_2015b_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble(0, 0.00
 datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble( 3.9990225e-05, 0.00064873031, 0.001959521, 0.0054431139, 0.011774899, 0.022367866, 0.038852725, 0.058638999, 0.079758281, 0.094741285, 0.10511208, 0.10750261, 0.10176179, 0.090711159, 0.07544378, 0.060140854, 0.045606629, 0.033391838, 0.023540912, 0.015938326, 0.010077537, 0.0066961409, 0.0040212393, 0.0024971674, 0.0015818356, 0.00084423808, 0.00040878896, 0.00025327142, 0.00013774411, 3.5546866e-05, 4.4433583e-05, 4.4433583e-06, 1.3330075e-05, 0, 0, 4.4433583e-06, 0, 4.4433583e-06, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
 
 
+from os import path as path
+
+theLumiMask = path.expandvars(@lumiMask)
+
 runProcess = cms.PSet(
     dtag  = cms.string("@dtag"),
     input = cms.untracked.vstring("@input"),
@@ -70,7 +74,7 @@ runProcess = cms.PSet(
     datapileup = datapileup_200pb_2015bcd_ll_Preliminary, 
     datapileupSingleLep = datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary,
     debug = cms.bool(False),
-    lumisToProcess = LumiList.LumiList(filename = @lumiMask).getVLuminosityBlockRange(),
+    lumisToProcess = LumiList.LumiList(filename = theLumiMask).getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),
     electronidparas = cms.PSet(myVidElectronId),
     maxevents = cms.int32(-1) # set to -1 when running on grid. 
