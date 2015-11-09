@@ -202,9 +202,9 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  }
 
                  //just to make it faster, only consider the first 3 sample of a same kind
-                 if(isData){if(dataProcessed>=2){ File->Close(); continue;}else{dataProcessed++;}}
-                 if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
-                 if(isMC  ){if(bckgProcessed>=2){ File->Close(); continue;}else{bckgProcessed++;}}
+                 if(isData){if(dataProcessed>=5){ File->Close(); continue;}else{dataProcessed++;}}
+                 if(isSign){if(signProcessed>=5){ File->Close(); continue;}else{signProcessed++;}}
+                 if(isMC  ){if(bckgProcessed>=5){ File->Close(); continue;}else{bckgProcessed++;}}
 
                  printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
 	         GetListOfObject(Root,RootDir,histlist,(TDirectory*)File,"" );
