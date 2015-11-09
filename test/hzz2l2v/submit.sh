@@ -23,11 +23,10 @@ step=$1   #variable that store the analysis step to run
 arguments=''; for var in "${@:2}"; do arguments=$arguments" "$var; done
 if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$arguments ;fi 
 
-
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_11_03
+SUFFIX=_2015_11_06
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
@@ -101,10 +100,10 @@ case $step in
 
     3.1)  # make plots and combine root files for photon + jet study
 	JSON=$MAINDIR/photon_samples.json
-	#INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+	INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
-	runPlotter --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --noPlot 
-	#ln -s -f $PLOTTER.root $MAINDIR/plotter.root
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --noPlot 
+#	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;; 
 esac
 
