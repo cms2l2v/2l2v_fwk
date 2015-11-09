@@ -47,6 +47,14 @@ void createMiniEventTree(TTree *t,MiniEvent_t &ev)
   t->Branch("t_energy"     ,  ev.t_energy     , "t_energy[nt]/D");
   t->Branch("t_et"         ,  ev.t_et         , "t_et[nt]/D");
 
+  t->Branch("t_dmfinding"       ,  ev.t_dmfinding        , "t_dmfinding/D");        
+  t->Branch("t_isodb3hits"      ,  ev.t_isodb3hits       , "t_isodb3hits/D");       
+  t->Branch("t_againstMu3Loose" ,  ev.t_againstMu3Loose  , "t_againstMu3Loose/D");  
+  t->Branch("t_againstMu3Tight" ,  ev.t_againstMu3Tight  , "t_againstMu3Tight/D");  
+  t->Branch("t_againstEl5VLoose",  ev.t_againstEl5VLoose , "t_againstEl5VLoose/D");       
+  t->Branch("t_againstEl5Loose" ,  ev.t_againstEl5Loose  , "t_againstEl5Loose/D");       
+  t->Branch("t_againstEl5Medium",  ev.t_againstEl5Medium , "t_againstEl5Medium/D");        
+
   t->Branch("me_id",        &ev.me_id,        "me_id/I");
   t->Branch("me_np",        &ev.me_np,        "me_np/I");
   t->Branch("me_pid",       ev.me_pid,        "me_pid/I");
@@ -121,15 +129,22 @@ void attachToMiniEventTree(TTree *t,MiniEvent_t &ev)
   t->SetBranchAddress("l_phi",     ev.l_phi);
   t->SetBranchAddress("l_mass",    ev.l_mass);
 
-  t->SetBranchAddress("nt"           ,  &ev.nt          );
-  t->SetBranchAddress("t_pt"         ,  ev.t_pt         );
-  t->SetBranchAddress("t_eta"        ,  ev.t_eta        );
-  t->SetBranchAddress("t_phi"        ,  ev.t_phi        );
-  t->SetBranchAddress("t_mass"       ,  ev.t_mass       );
-  t->SetBranchAddress("t_leadChHadP" ,  ev.t_leadChHadP );
-  t->SetBranchAddress("t_leadChHadPt",  ev.t_leadChHadPt);
-  t->SetBranchAddress("t_energy"     ,  ev.t_energy     );
-  t->SetBranchAddress("t_et"         ,  ev.t_et         );
+  t->SetBranchAddress("nt"                ,  &ev.nt          );
+  t->SetBranchAddress("t_pt"              ,  ev.t_pt         );
+  t->SetBranchAddress("t_eta"             ,  ev.t_eta        );
+  t->SetBranchAddress("t_phi"             ,  ev.t_phi        );
+  t->SetBranchAddress("t_mass"            ,  ev.t_mass       );
+  t->SetBranchAddress("t_leadChHadP"      ,  ev.t_leadChHadP );
+  t->SetBranchAddress("t_leadChHadPt"     ,  ev.t_leadChHadPt);
+  t->SetBranchAddress("t_energy"          ,  ev.t_energy     );
+  t->SetBranchAddress("t_et"              ,  ev.t_et         );
+  t->SetBranchAddress("t_dmfinding"       ,  ev.t_dmfinding       );
+  t->SetBranchAddress("t_isodb3hits"      ,  ev.t_isodb3hits      );
+  t->SetBranchAddress("t_againstMu3Loose" ,  ev.t_againstMu3Loose );
+  t->SetBranchAddress("t_againstMu3Tight" ,  ev.t_againstMu3Tight );
+  t->SetBranchAddress("t_againstEl5VLoose",  ev.t_againstEl5VLoose);
+  t->SetBranchAddress("t_againstEl5Loose" ,  ev.t_againstEl5Loose );
+  t->SetBranchAddress("t_againstEl5Medium",  ev.t_againstEl5Medium);
 
   t->SetBranchAddress("ngenj",        &ev.ngenj);
   t->SetBranchAddress("nj",        &ev.nj);

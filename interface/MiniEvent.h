@@ -26,7 +26,9 @@ struct MiniEvent_t
 
   Int_t nt;
   Int_t t_charge[10];
-  Double_t t_pt[10], t_eta[10], t_phi[10], t_mass[10], t_leadChHadP[10], t_leadChHadPt[10], t_energy[10], t_et[10];
+  Double_t t_pt[10], t_eta[10], t_phi[10], t_mass[10], t_leadChHadP[10], t_leadChHadPt[10], t_energy[10], t_et[10], t_dmfinding[10], t_isodb3hits[10], t_againstMu3Loose[10], t_againstMu3Tight[10], t_againstEl5VLoose[10], t_againstEl5Loose[10], t_againstEl5Medium[10];
+
+
 
   Int_t nj,ngenj;
   Double_t j_pt[20],j_eta[20],j_phi[20],j_mass[20],j_area[20];

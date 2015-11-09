@@ -500,8 +500,8 @@ int main (int argc, char *argv[])
 
 
   TString
-    electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose"),
-    electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight");
+    electronIdMainTag("cutBasedElectronID-Spring15-25ns-V1-standalone-tight"),
+    electronIdVetoTag("cutBasedElectronID-Spring15-25ns-V1-standalone-loose");
 
   //pileup weighting
   edm::LumiReWeighting * LumiWeights = NULL;
@@ -787,15 +787,12 @@ int main (int argc, char *argv[])
         // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         bool elTrigger   (
                           isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*")
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
                           :
-                          utils::passTriggerPatterns (tr, "HLT_Ele23_WPLoose_Gsf_v*")
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*")
                           );
         bool muTrigger   (
-                          isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_v*")
-                          :
-                          utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*")
+                          utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
                           );
 
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
@@ -1039,7 +1036,7 @@ int main (int argc, char *argv[])
           
           // Main leptons kin
           if(lepton.pt() < 20.)                      passKin = false;
-          if(leta > 2.1)                                    passKin = false;
+          if(leta > (lid==11 ? 2.5 : 2.4) )                                    passKin = false;
           if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
           
           
@@ -1105,14 +1102,14 @@ int main (int argc, char *argv[])
           //      if(!tau.isPFTau()) continue; // Only PFTaus // It should be false for slimmedTaus
           //      if(tau.emFraction() >=2.) continue;
           
-          // Discriminators from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV
-          // "The tau passes the discriminator if pat::Tau::tauID("name") returns a value of 0.5 or greater"
-          if(tau.tauID("decayModeFindingNewDMs")<0.5) continue; // High pt tau. Otherwise, OldDMs
-          // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
-          // Consequently, there might be a small bias due to events that are cut by the OldDM and would not be cut by the NewDM
-          if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue; // See whether to us the new byMediumPileupWeightedIsolation3Hits that is available only for dynamic strip reconstruction (default in CMSSW_7_4_14)
-          if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
-          if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
+          /// // Discriminators from https://twiki.cern.ch/twiki/bin/viewauth/CMS/TauIDRecommendation13TeV
+          /// // "The tau passes the discriminator if pat::Tau::tauID("name") returns a value of 0.5 or greater"
+          /// if(tau.tauID("decayModeFindingNewDMs")<0.5) continue; // High pt tau. Otherwise, OldDMs
+          /// // Anyways, the collection of taus from miniAOD should be already afer decayModeFinding cut (the tag - Old or New - is unspecified in the twiki, though).
+          /// // Consequently, there might be a small bias due to events that are cut by the OldDM and would not be cut by the NewDM
+          /// if (tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits")<0.5) continue; // See whether to us the new byMediumPileupWeightedIsolation3Hits that is available only for dynamic strip reconstruction (default in CMSSW_7_4_14)
+          /// if (tau.tauID ("againstMuonTight3")                          <0.5) continue; // Medium working point not usable. Available values: Loose, Tight
+          /// if (tau.tauID ("againstElectronMediumMVA5")                  <0.5) continue; // Tight working point not usable. Avaiable values: VLoose, Loose, Medium
           
           // Pixel hits cut (will be available out of the box in new MINIAOD production)
           {
@@ -1150,6 +1147,15 @@ int main (int argc, char *argv[])
               miniEvent.t_leadChHadPt[miniEvent.nt]=leadChargedHadron->pt();
               miniEvent.t_energy     [miniEvent.nt]=tau.energy();
               miniEvent.t_et         [miniEvent.nt]=tau.et();
+              
+              miniEvent.t_dmfinding  [miniEvent.nt]=tau.tauID("decayModeFindingNewDMs");
+              miniEvent.t_isodb3hits [miniEvent.nt]=tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits");
+              miniEvent.t_againstMu3Loose  [miniEvent.nt]=tau.tauID ("againstMuonLoose3");
+              miniEvent.t_againstMu3Tight  [miniEvent.nt]=tau.tauID ("againstMuonTight3");
+              miniEvent.t_againstEl5VLoose [miniEvent.nt]=tau.tauID ("againstElectronVLooseMVA5");
+              miniEvent.t_againstEl5Loose  [miniEvent.nt]=tau.tauID ("againstElectronLooseMVA5");
+              miniEvent.t_againstEl5Medium [miniEvent.nt]=tau.tauID ("againstElectronMediumMVA5");
+              
               miniEvent.nt++;
             }
         }
@@ -1158,13 +1164,13 @@ int main (int argc, char *argv[])
       //
       //JET/MET ANALYSIS
       //
-      if(debug) cout << "Now update Jet Energy Corrections" << endl;
-      //add scale/resolution uncertainties and propagate to the MET      
-      utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
-      if(debug) cout << "Update also MET" << endl;
-      std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
-      met=newMet[utils::cmssw::METvariations::NOMINAL];
-      if(debug) cout << "Jet Energy Corrections updated" << endl;
+      /// if(debug) cout << "Now update Jet Energy Corrections" << endl;
+      /// //add scale/resolution uncertainties and propagate to the MET      
+      /// utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
+      /// if(debug) cout << "Update also MET" << endl;
+      /// std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
+      /// met=newMet[utils::cmssw::METvariations::NOMINAL];
+      /// if(debug) cout << "Jet Energy Corrections updated" << endl;
       
       // Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
       pat::JetCollection
@@ -1250,7 +1256,7 @@ int main (int argc, char *argv[])
               bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
               // Leave b-tag status update to the offline offline analysis
 	      /*
-if (isMC)
+              if (isMC)
                 {
                   int flavId = jet.partonFlavour();
                   if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
@@ -1266,8 +1272,8 @@ if (isMC)
               miniEvent.nj++;
             }
 	}
-
-      if(saveSummaryTree && selLeptons.size() > 0 && selJets.size()>2)
+      
+      if(saveSummaryTree && selLeptons.size() > 0 && selJets.size()>1)
         {
           TDirectory* cwd = gDirectory;
           ofile->cd();
