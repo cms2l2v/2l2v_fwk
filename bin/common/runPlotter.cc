@@ -53,6 +53,7 @@ bool StoreInFile = true;
 bool doPlot = true;
 bool splitCanvas = false;
 bool onlyCutIndex = false;
+bool showRatioBox=true;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
@@ -847,7 +848,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    std::vector<TH1 *> compDists;
    if(data)                   compDists.push_back(data);
    else if(spimpose.size()>0) compDists=spimpose;
-   if(mc && compDists.size()){
+   if( mc && compDists.size() && showRatioBox ){
        c1->cd();
        TPad *t2 = new TPad("t2", "t2",0.0,0.0, 1.0,0.2);
        t2->SetFillColor(0);
@@ -1103,6 +1104,7 @@ int main(int argc, char* argv[]){
 	printf("--plotExt --> extension to save, you can specify multiple extensions by repeating this option\n");
 	printf("--cutflow --> name of the histogram with the original number of events (cutflow by default)\n");
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
+        printf("--removeRatioPlot --> if you want to remove ratio plots between Data ad Mc\n");
 
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;
@@ -1140,6 +1142,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--noPowers" )!=string::npos){ doPowers= false;    }
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
+     if(arg.find("--removeRatioPlot")!=string::npos){ showRatioBox = false; printf("No ratio plot between Data and Mc \n"); }
      if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", argv[i]);  }
      if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
