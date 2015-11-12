@@ -75,10 +75,10 @@ def produceNormalizationCache(samplesList,inDir,cache,xsecWgts,integLumi,puWgts)
         for f in input_list:
             fIn=ROOT.TFile.Open(f)
             if norigEvents is None:
-                norigEvents=fIn.Get('all_initNorm').Clone('xsecwgts')
+                norigEvents=fIn.Get('all_initNNLO').Clone('xsecwgts')
                 norigEvents.SetDirectory(0)
                 norigEvents.Reset('ICE')
-            norigEvents.Add(fIn.Get('all_initNorm'))
+            norigEvents.Add(fIn.Get('all_initNNLO'))
             if hputrue:
                 hputrue.SetDirectory(fIn)
                 fIn.Get('minievents').Draw('putrue>>+hputrue','ttbar_w[0]','goff')

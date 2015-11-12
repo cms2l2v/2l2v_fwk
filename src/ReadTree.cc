@@ -114,30 +114,33 @@ void ReadTree(TString filename,
       allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(12,"4j,#geq2b");
 
 
-      allPlots["eventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 6, 0., 6.); 
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 iso lepton");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "#geq 2 jets");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "E_{T}^{miss}");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "#geq 1 b-tag");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
+      allPlots["eventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 7, 0., 7.); 
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "#geq 1 b-tag");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "1 #tau");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(7, "op. sign");
       
-      allPlots["eventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 5, 0., 5.);
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 iso lepton");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "#geq 2 jets");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "E_{T}^{miss}");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "1 #tau");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "op. sign");
+      allPlots["eventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 6, 0., 6.);
+      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
+      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
+      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
+      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
+      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
+      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
 
-      allPlots["eventflowcat_"+systs[i]] = new TH1D("eventflowcat_"+systs[i], ";;Events", 8, 0., 8.);
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 iso lepton");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "#geq 2 jets");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "E_{T}^{miss}");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "1 #tau");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "op. sign");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "= 0 b-tag");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(7, "= 1 b-tag");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(8, "#geq 2 b-tag");
+      allPlots["eventflowcat_"+systs[i]] = new TH1D("eventflowcat_"+systs[i], ";;Events", 9, 0., 9.);
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(7, "= 0 b-tag");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(8, "= 1 b-tag");
+      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(9, "#geq 2 b-tag");
       
       allPlots["btagcat_"+systs[i]] = new TH1D("btagcat_"+systs[i], ";;Events", 3, 0., 3.);
       allPlots["btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "= 0 b-tags");
@@ -195,6 +198,8 @@ void ReadTree(TString filename,
       size_t theLep(0);
       double theLepPt(-1.);
       // Select leptons
+
+      std::vector<TLorentzVector> selLeptons; selLeptons.clear();
       
       if(debug) cout << "Event: " << i << endl;
       for (int ilep=0; ilep<ev.nl;++ilep)
@@ -213,11 +218,13 @@ void ReadTree(TString filename,
           //unsigned int lid(fabs(ev.l_id[ilep]));
           double leta(fabs(ilp4.Eta()));
 
-          if(ilp4.Pt() < 30.) passKin=false;
-          if(leta>2.4)      { passKin=false; passVetoKin=false;}
+          if(ilp4.Pt() < 30.){ passKin=false; passVetoKin=false;}
+          if(leta>2.4)       { passKin=false; passVetoKin=false;}
          
           if(ilp4.Pt() < 20.) passVetoKin=false;
           
+          if(debug) cout << "Lepton " << ilep << " has id " << ev.l_tightId[ilep] << ", iso " << ev.l_tightIso[ilep] << endl;
+
           if(ev.l_tightId[ilep] == 0)  passId=false;
           if(ev.l_tightIso[ilep]== 0) passIso=false;
           // Veto ID and Iso are already applied
@@ -229,16 +236,19 @@ void ReadTree(TString filename,
                 theLep = ilep;
                 theLepPt = ilp4.Pt();
               }
+            selLeptons.push_back(ilp4);
           }
           else if(passVetoKin && passVetoId && passVetoIso)
             nVetoLeptons++; // "else if" excludes main leptons from veto leptons
 	  
         } // End loop on leptons
+      
+      // For the moment I do not need to sort the collection
 
-      // One tight lepton, no additional leptons
-      
-      if(nMainLeptons!=1 || nVetoLeptons>0) continue;
-      
+      // For the moment, optimized for xsec. One tight lepton, no additional leptons
+      if(debug) cout << "Event has " << nMainLeptons << " leptons, from size " << selLeptons.size() << ", and " << nVetoLeptons << " veto leptons." << endl;
+
+
       TLorentzVector lp4;
       lp4.SetPtEtaPhiM(ev.l_pt[theLep], ev.l_eta[theLep], ev.l_phi[theLep], ev.l_mass[theLep]);
 
@@ -248,13 +258,43 @@ void ReadTree(TString filename,
       //	  if(abs(ev.l_id[theLep])!=abs(channelSelection)) continue;
       //	}
       
+      if(debug) cout << "Event has lepton id " << ev.l_id[theLep] << " and flags: muTrigger " << ev.muTrigger << " and elTrigger " << ev.elTrigger << endl;
       //apply trigger requirement
-      if(abs(ev.l_id[theLep]) == 13 && ev.muTrigger) continue;
-      if(abs(ev.l_id[theLep]) == 11 && ev.elTrigger) continue;
+      if(ev.muTrigger && abs(ev.l_id[theLep]) != 13) continue;
+      if(ev.elTrigger && abs(ev.l_id[theLep]) != 11) continue;
 
       if(debug) cout << "\t\t Event passed trigger" << endl;
       
       // FILL HISTFLOW 1
+
+      // Select taus
+      size_t theTau(0);
+      double theTauPt(-1.);
+      std::vector<TLorentzVector> selTaus; selTaus.clear();
+      for (int itau=0; itau<ev.nt;++itau)
+	{
+          // Kin (pre-applied, just a cross check)
+          if(ev.t_pt[itau] < 20 || fabs(ev.t_eta[itau]) >2.3) continue;
+          
+          // Discriminators
+          if(ev.t_isodb3hits[itau]      < 0.5) continue;
+          if(ev.t_againstMu3Tight[itau] < 0.5) continue; // Or "Loose"
+          if(ev.t_againstEl5Medium[itau]< 0.5) continue; // Or "VLoose" or "Loose"
+
+          TLorentzVector itp4;
+	  itp4.SetPtEtaPhiM(ev.t_pt[itau],ev.t_eta[itau],ev.t_phi[itau],ev.t_mass[itau]);
+          // Lepton cleaning
+          for(size_t ilep=0; ilep<selLeptons.size(); ++ilep)
+            if(itp4.DeltaR(selLeptons[ilep])<0.4) continue;
+          if(itp4.Pt()>theTauPt) // Redundant: they should be already sorted, so it is OK to take the first one passing the requirements.
+            {
+              theTau = itau;
+              theTauPt = itp4.Pt();
+            }
+          
+          selTaus.push_back(itp4);
+        }      
+      
       
       // Select jets
       uint32_t nJets(0),  nJetsJESLo(0),   nJetsJESHi(0),   nJetsJERLo(0),     nJetsJERHi(0);
@@ -273,7 +313,18 @@ void ReadTree(TString filename,
 	  //check kinematics
 	  TLorentzVector jp4;
 	  jp4.SetPtEtaPhiM(ev.j_pt[ijet],ev.j_eta[ijet],ev.j_phi[ijet],ev.j_mass[ijet]);
+          // Lepton cleaning
 	  if(jp4.DeltaR(lp4)<0.4) continue;
+          // Tau cleaning
+          bool skipJet(false);
+          for(size_t itau=0; itau<selTaus.size(); ++itau)
+            if(jp4.DeltaR(selTaus[itau])<0.4){
+              skipJet=true;
+              break;
+            }
+          if(skipJet)
+            continue;
+
 	  double csv = ev.j_csv[ijet];	  
 
 	  if(fabs(jp4.Eta()) > 2.4) continue;
@@ -397,9 +448,6 @@ void ReadTree(TString filename,
       
 
       if(debug) cout << "\t\t event passed jets loop " << endl; 
-      // Select taus
-      // Taus are already selected
-
     
 
       //varied MET
@@ -467,6 +515,16 @@ void ReadTree(TString filename,
 	}
 
       if(debug) cout << "\t\t event passed genevent stuff" << endl;
+
+
+      allPlots["eventflowold_nom"]   ->Fill(0., wgt);
+      allPlots["eventflownocat_nom"] ->Fill(0., wgt);
+      allPlots["eventflowcat_nom"]   ->Fill(0., wgt);
+      
+      if(nMainLeptons!=1 || nVetoLeptons>0) continue;
+      
+
+
       //nominal selection
       if(nJets>=1)
 	{
@@ -607,8 +665,8 @@ void ReadTree(TString filename,
         pass2Jets   (nJets>1),
         passMet     (met.Pt()>40.),
         pass1btag   (nBtags>0),
-        pass1tau    (ev.nt>0),
-        passOS      (ev.nt>0 ? (ev.t_charge[0] * ev.l_charge[theLep] < 0): false  ),
+        pass1tau    (selTaus.size()>0),
+        passOS      (selTaus.size()>0 ? (ev.t_charge[theTau] * ev.l_charge[theLep] < 0): false  ),
         passCat0btag(nBtags==0),
         passCat1btag(nBtags==1),
         passCat2btag(nBtags>1);
@@ -618,27 +676,27 @@ void ReadTree(TString filename,
       if(debug) cout << "\t\t Event weight: " << wgt << endl;
 
       
-                                                                  allPlots["eventflowold_nom"]->Fill(0., wgt);
-      if(pass2Jets)                                               allPlots["eventflowold_nom"]->Fill(1., wgt);
-      if(pass2Jets && passMet)                                    allPlots["eventflowold_nom"]->Fill(2., wgt);
-      if(pass2Jets && passMet && pass1btag)                       allPlots["eventflowold_nom"]->Fill(3., wgt);
-      if(pass2Jets && passMet && pass1btag && pass1tau)           allPlots["eventflowold_nom"]->Fill(4., wgt);
-      if(pass2Jets && passMet && pass1btag && pass1tau && passOS) allPlots["eventflowold_nom"]->Fill(5., wgt);
+                                                                  allPlots["eventflowold_nom"]->Fill(1., wgt);
+      if(pass2Jets)                                               allPlots["eventflowold_nom"]->Fill(2., wgt);
+      if(pass2Jets && passMet)                                    allPlots["eventflowold_nom"]->Fill(3., wgt);
+      if(pass2Jets && passMet && pass1btag)                       allPlots["eventflowold_nom"]->Fill(4., wgt);
+      if(pass2Jets && passMet && pass1btag && pass1tau)           allPlots["eventflowold_nom"]->Fill(5., wgt);
+      if(pass2Jets && passMet && pass1btag && pass1tau && passOS) allPlots["eventflowold_nom"]->Fill(6., wgt);
       
-                                                     allPlots["eventflownocat_nom"]->Fill(0., wgt);
-      if(pass2Jets)                                  allPlots["eventflownocat_nom"]->Fill(1., wgt);
-      if(pass2Jets && passMet)                       allPlots["eventflownocat_nom"]->Fill(2., wgt);
-      if(pass2Jets && passMet && pass1tau)           allPlots["eventflownocat_nom"]->Fill(3., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS) allPlots["eventflownocat_nom"]->Fill(4., wgt);
+                                                     allPlots["eventflownocat_nom"]->Fill(1., wgt);
+      if(pass2Jets)                                  allPlots["eventflownocat_nom"]->Fill(2., wgt);
+      if(pass2Jets && passMet)                       allPlots["eventflownocat_nom"]->Fill(3., wgt);
+      if(pass2Jets && passMet && pass1tau)           allPlots["eventflownocat_nom"]->Fill(4., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS) allPlots["eventflownocat_nom"]->Fill(5., wgt);
 
-                                                                     allPlots["eventflowcat_nom"]->Fill(0., wgt);
-      if(pass2Jets)                                                  allPlots["eventflowcat_nom"]->Fill(1., wgt);
-      if(pass2Jets && passMet)                                       allPlots["eventflowcat_nom"]->Fill(2., wgt);
-      if(pass2Jets && passMet && pass1tau)                           allPlots["eventflowcat_nom"]->Fill(3., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS)                 allPlots["eventflowcat_nom"]->Fill(4., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) allPlots["eventflowcat_nom"]->Fill(5., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots["eventflowcat_nom"]->Fill(6., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) allPlots["eventflowcat_nom"]->Fill(7., wgt);
+                                                                     allPlots["eventflowcat_nom"]->Fill(1., wgt);
+      if(pass2Jets)                                                  allPlots["eventflowcat_nom"]->Fill(2., wgt);
+      if(pass2Jets && passMet)                                       allPlots["eventflowcat_nom"]->Fill(3., wgt);
+      if(pass2Jets && passMet && pass1tau)                           allPlots["eventflowcat_nom"]->Fill(4., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS)                 allPlots["eventflowcat_nom"]->Fill(5., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) allPlots["eventflowcat_nom"]->Fill(6., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots["eventflowcat_nom"]->Fill(7., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) allPlots["eventflowcat_nom"]->Fill(8., wgt);
      
       if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) allPlots["btagcat_nom"]->Fill(0., wgt);
       if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots["btagcat_nom"]->Fill(1., wgt);

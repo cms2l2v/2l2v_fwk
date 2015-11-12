@@ -365,8 +365,12 @@ int main (int argc, char *argv[])
   bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
   bool isRun2015B   (!isMC && dtag.Contains("Run2015B"));
-  bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
+  TString urlChecker(urls[0]);
+  bool isNLOMC      (isMC && (urlChecker.Contains("amcatnlo") || urlChecker.Contains("powheg")) );
   
+  if(debug) cout << "isNLOMC=" << isNLOMC << " = isMC(" << isMC << ") && ( contains amcatnlo(" << dtag.Contains("amcatnlo") << ") || contains powheg(" << dtag.Contains("powheg") << ")" << endl;
+  if(debug) cout << "dtag: " << dtag << ", outUrl " << outUrl << ", urls[0]: " << urls[0] << endl;
+
   TString outTxtUrl = outUrl + ".txt";
   FILE *outTxtFile = NULL;
   if (!isMC) outTxtFile = fopen (outTxtUrl.Data (), "w");
@@ -414,12 +418,14 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (3, "PU central");
   normhist->GetXaxis()->SetBinLabel (4, "PU up");
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
+
+  mon.addHistogram(new TH1D("initNNLO", ";Variation;Events", 200, 0., 200.));
   
-  for(Int_t igenjet=0; igenjet<5; igenjet++)
-    {
-      TString fidtag("fidcounter"); fidtag+=igenjet;
-      mon.addHistogram(new TH1D(fidtag, ";Variation;Events", 200, 0., 200.)); 
-    }
+  //for(Int_t igenjet=0; igenjet<5; igenjet++)
+  //  {
+  //    TString fidtag("fidcounter"); fidtag+=igenjet;
+  //    mon.addHistogram(new TH1D(fidtag, ";Variation;Events", 200, 0., 200.)); 
+  //  }
   
 
 
@@ -608,51 +614,57 @@ int main (int argc, char *argv[])
                 }
                 if(nLeptons!=1) ngenJets=0;
                 
-                //require 1 jets not overlapping with lepton
-                fwlite::Handle<std::vector<reco::GenJet> > genJetsHandle;
-                genJetsHandle.getByLabel(ev, "ak4GenJetsCustom");
-                for(std::vector<reco::GenJet>::const_iterator genJet=genJetsHandle->begin(); genJet!=genJetsHandle->end(); genJet++)
-                  {
-                    if(genJet->pt()<20 || fabs(genJet->eta())>2.5) continue;
-                    //float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
-                    //if(dR<0.4) continue;
-                    miniEvent.genj_pt  [miniEvent.ngenj]=genJet->pt();
-                    miniEvent.genj_eta [miniEvent.ngenj]=genJet->eta();
-                    miniEvent.genj_phi [miniEvent.ngenj]=genJet->phi();
-                    miniEvent.genj_mass[miniEvent.ngenj]=genJet->mass();
-                    miniEvent.ngenj++;
-                  }
-                ngenJets = miniEvent.ngenj;
+                ////require 1 jets not overlapping with lepton
+                //fwlite::Handle<std::vector<reco::GenJet> > genJetsHandle;
+                //genJetsHandle.getByLabel(ev, "ak4GenJetsCustom");
+                //for(std::vector<reco::GenJet>::const_iterator genJet=genJetsHandle->begin(); genJet!=genJetsHandle->end(); genJet++)
+                //  {
+                //    if(genJet->pt()<20 || fabs(genJet->eta())>2.5) continue;
+                //    //float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
+                //    //if(dR<0.4) continue;
+                //    miniEvent.genj_pt  [miniEvent.ngenj]=genJet->pt();
+                //    miniEvent.genj_eta [miniEvent.ngenj]=genJet->eta();
+                //    miniEvent.genj_phi [miniEvent.ngenj]=genJet->phi();
+                //    miniEvent.genj_mass[miniEvent.ngenj]=genJet->mass();
+                //    miniEvent.ngenj++;
+                //  }
+                //ngenJets = miniEvent.ngenj;
                 
               }
             
-            fwlite::Handle<GenEventInfoProduct> evt;
-            evt.getByLabel(ev, "generator");
-            if(evt.isValid())
+            GenEventInfoProduct evt;
+            fwlite::Handle<GenEventInfoProduct> evtHandle;
+            evtHandle.getByLabel(ev, "generator");
+            if(evtHandle.isValid())
               {
-                weightGen = (evt->weight() > 0 ) ? 1. : -1. ;
+                evt = *evtHandle;
+                weightGen = (evt.weight() > 0 ) ? 1. : -1. ;
 
                 if(saveSummaryTree)
                   {
-                    miniEvent.ttbar_allmepartons   = evt->nMEPartons();
-                    miniEvent.ttbar_matchmepartons = evt->nMEPartonsFiltered();
-                    miniEvent.ttbar_w[0]           = evt->weight();
+                    if(debug) cout << "I am here, and ttbar_w[0] will be set to: " << evt.weight() << endl;
+                    miniEvent.ttbar_allmepartons   = evt.nMEPartons();
+                    miniEvent.ttbar_matchmepartons = evt.nMEPartonsFiltered();
+                    miniEvent.ttbar_w[0]           = evt.weight();
                     miniEvent.ttbar_nw++;
                   }
               }
             
             if(saveSummaryTree)
               {
-                fwlite::Handle<LHEEventProduct> lheEvtProd;
-                lheEvtProd.getByLabel(ev, "externalLHEProducer");
-                if(lheEvtProd.isValid())
+                const LHEEventProduct* lheEvtProd;
+                fwlite::Handle<LHEEventProduct> lheEvtProdHandle;
+                lheEvtProdHandle.getByLabel(ev, "externalLHEProducer");
+                if(lheEvtProdHandle.isValid())
                   {
+                    lheEvtProd = lheEvtProdHandle.ptr();
                     double weightLhe=lheEvtProd->originalXWGTUP();
 
                     for(unsigned int i=0; i<lheEvtProd->weights().size();++i)
                       {
                         double asdde=lheEvtProd->weights()[i].wgt;
                         miniEvent.ttbar_w[miniEvent.ttbar_nw]=miniEvent.ttbar_w[0]*asdde/weightLhe;
+                        if(debug) cout << "I am here, and ttbar_w[" << miniEvent.ttbar_nw << "] has been set to: " << miniEvent.ttbar_w[0]*asdde/weightLhe << endl;
                         miniEvent.ttbar_nw++;
                       }
                     
@@ -669,16 +681,16 @@ int main (int argc, char *argv[])
                       }
                   }
                 
-                for(Int_t igenjet=0; igenjet<5; igenjet++)
-                  {
-                    TString fidtag("fidcounter"); fidtag+=igenjet;
-                    mon.fillHisto(fidtag, tags, 0., miniEvent.ttbar_w[0]);
-                    if(igenjet<=ngenJets)
-                      {
-                        for(Int_t iw=1; iw<miniEvent.ttbar_nw; iw++)
-                          mon.fillHisto(fidtag, tags, double(iw), miniEvent.ttbar_w[iw]);
-                      }
-                  }
+                //for(Int_t igenjet=0; igenjet<5; igenjet++)
+                //  {
+                //    TString fidtag("fidcounter"); fidtag+=igenjet;
+                //    mon.fillHisto(fidtag, tags, 0., miniEvent.ttbar_w[0]);
+                //    if(igenjet<=ngenJets)
+                //      {
+                //        for(Int_t iw=1; iw<miniEvent.ttbar_nw; iw++)
+                //          mon.fillHisto(fidtag, tags, double(iw), miniEvent.ttbar_w[iw]);
+                //      }
+                //  }
               }
             
           }
@@ -747,6 +759,10 @@ int main (int argc, char *argv[])
             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval (ngenITpu) * (PUNorm[1]/PUNorm[0]);
           }
         
+
+        mon.fillHisto("initNNLO", tags, 0., miniEvent.ttbar_w[0]); //;weightGen);
+        for(Int_t iw=1; iw<miniEvent.ttbar_nw; iw++)
+          mon.fillHisto("initNNLO", tags, (float)iw, miniEvent.ttbar_w[iw]);
         
         mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
         mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
@@ -780,7 +796,7 @@ int main (int argc, char *argv[])
           for(edm::TriggerNames::Strings::const_iterator trnames = tr.triggerNames().begin(); trnames!=tr.triggerNames().end(); ++trnames)
             cout << *trnames << endl;
           cout << "----------- End of trigger list ----------" << endl;
-          return 0;
+          //return 0;
         }
 
         

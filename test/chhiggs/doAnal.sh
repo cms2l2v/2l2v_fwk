@@ -34,13 +34,13 @@ if [ "${1}" = "submit" ]; then
     fi
     
     if [ "${2}" = "ntuplizer" ]; then
-        OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_4_ttbar/
+        OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_v3/
         mkdir -p ${OUTDIR}
-        QUEUE="crab"
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples_maximal.json
         LFNDIRBASE="ntuples_pietro_2015-10-29_v1bis/"
-        runAnalysisOverSamples.py -e runNtuplizer -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -l ${LFNDIRBASE} -f 8 -s ${QUEUE}
+        runAnalysisOverSamples.py -e runNtuplizer -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -l ${LFNDIRBASE} -f 8 --NFile 2  -s ${QUEUE}
     else
-        runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 -s ${QUEUE}
+        runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 --NFile 2 -s ${QUEUE}
     fi
     
 elif [ "${1}" = "lumi" ]; then 
