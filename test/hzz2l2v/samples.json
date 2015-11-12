@@ -37,7 +37,7 @@
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_WZ2l2q"                      ,  "xsec":3.22       , "br":[ 1 ]           , "dset":"/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WZ2l2q"                      ,  "xsec":5.595       , "br":[ 1 ]           , "dset":"/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     { 
