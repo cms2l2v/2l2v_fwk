@@ -29,6 +29,16 @@
       "data":[
         { "dtag":"MC13TeV_WZ3lnu"                      ,  "xsec":4.42965       , "br":[ 1 ]           , "dset":"/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
+    }, 
+    {
+      "tag":"WZ#rightarrow 2l2q",
+      "isdata":false,
+      "color":602,
+      "lcolor":1,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_WZ2l2q"                      ,  "xsec":3.22       , "br":[ 1 ]           , "dset":"/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
     },
     { 
       "tag":"VVV",
@@ -105,12 +115,12 @@
       "fill":0,
       "marker":20,
       "data":[
-        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"   ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"       ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleElectron2015D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"     ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2015D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"   ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_MuEG2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"       ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
+        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"   ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"       ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2015D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"     ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"   ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_MuEG2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"       ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
       ]
     },
     {
