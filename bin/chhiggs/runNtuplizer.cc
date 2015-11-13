@@ -326,7 +326,6 @@ int main (int argc, char *argv[])
 
   bool debug           = runProcess.getParameter<bool>  ("debug");
   bool runSystematics  = runProcess.getParameter<bool>  ("runSystematics");
-  bool saveSummaryTree = runProcess.getParameter<bool>  ("saveSummaryTree");
   bool isMC            = runProcess.getParameter<bool>  ("isMC");
   double xsec          = runProcess.getParameter<double>("xsec");
   int mctruthmode      = runProcess.getParameter<int>   ("mctruthmode");
@@ -419,7 +418,7 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (4, "PU up");
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
 
-  mon.addHistogram(new TH1D("initNNLO", ";Variation;Events", 200, 0., 200.));
+  mon.addHistogram(new TH1D("initEvents", ";Variation;Events", 200, 0., 200.));
   
   //for(Int_t igenjet=0; igenjet<5; igenjet++)
   //  {
@@ -446,23 +445,20 @@ int main (int argc, char *argv[])
   TTree* summaryTree = NULL; //ev->;
   MiniEvent_t miniEvent;
 
-  if(saveSummaryTree)
-    {
-      TDirectory* cwd = gDirectory;
-      //TString outSummaryUrl = runProcess.getParameter<std::string>("summaryfile");
-      //if(outSummaryUrl=="") outSummaryUrl=outUrl;
-      //std::string summaryFileName(outUrl); 
-      //summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
-      
-      //summaryFile = new TFile(summaryFileName.c_str(), "recreate");
-      summaryTree = new TTree("minievents", "minievents");
-
-      createMiniEventTree(summaryTree, miniEvent);
-      
-      //summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
-        
-      cwd->cd();
-    }
+  TDirectory* cwd = gDirectory;
+  //TString outSummaryUrl = runProcess.getParameter<std::string>("summaryfile");
+  //if(outSummaryUrl=="") outSummaryUrl=outUrl;
+  //std::string summaryFileName(outUrl); 
+  //summaryFileName.replace(summaryFileName.find(".root", 0), 5, "_summary.root");
+  
+  //summaryFile = new TFile(summaryFileName.c_str(), "recreate");
+  summaryTree = new TTree("minievents", "minievents");
+  
+  createMiniEventTree(summaryTree, miniEvent);
+  
+  //summaryTree->SetDirectory(summaryFile);  // This line is probably not needed
+  
+  cwd->cd();
   
   
   //jet energy scale and uncertainties 
@@ -561,14 +557,12 @@ int main (int argc, char *argv[])
             if(!debug) fflush (stdout); // Otherwise debug messages are flushed
           }
 
-        if(saveSummaryTree){
-          // Save event header (in case I need to prepare an event list)
-          miniEvent.run    = ev.id().run();
-          miniEvent.lumi   = ev.luminosityBlock();
-          miniEvent.event  = ev.id().event(); 
-          miniEvent.isData = ev.isRealData();
-        }
-
+        // Save event header (in case I need to prepare an event list)
+        miniEvent.run    = ev.id().run();
+        miniEvent.lumi   = ev.luminosityBlock();
+        miniEvent.event  = ev.id().event(); 
+        miniEvent.isData = ev.isRealData();
+        
 
         edm::EventBase const & myEvent = ev;
         // Take into account the negative weights from some NLO generators (otherwise some phase space will be double counted)
@@ -584,53 +578,51 @@ int main (int argc, char *argv[])
         miniEvent.ttbar_genId=0;
 
         
-        if(isNLOMC)
+        if(isMC) // isNLOMC
           {
             int ngenJets(-1);
             //double weightGen(0.);
             //double weightLhe(0.);
-            if(saveSummaryTree)
-              {
-                fwlite::Handle<int> genTtbarIdHandle;
-                genTtbarIdHandle.getByLabel(ev, "categorizeGenTtbar", "genTtbarId");
-                if(genTtbarIdHandle.isValid()) miniEvent.ttbar_genId=*genTtbarIdHandle;
-
-
-                fwlite::Handle<reco::GenParticleCollection> genParticlesHandle;
-                genParticlesHandle.getByLabel(ev, "prunedGenParticles");
-                
-                //require only one lepton (can be from tau, if tau not from hadron)
-                int nLeptons(0);
-                float lphi(0), leta(0);
-                for (size_t ipart = 0; ipart < genParticlesHandle->size(); ++ipart) {
-                  const reco::GenParticle & genIt = (*genParticlesHandle)[ipart];
-                  if(!genIt.isPromptFinalState() && !genIt.isDirectPromptTauDecayProductFinalState()) continue;
-                  int ID = abs(genIt.pdgId());
-                  if(ID!=11 && ID!=13) continue;
-                  if(genIt.pt()<20 || fabs(genIt.eta())>2.5) continue;
-                  nLeptons++;
-                  lphi=genIt.phi();
-                  leta=genIt.eta();
-                }
-                if(nLeptons!=1) ngenJets=0;
-                
-                ////require 1 jets not overlapping with lepton
-                //fwlite::Handle<std::vector<reco::GenJet> > genJetsHandle;
-                //genJetsHandle.getByLabel(ev, "ak4GenJetsCustom");
-                //for(std::vector<reco::GenJet>::const_iterator genJet=genJetsHandle->begin(); genJet!=genJetsHandle->end(); genJet++)
-                //  {
-                //    if(genJet->pt()<20 || fabs(genJet->eta())>2.5) continue;
-                //    //float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
-                //    //if(dR<0.4) continue;
-                //    miniEvent.genj_pt  [miniEvent.ngenj]=genJet->pt();
-                //    miniEvent.genj_eta [miniEvent.ngenj]=genJet->eta();
-                //    miniEvent.genj_phi [miniEvent.ngenj]=genJet->phi();
-                //    miniEvent.genj_mass[miniEvent.ngenj]=genJet->mass();
-                //    miniEvent.ngenj++;
-                //  }
-                //ngenJets = miniEvent.ngenj;
-                
-              }
+            
+            fwlite::Handle<int> genTtbarIdHandle;
+            genTtbarIdHandle.getByLabel(ev, "categorizeGenTtbar", "genTtbarId");
+            if(genTtbarIdHandle.isValid()) miniEvent.ttbar_genId=*genTtbarIdHandle;
+            
+            
+            fwlite::Handle<reco::GenParticleCollection> genParticlesHandle;
+            genParticlesHandle.getByLabel(ev, "prunedGenParticles");
+            
+            //require only one lepton (can be from tau, if tau not from hadron)
+            int nLeptons(0);
+            float lphi(0), leta(0);
+            for (size_t ipart = 0; ipart < genParticlesHandle->size(); ++ipart) {
+              const reco::GenParticle & genIt = (*genParticlesHandle)[ipart];
+              if(!genIt.isPromptFinalState() && !genIt.isDirectPromptTauDecayProductFinalState()) continue;
+              int ID = abs(genIt.pdgId());
+              if(ID!=11 && ID!=13) continue;
+              if(genIt.pt()<20 || fabs(genIt.eta())>2.5) continue;
+              nLeptons++;
+              lphi=genIt.phi();
+              leta=genIt.eta();
+            }
+            if(nLeptons!=1) ngenJets=0;
+            
+            ////require 1 jets not overlapping with lepton
+            //fwlite::Handle<std::vector<reco::GenJet> > genJetsHandle;
+            //genJetsHandle.getByLabel(ev, "ak4GenJetsCustom");
+            //for(std::vector<reco::GenJet>::const_iterator genJet=genJetsHandle->begin(); genJet!=genJetsHandle->end(); genJet++)
+            //  {
+            //    if(genJet->pt()<20 || fabs(genJet->eta())>2.5) continue;
+            //    //float dR=deltaR(genJet->eta(),genJet->phi(),leta,lphi);
+            //    //if(dR<0.4) continue;
+            //    miniEvent.genj_pt  [miniEvent.ngenj]=genJet->pt();
+            //    miniEvent.genj_eta [miniEvent.ngenj]=genJet->eta();
+            //    miniEvent.genj_phi [miniEvent.ngenj]=genJet->phi();
+            //    miniEvent.genj_mass[miniEvent.ngenj]=genJet->mass();
+            //    miniEvent.ngenj++;
+            //  }
+            //ngenJets = miniEvent.ngenj;
+            
             
             GenEventInfoProduct evt;
             fwlite::Handle<GenEventInfoProduct> evtHandle;
@@ -640,58 +632,53 @@ int main (int argc, char *argv[])
                 evt = *evtHandle;
                 weightGen = (evt.weight() > 0 ) ? 1. : -1. ;
 
-                if(saveSummaryTree)
-                  {
                     if(debug) cout << "I am here, and ttbar_w[0] will be set to: " << evt.weight() << endl;
                     miniEvent.ttbar_allmepartons   = evt.nMEPartons();
                     miniEvent.ttbar_matchmepartons = evt.nMEPartonsFiltered();
                     miniEvent.ttbar_w[0]           = evt.weight();
                     miniEvent.ttbar_nw++;
+              }
+            
+            const LHEEventProduct* lheEvtProd;
+            fwlite::Handle<LHEEventProduct> lheEvtProdHandle;
+            lheEvtProdHandle.getByLabel(ev, "externalLHEProducer");
+            if(lheEvtProdHandle.isValid())
+              {
+                lheEvtProd = lheEvtProdHandle.ptr();
+                double weightLhe=lheEvtProd->originalXWGTUP();
+                
+                for(unsigned int i=0; i<lheEvtProd->weights().size();++i)
+                  {
+                    double asdde=lheEvtProd->weights()[i].wgt;
+                    miniEvent.ttbar_w[miniEvent.ttbar_nw]=miniEvent.ttbar_w[0]*asdde/weightLhe;
+                    if(debug) cout << "I am here, and ttbar_w[" << miniEvent.ttbar_nw << "] has been set to: " << miniEvent.ttbar_w[0]*asdde/weightLhe << endl;
+                    miniEvent.ttbar_nw++;
+                  }
+                
+                const lhef::HEPEUP &hepeup=lheEvtProd->hepeup();
+                miniEvent.me_id=hepeup.IDPRUP;
+                for(int ip=0;ip<hepeup.NUP; ++ip)
+                  {
+                    miniEvent.me_pid [miniEvent.me_np]=hepeup.IDUP[ip];
+                    miniEvent.me_px  [miniEvent.me_np]=hepeup.PUP[ip][0];
+                    miniEvent.me_py  [miniEvent.me_np]=hepeup.PUP[ip][1];
+                    miniEvent.me_pz  [miniEvent.me_np]=hepeup.PUP[ip][2];
+                    miniEvent.me_mass[miniEvent.me_np]=hepeup.PUP[ip][4];
+                    miniEvent.me_np++;
                   }
               }
             
-            if(saveSummaryTree)
-              {
-                const LHEEventProduct* lheEvtProd;
-                fwlite::Handle<LHEEventProduct> lheEvtProdHandle;
-                lheEvtProdHandle.getByLabel(ev, "externalLHEProducer");
-                if(lheEvtProdHandle.isValid())
-                  {
-                    lheEvtProd = lheEvtProdHandle.ptr();
-                    double weightLhe=lheEvtProd->originalXWGTUP();
-
-                    for(unsigned int i=0; i<lheEvtProd->weights().size();++i)
-                      {
-                        double asdde=lheEvtProd->weights()[i].wgt;
-                        miniEvent.ttbar_w[miniEvent.ttbar_nw]=miniEvent.ttbar_w[0]*asdde/weightLhe;
-                        if(debug) cout << "I am here, and ttbar_w[" << miniEvent.ttbar_nw << "] has been set to: " << miniEvent.ttbar_w[0]*asdde/weightLhe << endl;
-                        miniEvent.ttbar_nw++;
-                      }
-                    
-                    const lhef::HEPEUP &hepeup=lheEvtProd->hepeup();
-                    miniEvent.me_id=hepeup.IDPRUP;
-                    for(int ip=0;ip<hepeup.NUP; ++ip)
-                      {
-                        miniEvent.me_pid [miniEvent.me_np]=hepeup.IDUP[ip];
-                        miniEvent.me_px  [miniEvent.me_np]=hepeup.PUP[ip][0];
-                        miniEvent.me_py  [miniEvent.me_np]=hepeup.PUP[ip][1];
-                        miniEvent.me_pz  [miniEvent.me_np]=hepeup.PUP[ip][2];
-                        miniEvent.me_mass[miniEvent.me_np]=hepeup.PUP[ip][4];
-                        miniEvent.me_np++;
-                      }
-                  }
-                
-                //for(Int_t igenjet=0; igenjet<5; igenjet++)
-                //  {
-                //    TString fidtag("fidcounter"); fidtag+=igenjet;
-                //    mon.fillHisto(fidtag, tags, 0., miniEvent.ttbar_w[0]);
-                //    if(igenjet<=ngenJets)
-                //      {
+            //for(Int_t igenjet=0; igenjet<5; igenjet++)
+            //  {
+            //    TString fidtag("fidcounter"); fidtag+=igenjet;
+            //    mon.fillHisto(fidtag, tags, 0., miniEvent.ttbar_w[0]);
+            //    if(igenjet<=ngenJets)
+            //      {
                 //        for(Int_t iw=1; iw<miniEvent.ttbar_nw; iw++)
                 //          mon.fillHisto(fidtag, tags, double(iw), miniEvent.ttbar_w[iw]);
                 //      }
                 //  }
-              }
+            
             
           }
         
@@ -728,7 +715,7 @@ int main (int argc, char *argv[])
               }
           }
 
-        if(saveSummaryTree) miniEvent.nvtx = nGoodPV;
+        miniEvent.nvtx = nGoodPV;
         if(nGoodPV==0) continue; // Do not store/analyze events without any primary vertex
 
 
@@ -746,11 +733,8 @@ int main (int argc, char *argv[])
                 }
               }
             
-            if(saveSummaryTree)
-              {
                 miniEvent.pu=ngenITpu;
                 miniEvent.putrue=ngenITtruepu;
-              }
 
             //ngenITpu = nGoodPV; // based on nvtx
             puWeight = LumiWeights->weight (ngenITpu) * PUNorm[0];
@@ -760,9 +744,9 @@ int main (int argc, char *argv[])
           }
         
 
-        mon.fillHisto("initNNLO", tags, 0., miniEvent.ttbar_w[0]); //;weightGen);
+        mon.fillHisto("initEvents", tags, 0., miniEvent.ttbar_w[0]); //;weightGen);
         for(Int_t iw=1; iw<miniEvent.ttbar_nw; iw++)
-          mon.fillHisto("initNNLO", tags, (float)iw, miniEvent.ttbar_w[iw]);
+          mon.fillHisto("initEvents", tags, (float)iw, miniEvent.ttbar_w[iw]);
         
         mon.fillHisto("initNorm", tags, 0., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
         mon.fillHisto("initNorm", tags, 1., weightGen); // Should be all 1, but for NNLO samples there are events weighting -1
@@ -770,7 +754,7 @@ int main (int argc, char *argv[])
         mon.fillHisto("initNorm", tags, 3., TotalWeight_plus);
         mon.fillHisto("initNorm", tags, 4., TotalWeight_minus);
 
-        if(saveSummaryTree) miniEvent.weight=weightGen;
+        miniEvent.weight=weightGen;
         
         //##############################################   EVENT LOOP STARTS   ##############################################
 
@@ -818,11 +802,8 @@ int main (int argc, char *argv[])
         if(filterOnlySINGLEE)  { muTrigger = false;                    }
 
 
-        if(saveSummaryTree)
-          {
             miniEvent.elTrigger=elTrigger;
             miniEvent.muTrigger=muTrigger;
-          }
         
         if (!(elTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
@@ -837,7 +818,7 @@ int main (int argc, char *argv[])
         rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
         if(rhoHandle.isValid() ) rho = *rhoHandle;
         
-        if(saveSummaryTree) miniEvent.rho = rho;
+        miniEvent.rho = rho;
 
         reco::GenParticleCollection gen;
         fwlite::Handle<reco::GenParticleCollection> genHandle;
@@ -1068,38 +1049,33 @@ int main (int argc, char *argv[])
         }
       std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
 
-      if(saveSummaryTree)
+      miniEvent.nl=0;
+      
+      for(size_t ilep=0; ilep<selLeptons.size(); ++ilep)
         {
-          miniEvent.nl=0;
-
-          for(size_t ilep=0; ilep<selLeptons.size(); ++ilep)
-            {
-              patUtils::GenericLepton& lepton = selLeptons[ilep];
-              int lid(fabs(lepton.pdgId()));
-              
-              const reco::GenParticle* gen= lid==11 ? lepton.el.genLepton() : lepton.mu.genLepton();
-              miniEvent.isPromptFinalState[miniEvent.nl] = gen ? int(gen->isPromptFinalState()) : 0;
-              miniEvent.isDirectPromptTauDecayProductFinalState[miniEvent.nl] = gen ? int(gen->isDirectPromptTauDecayProductFinalState()) : 0;
-              miniEvent.l_id[miniEvent.nl]=lepton.pdgId();
-              miniEvent.l_tightId[miniEvent.nl]= lid == 11 ? int(patUtils::passId(electronVidMainId, myEvent, lepton.el)) : int(patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight));
-              miniEvent.l_tightIso[miniEvent.nl] = lid == 11 ? 1 : int(patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight)); // Electron iso is included within the ID
-              miniEvent.l_charge[miniEvent.nl]= lid==11 ? lepton.el.charge() : lepton.mu.charge();
-              miniEvent.l_pt[miniEvent.nl]=lepton.pt();
-              miniEvent.l_eta[miniEvent.nl]= lid==11 ? lepton.el.superCluster()->eta() : lepton.eta();
-              miniEvent.l_phi[miniEvent.nl]=lepton.phi();
-              miniEvent.l_mass[miniEvent.nl]=lepton.mass();
-              miniEvent.nl++;
-            }
+          patUtils::GenericLepton& lepton = selLeptons[ilep];
+          int lid(fabs(lepton.pdgId()));
+          
+          const reco::GenParticle* gen= lid==11 ? lepton.el.genLepton() : lepton.mu.genLepton();
+          miniEvent.isPromptFinalState[miniEvent.nl] = gen ? int(gen->isPromptFinalState()) : 0;
+          miniEvent.isDirectPromptTauDecayProductFinalState[miniEvent.nl] = gen ? int(gen->isDirectPromptTauDecayProductFinalState()) : 0;
+          miniEvent.l_id[miniEvent.nl]=lepton.pdgId();
+          miniEvent.l_tightId[miniEvent.nl]= lid == 11 ? int(patUtils::passId(electronVidMainId, myEvent, lepton.el)) : int(patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight));
+          miniEvent.l_tightIso[miniEvent.nl] = lid == 11 ? 1 : int(patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight)); // Electron iso is included within the ID
+          miniEvent.l_charge[miniEvent.nl]= lid==11 ? lepton.el.charge() : lepton.mu.charge();
+          miniEvent.l_pt[miniEvent.nl]=lepton.pt();
+          miniEvent.l_eta[miniEvent.nl]= lid==11 ? lepton.el.superCluster()->eta() : lepton.eta();
+          miniEvent.l_phi[miniEvent.nl]=lepton.phi();
+          miniEvent.l_mass[miniEvent.nl]=lepton.mass();
+          miniEvent.nl++;
         }
-
-
+      
+      
+      
       LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
-
-      if(saveSummaryTree)
-        {
-          miniEvent.met_pt=met.pt();
-          miniEvent.met_phi=met.phi();
-        }
+      
+      miniEvent.met_pt=met.pt();
+      miniEvent.met_phi=met.phi();
       
       //select the taus
       pat::TauCollection selTaus;
@@ -1146,35 +1122,33 @@ int main (int argc, char *argv[])
       std::sort (selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
       
       
-      if(saveSummaryTree)
+      miniEvent.nt=0;
+      for(size_t itau=0; itau<selTaus.size(); ++itau)
         {
-          miniEvent.nt=0;
-          for(size_t itau=0; itau<selTaus.size(); ++itau)
-            {
-              pat::Tau& tau = selTaus[itau];
-              const reco::GenJet* gen = tau.genJet();
-              miniEvent.t_charge[miniEvent.nt]=tau.charge();
-              miniEvent.t_pt  [miniEvent.nt]=tau.pt();
-              miniEvent.t_eta [miniEvent.nt]=tau.eta();
-              miniEvent.t_phi [miniEvent.nt]=tau.phi();
-              miniEvent.t_mass[miniEvent.nt]=tau.mass(); // No svfit yet
-              reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
-              miniEvent.t_leadChHadP [miniEvent.nt]=leadChargedHadron->p();
-              miniEvent.t_leadChHadPt[miniEvent.nt]=leadChargedHadron->pt();
-              miniEvent.t_energy     [miniEvent.nt]=tau.energy();
-              miniEvent.t_et         [miniEvent.nt]=tau.et();
-              
-              miniEvent.t_dmfinding  [miniEvent.nt]=tau.tauID("decayModeFindingNewDMs");
-              miniEvent.t_isodb3hits [miniEvent.nt]=tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits");
-              miniEvent.t_againstMu3Loose  [miniEvent.nt]=tau.tauID ("againstMuonLoose3");
-              miniEvent.t_againstMu3Tight  [miniEvent.nt]=tau.tauID ("againstMuonTight3");
-              miniEvent.t_againstEl5VLoose [miniEvent.nt]=tau.tauID ("againstElectronVLooseMVA5");
-              miniEvent.t_againstEl5Loose  [miniEvent.nt]=tau.tauID ("againstElectronLooseMVA5");
-              miniEvent.t_againstEl5Medium [miniEvent.nt]=tau.tauID ("againstElectronMediumMVA5");
-              
-              miniEvent.nt++;
-            }
+          pat::Tau& tau = selTaus[itau];
+          const reco::GenJet* gen = tau.genJet();
+          miniEvent.t_charge[miniEvent.nt]=tau.charge();
+          miniEvent.t_pt  [miniEvent.nt]=tau.pt();
+          miniEvent.t_eta [miniEvent.nt]=tau.eta();
+          miniEvent.t_phi [miniEvent.nt]=tau.phi();
+          miniEvent.t_mass[miniEvent.nt]=tau.mass(); // No svfit yet
+          reco::CandidatePtr leadChargedHadron = tau.leadChargedHadrCand();
+          miniEvent.t_leadChHadP [miniEvent.nt]=leadChargedHadron->p();
+          miniEvent.t_leadChHadPt[miniEvent.nt]=leadChargedHadron->pt();
+          miniEvent.t_energy     [miniEvent.nt]=tau.energy();
+          miniEvent.t_et         [miniEvent.nt]=tau.et();
+          
+          miniEvent.t_dmfinding  [miniEvent.nt]=tau.tauID("decayModeFindingNewDMs");
+          miniEvent.t_isodb3hits [miniEvent.nt]=tau.tauID ("byMediumCombinedIsolationDeltaBetaCorr3Hits");
+          miniEvent.t_againstMu3Loose  [miniEvent.nt]=tau.tauID ("againstMuonLoose3");
+          miniEvent.t_againstMu3Tight  [miniEvent.nt]=tau.tauID ("againstMuonTight3");
+          miniEvent.t_againstEl5VLoose [miniEvent.nt]=tau.tauID ("againstElectronVLooseMVA5");
+          miniEvent.t_againstEl5Loose  [miniEvent.nt]=tau.tauID ("againstElectronLooseMVA5");
+          miniEvent.t_againstEl5Medium [miniEvent.nt]=tau.tauID ("againstElectronMediumMVA5");
+          
+          miniEvent.nt++;
         }
+      
 
 
       //
@@ -1250,46 +1224,42 @@ int main (int argc, char *argv[])
       std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
       std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
 
-      if(saveSummaryTree)
+      miniEvent.nj=0;
+      for(size_t ijet=0; ijet<selJets.size(); ++ijet)
         {
-
-          miniEvent.nj=0;
-          for(size_t ijet=0; ijet<selJets.size(); ++ijet)
+          pat::Jet jet = selJets[ijet];
+          //save jet
+          const reco::Candidate* genParton = jet.genParton();
+          const reco::GenJet* genJet=jet.genJet(); 
+          miniEvent.j_area[miniEvent.nj]=jet.jetArea();
+          miniEvent.j_pt  [miniEvent.nj]=jet.pt();
+          miniEvent.j_mass[miniEvent.nj]=jet.mass();
+          miniEvent.j_eta [miniEvent.nj]=jet.eta();
+          miniEvent.j_phi [miniEvent.nj]=jet.phi();
+          miniEvent.genj_pt[miniEvent.nj]=genJet ? genJet->pt() : 0;
+          miniEvent.genj_mass[miniEvent.nj]=genJet ? genJet->mass() : 0;
+          miniEvent.genj_eta[miniEvent.nj]=genJet ? genJet->eta() : 0;
+          miniEvent.genj_phi[miniEvent.nj]=genJet ?  genJet->phi() : 0;
+          bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+          // Leave b-tag status update to the offline offline analysis
+          /*
+            if (isMC)
             {
-              pat::Jet jet = selJets[ijet];
-              //save jet
-              const reco::Candidate* genParton = jet.genParton();
-              const reco::GenJet* genJet=jet.genJet(); 
-              miniEvent.j_area[miniEvent.nj]=jet.jetArea();
-              miniEvent.j_pt  [miniEvent.nj]=jet.pt();
-              miniEvent.j_mass[miniEvent.nj]=jet.mass();
-              miniEvent.j_eta [miniEvent.nj]=jet.eta();
-              miniEvent.j_phi [miniEvent.nj]=jet.phi();
-              miniEvent.genj_pt[miniEvent.nj]=genJet ? genJet->pt() : 0;
-              miniEvent.genj_mass[miniEvent.nj]=genJet ? genJet->mass() : 0;
-              miniEvent.genj_eta[miniEvent.nj]=genJet ? genJet->eta() : 0;
-              miniEvent.genj_phi[miniEvent.nj]=genJet ?  genJet->phi() : 0;
-              bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
-              // Leave b-tag status update to the offline offline analysis
-	      /*
-              if (isMC)
-                {
-                  int flavId = jet.partonFlavour();
-                  if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-                  else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-                  else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
-                }
-	      */
-              miniEvent.j_csv[miniEvent.nj]=jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-              miniEvent.j_isbtag    [miniEvent.nj]= int(hasCSVtag);
-              miniEvent.j_flav      [miniEvent.nj]=jet.partonFlavour();
-              miniEvent.j_hadflav   [miniEvent.nj]=jet.hadronFlavour();
-              miniEvent.j_pid       [miniEvent.nj]=genParton ? genParton->pdgId() : 0;
-              miniEvent.nj++;
+            int flavId = jet.partonFlavour();
+            if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
+            else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
+            else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
             }
-	}
+          */
+          miniEvent.j_csv[miniEvent.nj]=jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+          miniEvent.j_isbtag    [miniEvent.nj]= int(hasCSVtag);
+          miniEvent.j_flav      [miniEvent.nj]=jet.partonFlavour();
+          miniEvent.j_hadflav   [miniEvent.nj]=jet.hadronFlavour();
+          miniEvent.j_pid       [miniEvent.nj]=genParton ? genParton->pdgId() : 0;
+          miniEvent.nj++;
+        }
       
-      if(saveSummaryTree && selLeptons.size() > 0 && selJets.size()>1)
+      if(selLeptons.size() > 0 && selJets.size()>1)
         {
           TDirectory* cwd = gDirectory;
           ofile->cd();
@@ -1318,7 +1288,7 @@ int main (int argc, char *argv[])
   TDirectory* cwd = gDirectory;
   ofile->cd();
   mon.Write();
-  if(saveSummaryTree)  summaryTree->Write();
+  summaryTree->Write();
   ofile->Close();
   delete ofile;
   cwd->cd();
