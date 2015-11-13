@@ -38,6 +38,7 @@ void createMiniEventTree(TTree *t,MiniEvent_t &ev)
   t->Branch("l_mass",    ev.l_mass,    "l_mass[nl]/D");
 
   t->Branch("nt"           ,  &ev.nt          , "nt/I");
+  t->Branch("t_charge"     ,  ev.t_charge     , "t_charge[nt]/I");
   t->Branch("t_pt"         ,  ev.t_pt         , "t_pt[nt]/D");
   t->Branch("t_eta"        ,  ev.t_eta        , "t_eta[nt]/D");
   t->Branch("t_phi"        ,  ev.t_phi        , "t_phi[nt]/D");
@@ -130,6 +131,7 @@ void attachToMiniEventTree(TTree *t,MiniEvent_t &ev)
   t->SetBranchAddress("l_mass",    ev.l_mass);
 
   t->SetBranchAddress("nt"                ,  &ev.nt          );
+  t->SetBranchAddress("t_charge"          ,  ev.t_charge     );
   t->SetBranchAddress("t_pt"              ,  ev.t_pt         );
   t->SetBranchAddress("t_eta"             ,  ev.t_eta        );
   t->SetBranchAddress("t_phi"             ,  ev.t_phi        );
@@ -166,3 +168,4 @@ void attachToMiniEventTree(TTree *t,MiniEvent_t &ev)
   t->SetBranchAddress("met_pt",    &ev.met_pt);
   t->SetBranchAddress("met_phi",   &ev.met_phi);
 }
+
