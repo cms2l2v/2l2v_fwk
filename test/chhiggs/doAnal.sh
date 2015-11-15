@@ -34,7 +34,7 @@ if [ "${1}" = "submit" ]; then
     fi
     
     if [ "${2}" = "ntuplizer" ]; then
-        OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_v3/
+        OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_v6/
         mkdir -p ${OUTDIR}
         JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples_maximal.json
         LFNDIRBASE="ntuples_pietro_2015-10-29_v1bis/"
