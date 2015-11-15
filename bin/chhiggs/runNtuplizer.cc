@@ -1285,7 +1285,7 @@ int main (int argc, char *argv[])
 
 
   //save all to the file
-  TDirectory* cwd = gDirectory;
+  cwd=gDirectory;
   ofile->cd();
   mon.Write();
   summaryTree->Write();
