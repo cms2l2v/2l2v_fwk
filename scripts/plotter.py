@@ -6,6 +6,22 @@ import math
 
 from UserCode.llvv_fwk.rounding import *
 
+"""
+Wrapper to be used when running in parallel
+"""
+def RunMethodPacked(args):
+    thePlot,outDir,lumi,savetex=args
+    try:
+        thePlot.show(outDir=outDir,lumi=lumi,saveTeX=savetex)
+        thePlot.appendTo(outDir+'/plotter_'+thePlot.name+'.root')
+        thePlot.reset()
+    except:
+        print 50*'<'
+        print "  Problem (%s) with %s continuing without"%(sys.exc_info()[1],thePlot.name)
+        print 50*'<'
+        return False
+    return True
+
 
 """
 A wrapper to store data and MC histograms for comparison
@@ -340,6 +356,8 @@ def main():
     parser.add_option(      '--rebin',       dest='rebin',       help='rebin factor',                   default=1,       type=int)
     parser.add_option('-l', '--lumi',        dest='lumi' ,       help='lumi to print out',              default=41.6,    type=float)
     parser.add_option(      '--only',        dest='only',        help='plot only these (csv)',          default='',      type='string')
+    parser.add_option('-n', '--njobs',       dest='njobs',       help='number of parallel jobs',        default=8,       type=int)
+
     (opt, args) = parser.parse_args()
 
     #read list of samples
@@ -375,17 +393,24 @@ def main():
             except:
                 pass
 
-    #show plots
+    # Let the multiprocessing begin
+    # Writing to multiple root files and hadding the final plotter is remarkably quicker than multiprocessing the plots and then sequentially add them to the plotter file.
     ROOT.gStyle.SetOptTitle(0)
     ROOT.gStyle.SetOptStat(0)
     ROOT.gROOT.SetBatch(True)
     outDir=opt.inDir+'/plots'
     os.system('mkdir -p %s' % outDir)
-    for p in plots : 
+    task_list=[]
+    for p in plots :
         if opt.saveLog    : plots[p].savelog=True
-        if not opt.silent : plots[p].show(outDir=outDir,lumi=opt.lumi,saveTeX=opt.saveTeX)
-        plots[p].appendTo(outDir+'/plotter.root')
-        plots[p].reset()
+        if not opt.silent : task_list.append( (plots[p], outDir, opt.lumi,opt.saveTeX) )
+
+    from multiprocessing import Pool
+    pool = Pool(opt.njobs)
+    pool.map(RunMethodPacked, task_list)
+
+    os.system('hadd -f '+outDir+'/plotter.root '+outDir+'/plotter_*.root')
+    os.system('rm '+outDir+'/plotter_*.root')
 
     print '-'*50
     print 'Plots and summary ROOT file can be found in %s' % outDir
