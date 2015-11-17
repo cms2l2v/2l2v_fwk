@@ -65,115 +65,125 @@ void ReadTree(TString filename,
   //book histograms
   std::map<TString, TH1*> allPlots;
 
+  std::vector<TString> chanList; chanList.clear();
+  chanList.push_back("mu_");
+  chanList.push_back("el_");
+
   std::map<Int_t,Double_t> lumiMap=lumiPerRun();
-  for(Int_t ij=1; ij<=4; ij++)
+
+  for(std::vector<TString>::iterator ichan=chanList.begin(); ichan!=chanList.end(); ++ichan) // Loop on channels
     {
-      for(Int_t itag=-1; itag<=2; itag++)
-	{
-	  if(itag>ij) continue;
-	  TString tag(itag<0 ? Form("%dj",ij) : Form("%dj%dt",ij,itag));
-	  allPlots["ratevsrun_"+tag] = new TH1D("ratevsrun_"+tag,";Run number; Events/pb",lumiMap.size(),0,lumiMap.size());
-	  Int_t runCtr(0);
-	  for(std::map<Int_t,Double_t>::iterator it=lumiMap.begin(); it!=lumiMap.end(); it++,runCtr++)
-	    allPlots["ratevsrun_"+tag]->GetXaxis()->SetBinLabel(runCtr+1,Form("%d",it->first));
-	  allPlots["lpt_"+tag]  = new TH1D("lpt_"+tag,";Transverse momentum [GeV];Events" ,20,0.,300.);
-	  allPlots["lsip3d_"+tag]  = new TH1D("lsip3d_"+tag,";3d impact parameter significance;Events" ,40,0.,20.);
-	  allPlots["lchiso_"+tag]  = new TH1D("lchiso_"+tag,";Charged hadron isolation [GeV];Events" ,25,0.,50.);
-	  allPlots["lchreliso_"+tag]  = new TH1D("lchreliso_"+tag,";Charged hadron relative isolation;Events" ,25,0.,0.2);
-	  allPlots["leta_"+tag] = new TH1D("leta_"+tag,";Pseudo-rapidity;Events" ,12,0.,3.);
-	  allPlots["jpt_"+tag]  = new TH1D("jpt_"+tag,";Transverse momentum [GeV];Events" ,20,0.,300.);
-	  allPlots["jeta_"+tag] = new TH1D("jeta_"+tag,";Pseudo-rapidity;Events" ,12,0.,3.);
-	  allPlots["ht_"+tag]   = new TH1D("ht_"+tag,";H_{T} [GeV];Events",40,0,800);
-	  allPlots["csv_"+tag]  = new TH1D("csv_"+tag,";CSV discriminator;Events",100,0,1.0);
-	  allPlots["nvtx_"+tag] = new TH1D("nvtx_"+tag,";Vertex multiplicity;Events" ,50,0.,50.);
-	  allPlots["met_"+tag]  = new TH1D("metpt_"+tag,";Missing transverse energy [GeV];Events" ,20,0.,300.);
-	  allPlots["metphi_"+tag] = new TH1D("metphi_" + tag,";MET #phi [rad];Events" ,50,-3.2,3.2);
-	  for(size_t isyst=0; isyst<sizeof(systs)/sizeof(TString); isyst++)
-	    {
-	      allPlots["mt_"+systs[isyst]+"_"+tag]     = new TH1D("mt_"+systs[isyst]+"_"+tag,";Transverse Mass [GeV];Events" ,20,0.,200.);
-	      allPlots["minmlb_"+systs[isyst]+"_"+tag] = new TH1D("minmlb_"+systs[isyst]+"_"+tag,";min Mass(lepton,b) [GeV];Events" ,25,0.,250.);
-	    }
-	}
-    }
-
-  //category counting
-  for(size_t i=0; i<sizeof(systs)/sizeof(TString); i++)
-    {
-      allPlots["njetsnbtags_"+systs[i]] = new TH1D("njetsnbtags_"+systs[i],";Category;Events" ,12,0.,12.);
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1j,=0b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1j,=1b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(3, "");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(4, "2j,=0b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(5, "2j,=1b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(6, "2j,#geq2b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(7, "3j,=0b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(8, "3j,=1b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(9, "3j,#geq2b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(10,"4j,=0b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(11,"4j,=1b");
-      allPlots["njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(12,"4j,#geq2b");
-
-
-      allPlots["eventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 5, 0., 5.); 
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "#geq 1 b-tag");
+      TString chan(*ichan);
+      for(Int_t ij=1; ij<=4; ij++)
+        {
+          for(Int_t itag=-1; itag<=2; itag++)
+            {
+              if(itag>ij) continue;
+              TString tag(itag<0 ? Form("%dj",ij) : Form("%dj%dt",ij,itag));
+              allPlots[chan+"ratevsrun_"+tag] = new TH1D("ratevsrun_"+tag,";Run number; Events/pb",lumiMap.size(),0,lumiMap.size());
+              Int_t runCtr(0);
+              for(std::map<Int_t,Double_t>::iterator it=lumiMap.begin(); it!=lumiMap.end(); it++,runCtr++)
+                allPlots[chan+"ratevsrun_"+tag]->GetXaxis()->SetBinLabel(runCtr+1,Form("%d",it->first));
+              allPlots[chan+"lpt_"+tag]  = new TH1D("lpt_"+tag,";Transverse momentum [GeV];Events" ,20,0.,300.);
+              allPlots[chan+"lsip3d_"+tag]  = new TH1D("lsip3d_"+tag,";3d impact parameter significance;Events" ,40,0.,20.);
+              allPlots[chan+"lchiso_"+tag]  = new TH1D("lchiso_"+tag,";Charged hadron isolation [GeV];Events" ,25,0.,50.);
+              allPlots[chan+"lchreliso_"+tag]  = new TH1D("lchreliso_"+tag,";Charged hadron relative isolation;Events" ,25,0.,0.2);
+              allPlots[chan+"leta_"+tag] = new TH1D("leta_"+tag,";Pseudo-rapidity;Events" ,12,0.,3.);
+              allPlots[chan+"jpt_"+tag]  = new TH1D("jpt_"+tag,";Transverse momentum [GeV];Events" ,20,0.,300.);
+              allPlots[chan+"jeta_"+tag] = new TH1D("jeta_"+tag,";Pseudo-rapidity;Events" ,12,0.,3.);
+              allPlots[chan+"ht_"+tag]   = new TH1D("ht_"+tag,";H_{T} [GeV];Events",40,0,800);
+              allPlots[chan+"csv_"+tag]  = new TH1D("csv_"+tag,";CSV discriminator;Events",100,0,1.0);
+              allPlots[chan+"nvtx_"+tag] = new TH1D("nvtx_"+tag,";Vertex multiplicity;Events" ,50,0.,50.);
+              allPlots[chan+"met_"+tag]  = new TH1D("metpt_"+tag,";Missing transverse energy [GeV];Events" ,20,0.,300.);
+              allPlots[chan+"metphi_"+tag] = new TH1D("metphi_" + tag,";MET #phi [rad];Events" ,50,-3.2,3.2);
+              for(size_t isyst=0; isyst<sizeof(systs)/sizeof(TString); isyst++)
+                {
+                  allPlots[chan+"mt_"+systs[isyst]+"_"+tag]     = new TH1D("mt_"+systs[isyst]+"_"+tag,";Transverse Mass [GeV];Events" ,20,0.,200.);
+                  allPlots[chan+"minmlb_"+systs[isyst]+"_"+tag] = new TH1D("minmlb_"+systs[isyst]+"_"+tag,";min Mass(lepton,b) [GeV];Events" ,25,0.,250.);
+                }
+            }
+        }
       
-      allPlots["eventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 4, 0., 4.);
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
-      allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
-
-      allPlots["eventflowcat_"+systs[i]] = new TH1D("eventflowcat_"+systs[i], ";;Events", 7, 0., 7.);
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "= 0 b-tag");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "= 1 b-tag");
-      allPlots["eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(7, "#geq 2 b-tag");
-
-
-
-      allPlots["raweventflowold_"+systs[i]] = new TH1D("raweventflowold_"+systs[i],";;Events", 7, 0., 7.); 
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(7, "#geq 1 b-tag");
+      //category counting
+      for(size_t i=0; i<sizeof(systs)/sizeof(TString); i++)
+        {
+          allPlots[chan+"njetsnbtags_"+systs[i]] = new TH1D("njetsnbtags_"+systs[i],";Category;Events" ,12,0.,12.);
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1j,=0b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1j,=1b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(3, "");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(4, "2j,=0b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(5, "2j,=1b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(6, "2j,#geq2b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(7, "3j,=0b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(8, "3j,=1b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(9, "3j,#geq2b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(10,"4j,=0b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(11,"4j,=1b");
+          allPlots[chan+"njetsnbtags_"+systs[i]]->GetXaxis()->SetBinLabel(12,"4j,#geq2b");
+          
+          
+          allPlots[chan+"eventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 5, 0., 5.); 
+          allPlots[chan+"eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
+          allPlots[chan+"eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
+          allPlots[chan+"eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
+          allPlots[chan+"eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
+          allPlots[chan+"eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "#geq 1 b-tag");
+          
+          allPlots[chan+"eventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 4, 0., 4.);
+          allPlots[chan+"eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
+          allPlots[chan+"eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
+          allPlots[chan+"eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
+          allPlots[chan+"eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
+          
+          allPlots[chan+"eventflowcat_"+systs[i]] = new TH1D("eventflowcat_"+systs[i], ";;Events", 7, 0., 7.);
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "= 0 b-tag");
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "= 1 b-tag");
+          allPlots[chan+"eventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(7, "#geq 2 b-tag");
+          
+          
+          
+          allPlots[chan+"raweventflowold_"+systs[i]] = new TH1D("raweventflowold_"+systs[i],";;Events", 7, 0., 7.); 
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
+          allPlots[chan+"raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(7, "#geq 1 b-tag");
+          
+          allPlots[chan+"raweventflownocat_"+systs[i]] = new TH1D("raweventflownocat_"+systs[i], ";;Events", 6, 0., 6.);
+          allPlots[chan+"raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
+          allPlots[chan+"raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
+          allPlots[chan+"raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
+          allPlots[chan+"raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
+          allPlots[chan+"raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
+          allPlots[chan+"raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
+          
+          allPlots[chan+"raweventflowcat_"+systs[i]] = new TH1D("raweventflowcat_"+systs[i], ";;Events", 9, 0., 9.);
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(7, "= 0 b-tag");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(8, "= 1 b-tag");
+          allPlots[chan+"raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(9, "#geq 2 b-tag");
+          
+          
+          
+          allPlots[chan+"btagcat_"+systs[i]] = new TH1D("btagcat_"+systs[i], ";;Events", 3, 0., 3.);
+          allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "= 0 b-tags");
+          allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "= 1 b-tags");
+          allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 b-tags");
+          
+        }
       
-      allPlots["raweventflownocat_"+systs[i]] = new TH1D("raweventflownocat_"+systs[i], ";;Events", 6, 0., 6.);
-      allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
-      allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
-      allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
-      allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
-      allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
-      allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
-
-      allPlots["raweventflowcat_"+systs[i]] = new TH1D("raweventflowcat_"+systs[i], ";;Events", 9, 0., 9.);
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(7, "= 0 b-tag");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(8, "= 1 b-tag");
-      allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(9, "#geq 2 b-tag");
-
-
-      
-      allPlots["btagcat_"+systs[i]] = new TH1D("btagcat_"+systs[i], ";;Events", 3, 0., 3.);
-      allPlots["btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "= 0 b-tags");
-      allPlots["btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "= 1 b-tags");
-      allPlots["btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 b-tags");
-
-    }
+    } // End loop on channels
 
   for (auto& it : allPlots) { it.second->Sumw2(); it.second->SetDirectory(0); }
 
@@ -223,6 +233,8 @@ void ReadTree(TString filename,
 
       size_t theLep(0);
       double theLepPt(-1.);
+
+      TString channel("");
       // Select leptons
 
       std::vector<TLorentzVector> selLeptons; selLeptons.clear();
@@ -288,6 +300,10 @@ void ReadTree(TString filename,
       //apply trigger requirement
       if(ev.muTrigger && abs(ev.l_id[theLep]) != 13) continue;
       if(ev.elTrigger && abs(ev.l_id[theLep]) != 11) continue;
+
+      if(abs(ev.l_id[theLep]) == 13) channel="mu_";
+      if(abs(ev.l_id[theLep]) == 11) channel="el_";
+
 
       if(debug) cout << "\t\t Event passed trigger" << endl;
       
@@ -548,9 +564,9 @@ void ReadTree(TString filename,
       if(debug) cout << "\t\t event passed genevent stuff" << endl;
 
 
-      allPlots["eventflowold_nom"]   ->Fill(0., wgt);
-      allPlots["eventflownocat_nom"] ->Fill(0., wgt);
-      allPlots["eventflowcat_nom"]   ->Fill(0., wgt);
+      allPlots[channel+"eventflowold_nom"]   ->Fill(0., wgt);
+      allPlots[channel+"eventflownocat_nom"] ->Fill(0., wgt);
+      allPlots[channel+"eventflowcat_nom"]   ->Fill(0., wgt);
       
       if(nMainLeptons!=1 || nVetoLeptons>0) continue;
       
@@ -563,15 +579,15 @@ void ReadTree(TString filename,
 	  int nBtagsCat=TMath::Min((int)nBtags,(int)2);
 	  int binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);
 	  
-	  allPlots["njetsnbtags_nom"]->Fill(binToFill,wgt);
-	  allPlots["njetsnbtags_qcdScaleDown"]->Fill(binToFill,wgtQCDScaleLo);
-	  allPlots["njetsnbtags_qcdScaleUp"]->Fill(binToFill,wgtQCDScaleHi);
-	  allPlots["njetsnbtags_puUp"]->Fill(binToFill,wgtPuUp);
-	  allPlots["njetsnbtags_puDown"]->Fill(binToFill,wgtPuDown);
-	  allPlots["njetsnbtags_muEffUp"]->Fill(binToFill,wgtMuEffUp);
-	  allPlots["njetsnbtags_muEffDown"]->Fill(binToFill,wgtMuEffDown);
-	  allPlots["njetsnbtags_umetUp"]->Fill(binToFill,wgt);
-	  allPlots["njetsnbtags_umetDown"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_nom"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_qcdScaleDown"]->Fill(binToFill,wgtQCDScaleLo);
+	  allPlots[channel+"njetsnbtags_qcdScaleUp"]->Fill(binToFill,wgtQCDScaleHi);
+	  allPlots[channel+"njetsnbtags_puUp"]->Fill(binToFill,wgtPuUp);
+	  allPlots[channel+"njetsnbtags_puDown"]->Fill(binToFill,wgtPuDown);
+	  allPlots[channel+"njetsnbtags_muEffUp"]->Fill(binToFill,wgtMuEffUp);
+	  allPlots[channel+"njetsnbtags_muEffDown"]->Fill(binToFill,wgtMuEffDown);
+	  allPlots[channel+"njetsnbtags_umetUp"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_umetDown"]->Fill(binToFill,wgt);
 	  
 	  std::vector<TString> catsToFill(2,Form("%dj",nJetsCat));
 	  catsToFill[1]+= Form("%dt",nBtagsCat);
@@ -582,42 +598,42 @@ void ReadTree(TString filename,
 	      TString tag=catsToFill[icat];
 	      if(rIt!=lumiMap.end()) {
 		Int_t runCtr=std::distance(lumiMap.begin(),rIt);
-		allPlots["ratevsrun_"+tag]->Fill(runCtr,1.e+6/rIt->second);
+		allPlots[channel+"ratevsrun_"+tag]->Fill(runCtr,1.e+6/rIt->second);
 	      }
-	      allPlots["lpt_"+tag]->Fill(ev.l_pt[theLep],wgt);
-	      allPlots["leta_"+tag]->Fill(ev.l_eta[theLep],wgt);
-	      allPlots["jpt_"+tag]->Fill(ev.j_pt[ selJetsIdx[0] ],wgt);
-	      allPlots["jeta_"+tag]->Fill(fabs(ev.j_eta[ selJetsIdx[0] ]),wgt);
-	      allPlots["csv_"+tag]->Fill(ev.j_csv[ selJetsIdx[0] ],wgt);
-	      allPlots["ht_"+tag]->Fill(htsum,wgt);
-	      allPlots["nvtx_"+tag]->Fill(ev.nvtx,wgt);
-	      allPlots["met_"+tag]->Fill(ev.met_pt,wgt);
-	      allPlots["metphi_"+tag]->Fill(ev.met_phi,wgt);
-	      allPlots["mt_nom_"+tag]->Fill(mt,wgt);
-	      allPlots["mt_qcdScaleDown_"+tag]->Fill(mt,wgtQCDScaleLo);
-	      allPlots["mt_qcdScaleUp_"+tag]->Fill(mt,wgtQCDScaleHi);
-	      allPlots["mt_puUp_"+tag]->Fill(mt,wgtPuUp);
-	      allPlots["mt_puDown_"+tag]->Fill(mt,wgtPuDown);
-	      allPlots["mt_muEffUp_"+tag]->Fill(mt,wgtMuEffUp);
-	      allPlots["mt_muEffDown_"+tag]->Fill(mt,wgtMuEffDown);
-	      allPlots["mt_eEffUp_"+tag]->Fill(mt,wgtElEffUp);
-	      allPlots["mt_eEffDown_"+tag]->Fill(mt,wgtElEffDown);	      
-	      allPlots["mt_umetUp_"+tag]->Fill(mtUMetup,wgtElEffUp);
-	      allPlots["mt_umetDown_"+tag]->Fill(mtUMetdown,wgtElEffDown);	      
+	      allPlots[channel+"lpt_"+tag]->Fill(ev.l_pt[theLep],wgt);
+	      allPlots[channel+"leta_"+tag]->Fill(ev.l_eta[theLep],wgt);
+	      allPlots[channel+"jpt_"+tag]->Fill(ev.j_pt[ selJetsIdx[0] ],wgt);
+	      allPlots[channel+"jeta_"+tag]->Fill(fabs(ev.j_eta[ selJetsIdx[0] ]),wgt);
+	      allPlots[channel+"csv_"+tag]->Fill(ev.j_csv[ selJetsIdx[0] ],wgt);
+	      allPlots[channel+"ht_"+tag]->Fill(htsum,wgt);
+	      allPlots[channel+"nvtx_"+tag]->Fill(ev.nvtx,wgt);
+	      allPlots[channel+"met_"+tag]->Fill(ev.met_pt,wgt);
+	      allPlots[channel+"metphi_"+tag]->Fill(ev.met_phi,wgt);
+	      allPlots[channel+"mt_nom_"+tag]->Fill(mt,wgt);
+	      allPlots[channel+"mt_qcdScaleDown_"+tag]->Fill(mt,wgtQCDScaleLo);
+	      allPlots[channel+"mt_qcdScaleUp_"+tag]->Fill(mt,wgtQCDScaleHi);
+	      allPlots[channel+"mt_puUp_"+tag]->Fill(mt,wgtPuUp);
+	      allPlots[channel+"mt_puDown_"+tag]->Fill(mt,wgtPuDown);
+	      allPlots[channel+"mt_muEffUp_"+tag]->Fill(mt,wgtMuEffUp);
+	      allPlots[channel+"mt_muEffDown_"+tag]->Fill(mt,wgtMuEffDown);
+	      allPlots[channel+"mt_eEffUp_"+tag]->Fill(mt,wgtElEffUp);
+	      allPlots[channel+"mt_eEffDown_"+tag]->Fill(mt,wgtElEffDown);	      
+	      allPlots[channel+"mt_umetUp_"+tag]->Fill(mtUMetup,wgtElEffUp);
+	      allPlots[channel+"mt_umetDown_"+tag]->Fill(mtUMetdown,wgtElEffDown);	      
 
 	      if(nBtagsCat>0)
 		{
-		  allPlots["minmlb_nom_"+tag]->Fill(minMlb,wgt);
-		  allPlots["minmlb_qcdScaleDown_"+tag]->Fill(minMlb,wgtQCDScaleLo);
-		  allPlots["minmlb_qcdScaleUp_"+tag]->Fill(minMlb,wgtQCDScaleHi);
-		  allPlots["minmlb_puUp_"+tag]->Fill(minMlb,wgtPuUp);
-		  allPlots["minmlb_puDown_"+tag]->Fill(minMlb,wgtPuDown);
-		  allPlots["minmlb_muEffUp_"+tag]->Fill(minMlb,wgtMuEffUp);
-		  allPlots["minmlb_muEffDown_"+tag]->Fill(minMlb,wgtMuEffDown);
-		  allPlots["minmlb_eEffUp_"+tag]->Fill(minMlb,wgtElEffUp);
-		  allPlots["minmlb_eEffDown_"+tag]->Fill(minMlb,wgtElEffDown);
-		  allPlots["minmlb_umetUp_"+tag]->Fill(minMlb,wgt);
-		  allPlots["minmlb_umetDown_"+tag]->Fill(minMlb,wgt);
+		  allPlots[channel+"minmlb_nom_"+tag]->Fill(minMlb,wgt);
+		  allPlots[channel+"minmlb_qcdScaleDown_"+tag]->Fill(minMlb,wgtQCDScaleLo);
+		  allPlots[channel+"minmlb_qcdScaleUp_"+tag]->Fill(minMlb,wgtQCDScaleHi);
+		  allPlots[channel+"minmlb_puUp_"+tag]->Fill(minMlb,wgtPuUp);
+		  allPlots[channel+"minmlb_puDown_"+tag]->Fill(minMlb,wgtPuDown);
+		  allPlots[channel+"minmlb_muEffUp_"+tag]->Fill(minMlb,wgtMuEffUp);
+		  allPlots[channel+"minmlb_muEffDown_"+tag]->Fill(minMlb,wgtMuEffDown);
+		  allPlots[channel+"minmlb_eEffUp_"+tag]->Fill(minMlb,wgtElEffUp);
+		  allPlots[channel+"minmlb_eEffDown_"+tag]->Fill(minMlb,wgtElEffDown);
+		  allPlots[channel+"minmlb_umetUp_"+tag]->Fill(minMlb,wgt);
+		  allPlots[channel+"minmlb_umetDown_"+tag]->Fill(minMlb,wgt);
 		}	  
 	    }
 	}
@@ -628,10 +644,10 @@ void ReadTree(TString filename,
           int nBtagsCat=TMath::Min((int)nBtags,(int)2);
 	  if(nBtagsCat>nJetsCat) nBtagsCat=nJetsCat;
 	  int binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);
-	  allPlots["njetsnbtags_jesUp"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_jesUp"]->Fill(binToFill,wgt);
 	  TString tag(Form("%dj%dt",nJetsCat,nBtagsCat));
-	  allPlots["mt_jesUp_"+tag]->Fill(mtJESup,wgt);
-	  allPlots["minmlb_jesUp_"+tag]->Fill(minMlbJESup,wgt);
+	  allPlots[channel+"mt_jesUp_"+tag]->Fill(mtJESup,wgt);
+	  allPlots[channel+"minmlb_jesUp_"+tag]->Fill(minMlbJESup,wgt);
 	}
       if(nJetsJESLo>=1)
 	{
@@ -639,10 +655,10 @@ void ReadTree(TString filename,
           int nBtagsCat=TMath::Min((int)nBtags,(int)2);
 	  if(nBtagsCat>nJetsCat) nBtagsCat=nJetsCat;
 	  int binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);
-	  allPlots["njetsnbtags_jesDown"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_jesDown"]->Fill(binToFill,wgt);
 	  TString tag(Form("%dj%dt",nJetsCat,nBtagsCat));
-	  allPlots["mt_jesDown_"+tag]->Fill(mtJESdown,wgt);
-	  allPlots["minmlb_jesDown_"+tag]->Fill(minMlbJESdown,wgt);
+	  allPlots[channel+"mt_jesDown_"+tag]->Fill(mtJESdown,wgt);
+	  allPlots[channel+"minmlb_jesDown_"+tag]->Fill(minMlbJESdown,wgt);
 	}
       if(nJetsJERHi>=1)
 	{
@@ -650,10 +666,10 @@ void ReadTree(TString filename,
           int nBtagsCat=TMath::Min((int)nBtags,(int)2);
 	  if(nBtagsCat>nJetsCat) nBtagsCat=nJetsCat;
 	  int binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);
-	  allPlots["njetsnbtags_jerUp"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_jerUp"]->Fill(binToFill,wgt);
 	  TString tag(Form("%dj%dt",nJetsCat,nBtagsCat));
-	  allPlots["mt_jerUp_"+tag]->Fill(mtJERup,wgt);
-	  allPlots["minmlb_jerUp_"+tag]->Fill(minMlbJERup,wgt);
+	  allPlots[channel+"mt_jerUp_"+tag]->Fill(mtJERup,wgt);
+	  allPlots[channel+"minmlb_jerUp_"+tag]->Fill(minMlbJERup,wgt);
 	}
       if(nJetsJERLo>=1)
 	{
@@ -661,10 +677,10 @@ void ReadTree(TString filename,
           int nBtagsCat=TMath::Min((int)nBtags,(int)2);
 	  if(nBtagsCat>nJetsCat) nBtagsCat=nJetsCat;
 	  int binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);
-	  allPlots["njetsnbtags_jerDown"]->Fill(binToFill,wgt);
+	  allPlots[channel+"njetsnbtags_jerDown"]->Fill(binToFill,wgt);
 	  TString tag(Form("%dj%dt",nJetsCat,nBtagsCat));
-	  allPlots["mt_jerDown_"+tag]->Fill(mtJERdown,wgt);
-	  allPlots["minmlb_jerDown_"+tag]->Fill(minMlbJERdown,wgt);
+	  allPlots[channel+"mt_jerDown_"+tag]->Fill(mtJERdown,wgt);
+	  allPlots[channel+"minmlb_jerDown_"+tag]->Fill(minMlbJERdown,wgt);
 	}
       if(nJets>=1)
 	{
@@ -672,19 +688,19 @@ void ReadTree(TString filename,
           
 	  int nBtagsCat=TMath::Min((int)nBtagsBeffLo,(int)2);
           int binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);
-	  allPlots["njetsnbtags_beffDown"]->Fill(binToFill,wgt); 
+	  allPlots[channel+"njetsnbtags_beffDown"]->Fill(binToFill,wgt); 
 	  
 	  nBtagsCat=TMath::Min((int)nBtagsBeffHi,(int)2);
 	  binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);          
-	  allPlots["njetsnbtags_beffUp"]->Fill(binToFill,wgt); 
+	  allPlots[channel+"njetsnbtags_beffUp"]->Fill(binToFill,wgt); 
 
 	  nBtagsCat=TMath::Min((int)nBtagsMistagLo,(int)2);
 	  binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);          
-	  allPlots["njetsnbtags_mistagDown"]->Fill(binToFill,wgt); 
+	  allPlots[channel+"njetsnbtags_mistagDown"]->Fill(binToFill,wgt); 
 
 	  nBtagsCat=TMath::Min((int)nBtagsMistagHi,(int)2);
 	  binToFill=getBtagCatBinToFill(nBtagsCat,nJetsCat);          
-	  allPlots["njetsnbtags_mistagUp"]->Fill(binToFill,wgt); 
+	  allPlots[channel+"njetsnbtags_mistagUp"]->Fill(binToFill,wgt); 
 	}
 
       if(debug) cout << "\t\t Now nominal selection starts" << endl;
@@ -707,31 +723,31 @@ void ReadTree(TString filename,
       if(debug) cout << "\t\t Event weight: " << wgt << endl;
 
       
-                                                                    allPlots["raweventflowold_nom"]->Fill(1., wgt);
-      if(pass2Jets)                                               { allPlots["raweventflowold_nom"]->Fill(2., wgt); allPlots["eventflowold_nom"]->Fill(0., wgt); }
-      if(pass2Jets && passMet)                                    { allPlots["raweventflowold_nom"]->Fill(3., wgt); allPlots["eventflowold_nom"]->Fill(1., wgt); }
-      if(pass2Jets && passMet && pass1tau)                        { allPlots["raweventflowold_nom"]->Fill(4., wgt); allPlots["eventflowold_nom"]->Fill(2., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS)              { allPlots["raweventflowold_nom"]->Fill(5., wgt); allPlots["eventflowold_nom"]->Fill(3., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && pass1btag) { allPlots["raweventflowold_nom"]->Fill(6., wgt); allPlots["eventflowold_nom"]->Fill(4., wgt); }
+                                                                    allPlots[channel+"raweventflowold_nom"]->Fill(1., wgt);
+      if(pass2Jets)                                               { allPlots[channel+"raweventflowold_nom"]->Fill(2., wgt); allPlots[channel+"eventflowold_nom"]->Fill(0., wgt); }
+      if(pass2Jets && passMet)                                    { allPlots[channel+"raweventflowold_nom"]->Fill(3., wgt); allPlots[channel+"eventflowold_nom"]->Fill(1., wgt); }
+      if(pass2Jets && passMet && pass1tau)                        { allPlots[channel+"raweventflowold_nom"]->Fill(4., wgt); allPlots[channel+"eventflowold_nom"]->Fill(2., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS)              { allPlots[channel+"raweventflowold_nom"]->Fill(5., wgt); allPlots[channel+"eventflowold_nom"]->Fill(3., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && pass1btag) { allPlots[channel+"raweventflowold_nom"]->Fill(6., wgt); allPlots[channel+"eventflowold_nom"]->Fill(4., wgt); }
       
-                                                       allPlots["raweventflownocat_nom"]->Fill(1., wgt);
-      if(pass2Jets)                                  { allPlots["raweventflownocat_nom"]->Fill(2., wgt); allPlots["eventflownocat_nom"]->Fill(0., wgt); }
-      if(pass2Jets && passMet)                       { allPlots["raweventflownocat_nom"]->Fill(3., wgt); allPlots["eventflownocat_nom"]->Fill(1., wgt); }
-      if(pass2Jets && passMet && pass1tau)           { allPlots["raweventflownocat_nom"]->Fill(4., wgt); allPlots["eventflownocat_nom"]->Fill(2., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS) { allPlots["raweventflownocat_nom"]->Fill(5., wgt); allPlots["eventflownocat_nom"]->Fill(3., wgt); }
+                                                       allPlots[channel+"raweventflownocat_nom"]->Fill(1., wgt);
+      if(pass2Jets)                                  { allPlots[channel+"raweventflownocat_nom"]->Fill(2., wgt); allPlots[channel+"eventflownocat_nom"]->Fill(0., wgt); }
+      if(pass2Jets && passMet)                       { allPlots[channel+"raweventflownocat_nom"]->Fill(3., wgt); allPlots[channel+"eventflownocat_nom"]->Fill(1., wgt); }
+      if(pass2Jets && passMet && pass1tau)           { allPlots[channel+"raweventflownocat_nom"]->Fill(4., wgt); allPlots[channel+"eventflownocat_nom"]->Fill(2., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS) { allPlots[channel+"raweventflownocat_nom"]->Fill(5., wgt); allPlots[channel+"eventflownocat_nom"]->Fill(3., wgt); }
 
-                                                                       allPlots["raweventflowcat_nom"]->Fill(1., wgt);
-      if(pass2Jets)                                                  { allPlots["raweventflowcat_nom"]->Fill(2., wgt); allPlots["eventflowcat_nom"]->Fill(0., wgt); }
-      if(pass2Jets && passMet)                                       { allPlots["raweventflowcat_nom"]->Fill(3., wgt); allPlots["eventflowcat_nom"]->Fill(1., wgt); }
-      if(pass2Jets && passMet && pass1tau)                           { allPlots["raweventflowcat_nom"]->Fill(4., wgt); allPlots["eventflowcat_nom"]->Fill(2., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS)                 { allPlots["raweventflowcat_nom"]->Fill(5., wgt); allPlots["eventflowcat_nom"]->Fill(3., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) { allPlots["raweventflowcat_nom"]->Fill(6., wgt); allPlots["eventflowcat_nom"]->Fill(4., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) { allPlots["raweventflowcat_nom"]->Fill(7., wgt); allPlots["eventflowcat_nom"]->Fill(5., wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) { allPlots["raweventflowcat_nom"]->Fill(8., wgt); allPlots["eventflowcat_nom"]->Fill(6., wgt); }
+                                                                       allPlots[channel+"raweventflowcat_nom"]->Fill(1., wgt);
+      if(pass2Jets)                                                  { allPlots[channel+"raweventflowcat_nom"]->Fill(2., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(0., wgt); }
+      if(pass2Jets && passMet)                                       { allPlots[channel+"raweventflowcat_nom"]->Fill(3., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(1., wgt); }
+      if(pass2Jets && passMet && pass1tau)                           { allPlots[channel+"raweventflowcat_nom"]->Fill(4., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(2., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS)                 { allPlots[channel+"raweventflowcat_nom"]->Fill(5., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(3., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) { allPlots[channel+"raweventflowcat_nom"]->Fill(6., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(4., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) { allPlots[channel+"raweventflowcat_nom"]->Fill(7., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(5., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) { allPlots[channel+"raweventflowcat_nom"]->Fill(8., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(6., wgt); }
      
-      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) allPlots["btagcat_nom"]->Fill(0., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots["btagcat_nom"]->Fill(1., wgt);
-      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) allPlots["btagcat_nom"]->Fill(2., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) allPlots[channel+"btagcat_nom"]->Fill(0., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots[channel+"btagcat_nom"]->Fill(1., wgt);
+      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) allPlots[channel+"btagcat_nom"]->Fill(2., wgt);
 
       if(debug) cout << "Event analyzed fully " << endl;
 
