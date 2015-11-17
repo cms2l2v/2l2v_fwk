@@ -117,9 +117,9 @@ void ReadTree(TString filename,
       allPlots["eventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 5, 0., 5.); 
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
       allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "E_{T}^{miss}");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 1 b-tag");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "1 #tau");
-      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "op. sign");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "1 #tau");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "op. sign");
+      allPlots["eventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "#geq 1 b-tag");
       
       allPlots["eventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 4, 0., 4.);
       allPlots["eventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "1 #it{l}, #geq 2 jets");
@@ -143,9 +143,9 @@ void ReadTree(TString filename,
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(4, "E_{T}^{miss}");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "#geq 1 b-tag");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "1 #tau");
-      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(7, "op. sign");
+      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
+      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
+      allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(7, "#geq 1 b-tag");
       
       allPlots["raweventflownocat_"+systs[i]] = new TH1D("raweventflownocat_"+systs[i], ";;Events", 6, 0., 6.);
       allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
@@ -710,9 +710,9 @@ void ReadTree(TString filename,
                                                                     allPlots["raweventflowold_nom"]->Fill(1., wgt);
       if(pass2Jets)                                               { allPlots["raweventflowold_nom"]->Fill(2., wgt); allPlots["eventflowold_nom"]->Fill(0., wgt); }
       if(pass2Jets && passMet)                                    { allPlots["raweventflowold_nom"]->Fill(3., wgt); allPlots["eventflowold_nom"]->Fill(1., wgt); }
-      if(pass2Jets && passMet && pass1btag)                       { allPlots["raweventflowold_nom"]->Fill(4., wgt); allPlots["eventflowold_nom"]->Fill(2., wgt); }
-      if(pass2Jets && passMet && pass1btag && pass1tau)           { allPlots["raweventflowold_nom"]->Fill(5., wgt); allPlots["eventflowold_nom"]->Fill(3., wgt); }
-      if(pass2Jets && passMet && pass1btag && pass1tau && passOS) { allPlots["raweventflowold_nom"]->Fill(6., wgt); allPlots["eventflowold_nom"]->Fill(4., wgt); }
+      if(pass2Jets && passMet && pass1tau)                        { allPlots["raweventflowold_nom"]->Fill(4., wgt); allPlots["eventflowold_nom"]->Fill(2., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS)              { allPlots["raweventflowold_nom"]->Fill(5., wgt); allPlots["eventflowold_nom"]->Fill(3., wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && pass1btag) { allPlots["raweventflowold_nom"]->Fill(6., wgt); allPlots["eventflowold_nom"]->Fill(4., wgt); }
       
                                                        allPlots["raweventflownocat_nom"]->Fill(1., wgt);
       if(pass2Jets)                                  { allPlots["raweventflownocat_nom"]->Fill(2., wgt); allPlots["eventflownocat_nom"]->Fill(0., wgt); }
