@@ -138,7 +138,7 @@ void ReadTree(TString filename,
 
 
 
-      allPlots["raweventflowold_"+systs[i]] = new TH1D("eventflowold_"+systs[i],";;Events", 7, 0., 7.); 
+      allPlots["raweventflowold_"+systs[i]] = new TH1D("raweventflowold_"+systs[i],";;Events", 7, 0., 7.); 
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
@@ -147,7 +147,7 @@ void ReadTree(TString filename,
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(6, "1 #tau");
       allPlots["raweventflowold_"+systs[i]]->GetXaxis()->SetBinLabel(7, "op. sign");
       
-      allPlots["raweventflownocat_"+systs[i]] = new TH1D("eventflownocat_"+systs[i], ";;Events", 6, 0., 6.);
+      allPlots["raweventflownocat_"+systs[i]] = new TH1D("raweventflownocat_"+systs[i], ";;Events", 6, 0., 6.);
       allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
       allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
       allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
@@ -155,7 +155,7 @@ void ReadTree(TString filename,
       allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(5, "1 #tau");
       allPlots["raweventflownocat_"+systs[i]]->GetXaxis()->SetBinLabel(6, "op. sign");
 
-      allPlots["raweventflowcat_"+systs[i]] = new TH1D("eventflowcat_"+systs[i], ";;Events", 9, 0., 9.);
+      allPlots["raweventflowcat_"+systs[i]] = new TH1D("raweventflowcat_"+systs[i], ";;Events", 9, 0., 9.);
       allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "Init");
       allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "1 iso lepton");
       allPlots["raweventflowcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 jets");
@@ -369,6 +369,9 @@ void ReadTree(TString filename,
 	  bool isBTagged(csv>0.890),isBTaggedUp(isBTagged),isBTaggedDown(isBTagged);
 	  if(!ev.isData)
 	    {
+              // No random update for now
+              bool tempIsBTagged(isBTagged);
+              
 	      double jptForBtag(jp4.Pt()>1000. ? 999. : jp4.Pt()), jetaForBtag(fabs(jp4.Eta()));
 	      double expEff(1.0), jetBtagSF(1.0), jetBtagSFUp(1.0), jetBtagSFDown(1.0);
 	      if(abs(ev.j_hadflav[ijet])==4) 
@@ -393,9 +396,11 @@ void ReadTree(TString filename,
                   jetBtagSFDown=btagSFldownReader.eval( BTagEntry::FLAV_UDSG, jetaForBtag, jptForBtag);
 		}
 	      
+              // No random update, for now (must find updated stuff)
 	      myBTagSFUtil.modifyBTagsWithSF(isBTagged,    jetBtagSF,     expEff);
 	      myBTagSFUtil.modifyBTagsWithSF(isBTaggedUp,  jetBtagSFUp,   expEff);
 	      myBTagSFUtil.modifyBTagsWithSF(isBTaggedDown,jetBtagSFDown, expEff);
+              isBTagged=tempIsBTagged;
 	    }
 	  
 	  //select the jet
