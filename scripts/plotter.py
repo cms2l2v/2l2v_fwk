@@ -36,7 +36,8 @@ class Plot(object):
         self._garbageList = []
         self.plotformats = ['pdf','png']
         self.savelog = False
-        self.ratiorange = (0.46,1.54)
+        #self.ratiorange = (0.46,1.54)
+        self.ratiorange = (0.16,1.84)
 
     def add(self, h, title, color, isData):
         h.SetTitle(title)
@@ -110,19 +111,21 @@ class Plot(object):
 
         #holds the main plot
         c.cd()
-        p1 = ROOT.TPad('p1','p1',0.0,0.85,1.0,0.0)
+        #p1 = ROOT.TPad('p1','p1',0.0,0.20,1.0,1.0)
+        p1 = ROOT.TPad('p1','p1',0.0,0.20,0.80,1.0)
         p1.Draw()
-        p1.SetRightMargin(0.05)
+        p1.SetBottomMargin(0.01)
+        p1.SetRightMargin(0.01)
         p1.SetLeftMargin(0.12)
         p1.SetTopMargin(0.01)
-        p1.SetBottomMargin(0.12)
         p1.SetGridx(False)
         p1.SetGridy(True)
         self._garbageList.append(p1)
         p1.cd()
 
         # legend
-        leg = ROOT.TLegend(0.5, 0.85-0.02*max(len(self.mc)-2,0), 0.98, 0.9)
+        #        leg = ROOT.TLegend(0.5, 0.85-0.02*max(len(self.mc)-2,0), 0.98, 0.9)
+        leg = ROOT.TLegend(0.8,0.2,1.0,1.0)
         leg.SetBorderSize(0)
         leg.SetFillStyle(0)        
         leg.SetTextFont(43)
@@ -140,7 +143,7 @@ class Plot(object):
         if nlegCols ==0 :
             print '%s is empty'%self.name
             return
-        leg.SetNColumns(ROOT.TMath.Min(nlegCols/2,3))
+        #leg.SetNColumns(ROOT.TMath.Min(nlegCols/2,3))
 
         # Build the stack to plot from all backgrounds
         totalMC = None
@@ -179,16 +182,20 @@ class Plot(object):
         frame.SetDirectory(0)
         frame.Reset('ICE')
         self._garbageList.append(frame)
-        frame.GetYaxis().SetTitleSize(0.045)
-        frame.GetYaxis().SetLabelSize(0.04)
-        frame.GetYaxis().SetNoExponent()
+        frame.GetYaxis().SetTitleSize(0.055)
+        frame.GetYaxis().SetLabelSize(0.05)
+        #frame.GetYaxis().SetNoExponent()
+        frame.GetXaxis().SetLabelSize(0)
+        frame.GetXaxis().SetTitleSize(0)
+        frame.GetXaxis().SetTitleOffset(0)
         frame.Draw()
-        frame.GetYaxis().SetTitleOffset(1.3)
+        frame.GetYaxis().SetTitleOffset(1.1)
         if totalMC is not None   : stack.Draw('hist same')
         if self.data is not None : self.data.Draw('p')
 
+        p1.RedrawAxis()
 
-        leg.Draw()
+        #leg.Draw()
         txt=ROOT.TLatex()
         txt.SetNDC(True)
         txt.SetTextFont(43)
@@ -201,12 +208,13 @@ class Plot(object):
 
         #holds the ratio
         c.cd()
-        p2 = ROOT.TPad('p2','p2',0.0,0.85,1.0,1.0)
+        #p2 = ROOT.TPad('p2','p2',0.0,0.0,1.0,0.20)
+        p2 = ROOT.TPad('p2','p2',0.0,0.0,0.80,0.20)
         p2.Draw()
-        p2.SetBottomMargin(0.01)
-        p2.SetRightMargin(0.05)
+        p2.SetRightMargin(0.01)
         p2.SetLeftMargin(0.12)
-        p2.SetTopMargin(0.05)
+        p2.SetTopMargin(0.01)
+        p2.SetBottomMargin(0.30)
         p2.SetGridx(False)
         p2.SetGridy(True)
         self._garbageList.append(p2)
@@ -216,14 +224,13 @@ class Plot(object):
         ratioframe.GetYaxis().SetRangeUser(self.ratiorange[0], self.ratiorange[1])
         self._garbageList.append(frame)
         ratioframe.GetYaxis().SetNdivisions(5)
-        ratioframe.GetYaxis().SetLabelSize(0.18)        
+        ratioframe.GetYaxis().SetLabelSize(0.15)        
         ratioframe.GetYaxis().SetTitleSize(0.2)
-        ratioframe.GetYaxis().SetTitleOffset(0.2)
-        ratioframe.GetXaxis().SetLabelSize(0)
-        ratioframe.GetXaxis().SetTitleSize(0)
-        ratioframe.GetXaxis().SetTitleOffset(0)
+        ratioframe.GetYaxis().SetTitleOffset(0.3)
+        ratioframe.GetXaxis().SetLabelSize(0.25)
+        ratioframe.GetXaxis().SetTitleSize(0.25)
+        ratioframe.GetXaxis().SetTitleOffset(1.1)
         ratioframe.Draw()
-
         try:
             ratio=self.dataH.Clone('ratio')
             ratio.SetDirectory(0)
@@ -238,6 +245,24 @@ class Plot(object):
             gr.Draw('p')
         except:
             pass
+
+        redline = ROOT.TLine(0.0,1.0, ratioframe.GetXaxis().GetXmax(),1.0);
+        redline.SetLineColor(ROOT.kRed);
+        redline.SetLineStyle(3);
+        redline.SetLineWidth(2);
+        redline.Draw();
+        
+        p2.RedrawAxis()
+
+        # Legend pad
+        c.cd()
+        p3=ROOT.TPad('p3','p3',0.8,0.2,1.0,1.0)
+        p3.SetRightMargin(0.01)
+        p3.SetLeftMargin(0.01)
+        p3.SetTopMargin(0.01)
+        p3.SetBottomMargin(0.30)
+        p3.Draw()
+        leg.Draw()
 
         #all done
         c.cd()
