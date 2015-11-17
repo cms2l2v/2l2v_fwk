@@ -26,13 +26,13 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_11_06
+SUFFIX=_2015_11_16
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples.json
-RESULTSDIR=$MAINDIR/results$SUFFIX
-PLOTSDIR=$MAINDIR/plots$SUFFIX
-PLOTTER=$MAINDIR/plotter$SUFFIX
+JSON=$MAINDIR/samples_VBF.json
+RESULTSDIR=$MAINDIR/Results_VbfCheck$SUFFIX
+PLOTSDIR=$MAINDIR/Plots_VbfCheck$SUFFIX
+PLOTTER=$MAINDIR/Plotter_VbfCheck$SUFFIX
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
 
@@ -54,7 +54,7 @@ case $step in
 	echo "Input: " $JSON
 	echo "Output: " $RESULTSDIR
 
-	queue='8nh'
+	queue='1nh'
 	#IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 	if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
 	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
@@ -96,9 +96,16 @@ case $step in
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
 	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --no2D $arguments
 	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
-	;; 
+	;;
 
-    3.1)  # make plots and combine root files for photon + jet study
+    3.1)  # make plots for Jamboree without ratio between data and MC
+        INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+        echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only z_mass, z_pt, met, mt  --removeRatioPlot  --json $JSON --no2D $arguments
+        ln -s -f $PLOTTER.root $MAINDIR/plotter.root
+        ;; 
+
+    3.2)  # make plots and combine root files for photon + jet study
 	JSON=$MAINDIR/photon_samples.json
 	INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
