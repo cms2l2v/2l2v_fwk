@@ -36,7 +36,8 @@ if [ "${1}" = "submit" ]; then
     if [ "${2}" = "ntuplizer" ]; then
         OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_v6/
         mkdir -p ${OUTDIR}
-        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples_maximal.json
+        #JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples_maximal.json
+        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/data_samples.json
         LFNDIRBASE="ntuples_pietro_2015-10-29_v1bis/"
         runAnalysisOverSamples.py -e runNtuplizer -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -l ${LFNDIRBASE} -f 8 --NFile 2  -s ${QUEUE}
     else
@@ -47,7 +48,8 @@ elif [ "${1}" = "lumi" ]; then
     rm myjson.json
     #cat ${OUTDIR}/*SingleMuon*.json > myjson.json
     cat ${OUTDIR}/Data13TeV_SingleMuon2015D_*.json > myjson.json
-
+    STARTINGJSON="data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
     sed -i -e "s#}{#, #g" myjson.json; 
     sed -i -e "s#, ,#, #g" myjson.json;
     echo "myjson.json has been recreated and the additional \"}{\" have been fixed."
@@ -56,9 +58,9 @@ elif [ "${1}" = "lumi" ]; then
     export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
     brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json
     echo "To be compared with the output of the full json:"
-    echo "brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    echo "brilcalc lumi --normtag ${STARTINGJSON}"
     #brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt -n 0.962
-    brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt
+    brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i ${STARTINGJSON}
 elif [ "${1}" = "plot" ]; then 
 
     BASEDIR=~/www/13TeV_xsec_plots/
