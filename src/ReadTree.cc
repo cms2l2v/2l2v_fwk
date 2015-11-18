@@ -189,19 +189,20 @@ void ReadTree(TString filename,
           allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 b-tags");
 
           TString cuts[] = {
-            "1l2j",
-            "met",
-            "1tau",
-            "os",
-            "1bi",
-            "0b",
-            "1b",
-            "2b"
+            "1l2j_",
+            "met_",
+            "1tau_",
+            "os_",
+            "1bi_",
+            "0b_",
+            "1b_",
+            "2b_"
           };
           
           for(size_t icut=0; icut<sizeof(cuts)/sizeof(TString); ++icut)
             {
               TString cut(cuts[icut]);
+              if(systs[i] != "nom") continue;
               allPlots[chan+cut+"lpt_"+systs[i]]       = new TH1D(chan+cut+"lpt_"+systs[i],";Transverse momentum [GeV];Events" ,50,0.,500.);
               allPlots[chan+cut+"leta_"+systs[i]]      = new TH1D(chan+cut+"leta_"+systs[i],";Pseudo-rapidity;Events" ,26,-2.6,2.6);
               allPlots[chan+cut+"jpt_"+systs[i]]       = new TH1D(chan+cut+"jpt_"+systs[i],";Transverse momentum [GeV];Events" ,50,0.,500.);
@@ -211,12 +212,12 @@ void ReadTree(TString filename,
               //allPlots[chan+cut+"ht_"+systs[i]]        = new TH1D(chan+cut+"ht_"+systs[i],";H_{T} [GeV];Events",40,0,800);
               allPlots[chan+cut+"csv_"+systs[i]]       = new TH1D(chan+cut+"csv_"+systs[i],";CSV discriminator;Events",100,0,1.0);
               allPlots[chan+cut+"nvtx_"+systs[i]]      = new TH1D(chan+cut+"nvtx_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
-              allPlots[chan+cut+"nvtxraw_"+systs[i]]   = new TH1D(chan+cut+"nvtx_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
+              allPlots[chan+cut+"nvtxraw_"+systs[i]]   = new TH1D(chan+cut+"nvtxraw_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
               allPlots[chan+cut+"met_"+systs[i]]       = new TH1D(chan+cut+"metpt_"+systs[i],";Missing transverse energy [GeV];Events" ,50,0.,1000.);
               allPlots[chan+cut+"metphi_"+systs[i]]    = new TH1D(chan+cut+"metphi_" + systs[i],";MET #phi [rad];Events" ,64,-3.2,3.2);
               allPlots[chan+cut+"nbjets_"+systs[i]]    = new TH1D(chan+cut+"nbjets_" + systs[i],";b-tags multiplicity;Events",5, 0.,5.);
               
-
+              
 
               allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(1, "=0 b-tag");
               allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(2, "=1 b-tag");
