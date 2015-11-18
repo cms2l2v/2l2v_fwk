@@ -37,6 +37,13 @@ Double_t computeMT(TLorentzVector& a, TLorentzVector& b)
   return TMath::Sqrt(2*a.Pt()*b.Pt()*(1-TMath::Cos(a.DeltaPhi(b))));
 }
 
+
+//void FillCutPlots(std::map<TString, TH1*> allPlots, TString& chan, TString cut, TString syst, MiniEvent_t& ev, size_t& theLep, std::vector<int> selJetsIdx, Double_t& wgt)
+//{
+//
+//}
+
+
 void ReadTree(TString filename,
 	      TString outname,
 	      Int_t channelSelection, 
@@ -180,6 +187,45 @@ void ReadTree(TString filename,
           allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(1, "= 0 b-tags");
           allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(2, "= 1 b-tags");
           allPlots[chan+"btagcat_"+systs[i]]->GetXaxis()->SetBinLabel(3, "#geq 2 b-tags");
+
+          TString cuts[] = {
+            "1l2j",
+            "met",
+            "1tau",
+            "os",
+            "1bi",
+            "0b",
+            "1b",
+            "2b"
+          };
+          
+          for(size_t icut=0; icut<sizeof(cuts)/sizeof(TString); ++icut)
+            {
+              TString cut(cuts[icut]);
+              allPlots[chan+cut+"lpt_"+systs[i]]       = new TH1D(chan+cut+"lpt_"+systs[i],";Transverse momentum [GeV];Events" ,50,0.,500.);
+              allPlots[chan+cut+"leta_"+systs[i]]      = new TH1D(chan+cut+"leta_"+systs[i],";Pseudo-rapidity;Events" ,26,-2.6,2.6);
+              allPlots[chan+cut+"jpt_"+systs[i]]       = new TH1D(chan+cut+"jpt_"+systs[i],";Transverse momentum [GeV];Events" ,50,0.,500.);
+              allPlots[chan+cut+"jeta_"+systs[i]]      = new TH1D(chan+cut+"jeta_"+systs[i],";Pseudo-rapidity;Events" ,26,-2.6,2.6);
+              allPlots[chan+cut+"tpt_"+systs[i]]       = new TH1D(chan+cut+"tpt_"+systs[i],";Transverse momentum [GeV];Events" ,30,0.,300.);
+              allPlots[chan+cut+"teta_"+systs[i]]      = new TH1D(chan+cut+"teta_"+systs[i],";Pseudo-rapidity;Events" ,26,-2.6,2.6);
+              //allPlots[chan+cut+"ht_"+systs[i]]        = new TH1D(chan+cut+"ht_"+systs[i],";H_{T} [GeV];Events",40,0,800);
+              allPlots[chan+cut+"csv_"+systs[i]]       = new TH1D(chan+cut+"csv_"+systs[i],";CSV discriminator;Events",100,0,1.0);
+              allPlots[chan+cut+"nvtx_"+systs[i]]      = new TH1D(chan+cut+"nvtx_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
+              allPlots[chan+cut+"nvtxraw_"+systs[i]]   = new TH1D(chan+cut+"nvtx_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
+              allPlots[chan+cut+"met_"+systs[i]]       = new TH1D(chan+cut+"metpt_"+systs[i],";Missing transverse energy [GeV];Events" ,50,0.,1000.);
+              allPlots[chan+cut+"metphi_"+systs[i]]    = new TH1D(chan+cut+"metphi_" + systs[i],";MET #phi [rad];Events" ,64,-3.2,3.2);
+              allPlots[chan+cut+"nbjets_"+systs[i]]    = new TH1D(chan+cut+"nbjets_" + systs[i],";b-tags multiplicity;Events",5, 0.,5.);
+              
+
+
+              allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(1, "=0 b-tag");
+              allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(2, "=1 b-tag");
+              allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(3, "=2 b-tag");
+              allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(4, "=3 b-tag");
+              allPlots[chan+cut+"nbjets_"+systs[i]]->GetXaxis()->SetBinLabel(5, "#geq4 b-tag");
+
+            }
+
           
         }
       
@@ -564,9 +610,9 @@ void ReadTree(TString filename,
       if(debug) cout << "\t\t event passed genevent stuff" << endl;
 
 
-      allPlots[channel+"eventflowold_nom"]   ->Fill(0., wgt);
-      allPlots[channel+"eventflownocat_nom"] ->Fill(0., wgt);
-      allPlots[channel+"eventflowcat_nom"]   ->Fill(0., wgt);
+      allPlots[channel+"raweventflowold_nom"]   ->Fill(0., wgt);
+      allPlots[channel+"raweventflownocat_nom"] ->Fill(0., wgt);
+      allPlots[channel+"raweventflowcat_nom"]   ->Fill(0., wgt);
       
       if(nMainLeptons!=1 || nVetoLeptons>0) continue;
       
@@ -722,14 +768,13 @@ void ReadTree(TString filename,
 
       if(debug) cout << "\t\t Event weight: " << wgt << endl;
 
-      
-                                                                    allPlots[channel+"raweventflowold_nom"]->Fill(1., wgt);
+                                                                    allPlots[channel+"raweventflowold_nom"]->Fill(1., wgt); 
       if(pass2Jets)                                               { allPlots[channel+"raweventflowold_nom"]->Fill(2., wgt); allPlots[channel+"eventflowold_nom"]->Fill(0., wgt); }
       if(pass2Jets && passMet)                                    { allPlots[channel+"raweventflowold_nom"]->Fill(3., wgt); allPlots[channel+"eventflowold_nom"]->Fill(1., wgt); }
       if(pass2Jets && passMet && pass1tau)                        { allPlots[channel+"raweventflowold_nom"]->Fill(4., wgt); allPlots[channel+"eventflowold_nom"]->Fill(2., wgt); }
       if(pass2Jets && passMet && pass1tau && passOS)              { allPlots[channel+"raweventflowold_nom"]->Fill(5., wgt); allPlots[channel+"eventflowold_nom"]->Fill(3., wgt); }
       if(pass2Jets && passMet && pass1tau && passOS && pass1btag) { allPlots[channel+"raweventflowold_nom"]->Fill(6., wgt); allPlots[channel+"eventflowold_nom"]->Fill(4., wgt); }
-      
+
                                                        allPlots[channel+"raweventflownocat_nom"]->Fill(1., wgt);
       if(pass2Jets)                                  { allPlots[channel+"raweventflownocat_nom"]->Fill(2., wgt); allPlots[channel+"eventflownocat_nom"]->Fill(0., wgt); }
       if(pass2Jets && passMet)                       { allPlots[channel+"raweventflownocat_nom"]->Fill(3., wgt); allPlots[channel+"eventflownocat_nom"]->Fill(1., wgt); }
@@ -744,10 +789,47 @@ void ReadTree(TString filename,
       if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) { allPlots[channel+"raweventflowcat_nom"]->Fill(6., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(4., wgt); }
       if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) { allPlots[channel+"raweventflowcat_nom"]->Fill(7., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(5., wgt); }
       if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) { allPlots[channel+"raweventflowcat_nom"]->Fill(8., wgt); allPlots[channel+"eventflowcat_nom"]->Fill(6., wgt); }
+
+
+      std::vector<TString> cuts; cuts.clear();
+
+      if(pass2Jets)                                                  { cuts.push_back("1l2j");} //FillCutPlots(allPlots, channel, cuts[0], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet)                                       { cuts.push_back("met" );} //FillCutPlots(allPlots, channel, cuts[1], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau)                           { cuts.push_back("1tau");} //FillCutPlots(allPlots, channel, cuts[2], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS)                 { cuts.push_back("os"  );} //FillCutPlots(allPlots, channel, cuts[3], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && pass1btag)    { cuts.push_back("1bi" );} //FillCutPlots(allPlots, channel, cuts[4], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) { cuts.push_back("0b"  );} //FillCutPlots(allPlots, channel, cuts[5], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) { cuts.push_back("1b"  );} //FillCutPlots(allPlots, channel, cuts[6], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) { cuts.push_back("2b"  );}  //FillCutPlots(allPlots, channel, cuts[7], "nom", ev, theLep, selJetsIdx, wgt); }
+
+      for(std::vector<TString>::iterator icut=cuts.begin(); icut!=cuts.end(); ++icut)
+        {
+          TString cut(*icut);
+          TString syst("nom");
+          allPlots[channel+cut+"lpt_"+syst]    ->Fill(ev.l_pt[theLep]                 ,wgt);
+          allPlots[channel+cut+"leta_"+syst]   ->Fill(ev.l_eta[theLep]                ,wgt);
+          allPlots[channel+cut+"jpt_"+syst]    ->Fill(ev.j_pt[ selJetsIdx[0] ]        ,wgt);
+          allPlots[channel+cut+"jeta_"+syst]   ->Fill(fabs(ev.j_eta[ selJetsIdx[0] ]) ,wgt);
+          allPlots[channel+cut+"tpt_"+syst]    ->Fill(ev.t_pt[theTau]                 ,wgt);
+          allPlots[channel+cut+"teta_"+syst]   ->Fill(ev.t_eta[theTau]                ,wgt);
+          allPlots[channel+cut+"csv_"+syst]    ->Fill(ev.j_csv[ selJetsIdx[0] ]       ,wgt);
+          //allPlots[channel+cut+"ht_"+syst]     ->Fill(htsum                           ,wgt);
+          allPlots[channel+cut+"nvtx_"+syst]   ->Fill(ev.nvtx                         ,wgt);
+          allPlots[channel+cut+"nvtxraw_"+syst]->Fill(ev.nvtx                         ,wgt/puWeight[0]);
+          allPlots[channel+cut+"met_"+syst]    ->Fill(ev.met_pt                       ,wgt);
+          allPlots[channel+cut+"metphi_"+syst] ->Fill(ev.met_phi                      ,wgt);
+          allPlots[channel+cut+"nbjets_"+syst] ->Fill(nBtags<4?nBtags:4               ,wgt);
+
+        }
      
       if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) allPlots[channel+"btagcat_nom"]->Fill(0., wgt);
       if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) allPlots[channel+"btagcat_nom"]->Fill(1., wgt);
       if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) allPlots[channel+"btagcat_nom"]->Fill(2., wgt);
+
+
+
+
+
 
       if(debug) cout << "Event analyzed fully " << endl;
 
