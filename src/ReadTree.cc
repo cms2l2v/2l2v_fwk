@@ -211,8 +211,8 @@ void ReadTree(TString filename,
               allPlots[chan+cut+"teta_"+systs[i]]      = new TH1D(chan+cut+"teta_"+systs[i],";Pseudo-rapidity;Events" ,26,-2.6,2.6);
               //allPlots[chan+cut+"ht_"+systs[i]]        = new TH1D(chan+cut+"ht_"+systs[i],";H_{T} [GeV];Events",40,0,800);
               allPlots[chan+cut+"csv_"+systs[i]]       = new TH1D(chan+cut+"csv_"+systs[i],";CSV discriminator;Events",100,0,1.0);
-              allPlots[chan+cut+"nvtx_"+systs[i]]      = new TH1D(chan+cut+"nvtx_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
-              allPlots[chan+cut+"nvtxraw_"+systs[i]]   = new TH1D(chan+cut+"nvtxraw_"+systs[i],";Vertex multiplicity;Events" ,100,0.,100.);
+              allPlots[chan+cut+"nvtx_"+systs[i]]      = new TH1D(chan+cut+"nvtx_"+systs[i],";Vertex multiplicity;Events" ,50,0.,50.);
+              allPlots[chan+cut+"nvtxraw_"+systs[i]]   = new TH1D(chan+cut+"nvtxraw_"+systs[i],";Vertex multiplicity;Events" ,50,0.,50.);
               allPlots[chan+cut+"met_"+systs[i]]       = new TH1D(chan+cut+"metpt_"+systs[i],";Missing transverse energy [GeV];Events" ,50,0.,1000.);
               allPlots[chan+cut+"metphi_"+systs[i]]    = new TH1D(chan+cut+"metphi_" + systs[i],";MET #phi [rad];Events" ,64,-3.2,3.2);
               allPlots[chan+cut+"nbjets_"+systs[i]]    = new TH1D(chan+cut+"nbjets_" + systs[i],";b-tags multiplicity;Events",5, 0.,5.);
@@ -810,7 +810,7 @@ void ReadTree(TString filename,
           allPlots[channel+cut+"lpt_"+syst]    ->Fill(ev.l_pt[theLep]                 ,wgt);
           allPlots[channel+cut+"leta_"+syst]   ->Fill(ev.l_eta[theLep]                ,wgt);
           allPlots[channel+cut+"jpt_"+syst]    ->Fill(ev.j_pt[ selJetsIdx[0] ]        ,wgt);
-          allPlots[channel+cut+"jeta_"+syst]   ->Fill(fabs(ev.j_eta[ selJetsIdx[0] ]) ,wgt);
+          allPlots[channel+cut+"jeta_"+syst]   ->Fill(ev.j_eta[ selJetsIdx[0] ] ,wgt);
           allPlots[channel+cut+"tpt_"+syst]    ->Fill(ev.t_pt[theTau]                 ,wgt);
           allPlots[channel+cut+"teta_"+syst]   ->Fill(ev.t_eta[theTau]                ,wgt);
           allPlots[channel+cut+"csv_"+syst]    ->Fill(ev.j_csv[ selJetsIdx[0] ]       ,wgt);
