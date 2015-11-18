@@ -793,14 +793,14 @@ void ReadTree(TString filename,
 
       std::vector<TString> cuts; cuts.clear();
 
-      if(pass2Jets)                                                  { cuts.push_back("1l2j");} //FillCutPlots(allPlots, channel, cuts[0], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet)                                       { cuts.push_back("met" );} //FillCutPlots(allPlots, channel, cuts[1], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet && pass1tau)                           { cuts.push_back("1tau");} //FillCutPlots(allPlots, channel, cuts[2], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS)                 { cuts.push_back("os"  );} //FillCutPlots(allPlots, channel, cuts[3], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && pass1btag)    { cuts.push_back("1bi" );} //FillCutPlots(allPlots, channel, cuts[4], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) { cuts.push_back("0b"  );} //FillCutPlots(allPlots, channel, cuts[5], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) { cuts.push_back("1b"  );} //FillCutPlots(allPlots, channel, cuts[6], "nom", ev, theLep, selJetsIdx, wgt); }
-      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) { cuts.push_back("2b"  );}  //FillCutPlots(allPlots, channel, cuts[7], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets)                                                  { cuts.push_back("1l2j_");} //FillCutPlots(allPlots, channel, cuts[0], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet)                                       { cuts.push_back("met_" );} //FillCutPlots(allPlots, channel, cuts[1], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau)                           { cuts.push_back("1tau_");} //FillCutPlots(allPlots, channel, cuts[2], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS)                 { cuts.push_back("os_"  );} //FillCutPlots(allPlots, channel, cuts[3], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && pass1btag)    { cuts.push_back("1bi_" );} //FillCutPlots(allPlots, channel, cuts[4], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat0btag) { cuts.push_back("0b_"  );} //FillCutPlots(allPlots, channel, cuts[5], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat1btag) { cuts.push_back("1b_"  );} //FillCutPlots(allPlots, channel, cuts[6], "nom", ev, theLep, selJetsIdx, wgt); }
+      if(pass2Jets && passMet && pass1tau && passOS && passCat2btag) { cuts.push_back("2b_"  );}  //FillCutPlots(allPlots, channel, cuts[7], "nom", ev, theLep, selJetsIdx, wgt); }
 
       for(std::vector<TString>::iterator icut=cuts.begin(); icut!=cuts.end(); ++icut)
         {
