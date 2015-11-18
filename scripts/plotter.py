@@ -193,6 +193,23 @@ class Plot(object):
         if totalMC is not None   : stack.Draw('hist same')
         if self.data is not None : self.data.Draw('p')
 
+        breakval=0.0
+        if ROOT.TString(self.name).Contains("eventflow"):
+            if not ROOT.TString(self.name).Contains("old"):
+                for xbin in xrange(1,totalMC.GetXaxis().GetNbins()+1):
+                    if ROOT.TString(totalMC.GetXaxis().GetBinLabel(xbin)).Contains("b-tag"):
+                        print totalMC.GetXaxis().GetBinLabel(xbin)
+                        breakval=totalMC.GetBinLowEdge(xbin)
+                        break
+
+        print "Breakval: ", breakval
+        vertline = ROOT.TLine(breakval,frame.GetMinimum(),breakval,maxY);
+        vertline.SetLineColor(ROOT.kRed);
+        vertline.SetLineStyle(1);
+        vertline.SetLineWidth(2);
+        if breakval != 0:
+            vertline.Draw();
+                
         p1.RedrawAxis()
 
         #leg.Draw()
@@ -205,6 +222,12 @@ class Plot(object):
             txt.DrawLatex(0.18,0.95,'#bf{CMS} #it{Preliminary} %3.1f pb^{-1} (13 TeV)' % (lumi) )
         else:
             txt.DrawLatex(0.18,0.95,'#bf{CMS} #it{Preliminary} %3.1f fb^{-1} (13 TeV)' % (lumi/1000.) )
+
+        if breakval!=0:
+            txt.SetTextSize(20)
+            txt.DrawLatex(vertline.GetX1()/totalMC.GetXaxis().GetXmax()+0.05,0.7,'#color[2]{#bf{#rightarrow}}' )
+            txt.SetTextSize(16)
+            txt.DrawLatex(vertline.GetX1()/totalMC.GetXaxis().GetXmax()+0.10,0.7,'#splitline{#bf{Exclusive}}{#bf{categories}}' )
 
         #holds the ratio
         c.cd()
@@ -251,6 +274,13 @@ class Plot(object):
         redline.SetLineStyle(3);
         redline.SetLineWidth(2);
         redline.Draw();
+        
+        vertliner = ROOT.TLine(breakval,self.ratiorange[0],breakval,self.ratiorange[1]);
+        vertliner.SetLineColor(ROOT.kRed);
+        vertliner.SetLineStyle(1);
+        vertliner.SetLineWidth(2);
+        if breakval!=0:
+            vertliner.Draw();
         
         p2.RedrawAxis()
 
