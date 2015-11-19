@@ -30,9 +30,9 @@ SUFFIX=_2015_11_16
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
-RESULTSDIR=$MAINDIR/Results_$SUFFIX
-PLOTSDIR=$MAINDIR/Plots_$SUFFIX
-PLOTTER=$MAINDIR/Plotter_$SUFFIX
+RESULTSDIR=$MAINDIR/results$SUFFIX
+PLOTSDIR=$MAINDIR/plots$SUFFIX
+PLOTTER=$MAINDIR/plotter$SUFFIX
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
 
