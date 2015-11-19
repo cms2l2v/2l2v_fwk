@@ -26,13 +26,14 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_11_16
+#SUFFIX=_2015_11_16
+SUFFIX=Test
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples_VBF.json
-RESULTSDIR=$MAINDIR/Results_VbfCheck$SUFFIX
-PLOTSDIR=$MAINDIR/Plots_VbfCheck$SUFFIX
-PLOTTER=$MAINDIR/Plotter_VbfCheck$SUFFIX
+JSON=$MAINDIR/Test.json
+RESULTSDIR=$MAINDIR/Results_$SUFFIX
+PLOTSDIR=$MAINDIR/Plots_$SUFFIX
+PLOTTER=$MAINDIR/Plotter_$SUFFIX
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
 
@@ -54,10 +55,10 @@ case $step in
 	echo "Input: " $JSON
 	echo "Output: " $RESULTSDIR
 
-	queue='1nh'
+	queue='8nh'
 	#IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 	if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -d $MAINDIR -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
 	;;
 
     1.1)  #submit jobs for 2l2v photon jet analysis
@@ -67,7 +68,7 @@ case $step in
 	echo "Input: " $JSON
 	echo "Output: " $RESULTSDIR
 	if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -d $MAINDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
 	;;
 
     2)  #extract integrated luminosity of the processed lumi blocks
@@ -101,7 +102,7 @@ case $step in
     3.1)  # make plots for Jamboree without ratio between data and MC
         INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
         echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only z_mass, z_pt, met, mt  --removeRatioPlot  --json $JSON --no2D $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only z_mass, z_pt, met, mt  --removeRatioPlot  removeZmassUnderFlow --json $JSON --no2D $arguments
         ln -s -f $PLOTTER.root $MAINDIR/plotter.root
         ;; 
 
