@@ -127,7 +127,6 @@ DatasetFileDB                      = opt.db
 FarmDirectory                      = opt.outdir+"/FARM"
 PROXYDIR                           = FarmDirectory+"/inputs/"
 LumiMaskDir                        = opt.indir
-print "CHECK IS IT IS OK!!!!! LumiMaskDir: "  + LumiMaskDir
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
