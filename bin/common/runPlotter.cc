@@ -54,6 +54,7 @@ bool doPlot = true;
 bool splitCanvas = false;
 bool onlyCutIndex = false;
 bool showRatioBox=true;
+bool removeZmassUnderFlow=false;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
@@ -729,7 +730,14 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 //      SaveName = hist->GetName();
 //      TString postfix(""); postfix+=i;
 //      hist->SetName(SaveName+postfix);
-      fixExtremities(hist,true,false);
+
+      bool fixUnderflowBin(true);
+      bool zmassHisto(false);
+      string histoName = hist->GetName();
+      TString histoNameStr( histoName.c_str() );
+      if( histoNameStr.Contains("zmass") ) zmassHisto=true; 
+      if( removeZmassUnderFlow && zmassHisto ) fixUnderflowBin=false;
+      fixExtremities(hist,true,fixUnderflowBin);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
       hist->SetMinimum(5e-2);
@@ -1105,6 +1113,7 @@ int main(int argc, char* argv[]){
 	printf("--cutflow --> name of the histogram with the original number of events (cutflow by default)\n");
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
         printf("--removeRatioPlot --> if you want to remove ratio plots between Data ad Mc\n");
+        printf("--removeZmassUnderFlow --> Remove the Underflow bin in Zmass Plots, tag to be used only for Jamboree results\n");
 
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;
@@ -1143,6 +1152,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
      if(arg.find("--removeRatioPlot")!=string::npos){ showRatioBox = false; printf("No ratio plot between Data and Mc \n"); }
+     if(arg.find("--removeZmassUnderFlow")!=string::npos){ removeZmassUnderFlow = true; printf("No UnderFlowBin in ZMass Plot \n"); }
      if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", argv[i]);  }
      if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
