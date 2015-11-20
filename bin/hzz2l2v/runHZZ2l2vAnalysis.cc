@@ -975,8 +975,7 @@ int main(int argc, char* argv[])
          for(size_t l=0;l<muons    .size();l++){leptons.push_back(patUtils::GenericLepton(muons    [l]));}      
          std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
 
-         LorentzVector muDiff(0,0,0,0);
-         std::vector< reco::GenParticle > genPart;
+         LorentzVector muDiff(0,0,0,0); 
          std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
          for(size_t ilep=0; ilep<leptons.size(); ilep++)
            {
@@ -1035,9 +1034,6 @@ int main(int argc, char* argv[])
 
              if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]); 
              else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
-
-             if(passId && passIso && passKin && lid==11) { eleLeptons.push_back(leptons[ilep]); }
-             else if( passId && passIso && passKin && lid==13) { muLeptons.push_back(leptons[ilep]); }
 
            }
            std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
