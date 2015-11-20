@@ -54,10 +54,8 @@ bool doPlot = true;
 bool splitCanvas = false;
 bool onlyCutIndex = false;
 bool showRatioBox=true;
-bool fixUnderflowBin=true;
-bool fixOverflowBin=true;
-bool removeUnderFlow=false;
-bool removeOverFlow=false;
+bool fixUnderflow=true;
+bool fixOverflow=true;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
@@ -734,8 +732,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 //      TString postfix(""); postfix+=i;
 //      hist->SetName(SaveName+postfix);
 
-      if( removeUnderFlow ) fixUnderflowBin=false;
-      if( removeOverFlow ) fixOverflowBin=false;
+
       fixExtremities(hist,fixOverflowBin,fixUnderflowBin);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
@@ -1152,8 +1149,8 @@ int main(int argc, char* argv[]){
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
      if(arg.find("--removeRatioPlot")!=string::npos){ showRatioBox = false; printf("No ratio plot between Data and Mc \n"); }
-     if(arg.find("--removeUnderFlow")!=string::npos){ removeUnderFlow = true; printf("No UnderFlowBin \n"); }
-     if(arg.find("--removeOverFlow")!=string::npos){ removeOverFlow = true; printf("No OverFlowBin \n"); }
+     if(arg.find("--removeUnderFlow")!=string::npos){ fixUnderflow = false; printf("No UnderFlowBin \n"); }
+     if(arg.find("--removeOverFlow")!=string::npos){ fixOverflow = false; printf("No OverFlowBin \n"); }
      if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", argv[i]);  }
      if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
