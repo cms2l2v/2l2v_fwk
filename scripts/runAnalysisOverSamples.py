@@ -125,7 +125,7 @@ scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysis
 DatasetFileDB                      = opt.db
 
 FarmDirectory                      = opt.outdir+"/FARM"
-PROXYDIR                           = FarmDirectory+"/inputs/" 
+PROXYDIR                           = FarmDirectory+"/inputs/"
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
@@ -167,7 +167,8 @@ for procBlock in procList :
             suffix = str(getByLabel(procData,'suffix' ,""))
             split=getByLabel(procData,'split',-1)
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
-            ### if mctruthmode!=0 : dtag+='_filt'+str(mctruthmode)      
+            filt=''
+            if mctruthmode!=0 : filt='_filt'+str(mctruthmode)      
             if(xsec>0 and not isdata):
                 for ibr in br :  xsec = xsec*ibr
 
@@ -182,7 +183,7 @@ for procBlock in procList :
                    #create the cfg file
                    eventsFile = FileList[s]
                    eventsFile = eventsFile.replace('?svcClass=default', '')
-                   prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s)
+                   prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + filt
                	   sedcmd = 'sed \''
                    sedcmd += 's%"@dtag"%"' + dtag +'"%;'
                    sedcmd += 's%"@input"%' + eventsFile+'%;'
@@ -193,7 +194,7 @@ for procBlock in procList :
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                    sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
                    sedcmd += 's%@suffix%' +suffix+'%;'
-                   sedcmd += 's%@lumiMask%"' +getByLabel(procData,'lumiMask','')+'"%;'
+                   sedcmd += 's%@lumiMask%"' + getByLabel(procData,'lumiMask','')+'"%;'
               	   if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
                    if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
                    if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
