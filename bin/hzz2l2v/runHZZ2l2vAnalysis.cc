@@ -977,7 +977,7 @@ int main(int argc, char* argv[])
 
          LorentzVector muDiff(0,0,0,0);
          std::vector< reco::GenParticle > genPart;
-         std::vector<patUtils::GenericLepton> selLeptons, extraLeptons, eleLeptons, muLeptons;
+         std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
          for(size_t ilep=0; ilep<leptons.size(); ilep++)
            {
              bool passKin(true),passId(true),passIso(true);
@@ -1562,8 +1562,7 @@ int main(int argc, char* argv[])
            
            for(size_t ich=0; ich<chTags.size(); ich++){
 
-             //TString tags_full=chTags[ich]+evCat;
-             TString tags_full=chTags[ich];
+             TString tags_full=chTags[ich]+evCat;
              float chWeight(iweight);
 
              //update weight and mass for photons
