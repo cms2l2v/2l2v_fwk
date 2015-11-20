@@ -153,10 +153,7 @@ int main(int argc, char* argv[])
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
   
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor=getMuonCorrector(jecDir,dtag);
-
-  //lepton efficiencies
-  LeptonEfficiencySF lepEff;
+  //MuScleFitCorrector *muCor=getMuonCorrector(jecDir,dtag);
 
   //pileup weighting
   edm::LumiReWeighting* LumiWeights = NULL;
@@ -349,7 +346,7 @@ int main(int argc, char* argv[])
 
          //Select the Tag muon 
          passKinMu = (ptf > 20);
-         passIdMu  = patUtils::passId(selLeptons[first].mu, vtx[0], patUtils::llvvMuonId::StdTight);      
+         passIdMu  = patUtils::passId(selLeptons[first].mu, vtx[0], patUtils::llvvMuonId::Tight);      
          passIsoMu = patUtils::passIso(selLeptons[first].mu,  patUtils::llvvMuonIso::Tight); 
          if(passIdMu && passKinMu && passIsoMu) Tag = true;
          if(Tag){
@@ -377,9 +374,9 @@ int main(int argc, char* argv[])
          }
          //Select the PassProbe
          if(ZPick){
-           passIdTh = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdTight);
-           passIdLo = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdLoose);
-           passIdMd = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdMedium);
+           passIdTh = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::Tight);
+           passIdLo = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::Loose);
+           passIdMd = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::Soft);
            passIsoProbeMu = patUtils::passIso(selLeptons[second].mu,  patUtils::llvvMuonIso::Tight);
            if(passIdTh && passIsoProbeMu) PassProbeTh = true;
            if(passIdLo && passIsoProbeMu) PassProbeLo = true;
