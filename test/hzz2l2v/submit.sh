@@ -30,9 +30,9 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 SUFFIX=_2015_11_12
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples_Jamboree.json
-RESULTSDIR=$MAINDIR/Results_Jamboree$SUFFIX
-PLOTSDIR=$MAINDIR/Plots_Jamboree$SUFFIX
+JSON=$MAINDIR/samples.json
+RESULTSDIR=$MAINDIR/results$SUFFIX
+PLOTSDIR=$MAINDIR/plots$SUFFIX
 PLOTTER=$MAINDIR/plotter$SUFFIX
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
