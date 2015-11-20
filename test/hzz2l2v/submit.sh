@@ -26,7 +26,8 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_11_16
+#SUFFIX=_Test
+SUFFIX=_2015_11_12
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
@@ -98,14 +99,21 @@ case $step in
 	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;;
 
-    3.1)  # make plots for Jamboree without ratio between data and MC
+    3.1)  # make plots for Jamboree without ratio between data and MC for ZMass, in this case we remove also the underflow bin
         INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
         echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only z_mass, z_pt, met, mt  --removeRatioPlot  removeZmassUnderFlow --json $JSON --no2D $arguments
-        ln -s -f $PLOTTER.root $MAINDIR/plotter.root
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zmass --removeRatioPlot --removeUnderFlow --json $JSON --no2D $arguments 
+        #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
         ;; 
 
-    3.2)  # make plots and combine root files for photon + jet study
+    3.2)  # make plots for Jamboree without ratio between data and MC for Z_pt, Met and Mt
+        INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+        echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt --only all_mt --only all_met --removeRatioPlot --json $JSON --no2D $arguments
+        #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
+        ;;
+
+    3.3)  # make plots and combine root files for photon + jet study
 	JSON=$MAINDIR/photon_samples.json
 	INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
