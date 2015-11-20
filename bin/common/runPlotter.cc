@@ -733,7 +733,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 //      hist->SetName(SaveName+postfix);
 
 
-      fixExtremities(hist,fixOverflowBin,fixUnderflowBin);
+      fixExtremities(hist,fixOverflow,fixUnderflow);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
       hist->SetMinimum(5e-2);
