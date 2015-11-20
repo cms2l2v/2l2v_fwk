@@ -126,7 +126,6 @@ DatasetFileDB                      = opt.db
 
 FarmDirectory                      = opt.outdir+"/FARM"
 PROXYDIR                           = FarmDirectory+"/inputs/"
-LumiMaskDir                        = opt.indir
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 1
 LaunchOnCondor.Jobs_Queue          = opt.queue
@@ -195,7 +194,7 @@ for procBlock in procList :
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                    sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
                    sedcmd += 's%@suffix%' +suffix+'%;'
-                   sedcmd += 's%@lumiMask%"' + LumiMaskDir + "/" + getByLabel(procData,'lumiMask','')+'"%;'
+                   sedcmd += 's%@lumiMask%"' + getByLabel(procData,'lumiMask','')+'"%;'
               	   if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
                    if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
                    if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
