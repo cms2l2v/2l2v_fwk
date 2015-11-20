@@ -54,6 +54,7 @@
 #include "TEventList.h"
 #include "TROOT.h"
 #include "TNtuple.h"
+#include "TLorentzVector.h"
 #include <Math/VectorUtil.h>
 
 using namespace std;
@@ -108,15 +109,20 @@ int main(int argc, char* argv[])
   bool isZGmc(isMC && dtag.Contains("ZG"));
   bool isMC_GG  = isMC && ( string(dtag.Data()).find("GG" )  != string::npos);
   bool isMC_VBF = isMC && ( string(dtag.Data()).find("VBF")  != string::npos);
+  bool isMC_VBF1000(isMC && dtag.Contains("VBFtoH1000toZZto2L2Nu"));
   bool isMC_125OnShell = isMC && (mctruthmode==521);
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
+  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
 
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
   printf("TextFile URL = %s\n",outTxtUrl.Data());
+
+  //Blind the sensible region
+  bool blindData=true;
 
   //tree info
   TString dirname = runProcess.getParameter<std::string>("dirName");
@@ -514,7 +520,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "metpuppi",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "metNM1",        ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
-  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,2000};
+  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,1500};
   Int_t nmtAxis=sizeof(mtaxis)/sizeof(Double_t);
   mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mtNM1"  ,       ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
@@ -523,9 +529,34 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events",100,0,500) );
 
   //Debug Plots Alessio
-  mon.addHistogram( new TH1F( "numbereeTrigger",  "Number of event passing the ee Trigger", 2, 0, 2) );
-  mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger", 2, 0, 2) );
-  mon.addHistogram( new TH1F( "numberemuTrigger",  "Number of event passing the emu Trigger", 2, 0, 2) );
+  mon.addHistogram( new TH1F(   "numbereeTrigger",    "Number of event passing the ee Trigger",  2, 0, 2) );
+  mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger",  2, 0, 2) );
+  mon.addHistogram( new TH1F(  "numberemuTrigger",   "Number of event passing the emu Trigger",  2, 0, 2) );
+
+  //VBF Tail Understanding
+  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Gen_Tail",     ";Mass [GeV]; Events", 175,   0, 350) );
+  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Gen_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
+  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Gen_Tail",      ";#Delta(R); Events", 100,   0,  10) );
+  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Gen_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
+  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Gen_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
+
+  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Reco_Tail",     ";Mass [GeV]; Events", 100, 150, 350) );
+  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Reco_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
+  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Reco_Tail",      ";#Delta(R); Events", 100,   0,  10) );
+  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
+  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
+
+  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Reco_GenMatch_Tail",     ";Mass [GeV]; Events", 100, 150, 350) );
+  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Reco_GenMatch_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
+  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Reco_GenMatch_Tail",      ";#Delta(R); Events", 100,   0,  10) );
+  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_GenMatch_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
+  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_GenMatch_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
+      
+  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Reco_NoGenMatch_Tail",     ";Mass [GeV]; Events", 100, 150, 350) );
+  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Reco_NoGenMatch_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
+  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Reco_NoGenMatch_Tail",      ";#Delta(R); Events", 100,   0,  10) );
+  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
+  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
 
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
@@ -690,10 +721,11 @@ int main(int argc, char* argv[])
 	     hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
          }
 	 
-         if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-       
+          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS 
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
 
+          if(!patUtils::passMetFilters(ev, isPromptReco)) continue;
+           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
           reco::VertexCollection vtx;
@@ -943,7 +975,7 @@ int main(int argc, char* argv[])
          for(size_t l=0;l<muons    .size();l++){leptons.push_back(patUtils::GenericLepton(muons    [l]));}      
          std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
 
-         LorentzVector muDiff(0,0,0,0);
+         LorentzVector muDiff(0,0,0,0); 
          std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
          for(size_t ilep=0; ilep<leptons.size(); ilep++)
            {
@@ -1000,14 +1032,14 @@ int main(int argc, char* argv[])
          passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
          passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
 
-             if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
+             if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]); 
              else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
 
            }
            std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
            std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
            LorentzVector recoMET = met - muDiff;
-
+         
          //
          //JET/MET ANALYSIS
          //
@@ -1105,7 +1137,7 @@ int main(int argc, char* argv[])
                {
                  dilId *= selLeptons[ilep].pdgId();
                  int id(abs(selLeptons[ilep].pdgId()));
-                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "loose" : "loose" ).first : 1.0;
+                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
                  boson += selLeptons[ilep].p4();
                }
         
@@ -1113,8 +1145,9 @@ int main(int argc, char* argv[])
              if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
              if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
              if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }
-           }
-         else{
+  
+         
+         } else{
            if(hasPhotonTrigger && selPhotons.size()) {
              dilId=22;
              chTags.push_back("ee");
@@ -1164,11 +1197,23 @@ int main(int argc, char* argv[])
          bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
          bool passBtags(nbtags==0); 
          bool passMinDphijmet( njets==0 || mindphijmet>0.5);
+         bool removeDump(false);
+
          if(runPhotonSelection)
            {
              passMass=hasPhotonTrigger;
              passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
            }
+
+         //VBF Control plots to understand VBF Tail in Z mass shape
+         if(isMC_VBF1000){
+		for( unsigned int k=0; k<gen.size(); ++k){	
+			if( gen[k].isHardProcess() &&  abs( gen[k].pdgId() ) == 23  && gen[k].mass() > 140 ){ removeDump=true; }
+      		  }
+	 }
+
+         // TEMPORARY FIX to remove a bump in VBF Z mass shape when mH=1000GeV
+         if( isMC_VBF1000 && removeDump ) continue;
 
          mon.fillHisto("eventflow",  tags,0,weight);
          mon.fillHisto("nvtxA",  tags,vtx.size(),1);
@@ -1191,6 +1236,7 @@ int main(int argc, char* argv[])
            mon.fillHisto("ntaus", tags, ntaus,weight);
            if(ntaus>0) mon.fillHisto("leadtaupt", tags, selTaus[0].pt(),weight);
          }
+  
          mon.fillHisto("zmass", tags,boson.mass(),weight); 
          mon.fillHisto("zy",    tags,fabs(boson.Rapidity()),weight); 
 
@@ -1286,16 +1332,31 @@ int main(int argc, char* argv[])
                      mon.fillHisto("qmass",       tags, boson.mass(),weight); 
 
                      mon.fillHisto( "njets",icat,njets,iweight);
-                     mon.fillHisto( "met",icat,met.pt(),iweight,true);
-                     mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
-                     mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
+
+                     if( isMC ) { 
+			mon.fillHisto( "met",icat,met.pt(),iweight,true);
+                     	mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
+                    	mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
+                     } else if ( !isMC && blindData ){
+                        if( met.pt() < 70 ){ 
+			  mon.fillHisto( "met",icat,met.pt(),iweight,true);
+			  mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
+                        } 
+                        if( puppimet.pt() < 70 ){ mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);}
+                     }
+
                      TVector2 met2(met.px(),met.py());
                      TVector2 boson2(iboson.px(), iboson.py());
                      double axialMet(boson2*met2); axialMet/=-iboson.pt();
                      mon.fillHisto( "axialmet",icat,axialMet,iweight);
                      double mt=higgs::utils::transverseMass(iboson,met,true);
-                     mon.fillHisto( "mt",icat,mt,iweight,true);
-                     
+
+                     if( isMC ){
+			mon.fillHisto( "mt",icat,mt,iweight,true);
+		     } else if( !isMC && blindData && mt<200 ){
+                        mon.fillHisto( "mt",icat,mt,iweight,true);               
+                     }
+
                      if(met.pt()>optim_Cuts1_met[0]) 
                        {
                          mon.fillHisto( "mtcheckpoint",  icat, mt,       iweight, true);

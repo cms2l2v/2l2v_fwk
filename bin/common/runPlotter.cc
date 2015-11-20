@@ -54,6 +54,8 @@ bool doPlot = true;
 bool splitCanvas = false;
 bool onlyCutIndex = false;
 bool showRatioBox=true;
+bool fixUnderflow=true;
+bool fixOverflow=true;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
@@ -729,7 +731,9 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 //      SaveName = hist->GetName();
 //      TString postfix(""); postfix+=i;
 //      hist->SetName(SaveName+postfix);
-      fixExtremities(hist,true,true);
+
+
+      fixExtremities(hist,fixOverflow,fixUnderflow);
       hist->SetTitle("");
       hist->SetStats(kFALSE);
       hist->SetMinimum(5e-2);
@@ -932,25 +936,25 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    c1->Update();
    c1->cd();
 
-   TPaveText* Tcms = new TPaveText(0.10,0.95,0.16,0.995,"brNDC");
+   TPaveText* Tcms = new TPaveText(0.10,0.92,0.16,0.998,"brNDC");
    Tcms->SetBorderSize(0);
    Tcms->SetFillColor(1);     Tcms->SetFillStyle(0);  Tcms->SetLineColor(0); 
-   Tcms->SetTextFont(62);     Tcms->SetTextAlign(11); Tcms->SetTextSize(0.035);
+   Tcms->SetTextFont(62);     Tcms->SetTextAlign(11); Tcms->SetTextSize(0.05);
    Tcms->AddText("CMS");
    Tcms->Draw("same");
 
-   TPaveText* Tpre = new TPaveText(0.163,0.95,0.50,0.995,"brNDC" );
+   TPaveText* Tpre = new TPaveText(0.163,0.92,0.50,0.998,"brNDC" );
    Tpre->SetBorderSize(0);
    Tpre->SetFillColor(1);     Tpre->SetFillStyle(0);  Tpre->SetLineColor(0); 
-   Tpre->SetTextFont(52);     Tpre->SetTextAlign(11); Tpre->SetTextSize(0.025);
+   Tpre->SetTextFont(52);     Tpre->SetTextAlign(11); Tpre->SetTextSize(0.036);
    if(isSim) Tpre->AddText("Simulation"); else Tpre->AddText("Preliminary");
    Tpre->Draw("same");
 
    char Buffer[1024];  sprintf(Buffer, "%.1f %s^{-1} (%.1f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", iEcm);
-   TPaveText* Tlumi = new TPaveText(0.75,0.95,0.95,0.995,"brNDC");
+   TPaveText* Tlumi = new TPaveText(0.75,0.92,0.95,0.998,"brNDC");
    Tlumi->SetBorderSize(0);
    Tlumi->SetFillColor(0);     Tlumi->SetFillStyle(0);  Tlumi->SetLineColor(0); 
-   Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(31); Tlumi->SetTextSize(0.025);
+   Tlumi->SetTextFont(42);     Tlumi->SetTextAlign(31); Tlumi->SetTextSize(0.04);
    Tlumi->AddText(Buffer);
    Tlumi->Draw("same");
 
@@ -1105,6 +1109,8 @@ int main(int argc, char* argv[]){
 	printf("--cutflow --> name of the histogram with the original number of events (cutflow by default)\n");
         printf("--splitCanvas --> (only for 2D plots) save all the samples in separated pltos\n");
         printf("--removeRatioPlot --> if you want to remove ratio plots between Data ad Mc\n");
+        printf("--removeUnderFlow --> Remove the Underflow bin in the final plots\n");
+        printf("--removeOverFlow --> Remove the Overflow bin in the final plots\n");
 
         printf("command line example: runPlotter --json ../data/beauty-samples.json --iLumi 2007 --inDir OUT/ --outDir OUT/plots/ --outFile plotter.root --noRoot --noPlot\n");
 	return 0;
@@ -1143,6 +1149,8 @@ int main(int argc, char* argv[]){
      if(arg.find("--noRoot")!=string::npos){ StoreInFile = false;    }
      if(arg.find("--noPlot")!=string::npos){ doPlot = false;    }
      if(arg.find("--removeRatioPlot")!=string::npos){ showRatioBox = false; printf("No ratio plot between Data and Mc \n"); }
+     if(arg.find("--removeUnderFlow")!=string::npos){ fixUnderflow = false; printf("No UnderFlowBin \n"); }
+     if(arg.find("--removeOverFlow")!=string::npos){ fixOverflow = false; printf("No OverFlowBin \n"); }
      if(arg.find("--plotExt" )!=string::npos && i+1<argc){ plotExt.push_back(argv[i+1]);  i++;  printf("saving plots as = %s\n", argv[i]);  }
      if(arg.find("--cutflow" )!=string::npos && i+1<argc){ cutflowhisto   = argv[i+1];  i++;  printf("Normalizing from 1st bin in = %s\n", cutflowhisto.c_str());  }
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
