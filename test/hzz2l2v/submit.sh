@@ -30,9 +30,9 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 SUFFIX=_2015_11_12
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples.json
-RESULTSDIR=$MAINDIR/results$SUFFIX
-PLOTSDIR=$MAINDIR/plots$SUFFIX
+JSON=$MAINDIR/samples_Jamboree.json
+RESULTSDIR=$MAINDIR/Results_Jamboree$SUFFIX
+PLOTSDIR=$MAINDIR/Plots_Jamboree$SUFFIX
 PLOTTER=$MAINDIR/plotter$SUFFIX
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
@@ -58,7 +58,7 @@ case $step in
 	queue='8nh'
 	#IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 	if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -d $MAINDIR -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
 	;;
 
     1.1)  #submit jobs for 2l2v photon jet analysis
@@ -68,7 +68,7 @@ case $step in
 	echo "Input: " $JSON
 	echo "Output: " $RESULTSDIR
 	if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -d $MAINDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
 	;;
 
     2)  #extract integrated luminosity of the processed lumi blocks
