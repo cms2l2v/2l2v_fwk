@@ -576,15 +576,18 @@ namespace patUtils
     
     bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
     bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
-    bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     ));
+    bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )); 
     // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
     // bool HBHE(    utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )); // Needs to be rerun for both data (prompt+reReco) and MC, for now.
+    // bool HBHEIso( utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseIsoFilter"   ));
     // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
-    bool HBHE(false);
+
     HcalNoiseSummary summary;
     fwlite::Handle <HcalNoiseSummary> summaryHandle;
     summaryHandle.getByLabel(ev, "hcalnoise");
     if(summaryHandle.isValid()) summary=*summaryHandle;
+
+    bool HBHE(false);
     bool failCommon(
                     summary.maxHPDHits() >= 17  ||
                     summary.maxHPDNoOtherHits() >= 10 ||
@@ -592,8 +595,15 @@ namespace patUtils
                     );
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
     HBHE = !(failCommon || summary.HasBadRBXTS4TS5());
-    
-    if(!HBHE || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
+ 
+    bool HBHEIsoFail(true);
+    if( summary.numIsolatedNoiseChannels() >=10 ||
+	summary.isolatedNoiseSumE() >=50 ||
+	summary.isolatedNoiseSumEt() >=25
+	) HBHEIsoFail = false;
+     
+ 
+    if(!HBHE || HBHEIso || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
     else                                      passMetFilter=true;
     
     return passMetFilter;
@@ -609,6 +619,7 @@ namespace patUtils
     // Flag_trkPOG_manystripclus53X
     // Flag_eeBadScFilter       -------> Recommended by PAG
     // Flag_METFilters
+    // Flag_HBHENoiseIsoFilter  -------> Recommended by PAG
     // Flag_HBHENoiseFilter     -------> Recommended by PAG
     // Flag_trkPOG_toomanystripclus53X
     // Flag_hcalLaserEventFilter
