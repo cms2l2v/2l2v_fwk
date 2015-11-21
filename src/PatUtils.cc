@@ -603,7 +603,7 @@ namespace patUtils
 	) HBHEIsoFail = false;
      
  
-    if(!HBHE || HBHEIso || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
+    if(!HBHE || HBHEIsoFail || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
     else                                      passMetFilter=true;
     
     return passMetFilter;
