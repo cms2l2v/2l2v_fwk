@@ -49,9 +49,9 @@ datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble( 3.9990
 runProcess = cms.PSet(
     dtag  = cms.string("Data13TeV_SingleMuonRunD"),
     input = cms.untracked.vstring(
-#"file:/afs/cern.ch/work/v/vischia/private/code/Run2015D_SingleMuon_MINIAOD_05Oct2015-v1_10000_12AB49B0-886F-E511-826F-0025905B855E.root",
-                                  "file:/afs/cern.ch/work/v/vischia/private/code/Run2015D_SingleMuon_MINIAOD_PromptReco-v4_000_259_821_00000_6C61DD6C-CB7B-E511-9D51-02163E01378F.root"),
-    outfile = cms.string("/afs/cern.ch/work/v/vischia/private/code/CMSSW_7_4_14/src/UserCode/llvv_fwk/Test_Data_RunD.root"),
+#"file:/afs/cern.ch/work/v/vischia/public/miniaod/Run2015D_SingleMuon_MINIAOD_05Oct2015-v1_10000_12AB49B0-886F-E511-826F-0025905B855E.root",
+                                  "file:/afs/cern.ch/work/v/vischia/public/miniaod/Run2015D_SingleMuon_MINIAOD_PromptReco-v4_000_259_821_00000_6C61DD6C-CB7B-E511-9D51-02163E01378F.root"),
+    outfile = cms.string("Test_Data_RunD.root"),
     isMC = cms.bool(False),
     triggerstudy = cms.bool(False),
     xsec = cms.double(831.76),

@@ -48,8 +48,8 @@ datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble( 3.9990
 
 runProcess = cms.PSet(
     dtag  = cms.string("MC13TeV_TTJets_inclusive"),
-    input = cms.untracked.vstring("file:/afs/cern.ch/work/v/vischia/private/code/TT_TuneCUETP8M1_13TeV-powheg-pythia8_MINIAODSIM_74X_mcRun2_asymptotic_v2-v1_40000_021CEA7F-4672-E511-A487-B499BAAC04F0.root"),
-    outfile = cms.string("/afs/cern.ch/work/v/vischia/private/code/CMSSW_7_4_14/src/UserCode/llvv_fwk/Test_Data_RunD.root"),
+    input = cms.untracked.vstring("file:/afs/cern.ch/work/v/vischia/public/miniaod/TT_TuneCUETP8M1_13TeV-powheg-pythia8_MINIAODSIM_74X_mcRun2_asymptotic_v2-v1_40000_021CEA7F-4672-E511-A487-B499BAAC04F0.root"),
+    outfile = cms.string("Test_TT.root"),
     isMC = cms.bool(True),
     triggerstudy = cms.bool(False),
     xsec = cms.double(831.76),
