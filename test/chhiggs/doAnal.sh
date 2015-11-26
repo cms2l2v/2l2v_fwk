@@ -33,16 +33,8 @@ if [ "${1}" = "submit" ]; then
         RESUBMIT=" -F "
     fi
     
-    if [ "${2}" = "ntuplizer" ]; then
-        OUTDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/chhiggs/ntuples_v6/
-        mkdir -p ${OUTDIR}
-        #JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/xsec_samples_maximal.json
-        JSONFILE=$CMSSW_BASE/src/UserCode/llvv_fwk/data/chhiggs/data_samples.json
-        LFNDIRBASE="ntuples_pietro_2015-10-29_v1bis/"
-        runAnalysisOverSamples.py -e runNtuplizer -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -l ${LFNDIRBASE} -f 8 --NFile 2  -s ${QUEUE}
-    else
-        runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 --NFile 2 -s ${QUEUE}
-    fi
+    runAnalysisOverSamples.py -e runChHiggsAnalysis -j ${JSONFILE} -o ${OUTDIR} -d  /dummy/ -c $CMSSW_BASE/src/UserCode/llvv_fwk/test/runAnalysis_cfg.py.templ -p "@useMVA=False @saveSummaryTree=False @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" ${RESUBMIT} -f 8 --NFile 2 -s ${QUEUE}
+    
     
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
@@ -61,6 +53,11 @@ elif [ "${1}" = "lumi" ]; then
     echo "brilcalc lumi --normtag ${STARTINGJSON}"
     #brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt -n 0.962
     brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i ${STARTINGJSON}
+elif [ "${1}" = "pileup" ]; then
+    echo "Computing pileup:"
+    echo "pileupCalc.py -i data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 69000 --maxPileupBin 50 --numPileupBins 50 MyDataPileupHistogram.root"
+    pileupCalc.py -i data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 69000 --maxPileupBin 50 --numPileupBins 50 MyDataPileupHistogram.root
+
 elif [ "${1}" = "plot" ]; then 
 
     BASEDIR=~/www/13TeV_xsec_plots/
