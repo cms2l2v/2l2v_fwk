@@ -42,6 +42,7 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 #include "UserCode/llvv_fwk/interface/TrigUtils.h"
+#include "UserCode/llvv_fwk/interface/EwkCorrections.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -908,9 +909,13 @@ int main(int argc, char* argv[])
           genEventInfoHandle.getByLabel(ev, "generator");
           if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
 
-     
+					//Electroweak corrections to ZZ and WZ(soon) simulations
+					double ewkCorrectionsWeight = 1.;
+					if(isMC) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen);
+        
+
            //final event weight
-           weight = xsecWeight * puWeight * shapeWeight;
+           weight = xsecWeight * puWeight * shapeWeight * ewkCorrectionsWeight;
          }
 
          //
