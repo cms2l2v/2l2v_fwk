@@ -2,6 +2,17 @@
 
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
 
+#include <cstdlib>
+#include <sstream>
+#include <cassert>
+#include <istream>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <sstream>
+#include <cstring>
+
 namespace patUtils
 {
 
@@ -570,18 +581,23 @@ namespace patUtils
 
 
   bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco){
+
     bool passMetFilter(false);
 
     edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
-    
-    bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
-    bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
-    bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )); 
+
+    //Good Vertex Filter
+    bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices" ));    
+ 
+    //bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
+    //bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     ));
+
     // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
     // bool HBHE(    utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )); // Needs to be rerun for both data (prompt+reReco) and MC, for now.
     // bool HBHEIso( utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseIsoFilter"   ));
+  
+    // HBHE Filter
     // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
-
     HcalNoiseSummary summary;
     fwlite::Handle <HcalNoiseSummary> summaryHandle;
     summaryHandle.getByLabel(ev, "hcalnoise");
@@ -603,8 +619,8 @@ namespace patUtils
 	) HBHEIsoFail = false;
      
  
-    if(!HBHE || HBHEIsoFail || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
-    else                                      passMetFilter=true;
+    if(!HBHE || !HBHEIsoFail || !GoodVtx ) passMetFilter=false;
+    else                                   passMetFilter=true;
     
     return passMetFilter;
     // Documentation:    
