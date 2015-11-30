@@ -1,4 +1,5 @@
 #include "UserCode/llvv_fwk/interface/EwkCorrections.h"
+#include <stdlib.h>
 
 namespace EwkCorrections
 {
@@ -26,7 +27,9 @@ namespace EwkCorrections
 		std::vector<float> Table_line;
   	std::vector<std::vector<float>> Table_EWK;
 		TString name;
-		TString path = "$CMSSW_BASE/src/UserCode/llvv_fwk/src/";
+		TString cmssw_path;
+		cmssw_path = getenv("CMSSW_BASE");
+		TString path = cmssw_path+"/src/UserCode/llvv_fwk/src/";
 		if(url.Contains("ZZ")){
 		 	name = path+"EwkCorrections/ZZ_EwkCorrections.dat";
     }
@@ -48,8 +51,8 @@ namespace EwkCorrections
    	 	}
  		}
  		myReadFile.close();
- 		cout << "File read" << endl;
- 		cout << "test table : en (6,2) on a " << Table_EWK[6][2] << endl;
+ 		//cout << "File read" << endl;
+ 		//cout << "test table : en (6,2) on a " << Table_EWK[6][2] << endl;
  		return Table_EWK;
 	}
 
@@ -75,10 +78,10 @@ namespace EwkCorrections
 			}
 		}
 		best = Table_EWK[j+199][1];
-		if( t_hat > best) j = j+199; //in the very rare case where we have bigger t than our table
+		if(t_hat > best) j = j+199; //in the very rare case where we have bigger t than our table
 		else{
 			for(int k = j ; k < j + 200 ; k++){
-			 	if(fabs(t_hat - Table_EWK[k][1]) < best){
+			 	if(fabs(t_hat - Table_EWK[k][1]) < fabs(best)){
 			 		best = fabs(t_hat - Table_EWK[k][1]);
 			 		j = k;
 			 	}
@@ -132,10 +135,13 @@ namespace EwkCorrections
 
       if(genParticle.status() == 2) continue; //drop the shower part of the history
 
-			if(genParticle.status() == 3){ //his includes the two incoming colliding particles and partons produced in hard interaction
-			 	if(genParticle.pdgId() == 2212) genIncomingProtons.push_back(genParticle);
-			 	if(genParticle.pdgId() >= 1 && genParticle.pdgId() <= 5) genIncomingQuarks.push_back(genParticle);
-			}
+//			if(genParticle.status() == 3){ //his includes the two incoming colliding particles and partons produced in hard interaction //look at everything
+			 	if(genParticle.pdgId() == 2212 && genParticle.status() == 4) genIncomingProtons.push_back(genParticle); //4 : incoming beam particle
+			 	if(fabs(genParticle.pdgId()) >= 1 && fabs(genParticle.pdgId()) <= 5 && genParticle.status() == 21) genIncomingQuarks.push_back(genParticle); //21 : incoming particles of hardest subprocess
+				if(debug){
+					cout << "Id : " << genParticle.pdgId() << " ; status : " << genParticle.status() << endl;
+					}
+		//	}
 
       //if(genParticle.pt() < 5) continue; //ask a minimal pt to remove garbage
       //let's be even more strict. I look at jet of 20GeV, so let's ask for no particles with a pT below 15
