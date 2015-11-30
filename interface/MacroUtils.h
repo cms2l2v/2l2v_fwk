@@ -44,7 +44,17 @@
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
 
-
+#include <cstdlib>
+#include <sstream>
+#include <cassert>
+#include <istream>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <map>
 #include <vector>
 #include "TVector3.h"
 #include "TMath.h"
@@ -217,6 +227,61 @@ class DuplicatesChecker{
     }
     return true;
   }
+};
+
+class MetFilter{
+ private :
+  struct RuLuEv {
+     unsigned int Run;
+     unsigned int Lumi;
+     unsigned int Event;
+     RuLuEv(unsigned int Run_, unsigned int Lumi_, unsigned int Event_){ Run = Run_; Lumi = Lumi_; Event = Event_;}
+     bool operator==(const RuLuEv &other) const { return (Run == other.Run && Lumi == other.Lumi && Event == other.Event); }
+  };
+  struct RuLuEvHasher{
+      std::size_t operator()(const RuLuEv& k) const{
+         using std::size_t;
+         using std::hash;
+         using std::string;
+         return ((hash<unsigned int>()(k.Run) ^ (hash<unsigned int>()(k.Lumi) << 1)) >> 1) ^ (hash<unsigned int>()(k.Event) << 1);
+      }
+  };
+
+  typedef std::unordered_map<RuLuEv, int, RuLuEvHasher> MetFilterMap;
+  MetFilterMap map;
+ public :
+  MetFilter(){}
+  ~MetFilter(){}
+  void Clear(){map.clear();}
+  void fill(std::string path, std::string file){
+     unsigned int Run=0; unsigned int Lumi=1; unsigned int Event=2;
+     //LOOP on the files and fill the map
+     std::string FileToRead = path + "/" + file;
+     std::ifstream File;
+     File.open(FileToRead.c_str());
+     if ( !File.good() ){
+       std::cout<<"ERROR:: File "<<file<<" NOT FOUND!!"<<std::endl; 
+     } else {
+       std::string line;
+       while ( File.good() ){
+            getline(File, line);
+            std::istringstream stringfile(line);
+            stringfile >> Run >> Lumi >> Event >> std::ws;
+            std::cout << "Run: " << Run << "; Lumi: " << Lumi << "; Event: " << Event << std::endl;	
+            map[RuLuEv(Run, Lumi, Event)] += 1;
+       }
+     }
+   }
+
+   bool passMetFilter(unsigned int Run, unsigned int Lumi, unsigned int Event){
+     
+     MetFilterMap::iterator it = map.find( RuLuEv(Run, Lumi, Event) );
+     if(it!=map.end()){
+       return false;
+     }
+     return true;
+     //return map[RuLuEv(Run, Lumi, Event)];
+   }
 };
 
 #endif
