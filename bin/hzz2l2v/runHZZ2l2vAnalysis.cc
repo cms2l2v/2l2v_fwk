@@ -114,6 +114,9 @@ int main(int argc, char* argv[])
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_QCD = (isMC && dtag.Contains("QCD"));                                                                                   
+  bool isMC_GJet = (isMC && dtag.Contains("GJet"));    
+
   bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
 
   TString outTxtUrl= outUrl + ".txt";    
@@ -458,6 +461,9 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
 
+  mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 40, 0, 4) ); 
+  mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 40, 0, 4) ); 
+  mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(#gamma,MET);Events", 40, 0, 4) ); 
   
   //lepton control
   mon.addHistogram( new TH1F( "leadpt",     ";Transverse momentum [GeV];Events", 50,0,500) );
@@ -828,6 +834,25 @@ int main(int argc, char* argv[])
            }
          }
 
+	 //Resolve G+jet/QCD mixing                                                                                                 
+         if (runPhotonSelection) {                                                                                                  
+           bool rejectEvent=false;                                                                                                  
+           // iF GJet sample; accept only event with prompt photons                                                                 
+           // if QCD sample; reject events with prompt photons in final state                                                       
+           if (isMC_GJet || isMC_QCD) {                                                                                             
+             int ng(0); bool gPromptFound=false;                                                                                    
+             for(size_t ig=0; ig<gen.size(); ig++){                                                                                 
+               int id(abs(gen[ig].pdgId()));                                                                                        
+               if((id==22) && gen[ig].isPromptFinalState()) {                                                                       
+                 gPromptFound=true; ng++;                                                                                           
+               }                                                                                                                    
+             }                                                                                                                      
+             if ( (isMC_GJet) && (!gPromptFound) ) rejectEvent=true;                                                                
+             if ( (isMC_QCD) && gPromptFound ) rejectEvent=true;                                                                    
+           } // end GJet / QCD sample                                                                                               
+           if (rejectEvent) { continue; }                                                                                           
+           //        std::cout << "Reject event in g+jet or QCD sample" << std::endl;                                               
+         } // only if mctruthmode==22           
 
          //
          // DERIVE WEIGHTS TO APPLY TO SAMPLE
@@ -1330,8 +1355,12 @@ int main(int argc, char* argv[])
                      
                      //this one is used to sample the boson mass: cuts may shape Z lineshape
                      mon.fillHisto("qmass",       tags, boson.mass(),weight); 
-
                      mon.fillHisto( "njets",icat,njets,iweight);
+
+		     double b_dphi=fabs(deltaPhi(iboson.phi(),met.phi()));
+		     mon.fillHisto( "metphi",icat,met.phi(),iweight,true);                                                                                       
+		     mon.fillHisto( "bosonphi",icat,iboson.phi(),iweight,true);                                                                                  
+		     mon.fillHisto( "dphi_boson_met",icat,b_dphi,iweight,true);    
 
                      if( isMC ) { 
 			mon.fillHisto( "met",icat,met.pt(),iweight,true);
