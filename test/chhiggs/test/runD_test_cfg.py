@@ -48,8 +48,10 @@ datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble( 3.9990
 
 runProcess = cms.PSet(
     dtag  = cms.string("Data13TeV_SingleMuonRunD"),
-    input = cms.untracked.vstring("file:/afs/cern.ch/work/v/vischia/private/code/Run2015D_SingleMuon_MINIAOD_05Oct2015-v1_10000_12AB49B0-886F-E511-826F-0025905B855E.root"),
-    outfile = cms.string("/afs/cern.ch/work/v/vischia/private/code/CMSSW_7_4_14/src/UserCode/llvv_fwk/Test_Data_RunD.root"),
+    input = cms.untracked.vstring(
+#"file:/afs/cern.ch/work/v/vischia/public/miniaod/Run2015D_SingleMuon_MINIAOD_05Oct2015-v1_10000_12AB49B0-886F-E511-826F-0025905B855E.root",
+                                  "file:/afs/cern.ch/work/v/vischia/public/miniaod/Run2015D_SingleMuon_MINIAOD_PromptReco-v4_000_259_821_00000_6C61DD6C-CB7B-E511-9D51-02163E01378F.root"),
+    outfile = cms.string("Test_Data_RunD.root"),
     isMC = cms.bool(False),
     triggerstudy = cms.bool(False),
     xsec = cms.double(831.76),
@@ -58,7 +60,7 @@ runProcess = cms.PSet(
     brnew = cms.double(-1),	
     mctruthmode = cms.int32(0),
     jacknife = cms.vint32(0,0),
-    saveSummaryTree = cms.bool(False),
+    saveSummaryTree = cms.bool(True),
     runSystematics = cms.bool(False),
     weightsFile = cms.vstring(""),
     muscleDir = cms.string("${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/"),
@@ -69,7 +71,7 @@ runProcess = cms.PSet(
     #datapileup = datapileup_6pb_2015b_doubleMu_plus_doubleEl_LoicPreliminary,
     datapileup = datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary, 
     datapileupSingleLep = datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary,
-    debug = cms.bool(True),
+    debug = cms.bool(False),
     lumisToProcess = LumiList.LumiList(filename = "/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt").getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),
     electronidparas = cms.PSet(myVidElectronId),

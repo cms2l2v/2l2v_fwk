@@ -1,20 +1,183 @@
 {
   "proc":[
     { 
+      "tag":"QCDMuEnriched",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "destination":"wjets selection",
+      "comment":"this seems the one matching better the one from TAU-14-001. Not sure of why pion kaon decays are explicitly mentioned, though",
+      "frommcm":"cross section 866600000, filter efficiency 0.00044",
+      "data":[        
+            { "dtag":"MC13TeV_QCDMuEnriched", "split_NoUse_TestingAutomaticOne":110, "xsec":381304, "br":[ 1.0 ] , "dset":"/QCD_Pt-20toInf_MuEnrichedPt15_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+            ]             
+    },          
+    {
+      "tag":"QCD",
+      "isdata":false,
+      "color":591,
+      "lcolor":1,
+      "destination":"qcd selection",
+      "frommcm":"all filter efficiencies are 1",
+      "data":[
+        { "dtag":"MC13TeV_QCD_Pt-15to30",     "split_NoUse_TestingAutomaticOne":100, "xsec":2237000000, "br":[1.0], "dset":"/QCD_Pt_15to30_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },           
+        { "dtag":"MC13TeV_QCD_Pt-30to50",     "split_NoUse_TestingAutomaticOne":100, "xsec":161500000,  "br":[1.0], "dset":"/QCD_Pt_30to50_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },    
+        { "dtag":"MC13TeV_QCD_Pt-50to80",     "split_NoUse_TestingAutomaticOne":100, "xsec":22110000,   "br":[1.0], "dset":"/QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },    
+        { "dtag":"MC13TeV_QCD_Pt-80to120",    "split_NoUse_TestingAutomaticOne":100, "xsec":3000114.3,  "br":[1.0], "dset":"/QCD_Pt_80to120_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },   
+        { "dtag":"MC13TeV_QCD_Pt-120to170",   "split_NoUse_TestingAutomaticOne":100, "xsec":493200,     "br":[1.0], "dset":"/QCD_Pt_120to170_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },  
+        { "dtag":"MC13TeV_QCD_Pt-170to300",   "split_NoUse_TestingAutomaticOne":100, "xsec":120300,     "br":[1.0], "dset":"/QCD_Pt_170to300_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },  
+        { "dtag":"MC13TeV_QCD_Pt-300to470",   "split_NoUse_TestingAutomaticOne":100, "xsec":7475,       "br":[1.0], "dset":"/QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },  
+        { "dtag":"MC13TeV_QCD_Pt-470to600",   "split_NoUse_TestingAutomaticOne":100, "xsec":587.1,      "br":[1.0], "dset":"/QCD_Pt_470to600_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },  
+        { "dtag":"MC13TeV_QCD_Pt-600to800",   "split_NoUse_TestingAutomaticOne":100, "xsec":167,        "br":[1.0], "dset":"/QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },  
+        { "dtag":"MC13TeV_QCD_Pt-800to1000",  "split_NoUse_TestingAutomaticOne":100, "xsec":28.25,      "br":[1.0], "dset":"/QCD_Pt_800to1000_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" }, 
+        { "dtag":"MC13TeV_QCD_Pt-1000to1400", "split_NoUse_TestingAutomaticOne":100, "xsec":8.195,      "br":[1.0], "dset":"/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },
+        { "dtag":"MC13TeV_QCD_Pt-1400to1800", "split_NoUse_TestingAutomaticOne":100, "xsec":0.7346,     "br":[1.0], "dset":"/QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" }         
+        ]       
+     },
+    {
+      "tag":"Z#rightarrow ll",
+      "isdata":false,
+      "color":831,
+      "lcolor":1,
+      "frommcm":"m50 has xsec=5943.2 eff=1, m10to50 has xsec=18610 eff=1",
+      "comment":" Must add the 10to50 with its proper xsec: /DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1/MINIAODSIM",
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToLL_10to50"               , "split_NoUse_TestingAutomaticOne":59, "xsec":18610.0  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" }, 
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               , "split_NoUse_TestingAutomaticOne":59, "xsec":2008.4  , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"    } 
+      ]
+    },
+    {   
+      "tag":"W,multijets",
+      "isdata":false,
+      "color":809,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_WJets"                            , "split_NoUse_TestingAutomaticOne":100, "xsec":20508.9       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"Diboson",
+      "isdata":false,
+      "color":592,
+      "lcolor":1,
+      "marker":1,
+      "comment":"Cross sections from prepreapproval of dilepton. Must check values",
+      "data":[
+        { "dtag":"MC13TeV_WW"                             , "split_NoUse_TestingAutomaticOne":41, "xsec":118.7       , "br":[ 1.0 ]           , "dset":"/WW_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+{ "dtag":"MC13TeV_WZ"                             , "split_NoUse_TestingAutomaticOne":41, "xsec":65.9       , "br":[ 1.0 ]           , "dset":"/WZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+{ "dtag":"MC13TeV_ZZ"                             , "split_NoUse_TestingAutomaticOne":41, "xsec":31.8       , "br":[ 1.0 ]           , "dset":"/ZZ_TuneCUETP8M1_13TeV-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+   {
+      "tag":"Single top",
+      "isdata":false,
+      "color":824,
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_SingleT_tW_5FS"                   , "split_NoUse_TestingAutomaticOne":10, "xsec":35.85        , "br":[ 1.0 ]                 , "dset":"/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"          },
+        { "dtag":"MC13TeV_SingleT_tW_5FS_DS"                , "split_NoUse_TestingAutomaticOne":10, "xsec":35.85        , "br":[ 1.0 ]                 , "dset":"/ST_tW_top_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"       },
+        { "dtag":"MC13TeV_SingleTbar_tW_5FS"                , "split_NoUse_TestingAutomaticOne":10, "xsec":35.85        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"      },
+        { "dtag":"MC13TeV_SingleTbar_tW_5FS_DS"             , "split_NoUse_TestingAutomaticOne":10, "xsec":35.85        , "br":[ 1.0 ]                 , "dset":"/ST_tW_antitop_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"   },
+        { "dtag":"MC13TeV_SingleT_t_4FS_leptonicDecays",     "split_NoUse_TestingAutomaticOne":10, "xsec":136.02, "br":[ 1.0 ] , "dset":"/ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },
+        { "dtag":"MC13TeV_SingleTbar_t_4FS_leptonicDecays", "split_NoUse_TestingAutomaticOne":10, "xsec":80.95, "br":[ 1.0 ]  , "dset":"/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" }
+      ]
+     },
+     {
+      "tag":"t#bar{t} inclusive",
+      "isdata":false,
+      "color":614,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_inclusive"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM" },
+        { "commentdtag":"MC13TeV_TTJets_inclusive_ext"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2_ext3-v1/MINIAODSIM" }
+      ]
+    },
+    {
+      "tag":"t#bar{t} dileptons",
+      "isdata":false,
+      "mctruthmode":1,
+      "color":614,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_dilepton"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} other",
+      "isdata":false,
+      "mctruthmode":2,
+      "color":822,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_other"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} ltau",
+      "label":"t#bar{t}#rightarrow#it{l}#tau",
+      "isdata":false,
+      "mctruthmode":3,
+      "color":614,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_leptau"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} dileptons for ltau",
+      "label":"t#bar{t} dileptons",    
+      "isdata":false,
+      "mctruthmode":4,
+      "color":822,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_dilleptau"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} ljets",
+      "label":"t#bar{t}#rightarrow#it{l}+jets",
+      "isdata":false,
+      "mctruthmode":5,
+      "color":621,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_lepjets"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    {
+      "tag":"t#bar{t} had",
+      "label":"t#bar{t}#rightarrow hadrons",
+      "isdata":false,
+      "mctruthmode":6,
+      "color":635,
+      "comment":"/TT_TuneZ2star_13TeV-powheg-pythia6-tauola/RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v3/MINIAODSIM",
+      "lcolor":1,
+      "data":[
+        { "dtag":"MC13TeV_TTJets_hadrons"                           , "split_NoUse_TestingAutomaticOne":100, "xsec":831.76       , "br":[ 1.0 ] , "dset":"/TT_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+      ]
+    },
+    { 
       "tag":"data",
       "isdata":true,
       "color":1,
       "fill":0,
       "comment":"real split 17",        
        "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD",       "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleElectron2015B_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-05Oct2015-v1/MINIAOD", "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD",       "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleElectron2015C_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015C_25ns-05Oct2015-v1/MINIAOD", "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD",       "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleElectron2015D_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-05Oct2015-v1/MINIAOD", "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD",       "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
-        { "dtag":"Data13TeV_SingleElectron2015D_PromptReco",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-PromptReco-v4/MINIAOD", "lumiMask":"${CMSSW_BASE}/src/UserCode/llvv_fwk/data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
+        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015B_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-05Oct2015-v1/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015C_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015C_25ns-05Oct2015-v1/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015D_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-05Oct2015-v1/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015D_PromptReco",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-PromptReco-v4/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
       ]             
     }    
   ]

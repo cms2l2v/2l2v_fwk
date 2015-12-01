@@ -569,7 +569,9 @@ namespace patUtils
   bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco){
     bool passMetFilter(false);
 
+    // Legacy: the different collection name was necessary with the early 2015B prompt reco 
     edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+    //edm::TriggerResultsByName metFilters = ev.triggerResultsByName("RECO");
     
     bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
     bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
