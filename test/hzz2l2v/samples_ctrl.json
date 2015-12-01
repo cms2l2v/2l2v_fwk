@@ -122,7 +122,7 @@
        "marker":20,                                                                                                            
        "data":[         
         { "dtag":"Data13TeV_SinglePhoton2015D_05Oct2015"        ,  "xsec":1.0     , "br":[ 1.0 ]    , "dset":"/SinglePhoton/Run2015D-05Oct2015-v1/MINIAOD"      ,  "lumiMask":"Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },             
-       { "dtag":"Data13TeV_SinglePhoton2015D"                  ,  "xsec":1.0     , "br":[ 1.0 ]    , "dset":"/SinglePhoton/Run2015D-PromptReco-v4/MINIAOD"     ,  "lumiMask":"Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }               
+       { "dtag":"Data13TeV_SinglePhoton2015D_PromptReco"                  ,  "xsec":1.0     , "br":[ 1.0 ]    , "dset":"/SinglePhoton/Run2015D-PromptReco-v4/MINIAOD"     ,  "lumiMask":"Cert_246908-260426_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }               
        ]                                                                                                                       
   },
       {
