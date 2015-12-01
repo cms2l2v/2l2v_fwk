@@ -904,15 +904,12 @@ int main (int argc, char *argv[])
         // Need either to simulate the HLT (https://twiki.cern.ch/twiki/bin/view/CMS/TopTrigger#How_to_easily_emulate_HLT_paths) to match triggers.
         bool eTrigger    (
                           isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_Ele23_CaloIdL_TrackIdL_IsoVL_v*")
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WP75_Gsf_v*")
                           :
-                          utils::passTriggerPatterns (tr, "HLT_Ele23_WPLoose_Gsf_v*")
+                          utils::passTriggerPatterns (tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*")
                           );
         bool muTrigger   (
-                          isMC ? 
-                          utils::passTriggerPatterns (tr, "HLT_IsoMu17_eta2p1_v*")
-                          :
-                          utils::passTriggerPatterns (tr, "HLT_IsoMu18_v*")
+                          utils::passTriggerPatterns (tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*")
                           );
 
         if(!isMC && muTrigger) mon.fillHisto("nvtx_singlemu_pileup", tags, nGoodPV, 1.);
