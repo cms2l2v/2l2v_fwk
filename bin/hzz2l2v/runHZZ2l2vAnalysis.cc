@@ -117,8 +117,7 @@ int main(int argc, char* argv[])
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));                                                                                   
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));    
 
-  //  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
-  bool isPromptReco (!isMC && ( dtag.Contains("Run2015B-PromptReco") || dtag.Contains("2015D_PromptReco")) );
+  bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
 
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
