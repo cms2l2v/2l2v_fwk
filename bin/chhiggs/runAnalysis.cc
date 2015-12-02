@@ -366,7 +366,7 @@ int main (int argc, char *argv[])
   // bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
   
   bool isTTbarMC    (isMC && (dtag.Contains("TTJets") || dtag.Contains("_TT_") )); // Is this still useful?
-  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
+  bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
   bool isRun2015B   (!isMC && dtag.Contains("Run2015B"));
   bool isNLOMC      (isMC && (dtag.Contains("amcatnlo") || dtag.Contains("powheg")) );
   
