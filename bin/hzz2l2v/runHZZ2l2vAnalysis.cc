@@ -114,7 +114,12 @@ int main(int argc, char* argv[])
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
-  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
+ 
+  //Tag for Met Filter
+  bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
+  bool isDoubleEleRunD( !isMC && dtag.Contains("DoubleElectron2015D") );
+  bool isDoubleMuRunD( !isMC && dtag.Contains("DoubleMu2015D") );
+  bool isMuonEGRunD( !isMC && dtag.Contains("MuEG2015D") );
 
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
@@ -672,6 +677,21 @@ int main(int argc, char* argv[])
   //DuplicatesChecker duplicatesChecker;
   //int nDuplicates(0)
   
+  MetFilter CSCmetFilerCheck;
+  MetFilter EcalmetFilerCheck;
+ 
+  if( isDoubleEleRunD && !isDoubleMuRunD && !isMuonEGRunD ) { 
+	CSCmetFilerCheck.fill("../../data/MetFilter/DoubleEG_RunD","DoubleEG_csc2015.txt");
+	EcalmetFilerCheck.fill("../../data/MetFilter/DoubleEG_RunD","DoubleEG_ecalscn1043093.txt"); 
+  } else if( !isDoubleEleRunD && isDoubleMuRunD && !isMuonEGRunD ) { 
+	CSCmetFilerCheck.fill("../../data/MetFilter/DoubleMuon_RunD","DoubleMuon_csc2015.txt");
+	EcalmetFilerCheck.fill("../../data/MetFilter/DoubleMuon_RunD","DoubleMuon_ecalscn1043093.txt"); 
+  } else if( !isDoubleEleRunD && !isDoubleMuRunD && isMuonEGRunD ) { 
+	CSCmetFilerCheck.fill("../../data/MetFilter/MuonEG_RunD","MuonEG_csc2015.txt");
+	EcalmetFilerCheck.fill("../../data/MetFilter/MuonEG_RunD","MuonEG_ecalscn1043093.txt"); 
+  }
+
+
   printf("Progressing Bar           :0%%       20%%       40%%       60%%       80%%       100%%\n");
   for(unsigned int f=0;f<urls.size();f++){
      TFile* file = TFile::Open(urls[f].c_str() );
@@ -721,10 +741,17 @@ int main(int argc, char* argv[])
 	     hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
          }
 	 
-          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS 
+          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+   
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
-
-          if(!patUtils::passMetFilters(ev, isPromptReco)) continue;
+          if( !isMC ){
+             unsigned int Run   = ev.eventAuxiliary().run();
+	     unsigned int Lumi  = ev.eventAuxiliary().luminosityBlock();
+             unsigned int Event = ev.eventAuxiliary().event();
+             if( !CSCmetFilerCheck.passMetFilter( Run, Lumi, Event )) continue;
+             if( !EcalmetFilerCheck.passMetFilter( Run, Lumi, Event )) continue; 
+             if( !patUtils::passMetFilters(ev, isPromptReco ) ) continue; 
+	   }
            //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
@@ -1206,14 +1233,22 @@ int main(int argc, char* argv[])
            }
 
          //VBF Control plots to understand VBF Tail in Z mass shape
+         std::vector<reco::GenParticle> VisLep;
          if(isMC_VBF1000){
-		for( unsigned int k=0; k<gen.size(); ++k){	
-			if( gen[k].isHardProcess() &&  abs( gen[k].pdgId() ) == 23  && gen[k].mass() > 140 ){ removeDump=true; }
+		double filterEff = 0.16275;
+                for( unsigned int k=0; k<gen.size(); ++k){	
+			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] ); 
       		  }
+		if( VisLep.size() == 2 ){
+                        TLorentzVector Lep1( VisLep[0].px(), VisLep[0].py(), VisLep[0].pz(), VisLep[0].p() );
+                        TLorentzVector Lep2( VisLep[1].px(), VisLep[1].py(), VisLep[1].pz(), VisLep[1].p() );	
+			double MassVisZ = ( Lep1 + Lep2 ).M();
+			if( MassVisZ > 150 ) removeDump=true; 
+		}
+                if(removeDump ) continue;
+                weight /= filterEff;
 	 }
 
-         // TEMPORARY FIX to remove a bump in VBF Z mass shape when mH=1000GeV
-         if( isMC_VBF1000 && removeDump ) continue;
 
          mon.fillHisto("eventflow",  tags,0,weight);
          mon.fillHisto("nvtxA",  tags,vtx.size(),1);
@@ -1353,7 +1388,7 @@ int main(int argc, char* argv[])
 
                      if( isMC ){
 			mon.fillHisto( "mt",icat,mt,iweight,true);
-		     } else if( !isMC && blindData && mt<200 ){
+		     } else if( !isMC && blindData && mt<325 ){
                         mon.fillHisto( "mt",icat,mt,iweight,true);               
                      }
 
@@ -1559,6 +1594,7 @@ int main(int argc, char* argv[])
            for(size_t ich=0; ich<chTags.size(); ich++){
 
              TString tags_full=chTags[ich]+evCat;
+             //TString tags_full=chTags[ich];
              float chWeight(iweight);
 
              //update weight and mass for photons
