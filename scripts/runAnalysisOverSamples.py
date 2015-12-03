@@ -10,6 +10,7 @@ PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
+nonLocalSamples = []
 
 """
 Gets the value of a given item
@@ -37,6 +38,8 @@ def initProxy():
    initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
 def getFileList(procData,DefaultNFilesPerJob):
+   global nonLocalSamples
+
    FileList = [];
    miniAODSamples = getByLabel(procData,'miniAOD','')
    isMINIAODDataset = ("/MINIAOD" in getByLabel(procData,'dset','')) or  ("amagitte" in getByLabel(procData,'dset',''))
@@ -50,6 +53,9 @@ def getFileList(procData,DefaultNFilesPerJob):
             IsOnLocalTier=True
             print ("Sample is found to be on the local grid tier (%s): %s") %(localTier, site)
             break
+
+      if(localTier != "" and not IsOnLocalTier):
+         nonLocalSamples += [getByLabel(procData,'dset','')]
 
       list = []
       if(IsOnLocalTier or isMINIAODDataset):
@@ -252,4 +258,11 @@ for procBlock in procList :
 
 if(LaunchOnCondor.subTool=='criminal'):
     LaunchOnCondor.SendCluster_CriminalSubmit()
+
+
+if(len(nonLocalSamples)>0):
+   print "Some samples that you want to process are not currently available on the local tier ("+localTier+") you use."
+   print "Consider transfering them via phedex to run your analysis faster:"
+   for nonLocalSample in nonLocalSamples:
+      print nonLocalSample
 
