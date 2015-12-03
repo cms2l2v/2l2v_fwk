@@ -10,6 +10,7 @@ PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
+isLocalSample = False
 nonLocalSamples = []
 
 """
@@ -39,6 +40,8 @@ def initProxy():
 
 def getFileList(procData,DefaultNFilesPerJob):
    global nonLocalSamples
+   global isLocalSample
+   isLocalSample = False
 
    FileList = [];
    miniAODSamples = getByLabel(procData,'miniAOD','')
@@ -50,9 +53,10 @@ def getFileList(procData,DefaultNFilesPerJob):
       IsOnLocalTier=False
       for site in listSites.split('\n'):
          if(localTier != "" and localTier in site and '100.00%' in site):
-            IsOnLocalTier=True
+            IsOnLocalTier=True            
             print ("Sample is found to be on the local grid tier (%s): %s") %(localTier, site)
             break
+      isLocalSample = IsOnLocalTier
 
       if(localTier != "" and not IsOnLocalTier):
          nonLocalSamples += [getByLabel(procData,'dset','')]
@@ -130,18 +134,6 @@ parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='us
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
 DatasetFileDB                      = opt.db
 
-FarmDirectory                      = opt.outdir+"/FARM"
-PROXYDIR                           = FarmDirectory+"/inputs/"
-JobName                            = opt.theExecutable
-LaunchOnCondor.Jobs_RunHere        = 1
-LaunchOnCondor.Jobs_Queue          = opt.queue
-LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
-LaunchOnCondor.Jobs_EmailReport    = opt.report
-LaunchOnCondor.Jobs_InitCmds       = ['ulimit -c 0;']  #disable production of core dump in case of job crash
-LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
-LaunchOnCondor.Jobs_LocalNJobs     = opt.localnfiles
-LaunchOnCondor.Jobs_CRABLFN        = opt.crablfn
-LaunchOnCondor.Jobs_ProxyDir       = FarmDirectory+"/inputs/" 
 #define local site
 localTier = ""
 hostname = commands.getstatusoutput("hostname -f")[1]
@@ -149,7 +141,18 @@ if(hostname.find("ucl.ac.be")!=-1):localTier = "T2_BE_UCL"
 if(hostname.find("iihe.ac.be")!=-1):localTier = "T2_BE_IIHE"
 if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 
+FarmDirectory                      = opt.outdir+"/FARM"
+PROXYDIR                           = FarmDirectory+"/inputs/"
 initProxy()
+
+JobName                            = opt.theExecutable
+LaunchOnCondor.Jobs_RunHere        = 1
+LaunchOnCondor.Jobs_Queue          = opt.queue
+LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
+LaunchOnCondor.Jobs_EmailReport    = opt.report
+LaunchOnCondor.Jobs_LocalNJobs     = opt.localnfiles
+LaunchOnCondor.Jobs_CRABLFN        = opt.crablfn
+LaunchOnCondor.Jobs_ProxyDir       = FarmDirectory+"/inputs/" 
 
 #open the file which describes the sample
 jsonFile = open(opt.samplesDB,'r')
@@ -165,6 +168,8 @@ for procBlock in procList :
         data = proc['data']
 
         for procData in data :
+            LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
+
             origdtag = getByLabel(procData,'dtag','')
             if(origdtag=='') : continue
             dtag = origdtag
@@ -183,7 +188,7 @@ for procBlock in procList :
                FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
                LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
                if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
-
+               if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 
                for s in range(0,len(FileList)):
                    #create the cfg file
@@ -238,7 +243,7 @@ for procBlock in procList :
                               LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
                           else:
                               LaunchOnCondor.Jobs_CRABUnitPerJob = int(opt.NFile)
-                       LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
+                       LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
 
                LaunchOnCondor.SendCluster_Submit()
 
@@ -252,7 +257,7 @@ for procBlock in procList :
                if(len(failedList)>0):
                   LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
                   for cfgfile in failedList:                  
-                     LaunchOnCondor.SendCluster_Push(["BASH", initialCommand + str(opt.theExecutable + ' ' + cfgfile)])
+                     LaunchOnCondor.SendCluster_Push(["BASH", str(opt.theExecutable + ' ' + cfgfile)])
                   LaunchOnCondor.SendCluster_Submit()
 
 
