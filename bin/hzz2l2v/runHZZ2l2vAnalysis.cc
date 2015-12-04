@@ -745,11 +745,8 @@ int main(int argc, char* argv[])
    
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
           if( !isMC ){
-             unsigned int Run   = ev.eventAuxiliary().run();
-	     unsigned int Lumi  = ev.eventAuxiliary().luminosityBlock();
-             unsigned int Event = ev.eventAuxiliary().event();
-             if( !CSCmetFilerCheck.passMetFilter( Run, Lumi, Event )) continue;
-             if( !EcalmetFilerCheck.passMetFilter( Run, Lumi, Event )) continue; 
+             if( !CSCmetFilerCheck.passMetFilter( ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event() )) continue;
+             if( !EcalmetFilerCheck.passMetFilter( ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event() )) continue; 
              if( !patUtils::passMetFilters(ev, isPromptReco ) ) continue; 
 	   }
            //##############################################   EVENT PASSED MET FILTER   ####################################### 
@@ -1233,8 +1230,8 @@ int main(int argc, char* argv[])
            }
 
          //VBF Control plots to understand VBF Tail in Z mass shape
-         std::vector<reco::GenParticle> VisLep;
          if(isMC_VBF1000){
+                std::vector<reco::GenParticle> VisLep;
 		double filterEff = 0.16275;
                 for( unsigned int k=0; k<gen.size(); ++k){	
 			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] ); 
@@ -1593,8 +1590,7 @@ int main(int argc, char* argv[])
            
            for(size_t ich=0; ich<chTags.size(); ich++){
 
-             TString tags_full=chTags[ich]+evCat;
-             //TString tags_full=chTags[ich];
+             TString tags_full=chTags[ich]+evCat; 
              float chWeight(iweight);
 
              //update weight and mass for photons
