@@ -108,6 +108,7 @@ void setStyle(JSONWrapper::Object& SingleProcess, TH1* hist){
    if(SingleProcess.isTag("lstyle") )hist->SetLineStyle  ((int)SingleProcess["lstyle"].toDouble());// else hist->SetLinStyle  (1);
    if(SingleProcess.isTag("fill"  ) )hist->SetFillColor  ((int)SingleProcess["fill"  ].toDouble());
    if(SingleProcess.isTag("marker") )hist->SetMarkerStyle((int)SingleProcess["marker"].toDouble());// else hist->SetMarkerStyle(1);
+   if(SingleProcess.isTag("msize") )hist->SetMarkerSize((double)SingleProcess["msize"].toDouble());// else the Size is the defaoult one
 }
 
 double getXsecXbr(JSONWrapper::Object& SingleProcess){
@@ -673,6 +674,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 }
 
 void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProperties){
+   
    if(HistoProperties.isIndexPlot && cutIndex<0)return;
 
    TCanvas* c1 = new TCanvas("c1","c1",800,800);
@@ -697,7 +699,10 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    t1->cd();
    if(!noLog) t1->SetLogy(true);
    float maximumFound(0);
+   bool met_histo=false;
+   bool mt_histo=false;
 
+   
    //TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
    //   TLegend* legA  = new TLegend(0.51,0.93,0.67,0.75, "NDC"); 
    // TLegend* legB  = new TLegend(0.67,0.93,0.83,0.75, "NDC");
@@ -728,12 +733,16 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       if(!hist)continue;
       setStyle(Process[i], hist);
 
-//      SaveName = hist->GetName();
+      
+      TString histoName(hist->GetName());
+      if( histoName.Contains("all_met") ) met_histo=true;
+      if( histoName.Contains("all_mt") ) mt_histo=true;
+      if( histoName.Contains("VbfDBG_Reco_Tail") || histoName.Contains("VbfDBG_Reco_NoGenMatch_Tail") || histoName.Contains("VbfDBG_Reco_GenMatch_Tail") || histoName.Contains("VbfDBG_Gen_Tail") ) continue;
 //      TString postfix(""); postfix+=i;
 //      hist->SetName(SaveName+postfix);
 
-
-      fixExtremities(hist,fixOverflow,fixUnderflow);
+      
+      fixExtremities(hist,fixOverflow,fixUnderflow); 
       hist->SetTitle("");
       hist->SetStats(kFALSE);
       hist->SetMinimum(5e-2);
@@ -841,6 +850,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 	}
        pave->Draw();
    }
+  
    
    legA->SetNColumns(4);   
    legA->SetBorderSize(0);
@@ -852,6 +862,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    std::vector<TH1 *> compDists;
    if(data)                   compDists.push_back(data);
    else if(spimpose.size()>0) compDists=spimpose;
+   
    if( mc && compDists.size() && showRatioBox ){
        c1->cd();
        TPad *t2 = new TPad("t2", "t2",0.0,0.0, 1.0,0.2);
@@ -932,7 +943,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        t1->SetPad(0,0,1,1);
    }
 
-   c1->Modified();
+   c1->Modified();  
    c1->Update();
    c1->cd();
 
@@ -958,8 +969,24 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    Tlumi->AddText(Buffer);
    Tlumi->Draw("same");
 
+   //Blind the region for Met and mt
+   TBox *blinding_box = new TBox();
+   if( met_histo ){
+      blinding_box->SetX1(0.27);
+      blinding_box->SetX2(0.95);
+      blinding_box->SetY1(0.80);
+      blinding_box->SetY2(0.1);
+   } else if( mt_histo ){
+      blinding_box->SetX1(0.24);
+      blinding_box->SetX2(0.95);
+      blinding_box->SetY1(0.80);
+      blinding_box->SetY2(0.1);
+   }
 
-
+   blinding_box->SetFillColor(2);
+   blinding_box->SetFillStyle(3004);
+   blinding_box->Draw("same");
+   
 
    string SavePath = dropBadCharacters(SaveName);
    if(outDir.size()) SavePath = outDir +"/"+ SavePath;
@@ -967,6 +994,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
      //system(string(("rm -f ") + SavePath + *i).c_str());
      c1->SaveAs((SavePath + *i).c_str());
    }
+   
    delete c1;
    for(unsigned int d=0;d<ObjectToDelete.size();d++){delete ObjectToDelete[d];}ObjectToDelete.clear();
    delete legA;
@@ -1200,7 +1228,7 @@ int main(int argc, char* argv[]){
    
        if(doTex && (it->name.find("eventflow")!=std::string::npos || it->name.find("evtflow")!=std::string::npos) && it->name.find("optim_eventflow")==std::string::npos){    ConvertToTex(Root,OutputFile,*it); }
        if(doPlot && do2D  && it->is2D()){                      if(!splitCanvas){Draw2DHistogram(Root,OutputFile,*it); }else{Draw2DHistogramSplitCanvas(Root,OutputFile,*it);}}
-       if(doPlot && do1D  && it->is1D()){                                       Draw1DHistogram(Root,OutputFile,*it); }
+       if(doPlot && do1D  && it->is1D()){ Draw1DHistogram(Root,OutputFile,*it); }
         system(("echo \"" + it->name + "\" >> " + csvFile).c_str());
    }printf("\n");
    OutputFile->Close();
