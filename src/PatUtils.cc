@@ -2,13 +2,9 @@
 
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
 
-#include <cstdlib>
-#include <sstream>
-#include <cassert>
 #include <istream>
 #include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <sstream>
 #include <cstring>
