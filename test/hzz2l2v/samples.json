@@ -136,15 +136,15 @@
       "marker":20,
       "msize":0.7,
       "data":[
-        { "dtag":"Data13TeV_PromptReco_DoubleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
-        { "dtag":"Data13TeV_PromptReco_DoubleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"   ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
-        { "dtag":"Data13TeV_PromptReco_MuEG2015C_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"       ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"          ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"        ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"            ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_PromptReco_DoubleElectron2015D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"                   ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_PromptReco_DoubleMu2015D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"                 ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_PromptReco_MuEG2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"                     ,  "lumiMask":"/afs/cern.ch/work/a/amagitte/public/HZZ_Analysis_Run2/JamboreeDir/CMSSW_7_4_14/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
+        { "dtag":"Data13TeV_PromptReco_DoubleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_PromptReco_DoubleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"   ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_PromptReco_MuEG2015C_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"       ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"          ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"        ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"            ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_PromptReco_DoubleElectron2015D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"                   ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_PromptReco_DoubleMu2015D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"                 ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_PromptReco_MuEG2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"                     ,  "lumiMask":"Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
       ]
     },
     {
@@ -174,6 +174,35 @@
       "marker":1,
       "data":[
         { "dtag":"MC13TeV_VBFtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.55      , "br":[0.269, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"ggH(600)#rightarrow ZZ",
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH600toZZto2L2Nu_powheg15"     ,  "xsec":2.128      , "br":[0.272, 0.0135]    , "dset":"/GluGluHToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"qqH(600)#rightarrow ZZ",
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.288      , "br":[0.272, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
