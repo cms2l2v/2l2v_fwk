@@ -27,12 +27,14 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 #SUFFIX=_Test
+#SUFFIX=_2015_11_30_OptCuts
+#SUFFIX=_2015_12_02_FinalApproval
 SUFFIX=_2015_11_30
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
-RESULTSDIR=$MAINDIR/Results$SUFFIX
-PLOTSDIR=$MAINDIR/Plots${SUFFIX}
+RESULTSDIR=$MAINDIR/results$SUFFIX
+PLOTSDIR=$MAINDIR/plots${SUFFIX}
 PLOTTER=$MAINDIR/plotter${SUFFIX}
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
@@ -95,7 +97,7 @@ case $step in
     3)  # make plots and combined root files
 	INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --no2D $arguments
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --no2D $arguments --noPlot
 	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;;
 
@@ -109,7 +111,7 @@ case $step in
     3.2)  # make plots for Jamboree without ratio between data and MC for Z_pt, Met and Mt
         INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
         echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt --only all_mt --only all_met --only ee_zpt --only mumu_zpt --only ee_met --only mumu_met --only ee_mt --only mumu_mt --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt_rebin --only all_mt --only all_met --only ee_zpt_rebin --only mumu_zpt_rebin --only ee_met --only mumu_met --only ee_mt --only mumu_mt --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf
         #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
         ;;
 
