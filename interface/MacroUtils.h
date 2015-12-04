@@ -267,7 +267,6 @@ class MetFilter{
             getline(File, line);
             std::istringstream stringfile(line);
             stringfile >> Run >> Lumi >> Event >> std::ws;
-            std::cout << "Run: " << Run << "; Lumi: " << Lumi << "; Event: " << Event << std::endl;	
             map[RuLuEv(Run, Lumi, Event)] += 1;
        }
      }
