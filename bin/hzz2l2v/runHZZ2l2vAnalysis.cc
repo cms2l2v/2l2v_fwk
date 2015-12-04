@@ -217,6 +217,11 @@ int main(int argc, char* argv[])
     VBFString = string(dtag.Data()).substr(VBFStringpos);
   }
   if(mctruthmode==125) HiggsMass=124;
+
+  //ELECTROWEAK CORRECTION WEIGHTS
+  std::vector<std::vector<float>> ewkTable;
+  if(isMC_ZZ || isMC_WZ) ewkTable = EwkCorrections::readFile_and_loadEwkTable(urls[0].c_str());
+
   
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
@@ -911,7 +916,7 @@ int main(int argc, char* argv[])
 
 					//Electroweak corrections to ZZ and WZ(soon) simulations
 					double ewkCorrectionsWeight = 1.;
-					if(isMC) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen);
+					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable);
         
 
            //final event weight

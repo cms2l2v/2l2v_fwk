@@ -1,5 +1,6 @@
 #include "UserCode/llvv_fwk/interface/EwkCorrections.h"
 #include <stdlib.h>
+//#include <PdfInfo.h>
 
 namespace EwkCorrections
 {
@@ -64,7 +65,7 @@ namespace EwkCorrections
 	//Find the right correction in the file	
 
 	std::vector<float> findCorrection(const std::vector<std::vector<float>> & Table_EWK, float sqrt_s_hat, float t_hat){
-		//find the range of sqrt s har (each 200 lines it changes)
+		//find the range of sqrt s hat (each 200 lines it changes)
 		int j = 0;
 		float best = 0.8E+04; //highest value of sqrt s hat in the table
 		if( sqrt_s_hat > best) j = 39800; //in the very rare case where we have bigger s than our table (table is for 8TeV and we run at 13TeV)
@@ -100,13 +101,12 @@ namespace EwkCorrections
 
 
 	//The main function, will return the kfactor
-	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles){
+	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table){
 
-		bool debug = true;
+		bool debug = false;
 		double kFactor = 1.;
 
 		if(debug) cout<< "Url name : "<< url<<endl;
-    if(url.Contains("ZZ") || url.Contains("WZ")){
 
 		//We can only apply corrections to specific diagrams in HZZ, so here we have to ask for some specific criteria:
 		// - isMC-->put in the central code
@@ -125,6 +125,7 @@ namespace EwkCorrections
     //create leptons and photons and neutrinos
 
 		reco::GenParticleCollection genIncomingQuarks;
+		reco::GenParticleCollection genIncomingGluons;
 		reco::GenParticleCollection genLeptons;
 		//reco::GenParticleCollection genPhotons;
     reco::GenParticleCollection genNeutrinos;
@@ -135,9 +136,9 @@ namespace EwkCorrections
 
       if(genParticle.status() == 2) continue; //drop the shower part of the history
 
-//			if(genParticle.status() == 3){ //his includes the two incoming colliding particles and partons produced in hard interaction //look at everything
 			 	if(genParticle.pdgId() == 2212 && genParticle.status() == 4) genIncomingProtons.push_back(genParticle); //4 : incoming beam particle
 			 	if(fabs(genParticle.pdgId()) >= 1 && fabs(genParticle.pdgId()) <= 5 && genParticle.status() == 21) genIncomingQuarks.push_back(genParticle); //21 : incoming particles of hardest subprocess
+			 	if(fabs(genParticle.pdgId()) == 21 && genParticle.status() == 21) genIncomingGluons.push_back(genParticle);
 				if(debug){
 					cout << "Id : " << genParticle.pdgId() << " ; status : " << genParticle.status() << endl;
 					}
@@ -164,6 +165,7 @@ namespace EwkCorrections
     }
 
     std::sort(genIncomingQuarks.begin(), genIncomingQuarks.end(), utils::sort_CandidatesByPt);
+    std::sort(genIncomingGluons.begin(), genIncomingGluons.end(), utils::sort_CandidatesByPt);
     std::sort(genLeptons.begin(), genLeptons.end(), utils::sort_CandidatesByPt);
     //std::sort(genPhotons.begin(), genPhotons.end(), utils::sort_CandidatesByPt);
     std::sort(genNeutrinos.begin(), genNeutrinos.end(), utils::sort_CandidatesByPt);
@@ -171,19 +173,90 @@ namespace EwkCorrections
 
 		if(debug){
 			cout<<"# of incoming quarks : "<< genIncomingQuarks.size() <<endl;
+			cout<<"# of incoming gluons : "<< genIncomingGluons.size() <<endl;
 			cout<<"# of incoming protons : "<< genIncomingProtons.size() <<endl;
 			cout<<"# of leptons : "<< genLeptons.size() <<endl;
 			cout<<"# of neutrinos : "<< genNeutrinos.size() <<endl;
 		}
 
+ 		//cout << "test table : en (6,2) on a " << Table[6][2] << endl;
+	//Here : generated particles are put in vectors
+	
+	//All what follows is valable only for ZZ->2l2nu. Another code is needed for WZ.
+	
+	//We don't compute rho for the moment (necessary after ?)
+	
+	LorentzVector Z1 = genLeptons[0].p4() + genLeptons[1].p4(); //First Z : charged leptons
+	LorentzVector Z2 = genNeutrinos[0].p4() + genNeutrinos[1].p4(); //Second Z : neutrinos
+	LorentzVector ZZ = Z1+Z2;
+	//Mainpulation to have TLorentzVectors instead of LorentzVectors
+	TLorentzVector ZZ_t;
+	TLorentzVector Z1_t;
+	TLorentzVector Z2_t;
+	ZZ_t.SetXYZT(ZZ.X(),ZZ.Y(),ZZ.Z(),ZZ.T());
+	Z1_t.SetXYZT(Z1.X(),Z1.Y(),Z1.Z(),Z1.T());
+	Z2_t.SetXYZT(Z2.X(),Z2.Y(),Z2.Z(),Z2.T());
 
-		//Read the electroweak corrections file and store it in the table
-		std::vector<std::vector<float>> Table_EWK;
-		Table_EWK = readFile_and_loadEwkTable(url);
+	double s_hat = pow(ZZ.M(),2); // s_hat = center-of-mass energy of 2 Z system
 
-		}
+	//In order to determine t_hat, we have to compute theta : angle between considered Z boson and the direction of the incident quarks in the rest frame of the 2 Z.
+	//At the end, we'll have cos(theta) = (p_q1,b - p_q2,b)/(|p_q1,b - p_q2,b|) . p_Z1,b  , where p_qi,b is the *unitary* momentum *vector* of the i quark after the Lorentz boost.
+	//(cf Nicolas's Master Thesis, p.15)
+	//Let's first boost the quarks 1 and 2, as well as the Z1.
+	TLorentzVector Z1_b = Z1_t;
+	TLorentzVector p1_b, p2_b;
+	double energy = 6500. ; //13 TeV in total
+	double x1 = 0.02; //FIXME We must find how to access this sh_t
+	double x2 = 0.03; //FIXME Idem (story with reco::PdfInfo)
+	p1_b.SetXYZT(0.,0.,x1*energy,x1*energy); //x1 = fraction of momentum taken by the particle initiating the hard process
+	p2_b.SetXYZT(0.,0.,-x2*energy,x2*energy); //goes the other way !
+	Z1_b.Boost( -ZZ_t.BoostVector()); //Inverse Lorentz transformation, to get to the center-of-mass frame
+	p1_b.Boost( -ZZ_t.BoostVector());
+	p2_b.Boost( -ZZ_t.BoostVector());
+	//Unitary vectors
+	TLorentzVector Z1_b_u = Z1_b*(1/Z1_b.P()); // Still LorentzVectors, but we look only at spatial components. The vector is normalized now.
+	TLorentzVector p1_b_u = p1_b*(1/p1_b.P());
+	TLorentzVector p2_b_u = p2_b*(1/p2_b.P());
+	//Effective beam axis
+	TLorentzVector diff_p = p1_b_u - p2_b_u;
+	TLorentzVector eff_beam_axis = diff_p*(1./diff_p.P());
+	//And finally the expression for cos(theta). Does anyone know a better way of doing things ?
+	double cos_theta = eff_beam_axis.X()*Z1_b_u.X() + eff_beam_axis.Y()*Z1_b_u.Y() + eff_beam_axis.Z()*Z1_b_u.Z();
+	//Now, compute t_hat according to the formula above.
+	//double t_hat = pow(Z1.M(),2) - 0.5*s_hat + cos_theta * sqrt(0.25*s_hat*s_hat - pow(Z1.M(),2)*s_hat); //old version ; actually we assume the Z to be on-shell.
+	double m_z = 91.1876;
+	double t_hat = m_z*m_z - 0.5*s_hat + cos_theta * sqrt( 0.25*s_hat*s_hat - m_z*m_z*s_hat );
 
-		return kFactor;
+	//Find the quark type
+	int quark_type = 0;
+	if(genIncomingQuarks.size() > 0) quark_type = fabs(genIncomingQuarks[0].pdgId()); //works unless if gg->ZZ process : it shouldn't be the case as we're using POWHEG
+	
+	//Extract the corrections for the values of s and t just computed
+	std::vector<float> Correction_vec = findCorrection( Table, sqrt(s_hat), t_hat );
+	
+	//Final correction factor
+	if(quark_type==1) kFactor = 1. + Correction_vec[1]; //d
+	if(quark_type==2) kFactor = 1. + Correction_vec[0]; //u
+	if(quark_type==3) kFactor = 1. + Correction_vec[1]; //s as d
+	if(quark_type==4) kFactor = 1. + Correction_vec[0]; //c as u
+	if(quark_type==5) kFactor = 1. + Correction_vec[2]; //b
+	//else, it stays at 1.
+
+
+	cout << "x1 = 	" << x1 << endl;
+	cout << "x2 = 	" << x2 << endl;
+	cout << "m_Z = 	" << Z1.M() <<  endl;
+	cout << "cos_theta = 	" << cos_theta << endl;
+	cout << "den = 	" << diff_p.P() << endl;
+	cout << "nb of quarks :		" << genIncomingQuarks.size() << endl;
+	cout << "quark_type :	 " << quark_type << endl;
+	cout << "sqrt(s_hat) =	 " << sqrt(s_hat) << endl;
+	cout << "t_hat =	 " << t_hat << endl;
+	cout << "kFactor =	 " << kFactor << endl;
+	cout << endl;
+
+
+	return kFactor;
 	}
 
 	//
