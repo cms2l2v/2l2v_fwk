@@ -566,27 +566,6 @@ namespace utils
        delete file;
      }
   }
- 
-  //This function will be removed soon as it is not behaving properly with xrootd
-  void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev, unsigned int Npu, std::vector<float>& mcpileup)
-  {
-    #warning 'THE FOLLOWING FUNCTION WILL BE REMOVED SOON: void getMCPileupDistributionFromMiniAOD(fwlite::ChainEvent& ev   , unsigned int Npu, std::vector<float>& mcpileup)',\n IF YOU USE IT REPLACE IT BY THIS ONE :DEPRECATED METHOD USED by 'void getMCPileupDistributionFromMiniAOD(std::vector<string>& urls, unsigned int Npu, std::vector<float>& mcpileup)'
-    mcpileup.clear();
-    mcpileup.resize(Npu);
-    for(Long64_t ientry=0;ientry<ev.size();ientry++){
-      ev.to(ientry);
-      
-      fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-      puInfoH.getByLabel(ev, "addPileupInfo");
-      if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
-      unsigned int ngenITpu = 0;
-      for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-         if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
-      }
-      if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!\n"); mcpileup.resize(ngenITpu+1);}
-      mcpileup[ngenITpu]++;
-    }
-  }
   
   void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
     PUNorm[0]=0; PUNorm[1]=0; PUNorm[2]=0;

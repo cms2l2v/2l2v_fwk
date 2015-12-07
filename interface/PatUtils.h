@@ -74,9 +74,34 @@ namespace patUtils
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
-   bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco);
-   
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
+
+
+
+   class MetFilter{
+    private :
+     struct RuLuEv {
+        unsigned int Run;  unsigned int Lumi;  unsigned int Event;
+        RuLuEv(unsigned int Run_, unsigned int Lumi_, unsigned int Event_){ Run = Run_; Lumi = Lumi_; Event = Event_;}
+        bool operator==(const RuLuEv &other) const { return (Run == other.Run && Lumi == other.Lumi && Event == other.Event); }
+     };
+     struct RuLuEvHasher{
+         std::size_t operator()(const RuLuEv& k) const{ using std::size_t; using std::hash;  using std::string;
+            return ((hash<unsigned int>()(k.Run) ^ (hash<unsigned int>()(k.Lumi) << 1)) >> 1) ^ (hash<unsigned int>()(k.Event) << 1);
+         }
+     };
+
+     typedef std::unordered_map<RuLuEv, int, RuLuEvHasher> MetFilterMap;
+     MetFilterMap map;
+    public :
+     MetFilter(){}
+     ~MetFilter(){}
+     void Clear(){map.clear();}
+     void FillBadEvents(std::string path);
+     bool passMetFilter(const fwlite::Event& ev, bool isPromptReco);
+   };
+
+
 
 }
 

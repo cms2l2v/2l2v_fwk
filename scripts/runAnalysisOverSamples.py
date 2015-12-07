@@ -146,7 +146,7 @@ PROXYDIR                           = FarmDirectory+"/inputs/"
 initProxy()
 
 JobName                            = opt.theExecutable
-LaunchOnCondor.Jobs_RunHere        = 1
+LaunchOnCondor.Jobs_RunHere        = 0
 LaunchOnCondor.Jobs_Queue          = opt.queue
 LaunchOnCondor.Jobs_LSFRequirement = '"'+opt.requirementtoBatch+'"'
 LaunchOnCondor.Jobs_EmailReport    = opt.report

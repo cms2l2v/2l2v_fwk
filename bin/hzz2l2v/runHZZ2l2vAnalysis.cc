@@ -648,6 +648,15 @@ int main(int argc, char* argv[])
 
   higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
 
+  patUtils::MetFilter metFiler;
+  if(!isMC) { 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+  }
 
   //##############################################
   //########           EVENT LOOP         ########
@@ -656,21 +665,6 @@ int main(int argc, char* argv[])
   //DuplicatesChecker duplicatesChecker;
   //int nDuplicates(0)
   
-  MetFilter CSCmetFilerCheck;
-  MetFilter EcalmetFilerCheck;
- 
-  if( isDoubleEleRunD && !isDoubleMuRunD && !isMuonEGRunD ) { 
-	CSCmetFilerCheck.fill("../../data/MetFilter/DoubleEG_RunD","DoubleEG_csc2015.txt");
-	EcalmetFilerCheck.fill("../../data/MetFilter/DoubleEG_RunD","DoubleEG_ecalscn1043093.txt"); 
-  } else if( !isDoubleEleRunD && isDoubleMuRunD && !isMuonEGRunD ) { 
-	CSCmetFilerCheck.fill("../../data/MetFilter/DoubleMuon_RunD","DoubleMuon_csc2015.txt");
-	EcalmetFilerCheck.fill("../../data/MetFilter/DoubleMuon_RunD","DoubleMuon_ecalscn1043093.txt"); 
-  } else if( !isDoubleEleRunD && !isDoubleMuRunD && isMuonEGRunD ) { 
-	CSCmetFilerCheck.fill("../../data/MetFilter/MuonEG_RunD","MuonEG_csc2015.txt");
-	EcalmetFilerCheck.fill("../../data/MetFilter/MuonEG_RunD","MuonEG_ecalscn1043093.txt"); 
-  }
-
-
   printf("Progressing Bar           :0%%       20%%       40%%       60%%       80%%       100%%\n");
   for(unsigned int f=0;f<urls.size();f++){
      TFile* file = TFile::Open(urls[f].c_str() );
@@ -724,18 +718,15 @@ int main(int argc, char* argv[])
    
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
           if( !isMC ){
-             if( !CSCmetFilerCheck.passMetFilter( ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event() )) continue;
-             if( !EcalmetFilerCheck.passMetFilter( ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event() )) continue; 
-             if( !patUtils::passMetFilters(ev, isPromptReco ) ) continue; 
-	   }
-           //##############################################   EVENT PASSED MET FILTER   ####################################### 
+             if( !metFiler.passMetFilter( ev, isPromptReco )) continue;
+	  }
+          //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
           reco::VertexCollection vtx;
           fwlite::Handle< reco::VertexCollection > vtxHandle; 
           vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
           if(vtxHandle.isValid()){ vtx = *vtxHandle;}
-
 
           double rho = 0;
           fwlite::Handle< double > rhoHandle;
