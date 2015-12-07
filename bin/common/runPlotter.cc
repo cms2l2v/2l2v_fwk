@@ -108,7 +108,7 @@ void setStyle(JSONWrapper::Object& SingleProcess, TH1* hist){
    if(SingleProcess.isTag("lstyle") )hist->SetLineStyle  ((int)SingleProcess["lstyle"].toDouble());// else hist->SetLinStyle  (1);
    if(SingleProcess.isTag("fill"  ) )hist->SetFillColor  ((int)SingleProcess["fill"  ].toDouble());
    if(SingleProcess.isTag("marker") )hist->SetMarkerStyle((int)SingleProcess["marker"].toDouble());// else hist->SetMarkerStyle(1);
-   if(SingleProcess.isTag("msize") )hist->SetMarkerSize((double)SingleProcess["msize"].toDouble());// else the Size is the defaoult one
+   if(SingleProcess.isTag("msize")  )hist->SetMarkerSize (      SingleProcess["msize"].toDouble());// else the Size is the defaoult one
 }
 
 double getXsecXbr(JSONWrapper::Object& SingleProcess){
