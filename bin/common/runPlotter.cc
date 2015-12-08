@@ -619,7 +619,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    legA->SetBorderSize(0);
    legA->SetTextFont(42);   legA->SetTextSize(0.03);
    legA->SetLineColor(0);   legA->SetLineStyle(1);   legA->SetLineWidth(1);
-   legA->SetFillColor(0);   legA->SetFillStyle(blind>-1E99?1001:0);
+   legA->SetFillColor(0);   legA->SetFillStyle(0);//blind>-1E99?1001:0);
 
    THStack* stack = new THStack("MC","MC");
    TH1*     data  = NULL;
