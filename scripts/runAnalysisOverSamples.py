@@ -90,7 +90,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
-      list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
+      list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
       if(split>0):
          NFilesPerJob = max(1,len(list)/split)
@@ -205,7 +205,7 @@ for procBlock in procList :
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                    sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
                    sedcmd += 's%@suffix%' +suffix+'%;'
-                   sedcmd += 's%@lumiMask%"' + getByLabel(procData,'lumiMask','')+'"%;'
+                   sedcmd += 's%@lumiMask%"' + os.path.expandvars(getByLabel(procData,'lumiMask',''))+'"%;'
               	   if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
                    if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
                    if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params

@@ -86,7 +86,7 @@ case $step in
 	
 	echo "COMPUTE INTEGRATED LUMINOSITY"
 	export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH
-	pip install --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
+	pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
 	brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	tail -n 3 $RESULTSDIR/LUMI.txt  
 	;;

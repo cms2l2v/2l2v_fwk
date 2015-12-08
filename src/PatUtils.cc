@@ -652,7 +652,7 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){
     if(summaryHandle.isValid()) summary=*summaryHandle;
     bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
-    if(failCommon || summary.HasBadRBXTS4TS5()) return false;
+    if((failCommon || summary.HasBadRBXTS4TS5())) return false;
     
      return true;
    }

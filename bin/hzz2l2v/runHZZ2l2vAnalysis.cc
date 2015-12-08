@@ -128,9 +128,6 @@ int main(int argc, char* argv[])
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
   printf("TextFile URL = %s\n",outTxtUrl.Data());
 
-  //Blind the sensible region
-  bool blindData=true;
-
   //tree info
   TString dirname = runProcess.getParameter<std::string>("dirName");
 
@@ -717,9 +714,7 @@ int main(int argc, char* argv[])
           if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
    
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
-          if( !isMC ){
-             if( !metFiler.passMetFilter( ev, isPromptReco )) continue;
-	  }
+          if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;	  
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
@@ -1359,17 +1354,9 @@ int main(int argc, char* argv[])
                      mon.fillHisto( "bosonphi",icat,iboson.phi(),iweight,true);                                                               
                      mon.fillHisto( "dphi_boson_met",icat,b_dphi,iweight,true);
 
-                     if( isMC ) { 
-			mon.fillHisto( "met",icat,met.pt(),iweight,true);
-                     	mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
-                    	mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
-                     } else if ( !isMC && blindData ){
-                        if( met.pt() < 100 ){ 
-			  mon.fillHisto( "met",icat,met.pt(),iweight,true);
-			  mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
-                        } 
-                        if( puppimet.pt() < 100 ){ mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);}
-                     }
+ 		     mon.fillHisto( "met",icat,met.pt(),iweight,true);
+                     mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
+                     mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
 
                      TVector2 met2(met.px(),met.py());
                      TVector2 boson2(iboson.px(), iboson.py());
@@ -1377,11 +1364,7 @@ int main(int argc, char* argv[])
                      mon.fillHisto( "axialmet",icat,axialMet,iweight);
                      double mt=higgs::utils::transverseMass(iboson,met,true);
 
-                     if( isMC ){
-			mon.fillHisto( "mt",icat,mt,iweight,true);
-		     } else if( !isMC && blindData && mt<325 ){
-                        mon.fillHisto( "mt",icat,mt,iweight,true);               
-                     }
+		     mon.fillHisto( "mt",icat,mt,iweight,true);
 
                      if(met.pt()>optim_Cuts1_met[0]) 
                        {
