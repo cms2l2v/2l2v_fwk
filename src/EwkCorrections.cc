@@ -101,7 +101,7 @@ namespace EwkCorrections
 
 
 	//The main function, will return the kfactor
-	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table){
+	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo){
 
 		bool debug = false;
 		double kFactor = 1.;
@@ -178,6 +178,20 @@ namespace EwkCorrections
 			cout<<"# of leptons : "<< genLeptons.size() <<endl;
 			cout<<"# of neutrinos : "<< genNeutrinos.size() <<endl;
 		}
+
+//This addition is from GenEventInfo. It contains a lot of info on PDFs, x1, x2, id1, id2... Maybe we could (should?) use this instead of our previous way to look at things? At least we should ask for a correspondance (same id...)
+          if(eventInfo.pdf()){ 
+             cout<< " CA MARCHE" << endl;
+             cout << "Q scale : " << eventInfo.pdf()->scalePDF << endl; 
+             cout << "X1 : " << eventInfo.pdf()->x.first << endl; 
+             cout << "X2 : " << eventInfo.pdf()->x.second << endl; 
+             cout << "ID 1 : " << eventInfo.pdf()->id.first << endl; 
+             cout << "ID 2 : " << eventInfo.pdf()->id.second << endl; 
+          } 
+
+
+
+
 
  		//cout << "test table : en (6,2) on a " << Table[6][2] << endl;
 	//Here : generated particles are put in vectors

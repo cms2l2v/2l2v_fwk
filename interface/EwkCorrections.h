@@ -65,7 +65,7 @@ namespace EwkCorrections
 
   std::vector<std::vector<float>> readFile_and_loadEwkTable(TString url);
   std::vector<float> findCorrection(const std::vector<std::vector<float>> & Table_EWK, float sqrt_s_hat, float t_hat);
-  double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table);
+  double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo);
 
 
 }

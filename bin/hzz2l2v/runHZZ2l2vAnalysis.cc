@@ -734,7 +734,22 @@ int main(int argc, char* argv[])
            //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
-          reco::VertexCollection vtx;
+          GenEventInfoProduct eventInfo;
+          fwlite::Handle< GenEventInfoProduct > eventInfoHandle; 
+          eventInfoHandle.getByLabel(ev, "generator");
+          if(eventInfoHandle.isValid()){ eventInfo = *eventInfoHandle;}
+
+	  //if(eventInfo.pdf()){ 
+          //   cout<< " CA MARCHE" << endl;
+	  //   cout << "Q scale : " << eventInfo.pdf()->scalePDF << endl; 
+          //   cout << "X1 : " << eventInfo.pdf()->x.first << endl; 
+          //   cout << "X2 : " << eventInfo.pdf()->x.second << endl; 
+          //   cout << "ID 1 : " << eventInfo.pdf()->id.first << endl; 
+          //   cout << "ID 2 : " << eventInfo.pdf()->id.second << endl; 
+          //} 
+
+
+	  reco::VertexCollection vtx;
           fwlite::Handle< reco::VertexCollection > vtxHandle; 
           vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
           if(vtxHandle.isValid()){ vtx = *vtxHandle;}
@@ -916,7 +931,7 @@ int main(int argc, char* argv[])
 
 					//Electroweak corrections to ZZ and WZ(soon) simulations
 					double ewkCorrectionsWeight = 1.;
-					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable);
+					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo);
         
 
            //final event weight
