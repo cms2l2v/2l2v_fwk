@@ -31,6 +31,7 @@
 
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/LumiUtils.h"
+#include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 
 // Electron ID
 #include "RecoEgamma/ElectronIdentification/interface/VersionedPatElectronSelector.h"
@@ -65,7 +66,7 @@ namespace EwkCorrections
 
   std::vector<std::vector<float>> readFile_and_loadEwkTable(TString url);
   std::vector<float> findCorrection(const std::vector<std::vector<float>> & Table_EWK, float sqrt_s_hat, float t_hat);
-  double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo);
+  double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo, SmartSelectionMonitor mon);
 
 
 }
