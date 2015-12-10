@@ -564,6 +564,29 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
   mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
 
+  //Electroweak corrections debug
+  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 100000, 0, -1000000, 13000, 0, 13000) );
+  mon.addHistogram( new TH2F(	"k_vs_s",	";#hat{s};k", 13000, 0, 13000, 200, 0, 2) );
+  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 100000, 0, -1000000, 200, 0, 2) );
+
+  mon.addHistogram( new TH1F(	"Nevent_vs_ZpT",	";p_{T}^{Z}; Events", 450, 0, 450) );
+  mon.addHistogram( new TH1F(	"Nevent_vs_Mzz",	";M_{ZZ}; Events", 1200, 0, 1200) );
+  
+  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 14,0,14) );
+  h_quarkType->GetXaxis()->SetBinLabel(1,"q#bar{q}");
+  h_quarkType->GetXaxis()->SetBinLabel(2,"u#bar{u}");
+  h_quarkType->GetXaxis()->SetBinLabel(3,"c#bar{c}");
+  h_quarkType->GetXaxis()->SetBinLabel(4,"d#bar{d}");
+  h_quarkType->GetXaxis()->SetBinLabel(5,"s#bar{s}");
+  h_quarkType->GetXaxis()->SetBinLabel(6,"b#bar{b}");
+  h_quarkType->GetXaxis()->SetBinLabel(7,"gg");
+  h_quarkType->GetXaxis()->SetBinLabel(8,"ug");
+  h_quarkType->GetXaxis()->SetBinLabel(9,"cg");
+  h_quarkType->GetXaxis()->SetBinLabel(10,"dg");
+  h_quarkType->GetXaxis()->SetBinLabel(11,"sg");
+  h_quarkType->GetXaxis()->SetBinLabel(12,"bg");
+  h_quarkType->GetXaxis()->SetBinLabel(13,"other");
+
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
@@ -739,17 +762,7 @@ int main(int argc, char* argv[])
           eventInfoHandle.getByLabel(ev, "generator");
           if(eventInfoHandle.isValid()){ eventInfo = *eventInfoHandle;}
 
-	  //if(eventInfo.pdf()){ 
-          //   cout<< " CA MARCHE" << endl;
-	  //   cout << "Q scale : " << eventInfo.pdf()->scalePDF << endl; 
-          //   cout << "X1 : " << eventInfo.pdf()->x.first << endl; 
-          //   cout << "X2 : " << eventInfo.pdf()->x.second << endl; 
-          //   cout << "ID 1 : " << eventInfo.pdf()->id.first << endl; 
-          //   cout << "ID 2 : " << eventInfo.pdf()->id.second << endl; 
-          //} 
-
-
-	  reco::VertexCollection vtx;
+				  reco::VertexCollection vtx;
           fwlite::Handle< reco::VertexCollection > vtxHandle; 
           vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
           if(vtxHandle.isValid()){ vtx = *vtxHandle;}
@@ -931,9 +944,8 @@ int main(int argc, char* argv[])
 
 					//Electroweak corrections to ZZ and WZ(soon) simulations
 					double ewkCorrectionsWeight = 1.;
-					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo);
-        
-
+					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo, mon);
+       
            //final event weight
            weight = xsecWeight * puWeight * shapeWeight * ewkCorrectionsWeight;
          }
