@@ -42,6 +42,7 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 #include "UserCode/llvv_fwk/interface/TrigUtils.h"
+#include "UserCode/llvv_fwk/interface/EwkCorrections.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -223,7 +224,11 @@ int main(int argc, char* argv[])
     VBFString = string(dtag.Data()).substr(VBFStringpos);
   }
   if(mctruthmode==125) HiggsMass=124;
-  
+ 
+  //ELECTROWEAK CORRECTION WEIGHTS
+	std::vector<std::vector<float>> ewkTable;
+  if(isMC_ZZ || isMC_WZ) ewkTable = EwkCorrections::readFile_and_loadEwkTable(urls[0].c_str());
+
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
   //#######################################
@@ -546,6 +551,31 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger",  2, 0, 2) );
   mon.addHistogram( new TH1F(  "numberemuTrigger",   "Number of event passing the emu Trigger",  2, 0, 2) );
 
+  //Electroweak corrections debug
+  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 100000, 0, -1000000, 13000, 0, 13000) );
+  mon.addHistogram( new TH2F(	"k_vs_s",	";#hat{s};k", 13000, 0, 13000, 200, 0, 2) );
+  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 100000, 0, -1000000, 200, 0, 2) );
+  
+  mon.addHistogram( new TH1F(	"Nevent_vs_ZpT",	";p_{T}^{Z}; Events", 450, 0, 450) );
+  mon.addHistogram( new TH1F(	"Nevent_vs_Mzz",	";M_{ZZ}; Events", 1200, 0, 1200) );
+  
+  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 14,0,14) );
+  h_quarkType->GetXaxis()->SetBinLabel(1,"q#bar{q}");
+  h_quarkType->GetXaxis()->SetBinLabel(2,"u#bar{u}");
+  h_quarkType->GetXaxis()->SetBinLabel(3,"c#bar{c}");
+  h_quarkType->GetXaxis()->SetBinLabel(4,"d#bar{d}");
+  h_quarkType->GetXaxis()->SetBinLabel(5,"s#bar{s}");
+  h_quarkType->GetXaxis()->SetBinLabel(6,"b#bar{b}");
+  h_quarkType->GetXaxis()->SetBinLabel(7,"gg");
+  h_quarkType->GetXaxis()->SetBinLabel(8,"ug");
+  h_quarkType->GetXaxis()->SetBinLabel(9,"cg");
+  h_quarkType->GetXaxis()->SetBinLabel(10,"dg");
+  h_quarkType->GetXaxis()->SetBinLabel(11,"sg");
+  h_quarkType->GetXaxis()->SetBinLabel(12,"bg");
+  h_quarkType->GetXaxis()->SetBinLabel(13,"other");
+
+
+
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
@@ -723,6 +753,12 @@ int main(int argc, char* argv[])
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
+          GenEventInfoProduct eventInfo;
+          fwlite::Handle< GenEventInfoProduct > eventInfoHandle; 
+          eventInfoHandle.getByLabel(ev, "generator");
+          if(eventInfoHandle.isValid()){ eventInfo = *eventInfoHandle;}
+          
+          
           reco::VertexCollection vtx;
           fwlite::Handle< reco::VertexCollection > vtxHandle; 
           vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
@@ -921,9 +957,13 @@ int main(int argc, char* argv[])
           genEventInfoHandle.getByLabel(ev, "generator");
           if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
 
+
+					//Electroweak corrections to ZZ and WZ(soon) simulations
+					double ewkCorrectionsWeight = 1.;
+					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo, mon);
      
            //final event weight
-           weight = xsecWeight * puWeight * shapeWeight;
+           weight = xsecWeight * puWeight * shapeWeight * ewkCorrectionsWeight;
          }
 
          //

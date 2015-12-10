@@ -384,6 +384,8 @@ def SendCluster_Create(FarmDirectory, JobName):
         
         hostname = os.getenv("HOSTNAME", "")
 
+        hostname = os.getenv("HOSTNAME", "")
+
 	#determine what is the submission system available, or use condor
         if(subTool==''):
            qbatchTestCommand="qsub"
