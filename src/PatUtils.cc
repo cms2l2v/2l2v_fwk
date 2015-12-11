@@ -294,6 +294,43 @@ namespace patUtils
     return false; 
   }
 
+  float relIso(patUtils::GenericLepton& lep, double rho){
+    
+    int lid=lep.pdgId();
+    float relIso = 0.0; 
+      
+    if(lid==13){
+
+      float  chIso   = lep.mu.pfIsolationR04().sumChargedHadronPt;
+      float  nhIso   = lep.mu.pfIsolationR04().sumNeutralHadronEt;
+      float  gIso    = lep.mu.pfIsolationR04().sumPhotonEt;
+      float  puchIso = lep.mu.pfIsolationR04().sumPUPt;
+      
+      relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.mu.pt();
+      
+    } else if (lid==11){ 
+      
+      //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
+      float  chIso   = lep.el.pfIsolationVariables().sumChargedHadronPt;
+      float  nhIso   = lep.el.pfIsolationVariables().sumNeutralHadronEt;
+      float  gIso    = lep.el.pfIsolationVariables().sumPhotonEt;
+        
+      if (rho == 0) {
+	float  puchIso = lep.el.pfIsolationVariables().sumPUPt; 
+	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.el.pt();
+      }
+      else {
+	float effArea = utils::cmssw::getEffectiveArea(11,lep.el.superCluster()->eta(),3);
+	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / lep.el.pt();
+      }
+      
+    }
+    
+    return relIso;
+
+  }
+
+
   bool passIso (VersionedPatElectronSelector id, pat::Electron& el){
     // This assumes an object to be created ( *before the event loop* ):
     // VersionedPatElectronSelector loose_id("some_VID_tag_including_the_WP");
@@ -349,42 +386,6 @@ namespace patUtils
           }
           return false;  
    }
-
-  float relIso(patUtils::GenericLepton& lep, double rho){
-
-    int lid=lep.pdgId();
-    float relIso = 0.0; 
-      
-    if(lid==13){
-
-      float  chIso   = lep.mu.pfIsolationR04().sumChargedHadronPt;
-      float  nhIso   = lep.mu.pfIsolationR04().sumNeutralHadronEt;
-      float  gIso    = lep.mu.pfIsolationR04().sumPhotonEt;
-      float  puchIso = lep.mu.pfIsolationR04().sumPUPt;
-      
-      relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.mu.pt();
-      
-    } else if (lid==11){ 
-      
-      //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
-      float  chIso   = lep.el.pfIsolationVariables().sumChargedHadronPt;
-      float  nhIso   = lep.el.pfIsolationVariables().sumNeutralHadronEt;
-      float  gIso    = lep.el.pfIsolationVariables().sumPhotonEt;
-        
-      if (rho == 0) {
-	float  puchIso = lep.el.pfIsolationVariables().sumPUPt; 
-	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.el.pt();
-      }
-      else {
-	float effArea = utils::cmssw::getEffectiveArea(11,lep.el.superCluster()->eta(),3);
-	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / lep.el.pt();
-      }
-      
-    }
-    
-    return relIso;
-
-  }
   
   bool passIso(pat::Muon& mu, int IsoLevel){
     //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation

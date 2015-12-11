@@ -704,9 +704,40 @@ int main(int argc, char* argv[])
   h1->GetXaxis()->SetBinLabel(8,"#Delta #phi Z-MET");
   h1->GetXaxis()->SetBinLabel(9,"di-#tau Cand");
 
+  TH1 *h2=mon.addHistogram( new TH1F ("yields", ";;Events", 17,0,17) );
+  h2->GetXaxis()->SetBinLabel(1,"OS eee#mu");
+  h2->GetXaxis()->SetBinLabel(2,"OS eee#tau");
+  h2->GetXaxis()->SetBinLabel(3,"OS ee#mu#tau");
+  h2->GetXaxis()->SetBinLabel(4,"OS ee#tau#tau");
+  h2->GetXaxis()->SetBinLabel(5,"OS #mu#mue#mu");
+  h2->GetXaxis()->SetBinLabel(6,"OS #mu#mue#tau");
+  h2->GetXaxis()->SetBinLabel(7,"OS #mu#mu#mu#tau");
+  h2->GetXaxis()->SetBinLabel(8,"OS #mu#mu#tau#tau");
+  h2->GetXaxis()->SetBinLabel(9,"SS eee#mu");
+  h2->GetXaxis()->SetBinLabel(10,"SS eee#tau");
+  h2->GetXaxis()->SetBinLabel(11,"SS ee#mu#tau");
+  h2->GetXaxis()->SetBinLabel(12,"SS ee#tau#tau");
+  h2->GetXaxis()->SetBinLabel(13,"SS #mu#mue#mu");
+  h2->GetXaxis()->SetBinLabel(14,"SS #mu#mue#tau");
+  h2->GetXaxis()->SetBinLabel(15,"SS #mu#mu#mu#tau");
+  h2->GetXaxis()->SetBinLabel(16,"SS #mu#mu#tau#tau");
+  
+  TH1 *h3=mon.addHistogram( new TH1F ("yieldsOS", ";;Events", 8,0,8) );
+  h3->GetXaxis()->SetBinLabel(1,"OS eee#mu");
+  h3->GetXaxis()->SetBinLabel(2,"OS eee#tau");
+  h3->GetXaxis()->SetBinLabel(3,"OS ee#mu#tau");
+  h3->GetXaxis()->SetBinLabel(4,"OS ee#tau#tau");
+  h3->GetXaxis()->SetBinLabel(5,"OS #mu#mue#mu");
+  h3->GetXaxis()->SetBinLabel(6,"OS #mu#mue#tau");
+  h3->GetXaxis()->SetBinLabel(7,"OS #mu#mu#mu#tau");
+  h3->GetXaxis()->SetBinLabel(8,"OS #mu#mu#tau#tau");
+  
   //bjets control
   mon.addHistogram( new TH1F( "nbjets",  ";Number of #b-jets;Events", 6,0,6) );
   mon.addHistogram( new TH1F( "njets",   ";Number of #jets;Events", 6,0,6) );
+
+  mon.addHistogram( new TH1F( "njets2ç∂ç∂",   ";Number of #jets;Events", 6,0,6) );
+
   mon.addHistogram( new TH1F( "bjetpt",  ";p_{T}^{#b-jet} (GeV);Events/10 GeV", 50,0,500) );
   mon.addHistogram( new TH1F( "bjetcsv", ";CSV b-tagged jet;Events", 50,0, 1) );
   
@@ -747,6 +778,10 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
 
+  mon.addHistogram( new TH1F( "nvtx2",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxraw2",";Vertices;Events",50,0,50) ); 
+  mon.addHistogram( new TH1F( "rho2",";#rho;Events",50,0,25) );
+
   //tau control
   mon.addHistogram( new TH1F( "leadtaupt",     ";Transverse momentum [GeV];Events", 50,0,500) );
   TH1 *htaus=mon.addHistogram( new TH1F("ntaus",  ";Tau multiplicity;Events",5,0,5) );
@@ -768,7 +803,19 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 40, 0, 4) );
   mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(#gamma,MET);Events", 40, 0, 4) );
   
-  //lepton control
+  //lepton control hztautau
+  mon.addHistogram( new TH1F( "nlep2", 	    ";Number of Leptons (e/#mu);Events", 10,0,10) );
+  mon.addHistogram( new TH1F( "leadpt2",    ";p_{T}^{e/#mu} (GeV);Events/10 GeV", 50,0,500) );
+  mon.addHistogram( new TH1F( "leadeta2",   ";#eta_{e/mu};Events", 50,-2.6,2.6) );
+  mon.addHistogram( new TH1F( "trailerpt2", ";p_{T}^{e/#mu} (GeV) ;Events/10 GeV", 50,0,500) );
+  mon.addHistogram( new TH1F( "trailereta2",";#eta_{e/#mu};Events", 50,-2.6,2.6) );
+  mon.addHistogram( new TH1F( "leppt2",     ";p_{T}^{e/#mu} (GeV);Events/10 GeV", 50,0,500) );
+  mon.addHistogram( new TH1F( "lepeta2",    ";#eta_{e/mu};Events", 50,-2.6,2.6) );
+
+
+
+
+  // lepton control
   mon.addHistogram( new TH1F( "leadpt",     ";Transverse momentum [GeV];Events", 50,0,500) );
   mon.addHistogram( new TH1F( "leadeta",    ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram( new TH1F( "trailerpt",  ";Transverse momentum [GeV];Events", 50,0,500) );
@@ -1439,6 +1486,7 @@ int main(int argc, char* argv[])
            if(!tau.tauID("againstElectronMediumMVA5"))continue;
            
            selTaus.push_back(tau);
+	   selLeptons.push_back(tau);
            ntaus++;
          }
          std::sort(selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
@@ -1640,59 +1688,59 @@ int main(int argc, char* argv[])
 	 // patUtils::GenericLepton leadingLep = selLeptons[0];
 	 // patUtils::GenericLepton trailerLep = selLeptons[1];
 	   
-	 mon.fillHisto("eventflow2"        ,   tags,                 0, weight);
+	 mon.fillHisto("eventflow2"       ,   tags,                 0, weight);
 	 if(selLeptons.size()>=2){
 	   mon.fillHisto("nlep"           ,   chTags, selLeptons.size(), weight);
-	   mon.fillHisto("eventflow2"      ,   tags,                 1, weight);
+	   mon.fillHisto("eventflow2"     ,   tags,                 1, weight);
 	   mon.fillHisto("zmass"          ,   tags, boson.mass(),    weight);
 	   if(passZmass){
 	     mon.fillHisto("eventflow2"   ,   tags,                 2, weight);
 	     //pu control
-	     mon.fillHisto("nvtx"        ,   tags, vtx.size(),      weight);
-	     mon.fillHisto("nvtxraw"     ,   tags, vtx.size(),      weight/puWeight);
-	     mon.fillHisto("rho"         ,   tags, rho,       weight);
+	     mon.fillHisto("nvtx2"        ,   tags, vtx.size(),      weight);
+	     mon.fillHisto("nvtxraw2"     ,   tags, vtx.size(),      weight/puWeight);
+	     mon.fillHisto("rho2"         ,   tags, rho,       weight);
 	     
 	     //Z kinematics control
-	     mon.fillHisto("leadpt"      ,   tags, leadingLep.pt(), weight);      
-	     mon.fillHisto("leadeta"     ,   tags, leadingLep.eta(), weight);      
-	     mon.fillHisto("trailerpt"   ,   tags, trailerLep.pt(), weight);      
-	     mon.fillHisto("trailereta"  ,   tags, trailerLep.eta(), weight);      
-	     mon.fillHisto("leppt"       ,   tags, leadingLep.pt(), weight);      
-	     mon.fillHisto("leppt"       ,   tags, trailerLep.pt(), weight);      
-	     mon.fillHisto("lepeta"      ,   tags, leadingLep.eta(), weight);      
-	     mon.fillHisto("lepeta"      ,   tags, trailerLep.eta(), weight);      
+	     mon.fillHisto("leadpt2"      ,   tags, leadingLep.pt(), weight);      
+	     mon.fillHisto("leadeta2"     ,   tags, leadingLep.eta(), weight);      
+	     mon.fillHisto("trailerpt2"   ,   tags, trailerLep.pt(), weight);      
+	     mon.fillHisto("trailereta2"  ,   tags, trailerLep.eta(), weight);      
+	     mon.fillHisto("leppt2"       ,   tags, leadingLep.pt(), weight);      
+	     mon.fillHisto("leppt2"       ,   tags, trailerLep.pt(), weight);      
+	     mon.fillHisto("lepeta2"      ,   tags, leadingLep.eta(), weight);      
+	     mon.fillHisto("lepeta2"      ,   tags, trailerLep.eta(), weight);      
 	     
 	     //analyze dilepton kinematics
-	     mon.fillHisto("zpt"         ,   tags, boson.pt(),      weight);      
-	     mon.fillHisto("zeta"        ,   tags, boson.eta(),     weight);
-	     mon.fillHisto("zy"          ,   tags, boson.Rapidity(),weight);
+	     mon.fillHisto("zpt"         ,   tags, zll.pt(),      weight);      
+	     mon.fillHisto("zeta"        ,   tags, zll.eta(),     weight);
+	     mon.fillHisto("zy"          ,   tags, zll.Rapidity(),weight);
 	     
 	     if(passZpt){
 	       mon.fillHisto("eventflow2",   tags,                 3, weight);
 	       
 	       mon.fillHisto("ntaus"           ,  chTags, selTaus.size(), weight);
-	       mon.fillHisto("tauleadpt"       ,  tags, selTaus.size()>0?selTaus[0].pt():-1,  weight);
-	       mon.fillHisto("tauleadeta"      ,  tags, selTaus.size()>0?selTaus[0].eta():-10, weight);
-	       mon.fillHisto("tautrailerpt"    ,  tags, selTaus.size()>1?selTaus[1].pt():-1,  weight);
-	       mon.fillHisto("tautrailereta"   ,  tags, selTaus.size()>1?selTaus[1].eta():-10, weight);
+	       mon.fillHisto("tauleadpt"       ,  tags,   selTaus.size()>0?selTaus[0].pt():-1,  weight);
+	       mon.fillHisto("tauleadeta"      ,  tags,   selTaus.size()>0?selTaus[0].eta():-10, weight);
+	       mon.fillHisto("tautrailerpt"    ,  tags,   selTaus.size()>1?selTaus[1].pt():-1,  weight);
+	       mon.fillHisto("tautrailereta"   ,  tags,   selTaus.size()>1?selTaus[1].eta():-10, weight);
 	       mon.fillHisto("taupt"           ,  chTags, selTaus.size()>0?selTaus[0].pt():-1, weight);
 	       mon.fillHisto("taupt"           ,  chTags, selTaus.size()>0?selTaus[1].pt():-1, weight);
-	       mon.fillHisto("taueta"          ,  tags, selTaus.size()>0?selTaus[0].eta():-10, weight);
-	       mon.fillHisto("taueta"          ,  tags, selTaus.size()>0?selTaus[0].eta():-10, weight);
+	       mon.fillHisto("taueta"          ,  tags,   selTaus.size()>0?selTaus[0].eta():-10, weight);
+	       mon.fillHisto("taueta"          ,  tags,   selTaus.size()>0?selTaus[0].eta():-10, weight);
 	       
 	       if(selLeptons.size()>=4){
 		 mon.fillHisto("eventflow2",   tags,                 4, weight);
 		 if(passLepVetoMain){
-		   mon.fillHisto("eventflow2",   tags,                 5, weight);
-		   mon.fillHisto("nbjets"   ,  chTags, nbjets,  weight);
-		   mon.fillHisto("njets"   ,  chTags, njets,  weight);
+		   mon.fillHisto("eventflow2", tags,                 5, weight);
+		   mon.fillHisto("nbjets"    , chTags, nbjets,  weight);
+		   mon.fillHisto("njets2"     , chTags, njets,   weight);
 		   
 		   if(passBJetVetoMain){
 		     mon.fillHisto("eventflow2"	,   tags,                 6, weight);
 		     
-		     mon.fillHisto("dPhi_AZ"         , tags, deltaPhi(higgsCand.phi(), boson.phi()),    weight);
-		     mon.fillHisto("dPhi_AMet"       , tags, deltaPhi(higgsCand.phi(), met.phi()),    weight);
-		     mon.fillHisto("dPhi_ZMet"       , tags, deltaPhi(boson.phi(), met.phi()),    weight);
+		     mon.fillHisto("dPhi_AZ"    , tags, deltaPhi(higgsCand.phi(), boson.phi()),    weight);
+		     mon.fillHisto("dPhi_AMet"  , tags, deltaPhi(higgsCand.phi(), met.phi()),    weight);
+		     mon.fillHisto("dPhi_ZMet"  , tags, deltaPhi(boson.phi(), met.phi()),    weight);
 		     mon.fillHisto("met"      	, tags, met.pt()         , weight);
 		     
 		     if(passDPhiCut){
@@ -1700,9 +1748,9 @@ int main(int argc, char* argv[])
 		       if(passHiggsLoose){
 			 mon.fillHisto("sumpt",   tags, selLeptons[higgsCandL1].pt()+selLeptons[higgsCandL2].pt(), weight);
 			 if(passHiggsMain){
-			   mon.fillHisto("eventflow2",   tags,                 8, weight);
-			   mon.fillHisto("yields"	,    tags,                HiggsShortId, weight);
-			   mon.fillHisto("yieldsOS",    tags,                HiggsShortId, weight);
+			   mon.fillHisto("eventflow2"   ,tags,                 8, weight);
+			   mon.fillHisto("yields"	,tags,                HiggsShortId, weight);
+			   mon.fillHisto("yieldsOS"     ,tags,                HiggsShortId, weight);
 			   
 			   mon.fillHisto("Apt"       	, tags, higgsCand.pt(),    weight);
 			   mon.fillHisto("Amass"           , tags, higgsCand.mass(),  weight);
