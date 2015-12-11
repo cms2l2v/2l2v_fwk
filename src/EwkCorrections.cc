@@ -81,8 +81,8 @@ namespace EwkCorrections
 
 
 	//The main function, will return the kfactor
-	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo, SmartSelectionMonitor mon){
-
+	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo, SmartSelectionMonitor& mon){
+		cout<< "getting ewk corrections..." << endl;
 		double kFactor = 1.;
 
 		//create leptons and photons and neutrinos
@@ -128,7 +128,7 @@ namespace EwkCorrections
 
 		//This addition is from GenEventInfo. It contains a lot of info on PDFs, x1, x2, id1, id2... Maybe we could (should?) use this instead of our previous way to look at things? At least we should ask for a correspondance (same id...)
 
-		if(eventInfo.pdf()) return 1; //no corrections can be applied because we need x1 and x2 
+		if(!eventInfo.pdf()) return 1; //no corrections can be applied because we need x1 and x2 
 		cout << "Q scale : " << eventInfo.pdf()->scalePDF << endl; 
 		double x1 = eventInfo.pdf()->x.first; 
 		double x2 = eventInfo.pdf()->x.second; 
@@ -200,6 +200,7 @@ namespace EwkCorrections
 		if(quark_type==5) kFactor = 1. + Correction_vec[2]; //b
 		//else, it stays at 1.
 
+		cout<< "kFactor found !" << endl;
 
 		cout << "x1 = 	" << x1 << endl;
 		cout << "x2 = 	" << x2 << endl;
@@ -208,16 +209,18 @@ namespace EwkCorrections
 		cout << "den = 	" << diff_p.P() << endl;
 		cout << "nb of quarks :		" << genIncomingQuarks.size() << endl;
 		cout << "quark_type :	 " << quark_type << endl;
+		cout << "id1 :	 " << id1 << endl;
+		cout << "id2 :	 " << id2 << endl;
 		cout << "sqrt(s_hat) =	 " << sqrt(s_hat) << endl;
 		cout << "t_hat =	 " << t_hat << endl;
 		cout << "kFactor =	 " << kFactor << endl;
 		cout << endl;
 
   	//Fill the histograms of control
-		std::vector <TString > quarks_type = {"u/c", "d/s", "b"};
-  	mon.fillHisto("s_vs_t", quarks_type, sqrt(s_hat), t_hat);
-  	mon.fillHisto("k_vs_s", quarks_type, kFactor, sqrt(s_hat));
-  	mon.fillHisto("k_vs_t", quarks_type, kFactor, t_hat);
+		std::vector <TString > quarks_type = {"uORc", "dORs", "b"};
+  	mon.fillHisto("s_vs_t", quarks_type, t_hat, sqrt(s_hat));
+  	mon.fillHisto("k_vs_s", quarks_type, sqrt(s_hat), kFactor);
+  	mon.fillHisto("k_vs_t", quarks_type, t_hat, kFactor);
 
 		mon.fillHisto("Nevent_vs_ZpT", "ll_LO", Z1.Pt(), 1.);
 		mon.fillHisto("Nevent_vs_ZpT", "ll_NLO", Z1.Pt(), kFactor);
@@ -252,7 +255,7 @@ namespace EwkCorrections
 			}
 		}
 		else if ( (id1 == 21 && id2 >0 && id2 < 9) || (id2 == 21 && id1 >0 && id1 < 9) ){ //qg case
-			mon.fillHisto( "count_quarks_type", "study", 6, 1.); //qq fill
+			mon.fillHisto( "count_quarks_type", "study", 6, 1.); //qg fill
 			switch ( min(id1, id2) ){
 				case 1:	//dg
 					mon.fillHisto( "count_quarks_type", "study", 9, 1.);

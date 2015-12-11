@@ -565,21 +565,21 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
 
   //Electroweak corrections debug
-  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 100000, 0, -1000000, 13000, 0, 13000) );
-  mon.addHistogram( new TH2F(	"k_vs_s",	";#hat{s};k", 13000, 0, 13000, 200, 0, 2) );
-  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 100000, 0, -1000000, 200, 0, 2) );
+  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 1000, 0, -1000000, 400, 0, 2000) );
+  mon.addHistogram( new TH2F(	"k_vs_s",	";#sqrt{#hat{s}};k", 400, 0, 2000, 200, 0, 2) );
+  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 1000, 0, -1000000, 200, 0, 2) );
 
   mon.addHistogram( new TH1F(	"Nevent_vs_ZpT",	";p_{T}^{Z}; Events", 450, 0, 450) );
   mon.addHistogram( new TH1F(	"Nevent_vs_Mzz",	";M_{ZZ}; Events", 1200, 0, 1200) );
   
-  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 14,0,14) );
+  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 13,0,13) );
   h_quarkType->GetXaxis()->SetBinLabel(1,"q#bar{q}");
   h_quarkType->GetXaxis()->SetBinLabel(2,"u#bar{u}");
   h_quarkType->GetXaxis()->SetBinLabel(3,"c#bar{c}");
   h_quarkType->GetXaxis()->SetBinLabel(4,"d#bar{d}");
   h_quarkType->GetXaxis()->SetBinLabel(5,"s#bar{s}");
   h_quarkType->GetXaxis()->SetBinLabel(6,"b#bar{b}");
-  h_quarkType->GetXaxis()->SetBinLabel(7,"gg");
+  h_quarkType->GetXaxis()->SetBinLabel(7,"qg");
   h_quarkType->GetXaxis()->SetBinLabel(8,"ug");
   h_quarkType->GetXaxis()->SetBinLabel(9,"cg");
   h_quarkType->GetXaxis()->SetBinLabel(10,"dg");
