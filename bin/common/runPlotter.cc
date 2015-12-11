@@ -1,11 +1,13 @@
-#include <string>
 #include <vector>
-#include <iostream>
 #include <list>
 #include <iterator>
 #include <algorithm>
 #include <unordered_map>
+#include <iostream>
+#include <string>
+#include <regex>
 
+ 
 #include "TROOT.h"
 #include "TFile.h"
 #include "TDirectory.h"
@@ -971,7 +973,6 @@ int main(int argc, char* argv[]){
    gErrorIgnoreLevel = kWarning; //supress info message
 
    std::vector<string> histoNameMask;
-   std::vector<string> histoNameMaskStart;
 
    for(int i=1;i<argc;i++){
      string arg(argv[i]);
@@ -987,8 +988,7 @@ int main(int argc, char* argv[]){
         printf("--outDir  --> path of the directory that will contains the output plots and tables\n");
         printf("--outFile --> path of the output summary .root file\n");
         printf("--json    --> containing list of process (and associated style) to process to process\n");
-        printf("--only    --> processing only the objects containing the following argument in their name\n");
-        printf("--onlyStartWith  --> processing only the objects starting with the following argument in their name\n");
+        printf("--only    --> processing only the objects matching this regex expression\n");
         printf("--index   --> will do the projection on that index for histos of type cutIndex\n");
         printf("--chi2    --> show the data/MC chi^2\n"); 
         printf("--showUnc --> show stat uncertainty (if number is given use it as relative bin by bin uncertainty (e.g. lumi)\n"); 
@@ -1018,10 +1018,9 @@ int main(int argc, char* argv[]){
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());  }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--json"   )!=string::npos && i+1<argc){ jsonFile = argv[i+1];  i++;  }
-     if(arg.find("--onlyStartWith"   )!=string::npos && i+1<argc){ histoNameMaskStart.push_back(argv[i+1]); printf("Only process Histo starting with '%s'\n", argv[i+1]); i++;  }
-     if(arg.find("--only"   )!=string::npos && i+1<argc)         { histoNameMask.push_back(argv[i+1]); printf("Only process Histo containing '%s'\n", argv[i+1]); i++;  }
-     if(arg.find("--index"  )!=string::npos && i+1<argc)         { sscanf(argv[i+1],"%d",&cutIndex); i++; onlyCutIndex=(cutIndex>=0); printf("index = %i\n", cutIndex);  }
-     if(arg.find("--chi2"  )!=string::npos)                      { showChi2 = true;  }
+     if(arg.find("--only"   )!=string::npos && i+1<argc){ histoNameMask.push_back(argv[i+1]); printf("Only histograms matching (regex) ewpression '%s' are processed\n", argv[i+1]); i++;  }
+     if(arg.find("--index"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%d",&cutIndex); i++; onlyCutIndex=(cutIndex>=0); printf("index = %i\n", cutIndex);  }
+     if(arg.find("--chi2"  )!=string::npos)             { showChi2 = true;  }
      if(arg.find("--showUnc") != string::npos) { 
        showUnc=true; 
        if(i+1<argc) { 
@@ -1077,10 +1076,8 @@ int main(int argc, char* argv[]){
 
    std::list<NameAndType>::iterator it= histlist.begin();
    while(it!= histlist.end()){
-       bool passMasking = false;  
-       for(unsigned int i=0;i<histoNameMask.size();i++){if(it->name.find(histoNameMask[i])!=std::string::npos)passMasking=true;}
-       for(unsigned int i=0;i<histoNameMaskStart.size();i++){if(it->name.find(histoNameMaskStart[i])==0)passMasking=true;}
-       if(histoNameMask.size()==0 && histoNameMaskStart.size()==0)passMasking = true;
+       bool passMasking = (histoNameMask.size()==0);  
+       for(unsigned int i=0;i<histoNameMask.size();i++){if(std::regex_match(it->name,std::regex(histoNameMask[i])))passMasking=true;}
        if(!passMasking){it=histlist.erase(it); continue; }
        if(!do2D   &&(it->is2D() || it->is3D())){it=histlist.erase(it); continue;}
        if(!do1D   && it->is1D()){it=histlist.erase(it); continue;}
