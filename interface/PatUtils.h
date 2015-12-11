@@ -50,10 +50,12 @@ namespace patUtils
       public:
       // constructor
       ~GenericLepton(){};
-       GenericLepton(pat::Electron el_) : pat::GenericParticle(el_){el = el_; };
-       GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_){mu = mu_; };
+       GenericLepton(pat::Electron el_) : pat::GenericParticle(el_) {el = el_; };
+       GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_) {mu = mu_; };
+       GenericLepton(pat::Tau     tau_) : pat::GenericParticle(tau_){tau = tau_; };
          pat::Electron el;
          pat::Muon     mu;
+	 pat::Tau     tau;
    };
 
    namespace llvvElecId { enum ElecId  {Veto, Loose, Medium, Tight, LooseMVA, MediumMVA, TightMVA}; }
@@ -68,6 +70,7 @@ namespace patUtils
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
    bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
    bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0); // Old PHYS15 Iso
+   float relIso(patUtils::GenericLepton& lep, double rho);
    bool passIso(pat::Muon&     mu,  int IsoLevel);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale); 
    bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale); 
