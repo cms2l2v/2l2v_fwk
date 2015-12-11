@@ -60,6 +60,259 @@
 using namespace std;
 
 // Additional functions
+LorentzVector getZCand(std::vector<patUtils::GenericLepton> selLeptons,LorentzVector& leadingLep,LorentzVector& trailerLep,LorentzVector& zlltmp, bool& passBestZmass, 
+		       double& BestMass,int& dilLep1,int& dilLep2, int& dilId,float rho){
+
+  dilLep1=-1; dilLep2=-1; dilId=-1;
+  BestMass=0;
+  passBestZmass=false;
+  LorentzVector zll(0.,0.,0.,0.);
+  
+  for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
+    int lid1=selLeptons[l1].pdgId();
+    
+    bool passIso1 = lid1==11?patUtils::passIso(selLeptons[l1].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(selLeptons[l1].mu,  patUtils::llvvMuonIso::Tight);
+    bool passLooseLepton1 = lid1==11?patUtils::passIso(selLeptons[l1].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(selLeptons[l1].mu,  patUtils::llvvMuonIso::Loose);
+      
+    // float relIso1 = utils::cmssw::relIso(selLeptons[l1].lep, rho);
+    // if( relIso1>0.30 ) continue;
+    
+    if(!passIso1) continue;
+    
+    for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
+      // float relIso2 = utils::cmssw::relIso(selLeptons[l2].lep, rho);
+      // if( relIso2>0.30 ) continue;								 //ISO SUBLEADING
+   
+      int lid2=selLeptons[l2].pdgId();
+    
+      bool passIso2 = lid2==11?patUtils::passIso(selLeptons[l2].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(selLeptons[l2].mu,  patUtils::llvvMuonIso::Tight);
+      bool passLooseLepton2 = lid2==11?patUtils::passIso(selLeptons[l2].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(selLeptons[l2].mu,  patUtils::llvvMuonIso::Loose);
+
+      if(!passIso2) continue;
+
+      if( selLeptons[l1].pt()<20 ) continue; 
+      if( selLeptons[l2].pt()<20 ) continue; 
+      //if( !((selLeptons[l1].pt()>=20 && selLeptons[l2].pt()>=10) || 
+      //			(selLeptons[l1].pt()>=10 && selLeptons[l2].pt()>=20))) continue; //CUT ON PT
+      if(abs(lid1)!=abs(lid2)) continue; 				 //SAME FLAVOUR PAIR
+      if(lid1*lid2>=0) continue;					 //OPPOSITE SIGN
+      if(deltaR(selLeptons[l1].p4(), selLeptons[l2].p4())<0.1) continue;
+      zlltmp = (selLeptons[l1].p4()+selLeptons[l2].p4());
+      if( fabs(zlltmp.mass() - 91.2) < fabs(BestMass-91.2) ){    //BEST MASS [76.2,106.2]
+	dilLep1 = l1; 
+	dilLep2 = l2;
+	zll=selLeptons[l1].p4()+selLeptons[l2].p4();
+	leadingLep=selLeptons[l1].p4();
+	trailerLep=selLeptons[l2].p4();
+	dilId = lid1 * lid2;
+	BestMass=zll.mass();
+	passBestZmass=true;
+      }
+    }
+  }
+  return zll;
+}
+
+LorentzVector getHiggsCand(std::vector<patUtils::GenericLepton> selLeptons, int dilLep1, int dilLep2, int& higgsCandL1, int& higgsCandL2, int& higgsCandId, int& HiggsShortId, vector<TString>& chTagsMain){
+  higgsCandL1=-1;
+  higgsCandL2=-1;
+  LorentzVector higgsCand(0.,0.,0.,0.);
+  HiggsShortId=-1;
+  higgsCandId=0;
+  
+  for(int l=0   ;l<(int)selLeptons.size();l++){
+    if(l==dilLep1 || l==dilLep2)continue;
+    if(deltaR(selLeptons[l].p4(),  selLeptons[dilLep1].p4())<0.1)continue;
+    if(deltaR(selLeptons[l].p4(),  selLeptons[dilLep2].p4())<0.1)continue;
+    if(higgsCandL1<0){higgsCandL1=l;continue;}
+    if(higgsCandL2<0 && deltaR(selLeptons[l].p4(),  selLeptons[higgsCandL1].p4())>=0.1){higgsCandL2=l;break;}//ordered in pT, so all done
+  }
+  string ChannelName = "none";   string signName = "";
+  if(higgsCandL1>=0 && higgsCandL2>=0){
+    higgsCandId=selLeptons[higgsCandL1].pdgId()*selLeptons[higgsCandL2].pdgId();
+    higgsCand = LorentzVector(selLeptons[higgsCandL1].p4()+selLeptons[higgsCandL2].p4());
+    if(higgsCandId<0){signName="_OS";}else{signName="_SS";}
+    if(higgsCandId<0){HiggsShortId = 0;}else{HiggsShortId = 8;}
+    if(abs(selLeptons[dilLep1].pdgId())==11){HiggsShortId += 0;}else{HiggsShortId += 4;}
+    switch(abs(higgsCandId)){
+    case 11*13:  ChannelName  = "elmu";  HiggsShortId+= 0; break;
+    case 11*15:  ChannelName  = "elha";  HiggsShortId+= 1; break;
+    case 13*15:  ChannelName  = "muha";  HiggsShortId+= 2; break;
+    case 15*15:  ChannelName  = "haha";  HiggsShortId+= 3; break;
+    default:     ChannelName  = "none";  HiggsShortId =-1; break;
+    }
+  }               
+  chTagsMain.push_back(chTagsMain[chTagsMain.size()-1] + signName + ChannelName); 
+  return higgsCand;
+}
+
+
+/*
+LorentzVector getSVFit(pat::MET met, std::vector<patUtils::GenericLepton> selLeptons, int higgsCandL1, int higgsCandL2){       
+	if(higgsCandL1<0 || higgsCandL2<0) return LorentzVector(0,0,0,0);
+
+	TMatrixD covMET(2, 2); // PFMET significance matrix
+	covMET[0][0] = met.sigx2;
+	covMET[0][1] = met.sigxy;
+	covMET[1][0] = met.sigxy;
+	covMET[1][1] = met.sigy2;
+
+	std::vector<svFitStandalone::MeasuredTauLepton> measuredTauLeptons;
+	measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(abs(selLeptons[higgsCandL1].pdgId())==15?svFitStandalone::kTauToHadDecay:abs(selLeptons[higgsCandL1].pdgId())==11?svFitStandalone::kTauToElecDecay:svFitStandalone::kTauToMuDecay, svFitStandalone::LorentzVector(selLeptons[higgsCandL1].px(), selLeptons[higgsCandL1].py(), selLeptons[higgsCandL1].pz(), selLeptons[higgsCandL1].E()) ));
+	measuredTauLeptons.push_back(svFitStandalone::MeasuredTauLepton(abs(selLeptons[higgsCandL2].pdgId())==15?svFitStandalone::kTauToHadDecay:abs(selLeptons[higgsCandL1].pdgId())==11?svFitStandalone::kTauToElecDecay:svFitStandalone::kTauToMuDecay, svFitStandalone::LorentzVector(selLeptons[higgsCandL2].px(), selLeptons[higgsCandL2].py(), selLeptons[higgsCandL2].pz(), selLeptons[higgsCandL2].E()) ));
+	SVfitStandaloneAlgorithm algo(measuredTauLeptons, svFitStandalone::Vector(met.px(), met.py(), 0) , covMET, 0);
+	algo.addLogM(false);
+	algo.fit();
+	if(algo.isValidSolution()){
+		return algo.fittedDiTauSystem();
+	}
+	return LorentzVector(selLeptons[higgsCandL1]+selLeptons[higgsCandL2]);
+};
+*/
+
+
+bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons, 
+		   float rho, int higgsCandId, int higgsCandL1, int higgsCandL2, 
+		   vector<float> isoElCut, vector<float> isoMuCut, const char* isoHaCut, vector<float> sumPtCut, 
+		   bool requireId,
+		   reco::VertexCollection vtx){
+  
+  if(higgsCandL1<0 || higgsCandL2<0)return false;
+  
+        // e - mu final state	
+	if(abs(higgsCandId) == 11*13){
+		patUtils::GenericLepton& lep1 = selLeptons[higgsCandL1];
+		patUtils::GenericLepton& lep2 = selLeptons[higgsCandL2];
+
+		LorentzVector lep1T, lep2T;
+		lep1T = selLeptons[higgsCandL1].p4();
+		lep2T = selLeptons[higgsCandL2].p4();
+
+		cout << "ELE CUT ISO PASSED: " << isoElCut.at(0) << "MUO CUT ISO PASSED: " << isoMuCut.at(0) << endl;
+		cout << "In the EMU final state: iso( lep1 )/iso( lep2 )--> "<< patUtils::relIso(lep1, rho) <<"/"<<patUtils::relIso(lep2, rho)<<endl;
+
+		if(requireId){
+
+		  int lid1=lep1.pdgId();
+		  int lid2=lep2.pdgId();
+
+		  bool passLooseLepton1 = lid1==11?patUtils::passId(lep1.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep1.mu, vtx[0], patUtils::llvvMuonId::Loose);
+		  bool passLooseLepton2 = lid1==11?patUtils::passId(lep2.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep2.mu, vtx[0], patUtils::llvvMuonId::Loose);
+
+		  if( ((lep1.pt()+lep2.pt()) >= sumPtCut.at(0))
+		      &&  ( patUtils::relIso(lep1, rho) <= ( (abs(lep1.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) ) 
+		      &&  ( patUtils::relIso(lep2, rho) <= ( (abs(lep2.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) ) 
+		      && passLooseLepton1  && passLooseLepton2 ){
+		    cout << "IMMMMMMMM IN iso( lep1 )/iso( lep2 )--> "<< patUtils::relIso(lep1, rho) <<"/"<<patUtils::relIso(lep2, rho)<<endl;
+		    return true; 
+		  } 
+		}else{
+		  if(((lep1.pt()+lep2.pt()) >= sumPtCut.at(0))
+		     &&  (patUtils::relIso(lep1, rho) <= ( (abs(lep1.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) )
+		     &&  (patUtils::relIso(lep2, rho) <= ( (abs(lep2.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) ) ){
+		    return true;
+		  }
+		} 
+	}
+
+	// e - tau final state
+	else if(abs(higgsCandId) == 11*15){
+	  pat::Tau& tau = (abs(selLeptons[higgsCandL1].pdgId())==15)?selLeptons[higgsCandL1].tau:selLeptons[higgsCandL2].tau;
+	  patUtils::GenericLepton& lep = (abs(selLeptons[higgsCandL1].pdgId())==15)?selLeptons[higgsCandL2]:selLeptons[higgsCandL1];
+	  int tauIdx = (abs(selLeptons[higgsCandL1].pdgId())==15)?higgsCandL1:higgsCandL2;
+	  LorentzVector tauT;
+	  tauT = selLeptons[tauIdx].p4();
+	  
+	  float relIso1 = patUtils::relIso(lep, rho);
+	  if(requireId){
+	    
+	    bool passId = patUtils::passId(lep.el, vtx[0], patUtils::llvvElecId::Tight);
+	    
+	    if((relIso1<=isoElCut.at(1)) 
+	       && passId
+	       && tau.tauID("againstElectronTightMVA5") 
+	       && tau.tauID("againstMuonLoose2")
+	       && tau.tauID(isoHaCut) 
+	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(1)) ){
+	      return true;
+	    } 
+	  }else{
+	    if((relIso1<=isoElCut.at(1)) 
+	       && tau.tauID("againstElectronTightMVA5") 
+	       && tau.tauID("againstMuonLoose2")
+	       && tau.tauID(isoHaCut) 
+	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(1)) ){
+	      return true;
+	    }
+	  } 
+	}
+	// mu - tau final state
+	else if(abs(higgsCandId) == 13*15){
+	  pat::Tau& tau = abs(selLeptons[higgsCandL1].pdgId())==15?selLeptons[higgsCandL1].tau:selLeptons[higgsCandL2].tau;
+	  patUtils::GenericLepton& lep = abs(selLeptons[higgsCandL1].pdgId())==15?selLeptons[higgsCandL2]:selLeptons[higgsCandL1];
+	  int tauIdx = abs(selLeptons[higgsCandL1].pdgId())==15?higgsCandL1:higgsCandL2;
+	  LorentzVector tauT;
+	  tauT = selLeptons[tauIdx].p4();
+	  //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLoose")/tau.tauID("againstMuonTight2") "<<
+	  //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLoose")<<"/"<<tau.tauID("againstMuonTight2")<<endl;
+	  
+	  float relIso1 = patUtils::relIso(lep, rho);
+	  if(requireId){
+
+	    bool passId = patUtils::passId(lep.mu, vtx[0], patUtils::llvvMuonId::Loose);
+
+	    if((relIso1<=isoMuCut.at(1))
+	       && passId
+	       && tau.tauID("againstElectronLoose")
+	       && tau.tauID("againstMuonTight2")
+	       && tau.tauID(isoHaCut)
+	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
+	      return true;
+	    }    
+		}else{
+	    if((relIso1<=isoMuCut.at(1))
+	       && tau.tauID("againstElectronLoose")
+	       && tau.tauID("againstMuonTight2")
+	       && tau.tauID(isoHaCut)
+	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
+	      return true;
+	    }    
+	  } 
+	}
+	// tau - tau final state
+	else if(abs(higgsCandId) == 15*15){
+		pat::Tau& tau1 = selLeptons[higgsCandL1].tau;
+		pat::Tau& tau2 = selLeptons[higgsCandL2].tau;
+		if(((tau1.pt()+tau2.pt()) >= sumPtCut.at(3))
+		   && tau1.tauID("againstElectronLoose") 
+		   && tau1.tauID("againstMuonLoose2") 
+		   && tau2.tauID("againstElectronLoose") 
+		   && tau2.tauID("againstMuonLoose2") 
+		   && tau1.tauID(isoHaCut) 
+		   && tau2.tauID(isoHaCut)  
+		   ){
+		  return true;
+		}
+	}               
+	return false;
+} 
+
+bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons, float rho, int higgsCandId, int higgsCandL1, int higgsCandL2, float isoElCut, float isoMuCut, const char* isoHaCut, float sumPtCut, bool requireId, reco::VertexCollection vtx){
+	vector<float> isoElCutV; 
+	vector<float> isoMuCutV; 
+	vector<float> sumPtCutV; 
+	isoElCutV.push_back(isoElCut);
+	isoElCutV.push_back(isoElCut);
+	isoMuCutV.push_back(isoMuCut);
+	isoMuCutV.push_back(isoMuCut);
+	sumPtCutV.push_back(sumPtCut);
+	sumPtCutV.push_back(sumPtCut);
+	sumPtCutV.push_back(sumPtCut);
+	sumPtCutV.push_back(sumPtCut);
+	bool passHiggs = passHiggsCuts(selLeptons, rho, higgsCandId, higgsCandL1, higgsCandL2, isoElCutV, isoMuCutV, isoHaCut, sumPtCutV, requireId, vtx);
+	return passHiggs;
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -1260,26 +1513,60 @@ int main(int argc, char* argv[])
 
          bool passMass(fabs(boson.mass()-91)<15);
 	 
-	 bool passZmass = (fabs(boson.mass()-91.2)<15);
-	 bool passZpt   = (boson.pt()>20);
+	 //
+	 // DILEPTON ANALYSIS
+	 //
+	 
+	 LorentzVector leadingLep, trailerLep, zll, zlltmp;
+	 int dilLep1, dilLep2;
+	 double BestMass;
+	 bool passBestZmass;
+	 zll = getZCand(selLeptons,leadingLep,trailerLep,zlltmp,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
+
+	 /*
+	 //apply data/mc correction factors
+	 if(dilLep1>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep1].pt(), selLeptons[dilLep1].eta(), abs(selLeptons[dilLep1].id),  abs(selLeptons[dilLep1].id) ==11 ? "loose" : "loose" ).first : 1.0;
+	 if(dilLep2>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep2].pt(), selLeptons[dilLep2].eta(), abs(selLeptons[dilLep2].id),  abs(selLeptons[dilLep2].id) ==11 ? "loose" : "loose" ).first : 1.0;
+	 */	 
+
+	 // std::vector<TString> chTags;
+	 bool isDileptonCandidate = false;
+	 //chTags.push_back("all");
+	 if( abs(dilId)==121 && eeTrigger  ){ chTags.push_back("ee"); isDileptonCandidate=true; }
+	 if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); isDileptonCandidate=true; }
+	 
+	 if(!isDileptonCandidate) continue;
+	 //if(examineThisEvent) cout << "dilepton candidate found" << endl; 
+	 
+	 bool passZmass = (passBestZmass && (fabs(zll.mass()-91.2)<15));
+	 bool passZpt   = (zll.pt()>20);
+
+	 // if(examineThisEvent) cout << "zll.mass()-zll.pt(): " << zll.mass() << "-" << zll.pt() << endl; 
+	 //if(examineThisEvent) cout << "passZbestMass-passZmass-passZpt: " << passBestZmass << "-" << passZmass << "-" << passZpt << endl; 
 	 
          bool passQt(boson.pt()>55);
 
-	 // THIS IS TO FIX
+	 int higgsCandL1, higgsCandL2;
+	 LorentzVector higgsCand;
+	 int HiggsShortId, higgsCandId;
+	 
+	 std::vector<TString> chTagsMain=chTags;
+	 higgsCand = getHiggsCand(selLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,chTagsMain);
+	 
 	 //check if the pair pass Lepton Veto
 	 bool passLepVetoMain = true;
-	 // for(int l=0;l<(int)selLeptons.size() && passLepVetoMain;l++){
-	 //   //if(l==dilLep1 || l==dilLep2 || l==higgsCandL1 || l==higgsCandL2) continue; //lepton already used in the dilepton pair or higgs candidate
-	 //   if(abs(selLeptons[l].id)==15){
-	 //     pat::Tau&  tau = selTaus[l];
-	 //     if(!tau.tauID("againstElectronLoose") ||
-	 // 	!tau.tauID("againstMuonLoose2")    ||
-	 // 	!tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")  ) continue;                    
-	 //     passLepVetoMain = false; break;
-	 //   }else{
-	 //     passLepVetoMain = false; break;
-	 //   }
-	 // }
+	 for(int l=0;l<(int)selLeptons.size() && passLepVetoMain;l++){
+	   if(l==dilLep1 || l==dilLep2 || l==higgsCandL1 || l==higgsCandL2) continue; //lepton already used in the dilepton pair or higgs candidate
+	   if(abs(selLeptons[l].pdgId())==15){
+	     pat::Tau&  tau = selTaus[l];
+	     if(!tau.tauID("againstElectronLoose") ||
+	 	!tau.tauID("againstMuonLoose2")    ||
+	 	!tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")  ) continue;                    
+	     passLepVetoMain = false; break;
+	   }else{
+	     passLepVetoMain = false; break;
+	   }
+	 }
 	 
 	 //check if the pair pass b-jet veto
 	 bool passBJetVetoMain = true;
@@ -1290,6 +1577,33 @@ int main(int argc, char* argv[])
 	   if(higgsCandL2!=-1 && deltaR(selBJets[j1],selLeptons[higgsCandL2])>0.4){passBJetVetoMain=false; break;}
 	 }
 
+	 //check how many additional light jets are present
+	 int NCleanedJetMain = 0;
+	 for(int j1=0;j1<(int)selJets.size();j1++){
+	   if(dilLep1    !=-1 && deltaR(selJets[j1]   , selLeptons[dilLep1 ])<0.4) continue;
+	   if(dilLep2    !=-1 && deltaR(selJets[j1]   , selLeptons[dilLep2 ])<0.4) continue;
+	   if(higgsCandL1         !=-1 && deltaR(selJets[j1]   , selLeptons[higgsCandL1      ])<0.4) continue;
+	   if(higgsCandL2         !=-1 && deltaR(selJets[j1]   , selLeptons[higgsCandL2      ])<0.4) continue;
+	   NCleanedJetMain++;
+	 }
+	 
+	 bool passDPhiCut    =  (fabs(deltaPhi(zll.phi(), met.phi()))>1.5);
+	 bool passHiggsLoose = passHiggsCuts(selLeptons, rho, higgsCandId, higgsCandL1, higgsCandL2, 0.5, 0.5, "decayModeFinding", 0., false, vtx); 
+	 bool passHiggsMain  = passHiggsCuts(selLeptons, rho, higgsCandId, higgsCandL1, higgsCandL2, 0.3, 0.3, "byLooseCombinedIsolationDeltaBetaCorr3Hits", 20., true, vtx);
+	 
+	 //SVFIT MASS
+	 LorentzVector higgsCand_SVFit = higgsCand;
+	 /*
+	   commented for the time being
+	 if(passZmass && passZpt && passDPhiCut && passHiggsLoose && passLepVetoMain && passBJetVetoMain){
+	   higgsCand_SVFit = getSVFit(mets[0], selLeptons, higgsCandL1, higgsCandL2);  //compute svfit mass in a smart way
+	   }
+	 */
+	 
+	 //build the higgs candH
+	 LorentzVector higgsCandH       = zll + higgsCand;
+	 //	 LorentzVector higgsCandH_SVFit = zll + higgsCand_SVFit;
+	 
          bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
          bool passBtags(nbtags==0); 
          bool passMinDphijmet( njets==0 || mindphijmet>0.5);
@@ -1323,8 +1637,8 @@ int main(int argc, char* argv[])
 	 // NOW FOR THE CONTROL PLOTS
 	 //
 	 
-	 patUtils::GenericLepton leadingLep = selLeptons[0];
-	 patUtils::GenericLepton trailerLep = selLeptons[1];
+	 // patUtils::GenericLepton leadingLep = selLeptons[0];
+	 // patUtils::GenericLepton trailerLep = selLeptons[1];
 	   
 	 mon.fillHisto("eventflow2"        ,   tags,                 0, weight);
 	 if(selLeptons.size()>=2){
@@ -1395,7 +1709,7 @@ int main(int argc, char* argv[])
 			   mon.fillHisto("Amasssvfit"      , tags, higgsCand_SVFit.mass(),  weight);
 			   mon.fillHisto("Hmass"           , tags, higgsCandH.mass(),  weight);
 			   mon.fillHisto("Hpt"             , tags, higgsCandH.pt(),  weight);
-			   mon.fillHisto("Hmasssvfit"      , tags, higgsCandH_SVFit.mass(),  weight);
+			   // mon.fillHisto("Hmasssvfit"   , tags, higgsCandH_SVFit.mass(),  weight);
 			   
 			   mon.fillHisto("Anjets"    	, tags, NCleanedJetMain      , weight); 
 			   mon.fillHisto("Amet"      	, tags, met.pt()         , weight);
