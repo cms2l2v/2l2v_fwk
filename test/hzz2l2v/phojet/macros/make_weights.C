@@ -91,7 +91,7 @@ Double_t expgaus(Double_t *x, Double_t *par) {
 TH1F* readHist(TString nameHist,TString nameFile, TString nameDir, int rebin)
 {
  TFile* file = new TFile(nameFile);
- file->ls();
+ //file->ls();
  TDirectory *dir=(TDirectory*)file->Get(nameDir);
  
  TH1F* hist = (TH1F*)dir->Get(nameHist);
@@ -375,27 +375,34 @@ TGraphErrors *makeGraph(TH1* htest) {
 }
 
 
-void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=true) {
+void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
-  TString ifile="plotter_2015_11_12.root";
+  Bool_t isData=true;
+  
+  TString ifile="plotter_2015_12_04.root";
   
   TString dydir, dydir2; // DY+jets
-  dydir="Ztoll_M-50";
-  dydir2="Ztoll_M-10to50";
-
+  if (isData) { dydir="emudata"; }
+  else {
+    dydir="Ztoll_M-50";
+    dydir2="Ztoll_M-10to50";
+  }
   
   TString gdir, gdir2, gdir3, gdir4, gdir5; // G+jets
-  gdir="GJets_HT-40to100";
-  gdir2="GJets_HT-100to200";
-  gdir3="GJets_HT-200to400";
-  gdir4="GJets_HT-400to600";
-  gdir5="GJets_HT-600toInf";
+  if (isData) {gdir="photondata";}
+  else {
+    gdir="GJets_HT-40to100";
+    gdir2="GJets_HT-100to200";
+    gdir3="GJets_HT-200to400";
+    gdir4="GJets_HT-400to600";
+    gdir5="GJets_HT-600toInf";
+  }
   
   Bool_t bfit=false;
   
   double xmin,xmax;
   double ymin, ymax;
-  ymin=0.5; ymax=1000000.;
+  ymin=0.5; ymax=100000000.;
   
   if (var=="_qt") {
     // bfit=true;
@@ -471,6 +478,10 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=true) {
 
   // DIMUONS
   cat="mumu";
+
+  std::cout << "=0jets: " << cat+hcat[0]+var << std::endl;
+  std::cout << ">=2: " << cat+hcat[1]+var << std::endl;
+  std::cout << "VBF: " << cat+hcat[2]+var << std::endl;
   
   TH1F *h_zpt_mm_1=readHist(cat+hcat[0]+var,ifile,dydir,rbin);//h_zpt_mm->Scale(dyweight);
   TH1F *h_zpt_mm_2=readHist(cat+hcat[1]+var,ifile,dydir,rbin);//h_zpt_mm_2->Scale(dyweight);
@@ -528,9 +539,9 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=true) {
   //  var="_phopt";
   
   // Photon + Jet
-  // std::cout << "=0jets: " << cat+hcat[0]+var << std::endl;
-  // std::cout << ">=2: " << cat+hcat[1]+var << std::endl;
-  // std::cout << "VBF: " << cat+hcat[2]+var << std::endl;
+  std::cout << "=0jets: " << cat+hcat[0]+var << std::endl;
+  std::cout << ">=2: " << cat+hcat[1]+var << std::endl;
+  std::cout << "VBF: " << cat+hcat[2]+var << std::endl;
   
   TH1F *h_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir,rbin);// h_zpt_gj->Scale(gweight);//h_zpt_gj->Sumw2();
   TH1F *h_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir,rbin); //h_zpt_gj_2->Scale(gweight);//h_zpt_gj_2->Sumw2();
@@ -539,6 +550,8 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=true) {
   h_zpt_gj_2->SetFillColor(0);
   h_zpt_gj_3->SetFillColor(0);
 
+  if (!isData) {
+    
   TH1F *h2_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir2,rbin);
   TH1F *h2_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir2,rbin); 
   TH1F *h2_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir2,rbin);
@@ -570,7 +583,9 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=true) {
   h_zpt_gj_1->Add(h2_zpt_gj_1); h_zpt_gj_1->Add(h3_zpt_gj_1); h_zpt_gj_1->Add(h4_zpt_gj_1); h_zpt_gj_1->Add(h5_zpt_gj_1);
   h_zpt_gj_2->Add(h2_zpt_gj_2); h_zpt_gj_2->Add(h3_zpt_gj_2); h_zpt_gj_2->Add(h4_zpt_gj_2); h_zpt_gj_2->Add(h5_zpt_gj_2);
   h_zpt_gj_3->Add(h2_zpt_gj_3); h_zpt_gj_3->Add(h3_zpt_gj_3); h_zpt_gj_3->Add(h4_zpt_gj_3); h_zpt_gj_3->Add(h5_zpt_gj_3);
-     
+
+  } // if MC
+  
   cat="g+jet";
 
   TCanvas *cg=getanotherCanvas("cg");
@@ -1115,8 +1130,14 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=true) {
 
   leg->Draw("SAME");
 
-  TFile *outfile=new TFile("photonWeights_Spring15.root","recreate");
- 
+  TFile *outfile;
+
+  if (isData) {
+    outfile=new TFile("photonWeights_Run2015Data.root","recreate");
+  } else {
+    outfile=new TFile("photonWeights_Spring15MC.root","recreate");
+  }
+  
   gr_e1->Write(); gr_m1->Write();
   gr_e2->Write(); gr_m2->Write();
   gr_e3->Write(); gr_m3->Write();
