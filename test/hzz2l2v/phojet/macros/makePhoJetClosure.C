@@ -39,12 +39,12 @@ void makePhoJetClosure()
 {
   systForClosure.clear();
 
-  // dilCh="ll";
+  dilCh="ll";
   //dilCh="ee";
-  dilCh="mumu";
+  //dilCh="mumu";
 
   //open the files with the input plots
-  TString llfile="plotter_2015_11_12_weighted.root";
+  TString llfile="plotter_2015_11_16.root";
   
   TFile *llInF=TFile::Open(llfile);
   TFile *gInF=TFile::Open(llfile);
@@ -644,10 +644,11 @@ void closureTest(TFile *llF,TFile *gF,TString distr,TString ch, TString cat, boo
   for(int ip=0; ip<uncGrUp->GetN(); ip++)
     {
       Double_t x,y;
-      uncGrUp->GetPoint(ip,x,y);
-      uncGr->SetPoint(ip,x,1+TMath::Abs(y-1));
-      uncGrUp->SetPoint(ip,x,1+TMath::Abs(y-1));
-      uncGrDown->SetPoint(ip,x,1-TMath::Abs(y-1));
+       uncGr->GetPoint(ip,x,y);
+      //  uncGrUp->GetPoint(ip,x,y);
+      // uncGr->SetPoint(ip,x,1+TMath::Abs(y-1));
+      // uncGrUp->SetPoint(ip,x,1+TMath::Abs(y-1));
+      // uncGrDown->SetPoint(ip,x,1-TMath::Abs(y-1));
     }
   uncGr->SetMarkerColor(1); //uncGr->SetMarkerSize(0.3);
   uncGr->Draw("P");
