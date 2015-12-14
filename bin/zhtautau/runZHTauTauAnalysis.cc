@@ -734,10 +734,7 @@ int main(int argc, char* argv[])
   
   //bjets control
   mon.addHistogram( new TH1F( "nbjets",  ";Number of #b-jets;Events", 6,0,6) );
-  mon.addHistogram( new TH1F( "njets",   ";Number of #jets;Events", 6,0,6) );
-
-  mon.addHistogram( new TH1F( "njets2ç∂ç∂",   ";Number of #jets;Events", 6,0,6) );
-
+  mon.addHistogram( new TH1F( "njets2",   ";Number of #jets;Events", 6,0,6) );
   mon.addHistogram( new TH1F( "bjetpt",  ";p_{T}^{#b-jet} (GeV);Events/10 GeV", 50,0,500) );
   mon.addHistogram( new TH1F( "bjetcsv", ";CSV b-tagged jet;Events", 50,0, 1) );
   
@@ -748,10 +745,17 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zmass",   		";M_{ll} (GeV);Events/2 GeV", 80,20,180) );
   mon.addHistogram( new TH1F( "dPhi_ZMet",              ";#Delta#phi(ll,#slash{E}_{T});Events",50,-3,3));
   
+  // zll boson control
+  mon.addHistogram( new TH1F( "zlly",      		";y_{ll};Events", 50,-6,6) );
+  mon.addHistogram( new TH1F( "zlleta",    		";#eta_{ll};Events", 50,-10,10) );
+  mon.addHistogram( new TH1F( "zllpt",     		";p_{T}^{ll} (GeV) ;Events/10 GeV", 50,0,500) );
+  mon.addHistogram( new TH1F( "zllmass",   		";M_{ll} (GeV);Events/2 GeV", 80,20,180) );
+  mon.addHistogram( new TH1F( "dPhi_ZllMet",        ";#Delta#phi(ll,#slash{E}_{T});Events",50,-3,3));
+
   mon.addHistogram( new TH1F( "sumpt",            ";L_{T} (GeV);Events/10 GeV", 50,0,500) );
   mon.addHistogram( new TH1F( "dPhi_AZ",          ";#DeltaPhi(#tau#tau,ll);Events",50,-3,3));
   mon.addHistogram( new TH1F( "dPhi_AMet",        ";#Delta#phi(#tau#tau,#slash{E}_{T});Events",50,-3,3));
-  mon.addHistogram( new TH1F( "met",              ";#slash{E}_{T} (GeV);Events/10 GeV",50,0,500));
+  mon.addHistogram( new TH1F( "met2",             ";#slash{E}_{T} (GeV);Events/10 GeV",50,0,500));
   
   mon.addHistogram( new TH1F( "Amet",             ";#slash{E}_{T} (GeV);Events/10 GeV",50,0,500));
   mon.addHistogram( new TH1F( "Anjets",           ";Number of Jets;Events",10,-0.5,9.5));
@@ -1692,7 +1696,7 @@ int main(int argc, char* argv[])
 	 if(selLeptons.size()>=2){
 	   mon.fillHisto("nlep"           ,   chTags, selLeptons.size(), weight);
 	   mon.fillHisto("eventflow2"     ,   tags,                 1, weight);
-	   mon.fillHisto("zmass"          ,   tags, boson.mass(),    weight);
+	   mon.fillHisto("zllmass"          ,   tags, boson.mass(),    weight);
 	   if(passZmass){
 	     mon.fillHisto("eventflow2"   ,   tags,                 2, weight);
 	     //pu control
@@ -1711,9 +1715,9 @@ int main(int argc, char* argv[])
 	     mon.fillHisto("lepeta2"      ,   tags, trailerLep.eta(), weight);      
 	     
 	     //analyze dilepton kinematics
-	     mon.fillHisto("zpt"         ,   tags, zll.pt(),      weight);      
-	     mon.fillHisto("zeta"        ,   tags, zll.eta(),     weight);
-	     mon.fillHisto("zy"          ,   tags, zll.Rapidity(),weight);
+	     mon.fillHisto("zllpt"         ,   tags, zll.pt(),      weight);      
+	     mon.fillHisto("zlleta"        ,   tags, zll.eta(),     weight);
+	     mon.fillHisto("zlly"          ,   tags, zll.Rapidity(),weight);
 	     
 	     if(passZpt){
 	       mon.fillHisto("eventflow2",   tags,                 3, weight);
@@ -1741,7 +1745,7 @@ int main(int argc, char* argv[])
 		     mon.fillHisto("dPhi_AZ"    , tags, deltaPhi(higgsCand.phi(), boson.phi()),    weight);
 		     mon.fillHisto("dPhi_AMet"  , tags, deltaPhi(higgsCand.phi(), met.phi()),    weight);
 		     mon.fillHisto("dPhi_ZMet"  , tags, deltaPhi(boson.phi(), met.phi()),    weight);
-		     mon.fillHisto("met"      	, tags, met.pt()         , weight);
+		     mon.fillHisto("met2"      	, tags, met.pt()         , weight);
 		     
 		     if(passDPhiCut){
 		       mon.fillHisto("eventflow2",   tags,                 7, weight);
