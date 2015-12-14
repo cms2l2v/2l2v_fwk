@@ -970,7 +970,7 @@ int main(int argc, char* argv[]){
    gStyle->SetPalette(1);
    gStyle->SetNdivisions(505);
 
-   gErrorIgnoreLevel = kWarning; //supress info message
+//   gErrorIgnoreLevel = kWarning; //supress info message
 
    std::vector<string> histoNameMask;
 

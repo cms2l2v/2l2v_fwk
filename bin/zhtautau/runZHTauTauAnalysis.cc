@@ -231,7 +231,7 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 	    if((relIso1<=isoElCut.at(1)) 
 	       && passId
 	       && tau.tauID("againstElectronTightMVA5") 
-	       && tau.tauID("againstMuonLoose2")
+	       && tau.tauID("againstMuonLoose3")
 	       && tau.tauID(isoHaCut) 
 	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(1)) ){
 	      return true;
@@ -239,7 +239,7 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 	  }else{
 	    if((relIso1<=isoElCut.at(1)) 
 	       && tau.tauID("againstElectronTightMVA5") 
-	       && tau.tauID("againstMuonLoose2")
+	       && tau.tauID("againstMuonLoose3")
 	       && tau.tauID(isoHaCut) 
 	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(1)) ){
 	      return true;
@@ -253,8 +253,8 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 	  int tauIdx = abs(selLeptons[higgsCandL1].pdgId())==15?higgsCandL1:higgsCandL2;
 	  LorentzVector tauT;
 	  tauT = selLeptons[tauIdx].p4();
-	  //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLoose")/tau.tauID("againstMuonTight2") "<<
-	  //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLoose")<<"/"<<tau.tauID("againstMuonTight2")<<endl;
+	  //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLooseMVA5")/tau.tauID("againstMuonTight2") "<<
+	  //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLooseMVA5")<<"/"<<tau.tauID("againstMuonTight2")<<endl;
 	  
 	  float relIso1 = patUtils::relIso(lep, rho);
 	  if(requireId){
@@ -263,7 +263,7 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 
 	    if((relIso1<=isoMuCut.at(1))
 	       && passId
-	       && tau.tauID("againstElectronLoose")
+	       && tau.tauID("againstElectronLooseMVA5")
 	       && tau.tauID("againstMuonTight2")
 	       && tau.tauID(isoHaCut)
 	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
@@ -271,7 +271,7 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 	    }    
 		}else{
 	    if((relIso1<=isoMuCut.at(1))
-	       && tau.tauID("againstElectronLoose")
+	       && tau.tauID("againstElectronLooseMVA5")
 	       && tau.tauID("againstMuonTight2")
 	       && tau.tauID(isoHaCut)
 	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
@@ -284,10 +284,10 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 		pat::Tau& tau1 = selLeptons[higgsCandL1].tau;
 		pat::Tau& tau2 = selLeptons[higgsCandL2].tau;
 		if(((tau1.pt()+tau2.pt()) >= sumPtCut.at(3))
-		   && tau1.tauID("againstElectronLoose") 
-		   && tau1.tauID("againstMuonLoose2") 
-		   && tau2.tauID("againstElectronLoose") 
-		   && tau2.tauID("againstMuonLoose2") 
+		   && tau1.tauID("againstElectronLooseMVA5") 
+		   && tau1.tauID("againstMuonLoose3") 
+		   && tau2.tauID("againstElectronLooseMVA5") 
+		   && tau2.tauID("againstMuonLoose3") 
 		   && tau1.tauID(isoHaCut) 
 		   && tau2.tauID(isoHaCut)  
 		   ){
@@ -1500,17 +1500,25 @@ int main(int argc, char* argv[])
          // ASSIGN CHANNEL
          //
          std::vector<TString> chTags;
+
+	 LorentzVector leadingLep, trailerLep, zll, zlltmp;
          int dilId(1);
+	 int dilLep1, dilLep2;
+	 double BestMass;
+	 bool passBestZmass;
+	 zll = getZCand(selLeptons,leadingLep,trailerLep,zlltmp,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
+
+
          LorentzVector boson(0,0,0,0);
          if(!runPhotonSelection && selLeptons.size()==2)
            {
-             for(size_t ilep=0; ilep<2; ilep++)
-               {
-                 dilId *= selLeptons[ilep].pdgId();
-                 int id(abs(selLeptons[ilep].pdgId()));
-                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
-                 boson += selLeptons[ilep].p4();
-               }
+//             for(size_t ilep=0; ilep<2; ilep++)
+//               {
+//                 dilId *= selLeptons[ilep].pdgId();
+//                 int id(abs(selLeptons[ilep].pdgId()));
+//                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
+//                 boson += selLeptons[ilep].p4();
+//               }
         
              //check the channel
              if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
@@ -1563,17 +1571,12 @@ int main(int argc, char* argv[])
          //                      //
          //////////////////////////
 
-         bool passMass(fabs(boson.mass()-91)<15);
+//         bool passMass(fabs(boson.mass()-91)<15);
 	 
 	 //
 	 // DILEPTON ANALYSIS
 	 //
 	 
-	 LorentzVector leadingLep, trailerLep, zll, zlltmp;
-	 int dilLep1, dilLep2;
-	 double BestMass;
-	 bool passBestZmass;
-	 zll = getZCand(selLeptons,leadingLep,trailerLep,zlltmp,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
 
 	 /*
 	 //apply data/mc correction factors
@@ -1592,6 +1595,7 @@ int main(int argc, char* argv[])
 	 
 	 bool passZmass = (passBestZmass && (fabs(zll.mass()-91.2)<15));
 	 bool passZpt   = (zll.pt()>20);
+         bool passMass = passZmass;
 
 	 // if(examineThisEvent) cout << "zll.mass()-zll.pt(): " << zll.mass() << "-" << zll.pt() << endl; 
 	 //if(examineThisEvent) cout << "passZbestMass-passZmass-passZpt: " << passBestZmass << "-" << passZmass << "-" << passZpt << endl; 
@@ -1607,12 +1611,12 @@ int main(int argc, char* argv[])
 	 
 	 //check if the pair pass Lepton Veto
 	 bool passLepVetoMain = true;
-	 for(int l=0;l<(int)selLeptons.size() && passLepVetoMain;l++){
+	 for(int l=0;l<(int)selTaus.size() && passLepVetoMain;l++){
 	   if(l==dilLep1 || l==dilLep2 || l==higgsCandL1 || l==higgsCandL2) continue; //lepton already used in the dilepton pair or higgs candidate
 	   if(abs(selLeptons[l].pdgId())==15){
 	     pat::Tau&  tau = selTaus[l];
-	     if(!tau.tauID("againstElectronLoose") ||
-	 	!tau.tauID("againstMuonLoose2")    ||
+	     if(!tau.tauID("againstElectronLooseMVA5") ||
+	 	!tau.tauID("againstMuonLoose3")    ||
 	 	!tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")  ) continue;                    
 	     passLepVetoMain = false; break;
 	   }else{
