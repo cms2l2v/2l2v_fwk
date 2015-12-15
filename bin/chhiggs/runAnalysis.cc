@@ -469,7 +469,7 @@ int main (int argc, char *argv[])
   h->GetXaxis()->SetBinLabel (7, "#geq 2 b-tags");
 
   // event selection - cross section
-  h = (TH1D*) mon.addHistogram (new TH1D ("chhiggseventflowdilep", ";;Events", 6, 0., 6.));
+  h = (TH1D*) mon.addHistogram (new TH1D ("xseceventflowdilep", ";;Events", 6, 0., 6.));
   h->GetXaxis()->SetBinLabel (1, "#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel (2, "M_{ll} veto");
   h->GetXaxis()->SetBinLabel (3, "#geq 2 jets");
@@ -643,7 +643,7 @@ int main (int argc, char *argv[])
       
       // lepton-tau
       mon.addHistogram(new TH1D("finaltaur"           +var, ";R^{#tau};Events",                    10,  0.,   1.   ));
-      mon.addHistogram(new TH1D("finaltaupolarization"+var, ";#eta^{#tau};Events",                 40, -1.,   3.   ));
+      mon.addHistogram(new TH1D("finaltaupolarization"+var, ";Y^{#tau};Events",                    40, -1.,   3.   ));
       mon.addHistogram(new TH1D("finaldphilepmet"     +var, ";#Delta#phi(#tau_{h}-#it{l});Events", 60,  0.  , 3.15 ));
       mon.addHistogram(new TH1D("finaldphitaumet"     +var, ";#Delta#phi(#tau_{h}-MET);Events",    60,  0.,   3.15 ));
       mon.addHistogram(new TH1D("finaldphileptau"     +var, ";#Delta#phi(#it{l}-#tau_{h});Events", 60,  0.,   3.15 ));
@@ -756,7 +756,19 @@ int main (int argc, char *argv[])
   gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
   
   //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
-  
+ 
+
+  patUtils::MetFilter metFiler;
+  if(!isMC) { 
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
+  }
+
+
   //##############################################
   //########           EVENT LOOP         ########
   //##############################################
@@ -924,9 +936,8 @@ int main (int argc, char *argv[])
         if (!(eTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
         // ------------ Apply MET filters ------------
-        if(!patUtils::passMetFilters(ev, isPromptReco)) continue;
-        
-        
+        if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;
+ 
         //load all the objects we will need to access
 
         double rho = 0;

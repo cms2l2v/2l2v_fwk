@@ -564,36 +564,56 @@ namespace patUtils
     return passPU;
   }
 
+  bool exclusiveDataEventFilter(const double& run, const bool& isMC, const bool& isPromptReco)
+  {
+    bool passExclusiveDataEventFilter(false);
+    
+    if(isMC)
+      passExclusiveDataEventFilter=true;
+    else
+      {
+        bool isForPromptReco(run<251162 || run>251562);
+        if(isPromptReco)  // Prompt reco keeps events outside of that range
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=true;
+            else                passExclusiveDataEventFilter=false;
+          }
+        else // 17Jul15 ReReco keeps event inside that range
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=false;
+            else                passExclusiveDataEventFilter=true;
+          }
+      }
+    return passExclusiveDataEventFilter;
+  }
 
 
-  bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco){
-    bool passMetFilter(false);
+void MetFilter::FillBadEvents(std::string path){
+     unsigned int Run=0; unsigned int Lumi=1; unsigned int Event=2;
+     //LOOP on the files and fill the map
+     std::ifstream File;
+     File.open(path.c_str());
+     if(!File.good() ){
+       std::cout<<"ERROR:: File "<<path<<" NOT FOUND!!"<<std::endl; 
+       return;
+     }
 
+     std::string line;
+     while ( File.good() ){
+         getline(File, line);
+         std::istringstream stringfile(line);
+         stringfile >> Run >> Lumi >> Event >> std::ws;
+         map[RuLuEv(Run, Lumi, Event)] += 1;
+    }
+    File.close();
+}
+
+bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){  
+     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return false;
+
+    // Legacy: the different collection name was necessary with the early 2015B prompt reco        
     edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
-    
-    bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
-    bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
-    bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     ));
-    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
-    // bool HBHE(    utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )); // Needs to be rerun for both data (prompt+reReco) and MC, for now.
-    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
-    bool HBHE(false);
-    HcalNoiseSummary summary;
-    fwlite::Handle <HcalNoiseSummary> summaryHandle;
-    summaryHandle.getByLabel(ev, "hcalnoise");
-    if(summaryHandle.isValid()) summary=*summaryHandle;
-    bool failCommon(
-                    summary.maxHPDHits() >= 17  ||
-                    summary.maxHPDNoOtherHits() >= 10 ||
-                    summary.maxZeros() >= 9e9
-                    );
-    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
-    HBHE = !(failCommon || summary.HasBadRBXTS4TS5());
-    
-    if(!HBHE || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
-    else                                      passMetFilter=true;
-    
-    return passMetFilter;
+
     // Documentation:    
     // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
     // Flag_trackingFailureFilter
@@ -617,31 +637,28 @@ namespace patUtils
     // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
     // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
     // -------------------------------------------------
-      
-    
-  }
 
-  bool exclusiveDataEventFilter(const double& run, const bool& isMC, const bool& isPromptReco)
-  {
-    bool passExclusiveDataEventFilter(false);
+    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return false; 
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return false;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return false;
+
+    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
+    //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
+    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
+
+    HcalNoiseSummary summary;
+    fwlite::Handle <HcalNoiseSummary> summaryHandle;
+    summaryHandle.getByLabel(ev, "hcalnoise");
+    if(summaryHandle.isValid()) summary=*summaryHandle;
+    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
+    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
+    if(failCommon || summary.HasBadRBXTS4TS5()) return false;
     
-    if(isMC)
-      passExclusiveDataEventFilter=true;
-    else
-      {
-        bool isForPromptReco(run<251162 || run>251562);
-        if(isPromptReco)  // Prompt reco keeps events outside of that range
-          {
-            if(isForPromptReco) passExclusiveDataEventFilter=true;
-            else                passExclusiveDataEventFilter=false;
-          }
-        else // 17Jul15 ReReco keeps event inside that range
-          {
-            if(isForPromptReco) passExclusiveDataEventFilter=false;
-            else                passExclusiveDataEventFilter=true;
-          }
-      }
-    return passExclusiveDataEventFilter;
-  }
+     return true;
+   }
+
+
+
+
 
 }

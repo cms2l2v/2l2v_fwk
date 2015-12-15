@@ -123,8 +123,14 @@
       "destination":"wjets selection",
       "comment":"real split 17",
       "data":[        
-        { "dtag":"Data13TeV_SingleMuon2015CPromptReco", "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015C-PromptReco-v1/MINIAOD",       "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt" },
-        { "dtag":"Data13TeV_SingleElectron2015CPromptReco",  "split":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015C-PromptReco-v1/MINIAOD", "lumiMask":"/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt" }
+        { "dtag":"Data13TeV_SingleMuon2015B_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015B-05Oct2015-v1/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015B_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015B-05Oct2015-v1/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015C_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015C_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015C_25ns-05Oct2015-v1/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_05Oct2015", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015D_05Oct2015",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-05Oct2015-v1/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleMuon2015D_PromptReco", "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD",       "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
+        { "dtag":"Data13TeV_SingleElectron2015D_PromptReco",  "split_NoUse_TestingAutomaticOne":50, "xsec":1.0, "br":[ 1.0 ] , "dset":"/SingleElectron/Run2015D-PromptReco-v4/MINIAOD", "lumiMask":"data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }
       ]             
     }    
   ]

@@ -43,8 +43,13 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
-
-
+#include <istream>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
 #include <vector>
 #include "TVector3.h"
 #include "TMath.h"
@@ -218,5 +223,6 @@ class DuplicatesChecker{
     return true;
   }
 };
+
 
 #endif
