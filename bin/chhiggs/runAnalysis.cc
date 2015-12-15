@@ -1319,7 +1319,7 @@ int main (int argc, char *argv[])
         isEMu(false);
       int multiChannel(0);
       if      (abs(slepId)==13 && muTrigger && nVetoE==0 && nVetoMu==0){ isSingleMu = true; multiChannel++; chTags.push_back("singlemu");}
-      else if (abs(slepId)==13 && eTrigger  && nVetoE==0 && nVetoMu==0){ isSingleE  = true; multiChannel++; chTags.push_back("singlee");}
+      else if (abs(slepId)==11 && eTrigger  && nVetoE==0 && nVetoMu==0){ isSingleE  = true; multiChannel++; chTags.push_back("singlee");}
       else if (abs(dilId)==121 && eTrigger                            ){ isDoubleE  = true; multiChannel++; chTags.push_back("ee");}
       else if (abs(dilId)==169 && muTrigger                           ){ isDoubleMu = true; multiChannel++; chTags.push_back("mumu");}
       else if (abs(dilId)==143 && muTrigger                           ){ isEMu      = true; multiChannel++; chTags.push_back("emu");}
