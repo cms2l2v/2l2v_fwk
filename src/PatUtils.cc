@@ -294,12 +294,48 @@ namespace patUtils
     return false; 
   }
 
+  float relIso(patUtils::GenericLepton& lep, double rho){
+    
+    int lid=lep.pdgId();
+    float relIso = 0.0; 
+      
+    if(lid==13){
+
+      float  chIso   = lep.mu.pfIsolationR04().sumChargedHadronPt;
+      float  nhIso   = lep.mu.pfIsolationR04().sumNeutralHadronEt;
+      float  gIso    = lep.mu.pfIsolationR04().sumPhotonEt;
+      float  puchIso = lep.mu.pfIsolationR04().sumPUPt;
+      
+      relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.mu.pt();
+      
+    } else if (lid==11){ 
+      
+      //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
+      float  chIso   = lep.el.pfIsolationVariables().sumChargedHadronPt;
+      float  nhIso   = lep.el.pfIsolationVariables().sumNeutralHadronEt;
+      float  gIso    = lep.el.pfIsolationVariables().sumPhotonEt;
+        
+      if (rho == 0) {
+	float  puchIso = lep.el.pfIsolationVariables().sumPUPt; 
+	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.el.pt();
+      }
+      else {
+	float effArea = utils::cmssw::getEffectiveArea(11,lep.el.superCluster()->eta(),3);
+	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / lep.el.pt();
+      }
+      
+    }
+    
+    return relIso;
+
+  }
+
+
   bool passIso (VersionedPatElectronSelector id, pat::Electron& el){
     // This assumes an object to be created ( *before the event loop* ):
     // VersionedPatElectronSelector loose_id("some_VID_tag_including_the_WP");
     return true; // Isolation is now embedded into the ID.
   }
-
   
   bool passIso(pat::Electron& el, int IsoLevel, double rho){
          //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
@@ -350,31 +386,31 @@ namespace patUtils
           }
           return false;  
    }
-
-   bool passIso(pat::Muon& mu, int IsoLevel){
-          //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
-          float  chIso   = mu.pfIsolationR04().sumChargedHadronPt;
-          float  nhIso   = mu.pfIsolationR04().sumNeutralHadronEt;
-          float  gIso    = mu.pfIsolationR04().sumPhotonEt;
-          float  puchIso = mu.pfIsolationR04().sumPUPt;
-          float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
-
-          switch(IsoLevel){
+  
+  bool passIso(pat::Muon& mu, int IsoLevel){
+    //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
+    float  chIso   = mu.pfIsolationR04().sumChargedHadronPt;
+    float  nhIso   = mu.pfIsolationR04().sumNeutralHadronEt;
+    float  gIso    = mu.pfIsolationR04().sumPhotonEt;
+    float  puchIso = mu.pfIsolationR04().sumPUPt;
+    float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
+    
+    switch(IsoLevel){
                case llvvMuonIso::Loose : 
-                  if( relIso < 0.20 ) return true;
-                  break;
-
-               case llvvMuonIso::Tight :
-                  if( relIso < 0.12 ) return true;
-                  break;
-
-               default:
+		 if( relIso < 0.20 ) return true;
+		 break;
+		 
+    case llvvMuonIso::Tight :
+      if( relIso < 0.12 ) return true;
+      break;
+      
+    default:
                   printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
                   return false;
                   break;
-          }
-          return false;          
-   }
+    }
+    return false;          
+  }
 
   bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold,
 			 float &triggerPrescale ){
@@ -564,38 +600,56 @@ namespace patUtils
     return passPU;
   }
 
+  bool exclusiveDataEventFilter(const double& run, const bool& isMC, const bool& isPromptReco)
+  {
+    bool passExclusiveDataEventFilter(false);
+    
+    if(isMC)
+      passExclusiveDataEventFilter=true;
+    else
+      {
+        bool isForPromptReco(run<251162 || run>251562);
+        if(isPromptReco)  // Prompt reco keeps events outside of that range
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=true;
+            else                passExclusiveDataEventFilter=false;
+          }
+        else // 17Jul15 ReReco keeps event inside that range
+          {
+            if(isForPromptReco) passExclusiveDataEventFilter=false;
+            else                passExclusiveDataEventFilter=true;
+          }
+      }
+    return passExclusiveDataEventFilter;
+  }
 
 
-  bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco){
-    bool passMetFilter(false);
+void MetFilter::FillBadEvents(std::string path){
+     unsigned int Run=0; unsigned int Lumi=1; unsigned int Event=2;
+     //LOOP on the files and fill the map
+     std::ifstream File;
+     File.open(path.c_str());
+     if(!File.good() ){
+       std::cout<<"ERROR:: File "<<path<<" NOT FOUND!!"<<std::endl; 
+       return;
+     }
 
-    // Legacy: the different collection name was necessary with the early 2015B prompt reco 
+     std::string line;
+     while ( File.good() ){
+         getline(File, line);
+         std::istringstream stringfile(line);
+         stringfile >> Run >> Lumi >> Event >> std::ws;
+         map[RuLuEv(Run, Lumi, Event)] += 1;
+    }
+    File.close();
+}
+
+bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){  
+     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return false;
+
+    // Legacy: the different collection name was necessary with the early 2015B prompt reco        
     edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
-    //edm::TriggerResultsByName metFilters = ev.triggerResultsByName("RECO");
-    
-    bool CSC(     utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")); 
-    bool GoodVtx( utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      ));
-    bool eeBadSc( utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     ));
-    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
-    // bool HBHE(    utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )); // Needs to be rerun for both data (prompt+reReco) and MC, for now.
-    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
-    bool HBHE(false);
-    HcalNoiseSummary summary;
-    fwlite::Handle <HcalNoiseSummary> summaryHandle;
-    summaryHandle.getByLabel(ev, "hcalnoise");
-    if(summaryHandle.isValid()) summary=*summaryHandle;
-    bool failCommon(
-                    summary.maxHPDHits() >= 17  ||
-                    summary.maxHPDNoOtherHits() >= 10 ||
-                    summary.maxZeros() >= 9e9
-                    );
-    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
-    HBHE = !(failCommon || summary.HasBadRBXTS4TS5());
-    
-    if(!HBHE || !CSC || !GoodVtx || !eeBadSc) passMetFilter=false;
-    else                                      passMetFilter=true;
-    
-    return passMetFilter;
+
     // Documentation:    
     // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
     // Flag_trackingFailureFilter
@@ -619,31 +673,28 @@ namespace patUtils
     // - MET filters are available in PromptReco since run 251585; for the earlier run range (251162-251562) use the re-MiniAOD 17Jul2015
     // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
     // -------------------------------------------------
-      
-    
-  }
 
-  bool exclusiveDataEventFilter(const double& run, const bool& isMC, const bool& isPromptReco)
-  {
-    bool passExclusiveDataEventFilter(false);
+    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return false; 
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return false;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return false;
+
+    // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
+    //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
+    // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
+
+    HcalNoiseSummary summary;
+    fwlite::Handle <HcalNoiseSummary> summaryHandle;
+    summaryHandle.getByLabel(ev, "hcalnoise");
+    if(summaryHandle.isValid()) summary=*summaryHandle;
+    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
+    // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
+    if((failCommon || summary.HasBadRBXTS4TS5())) return false;
     
-    if(isMC)
-      passExclusiveDataEventFilter=true;
-    else
-      {
-        bool isForPromptReco(run<251162 || run>251562);
-        if(isPromptReco)  // Prompt reco keeps events outside of that range
-          {
-            if(isForPromptReco) passExclusiveDataEventFilter=true;
-            else                passExclusiveDataEventFilter=false;
-          }
-        else // 17Jul15 ReReco keeps event inside that range
-          {
-            if(isForPromptReco) passExclusiveDataEventFilter=false;
-            else                passExclusiveDataEventFilter=true;
-          }
-      }
-    return passExclusiveDataEventFilter;
-  }
+     return true;
+   }
+
+
+
+
 
 }

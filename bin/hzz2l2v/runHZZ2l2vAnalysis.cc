@@ -114,15 +114,19 @@ int main(int argc, char* argv[])
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
-  bool isPromptReco (!isMC && dtag.Contains("Run2015B-PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
+  bool isMC_QCD = (isMC && dtag.Contains("QCD"));
+  bool isMC_GJet = (isMC && dtag.Contains("GJet"));
+ 
+  //Tag for Met Filter
+  bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
+  bool isDoubleEleRunD( !isMC && dtag.Contains("DoubleElectron2015D") );
+  bool isDoubleMuRunD( !isMC && dtag.Contains("DoubleMu2015D") );
+  bool isMuonEGRunD( !isMC && dtag.Contains("MuEG2015D") );
 
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
   printf("TextFile URL = %s\n",outTxtUrl.Data());
-
-  //Blind the sensible region
-  bool blindData=true;
 
   //tree info
   TString dirname = runProcess.getParameter<std::string>("dirName");
@@ -458,6 +462,9 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
 
+  mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 40, 0, 4) );
+  mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 40, 0, 4) );
+  mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(#gamma,MET);Events", 40, 0, 4) );
   
   //lepton control
   mon.addHistogram( new TH1F( "leadpt",     ";Transverse momentum [GeV];Events", 50,0,500) );
@@ -465,8 +472,11 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "trailerpt",  ";Transverse momentum [GeV];Events", 50,0,500) );
   mon.addHistogram( new TH1F( "trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram( new TH1F( "zy",         ";Rapidity;Events", 50,0,3) );
-  mon.addHistogram( new TH1F( "zmass",      ";Mass [GeV];Events", 100,40,250) );
+  mon.addHistogram( new TH1F( "zmass",      ";Mass [GeV];Events / 2 GeV", 100,40,240) );
   mon.addHistogram( new TH1F( "zpt",        ";Transverse momentum [GeV];Events",100,0,1500));
+  Double_t zptaxis[]= {0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975};
+  Int_t nzptAxis=sizeof(zptaxis)/sizeof(Double_t);
+  mon.addHistogram( new TH1F( "zpt_rebin",  ";Transverse momentum [GeV];Events / GeV", nzptAxis-1,zptaxis));
   mon.addHistogram( new TH1F( "qmass",      ";Mass [GeV];Events / (1 GeV)",100,76,106));
   mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
   mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
@@ -533,31 +543,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger",  2, 0, 2) );
   mon.addHistogram( new TH1F(  "numberemuTrigger",   "Number of event passing the emu Trigger",  2, 0, 2) );
 
-  //VBF Tail Understanding
-  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Gen_Tail",     ";Mass [GeV]; Events", 175,   0, 350) );
-  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Gen_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
-  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Gen_Tail",      ";#Delta(R); Events", 100,   0,  10) );
-  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Gen_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
-  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Gen_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
-
-  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Reco_Tail",     ";Mass [GeV]; Events", 100, 150, 350) );
-  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Reco_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
-  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Reco_Tail",      ";#Delta(R); Events", 100,   0,  10) );
-  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
-  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
-
-  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Reco_GenMatch_Tail",     ";Mass [GeV]; Events", 100, 150, 350) );
-  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Reco_GenMatch_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
-  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Reco_GenMatch_Tail",      ";#Delta(R); Events", 100,   0,  10) );
-  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_GenMatch_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
-  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_GenMatch_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
-      
-  mon.addHistogram( new TH1F(    "zmass_VbfDBG_Reco_NoGenMatch_Tail",     ";Mass [GeV]; Events", 100, 150, 350) );
-  mon.addHistogram( new TH1F(   "pt_lep_VbfDBG_Reco_NoGenMatch_Tail",       ";Pt [GeV]; Events", 200,   0, 200) );
-  mon.addHistogram( new TH1F(   "DR_lep_VbfDBG_Reco_NoGenMatch_Tail",      ";#Delta(R); Events", 100,   0,  10) );
-  mon.addHistogram( new TH1F( "DPhi_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#phi); Events", 360,   0, 360) );
-  mon.addHistogram( new TH1F( "DEta_lep_VbfDBG_Reco_NoGenMatch_Tail",   ";#Delta(#eta); Events", 100,   0,  10) );
-
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
@@ -568,9 +553,9 @@ int main(int argc, char* argv[])
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
       Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
   }
- 
-  
-  std::vector<double> optim_Cuts1_met; 
+
+
+  std::vector<double> optim_Cuts1_met;
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
   TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
   Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
@@ -588,10 +573,6 @@ int main(int argc, char* argv[])
 	h->GetYaxis()->SetBinLabel(6,"M_{out+}^{ll}/#geq 1 b-tag");
       }
     }
-
-
-
-
 
   std::vector<std::vector<double>> optim_Cuts_VBF; 
   for(double jet2Pt=20    ;jet2Pt<50;jet2Pt+=5) { 
@@ -664,6 +645,15 @@ int main(int argc, char* argv[])
 
   higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
 
+  patUtils::MetFilter metFiler;
+  if(!isMC) { 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+  }
 
   //##############################################
   //########           EVENT LOOP         ########
@@ -721,18 +711,17 @@ int main(int argc, char* argv[])
 	     hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
          }
 	 
-          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS 
+          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+   
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
-
-          if(!patUtils::passMetFilters(ev, isPromptReco)) continue;
-           //##############################################   EVENT PASSED MET FILTER   ####################################### 
+          if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;	  
+          //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
           reco::VertexCollection vtx;
           fwlite::Handle< reco::VertexCollection > vtxHandle; 
           vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
           if(vtxHandle.isValid()){ vtx = *vtxHandle;}
-
 
           double rho = 0;
           fwlite::Handle< double > rhoHandle;
@@ -828,6 +817,25 @@ int main(int argc, char* argv[])
            }
          }
 
+         //Resolve G+jet/QCD mixing                                                                                                 
+         if (runPhotonSelection) {
+           bool rejectEvent=false;
+           // iF GJet sample; accept only event with prompt photons                                                                 
+           // if QCD sample; reject events with prompt photons in final state                                                       
+           if (isMC_GJet || isMC_QCD) {
+             int ng(0); bool gPromptFound=false;
+             for(size_t ig=0; ig<gen.size(); ig++){
+               int id(abs(gen[ig].pdgId()));
+               if((id==22) && gen[ig].isPromptFinalState()) {
+                 gPromptFound=true; ng++;
+               }
+             }
+             if ( (isMC_GJet) && (!gPromptFound) ) rejectEvent=true;
+             if ( (isMC_QCD) && gPromptFound ) rejectEvent=true;
+           } // end GJet / QCD sample                                                                                               
+           if (rejectEvent) { continue; }
+           //        std::cout << "Reject event in g+jet or QCD sample" << std::endl;                                               
+         } // only if mctruthmode==22 
 
          //
          // DERIVE WEIGHTS TO APPLY TO SAMPLE
@@ -1206,14 +1214,22 @@ int main(int argc, char* argv[])
            }
 
          //VBF Control plots to understand VBF Tail in Z mass shape
+         std::vector<reco::GenParticle> VisLep;
          if(isMC_VBF1000){
-		for( unsigned int k=0; k<gen.size(); ++k){	
-			if( gen[k].isHardProcess() &&  abs( gen[k].pdgId() ) == 23  && gen[k].mass() > 140 ){ removeDump=true; }
+		double filterEff = 0.16275;
+                for( unsigned int k=0; k<gen.size(); ++k){	
+			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] ); 
       		  }
+		if( VisLep.size() == 2 ){
+                        TLorentzVector Lep1( VisLep[0].px(), VisLep[0].py(), VisLep[0].pz(), VisLep[0].p() );
+                        TLorentzVector Lep2( VisLep[1].px(), VisLep[1].py(), VisLep[1].pz(), VisLep[1].p() );	
+			double MassVisZ = ( Lep1 + Lep2 ).M();
+			if( MassVisZ > 150 ) removeDump=true; 
+		}
+                if(removeDump ) continue;
+                weight /= filterEff;
 	 }
 
-         // TEMPORARY FIX to remove a bump in VBF Z mass shape when mH=1000GeV
-         if( isMC_VBF1000 && removeDump ) continue;
 
          mon.fillHisto("eventflow",  tags,0,weight);
          mon.fillHisto("nvtxA",  tags,vtx.size(),1);
@@ -1244,6 +1260,7 @@ int main(int argc, char* argv[])
 
            mon.fillHisto("eventflow",tags, 2,weight);
            mon.fillHisto("zpt",      tags, boson.pt(),weight);
+           mon.fillHisto("zpt_rebin",tags, boson.pt(),weight,true);
 
            //these two are used to reweight photon -> Z, the 3rd is a control
            mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
@@ -1330,20 +1347,16 @@ int main(int argc, char* argv[])
                      
                      //this one is used to sample the boson mass: cuts may shape Z lineshape
                      mon.fillHisto("qmass",       tags, boson.mass(),weight); 
-
                      mon.fillHisto( "njets",icat,njets,iweight);
 
-                     if( isMC ) { 
-			mon.fillHisto( "met",icat,met.pt(),iweight,true);
-                     	mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
-                    	mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
-                     } else if ( !isMC && blindData ){
-                        if( met.pt() < 70 ){ 
-			  mon.fillHisto( "met",icat,met.pt(),iweight,true);
-			  mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
-                        } 
-                        if( puppimet.pt() < 70 ){ mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);}
-                     }
+                     double b_dphi=fabs(deltaPhi(iboson.phi(),met.phi()));
+                     mon.fillHisto( "metphi",icat,met.phi(),iweight,true);                                                                    
+                     mon.fillHisto( "bosonphi",icat,iboson.phi(),iweight,true);                                                               
+                     mon.fillHisto( "dphi_boson_met",icat,b_dphi,iweight,true);
+
+ 		     mon.fillHisto( "met",icat,met.pt(),iweight,true);
+                     mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
+                     mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
 
                      TVector2 met2(met.px(),met.py());
                      TVector2 boson2(iboson.px(), iboson.py());
@@ -1351,11 +1364,7 @@ int main(int argc, char* argv[])
                      mon.fillHisto( "axialmet",icat,axialMet,iweight);
                      double mt=higgs::utils::transverseMass(iboson,met,true);
 
-                     if( isMC ){
-			mon.fillHisto( "mt",icat,mt,iweight,true);
-		     } else if( !isMC && blindData && mt<200 ){
-                        mon.fillHisto( "mt",icat,mt,iweight,true);               
-                     }
+		     mon.fillHisto( "mt",icat,mt,iweight,true);
 
                      if(met.pt()>optim_Cuts1_met[0]) 
                        {
@@ -1550,7 +1559,7 @@ int main(int argc, char* argv[])
            bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
            bool isZsideBandPlus( (boson.mass()>110 && boson.mass()<200) );
            bool passPreselection                 (passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
-           bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );          
+           bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );         
          
            //re-assign the event category to take migrations into account
            TString evCat  = eventCategoryInst.GetCategory(tightVarJets,boson);
@@ -1558,7 +1567,7 @@ int main(int argc, char* argv[])
            
            for(size_t ich=0; ich<chTags.size(); ich++){
 
-             TString tags_full=chTags[ich]+evCat;
+             TString tags_full=chTags[ich]+evCat; 
              float chWeight(iweight);
 
              //update weight and mass for photons
@@ -1579,8 +1588,7 @@ int main(int argc, char* argv[])
              //scan the MET cut and fill the shapes
              for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
                
-               if(zvv.pt()>optim_Cuts1_met[index]){
-              
+               if(zvv.pt()>optim_Cuts1_met[index]){              
                  for(unsigned int nri=0;nri<NRparams.size();nri++){
                    
                    float nrweight=chWeight*NRweights[nri];
@@ -1590,17 +1598,19 @@ int main(int argc, char* argv[])
                        if(lShapeWeights[0]==0) nrweight=0;
                        else                    nrweight/=lShapeWeights[0];
                      }
-                   
+          
                    if(passPreselection && ivar==0 && nri==0                                    )   mon.fillHisto("metcount", tags_full, index, nrweight);
                    if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,nrweight);
-                   if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);
+                   if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);                    
                    if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);
                    if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,1,nrweight);
                    if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
                    if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
                    if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
                    if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);
-                 }
+
+                 
+		}
                }
              }
            }

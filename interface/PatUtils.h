@@ -50,10 +50,12 @@ namespace patUtils
       public:
       // constructor
       ~GenericLepton(){};
-       GenericLepton(pat::Electron el_) : pat::GenericParticle(el_){el = el_; };
-       GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_){mu = mu_; };
+       GenericLepton(pat::Electron el_) : pat::GenericParticle(el_) {el = el_; };
+       GenericLepton(pat::Muon     mu_) : pat::GenericParticle(mu_) {mu = mu_; };
+       GenericLepton(pat::Tau     tau_) : pat::GenericParticle(tau_){tau = tau_; };
          pat::Electron el;
          pat::Muon     mu;
+	 pat::Tau     tau;
    };
 
    namespace llvvElecId { enum ElecId  {Veto, Loose, Medium, Tight, LooseMVA, MediumMVA, TightMVA}; }
@@ -66,6 +68,7 @@ namespace patUtils
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel); // Old PHYS14 ID
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
+   float relIso(patUtils::GenericLepton& lep, double rho);
    bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
    bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0); // Old PHYS15 Iso
    bool passIso(pat::Muon&     mu,  int IsoLevel);
@@ -74,9 +77,34 @@ namespace patUtils
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
-   bool passMetFilters(const fwlite::Event& ev, const bool& isPromptReco);
-   
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
+
+
+
+   class MetFilter{
+    private :
+     struct RuLuEv {
+        unsigned int Run;  unsigned int Lumi;  unsigned int Event;
+        RuLuEv(unsigned int Run_, unsigned int Lumi_, unsigned int Event_){ Run = Run_; Lumi = Lumi_; Event = Event_;}
+        bool operator==(const RuLuEv &other) const { return (Run == other.Run && Lumi == other.Lumi && Event == other.Event); }
+     };
+     struct RuLuEvHasher{
+         std::size_t operator()(const RuLuEv& k) const{ using std::size_t; using std::hash;  using std::string;
+            return ((hash<unsigned int>()(k.Run) ^ (hash<unsigned int>()(k.Lumi) << 1)) >> 1) ^ (hash<unsigned int>()(k.Event) << 1);
+         }
+     };
+
+     typedef std::unordered_map<RuLuEv, int, RuLuEvHasher> MetFilterMap;
+     MetFilterMap map;
+    public :
+     MetFilter(){}
+     ~MetFilter(){}
+     void Clear(){map.clear();}
+     void FillBadEvents(std::string path);
+     bool passMetFilter(const fwlite::Event& ev, bool isPromptReco);
+   };
+
+
 
 }
 

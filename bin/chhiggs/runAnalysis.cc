@@ -756,7 +756,19 @@ int main (int argc, char *argv[])
   gROOT->cd ();                 //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
   
   //higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
-  
+ 
+
+  patUtils::MetFilter metFiler;
+  if(!isMC) { 
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+        metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt");
+  }
+
+
   //##############################################
   //########           EVENT LOOP         ########
   //##############################################
@@ -921,9 +933,8 @@ int main (int argc, char *argv[])
         if (!(eTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
         // ------------ Apply MET filters ------------
-        if(!patUtils::passMetFilters(ev, isPromptReco)) continue;
-        
-        
+        if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;
+ 
         //load all the objects we will need to access
 
         double rho = 0;

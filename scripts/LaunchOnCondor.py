@@ -108,7 +108,7 @@ def CreateTheShellFile(argv):
         global absoluteShellPath
         if(subTool=='crab'):return
 
-        Path_Shell = Farm_Directories[1]+'job'+Jobs_Index+Jobs_Name+Jobs_Index+'.sh'
+        Path_Shell = Farm_Directories[1]+'job'+Jobs_Index+Jobs_Name+'.sh'
         function_argument=''
         hostname = os.getenv("HOSTNAME", "")
         
@@ -303,6 +303,9 @@ def AddJobToCmdFile():
         global Jobs_EmailReport
         global Jobs_List
         Path_Out   = Farm_Directories[3] + Jobs_Index + Jobs_Name
+        Path_Log   = Farm_Directories[2] + Jobs_Index + Jobs_Name
+
+
         cmd_file=open(Path_Cmd,'a')
 	if subTool=='bsub':
                absoluteShellPath = Path_Shell;
@@ -335,9 +338,9 @@ def AddJobToCmdFile():
                 Jobs_List.extend([absoluteShellPath])
         else:
         	cmd_file.write('\n')
-	        cmd_file.write('Executable              = %s\n'     % Path_Shell)
-        	cmd_file.write('output                  = %s.out\n' % Path_Log)
-	        cmd_file.write('error                   = %s.err\n' % Path_Log)
+	        cmd_file.write('Executable              = %s\n'     % os.path.relpath(Path_Shell) )
+        	cmd_file.write('output                  = %s.out\n' % os.path.relpath(Path_Log) )
+	        cmd_file.write('error                   = %s.err\n' % os.path.relpath(Path_Log) )
                 cmd_file.write('log                     = /dev/null\n') 
 	        cmd_file.write('Queue 1\n')
         cmd_file.close()
@@ -378,11 +381,14 @@ def SendCluster_Create(FarmDirectory, JobName):
 	global Jobs_Name
 	global Jobs_Count
         global Farm_Directories
+        
+        hostname = os.getenv("HOSTNAME", "")
 
 	#determine what is the submission system available, or use condor
         if(subTool==''):
            qbatchTestCommand="qsub"
            if( commands.getstatusoutput("ls /gstore/t3cms" )[1].find("store")==0): qbatchTestCommand="qstat"
+           if( 'iihe.ac.be' in hostname): qbatchTestCommand="qstat"
 
   	   if(  commands.getstatusoutput("bjobs"          )[1].find("command not found")<0): subTool = 'bsub'
            elif(commands.getstatusoutput(qbatchTestCommand)[1].find("command not found")<0): subTool = 'qsub'

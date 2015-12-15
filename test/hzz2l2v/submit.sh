@@ -26,14 +26,13 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-#SUFFIX=_Test
-SUFFIX=_2015_11_12
+SUFFIX=_2015_12_04
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
 RESULTSDIR=$MAINDIR/results$SUFFIX
-PLOTSDIR=$MAINDIR/plots$SUFFIX
-PLOTTER=$MAINDIR/plotter$SUFFIX
+PLOTSDIR=$MAINDIR/plots${SUFFIX}
+PLOTTER=$MAINDIR/plotter${SUFFIX}
 
 #printf "Result dir is set as: \n\t%s\n" "$RESULTSDIR"
 
@@ -87,8 +86,8 @@ case $step in
 	
 	echo "COMPUTE INTEGRATED LUMINOSITY"
 	export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH
-	pip install --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
-	brilcalc lumi -i $RESULTSDIR/json_all.json -n 0.962 -u /pb -o $RESULTSDIR/LUMI.txt
+	pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
+	brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	tail -n 3 $RESULTSDIR/LUMI.txt  
 	;;
 
@@ -102,18 +101,12 @@ case $step in
     3.1)  # make plots for Jamboree without ratio between data and MC for ZMass, in this case we remove also the underflow bin
         INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
         echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zmass --removeRatioPlot --removeUnderFlow --json $JSON --no2D $arguments 
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only ee_zmass --only mumu_zmass --only all_zmass --removeUnderFlow --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt_rebin --only all_mt --only all_met --only ee_zpt_rebin --only mumu_zpt_rebin --only ee_met --only mumu_met --only ee_mt --only mumu_mt --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf 
         #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
         ;; 
 
-    3.2)  # make plots for Jamboree without ratio between data and MC for Z_pt, Met and Mt
-        INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
-        echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt --only all_mt --only all_met --removeRatioPlot --json $JSON --no2D $arguments
-        #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
-        ;;
-
-    3.3)  # make plots and combine root files for photon + jet study
+    3.2)  # make plots and combine root files for photon + jet study
 	JSON=$MAINDIR/photon_samples.json
 	INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
