@@ -61,8 +61,9 @@ namespace EwkCorrections
 		best = Table_EWK[j+199][1];
 		if(t_hat > best) j = j+199; //in the very rare case where we have bigger t than our table
 		else{
+			best = 0.1E+09;
 			for(int k = j ; k < j + 200 ; k++){
-				if(fabs(t_hat - Table_EWK[k][1]) < fabs(best)){
+				if(fabs(t_hat - Table_EWK[k][1]) < best){
 					best = fabs(t_hat - Table_EWK[k][1]);
 					j = k;
 				}
@@ -81,8 +82,7 @@ namespace EwkCorrections
 
 
 	//The main function, will return the kfactor
-	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo, SmartSelectionMonitor mon){
-
+	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo, SmartSelectionMonitor& mon){
 		double kFactor = 1.;
 
 		//create leptons and photons and neutrinos
@@ -128,18 +128,19 @@ namespace EwkCorrections
 
 		//This addition is from GenEventInfo. It contains a lot of info on PDFs, x1, x2, id1, id2... Maybe we could (should?) use this instead of our previous way to look at things? At least we should ask for a correspondance (same id...)
 
-		if(eventInfo.pdf()) return 1; //no corrections can be applied because we need x1 and x2 
-		cout << "Q scale : " << eventInfo.pdf()->scalePDF << endl; 
+		if(!eventInfo.pdf()) return 1; //no corrections can be applied because we need x1 and x2 
+		if( genLeptons.size() < 2 || genNeutrinos.size() < 2) return 1; //no corrections can be applied if we don't find our two Z's
+		cout<<"Event info OK"<<endl;
+		//cout << "Q scale : " << eventInfo.pdf()->scalePDF << endl; //This gives s_hat !!! 
 		double x1 = eventInfo.pdf()->x.first; 
 		double x2 = eventInfo.pdf()->x.second; 
-		int id1 = fabs(eventInfo.pdf()->id.first); 
-		int id2 = fabs(eventInfo.pdf()->id.second); 
+		int id1 = fabs(eventInfo.pdf()->id.first); //bugged for qg ?
+		int id2 = fabs(eventInfo.pdf()->id.second); //bugged for qg ?
 
 
+		cout<< "Id and x1,2 are ok" <<endl;
 
 
-
-		//cout << "test table : en (6,2) on a " << Table[6][2] << endl;
 		//Here : generated particles are put in vectors
 
 		//All what follows is valable only for ZZ->2l2nu. Another code is needed for WZ.
@@ -148,6 +149,7 @@ namespace EwkCorrections
 
 		LorentzVector Z1 = genLeptons[0].p4() + genLeptons[1].p4(); //First Z : charged leptons
 		LorentzVector Z2 = genNeutrinos[0].p4() + genNeutrinos[1].p4(); //Second Z : neutrinos
+cout<< "Z1 and Z2 defined" << endl;
 		LorentzVector ZZ = Z1+Z2;
 		//Mainpulation to have TLorentzVectors instead of LorentzVectors
 		TLorentzVector ZZ_t;
@@ -156,12 +158,13 @@ namespace EwkCorrections
 		ZZ_t.SetXYZT(ZZ.X(),ZZ.Y(),ZZ.Z(),ZZ.T());
 		Z1_t.SetXYZT(Z1.X(),Z1.Y(),Z1.Z(),Z1.T());
 		Z2_t.SetXYZT(Z2.X(),Z2.Y(),Z2.Z(),Z2.T());
+cout<< "Ready to compute s_hat" << endl;
 
-		double s_hat = pow(ZZ.M(),2); // s_hat = center-of-mass energy of 2 Z system
-
+		double s_hat = pow(ZZ.M(),2); // s_hat = center-of-mass energy of 2 Z system = Q scale!
+cout<< "s hat found " << s_hat << endl;
 		//In order to determine t_hat, we have to compute theta : angle between considered Z boson and the direction of the incident quarks in the rest frame of the 2 Z.
 		//At the end, we'll have cos(theta) = (p_q1,b - p_q2,b)/(|p_q1,b - p_q2,b|) . p_Z1,b  , where p_qi,b is the *unitary* momentum *vector* of the i quark after the Lorentz boost.
-		//(cf Nicolas's Master Thesis, p.15)
+		//(cf Nicolas' Master Thesis, p.15)
 		//Let's first boost the quarks 1 and 2, as well as the Z1.
 		TLorentzVector Z1_b = Z1_t;
 		TLorentzVector p1_b, p2_b;
@@ -184,12 +187,13 @@ namespace EwkCorrections
 		//double t_hat = pow(Z1.M(),2) - 0.5*s_hat + cos_theta * sqrt(0.25*s_hat*s_hat - pow(Z1.M(),2)*s_hat); //old version ; actually we assume the Z to be on-shell.
 		double m_z = 91.1876;
 		double t_hat = m_z*m_z - 0.5*s_hat + cos_theta * sqrt( 0.25*s_hat*s_hat - m_z*m_z*s_hat );
-
+cout << " before quark type" << endl;
 		//Find the quark type
 		int quark_type = 0;
 		if(genIncomingQuarks.size() > 0) quark_type = fabs(genIncomingQuarks[0].pdgId()); //works unless if gg->ZZ process : it shouldn't be the case as we're using POWHEG
 
 		//Extract the corrections for the values of s and t just computed
+		cout << "t_hat : " << t_hat << endl;
 		std::vector<float> Correction_vec = findCorrection( Table, sqrt(s_hat), t_hat );
 
 		//Final correction factor
@@ -198,26 +202,31 @@ namespace EwkCorrections
 		if(quark_type==3) kFactor = 1. + Correction_vec[1]; //s as d
 		if(quark_type==4) kFactor = 1. + Correction_vec[0]; //c as u
 		if(quark_type==5) kFactor = 1. + Correction_vec[2]; //b
+
+		if(sqrt(s_hat)< 2*m_z) kFactor = 1.; //Off-shell cases, not corrected to avoid non-defined values for t.
+
 		//else, it stays at 1.
 
+		cout<< "kFactor found !" << endl;
+		cout<< "nb of quarks : "<<genIncomingQuarks.size()<< " ; id1 : "<<eventInfo.pdf()->id.first<< " ; id2 : "<<eventInfo.pdf()->id.second<<endl;
+		cout<<endl;
 
-		cout << "x1 = 	" << x1 << endl;
-		cout << "x2 = 	" << x2 << endl;
-		cout << "m_Z = 	" << Z1.M() <<  endl;
-		cout << "cos_theta = 	" << cos_theta << endl;
-		cout << "den = 	" << diff_p.P() << endl;
-		cout << "nb of quarks :		" << genIncomingQuarks.size() << endl;
-		cout << "quark_type :	 " << quark_type << endl;
-		cout << "sqrt(s_hat) =	 " << sqrt(s_hat) << endl;
-		cout << "t_hat =	 " << t_hat << endl;
-		cout << "kFactor =	 " << kFactor << endl;
-		cout << endl;
+		//cout << "x1 = 	" << x1 << endl;
+		//cout << "x2 = 	" << x2 << endl;
+		//cout << "m_Z = 	" << Z1.M() <<  endl;
+		//cout << "cos_theta = 	" << cos_theta << endl;
+		//cout << "den = 	" << diff_p.P() << endl;
+		//cout << "nb of quarks :		" << genIncomingQuarks.size() << endl;
+		//cout << "nb of gluons :		" << genIncomingGluons.size() << endl;
+		//cout << "quark_type :	 " << quark_type << endl;
+		//cout << "id1 :	 " << id1 << endl;
+		//cout << "id2 :	 " << id2 << endl;
+		//cout << "sqrt(s_hat) =	 " << sqrt(s_hat) << endl;
+		//cout << "t_hat =	 " << t_hat << endl;
+		//cout << "kFactor =	 " << kFactor << endl;
+		//cout << endl;
 
   	//Fill the histograms of control
-		std::vector <TString > quarks_type = {"u/c", "d/s", "b"};
-  	mon.fillHisto("s_vs_t", quarks_type, sqrt(s_hat), t_hat);
-  	mon.fillHisto("k_vs_s", quarks_type, kFactor, sqrt(s_hat));
-  	mon.fillHisto("k_vs_t", quarks_type, kFactor, t_hat);
 
 		mon.fillHisto("Nevent_vs_ZpT", "ll_LO", Z1.Pt(), 1.);
 		mon.fillHisto("Nevent_vs_ZpT", "ll_NLO", Z1.Pt(), kFactor);
@@ -226,6 +235,31 @@ namespace EwkCorrections
 
 		mon.fillHisto("Nevent_vs_Mzz", "LO", ZZ.mass(), 1.);
 		mon.fillHisto("Nevent_vs_Mzz", "NLO", ZZ.mass(), kFactor);
+
+		if(genIncomingQuarks.size() == 2 && genIncomingGluons.size() ==0){
+			id2= quark_type;
+			id1 = id2;
+		}
+		else if( genIncomingQuarks.size() == 1 && genIncomingGluons.size() ==1){
+			id1 = quark_type;
+			id2 = 21;
+		}
+
+		if(id1 == 2 || id1 == 4){ //u or d quark
+  		mon.fillHisto("s_vs_t", "uc", t_hat, sqrt(s_hat));
+  		mon.fillHisto("k_vs_s", "uc", sqrt(s_hat), kFactor);
+  		mon.fillHisto("k_vs_t", "uc", t_hat, kFactor);
+		}
+		else if(id1 ==1 || id1 == 3){ //d or s quark
+ 		 	mon.fillHisto("s_vs_t", "ds", t_hat, sqrt(s_hat));
+  		mon.fillHisto("k_vs_s", "ds", sqrt(s_hat), kFactor);
+  		mon.fillHisto("k_vs_t", "ds", t_hat, kFactor);
+		}
+		else if( id1 == 5){ //b quark
+		 	mon.fillHisto("s_vs_t", "b", t_hat, sqrt(s_hat));
+  		mon.fillHisto("k_vs_s", "b", sqrt(s_hat), kFactor);
+  		mon.fillHisto("k_vs_t", "b", t_hat, kFactor);
+		}
 
 		//qq, uu, cc, dd, ss, bb, qg, ug, cg, dg, sg, bg, other
 		if( id1 >0 && id1 <9 && id1 == id2 ){ //qq case (same flavor!)
@@ -252,7 +286,7 @@ namespace EwkCorrections
 			}
 		}
 		else if ( (id1 == 21 && id2 >0 && id2 < 9) || (id2 == 21 && id1 >0 && id1 < 9) ){ //qg case
-			mon.fillHisto( "count_quarks_type", "study", 6, 1.); //qq fill
+			mon.fillHisto( "count_quarks_type", "study", 6, 1.); //qg fill
 			switch ( min(id1, id2) ){
 				case 1:	//dg
 					mon.fillHisto( "count_quarks_type", "study", 9, 1.);
@@ -279,7 +313,7 @@ namespace EwkCorrections
 			mon.fillHisto( "count_quarks_type", "study", 12, 1.);
 		}
 
-
+cout<< "done"<<endl;
 		return kFactor;
 	}
 
