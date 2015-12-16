@@ -516,7 +516,7 @@ namespace utils
        fwlite::Event ev(file);
        for(ev.toBegin(); !ev.atEnd(); ++ev){
           fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-          puInfoH.getByLabel(ev, "addPileupInfo");
+          puInfoH.getByLabel(ev, "slimmedAddPileupInfo");
           if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
           unsigned int ngenITpu = 0;
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
