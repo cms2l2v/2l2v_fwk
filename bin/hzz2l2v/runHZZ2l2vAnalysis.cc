@@ -84,25 +84,17 @@ int main(int argc, char* argv[])
 
   TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
-//  TString baseDir    = runProcess.getParameter<std::string>("dirName");
-//  if(mctruthmode!=0) { outFileUrl += "_filt"; outFileUrl += mctruthmode; } //FIXME
-//  TString outdir=runProcess.getParameter<std::string>("outdir");
-//  TString outUrl( outdir );
-//  gSystem->Exec("mkdir -p " + outUrl);
-
   TString outUrl = runProcess.getParameter<std::string>("outfile");
 
   //good lumi MASK
   lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
   bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
-  if( isMC ) std::cout << "Is MC" << std::endl;
-  if(!isMC)
-    {
+  if(!isMC){
       if(dtag.Contains("DoubleEle")) filterOnlyEE=true;
       if(dtag.Contains("DoubleMu"))  filterOnlyMUMU=true;
       if(dtag.Contains("MuEG"))      filterOnlyEMU=true;
-    }
+  }
   bool isSingleMuPD(!isMC && dtag.Contains("SingleMu"));  
   bool isV0JetsMC(false);//isMC && (dtag.Contains("DYJetsToLL_50toInf") || dtag.Contains("_WJets")));  #FIXME should be reactivated as soon as we have exclusive jet samples
   bool isWGmc(isMC && dtag.Contains("WG"));
@@ -116,12 +108,11 @@ int main(int argc, char* argv[])
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
+  bool runPhotonSelection = (mctruthmode==22 || mctruthmode==111);
+
  
   //Tag for Met Filter
   bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
-  bool isDoubleEleRunD( !isMC && dtag.Contains("DoubleElectron2015D") );
-  bool isDoubleMuRunD( !isMC && dtag.Contains("DoubleMu2015D") );
-  bool isMuonEGRunD( !isMC && dtag.Contains("MuEG2015D") );
 
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
@@ -150,13 +141,11 @@ int main(int argc, char* argv[])
   std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
   std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
 
-  GammaWeightsHandler *gammaWgtHandler=0;
-  if(mctruthmode==22 || mctruthmode==111) gammaWgtHandler=new GammaWeightsHandler(runProcess,"",true);
+  GammaWeightsHandler* gammaWgtHandler= runPhotonSelection?new GammaWeightsHandler(runProcess,"",true):NULL;
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
-  if(isMC_ZZ || isMC_WZ)
-    {
+  if(isMC_ZZ || isMC_WZ){
       TString weightsFile=weightsDir+"/zzQ2unc.root";
       TString dist("zzpt");
       if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
@@ -167,7 +156,7 @@ int main(int argc, char* argv[])
 	vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
 	q2UncF->Close();
       }
-    }
+  }
 
   //HIGGS weights and uncertainties
   
@@ -445,18 +434,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
 
-  //tau control
-  mon.addHistogram( new TH1F( "leadtaupt",     ";Transverse momentum [GeV];Events", 50,0,500) );
-  TH1 *htaus=mon.addHistogram( new TH1F("ntaus",  ";Tau multiplicity;Events",5,0,5) );
-  for(int ibin=1; ibin<=htaus->GetXaxis()->GetNbins(); ibin++)
-    {
-      TString label("");
-      if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
-      else                                label +="=";
-      label += (ibin-1);
-      htaus->GetXaxis()->SetBinLabel(ibin,label);
-    } 
-
   // photon control
   mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
@@ -538,22 +515,16 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events",100,0,500) );
 
-  //Debug Plots Alessio
-  mon.addHistogram( new TH1F(   "numbereeTrigger",    "Number of event passing the ee Trigger",  2, 0, 2) );
-  mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger",  2, 0, 2) );
-  mon.addHistogram( new TH1F(  "numberemuTrigger",   "Number of event passing the emu Trigger",  2, 0, 2) );
-
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
   //
 
   //NEED FOR ALL OPTIMIZATION
-  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
+  TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;;", nvarsToInclude,0,nvarsToInclude) ) ;
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
       Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
   }
-
 
   std::vector<double> optim_Cuts1_met;
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
@@ -629,9 +600,8 @@ int main(int argc, char* argv[])
           std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
           std::vector<float> dataPileupDistribution; for(unsigned int i=0;i<dataPileupDistributionDouble.size();i++){dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);}
           std::vector<float> mcPileupDistribution;
-          // Temporary hack for nvtx-based pileup
-	  //utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
-          utils::getMCPileupDistributionFromMiniAODtemp(urls,dataPileupDistribution.size(), mcPileupDistribution);
+
+	  utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
           while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
           while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
           gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -671,48 +641,107 @@ int main(int argc, char* argv[])
      int treeStep(ev.size()/50);
      for(ev.toBegin(); !ev.atEnd(); ++ev){ iev++;
          if(iev%treeStep==0){printf(".");fflush(stdout);}
+         float weight = xsecWeight;
+         float shapeWeight = 1.0;
+         double TotalWeight_plus = 1.0;
+         double TotalWeight_minus = 1.0;
+         float puWeight(1.0);
 
-          //##############################################   EVENT LOOP STARTS   ##############################################
-          //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+         //##############################################   EVENT LOOP STARTS   ##############################################
+         //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
+
+         //Skip bad lumi
+         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
+
+         //WEIGHT for Pileup
+         if(isMC){          
+	     int ngenITpu = 0;
+	     fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+             puInfoH.getByLabel(ev, "slimmedAddPileupInfo");
+             for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+                if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); } //getPU_NumInteractions(); }
+             }
+             puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
+             TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
+             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
+             weight *= puWeight;
+         }
 
 
-          //Skip bad lumi
-          if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
+         //WEIGHT for LineShape and NLO generators
+         float lShapeWeights[3]={1.0,1.0,1.0};
+         for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
+         if(isMC){
+          // if(isMC_VBF || isMC_GG || mctruthmode==125){
+	  //	   LorentzVector higgs(0,0,0,0);
+	  //	   LorentzVector totLeptons(0,0,0,0);
+	  //	   for(size_t igen=0; igen<gen.size(); igen++){
+	  //	     if(gen[igen].status()!=3) continue;
+	  //	     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
+	  //	     if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
+	  //	   }
+	  //	   if(mctruthmode==125) {
+	  //	     higgs=totLeptons;
+	  //	     if(isMC_125OnShell && higgs.mass()>180) continue;
+	  //	     if(!isMC_125OnShell && higgs.mass()<=180) continue;
+	  //	   }
+	  //
+	  //
+          //     //Line shape weights 
+          //     if((isMC_VBF || isMC_GG) && higgs.pt()>0){
+          //         std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
+          //         for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++)
+          //           {
+          //             if(nominalShapeWgtGr[iwgt]==0) continue;
+          //             lShapeWeights[iwgt]=nominalShapeWgtGr[iwgt]->Eval(higgs.mass());
+          //           }
+          //       }
+          //     shapeWeight   = lShapeWeights[0];
+          //     
+          //     //control SM line shape
+          //     mon.fillHisto("higgsMass_raw",    "", higgs.mass(), puWeight);
+          //     mon.fillHisto("higgsMass_cpspint","", higgs.mass(), puWeight * shapeWeight);
+          //     
+          //     //compute weight correction for narrow resonnance
+          //     for(unsigned int nri=0;nri<NRparams.size();nri++){ 
+          //       if(NRparams[nri].first<0) continue;
+          //       std::vector<TGraph *> shapeWgtGr = hLineShapeGrVec[NRparams[nri] ];
+          //       NRweights[nri] = shapeWgtGr[0]->Eval(higgs.mass()); 
+          //       float iweight = puWeight * NRweights[nri];
+          //       mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
+          //     }  
+          // }
+
+          //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
+          fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
+          genEventInfoHandle.getByLabel(ev, "generator");
+          if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
+     
+           //final event weight
+           weight *= shapeWeight;
+         }
+
+
 
           //apply trigger and require compatibilitiy of the event with the PD
           edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
           if(!tr.isValid())return false;
 
-         bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");
-         bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_Mu34_TrkIsoVVL_v*");
-         bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*"); 
-         bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");
-         if(filterOnlyEE)   { mumuTrigger=false; emuTrigger=false;  }
-         if(filterOnlyMUMU) { eeTrigger=false;   emuTrigger=false;  }
-         if(isSingleMuPD)   { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
-         if(filterOnlyEMU)  { eeTrigger=false;   mumuTrigger=false; }
-
-         if( eeTrigger ){ 
-           mon.fillHisto( "numbereeTrigger", "all", 1, 1);
-         }
-         if( mumuTrigger ){ 
-           mon.fillHisto( "numbermumuTrigger", "all", 1, 1);
-         }
-         if( emuTrigger ){ 
-           mon.fillHisto( "numberemuTrigger", "all", 1, 1);
-         }
-
-         bool hasPhotonTrigger(false);
-         float triggerPrescale(1.0),triggerThreshold(0);
-         bool runPhotonSelection(mctruthmode==22 || mctruthmode==111);
-         if(runPhotonSelection){
-             eeTrigger=false; mumuTrigger=false;
-             // printf("Running photon selection... ");
-	     hasPhotonTrigger = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
-         }
+          float triggerPrescale(1.0),triggerThreshold(0);
+          bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");
+          bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_Mu34_TrkIsoVVL_v*");
+          bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*"); 
+          bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");
+          bool photonTrigger      = runPhotonSelection?patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale):false;
+          if(filterOnlyEE)       { mumuTrigger=false; emuTrigger=false;  }
+          if(filterOnlyMUMU)     { eeTrigger=false;   emuTrigger=false;  }
+          if(isSingleMuPD)       { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
+          if(filterOnlyEMU)      { eeTrigger=false;   mumuTrigger=false; }
+          if(runPhotonSelection) { eeTrigger=false;   mumuTrigger=false; emuTrigger=false;}
 	 
-          if(!(eeTrigger || muTrigger || mumuTrigger || emuTrigger || hasPhotonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-   
+          if(!(eeTrigger || mumuTrigger || emuTrigger || photonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+	  if(runPhotonSelection && !photonTriggerStudy && !photonTrigger)continue;
+  
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
           if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;	  
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
@@ -765,11 +794,6 @@ int main(int argc, char* argv[])
           if(puppimetsHandle.isValid()){ puppimets = *puppimetsHandle;}
           LorentzVector puppimet = puppimets[0].p4(); 
 
-          pat::TauCollection taus;
-          fwlite::Handle< pat::TauCollection > tausHandle;
-          tausHandle.getByLabel(ev, "slimmedTaus");
-          if(tausHandle.isValid()){ taus = *tausHandle;}
-
          if(isV0JetsMC){
             fwlite::Handle< LHEEventProduct > lheEPHandle;
             lheEPHandle.getByLabel(ev, "externalLHEProducer");
@@ -784,7 +808,7 @@ int main(int argc, char* argv[])
 
 
          //MC crap for photon studies
-         if(hasPhotonTrigger && (isWGmc || isZGmc)){
+         if(photonTrigger && (isWGmc || isZGmc)){
            int nge(0), ngm(0), ngt(0), ngj(0), ngnu(0);
            bool zFound(false), wFound(false);
            for(size_t ig=0; ig<gen.size(); ig++){
@@ -818,109 +842,18 @@ int main(int argc, char* argv[])
          }
 
          //Resolve G+jet/QCD mixing                                                                                                 
-         if (runPhotonSelection) {
-           bool rejectEvent=false;
+         if (runPhotonSelection && (isMC_GJet || isMC_QCD) ) {
            // iF GJet sample; accept only event with prompt photons                                                                 
            // if QCD sample; reject events with prompt photons in final state                                                       
-           if (isMC_GJet || isMC_QCD) {
-             int ng(0); bool gPromptFound=false;
+             bool gPromptFound=false;
              for(size_t ig=0; ig<gen.size(); ig++){
-               int id(abs(gen[ig].pdgId()));
-               if((id==22) && gen[ig].isPromptFinalState()) {
-                 gPromptFound=true; ng++;
-               }
+               if((abs(gen[ig].pdgId())==22) && gen[ig].isPromptFinalState())  gPromptFound=true;               
              }
-             if ( (isMC_GJet) && (!gPromptFound) ) rejectEvent=true;
-             if ( (isMC_QCD) && gPromptFound ) rejectEvent=true;
-           } // end GJet / QCD sample                                                                                               
-           if (rejectEvent) { continue; }
-           //        std::cout << "Reject event in g+jet or QCD sample" << std::endl;                                               
+             if ( (isMC_GJet) && (!gPromptFound) ) continue; //reject event
+             if ( (isMC_QCD) && gPromptFound ) continue; //reject event
          } // only if mctruthmode==22 
 
-         //
-         // DERIVE WEIGHTS TO APPLY TO SAMPLE
-         //
-         //
     
-          //pileup weight
-          float weight = 1.0;
-          float shapeWeight = 1.0;
-          double TotalWeight_plus = 1.0;
-          double TotalWeight_minus = 1.0;
-          float puWeight(1.0);
-
-          if(isMC){          
-	    int ngenITpu = 0;
-            // Temporary hack for nvtx-based pileup
-	    // fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-             // puInfoH.getByLabel(ev, "addPileupInfo");
-             // for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-             //    if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
-             // }
-	     ngenITpu = vtx.size();
-	     
-             puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
-             TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
-             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
-         }
-
-
-         //Higgs specific weights
-         float lShapeWeights[3]={1.0,1.0,1.0};
-         for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
-         if(isMC){
-/*
-           if(isMC_VBF || isMC_GG || mctruthmode==125){
-		   LorentzVector higgs(0,0,0,0);
-		   LorentzVector totLeptons(0,0,0,0);
-		   for(size_t igen=0; igen<gen.size(); igen++){
-		     if(gen[igen].status()!=3) continue;
-		     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
-		     if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
-		   }
-		   if(mctruthmode==125) {
-		     higgs=totLeptons;
-		     if(isMC_125OnShell && higgs.mass()>180) continue;
-		     if(!isMC_125OnShell && higgs.mass()<=180) continue;
-		   }
-
-
-               //Line shape weights 
-               if((isMC_VBF || isMC_GG) && higgs.pt()>0){
-                   std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
-                   for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++)
-                     {
-                       if(nominalShapeWgtGr[iwgt]==0) continue;
-                       lShapeWeights[iwgt]=nominalShapeWgtGr[iwgt]->Eval(higgs.mass());
-                     }
-                 }
-               shapeWeight   = lShapeWeights[0];
-               
-               //control SM line shape
-               mon.fillHisto("higgsMass_raw",    "", higgs.mass(), puWeight);
-               mon.fillHisto("higgsMass_cpspint","", higgs.mass(), puWeight * shapeWeight);
-               
-               //compute weight correction for narrow resonnance
-               for(unsigned int nri=0;nri<NRparams.size();nri++){ 
-                 if(NRparams[nri].first<0) continue;
-                 std::vector<TGraph *> shapeWgtGr = hLineShapeGrVec[NRparams[nri] ];
-                 NRweights[nri] = shapeWgtGr[0]->Eval(higgs.mass()); 
-                 float iweight = puWeight * NRweights[nri];
-                 mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
-               }  
-           }
-*/
-
-          //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
-          fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
-          genEventInfoHandle.getByLabel(ev, "generator");
-          if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
-
-     
-           //final event weight
-           weight = xsecWeight * puWeight * shapeWeight;
-         }
-
          //
          //
          // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
@@ -928,50 +861,22 @@ int main(int argc, char* argv[])
          //
 
          //
-         // photon selection
+         // PHOTON ANALYSIS
          //
- 
-         pat::PhotonCollection selPhotons;
-         if(runPhotonSelection)
-           {
-	     // For PHoton trigger studies , do not apply the PHoton trigger on top of the Analysis:
-	     if (!photonTriggerStudy ) {
-	       if( !hasPhotonTrigger ) continue;
-	     }
-	     mon.fillHisto("npho", "trg", photons.size(), weight);
-	     for(size_t ipho=0; ipho<photons.size(); ipho++) {
-	       mon.fillHisto("phopt", "trg", photons[ipho].pt(), weight);
-	       mon.fillHisto("phoeta", "trg", photons[ipho].eta(), weight);
-	     }
-	     
-             //filter out number of prompt photons to avoid double counting
-            //  int ngenpho(0);
-             // 	  for(size_t igen=0; igen<gen.size(); igen++)
-             // 	    {
-             // 	      if(gen[igen].get("id")!=22 || gen[igen].get("status")!=1) continue;
-             // 	      float lxy=gen[igen].getVal("lxy");
-             // 	      if(lxy>0) continue;
-             // 	      ngenpho++;
-             //  }
-             //if(mctruthmode==111 && ngenpho>0) continue;
-             //if(mctruthmode==22 && ngenpho==0) continue;
+         pat::PhotonCollection selPhotons;	     
+	 mon.fillHisto("npho", "trg", photons.size(), weight);
+         for(size_t ipho=0; ipho<photons.size(); ipho++){
+	    pat::Photon photon = photons[ipho]; 
+ 	    mon.fillHisto("phopt", "trg", photon.pt(), weight);
+	    mon.fillHisto("phoeta", "trg", photon.eta(), weight);
 
-             //select the photons
-             for(size_t ipho=0; ipho<photons.size(); ipho++)
-               {
-		 pat::Photon photon = photons[ipho]; 
-                 double pt=photons[ipho].pt();
-                 double eta=photons[ipho].superCluster()->eta();
-
-                 //if systematics are active loosen the selection to the medium working point
-                 //std::vector<std::pair<std::string, bool> > phid =  photons[ipho].photonIDs() ;   for(size_t PHIDI = 0 ; PHIDI<phid.size(); PHIDI++){ printf("%i   %s  %i\n", (int)PHIDI, phid[PHIDI].first.c_str(), phid[PHIDI].second?1:0);  }  //print available photon ID
-
-                 if(pt<triggerThreshold || fabs(eta)>1.4442 ) continue;
-		 bool passId = patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight);
-		 if(!passId) continue;
-                 selPhotons.push_back(photon);
-               }
-           }
+            if(runPhotonSelection && photon.pt()<triggerThreshold)continue;
+            if(!runPhotonSelection &&  photon.pt()<20)continue;
+            if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
+	    if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
+            selPhotons.push_back(photon);
+         }
+           
 
          //
          // LEPTON ANALYSIS
@@ -1107,31 +1012,6 @@ int main(int argc, char* argv[])
            }
          std::sort(selJets.begin(), selJets.end(), utils::sort_CandidatesByPt);
 
-         //select the taus
-         pat::TauCollection selTaus;
-         int ntaus(0);
-         for(size_t itau=0; itau<taus.size(); ++itau){
-           pat::Tau& tau = taus[itau];
-           if(tau.pt()<20. || fabs(tau.eta()) >2.3) continue;
-           
-           //	bool overlapWithLepton(false);
-           //	for(int l1=0; l1<(int)selLeptons.size();++l1){
-           //	  if(deltaR(tau, selLeptons[l1])<0.1){overlapWithLepton=true; break;}
-           //	}
-           //	if(overlapWithLepton) continue;
-           
-           //	if(!tau.isPFTau()) continue; // Only PFTaus
-           //	if(tau.emFraction() >=2.) continue;
-           
-           if(!tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits"))continue;
-           if(!tau.tauID("againstMuonTight3"))continue; 
-           if(!tau.tauID("againstElectronMediumMVA5"))continue;
-           
-           selTaus.push_back(tau);
-           ntaus++;
-         }
-         std::sort(selTaus.begin(), selTaus.end(), utils::sort_CandidatesByPt);
-         
 
          //
          // ASSIGN CHANNEL
@@ -1139,8 +1019,7 @@ int main(int argc, char* argv[])
          std::vector<TString> chTags;
          int dilId(1);
          LorentzVector boson(0,0,0,0);
-         if(!runPhotonSelection && selLeptons.size()==2)
-           {
+         if(!runPhotonSelection && selLeptons.size()==2){
              for(size_t ilep=0; ilep<2; ilep++)
                {
                  dilId *= selLeptons[ilep].pdgId();
@@ -1152,11 +1031,9 @@ int main(int argc, char* argv[])
              //check the channel
              if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
              if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
-             if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }
-  
-         
-         } else{
-           if(hasPhotonTrigger && selPhotons.size()) {
+             if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }           
+         }else{
+           if(photonTrigger && selPhotons.size()) {
              dilId=22;
              chTags.push_back("ee");
              chTags.push_back("mumu");
@@ -1173,7 +1050,7 @@ int main(int argc, char* argv[])
          }
 
 	 // Photon trigger efficiencies
-	 // Must be run without the hasPhotonTrigger requirement on top of of the Analysis.
+	 // Must be run without the photonTrigger requirement on top of of the Analysis.
 	 if (photonTriggerStudy && runPhotonSelection && selPhotons.size() ) {
 	   TString tag="trigger";
 	   pat::Photon iphoton = selPhotons[0];
@@ -1209,7 +1086,7 @@ int main(int argc, char* argv[])
 
          if(runPhotonSelection)
            {
-             passMass=hasPhotonTrigger;
+             passMass=photonTrigger;
              passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
            }
 
@@ -1248,9 +1125,6 @@ int main(int argc, char* argv[])
            mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
            mon.fillHisto("leadeta",     tags,fabs(selLeptons[0].eta()),weight); 
            mon.fillHisto("trailereta",  tags,fabs(selLeptons[1].eta()),weight); 
-
-           mon.fillHisto("ntaus", tags, ntaus,weight);
-           if(ntaus>0) mon.fillHisto("leadtaupt", tags, selTaus[0].pt(),weight);
          }
   
          mon.fillHisto("zmass", tags,boson.mass(),weight); 
@@ -1588,7 +1462,7 @@ int main(int argc, char* argv[])
              //scan the MET cut and fill the shapes
              for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
                
-               if(zvv.pt()>optim_Cuts1_met[index]){              
+               if(zvv.pt()>optim_Cuts1_met[index]){
                  for(unsigned int nri=0;nri<NRparams.size();nri++){
                    
                    float nrweight=chWeight*NRweights[nri];
@@ -1607,9 +1481,7 @@ int main(int argc, char* argv[])
                    if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
                    if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
                    if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);
-
-                 
+                   if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);                 
 		}
                }
              }

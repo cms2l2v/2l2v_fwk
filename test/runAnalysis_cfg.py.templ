@@ -46,6 +46,7 @@ datapileup_42pb_2015b_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble(0, 0.00
 
 datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary = cms.vdouble( 3.9990225e-05, 0.00064873031, 0.001959521, 0.0054431139, 0.011774899, 0.022367866, 0.038852725, 0.058638999, 0.079758281, 0.094741285, 0.10511208, 0.10750261, 0.10176179, 0.090711159, 0.07544378, 0.060140854, 0.045606629, 0.033391838, 0.023540912, 0.015938326, 0.010077537, 0.0066961409, 0.0040212393, 0.0024971674, 0.0015818356, 0.00084423808, 0.00040878896, 0.00025327142, 0.00013774411, 3.5546866e-05, 4.4433583e-05, 4.4433583e-06, 1.3330075e-05, 0, 0, 4.4433583e-06, 0, 4.4433583e-06, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )
 
+datapileup_official = cms.vdouble( 141899.9,    622421.5,    818662.3,    1253138,    2114164,    4937264,    1.627961e+07,    6.475337e+07,    1.817159e+08,    3.220406e+08,    4.16444e+08,    4.291912e+08,    3.663307e+08,    2.557795e+08,    1.447021e+08,    6.727821e+07,    2.736262e+07,    1.139197e+07,    5668287,    3025054,    1401679,    511811,    146735.4,    35294.85,    8269.747,    2235.301,    721.3224,    258.8397,    97.26937,    36.8714,    13.72746,    4.931709,    1.692407,    0.5518936,    0.1706013,    0.0499358,    0.01383391,    0.003626617,    0.0008996063,    0.0002111484,    4.689276e-05,    9.85392e-06,    1.959294e-06,    3.686198e-07,    6.562482e-08,    1.105342e-08,    1.762478e-09,    2.614969e-10,    4.768003e-11)
 
 from os import path as path
 
@@ -71,8 +72,8 @@ runProcess = cms.PSet(
     tmvaInput = mySignalMVA,
     muscleDir =  cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/'),
     jecDir = cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/25ns/'),
-    datapileup = datapileup_200pb_2015bcd_ll_Preliminary, 
-    datapileupSingleLep = datapileup_42pb_2015C_singlemu_cleanNvtx_PietroPreliminary,
+    datapileup = datapileup_official, 
+    datapileupSingleLep = datapileup_official,
     debug = cms.bool(False),
     lumisToProcess = LumiList.LumiList(filename = theLumiMask).getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),

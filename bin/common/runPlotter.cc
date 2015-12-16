@@ -615,7 +615,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    //TLegend* legA  = new TLegend(0.845,0.2,0.99,0.99, "NDC"); 
    //   TLegend* legA  = new TLegend(0.51,0.93,0.67,0.75, "NDC"); 
    // TLegend* legB  = new TLegend(0.67,0.93,0.83,0.75, "NDC");
-   TLegend *legA = new TLegend(0.30,0.70,0.93,0.96, "NDC");
+   TLegend *legA = new TLegend(0.30,0.74,0.93,0.96, "NDC");
    legA->SetHeader("");
    legA->SetNColumns(3);   
    legA->SetBorderSize(0);
@@ -668,7 +668,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    if(mc   && Maximum<mc  ->GetMaximum()) Maximum=mc  ->GetMaximum()*1.1;
    if(data && Maximum<data->GetMaximum()) Maximum=data->GetMaximum()*1.1;
-   Maximum = noLog?Maximum*1.5:Maximum*2E2;
+   Maximum = noLog?Maximum*1.5:Maximum*2E3;
    Minimum = std::min(SignalMin, std::max(5E-2, Minimum)) * 0.9;  //important when there are negative content
  
    if(stack->GetNhists()<=0){//add a dummy histogram to make sure that we have something to draw
