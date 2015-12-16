@@ -12,9 +12,11 @@ if [[ $# -eq 0 ]]; then
     printf "\n\t%-5s  %-40s\n"  "0"  "completely clean up the directory" 
     printf "\n\t%-5s  %-40s\n"  "1"  "run 'runHZZ2l2vAnalysis' on samples.json" 
     printf "\n\t%-5s  %-40s\n"  "1.1"  "run 'runHZZ2l2vAnalysis' on photon_samples.json" 
+    printf "\n\t%-5s  %-40s\n"  "1.2"  "run 'runHZZ2l2vAnalysis' on photon_samples.json with photon re-weighting"
     printf "\n\t%-5s  %-40s\n"  "2"  "compute integrated luminosity from processed samples" 
+    printf "\n\t%-5s  %-40s\n"  "2.1"  "compute integrated luminosity from processed photon samples" 
     printf "\n\t%-5s  %-40s\n"  "3"  "make plots and combine root files" 
-    printf "\n\t%-5s  %-40s\n"  "3.1"  "make plots for photon_smaples" 
+    printf "\n\t%-5s  %-40s\n"  "3.1"  "make plots for photon_samples" 
 fi
 
 step=$1   #variable that store the analysis step to run
@@ -70,6 +72,18 @@ case $step in
 	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments
 	;;
 
+    1.2) #submit jobs for 2l2v photon jet analysis with photon re-weighting
+	echo "JOB SUBMISSION for Photon + Jet analysis"                                                                                   
+        queue='8nh'                                                                                                                       
+        JSON=$MAINDIR/photon_samples.json                                                                                                 
+        echo "Input: " $JSON                                                                                                              
+        echo "Output: " $RESULTSDIR                                                                                                       
+        if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi                                                                          
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @s
+ue @saveSummaryTree=True @weightsFile=photonWeights_RunD.root @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments                                                                                             
+        ;;                              
+
+
     2)  #extract integrated luminosity of the processed lumi blocks
 	echo "MISSING LUMI WILL APPEAR AS DIFFERENCE LUMI ONLY IN in.json"
 	mergeJSON.py --output=$RESULTSDIR/json_all.json        $RESULTSDIR/Data*.json
@@ -90,6 +104,19 @@ case $step in
 	brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	tail -n 3 $RESULTSDIR/LUMI.txt  
 	;;
+
+    2.1) #extract integrated luminosity of the processed lumi blocks in photon datasets
+	echo "MISSING LUMI WILL APPEAR AS DIFFERENCE LUMI ONLY IN in.json"             
+        mergeJSON.py --output=$RESULTSDIR/json_all.json        $RESULTSDIR/Data*.json  
+	mergeJSON.py --output=$RESULTSDIR/json_in.json  Cert_*.txt                
+	echo "COMPUTE INTEGRATED LUMINOSITY"                                                                                             
+                  
+        export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH                                                      
+        pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time         
+        brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt             
+        tail -n 3 $RESULTSDIR/LUMI.txt                                                                                                    
+        ;; 
+
 
     3)  # make plots and combined root files
         if [ -f $RESULTSDIR/LUMI.txt ]; then
