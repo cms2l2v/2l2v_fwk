@@ -51,11 +51,17 @@ def getFileList(procData,DefaultNFilesPerJob):
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
       listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(procData,'dset','') + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
       IsOnLocalTier=False
+      MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
-         if(localTier != "" and localTier in site and '100.00%' in site):
+         if(localTier==""):continue;
+         MaxFraction = max(MaxFraction, float(site.split()[1].replace('%','')) )
+         if(localTier in site):
+            FractionOnLocal = float(site.split()[1].replace('%',''));
+
+      if(FractionOnLocal == MaxFraction):
             IsOnLocalTier=True            
-            print ("Sample is found to be on the local grid tier (%s): %s") %(localTier, site)
-            break
+            print ("Sample is found to be on the local grid tier %s (%f%%) for %s") %(localTier, FractionOnLocal, getByLabel(procData,'dset',''))
+
       isLocalSample = IsOnLocalTier
 
       if(localTier != "" and not IsOnLocalTier):
