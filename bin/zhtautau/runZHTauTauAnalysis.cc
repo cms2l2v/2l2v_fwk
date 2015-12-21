@@ -60,57 +60,58 @@
 using namespace std;
 
 // Additional functions
-LorentzVector getZCand(std::vector<patUtils::GenericLepton> selLeptons,LorentzVector& leadingLep,LorentzVector& trailerLep,LorentzVector& zlltmp, bool& passBestZmass, 
-		       double& BestMass,int& dilLep1,int& dilLep2, int& dilId,float rho){
+LorentzVector getZCand(std::vector<patUtils::GenericLepton> selLeptons,LorentzVector& leadingLep,LorentzVector& trailerLep, bool& passBestZmass, double& BestMass,int& dilLep1,int& dilLep2, int& dilId,float rho){
+   LorentzVector zlltmp;
+   dilLep1=-1; dilLep2=-1; dilId=-1;
+   BestMass=0;
+   passBestZmass=false;
+   LorentzVector zll(0.,0.,0.,0.);
 
-  dilLep1=-1; dilLep2=-1; dilId=-1;
-  BestMass=0;
-  passBestZmass=false;
-  LorentzVector zll(0.,0.,0.,0.);
-  
-  for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
-    int lid1=selLeptons[l1].pdgId();
-    
-    bool passIso1 = lid1==11?patUtils::passIso(selLeptons[l1].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(selLeptons[l1].mu,  patUtils::llvvMuonIso::Tight);
-    bool passLooseLepton1 = lid1==11?patUtils::passIso(selLeptons[l1].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(selLeptons[l1].mu,  patUtils::llvvMuonIso::Loose);
-      
-    // float relIso1 = utils::cmssw::relIso(selLeptons[l1].lep, rho);
-    // if( relIso1>0.30 ) continue;
-    
-    if(!passIso1) continue;
-    
-    for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
-      // float relIso2 = utils::cmssw::relIso(selLeptons[l2].lep, rho);
-      // if( relIso2>0.30 ) continue;								 //ISO SUBLEADING
-   
-      int lid2=selLeptons[l2].pdgId();
-    
-      bool passIso2 = lid2==11?patUtils::passIso(selLeptons[l2].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(selLeptons[l2].mu,  patUtils::llvvMuonIso::Tight);
-      bool passLooseLepton2 = lid2==11?patUtils::passIso(selLeptons[l2].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(selLeptons[l2].mu,  patUtils::llvvMuonIso::Loose);
+   for(unsigned int l1=0   ;l1<selLeptons.size();l1++){
+      int lid1=selLeptons[l1].pdgId();
+      if(abs(lid1)==15)continue;
 
-      if(!passIso2) continue;
+      bool passIso1 = abs(lid1)==11?patUtils::passIso(selLeptons[l1].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(selLeptons[l1].mu,  patUtils::llvvMuonIso::Tight);
+      bool passLooseLepton1 = abs(lid1)==11?patUtils::passIso(selLeptons[l1].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(selLeptons[l1].mu,  patUtils::llvvMuonIso::Loose);
 
-      if( selLeptons[l1].pt()<20 ) continue; 
-      if( selLeptons[l2].pt()<20 ) continue; 
-      //if( !((selLeptons[l1].pt()>=20 && selLeptons[l2].pt()>=10) || 
-      //			(selLeptons[l1].pt()>=10 && selLeptons[l2].pt()>=20))) continue; //CUT ON PT
-      if(abs(lid1)!=abs(lid2)) continue; 				 //SAME FLAVOUR PAIR
-      if(lid1*lid2>=0) continue;					 //OPPOSITE SIGN
-      if(deltaR(selLeptons[l1].p4(), selLeptons[l2].p4())<0.1) continue;
-      zlltmp = (selLeptons[l1].p4()+selLeptons[l2].p4());
-      if( fabs(zlltmp.mass() - 91.2) < fabs(BestMass-91.2) ){    //BEST MASS [76.2,106.2]
-	dilLep1 = l1; 
-	dilLep2 = l2;
-	zll=selLeptons[l1].p4()+selLeptons[l2].p4();
-	leadingLep=selLeptons[l1].p4();
-	trailerLep=selLeptons[l2].p4();
-	dilId = lid1 * lid2;
-	BestMass=zll.mass();
-	passBestZmass=true;
+      // float relIso1 = utils::cmssw::relIso(selLeptons[l1].lep, rho);
+      // if( relIso1>0.30 ) continue;
+
+      if(!passIso1) continue;
+
+      for(unsigned int l2=l1+1;l2<selLeptons.size();l2++){
+         // float relIso2 = utils::cmssw::relIso(selLeptons[l2].lep, rho);
+         // if( relIso2>0.30 ) continue;								 //ISO SUBLEADING
+
+         int lid2 = selLeptons[l2].pdgId();
+
+         if(abs(lid2)==15)continue;
+         bool passIso2 = abs(lid2)==11?patUtils::passIso(selLeptons[l2].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(selLeptons[l2].mu,  patUtils::llvvMuonIso::Tight);
+         bool passLooseLepton2 = abs(lid2)==11?patUtils::passIso(selLeptons[l2].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(selLeptons[l2].mu,  patUtils::llvvMuonIso::Loose);
+
+         if(!passIso2) continue;
+
+         if( selLeptons[l1].pt()<20 ) continue; 
+         if( selLeptons[l2].pt()<20 ) continue; 
+         //if( !((selLeptons[l1].pt()>=20 && selLeptons[l2].pt()>=10) || 
+         //			(selLeptons[l1].pt()>=10 && selLeptons[l2].pt()>=20))) continue; //CUT ON PT
+         if(abs(lid1)!=abs(lid2)) continue; 				 //SAME FLAVOUR PAIR
+         if(lid1*lid2>=0) continue;					 //OPPOSITE SIGN
+         if(deltaR(selLeptons[l1].p4(), selLeptons[l2].p4())<0.1) continue;
+         zlltmp = (selLeptons[l1].p4()+selLeptons[l2].p4());
+         if( fabs(zlltmp.mass() - 91.2) < fabs(BestMass-91.2) ){    //BEST MASS [76.2,106.2]
+            dilLep1 = l1; 
+            dilLep2 = l2;
+            zll=selLeptons[l1].p4()+selLeptons[l2].p4();
+            leadingLep=selLeptons[l1].p4();
+            trailerLep=selLeptons[l2].p4();
+            dilId = lid1 * lid2;
+            BestMass=zll.mass();
+            passBestZmass=true;
+         }
       }
-    }
-  }
-  return zll;
+   }
+   return zll;
 }
 
 LorentzVector getHiggsCand(std::vector<patUtils::GenericLepton> selLeptons, int dilLep1, int dilLep2, int& higgsCandL1, int& higgsCandL2, int& higgsCandId, int& HiggsShortId, vector<TString>& chTagsMain){
@@ -253,8 +254,8 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 	  int tauIdx = abs(selLeptons[higgsCandL1].pdgId())==15?higgsCandL1:higgsCandL2;
 	  LorentzVector tauT;
 	  tauT = selLeptons[tauIdx].p4();
-	  //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLooseMVA5")/tau.tauID("againstMuonTight2") "<<
-	  //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLooseMVA5")<<"/"<<tau.tauID("againstMuonTight2")<<endl;
+	  //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLooseMVA5")/tau.tauID("againstMuonTight3") "<<
+	  //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLooseMVA5")<<"/"<<tau.tauID("againstMuonTight3")<<endl;
 	  
 	  float relIso1 = patUtils::relIso(lep, rho);
 	  if(requireId){
@@ -264,7 +265,7 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 	    if((relIso1<=isoMuCut.at(1))
 	       && passId
 	       && tau.tauID("againstElectronLooseMVA5")
-	       && tau.tauID("againstMuonTight2")
+	       && tau.tauID("againstMuonTight3")
 	       && tau.tauID(isoHaCut)
 	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
 	      return true;
@@ -272,7 +273,7 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
 		}else{
 	    if((relIso1<=isoMuCut.at(1))
 	       && tau.tauID("againstElectronLooseMVA5")
-	       && tau.tauID("againstMuonTight2")
+	       && tau.tauID("againstMuonTight3")
 	       && tau.tauID(isoHaCut)
 	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
 	      return true;
@@ -675,25 +676,6 @@ int main(int argc, char* argv[])
   TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
   Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
-
-  std::vector<std::vector<double>> optim_Cuts_VBF; 
-  for(double jet2Pt=20    ;jet2Pt<50;jet2Pt+=5) { 
-     for(double jet1Pt=jet2Pt;jet1Pt<50;jet1Pt+=5) {
-        for(double deta=2.0     ;deta<5.0;deta+=0.25) { 
-           for(double mjj=100.0    ;mjj<1000;mjj+=50) {
-              optim_Cuts_VBF.push_back( std::vector<double>{jet1Pt, jet2Pt, deta, mjj} );
-  }}}}
-   
-  TH2F* Hoptim_cuts_VBF  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut_VBF",      ";cut index;variable",       optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 4, 0, 4)) ;
-  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(1, "jet1 p_{T}>");
-  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(2, "jet2 p_{T}>");
-  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(3, "d#eta>");
-  Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(4, "M_{jj}>");
-  for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){ for(unsigned int cut=0;cut<4;cut++){ Hoptim_cuts_VBF    ->Fill(index, float(cut), optim_Cuts_VBF[index][cut]); }  }
-  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-     mon.addHistogram( new TH2F (TString("vbf_shapes")+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 1, 0, 2500) );     
-  }
-
      
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
@@ -743,9 +725,6 @@ int main(int argc, char* argv[])
 
  
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
-
-
-  higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
 
   patUtils::MetFilter metFiler;
   if(!isMC) { 
@@ -1100,38 +1079,25 @@ int main(int argc, char* argv[])
          //
          std::vector<TString> chTags;
 
-	 LorentzVector leadingLep, trailerLep, zll, zlltmp;
+	 LorentzVector leadingLep, trailerLep, zll;
          int dilId(1);
 	 int dilLep1, dilLep2;
 	 double BestMass;
 	 bool passBestZmass;
-	 zll = getZCand(selLeptons,leadingLep,trailerLep,zlltmp,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
+	 zll = getZCand(selLeptons,leadingLep,trailerLep,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
 
 
-         LorentzVector boson(0,0,0,0);
-         if(selLeptons.size()==2)
-           {
-//             for(size_t ilep=0; ilep<2; ilep++)
-//               {
-//                 dilId *= selLeptons[ilep].pdgId();
-//                 int id(abs(selLeptons[ilep].pdgId()));
-//                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
-//                 boson += selLeptons[ilep].p4();
-//               }
-        
+         LorentzVector boson = zll;
+         bool isDileptonCandidate = false;
+         if(dilId!=-1){
              //check the channel
-             if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
-             if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
-             if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }
-  
-         
+             if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ll");   chTags.push_back("ee"); isDileptonCandidate=true; }
+             if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("ll"); chTags.push_back("mumu"); isDileptonCandidate=true; }
          }
 
-         TString evCat=eventCategoryInst.GetCategory(selJets,boson);
          std::vector<TString> tags(1,"all");
          for(size_t ich=0; ich<chTags.size(); ich++){
            tags.push_back( chTags[ich] );
-           tags.push_back( chTags[ich]+evCat );
          }
 
          //////////////////////////
@@ -1153,11 +1119,6 @@ int main(int argc, char* argv[])
 	 if(dilLep2>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep2].pt(), selLeptons[dilLep2].eta(), abs(selLeptons[dilLep2].id),  abs(selLeptons[dilLep2].id) ==11 ? "loose" : "loose" ).first : 1.0;
 	 */	 
 
-	 // std::vector<TString> chTags;
-	 bool isDileptonCandidate = false;
-	 //chTags.push_back("all");
-	 if( abs(dilId)==121 && eeTrigger  ){ chTags.push_back("ee"); isDileptonCandidate=true; }
-	 if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); isDileptonCandidate=true; }
 	 
 	 if(!isDileptonCandidate) continue;
 	 //if(examineThisEvent) cout << "dilepton candidate found" << endl; 
@@ -1175,8 +1136,7 @@ int main(int argc, char* argv[])
 	 LorentzVector higgsCand;
 	 int HiggsShortId, higgsCandId;
 	 
-	 std::vector<TString> chTagsMain=chTags;
-	 higgsCand = getHiggsCand(selLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,chTagsMain);
+	 higgsCand = getHiggsCand(selLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,chTags);
 	 
 	 //check if the pair pass Lepton Veto
 	 bool passLepVetoMain = true;
@@ -1506,20 +1466,6 @@ int main(int argc, char* argv[])
            }        
          }
 
-         //HISTO FOR VBF THRESHOLD OPTIMIZATION
-         for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){          
-             if(selJets.size()<2)continue; //at least 2 selected jets (pT>15)
-             if(selJets[0].pt()<optim_Cuts_VBF[index][0])continue;
-             if(selJets[1].pt()<optim_Cuts_VBF[index][1])continue;
-             float deta=fabs(selJets[0].eta()-selJets[1].eta());
-             if(deta           <optim_Cuts_VBF[index][2])continue;
-             LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
-             if(dijet.mass()   <optim_Cuts_VBF[index][3])continue;
-             for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-                mon.fillHisto(TString("vbf_shapes")+varNames[ivar],tags,index, 1.0, weight);
-             }
-         }
-
 
          //
          // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
@@ -1646,13 +1592,9 @@ int main(int argc, char* argv[])
            bool passPreselection                 (passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
            bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );         
          
-           //re-assign the event category to take migrations into account
-           TString evCat  = eventCategoryInst.GetCategory(tightVarJets,boson);
-           //TString evCat  = eventCategoryInst.GetCategory(selJets,boson);
-           
            for(size_t ich=0; ich<chTags.size(); ich++){
 
-             TString tags_full=chTags[ich]+evCat; 
+             TString tags_full=chTags[ich]; 
              float chWeight(iweight);
 
              //update weight and mass for photons

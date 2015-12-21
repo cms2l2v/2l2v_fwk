@@ -28,7 +28,8 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_12_16
+SUFFIX=_2015_12_17
+#SUFFIX=_debug
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
 JSON=$MAINDIR/samples.json
@@ -66,6 +67,7 @@ case $step in
 	echo "JOB SUBMISSION for Photon + Jet analysis"
 	queue='8nh'
 	JSON=$MAINDIR/photon_samples.json
+        RESULTSDIR=${RESULTSDIR}_11
 	echo "Input: " $JSON
 	echo "Output: " $RESULTSDIR
 	if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
@@ -76,11 +78,11 @@ case $step in
 	echo "JOB SUBMISSION for Photon + Jet analysis"                                                                                   
         queue='8nh'                                                                                                                       
         JSON=$MAINDIR/photon_samples.json                                                                                                 
+        RESULTSDIR=${RESULTSDIR}_12
         echo "Input: " $JSON                                                                                                              
         echo "Output: " $RESULTSDIR                                                                                                       
         if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi                                                                          
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @s
-ue @saveSummaryTree=True @weightsFile=photonWeights_RunD.root @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments                                                                                             
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @weightsFile=photonWeights_RunD.root @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments 
         ;;                              
 
 
@@ -138,12 +140,20 @@ ue @saveSummaryTree=True @weightsFile=photonWeights_RunD.root @runSystematics=Tr
         #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
         ;; 
 
-    3.2)  # make plots and combine root files for photon + jet study
-	JSON=$MAINDIR/photon_samples.json
-	INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+    3.2)  # make plots and combine root files for photon + jet study    
+        JSON=$MAINDIR/photon_samples.json
+        RESULTSDIR=${RESULTSDIR}_11
+        PLOTSDIR=${PLOTSDIR}_11
+        PLOTTER=${PLOTTER}_11
+        if [ -f $RESULTSDIR/LUMI.txt ]; then
+  	   INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+        else
+           INTLUMI=2215.182 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON
+           echo "WARNING: $RESULTSDIR/LUMI.txt file is missing so use fixed integrated luminosity value, this might be different than the dataset you ran on"
+        fi
+
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
 	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --noPlot 
-#	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;; 
 esac
 

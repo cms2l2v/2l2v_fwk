@@ -414,7 +414,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
 
   //event selection
-  TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 9,0,9) );
+  TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 10,0,10) );
   h->GetXaxis()->SetBinLabel(1,"raw");
   h->GetXaxis()->SetBinLabel(2,"#geq 2 iso leptons");
   h->GetXaxis()->SetBinLabel(3,"|M-91|<15");
@@ -444,6 +444,7 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(#gamma,MET);Events", 40, 0, 4) );
   
   //lepton control
+  mon.addHistogram( new TH1F( "nleptons",   ";Nleptons;Events",10,0,10) );
   mon.addHistogram( new TH1F( "leadpt",     ";Transverse momentum [GeV];Events", 50,0,500) );
   mon.addHistogram( new TH1F( "leadeta",    ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram( new TH1F( "trailerpt",  ";Transverse momentum [GeV];Events", 50,0,500) );
@@ -569,7 +570,7 @@ int main(int argc, char* argv[])
   //##############################################
   //MC normalization (to 1/pb)
   double xsecWeight = 1.0;
-  if(isMC) xsecWeight=xsec/utils::getTotalNumberOfEvents(urls, false);//need to use the slow method in order to take NLO negative events into account
+  if(isMC) xsecWeight=xsec/utils::getTotalNumberOfEvents(urls, false, true);//need to use the slow method in order to take NLO negative events into account
 
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
@@ -653,6 +654,7 @@ int main(int argc, char* argv[])
          //Skip bad lumi
          if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
 
+
          //WEIGHT for Pileup
          if(isMC){          
 	     int ngenITpu = 0;
@@ -715,7 +717,7 @@ int main(int argc, char* argv[])
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
           genEventInfoHandle.getByLabel(ev, "generator");
-          if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
+          if(genEventInfoHandle.isValid()){ shapeWeight*=genEventInfoHandle->weight(); } // if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
      
            //final event weight
            weight *= shapeWeight;
@@ -738,9 +740,13 @@ int main(int argc, char* argv[])
           if(isSingleMuPD)       { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
           if(filterOnlyEMU)      { eeTrigger=false;   mumuTrigger=false; }
           if(runPhotonSelection) { eeTrigger=false;   mumuTrigger=false; emuTrigger=false;}
-	 
-          if(!(eeTrigger || mumuTrigger || emuTrigger || photonTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-	  if(runPhotonSelection && !photonTriggerStudy && !photonTrigger)continue;
+	
+          //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
+          if(!runPhotonSelection){
+             if(!(eeTrigger || mumuTrigger || emuTrigger))continue;
+          }else{
+	     if(!photonTriggerStudy && !photonTrigger)continue;
+          }
   
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
           if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;	  
@@ -898,8 +904,7 @@ int main(int argc, char* argv[])
              int lid=leptons[ilep].pdgId();
 
              //apply muon corrections
-             if(abs(lid)==13)
-               {
+             if(abs(lid)==13){
                  passSoftMuon=false;
                  if(muCor){
                    TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
@@ -917,8 +922,9 @@ int main(int argc, char* argv[])
 
              //veto nearby photon (loose electrons are many times photons...)
              double minDRlg(9999.);
-             for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+             for(size_t ipho=0; ipho<selPhotons.size(); ipho++){
                minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
+             }
              if(minDRlg<0.1) continue;
 
              //kinematics
@@ -937,13 +943,13 @@ int main(int argc, char* argv[])
              if(leptons[ilep].pt()<20) passKin=false;
 
              //Cut based identification
-         passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+             passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
              passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
-         passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft);
+             passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft);
 
              //isolation
-         passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
-         passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
+             passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
+             passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
 
              if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]); 
              else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
@@ -1048,6 +1054,9 @@ int main(int argc, char* argv[])
            tags.push_back( chTags[ich] );
            tags.push_back( chTags[ich]+evCat );
          }
+
+         mon.fillHisto("nleptons",tags,selLeptons.size(), weight);
+
 
 	 // Photon trigger efficiencies
 	 // Must be run without the photonTrigger requirement on top of of the Analysis.
