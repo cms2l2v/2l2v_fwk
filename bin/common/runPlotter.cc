@@ -684,7 +684,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    //draw the stack which will serve as frame
    stack->Draw("");
    stack->SetTitle("");
-   stack->GetXaxis()->SetLabelFont(42);
+   stack->GetXaxis()->SetTitle(((TH1*)stack->GetStack()->At(0))->GetXaxis()->GetTitle());
+   stack->GetYaxis()->SetTitle(((TH1*)stack->GetStack()->At(0))->GetYaxis()->GetTitle()); 
    stack->GetXaxis()->SetLabelOffset(0.007);
    stack->GetXaxis()->SetLabelSize(0.03);
    stack->GetXaxis()->SetTitleOffset(1.0);
