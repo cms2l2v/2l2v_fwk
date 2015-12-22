@@ -1,4 +1,7 @@
-g":"data",
+{
+  "proc":[
+    {
+      "tag":"data",
       "isdata":true,
       "color":1,
       "fill":0,
@@ -231,3 +234,4 @@ g":"data",
     }
   ]
 }
+
