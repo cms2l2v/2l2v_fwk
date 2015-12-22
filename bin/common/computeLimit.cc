@@ -1672,9 +1672,10 @@ void initializeTGraph(){
                  }
 //                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.44; alphaUsed_err=0.03;}
 //                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.71; alphaUsed_err=0.04;}
-                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.47; alphaUsed_err=0.03;} //25/01/2014
-                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.61; alphaUsed_err=0.04;}
-
+//                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.47; alphaUsed_err=0.03;} //25/01/2014
+//                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.61; alphaUsed_err=0.04;}
+                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.35; alphaUsed_err=0.02;} //08/12/2015
+                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.72; alphaUsed_err=0.04;}
 
                  double valDD, valDD_err;
                  double valMC, valMC_err;

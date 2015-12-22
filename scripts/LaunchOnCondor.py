@@ -341,7 +341,7 @@ def AddJobToCmdFile():
 	        cmd_file.write('Executable              = %s\n'     % os.path.relpath(Path_Shell) )
         	cmd_file.write('output                  = %s.out\n' % os.path.relpath(Path_Log) )
 	        cmd_file.write('error                   = %s.err\n' % os.path.relpath(Path_Log) )
-                cmd_file.write('log                     = /dev/null\n') 
+                cmd_file.write('log                     = %s.log\n' % os.path.relpath(Path_Log) ) 
 	        cmd_file.write('Queue 1\n')
         cmd_file.close()
 

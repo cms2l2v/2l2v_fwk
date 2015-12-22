@@ -28,6 +28,8 @@
 
   <bin name="runPhoJetAnalysis"           file="hzz2l2v/runPhoJetAnalysis.cc"></bin>
   <bin name="runHZZ2l2vAnalysis"          file="hzz2l2v/runHZZ2l2vAnalysis.cc"></bin>
+  <bin name="runZHTauTauAnalysis"         file="zhtautau/runZHTauTauAnalysis.cc"></bin>
+
 </environment>
 
 <flags CXXFLAGS="-g -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable  -Os"/>

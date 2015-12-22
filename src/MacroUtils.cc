@@ -483,9 +483,9 @@ namespace utils
 	}
 
 
-  int getTotalNumberOfEvents(std::vector<std::string>& urls, bool fast)
+  double getTotalNumberOfEvents(std::vector<std::string>& urls, bool fast, bool weightSum)
   {
-    int toReturn = 0;
+    double toReturn = 0;
     for(unsigned int f=0;f<urls.size();f++){
        TFile* file = TFile::Open(urls[f].c_str() );
        fwlite::Event ev(file);
@@ -494,7 +494,10 @@ namespace utils
              fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
              genEventInfoHandle.getByLabel(ev, "generator");
              if(!genEventInfoHandle.isValid()){fast=true; break;} //if this object is missing, it's likely missing for the entire sample, move to the fast method
-             if(genEventInfoHandle->weight()<0){toReturn--;}else{toReturn++;}
+             if(weightSum){toReturn+=genEventInfoHandle->weight();
+             }else{                 
+               if(genEventInfoHandle->weight()<0){toReturn--;}else{toReturn++;}
+             }
           }
        }
 
@@ -516,11 +519,11 @@ namespace utils
        fwlite::Event ev(file);
        for(ev.toBegin(); !ev.atEnd(); ++ev){
           fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-          puInfoH.getByLabel(ev, "addPileupInfo");
+          puInfoH.getByLabel(ev, "slimmedAddPileupInfo");
           if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
           unsigned int ngenITpu = 0;
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-             if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
+             if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); }
           }
           if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
           mcpileup[ngenITpu]++;

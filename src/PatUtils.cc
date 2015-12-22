@@ -294,12 +294,48 @@ namespace patUtils
     return false; 
   }
 
+  float relIso(patUtils::GenericLepton& lep, double rho){
+    
+    int lid=lep.pdgId();
+    float relIso = 0.0; 
+      
+    if(lid==13){
+
+      float  chIso   = lep.mu.pfIsolationR04().sumChargedHadronPt;
+      float  nhIso   = lep.mu.pfIsolationR04().sumNeutralHadronEt;
+      float  gIso    = lep.mu.pfIsolationR04().sumPhotonEt;
+      float  puchIso = lep.mu.pfIsolationR04().sumPUPt;
+      
+      relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.mu.pt();
+      
+    } else if (lid==11){ 
+      
+      //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
+      float  chIso   = lep.el.pfIsolationVariables().sumChargedHadronPt;
+      float  nhIso   = lep.el.pfIsolationVariables().sumNeutralHadronEt;
+      float  gIso    = lep.el.pfIsolationVariables().sumPhotonEt;
+        
+      if (rho == 0) {
+	float  puchIso = lep.el.pfIsolationVariables().sumPUPt; 
+	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.el.pt();
+      }
+      else {
+	float effArea = utils::cmssw::getEffectiveArea(11,lep.el.superCluster()->eta(),3);
+	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / lep.el.pt();
+      }
+      
+    }
+    
+    return relIso;
+
+  }
+
+
   bool passIso (VersionedPatElectronSelector id, pat::Electron& el){
     // This assumes an object to be created ( *before the event loop* ):
     // VersionedPatElectronSelector loose_id("some_VID_tag_including_the_WP");
     return true; // Isolation is now embedded into the ID.
   }
-
   
   bool passIso(pat::Electron& el, int IsoLevel, double rho){
          //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
@@ -350,31 +386,31 @@ namespace patUtils
           }
           return false;  
    }
-
-   bool passIso(pat::Muon& mu, int IsoLevel){
-          //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
-          float  chIso   = mu.pfIsolationR04().sumChargedHadronPt;
-          float  nhIso   = mu.pfIsolationR04().sumNeutralHadronEt;
-          float  gIso    = mu.pfIsolationR04().sumPhotonEt;
-          float  puchIso = mu.pfIsolationR04().sumPUPt;
-          float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
-
-          switch(IsoLevel){
+  
+  bool passIso(pat::Muon& mu, int IsoLevel){
+    //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
+    float  chIso   = mu.pfIsolationR04().sumChargedHadronPt;
+    float  nhIso   = mu.pfIsolationR04().sumNeutralHadronEt;
+    float  gIso    = mu.pfIsolationR04().sumPhotonEt;
+    float  puchIso = mu.pfIsolationR04().sumPUPt;
+    float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
+    
+    switch(IsoLevel){
                case llvvMuonIso::Loose : 
-                  if( relIso < 0.20 ) return true;
-                  break;
-
-               case llvvMuonIso::Tight :
-                  if( relIso < 0.12 ) return true;
-                  break;
-
-               default:
+		 if( relIso < 0.20 ) return true;
+		 break;
+		 
+    case llvvMuonIso::Tight :
+      if( relIso < 0.12 ) return true;
+      break;
+      
+    default:
                   printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
                   return false;
                   break;
-          }
-          return false;          
-   }
+    }
+    return false;          
+  }
 
   bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold,
 			 float &triggerPrescale ){
@@ -652,7 +688,7 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){
     if(summaryHandle.isValid()) summary=*summaryHandle;
     bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
-    if(failCommon || summary.HasBadRBXTS4TS5()) return false;
+    if((failCommon || summary.HasBadRBXTS4TS5())) return false;
     
      return true;
    }

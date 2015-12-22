@@ -51,11 +51,17 @@ def getFileList(procData,DefaultNFilesPerJob):
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
       listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(procData,'dset','') + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
       IsOnLocalTier=False
+      MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
-         if(localTier != "" and localTier in site and '100.00%' in site):
+         if(localTier==""):continue;
+         MaxFraction = max(MaxFraction, float(site.split()[1].replace('%','')) )
+         if(localTier in site):
+            FractionOnLocal = float(site.split()[1].replace('%',''));
+
+      if(FractionOnLocal == MaxFraction):
             IsOnLocalTier=True            
-            print ("Sample is found to be on the local grid tier (%s): %s") %(localTier, site)
-            break
+            print ("Sample is found to be on the local grid tier %s (%f%%) for %s") %(localTier, FractionOnLocal, getByLabel(procData,'dset',''))
+
       isLocalSample = IsOnLocalTier
 
       if(localTier != "" and not IsOnLocalTier):
@@ -90,7 +96,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
          list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
 
-      list = storeTools.keepOnlyFilesFromGoodRun(list, getByLabel(procData,'lumiMask',''))       
+      list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
       if(split>0):
          NFilesPerJob = max(1,len(list)/split)
@@ -126,7 +132,7 @@ parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='ba
 parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, action="store_true")
 parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'  , default=DatasetFileDB)
 parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'             , default=False, action="store_true")
-parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)', default=5)
+parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)', default=3)
 parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally', default=8)
 parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'  , default='')
 
@@ -205,7 +211,7 @@ for procBlock in procList :
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                    sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
                    sedcmd += 's%@suffix%' +suffix+'%;'
-                   sedcmd += 's%@lumiMask%"' + getByLabel(procData,'lumiMask','')+'"%;'
+                   sedcmd += 's%@lumiMask%"' + os.path.expandvars(getByLabel(procData,'lumiMask',''))+'"%;'
               	   if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
                    if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
                    if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
