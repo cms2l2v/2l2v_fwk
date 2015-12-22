@@ -227,7 +227,7 @@ int main(int argc, char* argv[])
  
   //ELECTROWEAK CORRECTION WEIGHTS
 	std::vector<std::vector<float>> ewkTable;
-  if(isMC_ZZ || isMC_WZ) ewkTable = EwkCorrections::readFile_and_loadEwkTable(urls[0].c_str());
+  if(isMC_ZZ) ewkTable = EwkCorrections::readFile_and_loadEwkTable(urls[0].c_str());
 
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
@@ -552,21 +552,21 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F(  "numberemuTrigger",   "Number of event passing the emu Trigger",  2, 0, 2) );
 
   //Electroweak corrections debug
-  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 100000, 0, -1000000, 13000, 0, 13000) );
-  mon.addHistogram( new TH2F(	"k_vs_s",	";#hat{s};k", 13000, 0, 13000, 200, 0, 2) );
-  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 100000, 0, -1000000, 200, 0, 2) );
+  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 1000, 0, -100000, 320, 0, 1600) );
+  mon.addHistogram( new TH2F(	"k_vs_s",	";#sqrt{#hat{s}};k", 1000, 0, 1000, 600, 0.5, 1.1) );
+  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 1000, 0, -100000, 600, 0.5, 1.1) );
+
+  mon.addHistogram( new TH1F(	"Nevent_vs_ZpT",	";p_{T}^{Z}; Events", 200, 0, 400) );
+  mon.addHistogram( new TH1F(	"Nevent_vs_Mzz",	";M_{ZZ}; Events", 500, 0, 1000) );
   
-  mon.addHistogram( new TH1F(	"Nevent_vs_ZpT",	";p_{T}^{Z}; Events", 450, 0, 450) );
-  mon.addHistogram( new TH1F(	"Nevent_vs_Mzz",	";M_{ZZ}; Events", 1200, 0, 1200) );
-  
-  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 14,0,14) );
+  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 13,0,13) );
   h_quarkType->GetXaxis()->SetBinLabel(1,"q#bar{q}");
   h_quarkType->GetXaxis()->SetBinLabel(2,"u#bar{u}");
   h_quarkType->GetXaxis()->SetBinLabel(3,"c#bar{c}");
   h_quarkType->GetXaxis()->SetBinLabel(4,"d#bar{d}");
   h_quarkType->GetXaxis()->SetBinLabel(5,"s#bar{s}");
   h_quarkType->GetXaxis()->SetBinLabel(6,"b#bar{b}");
-  h_quarkType->GetXaxis()->SetBinLabel(7,"gg");
+  h_quarkType->GetXaxis()->SetBinLabel(7,"qg");
   h_quarkType->GetXaxis()->SetBinLabel(8,"ug");
   h_quarkType->GetXaxis()->SetBinLabel(9,"cg");
   h_quarkType->GetXaxis()->SetBinLabel(10,"dg");
@@ -960,7 +960,7 @@ int main(int argc, char* argv[])
 
 					//Electroweak corrections to ZZ and WZ(soon) simulations
 					double ewkCorrectionsWeight = 1.;
-					if(isMC_ZZ || isMC_WZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo, mon);
+					if(isMC_ZZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo, mon);
      
            //final event weight
            weight = xsecWeight * puWeight * shapeWeight * ewkCorrectionsWeight;
