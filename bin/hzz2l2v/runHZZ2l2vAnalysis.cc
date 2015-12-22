@@ -521,11 +521,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events",100,0,500) );
 
-  //Debug Plots Alessio
-  mon.addHistogram( new TH1F(   "numbereeTrigger",    "Number of event passing the ee Trigger",  2, 0, 2) );
-  mon.addHistogram( new TH1F( "numbermumuTrigger",  "Number of event passing the mumu Trigger",  2, 0, 2) );
-  mon.addHistogram( new TH1F(  "numberemuTrigger",   "Number of event passing the emu Trigger",  2, 0, 2) );
-
   //Electroweak corrections debug
   mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 1000, 0, -100000, 320, 0, 1600) );
   mon.addHistogram( new TH2F(	"k_vs_s",	";#sqrt{#hat{s}};k", 1000, 0, 1000, 600, 0.5, 1.1) );
@@ -897,76 +892,6 @@ int main(int argc, char* argv[])
              if ( (isMC_GJet) && (!gPromptFound) ) continue; //reject event
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
          } // only if mctruthmode==22 
-
-    
-          //pileup weight
-          float weight = 1.0;
-          float shapeWeight = 1.0;
-          double TotalWeight_plus = 1.0;
-          double TotalWeight_minus = 1.0;
-          float puWeight(1.0);
-
-          if(isMC){          
-	    int ngenITpu = 0;
-            // Temporary hack for nvtx-based pileup
-	    // fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
-             // puInfoH.getByLabel(ev, "addPileupInfo");
-             // for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-             //    if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
-             // }
-	     ngenITpu = vtx.size();
-	     
-             puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
-             TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
-             TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
-         }
-
-
-         //Higgs specific weights
-         float lShapeWeights[3]={1.0,1.0,1.0};
-         for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
-         if(isMC){
-/*
-           if(isMC_VBF || isMC_GG || mctruthmode==125){
-		   LorentzVector higgs(0,0,0,0);
-		   LorentzVector totLeptons(0,0,0,0);
-		   for(size_t igen=0; igen<gen.size(); igen++){
-		     if(gen[igen].status()!=3) continue;
-		     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
-		     if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
-		   }
-		   if(mctruthmode==125) {
-		     higgs=totLeptons;
-		     if(isMC_125OnShell && higgs.mass()>180) continue;
-		     if(!isMC_125OnShell && higgs.mass()<=180) continue;
-		   }
-
-
-               //Line shape weights 
-               if((isMC_VBF || isMC_GG) && higgs.pt()>0){
-                   std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
-                   for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++)
-                     {
-                       if(nominalShapeWgtGr[iwgt]==0) continue;
-                       lShapeWeights[iwgt]=nominalShapeWgtGr[iwgt]->Eval(higgs.mass());
-                     }
-                 }
-               shapeWeight   = lShapeWeights[0];
-               
-               //control SM line shape
-               mon.fillHisto("higgsMass_raw",    "", higgs.mass(), puWeight);
-               mon.fillHisto("higgsMass_cpspint","", higgs.mass(), puWeight * shapeWeight);
-               
-               //compute weight correction for narrow resonnance
-               for(unsigned int nri=0;nri<NRparams.size();nri++){ 
-                 if(NRparams[nri].first<0) continue;
-                 std::vector<TGraph *> shapeWgtGr = hLineShapeGrVec[NRparams[nri] ];
-                 NRweights[nri] = shapeWgtGr[0]->Eval(higgs.mass()); 
-                 float iweight = puWeight * NRweights[nri];
-                 mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
-               }  
-           }
-*/
 
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
