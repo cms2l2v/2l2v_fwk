@@ -1,18 +1,16 @@
 {
-//Superimposes model with and without EW corrections ; TProfiles for EWK corrections as a function of mZZ ans ptZ.
-cout<<"test1"<<endl;
-TFile f1("./plotter.root");
-f1.cd("ZZ#rightarrow 2l2#nu");
-cout<<"test2"<<endl;
+gROOT->SetBatch();
+
+TFile f_in("../plotter.root","READ");
+f_in.cd("ZZ#rightarrow 2l2#nu");
 
 TH1F* LO_MZZ = (TH1F*) gDirectory->Get("LO_Nevent_vs_Mzz");
-cout<<"test3"<<endl;
 TH1F* NLO_MZZ = (TH1F*) gDirectory->Get("NLO_Nevent_vs_Mzz");
-cout<<"test4"<<endl;
 TH1F* LO_PTZ = (TH1F*) gDirectory->Get("ll_LO_Nevent_vs_ZpT");
-cout<<"test5"<<endl;
 TH1F* NLO_PTZ = (TH1F*) gDirectory->Get("ll_NLO_Nevent_vs_ZpT");
-cout<<"test6"<<endl;
+
+LO_MZZ->SetStats(kFALSE);
+LO_PTZ->SetStats(kFALSE);
 
 LO_MZZ->Rebin(10);
 NLO_MZZ->Rebin(10);
@@ -24,11 +22,6 @@ gStyle->SetOptStat(0);
 can->Divide(2);
 can->cd(1);
 gPad->SetLogy();
-
-for(int i =1 ; i < LO_MZZ->GetNbinsX()+1 ; i++){
-if (NLO_MZZ->GetBinContent(i) > LO_MZZ->GetBinContent(i)) cout << "Problem at bin " << i << endl;
-if(i==LO_MZZ->GetNbinsX())cout << "Total size : " << i << endl;
-}
 
 TGraphAsymmErrors *Corr_MZZ = new TGraphAsymmErrors(1);
 Corr_MZZ->Divide(NLO_MZZ, LO_MZZ);
@@ -60,9 +53,9 @@ Corr_MZZ->GetYaxis()->SetTitle("K");
 
 Corr_MZZ->Draw();
 
-can->SaveAs("EwkCorrectionsPlots/mZZ_EWK.root");
-can->SaveAs("EwkCorrectionsPlots/mZZ_EWK.png");
-can->SaveAs("EwkCorrectionsPlots/mZZ_EWK.pdf");
+can->SaveAs("ewkCorrections_plots/mZZ_EWK.root");
+can->SaveAs("ewkCorrections_plots/mZZ_EWK.png");
+can->SaveAs("ewkCorrections_plots/mZZ_EWK.pdf");
 
 
 TCanvas* can2 = new TCanvas("can2","EWK for ptZ",1600,950);
@@ -71,12 +64,6 @@ gStyle->SetOptStat(0);
 can2->Divide(2);
 can2->cd(1);
 gPad->SetLogy();
-
-
-for(int i =1 ; i < LO_PTZ->GetNbinsX()+1 ; i++){
-if (NLO_PTZ->GetBinContent(i) > LO_PTZ->GetBinContent(i)) cout << "Problem at bin " << i << endl;
-if(i==LO_PTZ->GetNbinsX())cout << "Total size : " << i << endl;
-}
 
 TGraphAsymmErrors *Corr_PTZ = new TGraphAsymmErrors(1);
 Corr_PTZ->Divide(NLO_PTZ, LO_PTZ);
@@ -101,8 +88,16 @@ Corr_PTZ->GetYaxis()->SetTitle("K");
 
 Corr_PTZ->Draw();
 
-can2->SaveAs("EwkCorrectionsPlots/pTZ_EWK.root");
-can2->SaveAs("EwkCorrectionsPlots/pTZ_EWK.png");
-can2->SaveAs("EwkCorrectionsPlots/pTZ_EWK.pdf");
+can2->SaveAs("ewkCorrections_plots/pTZ_EWK.root");
+can2->SaveAs("ewkCorrections_plots/pTZ_EWK.png");
+can2->SaveAs("ewkCorrections_plots/pTZ_EWK.pdf");
 
+TFile f_out("results.root","RECREATE");
+f_out.cd();
+can->Write();
+can2->Write();
+
+f_in.Close();
+f_out.Close();
+exit(0);
 }

@@ -41,6 +41,7 @@
 #include "TMath.h"
 #include "TGraph.h"
 #include <Math/VectorUtil.h>
+#include <stdlib.h>
 
 namespace EwkCorrections
 {
