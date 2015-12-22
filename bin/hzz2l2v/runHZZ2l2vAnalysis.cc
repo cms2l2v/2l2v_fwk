@@ -743,8 +743,10 @@ int main(int argc, char* argv[])
           // }
 
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
+          GenEventInfoProduct eventInfo;
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
           genEventInfoHandle.getByLabel(ev, "generator");
+          if(eventInfoHandle.isValid()){ eventInfo = *eventInfoHandle;}
           if(genEventInfoHandle.isValid()){ shapeWeight*=genEventInfoHandle->weight(); } // if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
      
            //final event weight
@@ -781,11 +783,6 @@ int main(int argc, char* argv[])
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access
-          GenEventInfoProduct eventInfo;
-          fwlite::Handle< GenEventInfoProduct > eventInfoHandle; 
-          eventInfoHandle.getByLabel(ev, "generator");
-          if(eventInfoHandle.isValid()){ eventInfo = *eventInfoHandle;}
-          
           
           reco::VertexCollection vtx;
           fwlite::Handle< reco::VertexCollection > vtxHandle; 
@@ -893,18 +890,12 @@ int main(int argc, char* argv[])
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
          } // only if mctruthmode==22 
 
-          //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
-          fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
-          genEventInfoHandle.getByLabel(ev, "generator");
-          if(genEventInfoHandle.isValid()){ if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
-
-
 					//Electroweak corrections to ZZ and WZ(soon) simulations
 					double ewkCorrectionsWeight = 1.;
 					if(isMC_ZZ) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo, mon);
      
            //final event weight
-           weight = xsecWeight * puWeight * shapeWeight * ewkCorrectionsWeight;
+           weight *= ewkCorrectionsWeight;
          }
 
          //
