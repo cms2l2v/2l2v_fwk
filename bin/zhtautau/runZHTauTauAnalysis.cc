@@ -796,9 +796,7 @@ int main(int argc, char* argv[])
           if(!(eeTrigger || mumuTrigger || emuTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
    
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
-          if( !isMC ){
-             if( !metFiler.passMetFilter( ev, isPromptReco )) continue;
-	  }
+          if( !metFiler.passMetFilter( ev, isPromptReco )) continue;
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
           //load all the objects we will need to access

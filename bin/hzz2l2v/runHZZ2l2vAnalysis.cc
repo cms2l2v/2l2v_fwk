@@ -413,6 +413,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "wdecays",     ";W decay channel",5,0,5) );
   mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
 
+  mon.addHistogram( new TH1F( "weight_eventflow",     ";weightEventflow",6,0,6) );
+  mon.addHistogram( new TH1F( "met_eventflow",     ";metEventflow",15,0,15) );
+
   //event selection
   TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 10,0,10) );
   h->GetXaxis()->SetBinLabel(1,"raw");
@@ -651,8 +654,10 @@ int main(int argc, char* argv[])
          //##############################################   EVENT LOOP STARTS   ##############################################
          //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
 
+         mon.fillHisto("weight_eventflow","debug", 1, weight);         
+
          //Skip bad lumi
-         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
+         if(!isMC && !goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
 
 
          //WEIGHT for Pileup
@@ -668,6 +673,8 @@ int main(int argc, char* argv[])
              TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
              weight *= puWeight;
          }
+
+         mon.fillHisto("weight_eventflow","debug", 2, weight);
 
 
          //WEIGHT for LineShape and NLO generators
@@ -723,7 +730,7 @@ int main(int argc, char* argv[])
            weight *= shapeWeight;
          }
 
-
+         mon.fillHisto("weight_eventflow","debug", 3, weight);
 
           //apply trigger and require compatibilitiy of the event with the PD
           edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
@@ -748,9 +755,17 @@ int main(int argc, char* argv[])
 	     if(!photonTriggerStudy && !photonTrigger)continue;
           }
   
-          //##############################################   EVENT PASSED THE TRIGGER   #######################################
-          if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;	  
+         mon.fillHisto("weight_eventflow","debug", 4, weight);
+
+
+          //##############################################   EVENT PASSED THE TRIGGER   ######################################
+          int metFilterValue = metFiler.passMetFilterInt( ev, isPromptReco );
+          mon.fillHisto("met_eventflow", "debug", metFilterValue, weight);
+          if( metFilterValue!=0 ) continue;	 //Note this must also be applied on MC
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
+
+         mon.fillHisto("weight_eventflow","debug", 5, weight);
+
 
           //load all the objects we will need to access
           reco::VertexCollection vtx;
