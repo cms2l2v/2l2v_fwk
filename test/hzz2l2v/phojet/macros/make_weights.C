@@ -225,17 +225,17 @@ TPad *getaPad_dn(TString name){
 
 }
 
-TGraphAsymmErrors* drawEff(TString hname1, TString hname2, TString filename, TString header, TString xtitle, int rebin, bool asymBin, float xlow, float xhigh, float xmin, float xmax, int icol, int imark, TString draw, double mup){//,double y, double c) {
+TGraphAsymmErrors* drawEff(TString hname1, TString hname2, TString filename, TString nameDir, TString header, TString xtitle, int rebin, bool asymBin, float xlow, float xhigh, float xmin, float xmax, int icol, int imark, TString draw, double mup){//,double y, double c) {
 
-  TH1D *ref = readHist(hname1, filename, rebin);
-  TH1D *sel = readHist(hname2, filename, rebin);
+  TH1D *ref = readHist(hname1, filename, nameDir, rebin);
+  TH1D *sel = readHist(hname2, filename, nameDir, rebin);
 
   ref->SetName(hname1+header);
   sel->SetName(hname2+header);
 
   TGraphAsymmErrors *Eff = new TGraphAsymmErrors();
   if (asymBin) {
-    Double_t xbins[14]={0.,4.,6.,8.,10.,12.,14.,18.
+    Double_t xbins[14]={0.,4.,6.,8.,10.,12.,14.,18.,
 		      22.,28.,34.,42.,52.,100.};
 
     sel->Rebin(14,"nsel",xbins);
