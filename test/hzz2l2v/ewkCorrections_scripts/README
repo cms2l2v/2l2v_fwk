@@ -1,5 +1,0 @@
-Script "profiles_draw.cc" produces combined plots for study of electroweak corrections from the "plotter.root" produced by submit.sh 2. To run it, simply execute it in ROOT :
-
-root -l profiles_draw.cc
-
-Plots are produced in the ewkCorrections_plots directory. Canvases are also saved in results.root.
