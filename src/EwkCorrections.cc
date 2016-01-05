@@ -3,7 +3,7 @@
 namespace EwkCorrections
 {
 	//Read correction table
-	std::vector<std::vector<float>> readFile_and_loadEwkTable(TString url){
+	std::vector<std::vector<float>> readFile_and_loadEwkTable(TString dtag){
 		ifstream myReadFile;
 		std::vector<float> Table_line;
 		std::vector<std::vector<float>> Table_EWK;
@@ -12,7 +12,7 @@ namespace EwkCorrections
 		cmssw_path = getenv("CMSSW_BASE");
 		TString path = cmssw_path+"/src/UserCode/llvv_fwk/src/";
 		
-		if(url.Contains("ZZ")) name = path+"EwkCorrections/ZZ_EwkCorrections.dat";
+		if(dtag.Contains("ZZ")) name = path+"EwkCorrections/ZZ_EwkCorrections.dat";
 		myReadFile.open(name);
 		if(!myReadFile.is_open()) cout<<"WARNING: "+name+" NOT FOUND"<<endl;
 		int Start=0;
@@ -68,7 +68,7 @@ namespace EwkCorrections
 
 
 	//The main function, will return the kfactor
-	double getEwkCorrections(TString url, reco::GenParticleCollection genParticles, std::vector<std::vector<float>> Table, GenEventInfoProduct eventInfo, SmartSelectionMonitor& mon){
+	double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double ewkCorrections_error){
 		double kFactor = 1.;
 
 		reco::GenParticleCollection genIncomingQuarks;
@@ -94,8 +94,6 @@ namespace EwkCorrections
 		if( genLeptons.size() < 2 || genNeutrinos.size() < 2) return 1; //no corrections can be applied if we don't find our two Z's
 		double x1 = eventInfo.pdf()->x.first; 
 		double x2 = eventInfo.pdf()->x.second; 
-		int id1=0;
-		int id2=0;
 
 		LorentzVector Z1 = genLeptons[0].p4() + genLeptons[1].p4(); //First Z : charged leptons
 		LorentzVector Z2 = genNeutrinos[0].p4() + genNeutrinos[1].p4(); //Second Z : neutrinos
@@ -142,92 +140,9 @@ namespace EwkCorrections
 
 		if(sqrt(s_hat)< 2*m_z) kFactor = 1.; //Off-shell cases, not corrected to avoid non-defined values for t.
 
-  		//Fill control histograms
-		if(sqrt(s_hat) > 2*m_z){
-			mon.fillHisto("Nevent_vs_ZpT", "ll_LO", Z1.Pt(), 1.);
-			mon.fillHisto("Nevent_vs_ZpT", "ll_NLO", Z1.Pt(), kFactor);
-			mon.fillHisto("Nevent_vs_ZpT", "vv_LO", Z2.Pt(), 1.);
-			mon.fillHisto("Nevent_vs_ZpT", "vv_NLO", Z2.Pt(), kFactor);
-		}
-		mon.fillHisto("Nevent_vs_Mzz", "LO", ZZ.mass(), 1.);
-		mon.fillHisto("Nevent_vs_Mzz", "NLO", ZZ.mass(), kFactor);
-
-		if(genIncomingQuarks.size() == 2 && genIncomingGluons.size() ==0){
-			id2 = quark_type;
-			id1 = id2;
-		}
-		else if( genIncomingQuarks.size() == 1 && genIncomingGluons.size() ==1){
-			id1 = quark_type;
-			id2 = 21;
-		}
-
-		if(id1 == 2 || id1 == 4){ //u or c quark
-  		mon.fillHisto("s_vs_t", "uc", t_hat, sqrt(s_hat));
-  		mon.fillHisto("k_vs_s", "uc", sqrt(s_hat), kFactor);
-  		mon.fillHisto("k_vs_t", "uc", t_hat, kFactor);
-		}
-		else if(id1 ==1 || id1 == 3){ //d or s quark
- 		 	mon.fillHisto("s_vs_t", "ds", t_hat, sqrt(s_hat));
-  		mon.fillHisto("k_vs_s", "ds", sqrt(s_hat), kFactor);
-  		mon.fillHisto("k_vs_t", "ds", t_hat, kFactor);
-		}
-		else if( id1 == 5){ //b quark
-		 	mon.fillHisto("s_vs_t", "b", t_hat, sqrt(s_hat));
-  		mon.fillHisto("k_vs_s", "b", sqrt(s_hat), kFactor);
-  		mon.fillHisto("k_vs_t", "b", t_hat, kFactor);
-		}
-
-		//qq, uu, cc, dd, ss, bb, qg, ug, cg, dg, sg, bg, other
-		if( id1 >0 && id1 <9 && id1 == id2 ){ //qq case
-			mon.fillHisto( "count_quarks_type", "study", 0, 1.); //qq fill
-			switch ( id1 ){
-				case 1:	//dd
-					mon.fillHisto( "count_quarks_type", "study", 3, 1.);
-					break;
-				case 2:	//uu
-					mon.fillHisto( "count_quarks_type", "study", 1, 1.);
-					break;
-				case 3:	//ss
-					mon.fillHisto( "count_quarks_type", "study", 4, 1.);
-					break;
-				case 4:	//cc
-					mon.fillHisto( "count_quarks_type", "study", 2, 1.);
-					break;
-				case 5:	//bb
-					mon.fillHisto( "count_quarks_type", "study", 5, 1.);
-					break;
-				default:
-					mon.fillHisto( "count_quarks_type", "study", 12, 1.);
-					break;
-			}
-		}
-		else if ( (id1 == 21 && id2 >0 && id2 < 9) || (id2 == 21 && id1 >0 && id1 < 9) ){ //qg case
-			mon.fillHisto( "count_quarks_type", "study", 6, 1.); //qg fill
-			switch ( min(id1, id2) ){
-				case 1:	//dg
-					mon.fillHisto( "count_quarks_type", "study", 9, 1.);
-					break;
-				case 2:	//ug
-					mon.fillHisto( "count_quarks_type", "study", 7, 1.);
-					break;
-				case 3:	//sg
-					mon.fillHisto( "count_quarks_type", "study", 10, 1.);
-					break;
-				case 4:	//cg
-					mon.fillHisto( "count_quarks_type", "study", 8, 1.);
-					break;
-				case 5:	//bg
-					mon.fillHisto( "count_quarks_type", "study", 11, 1.);
-					break;
-				default:
-					mon.fillHisto( "count_quarks_type", "study", 12, 1.);
-					break;
-			}
-
-		}
-		else{
-			mon.fillHisto( "count_quarks_type", "study", 12, 1.);
-		}
+		//Computing the associated error:
+		double kFactor_QCD = 15.99/9.89; //From arXiv1105.0020
+		ewkCorrections_error = fabs((kFactor-1)*(kFactor_QCD -1));
 
 		return kFactor;
 	}

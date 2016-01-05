@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 
   //ELECTROWEAK CORRECTION WEIGHTS
   std::vector<std::vector<float>> ewkTable;
-  if(isMC_ZZ2l2nu) ewkTable = EwkCorrections::readFile_and_loadEwkTable(urls[0].c_str());
+  if(isMC_ZZ2l2nu) ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
   
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
@@ -521,30 +521,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtresponse",   ";Transverse mass response [GeV];Events / GeV", 100,0,2) );
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events",100,0,500) );
-
-  //Electroweak corrections debug
-  mon.addHistogram( new TH2F(	"s_vs_t",	";#hat{t};#sqrt{#hat{s}}", 1000, 0, -100000, 320, 0, 1600) );
-  mon.addHistogram( new TH2F(	"k_vs_s",	";#sqrt{#hat{s}};k", 1000, 0, 1000, 600, 0.5, 1.1) );
-  mon.addHistogram( new TH2F(	"k_vs_t",	";#hat{t};k", 1000, 0, -100000, 600, 0.5, 1.1) );
-
-  mon.addHistogram( new TH1F(	"Nevent_vs_ZpT",	";p_{T}^{Z}; Events", 200, 0, 400) );
-  mon.addHistogram( new TH1F(	"Nevent_vs_Mzz",	";M_{ZZ}; Events", 500, 0, 1000) );
-
-  TH1F *h_quarkType=(TH1F*) mon.addHistogram( new TH1F ("count_quarks_type", ";;Events", 13,0,13) );
-  h_quarkType->GetXaxis()->SetBinLabel(1,"q#bar{q}");
-  h_quarkType->GetXaxis()->SetBinLabel(2,"u#bar{u}");
-  h_quarkType->GetXaxis()->SetBinLabel(3,"c#bar{c}");
-  h_quarkType->GetXaxis()->SetBinLabel(4,"d#bar{d}");
-  h_quarkType->GetXaxis()->SetBinLabel(5,"s#bar{s}");
-  h_quarkType->GetXaxis()->SetBinLabel(6,"b#bar{b}");
-  h_quarkType->GetXaxis()->SetBinLabel(7,"qg");
-  h_quarkType->GetXaxis()->SetBinLabel(8,"ug");
-  h_quarkType->GetXaxis()->SetBinLabel(9,"cg");
-  h_quarkType->GetXaxis()->SetBinLabel(10,"dg");
-  h_quarkType->GetXaxis()->SetBinLabel(11,"sg");
-  h_quarkType->GetXaxis()->SetBinLabel(12,"bg");
-  h_quarkType->GetXaxis()->SetBinLabel(13,"other");
-
 
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
@@ -893,7 +869,10 @@ int main(int argc, char* argv[])
 
 		   	 //Electroweak corrections to ZZ and WZ(soon) simulations
 		 	 	 double ewkCorrectionsWeight = 1.;
-		  	 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(urls[f].c_str(), gen, ewkTable, eventInfo, mon);
+		 	 	 double ewkCorrections_error = 0.;
+		  	 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
+				 double ewkCorrections_up = ewkCorrectionsWeight + ewkCorrections_error;
+				 double ewkCorrections_down = ewkCorrectionsWeight - ewkCorrections_error;
 
   	   	 //final event weight
   	   	 weight *= ewkCorrectionsWeight;
