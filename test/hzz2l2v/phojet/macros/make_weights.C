@@ -1,12 +1,31 @@
-#include "setTDRStyle.C"
+#include "../../../../src/tdrstyle.C"
 
+#include "TSystem.h"
+#include "TFile.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TF1.h"
+#include "TH1F.h"
+#include "TH1D.h"
+#include "TH2F.h"
+#include "TH2D.h"
+#include "TH3F.h"
+#include "TH3D.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
+#include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
+#include "TROOT.h"
+#include "TMath.h"
+#include "TLegend.h"
+#include "TPaveText.h"
 
 Double_t fermipow(Double_t *x, Double_t *par) {
 
   const Int_t n=6;
   Double_t thr[n]={22,36,50,75,90,300};
 
-  Double_t fland;
+  Double_t fland=0;
   Double_t fpow, ffermi;
 
   Double_t alpha,beta,gamma,delta;
@@ -20,7 +39,7 @@ Double_t fermipow(Double_t *x, Double_t *par) {
     
     fpow = TMath::Power( (x[0]/alpha), beta);
     ffermi = (TMath::Exp(-x[0]/alpha) / (1.+TMath::Exp( (gamma-x[0])/delta )));
-
+     
     //fland += TMath::Floor(x[0]) * fpow * ffermi;
     if (x[0]>=thr[i]) {
       fland += fpow * ffermi;
@@ -88,13 +107,13 @@ Double_t expgaus(Double_t *x, Double_t *par) {
 }
 
 
-TH1F* readHist(TString nameHist,TString nameFile, TString nameDir, int rebin)
+TH1D* readHist(TString nameHist,TString nameFile, TString nameDir, int rebin)
 {
  TFile* file = new TFile(nameFile);
  //file->ls();
  TDirectory *dir=(TDirectory*)file->Get(nameDir);
  
- TH1F* hist = (TH1F*)dir->Get(nameHist);
+ TH1D* hist = (TH1D*)dir->Get(nameHist);
  // if (hist==0) return;
  hist->GetSumw2();
  // hist->SetLineWidth(2);
@@ -225,6 +244,8 @@ TPad *getaPad_dn(TString name){
 
 }
 
+//FUNCTION BELOW IS NOT USED and NOT COMPILLING, so I (LQ) commented out
+/*
 TGraphAsymmErrors* drawEff(TString hname1, TString hname2, TString filename, TString nameDir, TString header, TString xtitle, int rebin, bool asymBin, float xlow, float xhigh, float xmin, float xmax, int icol, int imark, TString draw, double mup){//,double y, double c) {
 
   TH1D *ref = readHist(hname1, filename, nameDir, rebin);
@@ -308,11 +329,12 @@ TGraphAsymmErrors* drawEff(TString hname1, TString hname2, TString filename, TSt
   return Eff;
 
 }
+*/
 
 // Scale Histogram errors according to prescale: err'~ sqrt(prescale) ?????
 TH1D *hTemp(TH1D* h, Int_t prescale) { 
 
-  TH1D *h_temp=h->Clone();
+  TH1D *h_temp=(TH1D*) h->Clone();
 
   Double_t err1, err2;
 
@@ -347,7 +369,7 @@ TH1D *hNorm(TH1D *h, double xsec, double nevtmc, double lum ) {
 
 TGraphErrors *makeGraph(TH1* htest) {
 
-  TH1D *h=htest->Clone();
+  TH1D *h= (TH1D*) htest->Clone();
   
   Double_t err;
   
@@ -377,12 +399,15 @@ TGraphErrors *makeGraph(TH1* htest) {
 
 void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
+std::cout<<"A\n"; //DEBUG
+
   Bool_t isData=true;
   
-  TString ifile="plotter_2015_12_04.root";
-  
+  TString dyfile="../../plotter_2015_12_22.root";
+  TString ifile="../../plotter_2015_12_22_11.root";
+   
   TString dydir, dydir2; // DY+jets
-  if (isData) { dydir="emudata"; }
+  if (isData) { dydir="Z#rightarrow ll"; }
   else {
     dydir="Ztoll_M-50";
     dydir2="Ztoll_M-10to50";
@@ -407,9 +432,11 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   if (var=="_qt") {
     // bfit=true;
     xmin=45.01; xmax=1000.01;
-  } else if ( (var=="_met") || var=="_mt") {
+  } else if( (var=="_met") || var=="_mt") {
     xmin=1.; xmax=1000.0;
-  } 
+  } else{
+    xmin=1.; xmax=1000.0;    
+ }
  
   setTDRStyle();
   
@@ -421,13 +448,18 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   TString cat="ee";
   
   Int_t rbin=5;
-  
-  TH1F *h_zpt_ee_1=readHist(cat+hcat[0]+var,ifile,dydir,rbin); //h_zpt_ee->Scale(dyweight);
-  TH1F *h_zpt_ee_2=readHist(cat+hcat[1]+var,ifile,dydir,rbin);
-  TH1F *h_zpt_ee_3=readHist(cat+hcat[2]+var,ifile,dydir,rbin);
+
+  std::cout<<"B\n"; //DEBUG
+
+  TH1D *h_zpt_ee_1=readHist(cat+hcat[0]+var,dyfile,dydir,rbin); //h_zpt_ee->Scale(dyweight);
+  TH1D *h_zpt_ee_2=readHist(cat+hcat[1]+var,dyfile,dydir,rbin);
+  TH1D *h_zpt_ee_3=readHist(cat+hcat[2]+var,dyfile,dydir,rbin);
   h_zpt_ee_1->SetFillColor(0);
   h_zpt_ee_2->SetFillColor(0);
   h_zpt_ee_3->SetFillColor(0);
+
+  std::cout<<"C\n"; //DEBUG
+
 
   // Adddy2
   // TH1F *h2_zpt_ee_1=readHist(cat+hcat[0]+var,ifile,dydir2,rbin); //h_zpt_ee->Scale(dyweight);
@@ -456,7 +488,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   
   c->cd(2); 
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[1]);
   
   h_zpt_ee_2->Draw("EHIST");
@@ -467,7 +499,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
   c->cd(3); 
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[2]);
   
   h_zpt_ee_3->Draw("EHIST");
@@ -483,17 +515,17 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   std::cout << ">=2: " << cat+hcat[1]+var << std::endl;
   std::cout << "VBF: " << cat+hcat[2]+var << std::endl;
   
-  TH1F *h_zpt_mm_1=readHist(cat+hcat[0]+var,ifile,dydir,rbin);//h_zpt_mm->Scale(dyweight);
-  TH1F *h_zpt_mm_2=readHist(cat+hcat[1]+var,ifile,dydir,rbin);//h_zpt_mm_2->Scale(dyweight);
-  TH1F *h_zpt_mm_3=readHist(cat+hcat[2]+var,ifile,dydir,rbin);//h_zpt_mm_3->Scale(dyweight);
+  TH1D *h_zpt_mm_1=readHist(cat+hcat[0]+var,dyfile,dydir,rbin);//h_zpt_mm->Scale(dyweight);
+  TH1D *h_zpt_mm_2=readHist(cat+hcat[1]+var,dyfile,dydir,rbin);//h_zpt_mm_2->Scale(dyweight);
+  TH1D *h_zpt_mm_3=readHist(cat+hcat[2]+var,dyfile,dydir,rbin);//h_zpt_mm_3->Scale(dyweight);
   h_zpt_mm_1->SetFillColor(0);
   h_zpt_mm_2->SetFillColor(0);
   h_zpt_mm_3->SetFillColor(0);
 
  // Adddy2
-  // TH1F *h2_zpt_mm_1=readHist(cat+hcat[0]+var,ifile,dydir2,rbin); //h_zpt_mm->Scale(dyweight);
-  // TH1F *h2_zpt_mm_2=readHist(cat+hcat[1]+var,ifile,dydir2,rbin);
-  // TH1F *h2_zpt_mm_3=readHist(cat+hcat[2]+var,ifile,dydir2,rbin);
+  // TH1D *h2_zpt_mm_1=readHist(cat+hcat[0]+var,ifile,dydir2,rbin); //h_zpt_mm->Scale(dyweight);
+  // TH1D *h2_zpt_mm_2=readHist(cat+hcat[1]+var,ifile,dydir2,rbin);
+  // TH1D *h2_zpt_mm_3=readHist(cat+hcat[2]+var,ifile,dydir2,rbin);
   // h_zpt_mm_1->Add(h2_zpt_mm_1);
   // h_zpt_mm_2->Add(h2_zpt_mm_2);
   // h_zpt_mm_3->Add(h2_zpt_mm_3);
@@ -504,7 +536,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
   cm->cd(1);
   gPad->SetLogy(); gPad->SetLogx();
-   TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[0]);
   
   h_zpt_mm_1->Draw("EHIST");
@@ -514,7 +546,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   
   cm->cd(2); 
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[1]);
   
   h_zpt_mm_2->Draw("EHIST");
@@ -524,7 +556,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
   cm->cd(3); 
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[2]);
   
   h_zpt_mm_3->Draw("EHIST");
@@ -543,39 +575,39 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   std::cout << ">=2: " << cat+hcat[1]+var << std::endl;
   std::cout << "VBF: " << cat+hcat[2]+var << std::endl;
   
-  TH1F *h_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir,rbin);// h_zpt_gj->Scale(gweight);//h_zpt_gj->Sumw2();
-  TH1F *h_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir,rbin); //h_zpt_gj_2->Scale(gweight);//h_zpt_gj_2->Sumw2();
-  TH1F *h_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir,rbin);// h_zpt_gj_3->Scale(gweight);//h_zpt_gj_3->Sumw2();
+  TH1D *h_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir,rbin);// h_zpt_gj->Scale(gweight);//h_zpt_gj->Sumw2();
+  TH1D *h_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir,rbin); //h_zpt_gj_2->Scale(gweight);//h_zpt_gj_2->Sumw2();
+  TH1D *h_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir,rbin);// h_zpt_gj_3->Scale(gweight);//h_zpt_gj_3->Sumw2();
   h_zpt_gj_1->SetFillColor(0);
   h_zpt_gj_2->SetFillColor(0);
   h_zpt_gj_3->SetFillColor(0);
 
   if (!isData) {
     
-  TH1F *h2_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir2,rbin);
-  TH1F *h2_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir2,rbin); 
-  TH1F *h2_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir2,rbin);
+  TH1D *h2_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir2,rbin);
+  TH1D *h2_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir2,rbin); 
+  TH1D *h2_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir2,rbin);
   h2_zpt_gj_1->SetFillColor(0);
   h2_zpt_gj_2->SetFillColor(0);
   h2_zpt_gj_3->SetFillColor(0);
  
-  TH1F *h3_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir3,rbin);
-  TH1F *h3_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir3,rbin); 
-  TH1F *h3_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir3,rbin);
+  TH1D *h3_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir3,rbin);
+  TH1D *h3_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir3,rbin); 
+  TH1D *h3_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir3,rbin);
   h3_zpt_gj_1->SetFillColor(0);
   h3_zpt_gj_2->SetFillColor(0);
   h3_zpt_gj_3->SetFillColor(0);
 
-  TH1F *h4_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir4,rbin);
-  TH1F *h4_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir4,rbin); 
-  TH1F *h4_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir4,rbin);
+  TH1D *h4_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir4,rbin);
+  TH1D *h4_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir4,rbin); 
+  TH1D *h4_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir4,rbin);
   h4_zpt_gj_1->SetFillColor(0);
   h4_zpt_gj_2->SetFillColor(0);
   h4_zpt_gj_3->SetFillColor(0);
 
-  TH1F *h5_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir5,rbin);
-  TH1F *h5_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir5,rbin); 
-  TH1F *h5_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir5,rbin);
+  TH1D *h5_zpt_gj_1=readHist(cat+hcat[0]+var,ifile,gdir5,rbin);
+  TH1D *h5_zpt_gj_2=readHist(cat+hcat[1]+var,ifile,gdir5,rbin); 
+  TH1D *h5_zpt_gj_3=readHist(cat+hcat[2]+var,ifile,gdir5,rbin);
   h5_zpt_gj_1->SetFillColor(0);
   h5_zpt_gj_2->SetFillColor(0);
   h5_zpt_gj_3->SetFillColor(0);
@@ -593,7 +625,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
    
   cg->cd(1);
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[0]);
 
   // fermiFunction->SetParameters(params);
@@ -606,7 +638,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   
   cg->cd(2); 
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[1]);
 
   //fermiFunction->SetParameters(params);
@@ -619,7 +651,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
   cg->cd(3); 
   gPad->SetLogy(); gPad->SetLogx();
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(cat+" : "+hcat[2]);
 
   // fermiFunction->SetParameters(params);
@@ -643,43 +675,50 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   TCanvas *call=getanotherCanvas("call");
   call->Divide(3,1);
   
-  // TH1F *h_ee1=h_zpt_ee_1->Clone(); h_ee1->Rebin(rbin);
-  // TH1F *h_mm1=h_zpt_mm_1->Clone(); h_mm1->Rebin(rbin);
-  // TH1F *h_gj1=h_zpt_gj_1->Clone(); h_gj1->Rebin(rbin);
+  TH1F *h_ee1= (TH1F*) h_zpt_ee_1->Clone();
+  TH1F *h_mm1= (TH1F*) h_zpt_mm_1->Clone();
+  TH1F *h_gj1= (TH1F*) h_zpt_gj_1->Clone();
+ 
   if (asym) {
     h_zpt_ee_1->Rebin(26,"h_ee1",xbins);
     h_zpt_mm_1->Rebin(26,"h_mm1",xbins);
     h_zpt_gj_1->Rebin(26,"h_gj1",xbins);
   } else {
-      TH1F *h_ee1=h_zpt_ee_1->Clone(); h_ee1->Rebin(rbin);
-      TH1F *h_mm1=h_zpt_mm_1->Clone(); h_mm1->Rebin(rbin);
-      TH1F *h_gj1=h_zpt_gj_1->Clone(); h_gj1->Rebin(rbin);
-    }
+    h_ee1->Rebin(rbin);
+    h_mm1->Rebin(rbin);
+    h_gj1->Rebin(rbin);
+  }
   // h_ee1->Scale(1./h_ee1->Integral());
   // h_mm1->Scale(1./h_mm1->Integral());
   // h_gj1->Scale(1./h_gj1->Integral());
 
+  TH1F *h_ee2= (TH1F*) h_zpt_ee_2->Clone();
+  TH1F *h_mm2= (TH1F*) h_zpt_mm_2->Clone();
+  TH1F *h_gj2= (TH1F*) h_zpt_gj_2->Clone();
   if (asym) {
     h_zpt_ee_2->Rebin(26,"h_ee2",xbins);
     h_zpt_mm_2->Rebin(26,"h_mm2",xbins);
     h_zpt_gj_2->Rebin(26,"h_gj2",xbins);
   } else {
-    TH1F *h_ee2=h_zpt_ee_2->Clone(); h_ee2->Rebin(rbin);
-    TH1F *h_mm2=h_zpt_mm_2->Clone(); h_mm2->Rebin(rbin);
-    TH1F *h_gj2=h_zpt_gj_2->Clone(); h_gj2->Rebin(rbin);
+     h_ee2->Rebin(rbin);
+     h_mm2->Rebin(rbin);
+     h_gj2->Rebin(rbin);
   }
   // h_ee2->Scale(1./h_ee2->Integral());
   // h_mm2->Scale(1./h_mm2->Integral());
   // h_gj2->Scale(1./h_gj2->Integral());
 
+   TH1F *h_ee3= (TH1F*) h_zpt_ee_3->Clone();
+   TH1F *h_mm3= (TH1F*) h_zpt_mm_3->Clone();
+   TH1F *h_gj3= (TH1F*) h_zpt_gj_3->Clone();
  if (asym) {
     h_zpt_ee_3->Rebin(26,"h_ee3",xbins);
     h_zpt_mm_3->Rebin(26,"h_mm3",xbins);
     h_zpt_gj_3->Rebin(26,"h_gj3",xbins);
   } else {
-   TH1F *h_ee3=h_zpt_ee_3->Clone(); h_ee3->Rebin(rbin);
-   TH1F *h_mm3=h_zpt_mm_3->Clone(); h_mm3->Rebin(rbin);
-   TH1F *h_gj3=h_zpt_gj_3->Clone(); h_gj3->Rebin(rbin);
+   h_ee3->Rebin(rbin);
+   h_mm3->Rebin(rbin);
+   h_gj3->Rebin(rbin);
  }
   // h_ee3->Scale(1./h_ee3->Integral());
   // h_mm3->Scale(1./h_mm3->Integral());
@@ -688,7 +727,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   call->cd(1);
   gPad->SetLogy();
 
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader("=0 jets");
   leg->AddEntry(h_ee1,"ee","LP");
   leg->AddEntry(h_mm1,"#mu#mu","LP");
@@ -710,7 +749,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   call->cd(2);
   gPad->SetLogy();
 
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(">= 1jets");
   leg->AddEntry(h_ee2,"ee","LP");
   leg->AddEntry(h_mm2,"#mu#mu","LP");
@@ -732,7 +771,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   call->cd(3);
   gPad->SetLogy();
 
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader("VBF");
   leg->AddEntry(h_ee3,"ee","LP");
   leg->AddEntry(h_mm3,"#mu#mu","LP");
@@ -800,7 +839,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   pave->AddText("=0 jets");
   pave->Draw();
 
-  TLegend *leg=new TLegend(0.6,0.6,0.9,0.8);
+  leg=new TLegend(0.6,0.6,0.9,0.8);
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
@@ -831,8 +870,8 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   leg->SetTextSize(0.11);
   leg->SetTextAlign(12);
 
-  TH1D *hee1=h_ee1->Clone(); hee1->Divide(h_gj1);
-  TH1D *hmm1=h_mm1->Clone(); hmm1->Divide(h_gj1);
+  TH1D *hee1= (TH1D*) h_ee1->Clone(); hee1->Divide(h_gj1);
+  TH1D *hmm1= (TH1D*) h_mm1->Clone(); hmm1->Divide(h_gj1);
    
   hee1->Draw("e"); hee1->SetLineColor(kBlue); hee1->SetMarkerColor(kBlue);hee1->SetLineWidth(2);
   hmm1->Draw("esame"); hmm1->SetLineColor(kBlue-6); hmm1->SetMarkerColor(kBlue-6);hmm1->SetLineWidth(2);
@@ -864,7 +903,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   call2->cd();
   
   //distributions
-  TPad *t1 = new TPad("p1","p1",0,0.3,1.0,1.0);
+  t1 = new TPad("p1","p1",0,0.3,1.0,1.0);
   t1->Draw();
   t1->cd();
   t1->SetLogy(); t1->SetLogx();
@@ -890,7 +929,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   h_gj2->SetTitle("#gamma + jets");
   h_gj2->Draw("ehistsame");
 
-  TPaveText *pave = new TPaveText(0.7,0.85,0.95,0.9,"brNDC");
+  pave = new TPaveText(0.7,0.85,0.95,0.9,"brNDC");
   pave->SetBorderSize(0);
   pave->SetFillStyle(0);
   pave->SetTextAlign(32);
@@ -900,7 +939,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   pave->AddText(">=1 jet");
   pave->Draw();
 
-  TLegend *leg=new TLegend(0.6,0.6,0.9,0.8);
+  leg=new TLegend(0.6,0.6,0.9,0.8);
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
@@ -914,7 +953,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
   //closure
   call2->cd();
-  TPad *t2 = new TPad("p2","p2",0,0.0,1.0,0.3);
+  t2 = new TPad("p2","p2",0,0.0,1.0,0.3);
   t2->SetTopMargin(0);
   t2->SetBottomMargin(0.25);
   t2->SetRightMargin(0.05);
@@ -931,8 +970,8 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   leg->SetTextSize(0.11);
   leg->SetTextAlign(12);
 
-  TH1D *hee2=h_ee2->Clone(); hee2->Divide(h_gj2);
-  TH1D *hmm2=h_mm2->Clone(); hmm2->Divide(h_gj2);
+  TH1D *hee2= (TH1D*) h_ee2->Clone(); hee2->Divide(h_gj2);
+  TH1D *hmm2= (TH1D*) h_mm2->Clone(); hmm2->Divide(h_gj2);
  
   hee2->Draw("e"); hee2->SetLineColor(kBlue); hee2->SetMarkerColor(kBlue);hee2->SetLineWidth(2);
   hmm2->Draw("esame"); hmm2->SetLineColor(kBlue-6); hmm2->SetMarkerColor(kBlue-6);hmm2->SetLineWidth(2);
@@ -962,7 +1001,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   call3->cd();
   
   //distributions
-  TPad *t1 = new TPad("p1","p1",0,0.3,1.0,1.0);
+  t1 = new TPad("p1","p1",0,0.3,1.0,1.0);
   t1->Draw();
   t1->cd();
   t1->SetLogy(); t1->SetLogx();
@@ -988,7 +1027,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   h_gj3->SetTitle("#gamma + jets");
   h_gj3->Draw("ehistsame");
 
-  TPaveText *pave = new TPaveText(0.7,0.85,0.95,0.9,"brNDC");
+  pave = new TPaveText(0.7,0.85,0.95,0.9,"brNDC");
   pave->SetBorderSize(0);
   pave->SetFillStyle(0);
   pave->SetTextAlign(32);
@@ -998,7 +1037,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   pave->AddText("VBF");
   pave->Draw();
 
-  TLegend *leg=new TLegend(0.6,0.6,0.9,0.8);
+  leg=new TLegend(0.6,0.6,0.9,0.8);
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
@@ -1012,7 +1051,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
 
   //closure
   call3->cd();
-  TPad *t2 = new TPad("p2","p2",0,0.0,1.0,0.3);
+  t2 = new TPad("p2","p2",0,0.0,1.0,0.3);
   t2->SetTopMargin(0);
   t2->SetBottomMargin(0.25);
   t2->SetRightMargin(0.05);
@@ -1030,8 +1069,8 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   leg->SetTextAlign(12);
 
 
-  TH1D *hee3=h_ee3->Clone(); hee3->Divide(h_gj3);
-  TH1D *hmm3=h_mm3->Clone(); hmm3->Divide(h_gj3);
+  TH1D *hee3= (TH1D*) h_ee3->Clone(); hee3->Divide(h_gj3);
+  TH1D *hmm3= (TH1D*) h_mm3->Clone(); hmm3->Divide(h_gj3);
    
   hee3->Draw("e"); hee3->SetLineColor(kBlue); hee3->SetMarkerColor(kBlue);hee3->SetLineWidth(2);
   hmm3->Draw("esame"); hmm3->SetLineColor(kBlue-6); hmm3->SetMarkerColor(kBlue-6);hmm3->SetLineWidth(2);
@@ -1079,7 +1118,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   TGraphErrors *gr_m1=new TGraphErrors(hmm1); gr_m1->SetName("mumueq0jets_qt_datafitwgts");
   
   
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader("0jet category");
   leg->AddEntry(gr_e1,"ee","LP");
   leg->AddEntry(gr_m1,"#mu#mu","LP");
@@ -1098,7 +1137,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   TGraphErrors *gr_e2=new TGraphErrors(hee2);gr_e2->SetName("eegeq1jets_qt_datafitwgts");
   TGraphErrors *gr_m2=new TGraphErrors(hmm2);gr_m2->SetName("mumugeq1jets_qt_datafitwgts");
   
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader(">=1jet category");
   leg->AddEntry(gr_e2,"ee","LP");
   leg->AddEntry(gr_m2,"#mu#mu","LP");
@@ -1118,7 +1157,7 @@ void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
   TGraphErrors *gr_e3=new TGraphErrors(hee3);gr_e3->SetName("eevbf_qt_datafitwgts");
   TGraphErrors *gr_m3=new TGraphErrors(hmm3);gr_m3->SetName("mumuvbf_qt_datafitwgts");
   
-  TLegend *leg=legend();
+  leg=legend();
   leg->SetHeader("VBF category");
   leg->AddEntry(gr_e3,"ee","LP");
   leg->AddEntry(gr_m3,"#mu#mu","LP");
