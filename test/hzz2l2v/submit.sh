@@ -17,6 +17,7 @@ if [[ $# -eq 0 ]]; then
     printf "\n\t%-5s  %-40s\n"  "2.1"  "compute integrated luminosity from processed photon samples" 
     printf "\n\t%-5s  %-40s\n"  "3"  "make plots and combine root files" 
     printf "\n\t%-5s  %-40s\n"  "3.1"  "make plots for photon_samples" 
+    printf "\n\t%-5s  %-40s\n"  "3.2"  "make plots for photon_samples with photon re-weighting" 
 fi
 
 step=$1   #variable that store the analysis step to run
@@ -28,7 +29,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2015_12_17
+SUFFIX=_2015_12_22
 #SUFFIX=_debug
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -77,12 +78,12 @@ case $step in
     1.2) #submit jobs for 2l2v photon jet analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis"                                                                                   
         queue='8nh'                                                                                                                       
-        JSON=$MAINDIR/photon_samples.json                                                                                                 
+        JSON=$MAINDIR/photon_samples2.json                                                                                                 
         RESULTSDIR=${RESULTSDIR}_12
         echo "Input: " $JSON                                                                                                              
         echo "Output: " $RESULTSDIR                                                                                                       
         if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi                                                                          
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @weightsFile=photonWeights_RunD.root @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments 
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=True @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True $arguments 
         ;;                              
 
 
@@ -132,15 +133,7 @@ case $step in
 	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;;
 
-    3.1)  # make plots for Jamboree without ratio between data and MC for ZMass, in this case we remove also the underflow bin
-        INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
-        echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only ee_zmass --only mumu_zmass --only all_zmass --removeUnderFlow --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt_rebin --only all_mt --only all_met --only ee_zpt_rebin --only mumu_zpt_rebin --only ee_met --only mumu_met --only ee_mt --only mumu_mt --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf 
-        #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
-        ;; 
-
-    3.2)  # make plots and combine root files for photon + jet study    
+    3.1)  # make plots and combine root files for photon + jet study    
         JSON=$MAINDIR/photon_samples.json
         RESULTSDIR=${RESULTSDIR}_11
         PLOTSDIR=${PLOTSDIR}_11
@@ -153,7 +146,39 @@ case $step in
         fi
 
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
-	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --noPlot 
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON  
 	;; 
+
+
+    3.2)  # make plots and combine root files for photon + jet study    
+        JSON=$MAINDIR/photon_samples2.json
+        RESULTSDIR=${RESULTSDIR}_12
+        PLOTSDIR=${PLOTSDIR}_12
+        PLOTTER=${PLOTTER}_12
+        if [ -f $RESULTSDIR/LUMI.txt ]; then
+  	   INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+        else
+           INTLUMI=2215.182 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON
+           echo "WARNING: $RESULTSDIR/LUMI.txt file is missing so use fixed integrated luminosity value, this might be different than the dataset you ran on"
+        fi
+
+	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON  
+	;; 
+
+    3.3)  # make plots and combine root files for photon + jet study    
+        hadd -f ${PLOTTER}_13.root ${PLOTTER}.root ${PLOTTER}_12.root
+        runPlotter --iEcm 13 --iLumi 2215.182 --inDir ${RESULTSDIR}/ --outDir ${PLOTSDIR}_13/ --outFile ${PLOTTER}_13.root  --json $PWD/samplesWithPhoton.json --no2D  --fileOption READ
+        ;;
+
+
+     9)  # make plots for Jamboree without ratio between data and MC for ZMass, in this case we remove also the underflow bin
+        INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
+        echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only ee_zmass --only mumu_zmass --only all_zmass --removeUnderFlow --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root --only all_zpt_rebin --only all_mt --only all_met --only ee_zpt_rebin --only mumu_zpt_rebin --only ee_met --only mumu_met --only ee_mt --only mumu_mt --json $JSON --no2D $arguments --removeRatioPlot --plotExt .png --plotExt .pdf 
+        #ln -s -f $PLOTTER.root $MAINDIR/plotter.root
+        ;; 
+       
 esac
 
