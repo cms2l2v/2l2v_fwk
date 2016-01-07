@@ -109,11 +109,7 @@ int main(int argc, char* argv[])
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
   bool runPhotonSelection = (mctruthmode==22 || mctruthmode==111);
-
  
-  //Tag for Met Filter
-  bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
-
   TString outTxtUrl= outUrl + ".txt";    
   FILE* outTxtFile = NULL;
   if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
@@ -742,6 +738,7 @@ int main(int argc, char* argv[])
           bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*"); 
           bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");
           bool photonTrigger      = runPhotonSelection?patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale):false;
+
           if(filterOnlyEE)       { mumuTrigger=false; emuTrigger=false;  }
           if(filterOnlyMUMU)     { eeTrigger=false;   emuTrigger=false;  }
           if(isSingleMuPD)       { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
@@ -757,9 +754,8 @@ int main(int argc, char* argv[])
   
          mon.fillHisto("weight_eventflow","debug", 4, weight);
 
-
-          //##############################################   EVENT PASSED THE TRIGGER   ######################################
-          int metFilterValue = metFiler.passMetFilterInt( ev, isPromptReco );
+         //##############################################   EVENT PASSED THE TRIGGER   ######################################
+          int metFilterValue = metFiler.passMetFilterInt( ev );
           mon.fillHisto("met_eventflow", "debug", metFilterValue, weight);
           if( metFilterValue!=0 ) continue;	 //Note this must also be applied on MC
           //##############################################   EVENT PASSED MET FILTER   ####################################### 

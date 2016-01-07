@@ -933,7 +933,7 @@ int main (int argc, char *argv[])
         if (!(eTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
         // ------------ Apply MET filters ------------
-        if( !isMC && !metFiler.passMetFilter( ev, isPromptReco )) continue;
+        if( !isMC && !metFiler.passMetFilter( ev)) continue;
  
         //load all the objects we will need to access
 

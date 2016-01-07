@@ -646,11 +646,17 @@ void MetFilter::FillBadEvents(std::string path){
 
 
 
-int MetFilter::passMetFilterInt(const fwlite::Event& ev, bool isPromptReco){  
+int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
      if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;
 
     // Legacy: the different collection name was necessary with the early 2015B prompt reco        
-    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+//    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+    edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO
+    if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO
+    if(!metFilters.isValid()){       
+       printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
+    }
+
 
     // Documentation:    
     // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
@@ -707,8 +713,8 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev, bool isPromptReco){
    }
 
 
-bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){
-   return passMetFilterInt(ev, isPromptReco)==0;
+bool MetFilter::passMetFilter(const fwlite::Event& ev){
+   return passMetFilterInt(ev)==0;
 }
 
 
