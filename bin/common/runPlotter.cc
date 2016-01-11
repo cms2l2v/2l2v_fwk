@@ -66,6 +66,7 @@ std::vector<std::string> plotExt;
 string outFile = "/tmp/plotter.root";
 string cutflowhisto = "all_cutflow";
 string fileOption = "RECREATE";
+std::vector<string> keywords;
 
 //std::unordered_map<string, stSampleInfo> sampleInfoMap;
 std::unordered_map<string, std::vector<string> > MissingFiles;
@@ -87,6 +88,18 @@ struct NameAndType{
 
 void checkSumw2(TH1 *h) { if(h==0) return;  if(h->GetDefaultSumw2()) h->Sumw2();  }
 
+bool matchKeyword(JSONWrapper::Object& process, std::vector<string>& keywords){
+   if(keywords.size()<=0)return true;
+   if(process.isTag("keys")){
+      std::vector<JSONWrapper::Object> dsetkeywords = process["keys"].daughters();
+      for(size_t ikey=0; ikey<dsetkeywords.size(); ikey++){
+         for(unsigned int i=0;i<keywords.size();i++){if(std::regex_match(dsetkeywords[ikey].toString(),std::regex(keywords[i])))return true;}
+      }
+   }else{
+      return true;
+   }
+   return false;
+}
 
 string dropBadCharacters(string in){
    while(in.find("*")!=std::string::npos)in.replace(in.find("*"),1,"");
@@ -227,7 +240,8 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
       std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
       //loop on all Proc
       for(size_t ip=0; ip<Process.size(); ip++){
-          if(Process[ip].isTag("interpollation"))continue; //nothing to do with these
+          if(Process[ip].isTag("interpollation"))continue; //nothing to do with these          
+          if(!matchKeyword(Process[ip], keywords))continue; //only consider samples passing key filtering
 	  bool isData (  Process[ip]["isdata"].toBool()  );
           bool isSign ( !isData &&  Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool());
   	  bool isMC   = !isData && !isSign; 
@@ -235,8 +249,9 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 	  if(Process[ip].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip]["mctruthmode"].toInt()); filtExt += buf; }
 
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
-	  for(size_t id=0; id<Samples.size(); id++){
+	  for(size_t id=0; id<Samples.size(); id++){               
 	      int split = Samples[id].getInt("split", -1);               
+              int fileProcessed=0;
               for(int s=0; s<(split>0?split:999); s++){
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;                 
                  string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt; 
@@ -244,7 +259,12 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                     FILE* pFile = fopen((FileName+"_cfg.py").c_str(), "r");
                     if(!pFile){break;}else{fclose(pFile);}
                  }
+
                  FileName += ".root";
+
+                 FILE* pFile = fopen(FileName.c_str(), "r");  //check if the file exist
+                 if(!pFile){MissingFiles[Samples[id].getString("dtag")].push_back(FileName); continue;}else{fclose(pFile);}
+
 	         TFile* File = new TFile(FileName.c_str());                                 
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
                     MissingFiles[Samples[id].getString("dtag")].push_back(FileName);
@@ -253,10 +273,13 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                     DSetFiles[Samples[id].getString("dtag")].push_back(FileName);
                  }
 
+                 if(fileProcessed>0){File->Close();continue;} //only consider the first file of each sample to get the list of object 
+                 fileProcessed++;
+
                  //just to make it faster, only consider the first 3 sample of a same kind
                  if(isData){if(dataProcessed>=5){ File->Close(); continue;}else{dataProcessed++;}}
-                 if(isSign){if(signProcessed>=5){ File->Close(); continue;}else{signProcessed++;}}
-                 if(isMC  ){if(bckgProcessed>=5){ File->Close(); continue;}else{bckgProcessed++;}}
+                 if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
+                 if(isMC  ){if(bckgProcessed>=2){ File->Close(); continue;}else{bckgProcessed++;}}
 
                  printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
 	         GetListOfObject(Root,RootDir,histlist,(TDirectory*)File,"" );
@@ -311,6 +334,7 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, NameAndType& Hi
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
       if(!Process[i].isTag("interpollation"))continue; //only consider intepollated processes
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
 
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       File->cd();
@@ -405,6 +429,8 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
 
    for(unsigned int i=0;i<Process.size();i++){
       if(Process[i].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+     
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       OutputFile->cd();
       TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
@@ -484,6 +510,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering      
       if(Process[i]["isinvisible"].toBool())continue;
       string filtExt("");
       if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
@@ -535,6 +562,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    int NSampleToDraw = 0;
    for(unsigned int i=0;i<Process.size();i++){
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       if(Process[i]["isinvisible"].toBool())continue;
       NSampleToDraw++;
    }
@@ -546,6 +574,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       if(Process[i]["isinvisible"].toBool())continue;
 
       TVirtualPad* pad = c1->cd(i+1);
@@ -638,6 +667,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    ObjectToDelete.push_back(stack);
 
    for(unsigned int i=0;i<Process.size();i++){
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       if(Process[i]["isinvisible"].toBool())continue;
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       TH1* hist = (TH1*)GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
@@ -881,6 +911,7 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
    TH1* stack = NULL; 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
+      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       TH1* hist = (TH1*)GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
@@ -981,7 +1012,7 @@ int main(int argc, char* argv[]){
 
      if(arg.find("--help")!=string::npos){
         printf("--help   --> print this helping text\n");
-
+        printf("--key     --> only samples including this keyword are considered\n");
         printf("--iLumi   --> integrated luminosity to be used for the MC rescale\n");
         printf("--iEcm    --> center of mass energy (TeV) = 8 TeV by default\n");
         printf("--isSim   --> print CMS Simulation instead of the standard title\n");
@@ -1019,7 +1050,8 @@ int main(int argc, char* argv[]){
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());  }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--json"   )!=string::npos && i+1<argc){ jsonFile = argv[i+1];  i++;  }
-     if(arg.find("--only"   )!=string::npos && i+1<argc){ histoNameMask.push_back(argv[i+1]); printf("Only histograms matching (regex) ewpression '%s' are processed\n", argv[i+1]); i++;  }
+     if(arg.find("--key"    )!=string::npos && i+1<argc){ keywords.push_back(argv[i+1]); printf("Only samples matching this (regex) expression '%s' are processed\n", argv[i+1]); i++;  }
+     if(arg.find("--only"   )!=string::npos && i+1<argc){ histoNameMask.push_back(argv[i+1]); printf("Only histograms matching (regex) expression '%s' are processed\n", argv[i+1]); i++;  }
      if(arg.find("--index"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%d",&cutIndex); i++; onlyCutIndex=(cutIndex>=0); printf("index = %i\n", cutIndex);  }
      if(arg.find("--chi2"  )!=string::npos)             { showChi2 = true;  }
      if(arg.find("--showUnc") != string::npos) { 
@@ -1078,7 +1110,7 @@ int main(int argc, char* argv[]){
    std::list<NameAndType>::iterator it= histlist.begin();
    while(it!= histlist.end()){
        bool passMasking = (histoNameMask.size()==0);  
-       for(unsigned int i=0;i<histoNameMask.size();i++){if(std::regex_match(it->name,std::regex(histoNameMask[i])))passMasking=true;}
+       for(unsigned int i=0;i<histoNameMask.size();i++){if(std::regex_match(it->name,std::regex(histoNameMask[i])))passMasking=true; break;}
        if(!passMasking){it=histlist.erase(it); continue; }
        if(!do2D   &&(it->is2D() || it->is3D())){it=histlist.erase(it); continue;}
        if(!do1D   && it->is1D()){it=histlist.erase(it); continue;}

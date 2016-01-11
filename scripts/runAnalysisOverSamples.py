@@ -120,21 +120,22 @@ def getFileList(procData,DefaultNFilesPerJob):
 #configure
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
-parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='executable'                            , default='')
-parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'    , default='8nh')
-parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'           , default='pool>30000')
-parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                     , default='')
-parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'   , default='aoddir')
-parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                      , default='')
-parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag', default='all')
-parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'          , default='')
-parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'      , default='')
-parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email', default=False, action="store_true")
-parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'  , default=DatasetFileDB)
-parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'             , default=False, action="store_true")
-parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)', default=3)
-parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally', default=8)
-parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'  , default='')
+parser.add_option('-e', '--exe'        ,    dest='theExecutable'      , help='executable'                                , default='')
+parser.add_option('-s', '--sub'        ,    dest='queue'              , help='batch queue OR "crab" to use crab3'        , default='8nh')
+parser.add_option('-R', '--R'          ,    dest='requirementtoBatch' , help='requirement for batch queue'               , default='pool>30000')
+parser.add_option('-j', '--json'       ,    dest='samplesDB'          , help='samples json file'                         , default='')
+parser.add_option('-d', '--dir'        ,    dest='indir'              , help='input directory or tag in json file'       , default='aoddir')
+parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                          , default='')
+parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag'    , default='all')
+parser.add_option('-k', '--key'        ,    dest='onlykeyword'        , help='process only samples matching this keyword', default='')
+parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'              , default='')
+parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'          , default='')
+parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email'    , default=False, action="store_true")
+parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'      , default=DatasetFileDB)
+parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'                 , default=False, action="store_true")
+parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)'    , default=3)
+parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally'    , default=8)
+parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'      , default='')
 
 (opt, args) = parser.parse_args()
 scriptFile=os.path.expandvars('${CMSSW_BASE}/bin/${SCRAM_ARCH}/wrapLocalAnalysisRun.sh')
@@ -170,15 +171,21 @@ for procBlock in procList :
         #run over items in process
         if(getByLabel(proc,'interpollation', '')!=''):continue #skip interpollated processes
         isdata=getByLabel(proc,'isdata',False)
+        isdatadriven=getByLabel(proc,'isdatadriven',False)       
         mctruthmode=getByLabel(proc,'mctruthmode',0)
         data = proc['data']
 
         for procData in data :
             LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
 
+            keywords = getByLabel(proc,'keys',[])
+            if opt.onlykeyword!='' and len(keywords)>0 and opt.onlykeyword not in keywords :
+               continue
+
             origdtag = getByLabel(procData,'dtag','')
             if(origdtag=='') : continue
-            dtag = origdtag
+            dtag = origdtag         
+
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])
             suffix = str(getByLabel(procData,'suffix' ,""))
@@ -205,7 +212,7 @@ for procBlock in procList :
                    sedcmd += 's%"@dtag"%"' + dtag +'"%;'
                    sedcmd += 's%"@input"%' + eventsFile+'%;'
             	   sedcmd += 's%@outfile%' + prodfilepath+'.root%;'
-            	   sedcmd += 's%@isMC%' + str(not isdata)+'%;'
+            	   sedcmd += 's%@isMC%' + str(not (isdata or isdatadriven) )+'%;'
             	   sedcmd += 's%@mctruthmode%'+str(mctruthmode)+'%;'
             	   sedcmd += 's%@xsec%'+str(xsec)+'%;'
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
