@@ -18,7 +18,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
     
   //categories to consider, add more if needed but keep these ones 
   TString cats[]   =  {"eq0jets","eq1jets","eq2jets","geq3jets","vbf","geq1jets","novbf","mjjq100","mjjq092","mjjq083","mjjq066","mjjq049","mjjq033","mjjq016"};
-  dilCats_.push_back("ee"); dilCats_.push_back("mumu");
+  dilCats_.push_back("ee"); dilCats_.push_back("mumu"); dilCats_.push_back("ll");
   
   //retrieve from file
   TString gammaPtWeightsFile(gammaPtWeightsFiles[0].c_str());
@@ -81,8 +81,7 @@ float GammaWeightsHandler::getWeightFor(std::vector<Float_t> &vars, TString evCa
 {
   //get the weight (1.0 if not available)
   float weight(1.0);
-  if(wgtsH_.find(evCategoryLabel) != wgtsH_.end())
-    {
+  if(wgtsH_.find(evCategoryLabel) != wgtsH_.end()){
       std::vector<TGraph *> &availableWeights=wgtsH_[evCategoryLabel];
       for(size_t ivar=0; ivar<availableWeights.size(); ivar++)
 	{
@@ -90,7 +89,7 @@ float GammaWeightsHandler::getWeightFor(std::vector<Float_t> &vars, TString evCa
 	  if(vars.size()>ivar) weight*=h->Eval(vars[ivar]);
 	  if(weight<0) weight=0;
 	}
-    }
+  }
     
   return weight;
 }

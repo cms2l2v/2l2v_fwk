@@ -224,6 +224,192 @@
              { "dtag":"Data13TeV_SinglePhoton2015D_05Oct2015"        ,  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":"/SinglePhoton/Run2015D-05Oct2015-v1/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
              { "dtag":"Data13TeV_SinglePhoton2015D"                  ,  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":"/SinglePhoton/Run2015D-PromptReco-v4/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }    
       ]
-    }                                                                                                                                                            
+    },
+
+
+    {
+      "tag":"ggH(400)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":619,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH400toZZto2L2Nu_powheg15"     ,  "xsec":9.68      , "br":[0.269, 0.0135]    , "dset":"/GluGluHToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"qqH(400)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":619,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.55      , "br":[0.269, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"ggH(600)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH600toZZto2L2Nu_powheg15"     ,  "xsec":2.128      , "br":[0.272, 0.0135]    , "dset":"/GluGluHToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"qqH(600)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.288      , "br":[0.272, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"ggH(1000)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":868,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.189      , "br":[0.311, 0.0135]    , "dset":"/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+    {
+      "tag":"qqH(1000)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":868,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.066      , "br":[0.311, 0.0135]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
+      ]
+    },
+
+
+    {
+      "tag":"ggH(500)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":2,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "interpollation":[{"tagLeft":"ggH(400)#rightarrow ZZ", "massLeft":400, "mass":500, "tagRight":"ggH(600)#rightarrow ZZ", "massRight":600 }],
+      "data":[          { "dtag":"",  "xsec":4.724      , "br":[ 0.261, 0.0403896 ] }      ]
+    },
+     {
+      "tag":"qqH(500)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],   
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":2,
+      "lwidth":2,
+      "lstyle":2,   
+      "fill":0,
+      "marker":1,
+      "interpollation":[{"tagLeft":"qqH(400)#rightarrow ZZ", "massLeft":400, "mass":500, "tagRight":"qqH(600)#rightarrow ZZ", "massRight":600 }],
+      "data":[          { "dtag":"",  "xsec":0.353      , "br":[ 0.261, 0.0403896 ] }      ]
+    },
+    {
+      "tag":"ggH(750)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "interpollation":[{"tagLeft":"ggH(600)#rightarrow ZZ", "massLeft":600, "mass":750, "tagRight":"ggH(1000)#rightarrow ZZ", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.736      , "br":[ 0.290, 0.0403896 ] }      ]
+    },
+    {
+      "tag":"qqH(750)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "lstyle":2,   
+      "fill":0,
+      "marker":1,
+      "interpollation":[{"tagLeft":"qqH(600)#rightarrow ZZ", "massLeft":600, "mass":750, "tagRight":"qqH(1000)#rightarrow ZZ", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.131      , "br":[ 0.290, 0.0403896 ] }      ]
+    },
+    {
+      "tag":"ggH(850)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "fill":0,
+      "marker":1,
+      "interpollation":[{"tagLeft":"ggH(600)#rightarrow ZZ", "massLeft":600, "mass":850, "tagRight":"ggH(1000)#rightarrow ZZ", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.4035     , "br":[ 0.300, 0.0403896 ] }      ]
+    },
+    {
+      "tag":"qqH(850)#rightarrow ZZ",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":809,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "marker":1,
+      "interpollation":[{"tagLeft":"qqH(600)#rightarrow ZZ", "massLeft":600, "mass":850, "tagRight":"qqH(1000)#rightarrow ZZ", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.0962     , "br":[ 0.300, 0.0403896 ] }      ]
+    }
+
+
   ]
 }
