@@ -32,6 +32,7 @@
 
 #include "UserCode/llvv_fwk/interface/tdrstyle.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
 
@@ -86,150 +87,6 @@ struct NameAndType{
    bool operator< (const NameAndType& a){ return a.name < name;}
  };
 
-void checkSumw2(TH1 *h) { if(h==0) return;  if(h->GetDefaultSumw2()) h->Sumw2();  }
-
-bool matchKeyword(JSONWrapper::Object& process, std::vector<string>& keywords){
-   if(keywords.size()<=0)return true;
-   if(process.isTag("keys")){
-      std::vector<JSONWrapper::Object> dsetkeywords = process["keys"].daughters();
-      for(size_t ikey=0; ikey<dsetkeywords.size(); ikey++){
-         for(unsigned int i=0;i<keywords.size();i++){if(std::regex_match(dsetkeywords[ikey].toString(),std::regex(keywords[i])))return true;}
-      }
-   }else{
-      return true;
-   }
-   return false;
-}
-
-string dropBadCharacters(string in){
-   while(in.find("*")!=std::string::npos)in.replace(in.find("*"),1,"");
-   while(in.find("#")!=std::string::npos)in.replace(in.find("#"),1,"");
-   while(in.find("{")!=std::string::npos)in.replace(in.find("{"),1,"");
-   while(in.find("}")!=std::string::npos)in.replace(in.find("}"),1,"");
-   while(in.find("(")!=std::string::npos)in.replace(in.find("("),1,"");
-   while(in.find(")")!=std::string::npos)in.replace(in.find(")"),1,"");
-   while(in.find("^")!=std::string::npos)in.replace(in.find("^"),1,"");
-   while(in.find("/")!=std::string::npos)in.replace(in.find("/"),1,"-");
-   return in;
-}
-
-
-void setStyle(JSONWrapper::Object& SingleProcess, TH1* hist){
-   if(SingleProcess.isTag("color" ) )hist->SetLineColor  ((int)SingleProcess[ "color"].toDouble()); else hist->SetLineColor  (1);
-   if(SingleProcess.isTag("color" ) )hist->SetMarkerColor((int)SingleProcess[ "color"].toDouble()); else hist->SetMarkerColor(1);
-   if(SingleProcess.isTag("color" ) )hist->SetFillColor  ((int)SingleProcess[ "color"].toDouble()); else hist->SetFillColor  (0);
-   if(SingleProcess.isTag("lcolor") )hist->SetLineColor  ((int)SingleProcess["lcolor"].toDouble());
-   if(SingleProcess.isTag("mcolor") )hist->SetMarkerColor((int)SingleProcess["mcolor"].toDouble()); 
-   if(SingleProcess.isTag("fcolor") )hist->SetFillColor  ((int)SingleProcess["fcolor"].toDouble()); 
-   if(SingleProcess.isTag("lwidth") )hist->SetLineWidth  ((int)SingleProcess["lwidth"].toDouble());// else hist->SetLineWidth  (1);
-   if(SingleProcess.isTag("lstyle") )hist->SetLineStyle  ((int)SingleProcess["lstyle"].toDouble());// else hist->SetLinStyle  (1);
-   if(SingleProcess.isTag("fill"  ) )hist->SetFillColor  ((int)SingleProcess["fill"  ].toDouble());
-   if(SingleProcess.isTag("marker") )hist->SetMarkerStyle((int)SingleProcess["marker"].toDouble());// else hist->SetMarkerStyle(1);
-   if(SingleProcess.isTag("msize")  )hist->SetMarkerSize (      SingleProcess["msize"].toDouble());// else the Size is the defaoult one
-}
-
-double getXsecXbr(JSONWrapper::Object& SingleProcess){
-   double toReturn = 1.0;
-   if(!SingleProcess.isTag("data"))return toReturn;
-   toReturn*= SingleProcess["data"][0].getDouble("xsec",1.0);
-   if(SingleProcess["data"][0].isTag("br")){
-      std::vector<JSONWrapper::Object> BRs = SingleProcess["data"][0]["br"].daughters();
-      for(size_t ipbr=0; ipbr<BRs.size(); ipbr++){toReturn*=BRs[ipbr].toDouble();}
-   }
-   return toReturn;
-}
-
-
-
-// function that add the TPaveText on the current canvas with the "CMS Preliminary...." on top of the Histograms. For split Lumi
-void DrawPreliminary(double L, double B, double R, double T,  bool isSim=false, bool preliminary=true){
-     //TOP RIGHT OUT-FRAME
-     char LumiText[1024];  sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", iEcm);       
-     TPaveText* T1 = new TPaveText(1.0-R-0.50, 1.0-T, 1.02-R, 1.0-0.005, "NDC");
-     T1->SetTextFont(43); T1->SetTextSize(23);   T1->SetTextAlign(31);
-     T1->SetFillColor(0); T1->SetFillStyle(0);   T1->SetBorderSize(0);
-     T1->AddText(LumiText);  T1->Draw();
-
-     //TOP LEFT IN-FRAME
-     TPaveText* T2 = new TPaveText(L+0.005, 1.0-T-0.05, L+0.20, 1.0-T-0.005, "NDC");
-     T2->SetTextFont(63); T2->SetTextSize(30);   T2->SetTextAlign(11);
-     T2->SetFillColor(0); T2->SetFillStyle(0);   T2->SetBorderSize(0);
-     T2->AddText("CMS"); T2->Draw();
-
-     if(preliminary){ //Bellow CMS
-     TPaveText* T3 = new TPaveText(L+0.005, 1.0-T-0.085, L+0.20, 1.0-T-0.035, "NDC");
-     T3->SetTextFont(53); T3->SetTextSize(23);   T3->SetTextAlign(11);
-     T3->SetFillColor(0); T3->SetFillStyle(0);   T3->SetBorderSize(0);
-     T3->AddText("Preliminary"); T3->Draw();
-     }
-
-     //if(Text!=""){  //TOP right IN-FRAME
-     //TPaveText* T4 = new TPaveText(1.0-R-0.50, 1.0-T-0.06, 1.0-R, 1.0-T-0.01, "NDC");
-     //T4->SetTextFont(43); T4->SetTextSize(23);   T4->SetTextAlign(32);
-     //T4->SetFillColor(0); T4->SetFillStyle(0);   T4->SetBorderSize(0);
-     //T4->AddText(Text.c_str());  T4->Draw();
-     //}
-
-     if(isSim){ //Right of CMS
-     TPaveText* T5 = new TPaveText(L+0.085, 1.0-T-0.05, L+0.32, 1.0-T-0.005, "NDC");
-     T5->SetTextFont(53); T5->SetTextSize(23);   T5->SetTextAlign(11);
-     T5->SetFillColor(0); T5->SetFillStyle(0);   T5->SetBorderSize(0);
-     T5->AddText("Simulation"); T5->Draw();
-     }
-}
-
-void DrawPreliminary(TAttPad* pad=NULL, bool isSim=false,   bool preliminary=true){
-   if     (pad )DrawPreliminary(pad->GetLeftMargin(), pad->GetBottomMargin(), pad->GetRightMargin(), pad->GetTopMargin() , isSim, preliminary);
-   else if(gPad)DrawPreliminary(gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin(), isSim, preliminary);
-   else         DrawPreliminary(0.15, 0.15, 0.15, 0.15                                                                   , isSim, preliminary);
-}
-
-TObject* GetObjectFromPath(TDirectory* File, std::string Path, bool GetACopy=false)
-{
-   size_t pos = Path.find("/");
-   if(pos < 256){
-      std::string firstPart = Path.substr(0,pos);
-      std::string endPart   = Path.substr(pos+1,Path.length());
-      TDirectory* TMP = (TDirectory*)File->Get(firstPart.c_str());
-      if(TMP!=NULL){
-         TObject* TMP2 =  GetObjectFromPath(TMP,endPart,GetACopy);
-         return TMP2;
-      }
-      return NULL;
-   }else{
-      TObject* TMP = File->Get(Path.c_str());
-      if(GetACopy){	return TMP->Clone();
-      }else{            return TMP;
-      }
-   }
-}
-
-void fixExtremities(TH1* h,bool addOverflow, bool addUnderflow)
-{
-  if(h==0) return;
-
-  if(addUnderflow){
-      double fbin  = h->GetBinContent(0) + h->GetBinContent(1);
-      double fbine = sqrt(h->GetBinError(0)*h->GetBinError(0)
-                          + h->GetBinError(1)*h->GetBinError(1));
-      h->SetBinContent(1,fbin);
-      h->SetBinError(1,fbine);
-      h->SetBinContent(0,0);
-      h->SetBinError(0,0);
-    }
-  
-  if(addOverflow){  
-      int nbins = h->GetNbinsX();
-      double fbin  = h->GetBinContent(nbins) + h->GetBinContent(nbins+1);
-      double fbine = sqrt(h->GetBinError(nbins)*h->GetBinError(nbins) 
-                          + h->GetBinError(nbins+1)*h->GetBinError(nbins+1));
-      h->SetBinContent(nbins,fbin);
-      h->SetBinError(nbins,fbine);
-      h->SetBinContent(nbins+1,0);
-      h->SetBinError(nbins+1,0);
-    }
-}
-
 
 void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<NameAndType>& histlist, TDirectory* dir=NULL, std::string parentPath=""){
   if(parentPath=="" && !dir){
@@ -241,7 +98,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
       //loop on all Proc
       for(size_t ip=0; ip<Process.size(); ip++){
           if(Process[ip].isTag("interpollation"))continue; //nothing to do with these          
-          if(!matchKeyword(Process[ip], keywords))continue; //only consider samples passing key filtering
+          if(!utils::root::matchKeyword(Process[ip], keywords))continue; //only consider samples passing key filtering
 	  bool isData (  Process[ip]["isdata"].toBool()  );
           bool isSign ( !isData &&  Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool());
   	  bool isMC   = !isData && !isSign; 
@@ -250,27 +107,28 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
 	  for(size_t id=0; id<Samples.size(); id++){               
+              string dtag = Samples[id].getString("dtag", "");
+              string suffix = Samples[id].getString("suffix","");
 	      int split = Samples[id].getInt("split", -1);               
               int fileProcessed=0;
               for(int s=0; s<(split>0?split:999); s++){
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;                 
-                 string FileName = RootDir + Samples[id].getString("dtag", "") +  Samples[id].getString("suffix","") + segmentExt + filtExt; 
+                 string FileName = RootDir + dtag +  suffix + segmentExt + filtExt; 
                  if(split<0){ //autosplitting --> check if there is a cfg file before checking if there is a .root file
                     FILE* pFile = fopen((FileName+"_cfg.py").c_str(), "r");
                     if(!pFile){break;}else{fclose(pFile);}
                  }
-
                  FileName += ".root";
 
                  FILE* pFile = fopen(FileName.c_str(), "r");  //check if the file exist
-                 if(!pFile){MissingFiles[Samples[id].getString("dtag")].push_back(FileName); continue;}else{fclose(pFile);}
+                 if(!pFile){MissingFiles[dtag].push_back(FileName); continue;}else{fclose(pFile);}
 
 	         TFile* File = new TFile(FileName.c_str());                                 
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
-                    MissingFiles[Samples[id].getString("dtag")].push_back(FileName);
+                    MissingFiles[dtag].push_back(FileName);
                     continue; 
                  }else{
-                    DSetFiles[Samples[id].getString("dtag")].push_back(FileName);
+                    DSetFiles[dtag].push_back(FileName);
                  }
 
                  if(fileProcessed>0){File->Close();continue;} //only consider the first file of each sample to get the list of object 
@@ -281,7 +139,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
                  if(isMC  ){if(bckgProcessed>=2){ File->Close(); continue;}else{bckgProcessed++;}}
 
-                 printf("Adding all objects from %25s to the list of considered objects\n",  FileName.c_str());
+                 printf("Adding all objects from %25s to the list of considered objects:\n",  FileName.c_str());
 	         GetListOfObject(Root,RootDir,histlist,(TDirectory*)File,"" );
 	         File->Close();
                }
@@ -305,7 +163,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
    TList* list = dir->GetListOfKeys();
    for(int i=0;i<list->GetSize();i++){
-      TObject* tmp = GetObjectFromPath(dir,list->At(i)->GetName(),false);
+      TObject* tmp = utils::root::GetObjectFromPath(dir,list->At(i)->GetName(),false);
 
       if(tmp->InheritsFrom("TDirectory")){
          GetListOfObject(Root,RootDir,histlist,(TDirectory*)tmp,parentPath+ list->At(i)->GetName()+"/" );
@@ -329,12 +187,11 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 
 
-void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProperties){
-    
+void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& histlist){    
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
       if(!Process[i].isTag("interpollation"))continue; //only consider intepollated processes
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
 
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       File->cd();
@@ -350,71 +207,89 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, NameAndType& Hi
       double massR    = Process[i]["interpollation"][0]["massRight"].toDouble();
       double Ratio = ((double)mass - massL); Ratio/=(massR - massL);
 
-      double xsecXbr  = getXsecXbr(Process[i]);
-      double xsecXbrL = xsecXbr;  for(unsigned int j=0;j<Process.size();j++){if(Process[j]["tag"].c_str()==signalL){xsecXbrL = getXsecXbr(Process[j]); break;}}
-      double xsecXbrR = xsecXbr;  for(unsigned int j=0;j<Process.size();j++){if(Process[j]["tag"].c_str()==signalR){xsecXbrR = getXsecXbr(Process[j]); break;}}
+      double xsecXbr  = utils::root::getXsecXbr(Process[i]);
+      double xsecXbrL = xsecXbr;  for(unsigned int j=0;j<Process.size();j++){if(Process[j]["tag"].c_str()==signalL){xsecXbrL = utils::root::getXsecXbr(Process[j]); break;}}
+      double xsecXbrR = xsecXbr;  for(unsigned int j=0;j<Process.size();j++){if(Process[j]["tag"].c_str()==signalR){xsecXbrR = utils::root::getXsecXbr(Process[j]); break;}}
 
       while(signalL.find("/")!=std::string::npos)signalL.replace(signalL.find("/"),1,"-");
       while(signalR.find("/")!=std::string::npos)signalR.replace(signalR.find("/"),1,"-");
 
-      TH1* objL = (TH1*)GetObjectFromPath(File,signalL + "/" + HistoProperties.name);      
-      TH1* objR = (TH1*)GetObjectFromPath(File,signalR + "/" + HistoProperties.name);      
-      if(!objL || !objR)continue;
+      int ictr = 0;
+      int TreeStep = std::max(1,(int)(histlist.size()/50));
+      printf("Interpol %20s :", signal.c_str());
+      for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
+         if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+         NameAndType& HistoProperties = *it;        
 
-      TH1* histoInterpolated = NULL;
-      if(HistoProperties.isIndexPlot){
-         TH2F* histo2DL = (TH2F*) objL;
-         TH2F* histo2DR = (TH2F*) objR;
-         if(!histo2DL or !histo2DR)continue;
-         TH2F* histo2D  = (TH2F*) histo2DL->Clone(histo2DL->GetName());
-         histo2D->Reset();
+//         printf("%s\n", HistoProperties.name.c_str());
+//         time_t now = time(0);
+        
+         TH1* objL = (TH1*)utils::root::GetObjectFromPath(File,signalL + "/" + HistoProperties.name);      
+         TH1* objR = (TH1*)utils::root::GetObjectFromPath(File,signalR + "/" + HistoProperties.name);      
+         if(!objL || !objR)continue;
 
-         for(int cutIndex=0;cutIndex<=histo2DL->GetNbinsX()+1;cutIndex++){
-            TH1D* histoL = histo2DL->ProjectionY("tempL", cutIndex, cutIndex);
-            TH1D* histoR = histo2DR->ProjectionY("tempR", cutIndex, cutIndex);
-            if(histoL->Integral()>0 && histoR->Integral()>0){
+//         time_t after1 = time(0);
+
+
+         TH1* histoInterpolated = NULL;
+         if(HistoProperties.isIndexPlot){
+            TH2F* histo2DL = (TH2F*) objL;
+            TH2F* histo2DR = (TH2F*) objR;
+            if(!histo2DL or !histo2DR)continue;
+            histo2DL->Scale(1.0/xsecXbrL);
+            histo2DR->Scale(1.0/xsecXbrR);
+            TH2F* histo2D  = (TH2F*) histo2DL->Clone(histo2DL->GetName());
+            histo2D->Reset();
+
+            for(int cutIndex=0;cutIndex<=histo2DL->GetNbinsX()+1;cutIndex++){
+               TH1D* histoL = histo2DL->ProjectionY("tempL", cutIndex, cutIndex);
+               TH1D* histoR = histo2DR->ProjectionY("tempR", cutIndex, cutIndex);
+               if(histoL->Integral()>0 && histoR->Integral()>0){
+                  TH1D* histo  = th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral(), 0);
+                  for(int y=0;y<=histo2DL->GetNbinsY()+1;y++){
+                    histo2D->SetBinContent(cutIndex, y, histo->GetBinContent(y));
+                    histo2D->SetBinError(cutIndex, y, histo->GetBinError(y));
+                  }
+                  delete histo;
+               }
+               delete histoR;
+               delete histoL;
+            }
+            delete histo2DL;
+            delete histo2DR;
+            histo2D->Scale(xsecXbr);
+            histoInterpolated = histo2D;
+         }else if(HistoProperties.is1D()){
+            TH1F* histoL = (TH1F*) objL;
+            TH1F* histoR = (TH1F*) objR;
+            if(!histoL or !histoR or histoL->Integral()<=0 or histoR->Integral()<=0)continue;
+            if(histoL->Integral()>0 && histoR->Integral()>0){            
                histoL->Scale(1.0/xsecXbrL);
                histoR->Scale(1.0/xsecXbrR);
-               TH1D* histo  = (TH1D*)histoL->Clone(HistoProperties.name.c_str());  histo->Reset();
-//             printf("%f - %f -%f    --> %f - %f -%f\n", massL, mass, massR, histoL->Integral(), (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral(), histoR->Integral() );
-               histo->Add(th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral(), 0), 1);
-               histo->Scale(xsecXbr);
-               for(int y=0;y<=histo2DL->GetNbinsY()+1;y++){
-                 histo2D->SetBinContent(cutIndex, y, histo->GetBinContent(y));
-                 histo2D->SetBinError(cutIndex, y, histo->GetBinError(y));
-               }
-               delete histo;
+               double Integral = (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral();
+               TH1F* histo  = (TH1F*)histoL->Clone(HistoProperties.name.c_str());  histo->Reset();
+               histo->Add(th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, Integral, 0), 1.0);
+   //          printf("%40s - %f - %f -%f    --> %f - %f -%f\n", HistoProperties.name.c_str(), massL, mass, massR, histoL->Integral(), histo->Integral(), histoR->Integral() );
+               histo->Scale(xsecXbr);          
+               histoInterpolated = histo;
             }
             delete histoR;
             delete histoL;
          }
-         delete histo2DL;
-         delete histo2DR;
-         histoInterpolated = histo2D;
-      }else if(HistoProperties.is1D()){
-         TH1F* histoL = (TH1F*) objL;
-         TH1F* histoR = (TH1F*) objR;
-         if(!histoL or !histoR or histoL->Integral()<=0 or histoR->Integral()<=0)continue;
-         if(histoL->Integral()>0 && histoR->Integral()>0){            
-            histoL->Scale(1.0/xsecXbrL);
-            histoR->Scale(1.0/xsecXbrR);
-            double Integral = (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral();
-            TH1F* histo  = (TH1F*)histoL->Clone(HistoProperties.name.c_str());  histo->Reset();
-            histo->Add(th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, Integral, 0), 1.0);
-//          printf("%40s - %f - %f -%f    --> %f - %f -%f\n", HistoProperties.name.c_str(), massL, mass, massR, histoL->Integral(), histo->Integral(), histoR->Integral() );
-            histo->Scale(xsecXbr);          
-            histoInterpolated = histo;
-         }
-         delete histoR;
-         delete histoL;
-      }
 
-      if(histoInterpolated){
-         subdir->cd();
-         histoInterpolated->Write(HistoProperties.name.c_str());
-         gROOT->cd();
-         delete histoInterpolated;
-      }
+//         time_t after2 = time(0);
+
+         if(histoInterpolated){
+            subdir->cd();
+            histoInterpolated->Write(HistoProperties.name.c_str());
+            gROOT->cd();
+            delete histoInterpolated;
+         }
+
+//         time_t after3 = time(0);
+//         printf("%fs - %fs - %fs \n", difftime(after1,now), difftime(after2,after1), difftime(after3,after2));
+
+      }printf("\n");
    }
 }
 
@@ -429,14 +304,18 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
 
    for(unsigned int i=0;i<Process.size();i++){
       if(Process[i].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
-     
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+
+//      time_t now = time(0);
+
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       OutputFile->cd();
       TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
       if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
       subdir->cd();
 
+//      time_t after1 = time(0);
+      
       float  Weight = 1.0;     
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
@@ -450,8 +329,8 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
            for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){
               NameAndType& HistoProperties = *it;
 
-              TObject* inobj  = GetObjectFromPath(File,HistoProperties.name);  if(!inobj)continue;
-              TObject* outobj = GetObjectFromPath(subdir,HistoProperties.name);
+              TObject* inobj  = utils::root::GetObjectFromPath(File,HistoProperties.name);  if(!inobj)continue;
+              TObject* outobj = utils::root::GetObjectFromPath(subdir,HistoProperties.name);
              
               if(HistoProperties.isTree()){
                  TTree* outtree = (TTree*)outobj;
@@ -466,7 +345,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
                     for(unsigned int i=0;i<((TTree*)inobj)->GetEntries();i++){weightTree->Fill();}                       
                  }else{
                     outtree->CopyEntries(((TTree*)inobj), -1, "fast");
-                    TTree* weightTree = (TTree*)GetObjectFromPath(subdir,HistoProperties.name+"_PWeight");
+                    TTree* weightTree = (TTree*)utils::root::GetObjectFromPath(subdir,HistoProperties.name+"_PWeight");
                     for(unsigned int i=0;i<((TTree*)inobj)->GetEntries();i++){weightTree->Fill();} 
                  }
               }else{        
@@ -475,8 +354,8 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
                  if(!outhist){ //histogram not yet in file, so need to add it
                     subdir->cd();
                     outhist = (TH1*)(inobj)->Clone(inobj->GetName());
-                    setStyle(Process[i], outhist);
-                    checkSumw2(outhist);
+                    utils::root::setStyle(Process[i], outhist);
+                    utils::root::checkSumw2(outhist);
                  }else{
                     outhist->Add((TH1*)inobj);
                  }
@@ -485,18 +364,14 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
            delete File;         
          }   
       }
+//      time_t after2 = time(0);
+      
       subdir->cd();
       subdir->Write();
-   }printf("\n");
 
-
-   int ictr = 0;
-   int TreeStep = std::max(1,(int)(histlist.size()/50));
-   printf("Sample Interpolation         :");
-   for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
-       if(ictr%TreeStep==0){printf(".");fflush(stdout);}
-      NameAndType& HistoProperties = *it;
-      if(!HistoProperties.isTree())InterpollateProcess(Root, OutputFile, HistoProperties);
+//      time_t after3 = time(0);
+//      printf("%s %fs - %fs - %fs\n", dirName.c_str(), difftime(after1,now), difftime(after2,after1), difftime(after3,after2));
+     
    }printf("\n");
 }
 
@@ -510,7 +385,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering      
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering      
       if(Process[i]["isinvisible"].toBool())continue;
       string filtExt("");
       if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
@@ -519,9 +394,9 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
       c1->SetLogz(true);
 
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
-      TH1* hist = (TH1*)GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
+      TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
-      setStyle(Process[i], hist);
+      utils::root::setStyle(Process[i], hist);
 
       SaveName = hist->GetName();
       ObjectToDelete.push_back(hist);
@@ -538,9 +413,9 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
       leg->Draw("same");
       ObjectToDelete.push_back(leg);
 
-      DrawPreliminary();
+      utils::root::DrawPreliminary(iLumi, iEcm);
 
-      string SavePath = dropBadCharacters(SaveName + "_" + (Process[i])["tag"].toString());
+      string SavePath = utils::root::dropBadCharacters(SaveName + "_" + (Process[i])["tag"].toString());
       if(outDir.size()) SavePath = outDir +"/"+ SavePath;
       for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
       {
@@ -562,7 +437,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    int NSampleToDraw = 0;
    for(unsigned int i=0;i<Process.size();i++){
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       if(Process[i]["isinvisible"].toBool())continue;
       NSampleToDraw++;
    }
@@ -574,7 +449,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       if(Process[i]["isinvisible"].toBool())continue;
 
       TVirtualPad* pad = c1->cd(i+1);
@@ -582,9 +457,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       pad->SetTopMargin(0.0); pad->SetBottomMargin(0.10);  pad->SetRightMargin(0.20);
 
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
-      TH1* hist = (TH1*)GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
+      TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
-      setStyle(Process[i], hist);
+      utils::root::setStyle(Process[i], hist);
   
       SaveName = hist->GetName();
       ObjectToDelete.push_back(hist);
@@ -602,9 +477,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       ObjectToDelete.push_back(leg);
    }
    c1->cd(0);
-   DrawPreliminary();
+   utils::root::DrawPreliminary(iLumi, iEcm);
 
-   string SavePath = dropBadCharacters(SaveName);
+   string SavePath = utils::root::dropBadCharacters(SaveName);
    if(outDir.size()) SavePath = outDir +"/"+ SavePath; 
    for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
    {
@@ -667,14 +542,14 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    ObjectToDelete.push_back(stack);
 
    for(unsigned int i=0;i<Process.size();i++){
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       if(Process[i]["isinvisible"].toBool())continue;
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
-      TH1* hist = (TH1*)GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
+      TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
-      setStyle(Process[i], hist);
-      
-      fixExtremities(hist,fixOverflow,fixUnderflow); 
+      utils::root::setStyle(Process[i], hist);
+     
+      utils::root::fixExtremities(hist,fixOverflow,fixUnderflow); 
       if(Process[i].isTag("normto")) hist->Scale( Process[i]["normto"].toDouble()/hist->Integral() );
 
       if(Maximum<hist->GetMaximum())Maximum=hist->GetMaximum();
@@ -683,7 +558,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
       if(Process[i]["isdata"].toBool()){
           if(!data){legA->AddEntry(hist, Process[i]["tag"].c_str(), "P E");}
-          if(!data){data = (TH1D*)hist->Clone("data");checkSumw2(data);}else{data->Add(hist);}
+          if(!data){data = (TH1D*)hist->Clone("data");utils::root::checkSumw2(data);}else{data->Add(hist);}
       }else if(Process[i].isTag("spimpose") && Process[i]["spimpose"].toBool()){
           legA->AddEntry(hist, Process[i]["tag"].c_str(), "L" );
           spimposeOpts.push_back( "hist" );
@@ -692,7 +567,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       }else{
 	 stack->Add(hist, "HIST"); //Add to Stack
          legA->AddEntry(hist, Process[i]["tag"].c_str(), "F");	 
-         if(!mc){mc = (TH1D*)hist->Clone("mc");checkSumw2(mc);}else{mc->Add(hist);}      
+         if(!mc){mc = (TH1D*)hist->Clone("mc");utils::root::checkSumw2(mc);}else{mc->Add(hist);}      
       }
    }
 
@@ -733,7 +608,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    t1->Update();
 
    if(showUnc && mc){
-      mcPlusRelUnc = (TH1 *) mc->Clone("totalmcwithunc");checkSumw2(mcPlusRelUnc); mcPlusRelUnc->SetDirectory(0); 
+      mcPlusRelUnc = (TH1 *) mc->Clone("totalmcwithunc");utils::root::checkSumw2(mcPlusRelUnc); mcPlusRelUnc->SetDirectory(0); 
       for(int ibin=1; ibin<=mcPlusRelUnc->GetXaxis()->GetNbins(); ibin++){
          Double_t error=sqrt(pow(mcPlusRelUnc->GetBinError(ibin),2)+pow(mcPlusRelUnc->GetBinContent(ibin)*baseRelUnc,2));
          mcPlusRelUnc->SetBinError(ibin,error);
@@ -824,7 +699,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        TH1D *denRelUncH=0;
        if(mcPlusRelUnc) denRelUncH=(TH1D *) mcPlusRelUnc->Clone("mcrelunc");
        else             denRelUncH=(TH1D *) mc->Clone("mcrelunc");
-       checkSumw2(denRelUncH);
+       utils::root::checkSumw2(denRelUncH);
        for(int xbin=1; xbin<=denRelUncH->GetXaxis()->GetNbins(); xbin++)
 	 {
 	   if(denRelUncH->GetBinContent(xbin)==0) continue;
@@ -869,7 +744,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        for(size_t icd=0; icd<compDists.size(); icd++){
 	   TString name("CompHistogram"); name+=icd;
 	   TH1D *dataToObsH = (TH1D*)compDists[icd]->Clone(name);
-	   checkSumw2(dataToObsH);
+	   utils::root::checkSumw2(dataToObsH);
 	   dataToObsH->Divide(mc);
 	   dataToObsH->Draw("same");
        }
@@ -885,11 +760,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    t1->cd();
    c1->cd();
-   DrawPreliminary(t1);
+   utils::root::DrawPreliminary(iLumi, iEcm, t1);
    c1->Modified();  
    c1->Update();
 
-   string SavePath = dropBadCharacters(SaveName);
+   string SavePath = utils::root::dropBadCharacters(SaveName);
    if(outDir.size()) SavePath = outDir +"/"+ SavePath;
    for(auto i = plotExt.begin(); i != plotExt.end(); ++i){
      //system(string(("rm -f ") + SavePath + *i).c_str());
@@ -911,13 +786,13 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
    TH1* stack = NULL; 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
-      if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
       string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
-      TH1* hist = (TH1*)GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
+      TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
 
       if(!pFile){
-         string SavePath = dropBadCharacters(string(hist->GetName()) + ".tex");
+         string SavePath = utils::root::dropBadCharacters(string(hist->GetName()) + ".tex");
          SavePath = outDir + string("/") + SavePath;
          system(string(("rm -f ") + SavePath).c_str());
          pFile = fopen(SavePath.c_str(), "w");
@@ -950,7 +825,7 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
 
       if((!Process[i].isTag("spimpose") || !Process[i]["spimpose"].toBool()) && !Process[i]["isdata"].toBool()){
          //Add to Stack
-	if(!stack){stack = (TH1*)hist->Clone("Stack");checkSumw2(stack);}else{stack->Add(hist,1.0);}
+	if(!stack){stack = (TH1*)hist->Clone("Stack");utils::root::checkSumw2(stack);}else{stack->Add(hist,1.0);}
 
          char numberastext[2048]; numberastext[0] = '\0';
          for(int b=1;b<=hist->GetXaxis()->GetNbins();b++){sprintf(numberastext,"%s & %s",numberastext, utils::toLatexRounded(hist->GetBinContent(b), hist->GetBinError(b),-1,doPowers).c_str());}
@@ -1119,6 +994,9 @@ int main(int argc, char* argv[]){
    }
 
    if(fileOption!="READ")SavingToFile(Root,inDir,OutputFile, histlist);       
+
+   InterpollateProcess(Root, OutputFile, histlist);
+
 
    int ictr =0;
    int TreeStep = std::max(1,(int)(histlist.size()/50));

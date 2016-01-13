@@ -469,8 +469,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("csvb",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("csvc",     ";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
-  TH1 *hbtags=mon.addHistogram( new TH1F("nbtags",   ";b-tag multiplicity;Events",5,0,5) );
-  TH1 *hbtagsJP=mon.addHistogram( new TH1F("nbtagsJP",   ";b-tag multiplicity;Events",5,0,5) );
   mon.addHistogram( new TH1F("leadjetpt",    ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("trailerjetpt", ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
@@ -484,17 +482,17 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfmjj"       , ";Dijet invariant mass [GeV];Events",31,mjjaxis) );
   mon.addHistogram( new TH1F("vbfdphijj"    , ";Azimuthal angle difference;Events",20,0,3.5) );
   mon.addHistogram( new TH1F("vbfdetajj"    , ";Pseudo-rapidity span;Events",20,0,10) );
-  TH1 *hjets=mon.addHistogram( new TH1F("njets",  ";Jet multiplicity;Events",5,0,5) );
-  for(int ibin=1; ibin<=hjets->GetXaxis()->GetNbins(); ibin++)
-    {
+  TH1F* hjets   = (TH1F*) mon.addHistogram( new TH1F("njets",   ";Jet multiplicity;Events",5,0,5) );
+  TH1F* hbtags  = (TH1F*) mon.addHistogram( new TH1F("nbtags",  ";b-tag multiplicity;Events",5,0,5) );
+  TH1F* hbtagsJP= (TH1F*) mon.addHistogram( new TH1F("nbtagsJP",";b-tag multiplicity;Events",5,0,5) );
+  for(int ibin=1; ibin<=hjets->GetXaxis()->GetNbins(); ibin++){
       TString label("");
       if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
-      else                                label +="=";
       label += (ibin-1);
-      hjets->GetXaxis()->SetBinLabel(ibin,label);
-      hbtags->GetXaxis()->SetBinLabel(ibin,label);
+      hjets   ->GetXaxis()->SetBinLabel(ibin,label);
+      hbtags  ->GetXaxis()->SetBinLabel(ibin,label);
       hbtagsJP->GetXaxis()->SetBinLabel(ibin,label);
-    } 
+  } 
 
   mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
   mon.addHistogram( new TH1F( "mindphijmetNM1",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
@@ -560,6 +558,7 @@ int main(int argc, char* argv[])
   Hoptim_cuts_VBF->GetYaxis()->SetBinLabel(4, "M_{jj}>");
   for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){ for(unsigned int cut=0;cut<4;cut++){ Hoptim_cuts_VBF    ->Fill(index, float(cut), optim_Cuts_VBF[index][cut]); }  }
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+     if(ivar>0)continue;// do not fill for systematics in order to save time
      mon.addHistogram( new TH2F (TString("vbf_shapes")+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts_VBF.size(),0,optim_Cuts_VBF.size(), 1, 0, 2500) );     
   }
 
@@ -720,7 +719,7 @@ int main(int argc, char* argv[])
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
           genEventInfoHandle.getByLabel(ev, "generator");
-          if(genEventInfoHandle.isValid()){ shapeWeight*=genEventInfoHandle->weight(); } // if(genEventInfoHandle->weight()<0){shapeWeight*=-1;}  }
+          if(genEventInfoHandle.isValid()){ shapeWeight*=genEventInfoHandle->weight(); }
      
            //final event weight
            weight *= shapeWeight;
@@ -857,6 +856,23 @@ int main(int argc, char* argv[])
              mon.fillHisto("wdecays","",decBin,1);
            }
          }
+
+         //VBF Control plots to understand VBF Tail in Z mass shape
+         if(isMC_VBF1000){
+                double filterEff = 0.16275; //measured in previous iteration
+                std::vector<reco::GenParticle> VisLep;
+                for( unsigned int k=0; k<gen.size(); ++k){	
+                        if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] ); 
+                  }
+                if( VisLep.size() == 2 ){
+                        TLorentzVector Lep1( VisLep[0].px(), VisLep[0].py(), VisLep[0].pz(), VisLep[0].p() );
+                        TLorentzVector Lep2( VisLep[1].px(), VisLep[1].py(), VisLep[1].pz(), VisLep[1].p() );	
+                        double MassVisZ = ( Lep1 + Lep2 ).M();
+                        if( MassVisZ > 150 ) continue; //skip this event 
+                }
+                weight /= filterEff;
+         }
+        
 
          //Resolve G+jet/QCD mixing                                                                                                 
          if (runPhotonSelection && (isMC_GJet || isMC_QCD) ) {
@@ -1029,483 +1045,410 @@ int main(int argc, char* argv[])
            }
          std::sort(selJets.begin(), selJets.end(), utils::sort_CandidatesByPt);
 
-
          //
          // ASSIGN CHANNEL
          //
-         std::vector<TString> chTags;
-         int dilId(1);
-         LorentzVector boson(0,0,0,0);
-         if(!runPhotonSelection && selLeptons.size()==2){
-             for(size_t ilep=0; ilep<2; ilep++)
-               {
-                 dilId *= selLeptons[ilep].pdgId();
-                 int id(abs(selLeptons[ilep].pdgId()));
-                 weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
-                 boson += selLeptons[ilep].p4();
-               }
-        
-             //check the channel
-             if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
-             if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
-             if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }           
-         }else{
-           if(photonTrigger && selPhotons.size()) {
-             dilId=22;
-             chTags.push_back("ee");
-             chTags.push_back("mumu");
-             boson = selPhotons[0].p4();
-             weight *= triggerPrescale;
-           }
-         }
-
-         TString evCat=eventCategoryInst.GetCategory(selJets,boson);
-         std::vector<TString> tags(1,"all");
-         for(size_t ich=0; ich<chTags.size(); ich++){
-           tags.push_back( chTags[ich] );
-           tags.push_back( chTags[ich]+evCat );
-         }
-
-         mon.fillHisto("nleptons",tags,selLeptons.size(), weight);
-
-
-	 // Photon trigger efficiencies
-	 // Must be run without the photonTrigger requirement on top of of the Analysis.
-	 if (photonTriggerStudy && runPhotonSelection && selPhotons.size() ) {
-	   TString tag="trigger";
-	   pat::Photon iphoton = selPhotons[0];
-      
-	   mon.fillHisto("phopt", tag, iphoton.pt(),weight);
-	   mon.fillHisto("phoeta", tag, iphoton.eta(), weight);
-	   trigUtils::photonControlSample(ev, iphoton, mon, tag);
-	   trigUtils::photonControlEff(ev, iphoton, mon, tag);
-
-	   for(size_t itag=0; itag<tags.size(); itag++){		
-	     //update the weight
-	     TString icat=tags[itag];
-	     mon.fillHisto("phopt", icat, iphoton.pt(),weight);
-	     mon.fillHisto("phoeta", icat, iphoton.eta(),weight);
-	     trigUtils::photonControlSample(ev, iphoton, mon, icat);
-	     trigUtils::photonControlEff(ev, iphoton, mon, icat);
-	   }
-	 } // end Trigger efficiencies
-
-
-         //////////////////////////
-         //                      //
-         //  BASELINE SELECTION  //
-         //                      //
-         //////////////////////////
-
-         bool passMass(fabs(boson.mass()-91)<15);
-         bool passQt(boson.pt()>55);
-         bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
-         bool passBtags(nbtags==0); 
-         bool passMinDphijmet( njets==0 || mindphijmet>0.5);
-         bool removeDump(false);
-
-         if(runPhotonSelection)
-           {
-             passMass=photonTrigger;
-             passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
-           }
-
-         //VBF Control plots to understand VBF Tail in Z mass shape
-         std::vector<reco::GenParticle> VisLep;
-         if(isMC_VBF1000){
-		double filterEff = 0.16275;
-                for( unsigned int k=0; k<gen.size(); ++k){	
-			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] ); 
-      		  }
-		if( VisLep.size() == 2 ){
-                        TLorentzVector Lep1( VisLep[0].px(), VisLep[0].py(), VisLep[0].pz(), VisLep[0].p() );
-                        TLorentzVector Lep2( VisLep[1].px(), VisLep[1].py(), VisLep[1].pz(), VisLep[1].p() );	
-			double MassVisZ = ( Lep1 + Lep2 ).M();
-			if( MassVisZ > 150 ) removeDump=true; 
-		}
-                if(removeDump ) continue;
-                weight /= filterEff;
-	 }
-
-
-         mon.fillHisto("eventflow",  tags,0,weight);
-         mon.fillHisto("nvtxA",  tags,vtx.size(),1);
-         mon.fillHisto("nvtxB",  tags,vtx.size(),xsecWeight);
-         mon.fillHisto("nvtxC",  tags,vtx.size(),xsecWeight * puWeight);
-         mon.fillHisto("nvtxD",  tags,vtx.size(),xsecWeight * puWeight * shapeWeight);
-
-         mon.fillHisto("nvtxraw",  tags,vtx.size(),xsecWeight * shapeWeight);
-         mon.fillHisto("nvtx",  tags,vtx.size(),weight);
-         mon.fillHisto("rho",  tags,rho,weight);
-
-         if(chTags.size()==0) continue;
-         mon.fillHisto("eventflow",  tags,1,weight);
-         if(!runPhotonSelection){
-           mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
-           mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
-           mon.fillHisto("leadeta",     tags,fabs(selLeptons[0].eta()),weight); 
-           mon.fillHisto("trailereta",  tags,fabs(selLeptons[1].eta()),weight); 
-         }
-  
-         mon.fillHisto("zmass", tags,boson.mass(),weight); 
-         mon.fillHisto("zy",    tags,fabs(boson.Rapidity()),weight); 
-
-         if(passMass){
-
-           mon.fillHisto("eventflow",tags, 2,weight);
-           mon.fillHisto("zpt",      tags, boson.pt(),weight);
-           mon.fillHisto("zpt_rebin",tags, boson.pt(),weight,true);
-
-           //these two are used to reweight photon -> Z, the 3rd is a control
-           mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
-           mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
-
-           if(passQt){
-             mon.fillHisto("eventflow",tags,3,weight);
-             int nExtraLeptons((selLeptons.size()-2)+extraLeptons.size());
-             mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
-             if(nExtraLeptons>0){
-               LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1].p4() : extraLeptons[0].p4());
-               double dphi=fabs(deltaPhi(thirdLepton.phi(),met.phi()));
-               double mt=TMath::Sqrt(2*thirdLepton.pt()*met.pt()*(1-TMath::Cos(dphi)));
-               mon.fillHisto("thirdleptonpt",tags,thirdLepton.pt(),weight);
-               mon.fillHisto("thirdleptoneta",tags,fabs(thirdLepton.eta()),weight);
-               mon.fillHisto("thirdleptonmt",tags,mt,weight);
-             }
-             if(passThirdLeptonVeto){
-               
-               mon.fillHisto("eventflow",tags,4,weight);
-               for(size_t ijet=0; ijet<selJets.size(); ijet++){
-                 if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
-
-                 float csv(selJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
-                 mon.fillHisto( "csv",tags,csv,weight);
-                 if(!isMC) continue;
-                 int flavId=selJets[ijet].partonFlavour();
-                 TString jetFlav("others");
-                 if(abs(flavId)==5)      jetFlav="b";
-                 else if(abs(flavId)==4) jetFlav="c";
-                 mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
-               }
-               mon.fillHisto( "nbtags",tags,nbtags,weight);
-               mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
-               
-               if(passBtags){
-                 mon.fillHisto("eventflow",tags,5,weight);
-
-                 //include photon prediction from this point forward
-                 //requires looping tag by tag as weights are category-specific
-                 //the following relies on the hypothesis that the tags are ordered as follows: all, ch, ch+subtag, ch, ch+subtag, etc...
-                 //so that the ch will be assigned the weight of its subtag and all will be the summ of all ch+subtag weights
-                 std::vector<LorentzVector> massiveBoson(tags.size(),boson);
-                 std::vector<float> photonWeights(tags.size(),1.0);
-
-                 if(gammaWgtHandler!=0) {
-                   float lastPhotonWeight(1.0), totalPhotonWeight(0.0);
-                   LorentzVector lastMassiveBoson(boson);
-                   for(size_t itag=0; itag<tags.size(); itag++){
-                     size_t idx(tags.size()-itag-1);
-                     std::vector<Float_t> photonVars;
-                     photonVars.push_back(boson.pt());
-                     //photonVars.push_back(met.pt()/boson.pt());
-                     float photonWeight=gammaWgtHandler->getWeightFor(photonVars,tags[idx]);
-                     if(tags[idx]=="all")       { 
-                       photonWeights[idx]=(totalPhotonWeight==0? 1.0:totalPhotonWeight); 
-                     }
-                     else if(photonWeight!=1.0) { 
-                       photonWeights[idx]=photonWeight; 
-                       massiveBoson[idx]=gammaWgtHandler->getMassiveP4(boson,tags[idx]);
-                       totalPhotonWeight+=photonWeight; 
-                       lastPhotonWeight=photonWeight; 
-                       lastMassiveBoson=massiveBoson[idx];
-                     }
-                     else                       { 
-                       photonWeights[idx]=lastPhotonWeight; 
-                       massiveBoson[idx]=lastMassiveBoson;
-                     }
-                   }
-                 }
-
-
-                 for(size_t itag=0; itag<tags.size(); itag++){		
-                   //update the weight
-                   TString icat=tags[itag];
-                   float iweight(weight*photonWeights[itag]);
-                   
-                   LorentzVector iboson=massiveBoson[itag];
-
-                   mon.fillHisto( "mindphijmet",icat,mindphijmet,iweight);
-                   if(met.pt()>80) mon.fillHisto( "mindphijmetNM1",icat,mindphijmet,iweight);
-                   if(passMinDphijmet){
-                     mon.fillHisto("eventflow",icat,6,iweight);
-                     
-                     //this one is used to sample the boson mass: cuts may shape Z lineshape
-                     mon.fillHisto("qmass",       tags, boson.mass(),weight); 
-                     mon.fillHisto( "njets",icat,njets,iweight);
-
-                     double b_dphi=fabs(deltaPhi(iboson.phi(),met.phi()));
-                     mon.fillHisto( "metphi",icat,met.phi(),iweight,true);                                                                    
-                     mon.fillHisto( "bosonphi",icat,iboson.phi(),iweight,true);                                                               
-                     mon.fillHisto( "dphi_boson_met",icat,b_dphi,iweight,true);
-
- 		     mon.fillHisto( "met",icat,met.pt(),iweight,true);
-                     mon.fillHisto( "metpuppi",icat,puppimet.pt(),iweight,true);
-                     mon.fillHisto( "balance",icat,met.pt()/iboson.pt(),iweight);
-
-                     TVector2 met2(met.px(),met.py());
-                     TVector2 boson2(iboson.px(), iboson.py());
-                     double axialMet(boson2*met2); axialMet/=-iboson.pt();
-                     mon.fillHisto( "axialmet",icat,axialMet,iweight);
-                     double mt=higgs::utils::transverseMass(iboson,met,true);
-
-		     mon.fillHisto( "mt",icat,mt,iweight,true);
-
-                     if(met.pt()>optim_Cuts1_met[0]) 
-                       {
-                         mon.fillHisto( "mtcheckpoint",  icat, mt,       iweight, true);
-                         mon.fillHisto( "metcheckpoint", icat, met.pt(), iweight, true);
-                       }
-
-                     if(met.pt()>80){
-                       mon.fillHisto("eventflow",icat,7,iweight);
-                       mon.fillHisto( "mtNM1",icat,mt,iweight,true);
-                       mon.fillHisto( "balanceNM1",icat,met.pt()/iboson.pt(),iweight);
-                       mon.fillHisto( "axialmetNM1",icat,axialMet,iweight);
-                     }
-                     if(mt>500){
-                       mon.fillHisto( "metNM1",icat,met.pt(),iweight,true);
-                     }
-
-                     //pre-VBF control
-                     if(njets>=2){
-                       LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
-                       float deta=fabs(selJets[0].eta()-selJets[1].eta());
-                       float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
-                       float pt1(selJets[0].pt()),pt2(selJets[1].pt());
-                       mon.fillHisto( "leadjetpt",icat,pt1,iweight);
-                       mon.fillHisto( "trailerjetpt",icat,pt2,iweight);
-                       if(pt1>30 && pt2>30){
-                         float eta1(selJets[0].eta()),eta2(selJets[1].eta());
-                         float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
-                         float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
-                         mon.fillHisto("fwdjeteta",icat,fabs(fwdEta),  iweight);
-                         mon.fillHisto("cenjeteta",icat,fabs(cenEta),  iweight);
-                         mon.fillHisto("vbfdetajj",icat,deta,        iweight);
-                         if(deta>4.0){
-                           mon.fillHisto("vbfmjj",   icat,dijet.mass(),iweight,true);
-                           if(dijet.mass()>500){
-                             mon.fillHisto("vbfdphijj",icat,dphi,        iweight);
-                           }
-                         }
-                       }
-                     }
-                   }
-                 }
-               }
-             }
-           }        
-         }
-
-         //HISTO FOR VBF THRESHOLD OPTIMIZATION
-         for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){          
-             if(selJets.size()<2)continue; //at least 2 selected jets (pT>15)
-             if(selJets[0].pt()<optim_Cuts_VBF[index][0])continue;
-             if(selJets[1].pt()<optim_Cuts_VBF[index][1])continue;
-             float deta=fabs(selJets[0].eta()-selJets[1].eta());
-             if(deta           <optim_Cuts_VBF[index][2])continue;
-             LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
-             if(dijet.mass()   <optim_Cuts_VBF[index][3])continue;
-             for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-                mon.fillHisto(TString("vbf_shapes")+varNames[ivar],tags,index, 1.0, weight);
-             }
-         }
-
-
-         //
-         // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
-         //
-         //Fill histogram for posterior optimization, or for control regions
-         for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-           float iweight = weight;                            //nominal
-           
-           //energy scale/resolution
-           bool varyJesUp( varNames[ivar]=="_jesup" );
-           bool varyJesDown( varNames[ivar]=="_jesdown" );
-           bool varyJerUp( varNames[ivar]=="_jerup" );
-           bool varyJerDown( varNames[ivar]=="_jerdown" );
-           bool varyUmetUp( varNames[ivar]=="_umetup" );
-           bool varyUmetDown( varNames[ivar]=="_umetdown" );
-           bool varyLesUp( varNames[ivar]=="_lesup" );
-           bool varyLesDown( varNames[ivar]=="_lesdown" );
-                   
-           //pileup variations
-           if(varNames[ivar]=="_puup") iweight *=TotalWeight_plus;
-           if(varNames[ivar]=="_pudown") iweight *=TotalWeight_minus;
-           
-           //btag
-           bool varyBtagUp( varNames[ivar]=="_btagup" );
-           bool varyBtagDown( varNames[ivar]=="_btagdown" );
-           
-           //Q^2 variations on VV pT spectum
-           if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 )
-             {
-               size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
-               TGraph *varGr=vvShapeUnc[idx];
-               if(varGr==0) continue;
-               std::vector<LorentzVector> vs;
-               for(size_t ipart=0; ipart<gen.size(); ipart++)
-                 {
-                   int status=gen[ipart].status();
-                   if(status!=3) continue;
-                   int pid=gen[ipart].pdgId();
-                   if(abs(pid)!=23 && abs(pid)!=24) continue;
-                   vs.push_back( gen[ipart].p4() );
-                 }
-               if(vs.size()==2)
-                 {
-                   LorentzVector vv=vs[0]+vs[1];
-                   iweight *= varGr->Eval(vv.pt());
-                 }
-             }
-           
-           //Higgs line shape
-           if(varNames[ivar].Contains("lshape"))
-             {
-               size_t idx( varNames[ivar].EndsWith("up") ? 1 : 2);
-               float shapeReWeight = lShapeWeights[idx];
-               if(lShapeWeights[0]==0) shapeReWeight=0;
-               else                    shapeReWeight /= lShapeWeights[0];
-               iweight                 *= shapeReWeight;
-             }	 
-
-           //recompute MET/MT if JES/JER was varied
-           LorentzVector    zvv = mets[0].p4();
-
-           //FIXME
-           if(varyJesUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-           if(varyJesDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
-           if(varyJerUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
-           if(varyJerDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
-           if(varyUmetUp)   zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
-           if(varyUmetDown) zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
-           //if(varyLesUp)    zvv = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
-           //if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
-
-           pat::JetCollection tightVarJets;
-           int nbtagsjets = 0; 
-           for(size_t ijet=0; ijet<jets.size(); ijet++){
-
-             float eta=jets[ijet].eta();
-             if( fabs(eta)>4.7 ) continue;
-             float pt=jets[ijet].pt();
-
-             //FIXME
-             /*if(varyJesUp)    pt=jets[ijet].getVal("jesup");
-             if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
-             if(varyJerUp)    pt=jets[ijet].getVal("jerup");
-             if(varyJerDown)  pt=jets[ijet].getVal("jerdown");*/
-
-             if( pt < 30 ) continue;
-    
-             //cross-clean with selected leptons and photons
-             double minDRlj(9999.),minDRlg(9999.);
-             for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-               minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet].p4(),selLeptons[ilep].p4()) );
-             for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-               minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
-             if(minDRlj<0.4 || minDRlg<0.4) continue;
-             
-             //jet id
-             bool         passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
-             float     PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
-             if(!passPFloose || !passLooseSimplePuId) continue;
-            
-             //jet is selected
-             tightVarJets.push_back(jets[ijet]);
-
-             //check b-tag
-             if( pt < 30 || fabs(eta) > 2.5 ) continue;
-             if(!isMC && ivar>0 ) continue;
-             //if(!varyBtagUp && !varyBtagDown) continue;
-             int flavId=jets[ijet].partonFlavour();
-             bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>0.423);
-
-             if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
-             else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
-             else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
-
-             /*if(varyBtagUp) {
-               if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
-               else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
-               else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl+sflunc,leff);
-             }
-             else if(varyBtagDown) {
-               if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb-sfbunc,beff);
-               else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5-2*sfbunc,beff);
-               else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl-sflunc,leff);
-             }*/
-
-             if(hasCSVtag) nbtagsjets++;
-           }
-
-           bool passLocalBveto( nbtagsjets == 0 );	
-           bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
-           bool isZsideBandPlus( (boson.mass()>110 && boson.mass()<200) );
-           bool passPreselection                 (passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
-           bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );         
-         
-           //re-assign the event category to take migrations into account
-           TString evCat  = eventCategoryInst.GetCategory(tightVarJets,boson);
-           //TString evCat  = eventCategoryInst.GetCategory(selJets,boson);
-           
-           for(size_t ich=0; ich<chTags.size(); ich++){
-
-             TString tags_full=chTags[ich]+evCat; 
-             float chWeight(iweight);
-
-             //update weight and mass for photons
-             LorentzVector iboson(boson);
-             if(gammaWgtHandler!=0)
-               {
-                 std::vector<Float_t> photonVars;
-                 photonVars.push_back(iboson.pt());
-                 //photonVars.push_back(met[0].pt()/iboson.pt());
-                 float photonWeight=gammaWgtHandler->getWeightFor(photonVars,tags_full);
-                 chWeight *= photonWeight;
-                 iboson   = gammaWgtHandler->getMassiveP4(iboson,tags_full);
-               }
-             
-             //updet the transverse mass
-             float mt =higgs::utils::transverseMass(iboson,zvv,true);
-
-             //scan the MET cut and fill the shapes
-             for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
-               
-               if(zvv.pt()>optim_Cuts1_met[index]){
-                 for(unsigned int nri=0;nri<NRparams.size();nri++){
-                   
-                   float nrweight=chWeight*NRweights[nri];
-                   if(nri>0)
-                     {
-                       nrweight=chWeight*NRweights[nri];
-                       if(lShapeWeights[0]==0) nrweight=0;
-                       else                    nrweight/=lShapeWeights[0];
-                     }
+         for(unsigned int L=0;L<2;L++){  //Loop to assign a Z-->ll channel to photons
+            if(L==1 && !gammaWgtHandler)continue; //run it only for photon reweighting
           
-                   if(passPreselection && ivar==0 && nri==0                                    )   mon.fillHisto("metcount", tags_full, index, nrweight);
-                   if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,nrweight);
-                   if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);                    
-                   if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,1,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
-                   if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);                 
-		}
+            std::vector<TString> chTags;
+            TString evCat;       
+            int dilId(1);
+            LorentzVector boson(0,0,0,0);
+            float photonWeightMain=1.0;
+            if(!runPhotonSelection && selLeptons.size()==2){
+                for(size_t ilep=0; ilep<2; ilep++){
+                    dilId *= selLeptons[ilep].pdgId();
+                    int id(abs(selLeptons[ilep].pdgId()));
+                    weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
+                    boson += selLeptons[ilep].p4();
+                  }        
+                //check the channel
+                if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
+                if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
+                if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }           
+                evCat=eventCategoryInst.GetCategory(selJets,boson);            
+            }else if(photonTrigger && selPhotons.size()){
+                dilId=22;
+                chTags.push_back(L==0?"ee":"mumu");
+                chTags.push_back("ll");
+                boson = selPhotons[0].p4();
+                evCat=eventCategoryInst.GetCategory(selJets,boson);            
+                boson = gammaWgtHandler->getMassiveP4(boson, string(L==0?"ee":"mumu")+evCat);
+                std::vector<Float_t> photonVars;
+                photonVars.push_back(boson.pt());           
+                photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==0?"ee":"mumu")+evCat);
+                weight *= triggerPrescale * photonWeightMain;
+            }
+
+            std::vector<TString> tags(1,"all");
+            for(size_t ich=0; ich<chTags.size(); ich++){
+              tags.push_back( chTags[ich] );
+              tags.push_back( chTags[ich]+evCat );
+            }
+            mon.fillHisto("nleptons",tags,selLeptons.size(), weight);
+
+            // Photon trigger efficiencies
+            // Must be run without the photonTrigger requirement on top of of the Analysis.
+            if (photonTriggerStudy && runPhotonSelection && selPhotons.size() ){
+              TString tag="trigger";
+              pat::Photon iphoton = selPhotons[0];
+         
+              mon.fillHisto("phopt", tag, iphoton.pt(),weight);
+              mon.fillHisto("phoeta", tag, iphoton.eta(), weight);
+              trigUtils::photonControlSample(ev, iphoton, mon, tag);
+              trigUtils::photonControlEff(ev, iphoton, mon, tag);
+
+              for(size_t itag=0; itag<tags.size(); itag++){		
+                //update the weight
+                TString icat=tags[itag];
+                mon.fillHisto("phopt", icat, iphoton.pt(),weight);
+                mon.fillHisto("phoeta", icat, iphoton.eta(),weight);
+                trigUtils::photonControlSample(ev, iphoton, mon, icat);
+                trigUtils::photonControlEff(ev, iphoton, mon, icat);
+              }
+            } // end Trigger efficiencies
+
+            //////////////////////////
+            //                      //
+            //  BASELINE SELECTION  //
+            //                      //
+            //////////////////////////
+
+            bool passMass(fabs(boson.mass()-91)<15);
+            bool passQt(boson.pt()>55);
+            bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
+            bool passBtags(nbtags==0); 
+            bool passMinDphijmet( njets==0 || mindphijmet>0.5);
+
+            if(runPhotonSelection){
+                passMass=photonTrigger;
+                passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
+            }
+
+            mon.fillHisto("eventflow",  tags,0,weight);
+            mon.fillHisto("nvtxA",  tags,vtx.size(),1);
+            mon.fillHisto("nvtxB",  tags,vtx.size(),xsecWeight);
+            mon.fillHisto("nvtxC",  tags,vtx.size(),xsecWeight * puWeight);
+            mon.fillHisto("nvtxD",  tags,vtx.size(),xsecWeight * puWeight * shapeWeight);
+
+            mon.fillHisto("nvtxraw",  tags,vtx.size(),xsecWeight * shapeWeight);
+            mon.fillHisto("nvtx",  tags,vtx.size(),weight);
+            mon.fillHisto("rho",  tags,rho,weight);
+
+            if(chTags.size()==0) continue;
+            mon.fillHisto("eventflow",  tags,1,weight);
+            if(!runPhotonSelection){
+              mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
+              mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
+              mon.fillHisto("leadeta",     tags,fabs(selLeptons[0].eta()),weight); 
+              mon.fillHisto("trailereta",  tags,fabs(selLeptons[1].eta()),weight); 
+            }
+     
+            mon.fillHisto("zmass", tags,boson.mass(),weight); 
+            mon.fillHisto("zy",    tags,fabs(boson.Rapidity()),weight); 
+
+            if(passMass){
+              mon.fillHisto("eventflow",tags, 2,weight);
+              mon.fillHisto("zpt",      tags, boson.pt(),weight);
+              mon.fillHisto("zpt_rebin",tags, boson.pt(),weight,true);
+
+              //these two are used to reweight photon -> Z, the 3rd is a control
+              mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
+              mon.fillHisto("qtraw",    tags, boson.pt(),weight/triggerPrescale,true); 
+
+              if(passQt){
+                mon.fillHisto("eventflow",tags,3,weight);
+                int nExtraLeptons((selLeptons.size()-2)+extraLeptons.size());
+                mon.fillHisto("nextraleptons",tags,nExtraLeptons,weight);
+                if(nExtraLeptons>0){
+                  LorentzVector thirdLepton(selLeptons.size()>2 ?  selLeptons[1].p4() : extraLeptons[0].p4());
+                  double dphi=fabs(deltaPhi(thirdLepton.phi(),met.phi()));
+                  double mt=TMath::Sqrt(2*thirdLepton.pt()*met.pt()*(1-TMath::Cos(dphi)));
+                  mon.fillHisto("thirdleptonpt",tags,thirdLepton.pt(),weight);
+                  mon.fillHisto("thirdleptoneta",tags,fabs(thirdLepton.eta()),weight);
+                  mon.fillHisto("thirdleptonmt",tags,mt,weight);
+                }
+                if(passThirdLeptonVeto){
+                  
+                  mon.fillHisto("eventflow",tags,4,weight);
+                  for(size_t ijet=0; ijet<selJets.size(); ijet++){
+                    if(selJets[ijet].pt()<30 || fabs(selJets[ijet].eta())>2.5) continue;
+
+                    float csv(selJets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+                    mon.fillHisto( "csv",tags,csv,weight);
+                    if(!isMC) continue;
+                    int flavId=selJets[ijet].partonFlavour();
+                    TString jetFlav("others");
+                    if(abs(flavId)==5)      jetFlav="b";
+                    else if(abs(flavId)==4) jetFlav="c";
+                    mon.fillHisto( "csv"+jetFlav,tags,csv,weight);
+                  }
+                  mon.fillHisto( "nbtags",tags,nbtags,weight);
+                  mon.fillHisto( "nbtagsJP",tags,nbtagsJP,weight);
+                  
+                  if(passBtags){
+                    mon.fillHisto("eventflow",tags,5,weight);
+
+                    mon.fillHisto( "mindphijmet",tags,mindphijmet,weight);
+                    if(met.pt()>80) mon.fillHisto( "mindphijmetNM1",tags,mindphijmet,weight);
+                    if(passMinDphijmet){
+                      mon.fillHisto("eventflow",tags,6,weight);
+                     
+                      //this one is used to sample the boson mass: cuts may shape Z lineshape
+                      mon.fillHisto("qmass",       tags, boson.mass(),weight); 
+                      mon.fillHisto( "njets",tags,njets,weight);
+ 
+                      double b_dphi=fabs(deltaPhi(boson.phi(),met.phi()));
+                      mon.fillHisto( "metphi",tags,met.phi(),weight,true);                                                                    
+                      mon.fillHisto( "bosonphi",tags,boson.phi(),weight,true);                                                               
+                      mon.fillHisto( "dphi_boson_met",tags,b_dphi,weight,true);
+ 
+                      mon.fillHisto( "met",tags,met.pt(),weight,true);
+                      mon.fillHisto( "metpuppi",tags,puppimet.pt(),weight,true);
+                      mon.fillHisto( "balance",tags,met.pt()/boson.pt(),weight);
+
+                      TVector2 met2(met.px(),met.py());
+                      TVector2 boson2(boson.px(), boson.py());
+                      double axialMet(boson2*met2); axialMet/=-boson.pt();
+                      mon.fillHisto( "axialmet",tags,axialMet,weight);
+                      double mt=higgs::utils::transverseMass(boson,met,true);
+ 
+                      mon.fillHisto( "mt",tags,mt,weight,true);
+
+                      if(met.pt()>optim_Cuts1_met[0]) {
+                         mon.fillHisto( "mtcheckpoint",  tags, mt,       weight, true);
+                         mon.fillHisto( "metcheckpoint", tags, met.pt(), weight, true);
+                      }
+
+                      if(met.pt()>80){
+                        mon.fillHisto("eventflow",tags,7,weight);
+                        mon.fillHisto( "mtNM1",tags,mt,weight,true);
+                        mon.fillHisto( "balanceNM1",tags,met.pt()/boson.pt(),weight);
+                        mon.fillHisto( "axialmetNM1",tags,axialMet,weight);
+                      }
+                      if(mt>500){
+                        mon.fillHisto( "metNM1",tags,met.pt(),weight,true);
+                      }
+
+                      //pre-VBF control
+                      if(njets>=2){
+                        LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
+                        float deta=fabs(selJets[0].eta()-selJets[1].eta());
+                        float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
+                        float pt1(selJets[0].pt()),pt2(selJets[1].pt());
+                        mon.fillHisto( "leadjetpt",tags,pt1,weight);
+                        mon.fillHisto( "trailerjetpt",tags,pt2,weight);
+                        if(pt1>30 && pt2>30){
+                          float eta1(selJets[0].eta()),eta2(selJets[1].eta());
+                          float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
+                          float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
+                          mon.fillHisto("fwdjeteta",tags,fabs(fwdEta),  weight);
+                          mon.fillHisto("cenjeteta",tags,fabs(cenEta),  weight);
+                          mon.fillHisto("vbfdetajj",tags,deta,        weight);
+                          if(deta>4.0){
+                            mon.fillHisto("vbfmjj",   tags,dijet.mass(),weight,true);
+                            if(dijet.mass()>500){
+                              mon.fillHisto("vbfdphijj",tags,dphi,        weight);
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }        
+            }
+
+            //HISTO FOR VBF THRESHOLD OPTIMIZATION
+            for(unsigned int index=0;index<optim_Cuts_VBF.size();index++){          
+                if(selJets.size()<2)continue; //at least 2 selected jets (pT>15)
+                if(selJets[0].pt()<optim_Cuts_VBF[index][0])continue;
+                if(selJets[1].pt()<optim_Cuts_VBF[index][1])continue;
+                float deta=fabs(selJets[0].eta()-selJets[1].eta());
+                if(deta           <optim_Cuts_VBF[index][2])continue;
+                LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
+                if(dijet.mass()   <optim_Cuts_VBF[index][3])continue;
+                for(size_t ivar=0; ivar<1; ivar++){  // do not fill for systematics in order to save time, replace <1 by nvarsToInclude to add them back
+                   mon.fillHisto(TString("vbf_shapes")+varNames[ivar],tags,index, 1.0, weight);
+                }
+            }
+
+            //
+            // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
+            //
+            //Fill histogram for posterior optimization, or for control regions
+            for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+              float iweight = weight;                            //nominal
+              
+              //energy scale/resolution
+              bool varyJesUp( varNames[ivar]=="_jesup" );
+              bool varyJesDown( varNames[ivar]=="_jesdown" );
+              bool varyJerUp( varNames[ivar]=="_jerup" );
+              bool varyJerDown( varNames[ivar]=="_jerdown" );
+              bool varyUmetUp( varNames[ivar]=="_umetup" );
+              bool varyUmetDown( varNames[ivar]=="_umetdown" );
+              bool varyLesUp( varNames[ivar]=="_lesup" );
+              bool varyLesDown( varNames[ivar]=="_lesdown" );
+                      
+              //pileup variations
+              if(varNames[ivar]=="_puup") iweight *=TotalWeight_plus;
+              if(varNames[ivar]=="_pudown") iweight *=TotalWeight_minus;
+              
+              //btag
+              bool varyBtagUp( varNames[ivar]=="_btagup" );
+              bool varyBtagDown( varNames[ivar]=="_btagdown" );
+              
+              //Q^2 variations on VV pT spectum
+              if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 ){
+                  size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
+                  TGraph *varGr=vvShapeUnc[idx];
+                  if(varGr==0) continue;
+                  std::vector<LorentzVector> vs;
+                  for(size_t ipart=0; ipart<gen.size(); ipart++)
+                    {
+                      int status=gen[ipart].status();
+                      if(status!=3) continue;
+                      int pid=gen[ipart].pdgId();
+                      if(abs(pid)!=23 && abs(pid)!=24) continue;
+                      vs.push_back( gen[ipart].p4() );
+                    }
+                  if(vs.size()==2)
+                    {
+                      LorentzVector vv=vs[0]+vs[1];
+                      iweight *= varGr->Eval(vv.pt());
+                    }
                }
-             }
-           }
+              
+              //Higgs line shape
+              if(varNames[ivar].Contains("lshape"))
+                {
+                  size_t idx( varNames[ivar].EndsWith("up") ? 1 : 2);
+                  float shapeReWeight = lShapeWeights[idx];
+                  if(lShapeWeights[0]==0) shapeReWeight=0;
+                  else                    shapeReWeight /= lShapeWeights[0];
+                  iweight                 *= shapeReWeight;
+                }	 
+
+              //recompute MET/MT if JES/JER was varied
+              LorentzVector    zvv = mets[0].p4();
+
+              //FIXME
+              if(varyJesUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
+              if(varyJesDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
+              if(varyJerUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
+              if(varyJerDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
+              if(varyUmetUp)   zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
+              if(varyUmetDown) zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
+              //if(varyLesUp)    zvv = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
+              //if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
+
+              pat::JetCollection tightVarJets;
+              int nbtagsjets = 0; 
+              for(size_t ijet=0; ijet<jets.size(); ijet++){
+
+                float eta=jets[ijet].eta();
+                if( fabs(eta)>4.7 ) continue;
+                float pt=jets[ijet].pt();
+
+                //FIXME
+                /*if(varyJesUp)    pt=jets[ijet].getVal("jesup");
+                if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
+                if(varyJerUp)    pt=jets[ijet].getVal("jerup");
+                if(varyJerDown)  pt=jets[ijet].getVal("jerdown");*/
+
+                if( pt < 30 ) continue;
+       
+                //cross-clean with selected leptons and photons
+                double minDRlj(9999.),minDRlg(9999.);
+                for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
+                  minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet].p4(),selLeptons[ilep].p4()) );
+                for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
+                  minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
+                if(minDRlj<0.4 || minDRlg<0.4) continue;
+                
+                //jet id
+                bool         passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
+                float     PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
+                bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
+                if(!passPFloose || !passLooseSimplePuId) continue;
+               
+                //jet is selected
+                tightVarJets.push_back(jets[ijet]);
+
+                //check b-tag
+                if( pt < 30 || fabs(eta) > 2.5 ) continue;
+                if(!isMC && ivar>0 ) continue;
+                //if(!varyBtagUp && !varyBtagDown) continue;
+                int flavId=jets[ijet].partonFlavour();
+                bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>0.423);
+
+                if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
+                else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
+                else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
+
+                /*if(varyBtagUp) {
+                  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
+                  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
+                  else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl+sflunc,leff);
+                }
+                else if(varyBtagDown) {
+                  if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb-sfbunc,beff);
+                  else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5-2*sfbunc,beff);
+                  else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl-sflunc,leff);
+                }*/
+
+                if(hasCSVtag) nbtagsjets++;
+              }
+
+              bool passLocalBveto( nbtagsjets == 0 );	
+              bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
+              bool isZsideBandPlus( (boson.mass()>110 && boson.mass()<200) );
+              bool passPreselection                 (passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
+              bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );         
+            
+              //re-assign the event category to take migrations into account
+              TString evCat  = eventCategoryInst.GetCategory(tightVarJets,boson);
+              //TString evCat  = eventCategoryInst.GetCategory(selJets,boson);
+              
+              for(size_t ich=0; ich<chTags.size(); ich++){
+
+                TString tags_full=chTags[ich]+evCat; 
+                float chWeight(iweight);
+
+                //update weight and mass for photons
+                LorentzVector iboson(boson);
+                //updet the transverse mass
+                float mt =higgs::utils::transverseMass(iboson,zvv,true);
+
+                //scan the MET cut and fill the shapes
+                for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
+                  
+                  if(zvv.pt()>optim_Cuts1_met[index]){
+                    for(unsigned int nri=0;nri<NRparams.size();nri++){
+                      
+                      float nrweight=chWeight*NRweights[nri];
+                      if(nri>0)
+                        {
+                          nrweight=chWeight*NRweights[nri];
+                          if(lShapeWeights[0]==0) nrweight=0;
+                          else                    nrweight/=lShapeWeights[0];
+                        }
+             
+                      if(passPreselection && ivar==0 && nri==0                                    )   mon.fillHisto("metcount", tags_full, index, nrweight);
+                      if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,nrweight);
+                      if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, zvv.pt(),nrweight);                    
+                      if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,0,nrweight);
+                      if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,1,nrweight);
+                      if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,2,nrweight);
+                      if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,3,nrweight);
+                      if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,4,nrweight);
+                      if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],tags_full,index,5,nrweight);                 
+                   }
+                  }
+                }
+              }
+            }
          }
      }
      printf("\n"); 

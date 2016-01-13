@@ -29,7 +29,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2016_01_08
+SUFFIX=_2016_01_13
 #SUFFIX=_debug
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -114,18 +114,18 @@ if [[ $step > 2.999 && $step < 4 ]]; then
 
     if [[ $step == 3 ]]; then  # make plots and combined root files
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
-	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/ --outFile $PLOTTER.root  --json $JSON --no2D --key 2l2v_mcbased $arguments
-	ln -s -f $PLOTTER.root $MAINDIR/plotter.root      
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/ --outFile ${PLOTTER}_mcbased.root  --json $JSON --no2D --key 2l2v_mcbased $arguments
+	ln -s -f ${PLOTTER}_mcbased.root $PLOTTER.root 
     fi        
 
     if [[ $step == 3.1 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
-	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile $PLOTTER.root  --json $JSON --no2D --key 2l2v_photons $arguments 
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_photons $arguments 
     fi
 
     if [[ $step == 3.2 ]]; then # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
-	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven/ --outFile $PLOTTER.root  --json $JSON --no2D --key 2l2v_datadriven $arguments 
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven/ --outFile ${PLOTTER}_datadriven.root  --json $JSON --no2D --key 2l2v_datadriven $arguments 
     fi
 fi
 

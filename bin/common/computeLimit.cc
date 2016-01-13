@@ -35,7 +35,7 @@
 #include<algorithm>
 #include<vector>
 #include<set>
-
+#include <regex>
 
 
 using namespace std;
@@ -95,6 +95,8 @@ std::map<string, int> indexcutM;
 std::map<string, int> indexcutML;
 std::map<string, int> indexcutMR;
 
+std::vector<string> keywords;
+
 
 int indexvbf = -1;
 int massL=-1, massR=-1;
@@ -111,6 +113,20 @@ TGraph* TG_QCDScaleK0ggH0=NULL, *TG_QCDScaleK0ggH1=NULL, *TG_QCDScaleK1ggH1=NULL
 TGraph* TG_UEPSf0=NULL, *TG_UEPSf1=NULL, *TG_UEPSf2=NULL;
 
 double dropBckgBelow=0.01;
+
+bool matchKeyword(JSONWrapper::Object& process, std::vector<string>& keywords){
+   if(keywords.size()<=0)return true;
+   if(process.isTag("keys")){
+      std::vector<JSONWrapper::Object> dsetkeywords = process["keys"].daughters();
+      for(size_t ikey=0; ikey<dsetkeywords.size(); ikey++){
+         for(unsigned int i=0;i<keywords.size();i++){if(std::regex_match(dsetkeywords[ikey].toString(),std::regex(keywords[i])))return true;}
+      }
+   }else{
+      return true;
+   }
+   return false;
+}
+
 
 
 void filterBinContent(TH1* histo){
@@ -368,6 +384,7 @@ void printHelp()
   printf("--statBinByBin --> make bin by bin statistical uncertainty\n");
   printf("--inclusive  --> merge bins to make the analysis inclusive\n");
   printf("--dropBckgBelow --> drop all background processes that contributes for less than a threshold to the total background yields\n");
+  printf("--key        --> provide a key for sample filtering in the json\n");
 }
 
 //
@@ -438,6 +455,8 @@ int main(int argc, char* argv[])
     else if(arg.find("--BackExtrapol")    !=string::npos) { BackExtrapol=true; printf("BackExtrapol = True\n");}
     else if(arg.find("--statBinByBin")    !=string::npos) { sscanf(argv[i+1],"%f",&statBinByBin); i++; printf("statBinByBin = %f\n", statBinByBin);}
     else if(arg.find("--dropBckgBelow")   !=string::npos) { sscanf(argv[i+1],"%lf",&dropBckgBelow); i++; printf("dropBckgBelow = %f\n", dropBckgBelow);}
+    else if(arg.find("--key"          )   !=string::npos && i+1<argc){ keywords.push_back(argv[i+1]); printf("Only samples matching this (regex) expression '%s' are processed\n", argv[i+1]); i++;  }
+
   }
   if(jsonFile.IsNull()) { printf("No Json file provided\nrun with '--help' for more details\n"); return -1; }
   if(inFileUrl.IsNull()){ printf("No Inputfile provided\nrun with '--help' for more details\n"); return -1; }
@@ -1421,6 +1440,8 @@ void initializeTGraph(){
            //iterate over the processes required
            std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
            for(unsigned int i=0;i<Process.size();i++){
+              if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+             
                TString procCtr(""); procCtr+=i;
                TString proc=Process[i].getString("tag", "noTagFound");
                TDirectory *pdir = (TDirectory *)inF->Get(proc);         

@@ -1,24 +1,19 @@
-#include "../../../../src/tdrstyle.C"
+#include <vector>
+#include <list>
+#include <iterator>
+#include <algorithm>
+#include <unordered_map>
+#include <iostream>
+#include <string>
+#include <regex>
 
-#include "TSystem.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TCanvas.h"
-#include "TF1.h"
-#include "TH1F.h"
-#include "TH1D.h"
-#include "TH2F.h"
-#include "TH2D.h"
-#include "TH3F.h"
-#include "TH3D.h"
-#include "TProfile.h"
-#include "TProfile2D.h"
-#include "TGraphErrors.h"
-#include "TGraphAsymmErrors.h"
-#include "TROOT.h"
-#include "TMath.h"
-#include "TLegend.h"
-#include "TPaveText.h"
+#include "UserCode/llvv_fwk/interface/tdrstyle.h"
+#include "UserCode/llvv_fwk/interface/MacroUtils.h"
+#include "UserCode/llvv_fwk/interface/RootUtils.h"
+#include "UserCode/llvv_fwk/interface/JSONWrapper.h"
+
+using namespace std;
+
 
 Double_t fermipow(Double_t *x, Double_t *par) {
 
@@ -397,8 +392,45 @@ TGraphErrors *makeGraph(TH1* htest) {
 }
 
 
-void make_weights(TString tag="sel", TString var="_qt",  Bool_t asym=false) {
+int main(int argc, char* argv[]){
+   gROOT->LoadMacro("../../src/tdrstyle.C");
+   setTDRStyle();  
+   gStyle->SetPadTopMargin   (0.06);
+   gStyle->SetPadBottomMargin(0.12);
+   gStyle->SetPadRightMargin (0.16);
+   gStyle->SetPadLeftMargin  (0.14);
+   gStyle->SetTitleSize(0.04, "XYZ");
+   gStyle->SetTitleXOffset(1.1);
+   gStyle->SetTitleYOffset(1.45);
+   gStyle->SetPalette(1);
+   gStyle->SetNdivisions(505);
 
+   for(int i=1;i<argc;i++){
+     string arg(argv[i]);
+     if(arg.find("--help")!=string::npos){
+        printf("--help   --> print this helping text\n");
+//        printf("--key     --> only samples including this keyword are considered\n");
+	return 0;
+     }
+
+//     if(arg.find("--iLumi"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iLumi); i++; printf("Lumi = %f\n", iLumi); }
+//     if(arg.find("--key"    )!=string::npos && i+1<argc){ keywords.push_back(argv[i+1]); printf("Only samples matching this (regex) expression '%s' are processed\n", argv[i+1]); i++;  }
+   } 
+
+ TString tag="sel";
+ TString var="_qt";
+ Bool_t asym=false;
+ 
+  
+
+   string outFile = "photonWeight.root";
+   TFile* OutputFile = new TFile(outFile.c_str(),"NEW");
+
+   OutputFile->Close();
+
+
+
+ 
 std::cout<<"A\n"; //DEBUG
 
   Bool_t isData=true;
@@ -1171,7 +1203,7 @@ std::cout<<"A\n"; //DEBUG
 
 
 
-  var = "_qmass";
+  var = "_zmass";
   cat="ee";  
   TH1D *h_zmass_ee_1=readHist(cat+hcat[0]+var,dyfile,"data",1);  
   TH1D *h_zmass_ee_2=readHist(cat+hcat[1]+var,dyfile,"data",1); 
@@ -1181,13 +1213,7 @@ std::cout<<"A\n"; //DEBUG
   TH1D *h_zmass_mm_1=readHist(cat+hcat[0]+var,dyfile,"data",1);
   TH1D *h_zmass_mm_2=readHist(cat+hcat[1]+var,dyfile,"data",1);
   TH1D *h_zmass_mm_3=readHist(cat+hcat[2]+var,dyfile,"data",1);
-
-  cat="ll";  
-  TH1D *h_zmass_ll_1=readHist(cat+hcat[0]+var,dyfile,"data",1);
-  TH1D *h_zmass_ll_2=readHist(cat+hcat[1]+var,dyfile,"data",1);
-  TH1D *h_zmass_ll_3=readHist(cat+hcat[2]+var,dyfile,"data",1);
-
-
+ 
   TFile *outfile;
 
   if (isData) {
@@ -1208,17 +1234,8 @@ std::cout<<"A\n"; //DEBUG
   h_zmass_mm_1->Write(cat+hcat[0]+"_zmass");
   h_zmass_mm_2->Write(cat+hcat[1]+"_zmass");
   h_zmass_mm_3->Write(cat+hcat[2]+"_zmass");
-  cat="ll";  
-  h_zmass_ll_1->Write(cat+hcat[0]+"_zmass");
-  h_zmass_ll_2->Write(cat+hcat[1]+"_zmass");
-  h_zmass_ll_3->Write(cat+hcat[2]+"_zmass");
 
   outfile->Write(); outfile->Close();
-  
+   
 }
-
-
-
-
-
 
