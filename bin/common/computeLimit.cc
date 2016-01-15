@@ -107,6 +107,8 @@ TGraph *ggH7TG_xsec=NULL, *ggH7TG_scap=NULL, *ggH7TG_scam=NULL, *ggH7TG_pdfp=NUL
 TGraph *qqH7TG_xsec=NULL, *qqH7TG_scap=NULL, *qqH7TG_scam=NULL, *qqH7TG_pdfp=NULL, *qqH7TG_pdfm=NULL;
 TGraph *ggH8TG_xsec=NULL, *ggH8TG_scap=NULL, *ggH8TG_scam=NULL, *ggH8TG_pdfp=NULL, *ggH8TG_pdfm=NULL;
 TGraph *qqH8TG_xsec=NULL, *qqH8TG_scap=NULL, *qqH8TG_scam=NULL, *qqH8TG_pdfp=NULL, *qqH8TG_pdfm=NULL;
+TGraph *ggH13TG_xsec=NULL,*ggH13TG_scap=NULL,*ggH13TG_scam=NULL,*ggH13TG_pdfp=NULL,*ggH13TG_pdfm=NULL;
+TGraph *qqH13TG_xsec=NULL,*qqH13TG_scap=NULL,*qqH13TG_scam=NULL,*qqH13TG_pdfp=NULL,*qqH13TG_pdfm=NULL;
 TGraph *    TG_xsec=NULL, *    TG_scap=NULL, *    TG_scam=NULL, *    TG_pdfp=NULL, *    TG_pdfm=NULL;
 
 TGraph* TG_QCDScaleK0ggH0=NULL, *TG_QCDScaleK0ggH1=NULL, *TG_QCDScaleK1ggH1=NULL, *TG_QCDScaleK1ggH2=NULL, *TG_QCDScaleK2ggH2=NULL;
@@ -637,10 +639,12 @@ int main(int argc, char* argv[])
 
 
 void setTGraph(TString proc, TString suffix){
-         if( suffix.Contains('8') &&  proc.Contains("qq")){ TG_xsec=qqH8TG_xsec;    TG_scap=qqH8TG_scap;    TG_scam=qqH8TG_scam;    TG_pdfp=qqH8TG_pdfp;    TG_pdfm=qqH8TG_pdfm;
-   }else if( suffix.Contains('8') && !proc.Contains("qq")){ TG_xsec=ggH8TG_xsec;    TG_scap=ggH8TG_scap;    TG_scam=ggH8TG_scam;    TG_pdfp=ggH8TG_pdfp;    TG_pdfm=ggH8TG_pdfm;
-   }else if(!suffix.Contains('8') &&  proc.Contains("qq")){ TG_xsec=qqH7TG_xsec;    TG_scap=qqH7TG_scap;    TG_scam=qqH7TG_scam;    TG_pdfp=qqH7TG_pdfp;    TG_pdfm=qqH7TG_pdfm;
-   }else if(!suffix.Contains('8') && !proc.Contains("qq")){ TG_xsec=ggH7TG_xsec;    TG_scap=ggH7TG_scap;    TG_scam=ggH7TG_scam;    TG_pdfp=ggH7TG_pdfp;    TG_pdfm=ggH7TG_pdfm;
+         if( suffix.Contains("13") &&  proc.Contains("qq")){ TG_xsec=qqH13TG_xsec;   TG_scap=qqH13TG_scap;   TG_scam=qqH13TG_scam;   TG_pdfp=qqH13TG_pdfp;   TG_pdfm=qqH13TG_pdfm;
+   }else if( suffix.Contains("13") && !proc.Contains("qq")){ TG_xsec=ggH13TG_xsec;   TG_scap=ggH13TG_scap;   TG_scam=ggH13TG_scam;   TG_pdfp=ggH13TG_pdfp;   TG_pdfm=ggH13TG_pdfm;
+   }else if( suffix.Contains( '8') &&  proc.Contains("qq")){ TG_xsec=qqH8TG_xsec;    TG_scap=qqH8TG_scap;    TG_scam=qqH8TG_scam;    TG_pdfp=qqH8TG_pdfp;    TG_pdfm=qqH8TG_pdfm;
+   }else if( suffix.Contains( '8') && !proc.Contains("qq")){ TG_xsec=ggH8TG_xsec;    TG_scap=ggH8TG_scap;    TG_scam=ggH8TG_scam;    TG_pdfp=ggH8TG_pdfp;    TG_pdfm=ggH8TG_pdfm;
+   }else if(!suffix.Contains( '7') &&  proc.Contains("qq")){ TG_xsec=qqH7TG_xsec;    TG_scap=qqH7TG_scap;    TG_scam=qqH7TG_scam;    TG_pdfp=qqH7TG_pdfp;    TG_pdfm=qqH7TG_pdfm;
+   }else if(!suffix.Contains( '7') && !proc.Contains("qq")){ TG_xsec=ggH7TG_xsec;    TG_scap=ggH7TG_scap;    TG_scam=ggH7TG_scam;    TG_pdfp=ggH7TG_pdfp;    TG_pdfm=ggH7TG_pdfm;
    }
 }
 void initializeTGraph(){
@@ -699,6 +703,60 @@ void initializeTGraph(){
    qqH8TG_scam = new TGraph(sizeof(qqH8_mass)/sizeof(double), qqH8_mass, qqH8_scam);
    qqH8TG_pdfp = new TGraph(sizeof(qqH8_mass)/sizeof(double), qqH8_mass, qqH8_pdfp);
    qqH8TG_pdfm = new TGraph(sizeof(qqH8_mass)/sizeof(double), qqH8_mass, qqH8_pdfm);
+
+   double PDFRatio13to8_HMassData [] = {80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 110.5, 111.0, 111.5, 112.0, 112.5, 113.0, 113.5, 114.0, 114.5, 115.0, 115.5, 116.0, 116.5, 117.0, 117.5, 118.0, 118.5, 119.0, 119.5, 120.0, 120.1, 120.2, 120.3, 120.4, 120.5, 120.6, 120.7, 120.8, 120.9, 121.0, 121.1, 121.2, 121.3, 121.4, 121.5, 121.6, 121.7, 121.8, 121.9, 122.0, 122.1, 122.2, 122.3, 122.4, 122.5, 122.6, 122.7, 122.8, 122.9, 123.0, 123.1, 123.2, 123.3, 123.4, 123.5, 123.6, 123.7, 123.8, 123.9, 124.0, 124.1, 124.2, 124.3, 124.4, 124.5, 124.6, 124.7, 124.8, 124.9, 125.0, 125.1, 125.2, 125.3, 125.4, 125.5, 125.6, 125.7, 125.8, 125.9, 126.0, 126.1, 126.2, 126.3, 126.4, 126.5, 126.6, 126.7, 126.8, 126.9, 127.0, 127.1, 127.2, 127.3, 127.4, 127.5, 127.6, 127.7, 127.8, 127.9, 128.0, 128.1, 128.2, 128.3, 128.4, 128.5, 128.6, 128.7, 128.8, 128.9, 129.0, 129.1, 129.2, 129.3, 129.4, 129.5, 129.6, 129.7, 129.8, 129.9, 130.0, 130.5, 131.0, 131.5, 132.0, 132.5, 133.0, 133.5, 134.0, 134.5, 135.0, 135.5, 136.0, 136.5, 137.0, 137.5, 138.0, 138.5, 139.0, 139.5, 140.0, 140.5, 141.0, 141.5, 142.0, 142.5, 143.0, 143.5, 144.0, 144.5, 145.0, 145.5, 146.0, 146.5, 147.0, 147.5, 148.0, 148.5, 149.0, 149.5, 150.0, 152.0, 154.0, 156.0, 158.0, 160.0, 162.0, 164.0, 165.0, 166.0, 168.0, 170.0, 172.0, 174.0, 175.0, 176.0, 178.0, 180.0, 182.0, 184.0, 185.0, 186.0, 188.0, 190.0, 192.0, 194.0, 195.0, 196.0, 198.0, 200.0, 202.0, 204.0, 206.0, 208.0, 210.0, 212.0, 214.0, 216.0, 218.0, 220.0, 222.0, 224.0, 226.0, 228.0, 230.0, 232.0, 234.0, 236.0, 238.0, 240.0, 242.0, 244.0, 246.0, 248.0, 250.0, 252.0, 254.0, 256.0, 258.0, 260.0, 262.0, 264.0, 266.0, 268.0, 270.0, 272.0, 274.0, 276.0, 278.0, 280.0, 282.0, 284.0, 286.0, 288.0, 290.0, 292.0, 294.0, 296.0, 298.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0, 350.0, 360.0, 370.0, 380.0, 390.0, 400.0, 420.0, 440.0, 450.0, 460.0, 480.0, 500.0, 520.0, 540.0, 550.0, 560.0, 580.0, 600.0, 620.0, 640.0, 650.0, 660.0, 680.0, 700.0, 720.0, 740.0, 750.0, 760.0, 780.0, 800.0, 820.0, 840.0, 850.0, 860.0, 880.0, 900.0, 920.0, 940.0, 950.0, 960.0, 980.0, 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0};
+
+
+   double PDFRatio13to8_ggHData [] = {2.087, 2.092, 2.097, 2.103, 2.108, 2.113, 2.118, 2.123, 2.127, 2.132, 2.137, 2.142, 2.147, 2.152, 2.157, 2.161, 2.166, 2.171, 2.175, 2.180, 2.185, 2.189, 2.194, 2.199, 2.203, 2.208, 2.212, 2.217, 2.221, 2.226, 2.230, 2.233, 2.235, 2.237, 2.239, 2.242, 2.244, 2.246, 2.248, 2.250, 2.253, 2.255, 2.257, 2.259, 2.261, 2.263, 2.266, 2.268, 2.270, 2.272, 2.274, 2.275, 2.275, 2.276, 2.276, 2.276, 2.277, 2.277, 2.278, 2.278, 2.279, 2.279, 2.280, 2.280, 2.280, 2.281, 2.281, 2.282, 2.282, 2.283, 2.283, 2.283, 2.284, 2.284, 2.285, 2.285, 2.286, 2.286, 2.286, 2.287, 2.287, 2.288, 2.288, 2.289, 2.289, 2.289, 2.290, 2.290, 2.291, 2.291, 2.292, 2.292, 2.292, 2.293, 2.293, 2.294, 2.294, 2.295, 2.295, 2.295, 2.296, 2.296, 2.297, 2.297, 2.298, 2.298, 2.298, 2.299, 2.299, 2.300, 2.300, 2.300, 2.301, 2.301, 2.302, 2.302, 2.303, 2.303, 2.303, 2.304, 2.304, 2.305, 2.305, 2.306, 2.306, 2.306, 2.307, 2.307, 2.308, 2.308, 2.309, 2.309, 2.309, 2.310, 2.310, 2.311, 2.311, 2.311, 2.312, 2.312, 2.313, 2.313, 2.314, 2.314, 2.314, 2.315, 2.315, 2.316, 2.316, 2.317, 2.317, 2.319, 2.321, 2.323, 2.325, 2.327, 2.330, 2.332, 2.334, 2.336, 2.338, 2.340, 2.342, 2.344, 2.346, 2.348, 2.350, 2.352, 2.354, 2.356, 2.358, 2.361, 2.363, 2.365, 2.367, 2.369, 2.371, 2.373, 2.375, 2.377, 2.379, 2.381, 2.383, 2.385, 2.387, 2.389, 2.391, 2.393, 2.395, 2.397, 2.399, 2.407, 2.415, 2.423, 2.431, 2.439, 2.447, 2.455, 2.459, 2.462, 2.470, 2.478, 2.486, 2.493, 2.497, 2.501, 2.509, 2.517, 2.524, 2.532, 2.536, 2.539, 2.547, 2.555, 2.562, 2.570, 2.573, 2.577, 2.585, 2.592, 2.600, 2.607, 2.615, 2.622, 2.629, 2.637, 2.644, 2.652, 2.659, 2.666, 2.674, 2.681, 2.688, 2.696, 2.703, 2.710, 2.718, 2.725, 2.732, 2.740, 2.747, 2.754, 2.761, 2.769, 2.776, 2.783, 2.790, 2.798, 2.805, 2.812, 2.819, 2.826, 2.834, 2.841, 2.848, 2.855, 2.862, 2.870, 2.877, 2.884, 2.891, 2.898, 2.905, 2.913, 2.920, 2.927, 2.934, 2.941, 2.948, 2.956, 2.973, 2.991, 3.009, 3.027, 3.045, 3.063, 3.081, 3.099, 3.116, 3.134, 3.170, 3.206, 3.242, 3.278, 3.314, 3.387, 3.460, 3.496, 3.533, 3.607, 3.682, 3.758, 3.834, 3.873, 3.911, 3.989, 4.068, 4.148, 4.229, 4.269, 4.311, 4.393, 4.477, 4.563, 4.649, 4.693, 4.737, 4.826, 4.916, 5.007, 5.100, 5.147, 5.195, 5.291, 5.388, 5.487, 5.588, 5.639, 5.690, 5.794, 5.900, 14.966, 45.980, 203.535, 1574.400, 18004.200};
+
+   double PDFRatio13to8_qqHData [] = {1.731, 1.734, 1.736, 1.738, 1.741, 1.743, 1.746, 1.748, 1.750, 1.753, 1.755, 1.757, 1.759, 1.762, 1.764, 1.766, 1.768, 1.770, 1.773, 1.775, 1.777, 1.779, 1.781, 1.783, 1.785, 1.787, 1.789, 1.791, 1.793, 1.795, 1.797, 1.798, 1.799, 1.800, 1.801, 1.802, 1.803, 1.804, 1.805, 1.806, 1.807, 1.808, 1.809, 1.810, 1.811, 1.812, 1.813, 1.813, 1.814, 1.815, 1.816, 1.816, 1.817, 1.817, 1.817, 1.817, 1.817, 1.818, 1.818, 1.818, 1.818, 1.818, 1.819, 1.819, 1.819, 1.819, 1.819, 1.819, 1.820, 1.820, 1.820, 1.820, 1.820, 1.821, 1.821, 1.821, 1.821, 1.821, 1.821, 1.822, 1.822, 1.822, 1.822, 1.822, 1.823, 1.823, 1.823, 1.823, 1.823, 1.823, 1.824, 1.824, 1.824, 1.824, 1.824, 1.825, 1.825, 1.825, 1.825, 1.825, 1.825, 1.826, 1.826, 1.826, 1.826, 1.826, 1.827, 1.827, 1.827, 1.827, 1.827, 1.827, 1.828, 1.828, 1.828, 1.828, 1.828, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.830, 1.830, 1.830, 1.830, 1.830, 1.830, 1.831, 1.831, 1.831, 1.831, 1.831, 1.832, 1.832, 1.832, 1.832, 1.832, 1.832, 1.833, 1.833, 1.833, 1.833, 1.833, 1.833, 1.834, 1.834, 1.834, 1.834, 1.834, 1.835, 1.836, 1.837, 1.838, 1.839, 1.840, 1.840, 1.841, 1.842, 1.843, 1.844, 1.845, 1.846, 1.846, 1.847, 1.848, 1.849, 1.850, 1.851, 1.852, 1.852, 1.853, 1.854, 1.855, 1.856, 1.857, 1.857, 1.858, 1.859, 1.860, 1.861, 1.861, 1.862, 1.863, 1.864, 1.865, 1.866, 1.866, 1.867, 1.868, 1.871, 1.874, 1.877, 1.881, 1.884, 1.887, 1.890, 1.891, 1.893, 1.896, 1.899, 1.902, 1.905, 1.906, 1.908, 1.910, 1.913, 1.916, 1.919, 1.920, 1.922, 1.925, 1.927, 1.930, 1.933, 1.934, 1.936, 1.938, 1.941, 1.944, 1.947, 1.949, 1.952, 1.954, 1.957, 1.960, 1.962, 1.965, 1.967, 1.970, 1.973, 1.975, 1.978, 1.980, 1.983, 1.985, 1.988, 1.990, 1.992, 1.995, 1.997, 2.000, 2.002, 2.005, 2.007, 2.009, 2.012, 2.014, 2.016, 2.019, 2.021, 2.023, 2.026, 2.028, 2.030, 2.033, 2.035, 2.037, 2.039, 2.042, 2.044, 2.046, 2.048, 2.051, 2.053, 2.055, 2.057, 2.059, 2.062, 2.067, 2.073, 2.078, 2.083, 2.089, 2.094, 2.099, 2.104, 2.110, 2.115, 2.125, 2.135, 2.145, 2.155, 2.165, 2.185, 2.204, 2.214, 2.223, 2.242, 2.261, 2.280, 2.299, 2.308, 2.317, 2.336, 2.355, 2.373, 2.392, 2.401, 2.411, 2.429, 2.448, 2.468, 2.487, 2.496, 2.506, 2.526, 2.545, 2.565, 2.586, 2.596, 2.606, 2.627, 2.648, 2.669, 2.690, 2.701, 2.712, 2.734, 2.757, 4.642, 10.504, 34.989, 205.410, 3359.620};
+
+   TGraph* PDFRatio13to8_ggH= new TGraph(sizeof(PDFRatio13to8_HMassData)/sizeof(double), PDFRatio13to8_HMassData, PDFRatio13to8_ggHData);
+   TGraph* PDFRatio13to8_qqH= new TGraph(sizeof(PDFRatio13to8_HMassData)/sizeof(double), PDFRatio13to8_HMassData, PDFRatio13to8_qqHData);
+
+   double* ggH13_mass = new double[sizeof(ggH8_mass)/sizeof(double)];
+   double* ggH13_xsec = new double[sizeof(ggH8_xsec)/sizeof(double)];
+   double* ggH13_scap = new double[sizeof(ggH8_scap)/sizeof(double)];
+   double* ggH13_scam = new double[sizeof(ggH8_scam)/sizeof(double)];
+   double* ggH13_pdfp = new double[sizeof(ggH8_pdfp)/sizeof(double)];
+   double* ggH13_pdfm = new double[sizeof(ggH8_pdfm)/sizeof(double)];
+   for(unsigned int i=0;i<sizeof(ggH13_mass)/sizeof(double);i++){
+      ggH13_mass[i] = ggH8_mass[i];
+      ggH13_xsec[i] = ggH8_xsec[i] * PDFRatio13to8_ggH->Eval(ggH13_mass[i]);
+      ggH13_scap[i] = ggH8_scap[i];
+      ggH13_scam[i] = ggH8_scam[i];
+      ggH13_pdfp[i] = ggH8_pdfp[i];
+      ggH13_pdfm[i] = ggH8_pdfm[i];
+   }
+
+   double* qqH13_mass = new double[sizeof(qqH8_mass)/sizeof(double)];
+   double* qqH13_xsec = new double[sizeof(qqH8_xsec)/sizeof(double)];
+   double* qqH13_scap = new double[sizeof(qqH8_scap)/sizeof(double)];
+   double* qqH13_scam = new double[sizeof(qqH8_scam)/sizeof(double)];
+   double* qqH13_pdfp = new double[sizeof(qqH8_pdfp)/sizeof(double)];
+   double* qqH13_pdfm = new double[sizeof(qqH8_pdfm)/sizeof(double)];
+   for(unsigned int i=0;i<sizeof(qqH13_mass)/sizeof(double);i++){
+      qqH13_mass[i] = qqH8_mass[i];
+      qqH13_xsec[i] = qqH8_xsec[i] * PDFRatio13to8_qqH->Eval(qqH13_mass[i]);
+      qqH13_scap[i] = qqH8_scap[i];
+      qqH13_scam[i] = qqH8_scam[i];
+      qqH13_pdfp[i] = qqH8_pdfp[i];
+      qqH13_pdfm[i] = qqH8_pdfm[i];
+   }
+
+
+   ggH13TG_xsec = new TGraph(sizeof(ggH13_mass)/sizeof(double), ggH13_mass, ggH13_xsec);
+   ggH13TG_scap = new TGraph(sizeof(ggH13_mass)/sizeof(double), ggH13_mass, ggH13_scap);
+   ggH13TG_scam = new TGraph(sizeof(ggH13_mass)/sizeof(double), ggH13_mass, ggH13_scam);
+   ggH13TG_pdfp = new TGraph(sizeof(ggH13_mass)/sizeof(double), ggH13_mass, ggH13_pdfp);
+   ggH13TG_pdfm = new TGraph(sizeof(ggH13_mass)/sizeof(double), ggH13_mass, ggH13_pdfm);
+
+   qqH13TG_xsec = new TGraph(sizeof(qqH13_mass)/sizeof(double), qqH13_mass, qqH13_xsec);
+   qqH13TG_scap = new TGraph(sizeof(qqH13_mass)/sizeof(double), qqH13_mass, qqH13_scap);
+   qqH13TG_scam = new TGraph(sizeof(qqH13_mass)/sizeof(double), qqH13_mass, qqH13_scam);
+   qqH13TG_pdfp = new TGraph(sizeof(qqH13_mass)/sizeof(double), qqH13_mass, qqH13_pdfp);
+   qqH13TG_pdfm = new TGraph(sizeof(qqH13_mass)/sizeof(double), qqH13_mass, qqH13_pdfm);
+
 
    //#FIXME: extrapolated from 600 to 1TeVmissing points from 650GeV to 1TeV
    double QCDScaleMass   [] = {200, 250, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000};
@@ -1107,7 +1165,7 @@ void initializeTGraph(){
               TPaveText* Label = new TPaveText(0.1,0.81,0.94,0.89, "NDC");
               Label->SetFillColor(0);  Label->SetFillStyle(0);  Label->SetLineColor(0); Label->SetBorderSize(0);  Label->SetTextAlign(31);
               TString LabelText = procs["data"].channels[p->first].channel+"  -  "+procs["data"].channels[p->first].bin;
-              LabelText.ReplaceAll("leq","#leq");LabelText.ReplaceAll("geq","#geq"); LabelText.ReplaceAll("eq","=");
+              LabelText.ReplaceAll("eq","="); LabelText.ReplaceAll("l=","#leq");LabelText.ReplaceAll("g=","#geq"); 
               LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
               Label->AddText(LabelText);  Label->Draw();
  
