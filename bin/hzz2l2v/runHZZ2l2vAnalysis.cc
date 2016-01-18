@@ -967,7 +967,7 @@ int main(int argc, char* argv[])
              else if(lid==11){
                if(leptons[ilep].pt()<10) passLooseLepton=false;
              }
-             if(leptons[ilep].pt()<20) passKin=false;
+             if(leptons[ilep].pt()<25) passKin=false;
 
              //Cut based identification
              passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);

@@ -70,18 +70,22 @@ namespace utils
        if(h && h->GetDefaultSumw2()) h->Sumw2();  
     }
 
-   bool matchKeyword(JSONWrapper::Object& process, std::vector<std::string>& keywords){
+   bool getMatchingKeyword(JSONWrapper::Object& process, std::vector<std::string>& keywords, std::string& matching){
+      matching = "";
       if(keywords.size()<=0)return true;
-      if(process.isTag("keys")){
-         std::vector<JSONWrapper::Object> dsetkeywords = process["keys"].daughters();
-         for(size_t ikey=0; ikey<dsetkeywords.size(); ikey++){
-            for(unsigned int i=0;i<keywords.size();i++){if(std::regex_match(dsetkeywords[ikey].toString(),std::regex(keywords[i])))return true;}
-         }
-      }else{
-         return true;
+      if(!process.isTag("keys"))return false;
+      std::vector<JSONWrapper::Object> dsetkeywords = process["keys"].daughters();
+      for(size_t ikey=0; ikey<dsetkeywords.size(); ikey++){
+         for(unsigned int i=0;i<keywords.size();i++){if(std::regex_match(dsetkeywords[ikey].toString(),std::regex(keywords[i]))){matching=dsetkeywords[ikey].toString(); return true;}}
       }
       return false;
    }
+
+   bool matchKeyword(JSONWrapper::Object& process, std::vector<std::string>& keywords){
+      std::string unused;
+      return getMatchingKeyword(process, keywords, unused); 
+   }
+
 
    std::string dropBadCharacters(std::string in){
       while(in.find("*")!=std::string::npos)in.replace(in.find("*"),1,"");
@@ -109,6 +113,21 @@ namespace utils
       if(SingleProcess.isTag("marker") )hist->SetMarkerStyle((int)SingleProcess["marker"].toDouble());// else hist->SetMarkerStyle(1);
       if(SingleProcess.isTag("msize")  )hist->SetMarkerSize (      SingleProcess["msize"].toDouble());// else the Size is the defaoult one
    }
+
+    void setStyleFromKeyword(std::string keyword, JSONWrapper::Object& SingleProcess, TH1* hist){
+      if(SingleProcess.isTagFromKeyword(keyword, "color" ) )hist->SetLineColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "color", 1)); else hist->SetLineColor  (1);
+      if(SingleProcess.isTagFromKeyword(keyword, "color" ) )hist->SetMarkerColor((int)SingleProcess.getDoubleFromKeyword(keyword, "color", 1)); else hist->SetMarkerColor(1);
+      if(SingleProcess.isTagFromKeyword(keyword, "color" ) )hist->SetFillColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "color", 1)); else hist->SetFillColor  (0);
+      if(SingleProcess.isTagFromKeyword(keyword, "lcolor") )hist->SetLineColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "lcolor", 1));
+      if(SingleProcess.isTagFromKeyword(keyword, "mcolor") )hist->SetMarkerColor((int)SingleProcess.getDoubleFromKeyword(keyword, "mcolor", 1));
+      if(SingleProcess.isTagFromKeyword(keyword, "fcolor") )hist->SetFillColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "fcolor", 1));
+      if(SingleProcess.isTagFromKeyword(keyword, "lwidth") )hist->SetLineWidth  ((int)SingleProcess.getDoubleFromKeyword(keyword, "lwidth", 1));// else hist->SetLineWidth  (1);
+      if(SingleProcess.isTagFromKeyword(keyword, "lstyle") )hist->SetLineStyle  ((int)SingleProcess.getDoubleFromKeyword(keyword, "lstyle", 1));// else hist->SetLinStyle  (1);
+      if(SingleProcess.isTagFromKeyword(keyword, "fill"  ) )hist->SetFillColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "fill", 1));
+      if(SingleProcess.isTagFromKeyword(keyword, "marker") )hist->SetMarkerStyle((int)SingleProcess.getDoubleFromKeyword(keyword, "marker", 1));// else hist->SetMarkerStyle(1);
+      if(SingleProcess.isTagFromKeyword(keyword, "msize")  )hist->SetMarkerSize (     SingleProcess.getDoubleFromKeyword(keyword, "msize", 1));// else the Size is the defaoult one
+   }
+  
 
    double getXsecXbr(JSONWrapper::Object& SingleProcess){
       double toReturn = 1.0;

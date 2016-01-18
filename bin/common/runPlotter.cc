@@ -87,7 +87,6 @@ struct NameAndType{
    bool operator< (const NameAndType& a){ return a.name < name;}
  };
 
-
 void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<NameAndType>& histlist, TDirectory* dir=NULL, std::string parentPath=""){
   if(parentPath=="" && !dir){
       int dataProcessed = 0;
@@ -97,18 +96,20 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
       std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
       //loop on all Proc
       for(size_t ip=0; ip<Process.size(); ip++){
-          if(Process[ip].isTag("interpollation"))continue; //nothing to do with these          
-          if(!utils::root::matchKeyword(Process[ip], keywords))continue; //only consider samples passing key filtering
-	  bool isData (  Process[ip]["isdata"].toBool()  );
-          bool isSign ( !isData &&  Process[ip].isTag("spimpose") && Process[ip]["spimpose"].toBool());
+          if(Process[ip].isTag("interpollation"))continue; //nothing to do with these         
+          string matchingKeyword="";
+          if(!utils::root::getMatchingKeyword(Process[ip], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+	  bool isData (  Process[ip].getBoolFromKeyword(matchingKeyword, "isdata", false)  );
+          bool isSign ( !isData &&  Process[ip].getBoolFromKeyword(matchingKeyword, "spimpose", false));
   	  bool isMC   = !isData && !isSign; 
 	  string filtExt("");
-	  if(Process[ip].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip]["mctruthmode"].toInt()); filtExt += buf; }
+	  if(Process[ip].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip].getIntFromKeyword(matchingKeyword, "mctruthmode")); filtExt += buf; }
+          string procSuffix = Process[ip].getStringFromKeyword(matchingKeyword, "suffix", "");
 
 	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
 	  for(size_t id=0; id<Samples.size(); id++){               
               string dtag = Samples[id].getString("dtag", "");
-              string suffix = Samples[id].getString("suffix","");
+              string suffix = Samples[id].getString("suffix",procSuffix);
 	      int split = Samples[id].getInt("split", -1);               
               int fileProcessed=0;
               for(int s=0; s<(split>0?split:999); s++){
@@ -191,15 +192,16 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
       if(!Process[i].isTag("interpollation"))continue; //only consider intepollated processes
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
 
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       File->cd();
       TDirectory* subdir = File->GetDirectory(dirName.c_str());
       if(!subdir || subdir==File) subdir = File->mkdir(dirName.c_str());
       subdir->cd();
      
-      string signal   = Process[i]["tag"].c_str();
+      string signal   = Process[i].getStringFromKeyword(matchingKeyword, "tag");
       string signalL  = Process[i]["interpollation"][0]["tagLeft"].c_str();
       string signalR  = Process[i]["interpollation"][0]["tagRight"].c_str();
       double mass     = Process[i]["interpollation"][0]["mass"].toDouble();
@@ -304,11 +306,12 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
 
    for(unsigned int i=0;i<Process.size();i++){
       if(Process[i].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
 
 //      time_t now = time(0);
 
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       OutputFile->cd();
       TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
       if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
@@ -320,7 +323,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
          std::vector<string>& fileList = DSetFiles[(Samples[j])["dtag"].toString()];
-         if(!Process[i]["isdata"].toBool() && !Process[i]["isdatadriven"].toBool()){Weight= iLumi/fileList.size();}else{Weight=1.0;}
+         if(!Process[i].getBoolFromKeyword(matchingKeyword, "isdata", false) && !Process[i].getBoolFromKeyword(matchingKeyword, "isdatadriven", false)){Weight= iLumi/fileList.size();}else{Weight=1.0;}
 
          for(int f=0;f<fileList.size();f++){
            if(IndexFiles%NFilesStep==0){printf(".");fflush(stdout);} IndexFiles++;
@@ -354,7 +357,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
                  if(!outhist){ //histogram not yet in file, so need to add it
                     subdir->cd();
                     outhist = (TH1*)(inobj)->Clone(inobj->GetName());
-                    utils::root::setStyle(Process[i], outhist);
+                    utils::root::setStyleFromKeyword(matchingKeyword,Process[i], outhist);
                     utils::root::checkSumw2(outhist);
                  }else{
                     outhist->Add((TH1*)inobj);
@@ -385,18 +388,19 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering      
-      if(Process[i]["isinvisible"].toBool())continue;
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering      
+      if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
       string filtExt("");
-      if(Process[i].isTag("mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i]["mctruthmode"].toInt()); filtExt += buf; }
+      if(Process[i].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i].getIntFromKeyword(matchingKeyword, "mctruthmode", 0)); filtExt += buf; }
 
       TCanvas* c1 = new TCanvas("c1","c1",500,500);
       c1->SetLogz(true);
 
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
-      utils::root::setStyle(Process[i], hist);
+      utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
 
       SaveName = hist->GetName();
       ObjectToDelete.push_back(hist);
@@ -437,8 +441,9 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    int NSampleToDraw = 0;
    for(unsigned int i=0;i<Process.size();i++){
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
-      if(Process[i]["isinvisible"].toBool())continue;
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+      if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
       NSampleToDraw++;
    }
    int CanvasX = 3;
@@ -449,17 +454,18 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    std::vector<TObject*> ObjectToDelete;
    for(unsigned int i=0;i<Process.size();i++){
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
-      if(Process[i]["isinvisible"].toBool())continue;
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+      if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
 
       TVirtualPad* pad = c1->cd(i+1);
       pad->SetLogz(true);
       pad->SetTopMargin(0.0); pad->SetBottomMargin(0.10);  pad->SetRightMargin(0.20);
 
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
-      utils::root::setStyle(Process[i], hist);
+      utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
   
       SaveName = hist->GetName();
       ObjectToDelete.push_back(hist);
@@ -481,8 +487,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
    string SavePath = utils::root::dropBadCharacters(SaveName);
    if(outDir.size()) SavePath = outDir +"/"+ SavePath; 
-   for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext)
-   {
+   for(auto ext = plotExt.begin(); ext != plotExt.end(); ++ext){
      system(string(("rm -f ") + SavePath + *ext).c_str());
      c1->SaveAs((SavePath + *ext).c_str());
    }
@@ -542,31 +547,32 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    ObjectToDelete.push_back(stack);
 
    for(unsigned int i=0;i<Process.size();i++){
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
-      if(Process[i]["isinvisible"].toBool())continue;
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+      if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
-      utils::root::setStyle(Process[i], hist);
+      utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
      
       utils::root::fixExtremities(hist,fixOverflow,fixUnderflow); 
-      if(Process[i].isTag("normto")) hist->Scale( Process[i]["normto"].toDouble()/hist->Integral() );
+      if(Process[i].isTagFromKeyword(matchingKeyword, "normto")) hist->Scale( Process[i].getDoubleFromKeyword(matchingKeyword, "normto", 1.0)/hist->Integral() );
 
       if(Maximum<hist->GetMaximum())Maximum=hist->GetMaximum();
       if(Minimum>hist->GetMinimum())Minimum=hist->GetMinimum();
       ObjectToDelete.push_back(hist);
 
-      if(Process[i]["isdata"].toBool()){
-          if(!data){legA->AddEntry(hist, Process[i]["tag"].c_str(), "P E");}
+      if(Process[i].getBoolFromKeyword(matchingKeyword, "isdata", false)){
+          if(!data){legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "P E");}
           if(!data){data = (TH1D*)hist->Clone("data");utils::root::checkSumw2(data);}else{data->Add(hist);}
-      }else if(Process[i].isTag("spimpose") && Process[i]["spimpose"].toBool()){
-          legA->AddEntry(hist, Process[i]["tag"].c_str(), "L" );
+      }else if(Process[i].getBoolFromKeyword(matchingKeyword, "spimpose", false)){
+          legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "L" );
           spimposeOpts.push_back( "hist" );
           spimpose.push_back(hist);
           if(SignalMin>hist->GetMaximum()*1E-2) SignalMin=hist->GetMaximum()*1E-2;
       }else{
 	 stack->Add(hist, "HIST"); //Add to Stack
-         legA->AddEntry(hist, Process[i]["tag"].c_str(), "F");	 
+         legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "F");	 
          if(!mc){mc = (TH1D*)hist->Clone("mc");utils::root::checkSumw2(mc);}else{mc->Add(hist);}      
       }
    }
@@ -786,8 +792,9 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
    TH1* stack = NULL; 
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
-      if(!utils::root::matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
-      string dirName = Process[i]["tag"].c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
 
@@ -819,11 +826,11 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
       }
       ObjectToDelete.push_back(hist);
 
-      std::string CleanTag = Process[i]["tag"].c_str();
+      std::string CleanTag = Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str();
       if(CleanTag.find("#")!=std::string::npos)CleanTag = string("$") + CleanTag + "$";
       while(CleanTag.find("#")!=std::string::npos)CleanTag.replace(CleanTag.find("#"),1,"\\");
 
-      if((!Process[i].isTag("spimpose") || !Process[i]["spimpose"].toBool()) && !Process[i]["isdata"].toBool()){
+      if(!Process[i].getBoolFromKeyword(matchingKeyword, "spimpose", false)  && !Process[i].getBoolFromKeyword(matchingKeyword, "isdata", false)){
          //Add to Stack
 	if(!stack){stack = (TH1*)hist->Clone("Stack");utils::root::checkSumw2(stack);}else{stack->Add(hist,1.0);}
 
