@@ -28,21 +28,23 @@ phase=-1
 ###################################################
 
 
-jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
-BESTDISCOVERYOPTIM=False #Set to True for best discovery optimization, Set to False for best limit optimization
+jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json --key 2l2v_datadriven'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2016_01_13_datadriven.root'
+BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-MASS = [400,600, 1000]
-SUBMASS = [400,600, 1000]
+MASS = [400,500, 600, 750, 850, 1000]
+SUBMASS = MASS
+#SUBMASS = [400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
-LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
+#LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
+LandSArgCommonOptions=" --blind --rebin 10 --dropBckgBelow 0.00001  --subNRB "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
-for shape in ["mt_shapes --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
+for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
    for bin in BINS:
       #Run limit for Cut&Count GG+VBF
       signalSuffixVec += [ "" ]
@@ -136,7 +138,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('Z#rightarrow ll/all_optim_cut') 
+   cutsH = file.Get('ZZ#rightarrow 2l2#nu/all_optim_cut') 
       
    ###################################################
    ##   OPTIMIZATION LOOP                           ##
@@ -404,7 +406,7 @@ for signalSuffix in signalSuffixVec :
       else:
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
 
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 13 , 0.058 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, true, 13 , 2.215 )'")
       #os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
       #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 13 , 19.8 )'")
       #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/XSec_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  false, false, 13 , 19.8 )'")

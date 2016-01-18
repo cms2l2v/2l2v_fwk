@@ -644,11 +644,19 @@ void MetFilter::FillBadEvents(std::string path){
     File.close();
 }
 
-bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){  
-     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return false;
+
+
+int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
+     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;
 
     // Legacy: the different collection name was necessary with the early 2015B prompt reco        
-    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+//    edm::TriggerResultsByName metFilters = isPromptReco ? ev.triggerResultsByName("RECO") : ev.triggerResultsByName("PAT");
+    edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO
+    if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO
+    if(!metFilters.isValid()){       
+       printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
+    }
+
 
     // Documentation:    
     // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
@@ -674,9 +682,9 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){
     // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
     // -------------------------------------------------
 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return false; 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return false;
-    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return false;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return 2; 
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return 3;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return 4;
 
     // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
     //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
@@ -686,15 +694,28 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev, bool isPromptReco){
     fwlite::Handle <HcalNoiseSummary> summaryHandle;
     summaryHandle.getByLabel(ev, "hcalnoise");
     if(summaryHandle.isValid()) summary=*summaryHandle;
-    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
+
+    //HBHE NOISE
+    if(summary.maxHPDHits() >= 17)return 5;
+    if(summary.maxHPDNoOtherHits() >= 10)return 6;
+    if( summary.maxZeros() >= 9e9) return 7;
+    if(summary.HasBadRBXRechitR45Loose())return 8;  //for 25ns only!  CHeck the recipe for 50ns.
+//    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
-    if((failCommon || summary.HasBadRBXTS4TS5())) return false;
-    
-     return true;
+//    if((failCommon || summary.HasBadRBXRechitR45Loose() )) return 5;  //for 25ns only
+   
+     //HBHE ISO NOISE
+     if(summary.numIsolatedNoiseChannels() >=10)return 9;
+     if(summary.isolatedNoiseSumE() >=50) return 10;
+     if(summary.isolatedNoiseSumEt() >=25) return 11;
+
+     return 0;
    }
 
 
-
+bool MetFilter::passMetFilter(const fwlite::Event& ev){
+   return passMetFilterInt(ev)==0;
+}
 
 
 }

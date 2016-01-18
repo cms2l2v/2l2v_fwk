@@ -101,7 +101,8 @@ namespace patUtils
      ~MetFilter(){}
      void Clear(){map.clear();}
      void FillBadEvents(std::string path);
-     bool passMetFilter(const fwlite::Event& ev, bool isPromptReco);
+     int  passMetFilterInt(const fwlite::Event& ev);
+     bool passMetFilter(const fwlite::Event& ev);
    };
 
 

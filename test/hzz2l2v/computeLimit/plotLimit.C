@@ -240,7 +240,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   TGraph* THXSec        = new TGraph(N,MassAxis,ThXSec); THXSec->SetLineWidth(2); THXSec->SetLineStyle(2); THXSec->SetLineColor(4);
 
 
-  TGExpLimit->SetLineColor(2);  TGExpLimit->SetLineStyle(1);
+  TGExpLimit->SetLineColor(1);  TGExpLimit->SetLineStyle(2);
   TGObsLimit->SetLineWidth(2);  TGObsLimit->SetMarkerStyle(20);
   TGExpLimit2S->Draw("fc same");
   TGExpLimit1S->Draw("fc same");
