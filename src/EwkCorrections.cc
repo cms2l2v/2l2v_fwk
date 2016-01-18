@@ -68,7 +68,7 @@ namespace EwkCorrections
 
 
 	//The main function, will return the kfactor
-	double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double ewkCorrections_error){
+	double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double ewkCorrections_error, double rho){
 		double kFactor = 1.;
 
 		reco::GenParticleCollection genIncomingQuarks;
@@ -141,8 +141,18 @@ namespace EwkCorrections
 		if(sqrt(s_hat)< 2*m_z) kFactor = 1.; //Off-shell cases, not corrected to avoid non-defined values for t.
 
 		//Computing the associated error:
+		//Warning, several methods could be used.
+		//In Run 1, CMS used (kFactor-1)*(kFactor_QCD -1) for all rho
+		//And ATLAS used : 0 for rho < 0.3 and 1 for rho >0.3
+		//
+		//Here is an implementation that is using a mix of the two. It may change in the future (but the change won't be critical)
 		double kFactor_QCD = 15.99/9.89; //From arXiv1105.0020
-		ewkCorrections_error = fabs((kFactor-1)*(kFactor_QCD -1));
+		if(rho<0.3) ewkCorrections_error = fabs((kFactor-1)*(kFactor_QCD -1));
+		else ewkCorrections_error = 1;
+
+		//At this point, we have the relative error on the delta_ewk ( = k_ewk -1 )
+		//Let's - instead - return the absolute error on k: we do delta_ewk* the_relative_errir_on_it. This gives absolute error on delta, and so on k
+		ewkCorrections_error = fabs(ewkCorrections_error*(kFactor-1));
 
 		return kFactor;
 	}

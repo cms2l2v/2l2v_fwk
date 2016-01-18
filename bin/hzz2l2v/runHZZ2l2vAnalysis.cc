@@ -137,7 +137,9 @@ int main(int argc, char* argv[])
     if(isMC_ZZ)             { varNames.push_back("_zzptup");   varNames.push_back("_zzptdown");     }
     if(isMC_WZ)             { varNames.push_back("_wzptup");   varNames.push_back("_wzptdown");     }
     if(isMC_GG || isMC_VBF) { varNames.push_back("_lshapeup"); varNames.push_back("_lshapedown"); }
-  }
+    if(isMC_ZZ2l2nu) { varNames.push_back("_ewkcorrectionsup"); varNames.push_back("_ewkcorrectionsdown"); }
+
+	}
   size_t nvarsToInclude=varNames.size();
   
   std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
@@ -870,9 +872,9 @@ int main(int argc, char* argv[])
 		   	 //Electroweak corrections to ZZ and WZ(soon) simulations
 		 	 	 double ewkCorrectionsWeight = 1.;
 		 	 	 double ewkCorrections_error = 0.;
-		  	 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
-				 double ewkCorrections_up = ewkCorrectionsWeight + ewkCorrections_error;
-				 double ewkCorrections_down = ewkCorrectionsWeight - ewkCorrections_error;
+		  	 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error, rho);
+				 double ewkCorrections_up = (ewkCorrectionsWeight + ewkCorrections_error)/ewkCorrectionsWeight;
+				 double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
 
   	   	 //final event weight
   	   	 weight *= ewkCorrectionsWeight;
@@ -1351,7 +1353,11 @@ int main(int argc, char* argv[])
            //btag
            bool varyBtagUp( varNames[ivar]=="_btagup" );
            bool varyBtagDown( varNames[ivar]=="_btagdown" );
-           
+          
+					 //EwkCorrections variation
+					 if ( varNames[ivar]=="_ewkcorrectionsup")		iweight *= ewkCorrections_up;
+					 if ( varNames[ivar]=="_ewkcorrectionsdown")	iweight *= ewkCorrections_down;
+
            //Q^2 variations on VV pT spectum
            if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 )
              {
@@ -1424,8 +1430,8 @@ int main(int argc, char* argv[])
              //jet id
              bool         passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
              float     PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
-             if(!passPFloose || !passLooseSimplePuId) continue;
+             //bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
+             if(!passPFloose /*|| !passLooseSimplePuId*/) continue; //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
             
              //jet is selected
              tightVarJets.push_back(jets[ijet]);

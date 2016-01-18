@@ -47,7 +47,7 @@ namespace EwkCorrections
 {
   std::vector<std::vector<float>> readFile_and_loadEwkTable(TString dtag);
   std::vector<float> findCorrection(const std::vector<std::vector<float>> & Table_EWK, float sqrt_s_hat, float t_hat);
-  double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double ewkCorrections_error);
+  double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double ewkCorrections_error, double rho);
 }
 
 #endif
