@@ -42,6 +42,7 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 #include "UserCode/llvv_fwk/interface/TrigUtils.h"
+#include "UserCode/llvv_fwk/interface/EwkCorrections.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -105,7 +106,8 @@ int main(int argc, char* argv[])
   bool isMC_125OnShell = isMC && (mctruthmode==521);
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
-  bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_ZZ2l2nu  = isMC && ( string(dtag.Data()).find("TeV_ZZ2l2nu")  != string::npos);
+	bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
   bool runPhotonSelection = (mctruthmode==22 || mctruthmode==111);
@@ -131,7 +133,8 @@ int main(int argc, char* argv[])
     if(isMC_ZZ)             { varNames.push_back("_zzptup");   varNames.push_back("_zzptdown");     }
     if(isMC_WZ)             { varNames.push_back("_wzptup");   varNames.push_back("_wzptdown");     }
     if(isMC_GG || isMC_VBF) { varNames.push_back("_lshapeup"); varNames.push_back("_lshapedown"); }
-  }
+		if(isMC_ZZ2l2nu) { varNames.push_back("_ewkcorrectionsup"); varNames.push_back("_ewkcorrectionsdown"); }
+	}
   size_t nvarsToInclude=varNames.size();
   
   std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
@@ -206,6 +209,12 @@ int main(int argc, char* argv[])
   }
   if(mctruthmode==125) HiggsMass=124;
   
+
+  //ELECTROWEAK CORRECTION WEIGHTS
+  std::vector<std::vector<float>> ewkTable;
+  if(isMC_ZZ2l2nu) ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
+
+
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
   //#######################################
@@ -661,7 +670,7 @@ int main(int argc, char* argv[])
 	     fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
              puInfoH.getByLabel(ev, "slimmedAddPileupInfo");
              for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-                if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); } //getPU_NumInteractions(); }
+                if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); } //getPU_NumInteractions(); 
              }
              puWeight          = LumiWeights->weight(ngenITpu) * PUNorm[0];
              TotalWeight_plus  = PuShifters[utils::cmssw::PUUP  ]->Eval(ngenITpu) * (PUNorm[2]/PUNorm[0]);
@@ -675,6 +684,7 @@ int main(int argc, char* argv[])
          //WEIGHT for LineShape and NLO generators
          float lShapeWeights[3]={1.0,1.0,1.0};
          for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
+         GenEventInfoProduct eventInfo;
          if(isMC){
           // if(isMC_VBF || isMC_GG || mctruthmode==125){
 	  //	   LorentzVector higgs(0,0,0,0);
@@ -719,6 +729,7 @@ int main(int argc, char* argv[])
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
           genEventInfoHandle.getByLabel(ev, "generator");
+          if(genEventInfoHandle.isValid()){ eventInfo = *genEventInfoHandle;}
           if(genEventInfoHandle.isValid()){ shapeWeight*=genEventInfoHandle->weight(); }
      
            //final event weight
@@ -886,7 +897,16 @@ int main(int argc, char* argv[])
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
          } // only if mctruthmode==22 
 
-    
+     		 //Electroweak corrections to ZZ and WZ(soon) simulations
+     		 double ewkCorrectionsWeight = 1.;
+     		 double ewkCorrections_error = 0.;
+     		 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error, rho);
+     		 double ewkCorrections_up = (ewkCorrectionsWeight + ewkCorrections_error)/ewkCorrectionsWeight;
+     		 double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
+     
+       	 //final event weight
+       	 weight *= ewkCorrectionsWeight;
+     
          //
          //
          // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
@@ -1298,7 +1318,11 @@ int main(int argc, char* argv[])
               //btag
               bool varyBtagUp( varNames[ivar]=="_btagup" );
               bool varyBtagDown( varNames[ivar]=="_btagdown" );
-              
+         
+         			//EwkCorrections variation
+         			if ( varNames[ivar]=="_ewkcorrectionsup")		iweight *= ewkCorrections_up;
+          	  if ( varNames[ivar]=="_ewkcorrectionsdown")	iweight *= ewkCorrections_down;
+         
               //Q^2 variations on VV pT spectum
               if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 ){
                   size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
@@ -1370,8 +1394,9 @@ int main(int argc, char* argv[])
                 //jet id
                 bool         passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
                 float     PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-                bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
-                if(!passPFloose || !passLooseSimplePuId) continue;
+                
+                //bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
+                if(!passPFloose /*|| !passLooseSimplePuId */) continue; //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
                
                 //jet is selected
                 tightVarJets.push_back(jets[ijet]);
@@ -1473,4 +1498,3 @@ int main(int argc, char* argv[])
      goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
   }
 }  
-

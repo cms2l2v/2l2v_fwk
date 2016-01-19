@@ -10,6 +10,7 @@
 <use name="DataFormats/BeamSpot"/>
 <use name="DataFormats/EgammaCandidates"/>
 <use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/HepMCCandidate"/>
 <use name="SimDataFormats/GeneratorProducts"/>
 <use name="CondFormats/JetMETObjects"/>
 <use name="RecoEcal/EgammaCoreTools"/>
