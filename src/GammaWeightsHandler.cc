@@ -13,7 +13,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
   std::vector<TString> wgtNames; 
   wgtNames.push_back("qt");
   if(ewkSupWgt!="") wgtNames.push_back(ewkSupWgt);
-  TString wgtType( isMC ? "mcfitwgts" : "datafitwgts");
+  TString wgtType( isMC ? "mcfitwgts" : "datafitwgtsrebin");
   TString massType( isMC ? "mczmass" : "zmass");
     
   //categories to consider, add more if needed but keep these ones 
@@ -74,7 +74,7 @@ LorentzVector GammaWeightsHandler::getMassiveP4(LorentzVector &gamma,TString evC
 	while(fabs(mass-91)>15) 
 	  mass = zmassH_[evCategoryLabel]->GetRandom();
     }
-  return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.energy(),2)));
+  return LorentzVector(gamma.px(),gamma.py(),gamma.pz(),sqrt(pow(mass,2)+pow(gamma.P(),2)));
 }
 
 float GammaWeightsHandler::getWeightFor(std::vector<Float_t> &vars, TString evCategoryLabel)

@@ -188,6 +188,8 @@ namespace utils
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::string pattern1, std::string pattern2, std::string pattern3="", std::string pattern4="");
   bool passTriggerPatterns(edm::TriggerResultsByName& tr, std::vector<std::string>& patterns);
 
+  void getHiggsLineshapeFromMiniAOD(std::vector<std::string>& urls, TH1D* hGen);
+
   inline bool sort_CandidatesByPt(const pat::GenericParticle &a, const pat::GenericParticle &b)  { return a.pt()>b.pt(); }
 }
 

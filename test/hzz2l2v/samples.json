@@ -2,7 +2,7 @@
   "proc":[
     {
       "tag":"data",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photonweight"],
       "isdata":true,
       "color":1,
       "fill":0,
@@ -271,14 +271,14 @@
     },  
     {   
       "tag":"photondata",                                                                                                                                          
-      "keys":["2l2v_photons", "2l2v_photonsWeight", "2l2v_datadriven", "2l2v_photonsOnly", "2l2v_photoncontrol"],           
+      "keys":["2l2v_photons", "2l2v_photonsWeight", "2l2v_datadriven", "2l2v_photonsOnly", "2l2v_photoncontrol", "2l2v_photonweight"],           
       "isdata":true,                                                                                                                                                     
       "mctruthmode":22,                                                                                                                                             
       "color":1,                                                                                                                                                   
       "fill":0,                                                                                                                                                    
       "marker":20, 
-      "2l2v_datadriven" :{"suffix":"reweighted", "tag":"Instr. MET", "isdata":false, "isdatadriven":true, "color":831},
-      "2l2v_photonsOnly":{"suffix":"reweighted", "tag":"Instr. MET", "isdata":false, "isdatadriven":true, "color":831},      
+      "2l2v_datadriven" :{"suffix":"reweighted", "tag":"Instr. MET", "isdata":false, "isdatadriven":true, "color":831, "fill":1},
+      "2l2v_photonsOnly":{"suffix":"reweighted", "tag":"Instr. MET", "isdata":false, "isdatadriven":true, "color":831, "fill":1},      
       "2l2v_photoncontrol":{"mctruthmode":22},            
       "data":[  
              { "dtag":"Data13TeV_SinglePhoton2015C_05Oct2015",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":"/SinglePhoton/Run2015C_25ns-05Oct2015-v1/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },  

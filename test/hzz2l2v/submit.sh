@@ -29,7 +29,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2016_01_18
+SUFFIX=_2016_01_21
 #SUFFIX=_debug
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -123,6 +123,11 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [[ $step == 3.1 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
 	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_photons $arguments 
+    fi
+
+    if [[ $step == 3.15 ]]; then  # make plots and combine root files for photon + jet study    
+	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
+	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}_forPhotonWeights.root  --json $JSON --noPlot --key 2l2v_photonweight --only ".*(_qt|_qmass|_met|_mt)" $arguments 
     fi
 
     if [[ $step == 3.2 ]]; then # make plots and combine root files for photon + jet study    

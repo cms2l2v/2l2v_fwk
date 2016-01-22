@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
   double cprime = runProcess.getParameter<double>("cprime");
   double brnew  = runProcess.getParameter<double>("brnew");
   std::vector<std::pair<double, double> > NRparams;
-  NRparams.push_back(std::make_pair<double,double>(-1.0, -1.0));
+  NRparams.push_back(std::make_pair<double,double>(-1.0, -1.0)); //no reweighting
 //  NRparams.push_back(std::make_pair<double,double>(double(cprime),double(brnew)) );
   if(mctruthmode==125){
 //    NRparams.push_back(std::make_pair<double,double>(5, 0));
@@ -183,10 +183,10 @@ int main(int argc, char* argv[])
 //    NRparams.push_back(std::make_pair<double,double>(25,0));
 //    NRparams.push_back(std::make_pair<double,double>(30,0));
   }else if(suffix=="" && (isMC_GG || isMC_VBF)){ //consider the other points only when no suffix is being used    
-//    for(double cp=0.1;cp<=1.0;cp+=0.1){
-//       for(double brn=0.0; brn<=0.5;brn+=0.1){
-//          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
-//    }}
+    for(double cp=0.1;cp<=1.0;cp+=0.1){
+       for(double brn=0.0; brn<=0.0;brn+=0.1){ //brnew up to 0.5
+          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
+    }}
   }
 
 
@@ -218,188 +218,92 @@ int main(int argc, char* argv[])
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
   //#######################################
-  bool useGenLineShape(true),useGenLineShapeForNR(true);
-  TH1 *hGen=0;
-  TGraph *hLineShapeNominal=0;
   std::map<std::pair<double,double>, std::vector<TGraph *> > hLineShapeGrVec;  
-  TFile *nrLineShapesFile=0;
-  if(isMC_GG || isMC_VBF)
-    {
+  if(isMC_GG || isMC_VBF){
+      TH1D* hGen=new TH1D("hGen", "hGen", 1000, 0, 4000);
+      utils::getHiggsLineshapeFromMiniAOD(urls, hGen);
+      printf("hGen integral = %f\n", hGen->Integral());
+
+      TGraph* hLineShapeNominal= new TGraph(hGen);
+      TFile* nrLineShapesFile=NULL;
       if(mctruthmode==125){
 	TString nrLineShapesFileUrl(weightsDir+"/higgs_width_zz2l2nu.root");
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
-      }
-      else if(useGenLineShapeForNR){
-	TString nrLineShapesFileUrl(weightsDir+"/NR_weightsFromLoic.root");
+      }else{
+	TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/NR_weightsRun2.root");
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       }
 
-      TString lineShapeWeightsFileURL(weightsDir+"/");
-      lineShapeWeightsFileURL += (isMC_VBF ? "VBFtoHtoZZLineShapes.root" : "GGtoHtoZZLineShapes.root");
-      gSystem->ExpandPathName(lineShapeWeightsFileURL);
-      TFile *fin=TFile::Open(lineShapeWeightsFileURL);     
-      
-      TString interferenceShapeWeightsFileUrl(weightsDir+"/");
-      interferenceShapeWeightsFileUrl += (isMC_VBF ? "VBFtoHtoZZLineShapesInterference.root" : "GGtoHtoZZLineShapesInterference.root");
-      TFile *fin_int=0;
-      if(interferenceShapeWeightsFileUrl!="")// && (isMC_GG) 
-	{
-	  gSystem->ExpandPathName(interferenceShapeWeightsFileUrl);
-	  fin_int=TFile::Open(interferenceShapeWeightsFileUrl);
-	}
-      if(fin) 
-	{
-	  if(!useGenLineShape) cout << "Line shape weights (and uncertainties) will be applied from " << fin->GetName() << endl;
-	  if(fin_int)          cout << "Inteference terms (and uncertainties) will betaken from " << fin_int->GetName() << endl;
-	  
-	  char dirBuf[100];
-	  sprintf(dirBuf,"H%d/",int(HiggsMass));
-	  	  
-	  hGen                   = (TH1 *) fin->Get(dirBuf+TString("gen")); hGen->SetDirectory(0); hGen->Scale(1./hGen->Integral()); 
-	  if(!useGenLineShape)   hLineShapeNominal = new TGraph((TH1 *)fin->Get(dirBuf+TString("cps_shape")));	  
-	  else                   hLineShapeNominal = new TGraph(hGen);
+      //loop over possible scenarios: SM or BSM
+      for(size_t nri=0; nri<NRparams.size(); nri++){
+         //recompute weights depending on the scenario (SM or BSM)
+         TGraph* shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
+         TGraph* shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
+         TGraph* shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
 
-
-	  //CPS shape: if not required set all weights to 1.0
-	  TGraph *cpsGr          = (TGraph *) fin->Get(dirBuf+TString("cps"));
-	  if(useGenLineShape){
-	    for(int ip=0; ip<cpsGr->GetN(); ip++){
-	      Double_t x,y; 
-	      cpsGr->GetPoint(ip,x,y);
-	      cpsGr->SetPoint(ip,x,1.0);
-	    }
-	  }
-
-	  //interference: if not found set all weights to 1.0, if only nominal then set weights for 100% variation 
-	  TGraph *cpspintGr          = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("nominal"));
-	  if(cpspintGr==0) cpspintGr = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("Ratio"));
-	  TGraph *cpspint_upGr       = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("up"));
-	  TGraph *cpspint_downGr     = (TGraph *) (fin_int!=0? fin_int: fin)->Get(dirBuf+TString("down"));
-	  if(cpspintGr==0)
-	    {
-	      cpspintGr = (TGraph *)cpsGr->Clone();
-	      for(int ip=0; ip<cpspintGr->GetN(); ip++) { Double_t x,y; cpspintGr->GetPoint(ip,x,y); cpspintGr->SetPoint(ip,x,1); }
-	      cpspint_upGr = (TGraph *) cpspintGr->Clone();
-	      cpspint_downGr=(TGraph *) cpspintGr->Clone();
-	    }
-	  else if(cpspint_upGr==0 && cpspint_downGr==0)
-	    {
-	      cpspint_upGr=(TGraph *)cpspintGr->Clone();
-	      cpspint_downGr=(TGraph *)cpspintGr->Clone();
-	      for(int ip=0; ip<cpspintGr->GetN(); ip++) { 
-		Double_t x,y; 
-		cpspintGr->GetPoint(ip,x,y);
-		cpspint_downGr->SetPoint(ip,x,1.0);
-		float yDiff(fabs(1-y));
-		float yMirror(1-2*yDiff);
-		if(y>1)        yMirror=1+2*yDiff;
-		if(yMirror<0)  yMirror=0;
-		if(yMirror>10) yMirror=10;
-		cpspint_upGr->SetPoint(ip,x,yMirror);
-	      }
-	    }
-	  
-	  //loop over possible scenarios: SM or BSM
-	  for(size_t nri=0; nri<NRparams.size(); nri++)
-	    {
-	      //recompute weights depending on the scenario (SM or BSM)
-	      TGraph *shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
-	      TGraph *shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
-	      TGraph *shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
-
-              TGraph* nrWgtGr    =NULL;
-              TGraph* nrWgtUpGr  =NULL;
-              TGraph* nrWgtDownGr=NULL;              
-
-	      Float_t hySum(0);
-	      for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++)
-		{
-		  Double_t hmass    = hGen->GetBinCenter(ip);
-		  Double_t hy       = hGen->GetBinContent(ip);
+         double hySum=0;
+         for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++){
+    	     Double_t hmass    = hGen->GetBinCenter(ip);
+	     Double_t hy       = hGen->GetBinContent(ip);
+             hySum            += hy;
 		  
-		  Double_t shapeWgt(1.0),shapeWgtUp(1.0),shapeWgtDown(1.0);
-		  if(NRparams[nri].first<0)
-		    {
-		      shapeWgt     = cpsGr->Eval(hmass) * cpspintGr->Eval(hmass);
-		      shapeWgtUp   = cpsGr->Eval(hmass) * cpspint_upGr->Eval(hmass);
-		      shapeWgtDown = cpsGr->Eval(hmass) * cpspint_downGr->Eval(hmass);
-		    }
-		  else if(mctruthmode==125){
-		    TString var("");
-		    if(dtag.Contains("ScaleUp"))   var="up";
-		    if(dtag.Contains("ScaleDown")) var="down";
-		    Double_t nrWgt = higgs::utils::weightToH125Interference(hmass,NRparams[nri].first,nrLineShapesFile,var);
-		    shapeWgt       = cpsGr->Eval(hmass) * nrWgt;
-		    shapeWgtUp     = shapeWgt;
-		    shapeWgtDown   = shapeWgt;
-		  }
-		  else
-		    {
-                      if(!nrWgtGr)    nrWgtGr     = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
-                      if(!nrWgtUpGr)  nrWgtUpGr   = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");          
-                      if(!nrWgtDownGr)nrWgtDownGr = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down"); 
+	     Double_t shapeWgt(1.0),shapeWgtUp(1.0),shapeWgtDown(1.0);
+             if(mctruthmode==125){  //reweighting to SM higgs width various width 
+                TString var("");
+   	        if(dtag.Contains("ScaleUp"))   var="up";
+	        if(dtag.Contains("ScaleDown")) var="down";
+  	        shapeWgt       = higgs::utils::weightToH125Interference(hmass,NRparams[nri].first,nrLineShapesFile,var);
+	        shapeWgtUp     = shapeWgt;
+	        shapeWgtDown   = shapeWgt;
+ 	     }else if(NRparams[nri].first>=0){ //reweighting to Narrow reasonnance or EWS model
+                TGraph* nrWgtGr     = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
+                TGraph* nrWgtUpGr   = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");          
+                TGraph* nrWgtDownGr = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down"); 
 
-                    shapeWgt       = nrWgtGr    ->Eval(hmass);
-                    shapeWgtUp     = nrWgtUpGr  ->Eval(hmass);
-                    shapeWgtDown   = nrWgtDownGr->Eval(hmass);
-
-//		      Double_t cpsWgt=cpsGr->Eval(hmass);
-//		      shapeWgt       = cpsWgt * std::max(0.0, nrWgtGr    ->Eval(hmass));
-//		      shapeWgtUp     = cpsWgt * std::max(0.0, nrWgtUpGr  ->Eval(hmass));
-//		      shapeWgtDown   = cpsWgt * std::max(0.0, nrWgtDownGr->Eval(hmass));
-		    }
-		  
-		  shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
-		  shapeWgts_upGr->SetPoint(shapeWgts_upGr->GetN(),     hmass, shapeWgtUp);     shapeUpNorm   += shapeWgtUp*hy;
-		  shapeWgts_downGr->SetPoint(shapeWgts_downGr->GetN(), hmass, shapeWgtDown);   shapeDownNorm += shapeWgtDown*hy;
-		}
+                shapeWgt       = nrWgtGr    ->Eval(hmass);
+                shapeWgtUp     = nrWgtUpGr  ->Eval(hmass);
+                shapeWgtDown   = nrWgtDownGr->Eval(hmass);                       
+             }else{ //unknown case, do not reweight  (SM-Like)
+     	        shapeWgt     = 1.0;
+	        shapeWgtUp   = 1.0;
+ 	        shapeWgtDown = 1.0;
+  	     }
+	
+             if(ip==150)printf("weight for mZZ %f = %f x %f\n", hmass, shapeWgt, hy);
+	     shapeWgtsGr->SetPoint(shapeWgtsGr->GetN(),           hmass, shapeWgt);       shapeNorm     += shapeWgt*hy;
+	     shapeWgts_upGr->SetPoint(shapeWgts_upGr->GetN(),     hmass, shapeWgtUp);     shapeUpNorm   += shapeWgtUp*hy;
+	     shapeWgts_downGr->SetPoint(shapeWgts_downGr->GetN(), hmass, shapeWgtDown);   shapeDownNorm += shapeWgtDown*hy;
+         }
 	      
-	      if(mctruthmode!=125)
-	      {
-		cout << "C'=" << NRparams[nri].first << " " << hySum << " " << shapeNorm << endl;
-		if(hySum>0){
-		  shapeNorm     /= hySum;
-		  shapeUpNorm   /= hySum;
-		  shapeDownNorm /= hySum;
-		}
-		//fix possible normalization issues
-		cout << "C'=" << NRparams[nri].first << " BRnew=" << NRparams[nri].second << " shape wgts will be re-scaled to preserve unitarity with: "
-		     << " nominal=" << shapeNorm
-		     << " up     =" << shapeUpNorm
-		     << " down   =" << shapeDownNorm 
-		     << endl;
-		for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++)
-		  {
-		    Double_t x,y;
-		    shapeWgtsGr->GetPoint(ip,x,y);
-		    shapeWgtsGr->SetPoint(ip,x,y/shapeNorm);
-		    
-		    shapeWgts_upGr->GetPoint(ip,x,y);
-		    shapeWgts_upGr->SetPoint(ip,x,y/shapeUpNorm);
-		    
-		    shapeWgts_downGr->GetPoint(ip,x,y);
-		    shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
-		  }
-	      }
-	      //all done here...
-	      std::vector<TGraph *> inrWgts;
-	      inrWgts.push_back( shapeWgtsGr      );
-	      inrWgts.push_back( shapeWgts_upGr   );
-	      inrWgts.push_back( shapeWgts_downGr );
-	      hLineShapeGrVec[ NRparams[nri] ] = inrWgts;
+         if(mctruthmode!=125){
+  	    cout << "C'=" << NRparams[nri].first << " " << shapeNorm << endl;
+	    if(hySum>0){
+	       shapeNorm     /= hySum;
+	       shapeUpNorm   /= hySum;
+	       shapeDownNorm /= hySum;
+     	    }
+
+            //fix possible normalization issues
+            printf("C'=%6.2f  BRNew=%6.2f shapeNorm = %f Up=%f Down=%f\n", NRparams[nri].first, NRparams[nri].second, shapeNorm, shapeUpNorm, shapeDownNorm);
+ 	    for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++){
+  	         Double_t x,y;
+	         shapeWgtsGr->GetPoint(ip,x,y);
+	         shapeWgtsGr->SetPoint(ip,x,y/shapeNorm);   
+ 	         shapeWgts_upGr->GetPoint(ip,x,y);
+	         shapeWgts_upGr->SetPoint(ip,x,y/shapeUpNorm);		    
+  	         shapeWgts_downGr->GetPoint(ip,x,y);
+	         shapeWgts_downGr->SetPoint(ip,x,y/shapeDownNorm);
 	    }
-	  
-	  //close files
-	  fin->Close();
-	  delete fin;
-	  if(fin_int){
-	    fin_int->Close();
-	    delete fin_int;
-	  }
-	}
-    }
+         }
+
+         //all done here...
+	 std::vector<TGraph *> inrWgts = {shapeWgtsGr, shapeWgts_upGr, shapeWgts_downGr};
+	 hLineShapeGrVec[ NRparams[nri] ] = inrWgts;
+      }	  
+      if(nrLineShapesFile){nrLineShapesFile->Close(); delete nrLineShapesFile;}
+  }
 
 
   //##############################################
@@ -677,61 +581,62 @@ int main(int argc, char* argv[])
              TotalWeight_minus = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
              weight *= puWeight;
          }
-
          mon.fillHisto("weight_eventflow","debug", 2, weight);
 
+         reco::GenParticleCollection gen;
+         fwlite::Handle< reco::GenParticleCollection > genHandle;
+         genHandle.getByLabel(ev, "prunedGenParticles");
+         if(genHandle.isValid()){ gen = *genHandle;}
+
+         GenEventInfoProduct eventInfo;       
+         fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
+         genEventInfoHandle.getByLabel(ev, "generator");        
+         if(genEventInfoHandle.isValid()){ eventInfo = *genEventInfoHandle;}
 
          //WEIGHT for LineShape and NLO generators
          float lShapeWeights[3]={1.0,1.0,1.0};
          for(unsigned int nri=0;nri<NRparams.size();nri++){NRweights[nri] = 1.0;}
-         GenEventInfoProduct eventInfo;
          if(isMC){
-          // if(isMC_VBF || isMC_GG || mctruthmode==125){
-	  //	   LorentzVector higgs(0,0,0,0);
-	  //	   LorentzVector totLeptons(0,0,0,0);
-	  //	   for(size_t igen=0; igen<gen.size(); igen++){
-	  //	     if(gen[igen].status()!=3) continue;
-	  //	     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16) totLeptons += gen[igen].p4();
-	  //	     if(gen[igen].pdgId()==25)                                      higgs=gen[igen].p4();
-	  //	   }
-	  //	   if(mctruthmode==125) {
-	  //	     higgs=totLeptons;
-	  //	     if(isMC_125OnShell && higgs.mass()>180) continue;
-	  //	     if(!isMC_125OnShell && higgs.mass()<=180) continue;
-	  //	   }
-	  //
-	  //
-          //     //Line shape weights 
-          //     if((isMC_VBF || isMC_GG) && higgs.pt()>0){
-          //         std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
-          //         for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++)
-          //           {
-          //             if(nominalShapeWgtGr[iwgt]==0) continue;
-          //             lShapeWeights[iwgt]=nominalShapeWgtGr[iwgt]->Eval(higgs.mass());
-          //           }
-          //       }
-          //     shapeWeight   = lShapeWeights[0];
-          //     
-          //     //control SM line shape
-          //     mon.fillHisto("higgsMass_raw",    "", higgs.mass(), puWeight);
-          //     mon.fillHisto("higgsMass_cpspint","", higgs.mass(), puWeight * shapeWeight);
-          //     
-          //     //compute weight correction for narrow resonnance
-          //     for(unsigned int nri=0;nri<NRparams.size();nri++){ 
-          //       if(NRparams[nri].first<0) continue;
-          //       std::vector<TGraph *> shapeWgtGr = hLineShapeGrVec[NRparams[nri] ];
-          //       NRweights[nri] = shapeWgtGr[0]->Eval(higgs.mass()); 
-          //       float iweight = puWeight * NRweights[nri];
-          //       mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
-          //     }  
-          // }
-
           //NLO weight:  This is needed because NLO generator might produce events with negative weights FIXME: need to verify that the total cross-section is properly computed
-          fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
-          genEventInfoHandle.getByLabel(ev, "generator");
-          if(genEventInfoHandle.isValid()){ eventInfo = *genEventInfoHandle;}
-          if(genEventInfoHandle.isValid()){ shapeWeight*=genEventInfoHandle->weight(); }
+          shapeWeight*=eventInfo.weight(); 
+
      
+          if(isMC_VBF || isMC_GG || mctruthmode==125){
+             LorentzVector higgs(0,0,0,0);
+  	     for(unsigned int igen=0; igen<gen.size(); igen++){
+                if(!gen[igen].isHardProcess()) continue;
+	        if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16){ higgs += gen[igen].p4(); }
+	     }
+	     if(mctruthmode==125) {
+	        if(isMC_125OnShell && higgs.mass()>180) continue;
+	        if(!isMC_125OnShell && higgs.mass()<=180) continue;
+	     }
+	  
+             //     //Line shape weights 
+             if(isMC_VBF || isMC_GG){               
+                std::vector<TGraph *> nominalShapeWgtGr=hLineShapeGrVec.begin()->second;
+                for(size_t iwgt=0; iwgt<nominalShapeWgtGr.size(); iwgt++){
+                   if(nominalShapeWgtGr[iwgt]==0) continue;
+                   lShapeWeights[iwgt]=nominalShapeWgtGr[iwgt]->Eval(higgs.mass());
+                 }
+               
+                //control SM line shape
+                mon.fillHisto("higgsMass_raw",    "", higgs.mass(), puWeight * shapeWeight);
+                mon.fillHisto("higgsMass_cpspint","", higgs.mass(), puWeight * shapeWeight * lShapeWeights[0]);
+
+                 //compute weight correction for narrow resonnance
+                for(unsigned int nri=0;nri<NRparams.size();nri++){ 
+                   if(NRparams[nri].first<0) continue;
+                   std::vector<TGraph *> shapeWgtGr = hLineShapeGrVec[NRparams[nri] ];
+                   NRweights[nri] = shapeWgtGr[0]->Eval(higgs.mass()); 
+                   float iweight = puWeight * shapeWeight * NRweights[nri];
+                   mon.fillHisto(TString("higgsMass_4nr")+NRsuffix[nri], "", higgs.mass(), iweight );
+                }  
+
+                shapeWeight *= lShapeWeights[0];               
+             }
+           }
+
            //final event weight
            weight *= shapeWeight;
          }
@@ -783,11 +688,6 @@ int main(int argc, char* argv[])
           fwlite::Handle< double > rhoHandle;
           rhoHandle.getByLabel(ev, "fixedGridRhoFastjetAll");
           if(rhoHandle.isValid()){ rho = *rhoHandle;}
-
-          reco::GenParticleCollection gen;
-          fwlite::Handle< reco::GenParticleCollection > genHandle;
-          genHandle.getByLabel(ev, "prunedGenParticles");
-          if(genHandle.isValid()){ gen = *genHandle;}
 
           pat::MuonCollection muons;
           fwlite::Handle< pat::MuonCollection > muonsHandle;
@@ -1068,8 +968,10 @@ int main(int argc, char* argv[])
          //
          // ASSIGN CHANNEL
          //
+         double initialWeight = weight;
          for(unsigned int L=0;L<2;L++){  //Loop to assign a Z-->ll channel to photons
             if(L==1 && !gammaWgtHandler)continue; //run it only for photon reweighting
+            weight = initialWeight;  //make sure we do not modify the weight twice in this loop
           
             std::vector<TString> chTags;
             TString evCat;       
@@ -1329,16 +1231,14 @@ int main(int argc, char* argv[])
                   TGraph *varGr=vvShapeUnc[idx];
                   if(varGr==0) continue;
                   std::vector<LorentzVector> vs;
-                  for(size_t ipart=0; ipart<gen.size(); ipart++)
-                    {
+                  for(size_t ipart=0; ipart<gen.size(); ipart++){
                       int status=gen[ipart].status();
                       if(status!=3) continue;
                       int pid=gen[ipart].pdgId();
                       if(abs(pid)!=23 && abs(pid)!=24) continue;
                       vs.push_back( gen[ipart].p4() );
                     }
-                  if(vs.size()==2)
-                    {
+                  if(vs.size()==2){
                       LorentzVector vv=vs[0]+vs[1];
                       iweight *= varGr->Eval(vv.pt());
                     }
