@@ -164,6 +164,234 @@
       "data":[
              { "dtag":"ZHToTauTau_M125_13TeV_powheg_pythia8"  ,  "xsec":0.00265 , "br":[ 1.0 ]            , "dset":"/ZHToTauTau_M125_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
       ]
+    },
+    {
+      "tag":"H(200GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_200_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-200_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(200GeV)#rightarrow ZA(100GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_200_100",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-200_MA-100/"}
+      ]
+    },
+    {
+      "tag":"H(250GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_250_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-250_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(300GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_300_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-300_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(300GeV)#rightarrow ZA(100GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_300_100",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-300_MA-100/"}
+      ]
+    },
+    {
+      "tag":"H(300GeV)#rightarrow ZA(200GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_300_200",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-300_MA-200/"}
+      ]
+    },
+    {
+      "tag":"H(500GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_500_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-500_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(500GeV)#rightarrow ZA(100GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_500_100",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-500_MA-100/"}
+      ]
+    },
+    {
+      "tag":"H(500GeV)#rightarrow ZA(200GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_500_200",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-500_MA-200/"}
+      ]
+    },
+    {
+      "tag":"H(500GeV)#rightarrow ZA(300GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_500_300",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-500_MA-300/"}
+      ]
+    },
+    {
+      "tag":"H(650GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_650_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-650_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(800GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_800_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-800_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(800GeV)#rightarrow ZA(100GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_800_100",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-800_MA-100/"}
+      ]
+    },
+    {
+      "tag":"H(800GeV)#rightarrow ZA(200GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_800_200",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-800_MA-200/"}
+      ]
+    },
+    {
+      "tag":"H(800GeV)#rightarrow ZA(400GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_800_400",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-800_MA-400/"}
+      ]
+    },
+    {
+      "tag":"H(1000GeV)#rightarrow ZA(50GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_1000_50",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-1000_MA-50/"}
+      ]
+    },
+    {
+      "tag":"H(1000GeV)#rightarrow ZA(200GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_1000_200",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-1000_MA-200/"}
+      ]
+    },
+    {
+      "tag":"H(1000GeV)#rightarrow ZA(500GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_1000_500",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-1000_MA-500/"}
+      ]
+    },
+    {
+      "tag":"H(2000GeV)#rightarrow ZA(1000GeV)",
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "color":"804",
+      "lwidth":2,       "lstyle":1,      "fill":0,      "marker":1,
+      "data":[
+        { "dtag":"MC13TeV_HZAtoTauTau_2000_1000",          "xsec":1,      "br":[1], "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/74X/HToZATo2L2Tau_MH-2000_MA-1000/"}
+      ]
     }
   ]
 }

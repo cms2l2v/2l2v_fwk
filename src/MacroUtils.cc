@@ -628,5 +628,27 @@ namespace utils
   }
   
   
-  
+   void getHiggsLineshapeFromMiniAOD(std::vector<std::string>& urls, TH1D* hGen){
+      if(!hGen)return;
+      hGen->Reset();
+      for(unsigned int f=0;f<urls.size();f++){
+       TFile* file = TFile::Open(urls[f].c_str() );
+       fwlite::Event ev(file);
+       for(ev.toBegin(); !ev.atEnd(); ++ev){
+          reco::GenParticleCollection gen;
+          fwlite::Handle< reco::GenParticleCollection > genHandle;
+          genHandle.getByLabel(ev, "prunedGenParticles");
+          if(genHandle.isValid()){ gen = *genHandle;}
+
+          LorentzVector higgs(0,0,0,0);
+	  for(size_t igen=0; igen<gen.size(); igen++){
+	     if(!gen[igen].isHardProcess()) continue;
+	     if(abs(gen[igen].pdgId())>=11 && abs(gen[igen].pdgId())<=16){ higgs += gen[igen].p4(); }
+	  }         
+          hGen->Fill(higgs.mass());
+       }
+       delete file;
+     }
+  }
+ 
 }

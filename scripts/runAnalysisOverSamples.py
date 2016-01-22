@@ -23,6 +23,18 @@ def getByLabel(proc,key,defaultVal=None) :
     except KeyError:
         return defaultVal
 
+
+def getByLabelFromKeyword(proc,keyword,key,defaultVal=None) :
+    try:
+       print "found keyword option %s" % str(proc[keyword][key])
+       return proc[keyword][key]
+    except:
+       try :
+           return proc[key]
+       except KeyError:
+           return defaultVal
+
+
 initialCommand = '';
 def initProxy():
    global initialCommand
@@ -54,7 +66,10 @@ def getFileList(procData,DefaultNFilesPerJob):
       MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
          if(localTier==""):continue;
-         MaxFraction = max(MaxFraction, float(site.split()[1].replace('%','')) )
+         try:
+            MaxFraction = max(MaxFraction, float(site.split()[1].replace('%','')) )
+         except:
+            MaxFraction = max(MaxFraction, 0.0);
          if(localTier in site):
             FractionOnLocal = float(site.split()[1].replace('%',''));
 
@@ -170,25 +185,25 @@ for procBlock in procList :
     for proc in procBlock[1] :
         #run over items in process
         if(getByLabel(proc,'interpollation', '')!=''):continue #skip interpollated processes
-        isdata=getByLabel(proc,'isdata',False)
-        isdatadriven=getByLabel(proc,'isdatadriven',False)       
-        mctruthmode=getByLabel(proc,'mctruthmode',0)
+        keywords = getByLabel(proc,'keys',[])
+        if(opt.onlykeyword!='' and len(keywords)>0 and opt.onlykeyword not in keywords): continue
+
+        isdata=getByLabelFromKeyword(proc,opt.onlykeyword,'isdata',False)
+        isdatadriven=getByLabelFromKeyword(proc,opt.onlykeyword,'isdatadriven',False)       
+        mctruthmode=getByLabelFromKeyword(proc,opt.onlykeyword,'mctruthmode',0)
+        procSuffix=getByLabelFromKeyword(proc,opt.onlykeyword,'suffix' ,"")
         data = proc['data']
 
         for procData in data :
             LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
-
-            keywords = getByLabel(proc,'keys',[])
-            if opt.onlykeyword!='' and len(keywords)>0 and opt.onlykeyword not in keywords :
-               continue
-
+ 
             origdtag = getByLabel(procData,'dtag','')
             if(origdtag=='') : continue
             dtag = origdtag         
 
             xsec = getByLabel(procData,'xsec',-1)
             br = getByLabel(procData,'br',[])
-            suffix = str(getByLabel(procData,'suffix' ,""))
+            suffix = str(getByLabel(procData,'suffix' ,procSuffix))
             split=getByLabel(procData,'split',-1)
             if opt.onlytag!='all' and dtag.find(opt.onlytag)<0 : continue
             filt=''

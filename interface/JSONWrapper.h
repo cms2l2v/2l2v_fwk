@@ -56,6 +56,12 @@ namespace JSONWrapper{
     inline bool isBool  (){if(val=="true" || val=="TRUE" || val=="True" || val=="false" || val=="FALSE" || val=="False")return true; return false;}
     inline bool isString(){return !isNumber() && !isBool();}
 
+    inline bool   isTagFromKeyword(std::string keyword, std::string searchkey) { if(isTag(keyword) && getObject(keyword).isTag(searchkey)){return true;}else{ return isTag(searchkey);} }
+    inline std::string getStringFromKeyword(std::string keyword, std::string searchkey, std::string defaultValue=""   ){if(isTag(keyword) && getObject(keyword).isTag(searchkey)){return getObject(keyword).getString(searchkey, defaultValue);}else{ return getString(searchkey, defaultValue); } }
+    inline double getDoubleFromKeyword(std::string keyword, std::string searchkey, double      defaultValue=0.0  ){if(isTag(keyword) && getObject(keyword).isTag(searchkey)){return getObject(keyword).getDouble(searchkey, defaultValue);}else{ return getDouble(searchkey, defaultValue); } }
+    inline int    getIntFromKeyword   (std::string keyword, std::string searchkey, int         defaultValue=0    ){if(isTag(keyword) && getObject(keyword).isTag(searchkey)){return getObject(keyword).getInt(searchkey, defaultValue);}else{ return getInt(searchkey, defaultValue); } }
+    inline bool   getBoolFromKeyword  (std::string keyword, std::string searchkey, bool        defaultValue=false){if(isTag(keyword) && getObject(keyword).isTag(searchkey)){return getObject(keyword).getBool(searchkey, defaultValue);}else{ return getBool(searchkey, defaultValue); } }
+
     int EndOfObject;
     std::vector<std::string> key;
     std::vector<Object> obj;

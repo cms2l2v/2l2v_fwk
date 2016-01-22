@@ -225,12 +225,11 @@ int main(int argc, char* argv[]){
 
    //FIXME these are currently hard-coded, but we should pass them via parameters using the code just bellow
    bool isData=true;
-   bool bfit=false;
+   bool bfit=true;
    int  rbin=5;
-   bool asym=false;
-   double xbins[27] = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 125, 150, 175, 200, 250, 300, 400, 500, 1000,1500};
-   string gDataFile = "plotter_2015_12_22_11.root";
-   string zDataFile = "plotter_2015_12_22.root";
+   bool asym=true;
+   string gDataFile = "plotter_2016_01_18_forPhotonWeights.root";
+   string zDataFile = "plotter_2016_01_18_forPhotonWeights.root";
    string outFile   = "photonWeights.root";
 
    for(int i=1;i<argc;i++){
@@ -247,15 +246,14 @@ int main(int argc, char* argv[]){
   std::vector<string> zDataDir;
   if(isData){
      gDataDir.push_back("photondata");
-     zDataDir.push_back("Z#rightarrow ll");
+     zDataDir.push_back("data");
   }else{
      gDataDir.push_back("GJets_HT-40to100");
      gDataDir.push_back("GJets_HT-100to200");
      gDataDir.push_back("GJets_HT-200to400");
      gDataDir.push_back("GJets_HT-400to600");
      gDataDir.push_back("GJets_HT-600toInf");
-     zDataDir.push_back("Ztoll_M-50");
-     zDataDir.push_back("Ztoll_M-10to50");
+     zDataDir.push_back("Z#rightarrow ll");
   }
 
   std::vector<int> catColor = {4     , 2   , 8   , 1    };
@@ -288,8 +286,7 @@ int main(int argc, char* argv[]){
         if(!hist)continue;
 
         hist->GetSumw2();
-        if(asym && var[v]=="_qt"){hist->Rebin(26,hist->GetName(),xbins);
-        }else if(rbin>1){ hist->Rebin(rbin);}
+        if(rbin>1){ hist->Rebin(rbin);}
         hist->GetXaxis()->SetTitleSize(.055);
         hist->GetYaxis()->SetTitleSize(.055);
         hist->GetXaxis()->SetLabelSize(.05);
@@ -309,37 +306,56 @@ int main(int argc, char* argv[]){
      File->Close();
   }}}//all histos are now loaded
 
-
+   //non fixed-width rebins
+  if(asym){
+     double xbins[] = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 175, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1250, 1500};    
+     for(unsigned int v=0;v<var.size();v++){
+        if(var[v]!="_qt")continue;
+        for(unsigned int b=0;b<bin.size();b++){
+           for(unsigned int c=0;c<cat.size();c++){
+              if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){continue;}
+              TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];        
+              hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"rebin").c_str());
+              hist = (TH1D*)hist->Rebin((sizeof(xbins)/sizeof(double))-1, hist->GetName(), xbins);              
+              DataHistos[cat[c]+bin[b]+var[v]+"rebin"] = hist;
+           }
+        }
+        printf("add variable %s\n", (var[v]+"rebin").c_str());
+        var.push_back(var[v]+"rebin");
+     }
+  }
 
 
 
   //compute the weight
-  for(unsigned int b=0;b<bin.size();b++){
-     if(DataHistos.find(string("photon")+bin[b]+"_qt")==DataHistos.end()){printf("Histo missing for %s\n", (string("photon")+bin[b]+"_qt").c_str()); continue;}
-     TH1D* histPhoton = DataHistos[string("photon")+bin[b]+"_qt"];
+  for(unsigned int v=0;v<var.size();v++){
+     if(var[v]!="_qt" && var[v]!="_qtrebin")continue;
+     for(unsigned int b=0;b<bin.size();b++){     
+        if(DataHistos.find(string("photon")+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (string("photon")+bin[b]+var[v]).c_str()); continue;}
+        TH1D* histPhoton = DataHistos[string("photon")+bin[b]+var[v]];
 
-     for(unsigned int c=0;c<cat.size();c++){
-        if(cat[c]=="photon")continue;
-        if(DataHistos.find(cat[c]+bin[b]+"_qt")==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+"_qt").c_str()); continue;}
-        TH1D* hist = DataHistos[cat[c]+bin[b]+"_qt"];
-        hist = (TH1D*)hist->Clone((cat[c]+bin[b]+"_qtweight").c_str());
-        hist->Divide(histPhoton);
-        DataHistos[cat[c]+bin[b]+"_qtweight"] = hist;
+        for(unsigned int c=0;c<cat.size();c++){
+           if(cat[c]=="photon")continue;
+           if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
+           TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
+           hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"weight").c_str());
+           hist->Divide(histPhoton);
+           DataHistos[cat[c]+bin[b]+var[v]+"weight"] = hist;
+        }
      }
+     printf("add variable %s\n", (var[v]+"weight").c_str());
+     var.push_back(var[v]+"weight");
   }
-  var.push_back("_qtweight");
-
-
 
 
   //make the plots
   for(unsigned int v=0;v<var.size();v++){
      double xmin,xmax;
      double ymin=0.5, ymax=1E6;
-     if (var[v]=="_qt") {                             xmin=45.01; xmax=1000.01;
-     } else if (var[v]=="_qtweight") {                xmin=45.01; xmax=1000.01; ymin=0.0001;  ymax=0.5;
-     } else if( (var[v]=="_met") || var[v]=="_mt") {  xmin=1.; xmax=1000.0;
-     } else{                                          xmin=1.; xmax=1000.0;    
+     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=45.01; xmax=1000.01;
+     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=45.01; xmax=1000.01; ymin=0.0001;  ymax=0.5;
+     } else if( (var[v]=="_met") || var[v]=="_mt") {               xmin=1.; xmax=1000.0;
+     } else{                                                       xmin=1.; xmax=1000.0;    
      }
 
      TCanvas* c1 =new TCanvas("c1","c1",500*bin.size(), 500);
@@ -347,7 +363,7 @@ int main(int argc, char* argv[]){
 
      for(unsigned int b=0;b<bin.size();b++){
         c1->cd(1+b);
-        if(var[v]!="_qtweight") gPad->SetLogy(); if(var[v]=="_qt")gPad->SetLogx();
+        if(var[v]!="_qtweight" || var[v]!="_qtrebinweight") gPad->SetLogy(); if(var[v]=="_qt" || var[v]=="_qtrebin")gPad->SetLogx();
         TLegend* leg = new TLegend(0.52,0.67,0.92,0.90);
         leg->SetFillStyle(0);
         leg->SetBorderSize(0);
@@ -366,7 +382,14 @@ int main(int argc, char* argv[]){
 
            if(!axisDrawn){hist->Draw("AXIS"); axisDrawn=true;}
            hist->Draw("HIST E1 same");           
-           if (bfit)hist->Fit("pol2","FR+","EHISTSAME",60.,500.);
+           if(bfit && (var[v]=="_qt" || var[v]=="_qtrebin")){
+//             TF1* fitFunc = new TF1("myPol2","pol2",60,500);
+             TF1* fitFunc = new TF1("myFunc", expgaus, 60, 500, 5);
+             hist->Fit(fitFunc,"FR+","EHISTSAME",60.,500.);
+             fitFunc->SetLineColor(catColor[c]);
+             fitFunc->SetLineWidth(2);
+             fitFunc->Draw("same");
+           }
            leg->AddEntry(hist, catL[c].c_str(), "LP"); 
         }
         leg->Draw("SAME");
@@ -387,6 +410,10 @@ int main(int argc, char* argv[]){
         if(var[v]=="_qtweight"){
            TGraphErrors* graph = new TGraphErrors(hist);
            graph->Write((cat[c]+bin[b]+"_qt_datafitwgts").c_str());
+        }else if(var[v]=="_qtrebinweight"){
+           TGraphErrors* graph = new TGraphErrors(hist);
+           graph->Write((cat[c]+bin[b]+"_qt_datafitwgtsrebin").c_str());
+          
         }else if(var[v]=="_qmass"){
            hist->Write((cat[c]+bin[b]+"_zmass").c_str());
         }
