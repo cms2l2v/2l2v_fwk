@@ -48,6 +48,7 @@ double baseRelUnc=0.044;
 bool noLog=false;
 bool isSim=false;
 bool doTree = true;
+bool doInterpollation = true;
 bool do2D  = true;
 bool do1D  = true;
 bool doTex = true;
@@ -87,34 +88,48 @@ struct NameAndType{
    bool operator< (const NameAndType& a){ return a.name < name;}
  };
 
-void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<NameAndType>& histlist, TDirectory* dir=NULL, std::string parentPath=""){
-  if(parentPath=="" && !dir){
+void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<NameAndType>& histlist, std::string parentPath="/",  TDirectory* dir=NULL){
+
+   if(parentPath=="/"){
       int dataProcessed = 0;
       int signProcessed = 0;
       int bckgProcessed = 0; 
 
       std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
-      //loop on all Proc
       for(size_t ip=0; ip<Process.size(); ip++){
-          if(Process[ip].isTag("interpollation"))continue; //nothing to do with these         
-          string matchingKeyword="";
-          if(!utils::root::getMatchingKeyword(Process[ip], keywords, matchingKeyword))continue; //only consider samples passing key filtering
-	  bool isData (  Process[ip].getBoolFromKeyword(matchingKeyword, "isdata", false)  );
+         if(Process[ip].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
+         string matchingKeyword="";
+         if(!utils::root::getMatchingKeyword(Process[ip], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+         string dirName = Process[ip].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+
+         if(dir){  //check if a directory already exist for this process in the output file
+            TObject* tmp = utils::root::GetObjectFromPath(dir,dirName,false);
+            if(tmp && tmp->InheritsFrom("TDirectory")){
+               printf("Adding all objects from %25s to the list of considered objects:\n",  dirName.c_str());
+               GetListOfObject(Root,RootDir,histlist,"", (TDirectory*)tmp );
+               continue; // nothing else to do for this process
+            }
+         }
+
+
+          bool isData (  Process[ip].getBoolFromKeyword(matchingKeyword, "isdata", false)  );
           bool isSign ( !isData &&  Process[ip].getBoolFromKeyword(matchingKeyword, "spimpose", false));
-  	  bool isMC   = !isData && !isSign; 
-	  string filtExt("");
-	  if(Process[ip].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip].getIntFromKeyword(matchingKeyword, "mctruthmode")); filtExt += buf; }
+          bool isMC   = !isData && !isSign; 
+          string filtExt("");
+          if(Process[ip].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[ip].getIntFromKeyword(matchingKeyword, "mctruthmode")); filtExt += buf; }
           string procSuffix = Process[ip].getStringFromKeyword(matchingKeyword, "suffix", "");
 
-	  std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
-	  for(size_t id=0; id<Samples.size(); id++){               
+          std::vector<JSONWrapper::Object> Samples = (Process[ip])["data"].daughters();
+          for(size_t id=0; id<Samples.size(); id++){               
               string dtag = Samples[id].getString("dtag", "");
               string suffix = Samples[id].getString("suffix",procSuffix);
-	      int split = Samples[id].getInt("split", -1);               
+
+              int split = Samples[id].getInt("split", -1);               
               int fileProcessed=0;
-              for(int s=0; s<(split>0?split:999); s++){
+              for(int s=0; s<(split>0?split:999); s++){                 
                  char buf[255]; sprintf(buf,"_%i",s); string segmentExt = buf;                 
                  string FileName = RootDir + dtag +  suffix + segmentExt + filtExt; 
+
                  if(split<0){ //autosplitting --> check if there is a cfg file before checking if there is a .root file
                     FILE* pFile = fopen((FileName+"_cfg.py").c_str(), "r");
                     if(!pFile){break;}else{fclose(pFile);}
@@ -124,7 +139,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  FILE* pFile = fopen(FileName.c_str(), "r");  //check if the file exist
                  if(!pFile){MissingFiles[dtag].push_back(FileName); continue;}else{fclose(pFile);}
 
-	         TFile* File = new TFile(FileName.c_str());                                 
+                 TFile* File = new TFile(FileName.c_str());                                 
                  if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
                     MissingFiles[dtag].push_back(FileName);
                     continue; 
@@ -141,49 +156,49 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  if(isMC  ){if(bckgProcessed>=2){ File->Close(); continue;}else{bckgProcessed++;}}
 
                  printf("Adding all objects from %25s to the list of considered objects:\n",  FileName.c_str());
-	         GetListOfObject(Root,RootDir,histlist,(TDirectory*)File,"" );
-	         File->Close();
+                 GetListOfObject(Root,RootDir,histlist,"", (TDirectory*)File );
+                 File->Close();
                }
-	    }
-      }
+            }
 
-      printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
-      for(std::unordered_map<string, std::vector<string> >::iterator it = MissingFiles.begin(); it!=MissingFiles.end(); it++){
-         if(it->second.size()<=0)continue;
-         printf("Missing file in dataset %s:\n", it->first.c_str());
-         for(unsigned int f=0;f<it->second.size();f++){
-            printf("\t %s\n", it->second[f].c_str());
+         printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
+         for(std::unordered_map<string, std::vector<string> >::iterator it = MissingFiles.begin(); it!=MissingFiles.end(); it++){
+            if(it->second.size()<=0)continue;
+            printf("Missing file in dataset %s:\n", it->first.c_str());
+            for(unsigned int f=0;f<it->second.size();f++){
+               printf("\t %s\n", it->second[f].c_str());
+            }
          }
       }
-
       //for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){printf("%s\n",it->name.c_str()); }
       return;
-   }
 
-   if(dir==NULL)return;
+   }else if(dir){
+      TList* list = dir->GetListOfKeys();
+      for(int i=0;i<list->GetSize();i++){
+         TObject* tmp = utils::root::GetObjectFromPath(dir,list->At(i)->GetName(),false);
+   //      printf("check object %s:%s\n", parentPath.c_str(), list->At(i)->GetName());
 
-   TList* list = dir->GetListOfKeys();
-   for(int i=0;i<list->GetSize();i++){
-      TObject* tmp = utils::root::GetObjectFromPath(dir,list->At(i)->GetName(),false);
-
-      if(tmp->InheritsFrom("TDirectory")){
-         GetListOfObject(Root,RootDir,histlist,(TDirectory*)tmp,parentPath+ list->At(i)->GetName()+"/" );
-      }else if(tmp->InheritsFrom("TTree")){ 
-        printf("found one object inheriting from a ttree\n");
-        histlist.push_back(NameAndType(parentPath+list->At(i)->GetName(), 4, false ) );
-      }else if(tmp->InheritsFrom("TH1")){
-        int  type = 0;
-        if(tmp->InheritsFrom("TH1")) type++;
-        if(tmp->InheritsFrom("TH2")) type++;
-        if(tmp->InheritsFrom("TH3")) type++;
-        bool hasIndex = string(((TH1*)tmp)->GetXaxis()->GetTitle()).find("cut index")<string::npos;
-        if(hasIndex){type=1;}
-	histlist.push_back(NameAndType(parentPath+list->At(i)->GetName(), type, hasIndex ) );
-      }else{
-        printf("The file contain an unknown object named %s\n", list->At(i)->GetName() );
+         if(tmp->InheritsFrom("TDirectory")){
+            GetListOfObject(Root,RootDir,histlist,parentPath+ list->At(i)->GetName()+"/",(TDirectory*)tmp);
+         }else if(tmp->InheritsFrom("TTree")){ 
+           printf("found one object inheriting from a ttree\n");
+           histlist.push_back(NameAndType(parentPath+list->At(i)->GetName(), 4, false ) );
+         }else if(tmp->InheritsFrom("TH1")){
+           int  type = 0;
+           if(tmp->InheritsFrom("TH1")) type++;
+           if(tmp->InheritsFrom("TH2")) type++;
+           if(tmp->InheritsFrom("TH3")) type++;
+           bool hasIndex = string(((TH1*)tmp)->GetXaxis()->GetTitle()).find("cut index")<string::npos;
+           if(hasIndex){type=1;}
+           histlist.push_back(NameAndType(parentPath+list->At(i)->GetName(), type, hasIndex ) );
+         }else{
+           printf("The file contain an unknown object named %s\n", list->At(i)->GetName() );
+         }
+         delete tmp;
       }
-      delete tmp;
-   }
+  }
+
 }
 
 
@@ -197,10 +212,15 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
 
       string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
       File->cd();
+ 
       TDirectory* subdir = File->GetDirectory(dirName.c_str());
-      if(!subdir || subdir==File) subdir = File->mkdir(dirName.c_str());
+      if(!subdir || subdir==File){ subdir = File->mkdir(dirName.c_str());
+      }else{
+         printf("Skip process %s as it seems to be already processed\n", dirName.c_str());
+         continue;  //skip this process as it already exist in the file
+      }
       subdir->cd();
-     
+
       string signal   = Process[i].getStringFromKeyword(matchingKeyword, "tag");
       string signalL  = Process[i]["interpollation"][0]["tagLeft"].c_str();
       string signalR  = Process[i]["interpollation"][0]["tagRight"].c_str();
@@ -219,6 +239,7 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
       int ictr = 0;
       int TreeStep = std::max(1,(int)(histlist.size()/50));
       printf("Interpol %20s :", signal.c_str());
+
       for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
          if(ictr%TreeStep==0){printf(".");fflush(stdout);}
          NameAndType& HistoProperties = *it;        
@@ -238,17 +259,18 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
             TH2F* histo2DL = (TH2F*) objL;
             TH2F* histo2DR = (TH2F*) objR;
             if(!histo2DL or !histo2DR)continue;
+            if(histo2DL->GetSum() <=0 || histo2DR->GetSum()<=0)continue;  //Important
             histo2DL->Scale(1.0/xsecXbrL);
             histo2DR->Scale(1.0/xsecXbrR);
             TH2F* histo2D  = (TH2F*) histo2DL->Clone(histo2DL->GetName());
             histo2D->Reset();
 
-            for(int cutIndex=0;cutIndex<=histo2DL->GetNbinsX()+1;cutIndex++){
+            for(unsigned int cutIndex=0;cutIndex<=(unsigned int)(histo2DL->GetNbinsX()+1);cutIndex++){
                TH1D* histoL = histo2DL->ProjectionY("tempL", cutIndex, cutIndex);
                TH1D* histoR = histo2DR->ProjectionY("tempR", cutIndex, cutIndex);
                if(histoL->Integral()>0 && histoR->Integral()>0){
                   TH1D* histo  = th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral(), 0);
-                  for(int y=0;y<=histo2DL->GetNbinsY()+1;y++){
+                  for(unsigned int y=0;y<=(unsigned int)(histo2DL->GetNbinsY()+1);y++){
                     histo2D->SetBinContent(cutIndex, y, histo->GetBinContent(y));
                     histo2D->SetBinError(cutIndex, y, histo->GetBinError(y));
                   }
@@ -264,12 +286,14 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
          }else if(HistoProperties.is1D()){
             TH1F* histoL = (TH1F*) objL;
             TH1F* histoR = (TH1F*) objR;
-            if(!histoL or !histoR or histoL->Integral()<=0 or histoR->Integral()<=0)continue;
+            if(!histoL or !histoR)continue;
+            if(histoL->GetSum() <=0 || histoR->GetSum()<=0)continue;  //Important
+            histoL->Scale(1.0/xsecXbrL);
+            histoR->Scale(1.0/xsecXbrR);
             if(histoL->Integral()>0 && histoR->Integral()>0){            
-               histoL->Scale(1.0/xsecXbrL);
-               histoR->Scale(1.0/xsecXbrR);
-               double Integral = (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral();
+               double Integral = (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral();               
                TH1F* histo  = (TH1F*)histoL->Clone(HistoProperties.name.c_str());  histo->Reset();
+
                histo->Add(th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, Integral, 0), 1.0);
    //          printf("%40s - %f - %f -%f    --> %f - %f -%f\n", HistoProperties.name.c_str(), massL, mass, massR, histoL->Integral(), histo->Integral(), histoR->Integral() );
                histo->Scale(xsecXbr);          
@@ -311,10 +335,15 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
 
 //      time_t now = time(0);
 
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");      
       OutputFile->cd();
       TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
-      if(!subdir || subdir==OutputFile) subdir = OutputFile->mkdir(dirName.c_str());
+      if(!subdir || subdir==OutputFile){ subdir = OutputFile->mkdir(dirName.c_str());
+      }else{ 
+         printf("Skip process %s as it seems to be already processed\n", dirName.c_str());
+         continue;  //skip this process as it already exist in the file
+      }
+
       subdir->cd();
 
 //      time_t after1 = time(0);
@@ -907,6 +936,7 @@ int main(int argc, char* argv[]){
         printf("--chi2    --> show the data/MC chi^2\n"); 
         printf("--showUnc --> show stat uncertainty (if number is given use it as relative bin by bin uncertainty (e.g. lumi)\n"); 
 	printf("--noLog   --> use linear scale\n");
+        printf("--noInterpollation --> do not motph histograms for missing samples\n");
         printf("--no1D   --> Skip processing of 1D objects\n");
         printf("--no2D   --> Skip processing of 2D objects\n");
         printf("--noTree --> Skip processing of Tree objects\n");
@@ -951,6 +981,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
      if(arg.find("--noTree"  )!=string::npos){ doTree = false;    }
+     if(arg.find("--noInterpollation"  )!=string::npos){ doInterpollation = false; }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
      if(arg.find("--no1D"  )!=string::npos){ do1D = false;    }
      if(arg.find("--noTex" )!=string::npos){ doTex= false;    }
@@ -977,11 +1008,9 @@ int main(int argc, char* argv[]){
 
    JSONWrapper::Object Root(jsonFile, true);
    std::list<NameAndType> histlist;
-//   if(fileOption!="READ"){
-      GetListOfObject(Root,inDir,histlist);
-//   }else{
-//      GetListOfObject(Root,inDir,histlist, OutputFile, "");
-//   }
+   if(fileOption=="RECREATE"){      GetListOfObject(Root,inDir,histlist,"/", OutputFile);
+   }else{                           GetListOfObject(Root,inDir,histlist,"/", OutputFile);
+   }
    histlist.sort();
    histlist.unique();   
 
@@ -1000,9 +1029,10 @@ int main(int argc, char* argv[]){
        it++;
    }
 
-   if(fileOption!="READ")SavingToFile(Root,inDir,OutputFile, histlist);       
-
-   InterpollateProcess(Root, OutputFile, histlist);
+   if(fileOption!="READ"){
+      SavingToFile(Root,inDir,OutputFile, histlist);       
+      if(doInterpollation)InterpollateProcess(Root, OutputFile, histlist);
+   }
 
 
    int ictr =0;
@@ -1011,7 +1041,7 @@ int main(int argc, char* argv[]){
    for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
        if(ictr%TreeStep==0){printf(".");fflush(stdout);}
    
-       if(doTex && (it->name.find("eventflow")!=std::string::npos || it->name.find("evtflow")!=std::string::npos) && it->name.find("optim_eventflow")==std::string::npos){    ConvertToTex(Root,OutputFile,*it); }
+       if(doPlot && doTex && (it->name.find("eventflow")!=std::string::npos || it->name.find("evtflow")!=std::string::npos) && it->name.find("optim_eventflow")==std::string::npos){    ConvertToTex(Root,OutputFile,*it); }
        if(doPlot && do2D  && it->is2D()){                      if(!splitCanvas){Draw2DHistogram(Root,OutputFile,*it); }else{Draw2DHistogramSplitCanvas(Root,OutputFile,*it);}}
        if(doPlot && do1D  && it->is1D()){ Draw1DHistogram(Root,OutputFile,*it); }
         system(("echo \"" + it->name + "\" >> " + csvFile).c_str());

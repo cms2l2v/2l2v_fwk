@@ -415,6 +415,13 @@ int main(int argc, char* argv[]){
            graph->Write((cat[c]+bin[b]+"_qt_datafitwgtsrebin").c_str());
           
         }else if(var[v]=="_qmass"){
+           //replace VBF by geq1jets has there is no stat in VBF for Z candidates
+           if(bin[b]=="vbf")continue;  
+           if(bin[b]=="geq1jets"){
+              hist->Write((cat[c]+"vbf"+"_zmass").c_str());  
+           }
+
+
            hist->Write((cat[c]+bin[b]+"_zmass").c_str());
         }
      }}
