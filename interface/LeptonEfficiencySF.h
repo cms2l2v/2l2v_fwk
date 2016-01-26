@@ -28,60 +28,75 @@ class LeptonEfficiencySF
 	    {
 		if( eta>= -2.5 && eta<-2.0)
 		  {
-		    if(pt<30)      { eff.first=0.94346;  eff.second=0.08928; }
-		    else if(pt<40) { eff.first=0.96368;  eff.second=0.0635; }
-		    else if(pt<50) { eff.first=0.99027;  eff.second=0.06856; }
-		    else           { eff.first=0.92276;  eff.second=0.11803; }
+		    if(pt<30)      { eff.first=0.8775;  eff.second=0.0067; }
+		    else if(pt<40) { eff.first=1.0271;  eff.second=0.0045; }
+		    else if(pt<50) { eff.first=1.0186;  eff.second=0.0033; }
+		    else           { eff.first=1.0114;  eff.second=0.0073; }
 
 		  }
-		else if(eta>=-2.0 && eta<-1.4)
+		else if(eta>=-2.0 && eta<-1.566)
 		  {
-		    if(pt<30)      { eff.first=0.95742;  eff.second=0.07349; }
-		    else if(pt<40) { eff.first=0.98631;  eff.second=0.05149; }
-		    else if(pt<50) { eff.first=0.96946;  eff.second=0.05609; }
-		    else           { eff.first=0.96212;  eff.second=0.09426; }
+		    if(pt<30)      { eff.first=0.9905;  eff.second=0.0067; }
+		    else if(pt<40) { eff.first=1.0024;  eff.second=0.0043; }
+		    else if(pt<50) { eff.first=1.0034;  eff.second=0.0032; }
+		    else           { eff.first=1.0044;  eff.second=0.0074; }
 		  }
-		else if(eta>=-1.4 && eta<-0.8)
+		else if(eta>=-1.566 && eta<-1.444)
 		  {
-		    if(pt<30)      { eff.first=0.97916;  eff.second=0.06576; }
-		    else if(pt<40) { eff.first=0.98246;  eff.second=0.04341; }
-		    else if(pt<50) { eff.first=0.98483;  eff.second=0.04064; }
-		    else           { eff.first=0.98467;  eff.second=0.07062; }
+		    if(pt<30)      { eff.first=1.0083;  eff.second=0.0185; }
+		    else if(pt<40) { eff.first=1.0133;  eff.second=0.0133; }
+		    else if(pt<50) { eff.first=0.9938;  eff.second=0.0079; }
+		    else           { eff.first=0.9805;  eff.second=0.0129; }
 		  }
-		else if(eta>=-0.8 && eta<0)
+		else if(eta>=-1.444 && eta<-0.8)
 		  {
-		    if(pt<30)      { eff.first=0.98226;  eff.second=0.05211; }
-		    else if(pt<40) { eff.first=0.98214;  eff.second=0.0338; }
-		    else if(pt<50) { eff.first=0.98527;  eff.second=0.03314; }
-		    else           { eff.first=0.98424;  eff.second=0.05669; }
+		    if(pt<30)      { eff.first=1.0199;  eff.second=0.0072; }
+		    else if(pt<40) { eff.first=0.9919;  eff.second=0.0026; }
+		    else if(pt<50) { eff.first=0.9881;  eff.second=0.0015; }
+		    else           { eff.first=0.9798;  eff.second=0.0030; }
 		  }
-		else if(eta>0 && eta<0.8)
+		else if(eta>-0.8 && eta<0)
 		  {
-		    if(pt<30)      { eff.first=0.97089;  eff.second=0.05216; }
-		    else if(pt<40) { eff.first=0.99258;  eff.second=0.03381; }
-		    else if(pt<50) { eff.first=0.97086;  eff.second=0.03177; }
-		    else           { eff.first=0.97901;  eff.second=0.05379; }
+		    if(pt<30)      { eff.first=0.9871;  eff.second=0.0069; }
+		    else if(pt<40) { eff.first=0.9752;  eff.second=0.0016; }
+		    else if(pt<50) { eff.first=0.9775;  eff.second=0.0015; }
+		    else           { eff.first=0.9778;  eff.second=0.0030; }
 		  }
-                else if(eta>0.8 && eta<1.4)
+                else if(eta>0 && eta<0.8)
                   {
-                    if(pt<30)      { eff.first=0.95247;  eff.second=0.06332; }
-                    else if(pt<40) { eff.first=0.97602;  eff.second=0.04223; }
-                    else if(pt<50) { eff.first=0.99021;  eff.second=0.04053; }
-                    else           { eff.first=0.97189;  eff.second=0.06631; }
+                    if(pt<30)      { eff.first=0.7954;  eff.second=0.0043; }
+                    else if(pt<40) { eff.first=0.9774;  eff.second=0.0016; }
+                    else if(pt<50) { eff.first=0.9786;  eff.second=0.0015; }
+                    else           { eff.first=0.9789;  eff.second=0.0030; }
                   }
-                else if(eta>1.4 && eta<2.0)
+                else if(eta>0.8 && eta<1.444)
                   {
-                    if(pt<30)      { eff.first=0.93671;  eff.second=0.07281; }
-                    else if(pt<40) { eff.first=0.98022;  eff.second=0.05307; }
-                    else if(pt<50) { eff.first=1.00077;  eff.second=0.05669; }
-                    else           { eff.first=1.00785;  eff.second=0.09184; }
+                    if(pt<30)      { eff.first=1.0146;  eff.second=0.0072; }
+                    else if(pt<40) { eff.first=0.9988;  eff.second=0.0016; }
+                    else if(pt<50) { eff.first=0.9881;  eff.second=0.0015; }
+                    else           { eff.first=0.9861;  eff.second=0.0030; }
                   }
+                else if(eta>1.444 && eta<1.556)
+                  {
+                    if(pt<30)      { eff.first=1.0393;  eff.second=0.0544; }
+                    else if(pt<40) { eff.first=0.9985;  eff.second=0.0133; }
+                    else if(pt<50) { eff.first=0.9739;  eff.second=0.0079; }
+                    else           { eff.first=0.9854;  eff.second=0.0169; }
+                  }
+                  else if(eta>1.556 && eta<2.0)
+                  {
+                    if(pt<30)      { eff.first=1.0233;  eff.second=0.0130; }
+                    else if(pt<40) { eff.first=0.9917;  eff.second=0.0043; }
+                    else if(pt<50) { eff.first=1.0034;  eff.second=0.0032; }
+                    else           { eff.first=1.0077;  eff.second=0.0063; }
+                  }
+                  
                 else
                   {
-                    if(pt<30)      { eff.first=0.98114;  eff.second=0.07752; }
-                    else if(pt<40) { eff.first=0.99129;  eff.second=0.05948; }
-                    else if(pt<50) { eff.first=1.00664;  eff.second=0.05948; }
-                    else           { eff.first=1.00287;  eff.second=0.11191; }
+                    if(pt<30)      { eff.first=1.0306;  eff.second=0.0082; }
+                    else if(pt<40) { eff.first=1.0246;  eff.second=0.0045; }
+                    else if(pt<50) { eff.first=1.0140;  eff.second=0.0042; }
+                    else           { eff.first=1.0149;  eff.second=0.0083; }
                   }
 
 	      }
@@ -89,60 +104,74 @@ class LeptonEfficiencySF
 	      {
 		if(eta>=-2.5 && eta<-2.0)
 		  {
-		    if(pt<30)      { eff.first=0.84581;  eff.second=0.08471; }
-		    else if(pt<40) { eff.first=0.89007;  eff.second=0.06096; }
-		    else if(pt<50) { eff.first=0.92463;  eff.second=0.06599; }
-		    else           { eff.first=0.88587;  eff.second=0.11588; }
+		    if(pt<30)      { eff.first=1.0536;  eff.second=0.0099; }
+		    else if(pt<40) { eff.first=1.0123;  eff.second=0.0050; }
+		    else if(pt<50) { eff.first=1.0087;  eff.second=0.0045; }
+		    else           { eff.first=1.0060;  eff.second=0.0077; }
 
 		  }
-		else if(eta>=-2.0 && eta<-1.4)
+		  else if(eta>=-2.0 && eta<-1.566)
 		  {
-		    if(pt<30)      { eff.first=0.89439;  eff.second=0.07229; }
-		    else if(pt<40) { eff.first=0.96171;  eff.second=0.05152; }
-		    else if(pt<50) { eff.first=0.94212;  eff.second=0.05558; }
-		    else           { eff.first=0.91704;  eff.second=0.09181; }
+		    if(pt<30)      { eff.first=0.9695;  eff.second=0.0117; }
+		    else if(pt<40) { eff.first=0.9713;  eff.second=0.0047; }
+		    else if(pt<50) { eff.first=0.9833;  eff.second=0.0033; }
+		    else           { eff.first=0.9851;  eff.second=0.0057; }
 		  }
-		else if(eta>=-1.4 && eta<-0.8)
+		else if(eta>=-1.566 && eta<-1.444)
 		  {
-		    if(pt<30)      { eff.first=0.96571;  eff.second=0.06729; }
-		    else if(pt<40) { eff.first=0.94892;  eff.second=0.04324; }
-		    else if(pt<50) { eff.first=0.95404;  eff.second=0.04033; }
-		    else           { eff.first=0.94187;  eff.second=0.06918; }
+		    if(pt<30)      { eff.first=1.0404;  eff.second=0.0231; }
+		    else if(pt<40) { eff.first=1.0248;  eff.second=0.0120; }
+		    else if(pt<50) { eff.first=0.9902;  eff.second=0.0090; }
+		    else           { eff.first=0.9489;  eff.second=0.0143; }
+		  }
+		else if(eta>=-1.444 && eta<-0.8)
+		  {
+		    if(pt<30)      { eff.first=1.0594;  eff.second=0.0087; }
+		    else if(pt<40) { eff.first=0.9909;  eff.second=0.0029; }
+		    else if(pt<50) { eff.first=0.9741;  eff.second=0.0016; }
+		    else           { eff.first=0.9581;  eff.second=0.0040; }
 		  }
 		else if(eta>=-0.8 && eta<0)
 		  {
-		    if(pt<30)      { eff.first=0.99296;  eff.second=0.05415; }
-		    else if(pt<40) { eff.first=0.97392;  eff.second=0.03435; }
-		    else if(pt<50) { eff.first=0.97599;  eff.second=0.03342; }
-		    else           { eff.first=0.98989;  eff.second=0.05762; }
+		    if(pt<30)      { eff.first=1.0226;  eff.second=0.0081; }
+		    else if(pt<40) { eff.first=0.9786;  eff.second=0.0028; }
+		    else if(pt<50) { eff.first=0.9698;  eff.second=0.0016; }
+		    else           { eff.first=0.9675;  eff.second=0.0031; }
 		  }
 		else if(eta>=0 && eta<0.8)
 		  {
-		    if(pt<30)      { eff.first=0.97001;  eff.second=0.05372; }
-		    else if(pt<40) { eff.first=0.98839;  eff.second=0.03443; }
-		    else if(pt<50) { eff.first=0.95987;  eff.second=0.03199; }
-		    else           { eff.first=0.95920;  eff.second=0.05368; }
+		    if(pt<30)      { eff.first=1.0180;  eff.second=0.0067; }
+		    else if(pt<40) { eff.first=0.9862;  eff.second=0.0028; }
+		    else if(pt<50) { eff.first=0.9744;  eff.second=0.0016; }
+		    else           { eff.first=0.9708;  eff.second=0.0031; }
 		  }
-                else if(eta>=0.8 && eta<1.4)
+                else if(eta>=0.8 && eta<1.444)
                   {
-                    if(pt<30)      { eff.first=0.93096;  eff.second=0.06442; }
-                    else if(pt<40) { eff.first=0.95574;  eff.second=0.04254; }
-                    else if(pt<50) { eff.first=0.96301;  eff.second=0.04038; }
-                    else           { eff.first=0.96160;  eff.second=0.06669; }
+                    if(pt<30)      { eff.first=1.0774;  eff.second=0.0276; }
+                    else if(pt<40) { eff.first=1.0065;  eff.second=0.0029; }
+                    else if(pt<50) { eff.first=0.9764;  eff.second=0.0017; }
+                    else           { eff.first=0.9648;  eff.second=0.0041; }
                   }
-                else if(eta>=1.4 && eta<2.0)
+                else if(eta>=1.444 && eta<1.566)
                   {
-                    if(pt<30)      { eff.first=0.93805;  eff.second=0.07532; }
-                    else if(pt<40) { eff.first=0.96064;  eff.second=0.05330; }
-                    else if(pt<50) { eff.first=0.98193;  eff.second=0.05658; }
-                    else           { eff.first=0.98035;  eff.second=0.09074; }
+                    if(pt<30)      { eff.first=1.1880;  eff.second=0.0264; }
+                    else if(pt<40) { eff.first=0.9910;  eff.second=0.0154; }
+                    else if(pt<50) { eff.first=0.9562;  eff.second=0.0400; }
+                    else           { eff.first=0.9744;  eff.second=0.0180; }
+                  }
+                  else if(eta>=1.566 && eta<2.0)
+                  {
+                    if(pt<30)      { eff.first=0.9804;  eff.second=0.0073; }
+                    else if(pt<40) { eff.first=0.9619;  eff.second=0.0047; }
+                    else if(pt<50) { eff.first=0.9785;  eff.second=0.0033; }
+                    else           { eff.first=0.9943;  eff.second=0.0057; }
                   }
                 else 
                   {
-                    if(pt<30)      { eff.first=0.95528;  eff.second=0.07815; }
-                    else if(pt<40) { eff.first=0.96873;  eff.second=0.05945; }
-                    else if(pt<50) { eff.first=0.97990;  eff.second=0.06492; }
-                    else           { eff.first=0.97498;  eff.second=0.11061; }
+                    if(pt<30)      { eff.first=1.0265;  eff.second=0.0097; }
+                    else if(pt<40) { eff.first=1.0096;  eff.second=0.0050; }
+                    else if(pt<50) { eff.first=1.0013;  eff.second=0.0045; }
+                    else           { eff.first=1.0048;  eff.second=0.0087; }
                   }
 
 	      }
@@ -150,60 +179,74 @@ class LeptonEfficiencySF
 	      {
 		if(eta>=-2.5 && eta<-2.0)
 		  {
-		    if(pt<30)      { eff.first=0.83898;  eff.second=0.08719; }
-		    else if(pt<40) { eff.first=0.84466;  eff.second=0.05998; }
-		    else if(pt<50) { eff.first=0.89877;  eff.second=0.06556; }
-		    else           { eff.first=0.83868;  eff.second=0.11265; }
+		    if(pt<30)      { eff.first=1.0586;  eff.second=0.0114; }
+		    else if(pt<40) { eff.first=1.0246;  eff.second=0.0060; }
+		    else if(pt<50) { eff.first=1.0101;  eff.second=0.0052; }
+		    else           { eff.first=0.9987;  eff.second=0.0097; }
 
 		  }
-		else if(eta>=-2.0 && eta<-1.4)
+		else if(eta>=-2.0 && eta<-1.566)
 		  {
-		    if(pt<30)      { eff.first=0.83047;  eff.second=0.07218; }
-		    else if(pt<40) { eff.first=0.96514;  eff.second=0.05336; }
-		    else if(pt<50) { eff.first=0.89141;  eff.second=0.05452; }
-		    else           { eff.first=0.87330;  eff.second=0.08977; }
+		    if(pt<30)      { eff.first=0.9838;  eff.second=0.0128; }
+		    else if(pt<40) { eff.first=0.9686;  eff.second=0.0056; }
+		    else if(pt<50) { eff.first=0.9819;  eff.second=0.0050; }
+		    else           { eff.first=0.9806;  eff.second=0.0075; }
 		  }
-		else if(eta>=-1.4 && eta<-0.8)
+		  else if(eta>=-1.566 && eta<-1.444)
 		  {
-		    if(pt<30)      { eff.first=0.93803;  eff.second=0.06887; }
-		    else if(pt<40) { eff.first=0.91022;  eff.second=0.04327; }
-		    else if(pt<50) { eff.first=0.92954;  eff.second=0.04048; }
-		    else           { eff.first=0.90445;  eff.second=0.06822; }
+		    if(pt<30)      { eff.first=1.1862;  eff.second=0.0498; }
+		    else if(pt<40) { eff.first=1.0152;  eff.second=0.0146; }
+		    else if(pt<50) { eff.first=0.9934;  eff.second=0.0156; }
+		    else           { eff.first=0.9449;  eff.second=0.0176; }
+		  }
+		else if(eta>=-1.444 && eta<-0.8)
+		  {
+		    if(pt<30)      { eff.first=1.0502;  eff.second=0.0109; }
+		    else if(pt<40) { eff.first=0.9892;  eff.second=0.0034; }
+		    else if(pt<50) { eff.first=0.9704;  eff.second=0.0030; }
+		    else           { eff.first=0.9562;  eff.second=0.0044; }
 		  }
 		else if(eta>=-0.8 && eta<0)
 		  {
-		    if(pt<30)      { eff.first=0.96447;  eff.second=0.05418; }
-		    else if(pt<40) { eff.first=0.95349;  eff.second=0.03441; }
-		    else if(pt<50) { eff.first=0.96792;  eff.second=0.03369; }
-		    else           { eff.first=0.97049;  eff.second=0.05739; }
+		    if(pt<30)      { eff.first=1.0188;  eff.second=0.0078; }
+		    else if(pt<40) { eff.first=0.9644;  eff.second=0.0033; }
+		    else if(pt<50) { eff.first=0.9565;  eff.second=0.0018; }
+		    else           { eff.first=0.9544;  eff.second=0.0034; }
 		  }
 		else if(eta>=0 && eta<0.8)
 		  {
-		    if(pt<30)      { eff.first=0.97272;  eff.second=0.05497; }
-		    else if(pt<40) { eff.first=0.96903;  eff.second=0.03456; }
-		    else if(pt<50) { eff.first=0.95245;  eff.second=0.03226; }
-		    else           { eff.first=0.93636;  eff.second=0.05335; }
+		    if(pt<30)      { eff.first=0.9944;  eff.second=0.0059; }
+		    else if(pt<40) { eff.first=0.9674;  eff.second=0.0021; }
+		    else if(pt<50) { eff.first=0.9617;  eff.second=0.0018; }
+		    else           { eff.first=0.9617;  eff.second=0.0034; }
 		  }
-                else if(eta>=0.8 && eta<1.4)
+		  else if(eta>=0.8 && eta<1.444)
                   {
-                    if(pt<30)      { eff.first=0.93304;  eff.second=0.06752; }
-                    else if(pt<40) { eff.first=0.94285;  eff.second=0.04336; }
-                    else if(pt<50) { eff.first=0.92849;  eff.second=0.04019; }
-                    else           { eff.first=0.89527;  eff.second=0.06418; }
+                    if(pt<30)      { eff.first=1.0567;  eff.second=0.0148; }
+                    else if(pt<40) { eff.first=0.9969;  eff.second=0.0035; }
+                    else if(pt<50) { eff.first=0.9730;  eff.second=0.0030; }
+                    else           { eff.first=0.9561;  eff.second=0.0045; }
                   }
-                else if(eta>=1.4 && eta<2.0)
+                else if(eta>=1.444 && eta<1.556)
                   {
-                    if(pt<30)      { eff.first=0.92503;  eff.second=0.07850; }
-                    else if(pt<40) { eff.first=0.91792;  eff.second=0.05323; }
-                    else if(pt<50) { eff.first=0.93845;  eff.second=0.05589; }
-                    else           { eff.first=0.96444;  eff.second=0.91054; }
+                    if(pt<30)      { eff.first=1.0601;  eff.second=0.0439; }
+                    else if(pt<40) { eff.first=0.9868;  eff.second=0.1167; }
+                    else if(pt<50) { eff.first=0.9568;  eff.second=0.0110; }
+                    else           { eff.first=0.9493;  eff.second=0.0164; }
+                  }
+                else if(eta>=1.556 && eta<2.0)
+                  {
+                    if(pt<30)      { eff.first=1.0225;  eff.second=0.0130; }
+                    else if(pt<40) { eff.first=0.9670;  eff.second=0.0056; }
+                    else if(pt<50) { eff.first=0.9847;  eff.second=0.0050; }
+                    else           { eff.first=0.9922;  eff.second=0.0075; }
                   }
                 else
                   {
-                    if(pt<30)      { eff.first=0.93980;  eff.second=0.07994; }
-                    else if(pt<40) { eff.first=0.98190;  eff.second=0.06128; }
-                    else if(pt<50) { eff.first=0.95518;  eff.second=0.06467; }
-                    else           { eff.first=0.96954;  eff.second=0.11139; }
+                    if(pt<30)      { eff.first=1.0560;  eff.second=0.0113; }
+                    else if(pt<40) { eff.first=1.0229;  eff.second=0.0459; }
+                    else if(pt<50) { eff.first=1.0043;  eff.second=0.0052; }
+                    else           { eff.first=1.0013;  eff.second=0.0097; }
                   }
 	      }
 	}
