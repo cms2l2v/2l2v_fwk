@@ -5,7 +5,6 @@
 #include "DataFormats/FWLite/interface/Event.h"
 //#include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
-
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
@@ -146,13 +145,15 @@ LorentzVector getHiggsCand(std::vector<patUtils::GenericLepton> selLeptons, int 
     higgsCandId=selLeptons[higgsCandL1].pdgId()*selLeptons[higgsCandL2].pdgId();
     higgsCand = LorentzVector(selLeptons[higgsCandL1].p4()+selLeptons[higgsCandL2].p4());
     if(higgsCandId<0){signName="_OS";}else{signName="_SS";}
-    if(higgsCandId<0){HiggsShortId = 0;}else{HiggsShortId = 8;}
-    if(abs(selLeptons[dilLep1].pdgId())==11){HiggsShortId += 0;}else{HiggsShortId += 4;}
+    if(higgsCandId<0){HiggsShortId = 0;}else{HiggsShortId =12;}
+    if(abs(selLeptons[dilLep1].pdgId())==11){HiggsShortId += 0;}else{HiggsShortId += 6;}
     switch(abs(higgsCandId)){
-    case 11*13:  ChannelName  = "elmu";  HiggsShortId+= 0; break;
-    case 11*15:  ChannelName  = "elha";  HiggsShortId+= 1; break;
-    case 13*15:  ChannelName  = "muha";  HiggsShortId+= 2; break;
-    case 15*15:  ChannelName  = "haha";  HiggsShortId+= 3; break;
+    case 11*11:  ChannelName  = "elel";  HiggsShortId+= 0; break;
+    case 13*13:  ChannelName  = "mumu";  HiggsShortId+= 1; break;
+    case 11*13:  ChannelName  = "elmu";  HiggsShortId+= 2; break;
+    case 11*15:  ChannelName  = "elha";  HiggsShortId+= 3; break;
+    case 13*15:  ChannelName  = "muha";  HiggsShortId+= 4; break;
+    case 15*15:  ChannelName  = "haha";  HiggsShortId+= 5; break;
     default:     ChannelName  = "none";  HiggsShortId =-1; break;
     }
   }               
@@ -193,125 +194,187 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons,
   
   if(higgsCandL1<0 || higgsCandL2<0)return false;
   
-        // e - mu final state	
-	if(abs(higgsCandId) == 11*13){
-		patUtils::GenericLepton& lep1 = selLeptons[higgsCandL1];
-		patUtils::GenericLepton& lep2 = selLeptons[higgsCandL2];
+  // e - e final state
+  if(abs(higgsCandId) == 11*11){
+    patUtils::GenericLepton  & lep1 = selLeptons[higgsCandL1];
+    patUtils::GenericLepton  & lep2 = selLeptons[higgsCandL2];
+    
+    LorentzVector lep1T, lep2T;
+    lep1T = selLeptons[higgsCandL1].p4();
+    lep2T = selLeptons[higgsCandL2].p4();
+    
+    if(requireId){
+      
+      int lid1=lep1.pdgId();
+      int lid2=lep2.pdgId();
+      
+      bool passLooseLepton1 = lid1==11?patUtils::passId(lep1.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep1.mu, vtx[0], patUtils::llvvMuonId::Loose);
+      bool passLooseLepton2 = lid2==11?patUtils::passId(lep2.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep2.mu, vtx[0], patUtils::llvvMuonId::Loose);
 
-		LorentzVector lep1T, lep2T;
-		lep1T = selLeptons[higgsCandL1].p4();
-		lep2T = selLeptons[higgsCandL2].p4();
+      if( ((lep1.pt()+lep2.pt()) >= sumPtCut.at(0))
+	  &&  ( patUtils::relIso(lep1, rho)  <= isoElCut.at(0) ) 
+	  &&  ( patUtils::relIso(lep1, rho)  <= isoElCut.at(0) ) 
+	  &&  passLooseLepton1  && passLooseLepton2  ){
+      return true; 
+      } 
+    }else{
+      if(((lep1.pt()+lep2.pt()) >= sumPtCut.at(0))
+	 &&  ( patUtils::relIso(lep1, rho)<= isoElCut.at(0))
+	 &&  ( patUtils::relIso(lep1, rho)<= isoElCut.at(0)) ){
+	return true;
+      }
+    } 
+  }
+  // mu - mu final state
+  else if(abs(higgsCandId) == 13*13){
+    patUtils::GenericLepton  & lep1 = selLeptons[higgsCandL1];
+    patUtils::GenericLepton  & lep2 = selLeptons[higgsCandL2];
+    
+    LorentzVector lep1T, lep2T;
+    lep1T = selLeptons[higgsCandL1].p4();
+    lep2T = selLeptons[higgsCandL2].p4();
 
-		cout << "ELE CUT ISO PASSED: " << isoElCut.at(0) << "MUO CUT ISO PASSED: " << isoMuCut.at(0) << endl;
-		cout << "In the EMU final state: iso( lep1 )/iso( lep2 )--> "<< patUtils::relIso(lep1, rho) <<"/"<<patUtils::relIso(lep2, rho)<<endl;
+    if(requireId){
 
-		if(requireId){
+      int lid1=lep1.pdgId();
+      int lid2=lep2.pdgId();
+      
+      bool passLooseLepton1 = lid1==11?patUtils::passId(lep1.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep1.mu, vtx[0], patUtils::llvvMuonId::Loose);
+      bool passLooseLepton2 = lid2==11?patUtils::passId(lep2.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep2.mu, vtx[0], patUtils::llvvMuonId::Loose);
+      
+      if( ((lep1.pt()+lep2.pt()) >= sumPtCut.at(1))
+	  &&  (  patUtils::relIso(lep1, rho) <= isoMuCut.at(0) ) 
+	  &&  (  patUtils::relIso(lep1, rho) <= isoMuCut.at(0) ) 
+	  && passLooseLepton1  && passLooseLepton2 ){
+	return true; 
+      } 
+    }else{
+      if(((lep1.pt()+lep2.pt()) >= sumPtCut.at(1))
+	 &&  ( patUtils::relIso(lep1, rho) <= isoMuCut.at(0))
+	 &&  ( patUtils::relIso(lep1, rho) <= isoMuCut.at(0)) ){
+	return true;
+      }
+    } 
+  }
+  // e - mu final state	
+  else if(abs(higgsCandId) == 11*13){
+    patUtils::GenericLepton& lep1 = selLeptons[higgsCandL1];
+    patUtils::GenericLepton& lep2 = selLeptons[higgsCandL2];
+    
+    LorentzVector lep1T, lep2T;
+    lep1T = selLeptons[higgsCandL1].p4();
+    lep2T = selLeptons[higgsCandL2].p4();
+    
+    cout << "ELE CUT ISO PASSED: " << isoElCut.at(0) << "MUO CUT ISO PASSED: " << isoMuCut.at(0) << endl;
+    cout << "In the EMU final state: iso( lep1 )/iso( lep2 )--> "<< patUtils::relIso(lep1, rho) <<"/"<<patUtils::relIso(lep2, rho)<<endl;
+    
+    if(requireId){
+      
+      int lid1=lep1.pdgId();
+      int lid2=lep2.pdgId();
+      
+      bool passLooseLepton1 = lid1==11?patUtils::passId(lep1.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep1.mu, vtx[0], patUtils::llvvMuonId::Loose);
+      bool passLooseLepton2 = lid2==11?patUtils::passId(lep2.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep2.mu, vtx[0], patUtils::llvvMuonId::Loose);
+      
+      if( ((lep1.pt()+lep2.pt()) >= sumPtCut.at(2))
+	  &&  ( patUtils::relIso(lep1, rho) <= ( (abs(lep1.pdgId())==11)?isoElCut.at(1):isoMuCut.at(1) ) ) 
+	  &&  ( patUtils::relIso(lep2, rho) <= ( (abs(lep2.pdgId())==11)?isoElCut.at(1):isoMuCut.at(1) ) ) 
+	  && passLooseLepton1  && passLooseLepton2 ){
+	cout << "IMMMMMMMM IN iso( lep1 )/iso( lep2 )--> "<< patUtils::relIso(lep1, rho) <<"/"<<patUtils::relIso(lep2, rho)<<endl;
+	return true; 
+      } 
+    }else{
+      if(((lep1.pt()+lep2.pt()) >= sumPtCut.at(2))
+	 &&  (patUtils::relIso(lep1, rho) <= ( (abs(lep1.pdgId())==11)?isoElCut.at(1):isoMuCut.at(1) ) )
+	 &&  (patUtils::relIso(lep2, rho) <= ( (abs(lep2.pdgId())==11)?isoElCut.at(1):isoMuCut.at(1) ) ) ){
+	return true;
+      }
+    } 
+  }
 
-		  int lid1=lep1.pdgId();
-		  int lid2=lep2.pdgId();
-
-		  bool passLooseLepton1 = lid1==11?patUtils::passId(lep1.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep1.mu, vtx[0], patUtils::llvvMuonId::Loose);
-		  bool passLooseLepton2 = lid2==11?patUtils::passId(lep2.el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(lep2.mu, vtx[0], patUtils::llvvMuonId::Loose);
-
-		  if( ((lep1.pt()+lep2.pt()) >= sumPtCut.at(0))
-		      &&  ( patUtils::relIso(lep1, rho) <= ( (abs(lep1.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) ) 
-		      &&  ( patUtils::relIso(lep2, rho) <= ( (abs(lep2.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) ) 
-		      && passLooseLepton1  && passLooseLepton2 ){
-		    cout << "IMMMMMMMM IN iso( lep1 )/iso( lep2 )--> "<< patUtils::relIso(lep1, rho) <<"/"<<patUtils::relIso(lep2, rho)<<endl;
-		    return true; 
-		  } 
-		}else{
-		  if(((lep1.pt()+lep2.pt()) >= sumPtCut.at(0))
-		     &&  (patUtils::relIso(lep1, rho) <= ( (abs(lep1.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) )
-		     &&  (patUtils::relIso(lep2, rho) <= ( (abs(lep2.pdgId())==11)?isoElCut.at(0):isoMuCut.at(0) ) ) ){
-		    return true;
-		  }
-		} 
-	}
-
-	// e - tau final state
-	else if(abs(higgsCandId) == 11*15){
-	  pat::Tau& tau = (abs(selLeptons[higgsCandL1].pdgId())==15)?selLeptons[higgsCandL1].tau:selLeptons[higgsCandL2].tau;
-	  patUtils::GenericLepton& lep = (abs(selLeptons[higgsCandL1].pdgId())==15)?selLeptons[higgsCandL2]:selLeptons[higgsCandL1];
-	  int tauIdx = (abs(selLeptons[higgsCandL1].pdgId())==15)?higgsCandL1:higgsCandL2;
-	  LorentzVector tauT;
-	  tauT = selLeptons[tauIdx].p4();
-	  
-	  float relIso1 = patUtils::relIso(lep, rho);
-	  if(requireId){
-	    
-	    //  bool passId = patUtils::passId(lep.el, vtx[0], patUtils::llvvElecId::Tight);
-	    // uniform the selection (as per suggestion of Lucia Jan 8th 2015)
-	    
-	    bool passId = patUtils::passId(lep.el, vtx[0], patUtils::llvvElecId::Loose);
-
-	    if((relIso1<=isoElCut.at(1)) 
-	       && passId
-	       && tau.tauID("againstElectronTightMVA5") 
-	       && tau.tauID("againstMuonLoose3")
-	       && tau.tauID(isoHaCut) 
-	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(1)) ){
-	      return true;
-	    } 
-	  }else{
-	    if((relIso1<=isoElCut.at(1)) 
-	       && tau.tauID("againstElectronTightMVA5") 
-	       && tau.tauID("againstMuonLoose3")
-	       && tau.tauID(isoHaCut) 
-	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(1)) ){
-	      return true;
-	    }
-	  } 
-	}
-	// mu - tau final state
-	else if(abs(higgsCandId) == 13*15){
-	  pat::Tau& tau = abs(selLeptons[higgsCandL1].pdgId())==15?selLeptons[higgsCandL1].tau:selLeptons[higgsCandL2].tau;
-	  patUtils::GenericLepton& lep = abs(selLeptons[higgsCandL1].pdgId())==15?selLeptons[higgsCandL2]:selLeptons[higgsCandL1];
-	  int tauIdx = abs(selLeptons[higgsCandL1].pdgId())==15?higgsCandL1:higgsCandL2;
-	  LorentzVector tauT;
-	  tauT = selLeptons[tauIdx].p4();
-	  //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLooseMVA5")/tau.tauID("againstMuonTight3") "<<
-	  //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLooseMVA5")<<"/"<<tau.tauID("againstMuonTight3")<<endl;
-	  
-	  float relIso1 = patUtils::relIso(lep, rho);
-	  if(requireId){
-
-	    bool passId = patUtils::passId(lep.mu, vtx[0], patUtils::llvvMuonId::Loose);
-
-	    if((relIso1<=isoMuCut.at(1))
-	       && passId
-	       && tau.tauID("againstElectronLooseMVA5")
-	       && tau.tauID("againstMuonTight3")
-	       && tau.tauID(isoHaCut)
-	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
-	      return true;
-	    }    
-		}else{
-	    if((relIso1<=isoMuCut.at(1))
-	       && tau.tauID("againstElectronLooseMVA5")
-	       && tau.tauID("againstMuonTight3")
-	       && tau.tauID(isoHaCut)
-	       && ((tau.pt()+lep.pt()) >= sumPtCut.at(2)) ){
-	      return true;
-	    }    
-	  } 
-	}
-	// tau - tau final state
-	else if(abs(higgsCandId) == 15*15){
-		pat::Tau& tau1 = selLeptons[higgsCandL1].tau;
-		pat::Tau& tau2 = selLeptons[higgsCandL2].tau;
-		if(((tau1.pt()+tau2.pt()) >= sumPtCut.at(3))
-		   && tau1.tauID("againstElectronLooseMVA5") 
-		   && tau1.tauID("againstMuonLoose3") 
-		   && tau2.tauID("againstElectronLooseMVA5") 
-		   && tau2.tauID("againstMuonLoose3") 
-		   && tau1.tauID(isoHaCut) 
-		   && tau2.tauID(isoHaCut)  
-		   ){
-		  return true;
-		}
-	}               
-	return false;
+  // e - tau final state
+  else if(abs(higgsCandId) == 11*15){
+    pat::Tau& tau = (abs(selLeptons[higgsCandL1].pdgId())==15)?selLeptons[higgsCandL1].tau:selLeptons[higgsCandL2].tau;
+    patUtils::GenericLepton& lep = (abs(selLeptons[higgsCandL1].pdgId())==15)?selLeptons[higgsCandL2]:selLeptons[higgsCandL1];
+    int tauIdx = (abs(selLeptons[higgsCandL1].pdgId())==15)?higgsCandL1:higgsCandL2;
+    LorentzVector tauT;
+    tauT = selLeptons[tauIdx].p4();
+    
+    float relIso1 = patUtils::relIso(lep, rho);
+    if(requireId){
+      
+      //  bool passId = patUtils::passId(lep.el, vtx[0], patUtils::llvvElecId::Tight);
+      // uniform the selection (as per suggestion of Lucia Jan 8th 2015)
+      
+      bool passId = patUtils::passId(lep.el, vtx[0], patUtils::llvvElecId::Loose);
+      
+      if((relIso1<=isoElCut.at(2)) 
+	 && passId
+	 && tau.tauID("againstElectronTightMVA5") 
+	 && tau.tauID("againstMuonLoose3")
+	 && tau.tauID(isoHaCut) 
+	 && ((tau.pt()+lep.pt()) >= sumPtCut.at(3)) ){
+	return true;
+      } 
+    }else{
+      if((relIso1<=isoElCut.at(2)) 
+	 && tau.tauID("againstElectronTightMVA5") 
+	 && tau.tauID("againstMuonLoose3")
+	 && tau.tauID(isoHaCut) 
+	 && ((tau.pt()+lep.pt()) >= sumPtCut.at(3)) ){
+	return true;
+      }
+    } 
+  }
+  // mu - tau final state
+  else if(abs(higgsCandId) == 13*15){
+    pat::Tau& tau = abs(selLeptons[higgsCandL1].pdgId())==15?selLeptons[higgsCandL1].tau:selLeptons[higgsCandL2].tau;
+    patUtils::GenericLepton& lep = abs(selLeptons[higgsCandL1].pdgId())==15?selLeptons[higgsCandL2]:selLeptons[higgsCandL1];
+    int tauIdx = abs(selLeptons[higgsCandL1].pdgId())==15?higgsCandL1:higgsCandL2;
+    LorentzVector tauT;
+    tauT = selLeptons[tauIdx].p4();
+    //cout << "In the MUTAU final state: passLooseId(lep)/tau.tauID("againstElectronLooseMVA5")/tau.tauID("againstMuonTight3") "<<
+    //passLooseId( lep )<<"/"<<tau.tauID("againstElectronLooseMVA5")<<"/"<<tau.tauID("againstMuonTight3")<<endl;
+    
+    float relIso1 = patUtils::relIso(lep, rho);
+    if(requireId){
+      
+      bool passId = patUtils::passId(lep.mu, vtx[0], patUtils::llvvMuonId::Loose);
+      
+      if((relIso1<=isoMuCut.at(2))
+	 && passId
+	 && tau.tauID("againstElectronLooseMVA5")
+	 && tau.tauID("againstMuonTight3")
+	 && tau.tauID(isoHaCut)
+	 && ((tau.pt()+lep.pt()) >= sumPtCut.at(4)) ){
+	return true;
+      }    
+    }else{
+      if((relIso1<=isoMuCut.at(2))
+	 && tau.tauID("againstElectronLooseMVA5")
+	 && tau.tauID("againstMuonTight3")
+	 && tau.tauID(isoHaCut)
+	 && ((tau.pt()+lep.pt()) >= sumPtCut.at(4)) ){
+	return true;
+      }    
+    } 
+  }
+  // tau - tau final state
+  else if(abs(higgsCandId) == 15*15){
+    pat::Tau& tau1 = selLeptons[higgsCandL1].tau;
+    pat::Tau& tau2 = selLeptons[higgsCandL2].tau;
+    if(((tau1.pt()+tau2.pt()) >= sumPtCut.at(5))
+       && tau1.tauID("againstElectronLooseMVA5") 
+       && tau1.tauID("againstMuonLoose3") 
+       && tau2.tauID("againstElectronLooseMVA5") 
+       && tau2.tauID("againstMuonLoose3") 
+       && tau1.tauID(isoHaCut) 
+       && tau2.tauID(isoHaCut)  
+       ){
+      return true;
+    }
+  }               
+  return false;
 } 
 
 //**********************************************************************************************//
@@ -323,8 +386,12 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons, float rho, i
 	vector<float> sumPtCutV; 
 	isoElCutV.push_back(isoElCut);
 	isoElCutV.push_back(isoElCut);
+	isoElCutV.push_back(isoElCut);
 	isoMuCutV.push_back(isoMuCut);
 	isoMuCutV.push_back(isoMuCut);
+	isoMuCutV.push_back(isoMuCut);
+	sumPtCutV.push_back(sumPtCut);	
+	sumPtCutV.push_back(sumPtCut);
 	sumPtCutV.push_back(sumPtCut);
 	sumPtCutV.push_back(sumPtCut);
 	sumPtCutV.push_back(sumPtCut);
@@ -396,7 +463,8 @@ int main(int argc, char* argv[])
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
- 
+  bool isZZ4L = (isMC && dtag.Contains("TeV_ZZ4l"));
+  
   //Tag for Met Filter
   bool isPromptReco (!isMC && dtag.Contains("PromptReco")); //"False" picks up correctly the new prompt reco (2015C) and MC
 
@@ -445,8 +513,7 @@ int main(int argc, char* argv[])
 	q2UncF->Close();
       }
     }
-
-  
+ 
   //STANDARD MODEL
   double HiggsMass=0; string VBFString = ""; string GGString("");
   TF1 *decayProbPdf=new TF1("relbw","(2*sqrt(2)*[0]*[1]*sqrt(pow([0],2)*(pow([0],2)+pow([1],2)))/(TMath::Pi()*sqrt(pow([0],2)+sqrt(pow([0],2)*(pow([0],2)+pow([1],2))))))/(pow(pow(x,2)-pow([0],2),2)+pow([0]*[1],2))",0,2000);
@@ -473,7 +540,12 @@ int main(int argc, char* argv[])
 
   mon.addHistogram( new TH1F( "wdecays",     ";W decay channel",5,0,5) );
   mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
-
+  
+  TH1 *hdebug=mon.addHistogram( new TH1F ("xsdebug", ";;Events", 3,0,3) );
+  hdebug->GetXaxis()->SetBinLabel(1,"InitialEv");
+  hdebug->GetXaxis()->SetBinLabel(2,"Filter 1113");
+  hdebug->GetXaxis()->SetBinLabel(3,"Filter 15");
+    
   //event selection
   TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 9,0,9) );
   h->GetXaxis()->SetBinLabel(1,"raw");
@@ -497,33 +569,45 @@ int main(int argc, char* argv[])
   h1->GetXaxis()->SetBinLabel(8,"#Delta #phi Z-MET");
   h1->GetXaxis()->SetBinLabel(9,"di-#tau Cand");
 
-  TH1 *h2=mon.addHistogram( new TH1F ("yields", ";;Events", 17,0,17) );
-  h2->GetXaxis()->SetBinLabel(1,"OS eee#mu");
-  h2->GetXaxis()->SetBinLabel(2,"OS eee#tau");
-  h2->GetXaxis()->SetBinLabel(3,"OS ee#mu#tau");
-  h2->GetXaxis()->SetBinLabel(4,"OS ee#tau#tau");
-  h2->GetXaxis()->SetBinLabel(5,"OS #mu#mue#mu");
-  h2->GetXaxis()->SetBinLabel(6,"OS #mu#mue#tau");
-  h2->GetXaxis()->SetBinLabel(7,"OS #mu#mu#mu#tau");
-  h2->GetXaxis()->SetBinLabel(8,"OS #mu#mu#tau#tau");
-  h2->GetXaxis()->SetBinLabel(9,"SS eee#mu");
-  h2->GetXaxis()->SetBinLabel(10,"SS eee#tau");
-  h2->GetXaxis()->SetBinLabel(11,"SS ee#mu#tau");
-  h2->GetXaxis()->SetBinLabel(12,"SS ee#tau#tau");
-  h2->GetXaxis()->SetBinLabel(13,"SS #mu#mue#mu");
-  h2->GetXaxis()->SetBinLabel(14,"SS #mu#mue#tau");
-  h2->GetXaxis()->SetBinLabel(15,"SS #mu#mu#mu#tau");
-  h2->GetXaxis()->SetBinLabel(16,"SS #mu#mu#tau#tau");
+  TH1 *h2=mon.addHistogram( new TH1F ("yields", ";;Events", 25,0,25) );
+  h2->GetXaxis()->SetBinLabel(1,"OS eeee");
+  h2->GetXaxis()->SetBinLabel(2,"OS ee#mu#mu");
+  h2->GetXaxis()->SetBinLabel(3,"OS eee#mu");
+  h2->GetXaxis()->SetBinLabel(4,"OS eee#tau");
+  h2->GetXaxis()->SetBinLabel(5,"OS ee#mu#tau");
+  h2->GetXaxis()->SetBinLabel(6,"OS ee#tau#tau");
+  h2->GetXaxis()->SetBinLabel(7,"OS #mu#muee");
+  h2->GetXaxis()->SetBinLabel(8,"OS #mu#mu#mu#mu");
+  h2->GetXaxis()->SetBinLabel(9,"OS #mu#mue#mu");
+  h2->GetXaxis()->SetBinLabel(10,"OS #mu#mue#tau");
+  h2->GetXaxis()->SetBinLabel(11,"OS #mu#mu#mu#tau");
+  h2->GetXaxis()->SetBinLabel(12,"OS #mu#mu#tau#tau");
+  h2->GetXaxis()->SetBinLabel(13,"SS eeee");
+  h2->GetXaxis()->SetBinLabel(14,"SS ee#mu#mu");
+  h2->GetXaxis()->SetBinLabel(15,"SS eee#mu");
+  h2->GetXaxis()->SetBinLabel(16,"SS eee#tau");
+  h2->GetXaxis()->SetBinLabel(17,"SS ee#mu#tau");
+  h2->GetXaxis()->SetBinLabel(18,"SS ee#tau#tau");
+  h2->GetXaxis()->SetBinLabel(19,"SS #mu#muee");
+  h2->GetXaxis()->SetBinLabel(20,"SS #mu#mu#mu#mu");
+  h2->GetXaxis()->SetBinLabel(21,"SS #mu#mue#mu");
+  h2->GetXaxis()->SetBinLabel(22,"SS #mu#mue#tau");
+  h2->GetXaxis()->SetBinLabel(23,"SS #mu#mu#mu#tau");
+  h2->GetXaxis()->SetBinLabel(24,"SS #mu#mu#tau#tau");
   
-  TH1 *h3=mon.addHistogram( new TH1F ("yieldsOS", ";;Events", 8,0,8) );
-  h3->GetXaxis()->SetBinLabel(1,"OS eee#mu");
-  h3->GetXaxis()->SetBinLabel(2,"OS eee#tau");
-  h3->GetXaxis()->SetBinLabel(3,"OS ee#mu#tau");
-  h3->GetXaxis()->SetBinLabel(4,"OS ee#tau#tau");
-  h3->GetXaxis()->SetBinLabel(5,"OS #mu#mue#mu");
-  h3->GetXaxis()->SetBinLabel(6,"OS #mu#mue#tau");
-  h3->GetXaxis()->SetBinLabel(7,"OS #mu#mu#mu#tau");
-  h3->GetXaxis()->SetBinLabel(8,"OS #mu#mu#tau#tau");
+  TH1 *h3=mon.addHistogram( new TH1F ("yieldsOS", ";;Events", 12,0,12) );
+  h3->GetXaxis()->SetBinLabel(1,"OS eeee");
+  h3->GetXaxis()->SetBinLabel(2,"OS ee#mu#mu");
+  h3->GetXaxis()->SetBinLabel(3,"OS eee#mu");
+  h3->GetXaxis()->SetBinLabel(4,"OS eee#tau");
+  h3->GetXaxis()->SetBinLabel(5,"OS ee#mu#tau");
+  h3->GetXaxis()->SetBinLabel(6,"OS ee#tau#tau");
+  h3->GetXaxis()->SetBinLabel(7,"OS #mu#muee");
+  h3->GetXaxis()->SetBinLabel(8,"OS #mu#mu#mu#mu");
+  h3->GetXaxis()->SetBinLabel(9,"OS #mu#mue#mu");
+  h3->GetXaxis()->SetBinLabel(10,"OS #mu#mue#tau");
+  h3->GetXaxis()->SetBinLabel(11,"OS #mu#mu#mu#tau");
+  h3->GetXaxis()->SetBinLabel(12,"OS #mu#mu#tau#tau");
   
   //bjets control
   mon.addHistogram( new TH1F( "nbjets",  ";Number of #b-jets;Events", 6,0,6) );
@@ -580,17 +664,27 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "rho2",";#rho;Events",50,0,25) );
 
   //tau control
-  mon.addHistogram( new TH1F( "leadtaupt",     ";Transverse momentum [GeV];Events", 50,0,500) );
-  TH1 *htaus=mon.addHistogram( new TH1F("ntaus",  ";Tau multiplicity;Events",5,0,5) );
-  for(int ibin=1; ibin<=htaus->GetXaxis()->GetNbins(); ibin++)
-    {
-      TString label("");
-      if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
-      else                                label +="=";
-      label += (ibin-1);
-      htaus->GetXaxis()->SetBinLabel(ibin,label);
-    } 
+  // mon.addHistogram( new TH1F( "leadtaupt",     ";Transverse momentum [GeV];Events", 50,0,500) );
+  // TH1 *htaus=mon.addHistogram( new TH1F("ntaus",  ";Tau multiplicity;Events",5,0,5) );
+  // for(int ibin=1; ibin<=htaus->GetXaxis()->GetNbins(); ibin++)
+  //   {
+  //     TString label("");
+  //     if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
+  //     else                                label +="=";
+  //     label += (ibin-1);
+  //     htaus->GetXaxis()->SetBinLabel(ibin,label);
+  //   } 
 
+  //tau control
+  mon.addHistogram( new TH1F( "ntaus",      	";Number of Taus;Events", 10,0,10) );
+  mon.addHistogram( new TH1F( "tauleadpt",  	";p_{T}^{#tau} (GeV);Events/10 GeV", 50,0,500) );
+  mon.addHistogram( new TH1F( "tauleadeta", 	";#eta_{#tau};Events", 50,-2.6,2.6) );
+  mon.addHistogram( new TH1F( "tautrailerpt",  	";p_{T}^{#tau} (GeV);Events/10 GeV", 50,0,500) );
+  mon.addHistogram( new TH1F( "tautrailereta", 	";#eta_{#tau};Events", 50,-2.6,2.6) );
+  mon.addHistogram( new TH1F( "taudz",      	";dz_{#tau};Events", 50,0,10) );
+  mon.addHistogram( new TH1F( "tauvz",      	";vz_{#tau};Events", 50,0,10) );
+  mon.addHistogram( new TH1F( "taupt",  		";p_{T}^{#tau} (GeV);Events/10 GeV", 50,0,500) );
+  
   // photon control
   mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
@@ -857,8 +951,7 @@ int main(int argc, char* argv[])
           PuShifters=utils::cmssw::getPUshifters(dataPileupDistribution,0.05);
           utils::getPileupNormalization(mcPileupDistribution, PUNorm, LumiWeights, PuShifters);
   }
-
- 
+  
   gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
 
   patUtils::MetFilter metFiler;
@@ -913,11 +1006,9 @@ int main(int argc, char* argv[])
              weight *= puWeight;
          }
 
-
-
-          //apply trigger and require compatibilitiy of the event with the PD
-          edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
-          if(!tr.isValid())return false;
+	 //apply trigger and require compatibilitiy of the event with the PD
+	 edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+	 if(!tr.isValid())return false;
 
          bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");
          bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_Mu34_TrkIsoVVL_v*");
@@ -1001,6 +1092,34 @@ int main(int argc, char* argv[])
                printf("Handle to externalLHEProducer is invalid --> Can not ignore V0+Jet events from inclusive samples\n");
             }
          }
+
+	 if(isZZ4L){
+	   //cout << " I'm filling the histogram (I bin)" << endl;  
+	   mon.fillHisto("xsdebug"      ,   "",                 0, 1);
+	   int nge(0), ngm(0), ngt(0), ngz(0);
+	   for(size_t ig=0; ig<gen.size(); ig++){
+	     int status=gen[ig].status();
+	     if(status!=3) continue;
+	     int id(gen[ig].pdgId());
+	     //cout << " gen particles : " << id << " and " << status << endl;
+	     if(id==23)      ngz++;
+	     if(abs(id)==11) nge++;
+	     if(abs(id)==13) ngm++;
+	     if(abs(id)==15) ngt++;
+	   }
+	   if(mctruthmode==1113){
+	     if(ngz<2 || ngt>0) continue; 
+	     //cout << " I'm filling the histogram (II bin)" << endl;  
+	     mon.fillHisto("xsdebug"      ,   "",                 1, 1);
+	   }
+	   if(mctruthmode==15)  {
+	     if(ngz<2 || ngt<1) continue; 
+	     //cout << " I'm filling the histogram (III bin)" << endl;  
+	     mon.fillHisto("xsdebug"      ,   "",                 2, 1);
+	   }
+	   //if(mctruthmode==1113) cout << "Filter tag 1113. #ele: " << nge << " #muon: " << ngm << " #tau: " << ngt << endl;
+	   //if(mctruthmode==15)   cout << "Filter tag 15. #ele: " << nge << " #muon: " << ngm << " #tau: " << ngt << endl;
+	 }
 
          //
          // DERIVE WEIGHTS TO APPLY TO SAMPLE
@@ -1108,7 +1227,8 @@ int main(int argc, char* argv[])
 	     passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
 	     passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
 
-	     bool passVeryLooseIso = (patUtils::relIso(leptons[ilep] ,rho)<0.5);
+	     // bool passVeryLooseIso = (patUtils::relIso(leptons[ilep] ,rho)<0.5);
+	     bool passVeryLooseIso = (patUtils::relIso(leptons[ilep] ,rho)<1.);
 
 	     // lower the e/m isolation cuts (Lucia's suggestion 08.01.2015)
 	     if(passKin && passVeryLooseIso) selLeptons.push_back(leptons[ilep]); 
@@ -1257,12 +1377,10 @@ int main(int argc, char* argv[])
 	 // DILEPTON ANALYSIS
 	 //
 	 
-	 /*
 	 //apply data/mc correction factors
-	 if(dilLep1>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep1].pt(), selLeptons[dilLep1].eta(), abs(selLeptons[dilLep1].id),  abs(selLeptons[dilLep1].id) ==11 ? "loose" : "loose" ).first : 1.0;
-	 if(dilLep2>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep2].pt(), selLeptons[dilLep2].eta(), abs(selLeptons[dilLep2].id),  abs(selLeptons[dilLep2].id) ==11 ? "loose" : "loose" ).first : 1.0;
-	 */	 
-
+	 //if(dilLep1>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep1].pt(), selLeptons[dilLep1].eta(), abs(selLeptons[dilLep1].pdgId()),  abs(selLeptons[dilLep1].pdgId()) ==11 ? "loose" : "loose" ).first : 1.0;
+	 //if(dilLep2>=0)weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[dilLep2].pt(), selLeptons[dilLep2].eta(), abs(selLeptons[dilLep2].pdgId()),  abs(selLeptons[dilLep2].pdgId()) ==11 ? "loose" : "loose" ).first : 1.0;
+		 
 	 if(!isDileptonCandidate) continue;
 	 //if(examineThisEvent) cout << "dilepton candidate found" << endl; 
 	 
@@ -1586,12 +1704,18 @@ int main(int argc, char* argv[])
 	 
 	 higgsCand = getHiggsCand(selLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,chTags);
 	 
+	 //reweight the event to account for lept eff.
+	 //	 if(isMC && higgsCandL1>=0 && abs(selLeptons[higgsCandL1].pdgId())<15)
+	 //  weight *= lepEff.getLeptonEfficiency( selLeptons[higgsCandL1].pt(), selLeptons[higgsCandL1].eta(), abs(selLeptons[higgsCandL1].pdgId()), abs(selLeptons[higgsCandL1].pdgId()) ==11 ? "loose" : "loose" ).first;
+	 //if(isMC && higgsCandL2>=0 && abs(selLeptons[higgsCandL2].pdgId())<15)
+	 //  weight *= lepEff.getLeptonEfficiency( selLeptons[higgsCandL2].pt(), selLeptons[higgsCandL2].eta(), abs(selLeptons[higgsCandL2].pdgId()), abs(selLeptons[higgsCandL2].pdgId()) ==11 ? "loose" : "loose" ).first;
+
 	 //check if the pair pass Lepton Veto
 	 bool passLepVetoMain = true;
-	 for(int l=0;l<(int)selTaus.size() && passLepVetoMain;l++){
+	 for(int l=0;l<(int)selLeptons.size() && passLepVetoMain;l++){
 	   if(l==dilLep1 || l==dilLep2 || l==higgsCandL1 || l==higgsCandL2) continue; //lepton already used in the dilepton pair or higgs candidate
 	   if(abs(selLeptons[l].pdgId())==15){
-	     pat::Tau&  tau = selTaus[l];
+	     pat::Tau&  tau = selLeptons[l].tau;
 	     if(!tau.tauID("againstElectronLooseMVA5") ||
 	 	!tau.tauID("againstMuonLoose3")    ||
 	 	!tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")  ) continue;                    
@@ -1604,8 +1728,8 @@ int main(int argc, char* argv[])
 	 //check if the pair pass b-jet veto
 	 bool passBJetVetoMain = true;
 	 for(int j1=0;j1<(int)selBJets.size();j1++){
-	   if(deltaR(selBJets[j1], selLeptons[1])>0.4){passBJetVetoMain=false; break;}
-	   if(deltaR(selBJets[j1], selLeptons[2])>0.4){passBJetVetoMain=false; break;}
+	   if(dilLep1!=-1 && deltaR(selBJets[j1], selLeptons[dilLep1])>0.4){passBJetVetoMain=false; break;}
+	   if(dilLep2!=-1 && deltaR(selBJets[j1], selLeptons[dilLep2])>0.4){passBJetVetoMain=false; break;}
 	   if(higgsCandL1!=-1 && deltaR(selBJets[j1],selLeptons[higgsCandL1])>0.4){passBJetVetoMain=false; break;}
 	   if(higgsCandL2!=-1 && deltaR(selBJets[j1],selLeptons[higgsCandL2])>0.4){passBJetVetoMain=false; break;}
 	 }
@@ -1669,7 +1793,7 @@ int main(int argc, char* argv[])
 	 if(selLeptons.size()>=2){
 	   mon.fillHisto("nlep"           ,   chTags, selLeptons.size(), weight);
 	   mon.fillHisto("eventflow2"     ,   tags,                 1, weight);
-	   mon.fillHisto("zllmass"          ,   tags, boson.mass(),    weight);
+	   mon.fillHisto("zllmass"          ,   tags, zll.mass(),    weight);
 	   if(passZmass){
 	     mon.fillHisto("eventflow2"   ,   tags,                 2, weight);
 	     //pu control
@@ -1726,7 +1850,7 @@ int main(int argc, char* argv[])
 			 mon.fillHisto("sumpt",   tags, selLeptons[higgsCandL1].pt()+selLeptons[higgsCandL2].pt(), weight);
 			 if(passHiggsMain){
 			   mon.fillHisto("eventflow2"   ,tags,                 8, weight);
-			   mon.fillHisto("yields"	,tags,                HiggsShortId, weight);
+			   mon.fillHisto("yields"          ,tags,                HiggsShortId, weight);
 			   mon.fillHisto("yieldsOS"     ,tags,                HiggsShortId, weight);
 			   
 			   mon.fillHisto("Apt"       	, tags, higgsCand.pt(),    weight);

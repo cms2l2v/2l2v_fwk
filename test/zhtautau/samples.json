@@ -19,64 +19,46 @@
         { "dtag":"Data13TeV_PromptReco_MuEG2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"                     ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
       ]
     },
+    {	
+      "tag":"ZZ#rightarrow 4l",
+      "isdata":false,
+      "color":2,
+      "lcolor":1,
+      "data":[
+             { "dtag":"ZZTo4L_13TeV_powheg_pythia8"           ,  "xsec": 1.256   , "br":[ 1.0 ]              , "dset":"/ZZTo4L_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"} 
+      ]
+    },	
     {
-      "tag":"ZZ#rightarrow 2l2#nu",
+      "tag":"ZZ#rightarrow 2l+X",
       "isdata":false,
       "color":592,
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"}
-      ]
-    },
-    { 
-      "tag":"ZZ#rightarrow 2l2q",
-      "isdata":false,
-      "color":600,
-      "lcolor":1,
-      "marker":1,
-      "data":[
-        { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
+	{ "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     {
-      "tag":"WW#rightarrow 2l2#nu",
+      "tag":"WW#rightarrow l#nu+X",
       "isdata":false,
       "color":590,
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_WW2l2nu"                      ,  "xsec":12.178       , "br":[ 1 ]           , "dset":"/WWTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WW2l2nu"                      ,  "xsec":12.178       , "br":[ 1 ]           , "dset":"/WWTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+	{ "dtag":"MC13TeV_WWlnu2q"                      ,  "xsec":49.997      , "br":[ 1 ]           , "dset":"/WWToLNuQQ_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     { 
-      "tag":"WW#rightarrow lnu2q",
-      "isdata":false,
-      "color":597,
-      "lcolor":1,
-      "marker":1,
-      "data":[
-        { "dtag":"MC13TeV_WWlnu2q"                      ,  "xsec":49.997      , "br":[ 1 ]           , "dset":"/WWToLNuQQ_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-      ]
-    },
-    { 
-      "tag":"WZ#rightarrow 3l#nu",
+      "tag":"WZ#rightarrow 2l+X",
       "isdata":false,
       "color":594,
       "lcolor":1,
       "marker":1,
       "data":[
-        { "dtag":"MC13TeV_WZ3lnu"                      ,  "xsec":4.42965       , "br":[ 1 ]           , "dset":"/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-      ]
-    }, 
-    {
-      "tag":"WZ#rightarrow 2l2q",
-      "isdata":false,
-      "color":602,
-      "lcolor":1,
-      "marker":1,
-      "data":[
-        { "dtag":"MC13TeV_WZ2l2q"                      ,  "xsec":5.595       , "br":[ 1 ]           , "dset":"/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_WZ3lnu"                      ,  "xsec":4.42965       , "br":[ 1 ]           , "dset":"/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+	{ "dtag":"MC13TeV_WZ2l2q"                      ,  "xsec":5.595       , "br":[ 1 ]           , "dset":"/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     { 
@@ -147,15 +129,6 @@
              { "dtag":"MC13TeV_DYJetsToLL_50toInf"               ,  "xsec":6025.3     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
       ]
     },
-    {  	
-      "tag":"ZZ#rightarrow 4l",
-      "isdata":false,
-      "color":2,
-      "lcolor":1,
-      "data":[
-             { "dtag":"ZZTo4L_13TeV_powheg_pythia8"                  ,  "xsec": 1.256   , "br":[ 1.0 ]              , "dset":"/ZZTo4L_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"} 
-      ]
-    },
     {		
       "tag":"ZH#rightarrow ll#tau#tau",
       "isdata":false,
@@ -165,9 +138,8 @@
              { "dtag":"ZHToTauTau_M125_13TeV_powheg_pythia8"  ,  "xsec":0.00265 , "br":[ 1.0 ]            , "dset":"/ZHToTauTau_M125_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
       ]
     },
-    {
+    {	
       "tag":"H(200GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -179,7 +151,7 @@
     },
     {
       "tag":"H(200GeV)#rightarrow ZA(100GeV)",
-      "isinvisible":true,
+      "isinvisible":true,	  
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -191,7 +163,7 @@
     },
     {
       "tag":"H(250GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -203,7 +175,7 @@
     },
     {
       "tag":"H(300GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -215,7 +187,7 @@
     },
     {
       "tag":"H(300GeV)#rightarrow ZA(100GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -239,7 +211,7 @@
     },
     {
       "tag":"H(500GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -251,7 +223,7 @@
     },
     {
       "tag":"H(500GeV)#rightarrow ZA(100GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -275,7 +247,6 @@
     },
     {
       "tag":"H(500GeV)#rightarrow ZA(300GeV)",
-      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -287,7 +258,6 @@
     },
     {
       "tag":"H(650GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -299,7 +269,7 @@
     },
     {
       "tag":"H(800GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -311,7 +281,6 @@
     },
     {
       "tag":"H(800GeV)#rightarrow ZA(100GeV)",
-      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -335,7 +304,7 @@
     },
     {
       "tag":"H(800GeV)#rightarrow ZA(400GeV)",
-      "isinvisible":true,
+       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -347,7 +316,7 @@
     },
     {
       "tag":"H(1000GeV)#rightarrow ZA(50GeV)",
-      "isinvisible":true,
+      "isinvisible":true,	   
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -371,7 +340,7 @@
     },
     {
       "tag":"H(1000GeV)#rightarrow ZA(500GeV)",
-      "isinvisible":true,
+      "isinvisible":true,		   
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -383,7 +352,6 @@
     },
     {
       "tag":"H(2000GeV)#rightarrow ZA(1000GeV)",
-      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
