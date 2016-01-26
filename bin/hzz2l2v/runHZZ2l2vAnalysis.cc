@@ -36,7 +36,8 @@
 #include "UserCode/llvv_fwk/interface/TMVAUtils.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
-#include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
+#include "UserCode/llvv_fwk/interface/rochcor2015.h"
+#include "UserCode/llvv_fwk/interface/muresolution_run2.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
@@ -496,7 +497,7 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
-  MuScleFitCorrector* muCor=NULL;//getMuonCorrector(muscleDir,dtag); //FIXME Not yet updated for run2
+  rochcor2015* muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -851,16 +852,17 @@ int main(int argc, char* argv[])
            {
              bool passKin(true),passId(true),passIso(true);
              bool passLooseLepton(true), passSoftMuon(true), passSoftElectron(true), passVetoElectron(true);
-
              int lid=leptons[ilep].pdgId();
 
              //apply muon corrections
              if(abs(lid)==13){
                  passSoftMuon=false;
                  if(muCor){
+                   float qter;
                    TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-                   muCor->applyPtCorrection(p4 , lid<0 ? -1 :1 );
-                   if(isMC) muCor->applyPtSmearing(p4, lid<0 ? -1 : 1, false);
+                   if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+                   }else{   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
+                   }
                    muDiff -= leptons[ilep].p4();
                    leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
                    muDiff += leptons[ilep].p4();
@@ -986,13 +988,17 @@ int main(int argc, char* argv[])
                 for(size_t ilep=0; ilep<2; ilep++){
                     dilId *= selLeptons[ilep].pdgId();
                     int id(abs(selLeptons[ilep].pdgId()));
-                    weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight" : "tight" ).first : 1.0;
+                    weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"    ).first : 1.0; //ID
+                    weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso" ).first : 1.0; //ISO w.r.t ID
                     boson += selLeptons[ilep].p4();
                   }        
                 //check the channel
                 if( abs(dilId)==121 && eeTrigger){   chTags.push_back("ee");   chTags.push_back("ll"); }
                 if( abs(dilId)==169 && mumuTrigger){ chTags.push_back("mumu"); chTags.push_back("ll"); }
                 if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }           
+
+                weight *= isMC ? lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first : 1.0;
+
                 evCat=eventCategoryInst.GetCategory(selJets,boson);            
             }else if(photonTrigger && selPhotons.size()){
                 dilId=22;

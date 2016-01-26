@@ -396,18 +396,18 @@ namespace patUtils
     float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
     
     switch(IsoLevel){
-               case llvvMuonIso::Loose : 
-		 if( relIso < 0.20 ) return true;
-		 break;
+       case llvvMuonIso::Loose : 
+          if( relIso < 0.20 ) return true;
+	  break;
 		 
-    case llvvMuonIso::Tight :
-      if( relIso < 0.12 ) return true;
-      break;
+       case llvvMuonIso::Tight :
+         if( relIso < 0.15 ) return true;
+         break;
       
-    default:
-                  printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
-                  return false;
-                  break;
+       default:
+         printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
+         return false;
+         break;
     }
     return false;          
   }
