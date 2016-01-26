@@ -384,6 +384,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("csvothers",";Combined Secondary Vertex;Jets",50,0.,1.) );
   mon.addHistogram( new TH1F("leadjetpt",    ";Transverse momentum [GeV];Events",50,0,1000) );
   mon.addHistogram( new TH1F("trailerjetpt", ";Transverse momentum [GeV];Events",50,0,1000) );
+  mon.addHistogram( new TH1F("vbfjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
   mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
   mon.addHistogram( new TH1F("cenjeteta",       ";Pseudo-rapidity;Events",25,0,5) );
   Double_t mjjaxis[32];
@@ -395,6 +396,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfmjj"       , ";Dijet invariant mass [GeV];Events",31,mjjaxis) );
   mon.addHistogram( new TH1F("vbfdphijj"    , ";Azimuthal angle difference;Events",20,0,3.5) );
   mon.addHistogram( new TH1F("vbfdetajj"    , ";Pseudo-rapidity span;Events",20,0,10) );
+  mon.addHistogram( new TH1F("vbfcjv"       , ";Central jet multiplicity;Events",5,0,5) );
   TH1F* hjets   = (TH1F*) mon.addHistogram( new TH1F("njets",   ";Jet multiplicity;Events",5,0,5) );
   TH1F* hbtags  = (TH1F*) mon.addHistogram( new TH1F("nbtags",  ";b-tag multiplicity;Events",5,0,5) );
   TH1F* hbtagsJP= (TH1F*) mon.addHistogram( new TH1F("nbtagsJP",";b-tag multiplicity;Events",5,0,5) );
@@ -408,6 +410,8 @@ int main(int argc, char* argv[])
   } 
 
   mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmet25",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmet50",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
   mon.addHistogram( new TH1F( "mindphijmetNM1",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
   mon.addHistogram( new TH1D( "balance",      ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
   mon.addHistogram( new TH1D( "balanceNM1",   ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
@@ -1113,6 +1117,8 @@ int main(int argc, char* argv[])
                     mon.fillHisto("eventflow",tags,5,weight);
 
                     mon.fillHisto( "mindphijmet",tags,mindphijmet,weight);
+                    if(met.pt()>25)mon.fillHisto( "mindphijmet25",tags,mindphijmet,weight);
+                    if(met.pt()>50)mon.fillHisto( "mindphijmet50",tags,mindphijmet,weight);
                     if(met.pt()>80) mon.fillHisto( "mindphijmetNM1",tags,mindphijmet,weight);
                     if(passMinDphijmet){
                       mon.fillHisto("eventflow",tags,6,weight);
@@ -1165,6 +1171,8 @@ int main(int argc, char* argv[])
                           float eta1(selJets[0].eta()),eta2(selJets[1].eta());
                           float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
                           float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
+                          mon.fillHisto("vbfjeteta", tags,fabs(fwdEta),  weight);
+                          mon.fillHisto("vbfjeteta", tags,fabs(cenEta),  weight);                          
                           mon.fillHisto("fwdjeteta",tags,fabs(fwdEta),  weight);
                           mon.fillHisto("cenjeteta",tags,fabs(cenEta),  weight);
                           mon.fillHisto("vbfdetajj",tags,deta,        weight);
@@ -1172,6 +1180,14 @@ int main(int argc, char* argv[])
                             mon.fillHisto("vbfmjj",   tags,dijet.mass(),weight,true);
                             if(dijet.mass()>500){
                               mon.fillHisto("vbfdphijj",tags,dphi,        weight);
+                              int countJetVeto = 0;
+                              for(size_t ijet=2; ijet<selJets.size(); ijet++){
+                                 if((selJets[ijet].eta()<selJets[0].eta() && selJets[ijet].eta()>selJets[1].eta()) ||
+                                    (selJets[ijet].eta()>selJets[0].eta() && selJets[ijet].eta()<selJets[1].eta())){
+                                    countJetVeto++;
+                                 }
+                              }
+                              mon.fillHisto("vbfcjv",tags,countJetVeto,        weight);
                             }
                           }
                         }
@@ -1337,6 +1353,8 @@ int main(int argc, char* argv[])
               //TString evCat  = eventCategoryInst.GetCategory(selJets,boson);
               
               for(size_t ich=0; ich<chTags.size(); ich++){
+                 if(chTags[ich]=="ll")continue; //save time
+                 if(chTags[ich]=="emu" && (isMC_GG || isMC_VBF))continue; //save time 
 
                 TString tags_full=chTags[ich]+evCat; 
                 float chWeight(iweight);
