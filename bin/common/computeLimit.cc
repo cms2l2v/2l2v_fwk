@@ -1717,7 +1717,7 @@ void initializeTGraph(){
               for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
                  if(!it->second.isBckg || it->second.isData)continue;
                  TString procName = it->first.c_str();
-                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("WWW") || procName.Contains("WWZ") || procName.Contains("WW") || procName.Contains("WW#rightarrow 2l2#nu") || procName.Contains("Z#rightarrow #tau#tau") || procName.Contains("W#rightarrow l#nu") ||  procName.Contains("Top") ||  procName.Contains("W,multijets") ))continue;
+                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("Top") || procName.Contains("WWW") || procName.Contains("WW") || procName.Contains("WW#rightarrow 2l2#nu") ||  procName.Contains("WW#rightarrow lnu2q") || procName.Contains("W#rightarrow l#nu") || procName.Contains("W,multijets") || procName.Contains("Z#rightarrow #tau#tau") ))continue;
                  addProc(procInfo_NRB, it->second);
                  for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)==it->first){sorted_procs.erase(p);break;}}
                  toBeDelete.push_back(it->first);
@@ -1745,17 +1745,18 @@ void initializeTGraph(){
                  //compute alpha
                  double alpha=0 ,alpha_err=0;
                  double alphaUsed=0 ,alphaUsed_err=0;
-                 if(hCtrl_SB->GetBinContent(5)>0){
-                    alpha     = hChan_SB->GetBinContent(5) / hCtrl_SB->GetBinContent(5);
-                    alpha_err = ( fabs( hChan_SB->GetBinContent(5) * hCtrl_SB->GetBinError(5) ) + fabs(hChan_SB->GetBinError(5) * hCtrl_SB->GetBinContent(5) )  ) / pow(hCtrl_SB->GetBinContent(5), 2);        
+		 int bin = 6; //bin = 5 => AllSide Region; bin = 6 => UpSide Region
+                 if(hCtrl_SB->GetBinContent(bin)>0){
+                    alpha     = hChan_SB->GetBinContent(bin) / hCtrl_SB->GetBinContent(bin);
+                    alpha_err = ( fabs( hChan_SB->GetBinContent(bin) * hCtrl_SB->GetBinError(bin) ) + fabs(hChan_SB->GetBinError(bin) * hCtrl_SB->GetBinContent(bin) )  ) / pow(hCtrl_SB->GetBinContent(bin), 2);        
                  }
 //                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.44; alphaUsed_err=0.03;}
 //                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.71; alphaUsed_err=0.04;}
 //                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.47; alphaUsed_err=0.03;} //25/01/2014
 //                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.61; alphaUsed_err=0.04;}
-                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.35; alphaUsed_err=0.02;} //08/12/2015
-                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.72; alphaUsed_err=0.04;}
-
+                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.36; alphaUsed_err=0.02;} //26/01/2016
+                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.73; alphaUsed_err=0.04;}
+		
                  double valDD, valDD_err;
                  double valMC, valMC_err;
                  valMC = hNRB->IntegralAndError(1,hNRB->GetXaxis()->GetNbins(),valMC_err);  if(valMC<1E-6){valMC=0.0; valMC_err=0.0;}
