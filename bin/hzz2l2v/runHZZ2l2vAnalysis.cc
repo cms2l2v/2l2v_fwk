@@ -44,6 +44,7 @@
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 #include "UserCode/llvv_fwk/interface/TrigUtils.h"
 #include "UserCode/llvv_fwk/interface/EwkCorrections.h"
+#include "UserCode/llvv_fwk/interface/ZZatNNLO.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -212,9 +213,11 @@ int main(int argc, char* argv[])
   
 
   //ELECTROWEAK CORRECTION WEIGHTS
-  std::vector<std::vector<float>> ewkTable;
-  if(isMC_ZZ2l2nu) ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
-
+  std::vector<std::vector<float>> ewkTable, ZZ_NNLOTable;
+  if(isMC_ZZ2l2nu){
+  	ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
+		ZZ_NNLOTable = ZZatNNLO::readFile_and_loadTable(dtag);
+	}
 
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
@@ -805,13 +808,20 @@ int main(int argc, char* argv[])
      		 //Electroweak corrections to ZZ and WZ(soon) simulations
      		 double ewkCorrectionsWeight = 1.;
      		 double ewkCorrections_error = 0.;
-     		 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error, rho);
+     		 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
      		 double ewkCorrections_up = (ewkCorrectionsWeight + ewkCorrections_error)/ewkCorrectionsWeight;
      		 double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
      
        	 //final event weight
        	 weight *= ewkCorrectionsWeight;
-     
+    
+    		 //NNLO corrections on ZZ2l2nu
+    		 double ZZ_NNLOcorrectionsWeight =1.;
+    		 if(isMC_ZZ2l2nu) ZZ_NNLOcorrectionsWeight = ZZatNNLO::getNNLOCorrections(dtag, gen, ZZ_NNLOTable);
+				 
+				 //final event weight
+				 weight *= ZZ_NNLOcorrectionsWeight;
+
          //
          //
          // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS
