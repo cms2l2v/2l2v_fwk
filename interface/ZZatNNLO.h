@@ -1,5 +1,5 @@
-#ifndef EwkCorrections_h
-#define EwkCorrections_h
+#ifndef ZZatNNLO_h
+#define ZZatNNLO_h
 
 
 #include "DataFormats/FWLite/interface/Handle.h"
@@ -43,11 +43,12 @@
 #include <Math/VectorUtil.h>
 #include <stdlib.h>
 
-namespace EwkCorrections
+namespace ZZatNNLO
 {
-  std::vector<std::vector<float>> readFile_and_loadEwkTable(TString dtag);
-  std::vector<float> findCorrection(const std::vector<std::vector<float>> & Table_EWK, float sqrt_s_hat, float t_hat);
-  double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double & ewkCorrections_error);
+	std::vector<std::vector<float>> readFile_and_loadTable(TString dtag);
+	double findCorrection(const std::vector<std::vector<float>> & Table, double dphi);
+	double getNNLOCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table);
+
 }
 
 #endif
