@@ -1755,8 +1755,8 @@ void initializeTGraph(){
 //                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.47; alphaUsed_err=0.03;} //25/01/2014
 //                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.61; alphaUsed_err=0.04;}
                  if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.36; alphaUsed_err=0.02;} //26/01/2016
-                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.73; alphaUsed_err=0.04;}
-		
+                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.77; alphaUsed_err=0.04;}
+
                  double valDD, valDD_err;
                  double valMC, valMC_err;
                  valMC = hNRB->IntegralAndError(1,hNRB->GetXaxis()->GetNbins(),valMC_err);  if(valMC<1E-6){valMC=0.0; valMC_err=0.0;}
