@@ -48,7 +48,7 @@ double baseRelUnc=0.044;
 bool noLog=false;
 bool isSim=false;
 bool doTree = true;
-bool doInterpollation = true;
+bool doInterpollation = false;
 bool do2D  = true;
 bool do1D  = true;
 bool doTex = true;
@@ -86,7 +86,16 @@ struct NameAndType{
    bool isTree(){return type==4;}
    bool operator==(const NameAndType& a){ return a.name == name;}
    bool operator< (const NameAndType& a){ return a.name < name;}
- };
+};
+
+string getDirName(JSONWrapper::Object& Process, string matchingKeyword=""){
+   string dirName = Process.getStringFromKeyword(matchingKeyword, "tag", "");
+   if(Process.isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process.getIntFromKeyword(matchingKeyword, "mctruthmode", 0)); dirName += buf; }
+   string procSuffix = Process.getStringFromKeyword(matchingKeyword, "suffix", "");
+   if(procSuffix!=""){dirName += "_" + procSuffix;}
+   while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");         
+   return dirName;
+}
 
 void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<NameAndType>& histlist, std::string parentPath="/",  TDirectory* dir=NULL){
 
@@ -97,10 +106,10 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
       std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
       for(size_t ip=0; ip<Process.size(); ip++){
-         if(Process[ip].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
+         if(Process[ip].isTag("interpollation") || Process[ip].isTag("mixing"))continue; //treated in a specific function after the loop on Process
          string matchingKeyword="";
          if(!utils::root::getMatchingKeyword(Process[ip], keywords, matchingKeyword))continue; //only consider samples passing key filtering
-         string dirName = Process[ip].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+         string dirName = getDirName(Process[ip], matchingKeyword);
 
          if(dir){  //check if a directory already exist for this process in the output file
             TObject* tmp = utils::root::GetObjectFromPath(dir,dirName,false);
@@ -109,8 +118,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                GetListOfObject(Root,RootDir,histlist,"", (TDirectory*)tmp );
                continue; // nothing else to do for this process
             }
-         }
-
+          }
 
           bool isData (  Process[ip].getBoolFromKeyword(matchingKeyword, "isdata", false)  );
           bool isSign ( !isData &&  Process[ip].getBoolFromKeyword(matchingKeyword, "spimpose", false));
@@ -159,8 +167,10 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  GetListOfObject(Root,RootDir,histlist,"", (TDirectory*)File );
                  File->Close();
                }
-            }
+            }          
+      }
 
+      if(MissingFiles.size()>0){
          printf("The list of missing or corrupted files, that are ignored, can be found below:\n");
          for(std::unordered_map<string, std::vector<string> >::iterator it = MissingFiles.begin(); it!=MissingFiles.end(); it++){
             if(it->second.size()<=0)continue;
@@ -170,6 +180,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
             }
          }
       }
+
       //for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++){printf("%s\n",it->name.c_str()); }
       return;
 
@@ -201,6 +212,66 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 }
 
+void MixProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& histlist){    
+   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+   for(unsigned int i=0;i<Process.size();i++){
+      if(!Process[i].isTag("mixing"))continue; //only consider intepollated processes
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+
+      string dirName = getDirName(Process[i], matchingKeyword);
+      File->cd();
+ 
+      TDirectory* subdir = File->GetDirectory(dirName.c_str());
+      if(subdir && subdir!=File){
+         printf("Skip process %s as it seems to be already processed\n", dirName.c_str());
+         continue;  //skip this process as it already exist in the file
+      }
+
+      
+      //check that the subProcess actually point to an existing directory
+      std::vector<JSONWrapper::Object> subProcess = Process[i]["mixing"].daughters();     
+      std::vector<std::pair<string, double> > subProcList;
+      for(unsigned int sp=0;sp<subProcess.size();sp++){
+         string subProcDir = subProcess[sp].getString("tag", "");
+         if(!File->GetDirectory(subProcDir.c_str())){printf("subprocess directory not found: %s\n", subProcDir.c_str()); continue;}
+         subProcList.push_back(std::make_pair(subProcDir, subProcess[sp].getDouble("scale", 1.0)) );
+      }
+      if(subProcList.size()<=0){printf("No subProcess defined to construct the mixed process %s\n", dirName.c_str()); continue;  };
+
+      //create the directory to host the results
+      subdir = File->mkdir(dirName.c_str());
+      subdir->cd();
+
+
+      int ictr = 0;
+      int TreeStep = std::max(1,(int)(histlist.size()/50));
+      printf("Mixing %20s :", dirName.c_str());
+      for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
+         if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+         NameAndType& HistoProperties = *it;        
+        
+         TH1* obj1 = (TH1*)utils::root::GetObjectFromPath(File,subProcList[0].first + "/" + HistoProperties.name);      
+         if(!obj1)continue;
+         obj1 = (TH1*)obj1->Clone(HistoProperties.name.c_str());
+         utils::root::checkSumw2(obj1);
+         obj1->Scale(subProcList[0].second);
+
+         for(unsigned int sp=1;sp<subProcList.size();sp++){
+            TH1* obj2 = (TH1*)utils::root::GetObjectFromPath(File,subProcList[sp].first + "/" + HistoProperties.name);
+            if(!obj2)continue;
+            obj1->Add(obj2, subProcList[sp].second);
+         }
+         utils::root::setStyleFromKeyword(matchingKeyword,Process[i], obj1);
+        
+         subdir->cd();
+         obj1->Write(HistoProperties.name.c_str());
+         gROOT->cd();
+         delete obj1;
+      }printf("\n");
+   }
+}
+
 
 
 void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& histlist){    
@@ -210,7 +281,7 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
 
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = getDirName(Process[i], matchingKeyword);
       File->cd();
  
       TDirectory* subdir = File->GetDirectory(dirName.c_str());
@@ -329,13 +400,13 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
    printf("Processing input root files  :");
 
    for(unsigned int i=0;i<Process.size();i++){
-      if(Process[i].isTag("interpollation"))continue; //treated in a specific function after the loop on Process
+      if(Process[i].isTag("interpollation") || Process[i].isTag("mixing"))continue; //treated in a specific function after the loop on Process
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
 
 //      time_t now = time(0);
 
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");      
+      string dirName = getDirName(Process[i], matchingKeyword);
       OutputFile->cd();
       TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
       if(!subdir || subdir==OutputFile){ subdir = OutputFile->mkdir(dirName.c_str());
@@ -426,7 +497,7 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
       TCanvas* c1 = new TCanvas("c1","c1",500,500);
       c1->SetLogz(true);
 
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = getDirName(Process[i], matchingKeyword);
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
@@ -491,7 +562,7 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       pad->SetLogz(true);
       pad->SetTopMargin(0.0); pad->SetBottomMargin(0.10);  pad->SetRightMargin(0.20);
 
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = getDirName(Process[i], matchingKeyword);
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
@@ -579,7 +650,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
       if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "");while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = getDirName(Process[i], matchingKeyword);
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
@@ -823,7 +894,7 @@ void ConvertToTex(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProp
    for(unsigned int i=0;i<Process.size();i++){
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
-      string dirName = Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str();while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");
+      string dirName = getDirName(Process[i], matchingKeyword);
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
       if(!hist)continue;
 
@@ -937,6 +1008,7 @@ int main(int argc, char* argv[]){
         printf("--showUnc --> show stat uncertainty (if number is given use it as relative bin by bin uncertainty (e.g. lumi)\n"); 
 	printf("--noLog   --> use linear scale\n");
         printf("--noInterpollation --> do not motph histograms for missing samples\n");
+        printf("--doInterpollation --> do motph histograms for missing samples\n");
         printf("--no1D   --> Skip processing of 1D objects\n");
         printf("--no2D   --> Skip processing of 2D objects\n");
         printf("--noTree --> Skip processing of Tree objects\n");
@@ -982,6 +1054,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
      if(arg.find("--noTree"  )!=string::npos){ doTree = false;    }
      if(arg.find("--noInterpollation"  )!=string::npos){ doInterpollation = false; }
+     if(arg.find("--doInterpollation"  )!=string::npos){ doInterpollation = true; }
      if(arg.find("--no2D"  )!=string::npos){ do2D = false;    }
      if(arg.find("--no1D"  )!=string::npos){ do1D = false;    }
      if(arg.find("--noTex" )!=string::npos){ doTex= false;    }
@@ -996,7 +1069,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--splitCanvas")!=string::npos){ splitCanvas = true;    }
      if(arg.find("--fileOption" )!=string::npos && i+1<argc){ fileOption = argv[i+1];  i++;  printf("FileOption = %s\n", fileOption.c_str());  }
    } 
-   system( (string("mkdir -p ") + outDir).c_str());
+   if(doPlot)system( (string("mkdir -p ") + outDir).c_str());
    if(plotExt.size() == 0)
      plotExt.push_back(".png");
 
@@ -1015,8 +1088,6 @@ int main(int argc, char* argv[]){
    histlist.unique();   
 
    printf("Progressing Bar              :0%%       20%%       40%%       60%%       80%%       100%%\n");
-   string csvFile(outDir +"/histlist.csv");
-   system(("echo \"\" > " + csvFile).c_str());
 
    std::list<NameAndType>::iterator it= histlist.begin();
    while(it!= histlist.end()){
@@ -1032,6 +1103,7 @@ int main(int argc, char* argv[]){
    if(fileOption!="READ"){
       SavingToFile(Root,inDir,OutputFile, histlist);       
       if(doInterpollation)InterpollateProcess(Root, OutputFile, histlist);
+      MixProcess(Root, OutputFile, histlist);
    }
 
 
@@ -1044,13 +1116,7 @@ int main(int argc, char* argv[]){
        if(doPlot && doTex && (it->name.find("eventflow")!=std::string::npos || it->name.find("evtflow")!=std::string::npos) && it->name.find("optim_eventflow")==std::string::npos){    ConvertToTex(Root,OutputFile,*it); }
        if(doPlot && do2D  && it->is2D()){                      if(!splitCanvas){Draw2DHistogram(Root,OutputFile,*it); }else{Draw2DHistogramSplitCanvas(Root,OutputFile,*it);}}
        if(doPlot && do1D  && it->is1D()){ Draw1DHistogram(Root,OutputFile,*it); }
-        system(("echo \"" + it->name + "\" >> " + csvFile).c_str());
    }printf("\n");
-   OutputFile->Close();
-   
-   //system(("python ${CMSSW_BASE}/src/CMGTools/HtoZZ2l2nu/data/html/generateJSONplotterFromList.py -i " + csvFile + " -o "+outDir+"/plotter.json").c_str());
-   system(("rm " + csvFile).c_str());
-   //system(("cp ${CMSSW_BASE}/src/CMGTools/HtoZZ2l2nu/data/html/index.html " + outDir).c_str());
-   //printf("You can browse the results using %s/index.html\n",outDir.c_str());
+   OutputFile->Close();   
 }
 
