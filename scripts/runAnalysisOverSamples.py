@@ -46,8 +46,12 @@ def initProxy():
 
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
-      if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
-      else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+      if(not os.path.isfile(os.path.expanduser('~/.globus/mysecret.txt'))):
+         if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+         else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+      else:
+         if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt')
+         else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
    initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
 def getFileList(procData,DefaultNFilesPerJob):
@@ -143,6 +147,7 @@ parser.add_option('-d', '--dir'        ,    dest='indir'              , help='in
 parser.add_option('-o', '--out'        ,    dest='outdir'             , help='output directory'                          , default='')
 parser.add_option('-t', '--tag'        ,    dest='onlytag'            , help='process only samples matching this tag'    , default='all')
 parser.add_option('-k', '--key'        ,    dest='onlykeyword'        , help='process only samples matching this keyword', default='')
+parser.add_option('-K', '--skipkey'    ,    dest='skipkeyword'        , help='skip process matching this keyword'        , default='')
 parser.add_option('-p', '--pars'       ,    dest='params'             , help='extra parameters for the job'              , default='')
 parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='base configuration file template'          , default='')
 parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email'    , default=False, action="store_true")
@@ -185,8 +190,14 @@ for procBlock in procList :
     for proc in procBlock[1] :
         #run over items in process
         if(getByLabel(proc,'interpollation', '')!=''):continue #skip interpollated processes
+        if(getByLabel(proc,'mixing'        , '')!=''):continue #skip mixed processes
         keywords = getByLabel(proc,'keys',[])
-        if(opt.onlykeyword!='' and len(keywords)>0 and opt.onlykeyword not in keywords): continue
+        if(opt.onlykeyword!='' and len(keywords)>0 and opt.onlykeyword not in keywords): continue #skip processes not maching the keyword
+        if(opt.skipkeyword!='' and len(keywords)>0):
+           skipThisProc = False
+           for skip in opt.skipkeyword.split(','):
+              if(skip in keywords): skipThisProc = True
+           if(skipThisProc):continue #skip processes matching one of the skipkeyword
 
         isdata=getByLabelFromKeyword(proc,opt.onlykeyword,'isdata',False)
         isdatadriven=getByLabelFromKeyword(proc,opt.onlykeyword,'isdatadriven',False)       

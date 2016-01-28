@@ -29,13 +29,13 @@ phase=-1
 
 
 jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json --key 2l2v_datadriven'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2016_01_21_datadriven.root'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-#MASS = [400,500, 600, 750, 850, 1000]
-MASS = [400, 600, 1000]
+MASS = [400,500, 600, 750, 850, 1000]
+#MASS = [400, 600, 1000]
 SUBMASS = MASS
 #SUBMASS = [400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]

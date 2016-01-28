@@ -92,11 +92,12 @@ int main(int argc, char* argv[])
   //good lumi MASK
   lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
 
-  bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false);
+  bool filterOnlyEE(false), filterOnlyMUMU(false), filterOnlyEMU(false), filterOnlyPhoton(false);
   if(!isMC){
-      if(dtag.Contains("DoubleEle")) filterOnlyEE=true;
-      if(dtag.Contains("DoubleMu"))  filterOnlyMUMU=true;
-      if(dtag.Contains("MuEG"))      filterOnlyEMU=true;
+      if(dtag.Contains("DoubleEle"))   filterOnlyEE=true;
+      if(dtag.Contains("DoubleMu"))    filterOnlyMUMU=true;
+      if(dtag.Contains("MuEG"))        filterOnlyEMU=true;
+      if(dtag.Contains("SinglePhoton"))filterOnlyPhoton=true;      
   }
   bool isSingleMuPD(!isMC && dtag.Contains("SingleMu"));  
   bool isV0JetsMC(false);//isMC && (dtag.Contains("DYJetsToLL_50toInf") || dtag.Contains("_WJets")));  #FIXME should be reactivated as soon as we have exclusive jet samples
@@ -112,12 +113,7 @@ int main(int argc, char* argv[])
 	bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
-  bool runPhotonSelection = (mctruthmode==22 || mctruthmode==111);
  
-  TString outTxtUrl= outUrl + ".txt";    
-  FILE* outTxtFile = NULL;
-  if(!isMC)outTxtFile = fopen(outTxtUrl.Data(), "w");
-  printf("TextFile URL = %s\n",outTxtUrl.Data());
 
   //tree info
   TString dirname = runProcess.getParameter<std::string>("dirName");
@@ -142,7 +138,8 @@ int main(int argc, char* argv[])
   std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
   std::string weightsDir( allWeightsURL.size() ? allWeightsURL[0] : "");
 
-  GammaWeightsHandler* gammaWgtHandler= runPhotonSelection?new GammaWeightsHandler(runProcess,"",true):NULL;
+  std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");      
+  GammaWeightsHandler* gammaWgtHandler = (gammaPtWeightsFiles.size()>0 && gammaPtWeightsFiles[0]!="") ? new GammaWeightsHandler(runProcess,"",true) : NULL;
 
   //shape uncertainties for dibosons
   std::vector<TGraph *> vvShapeUnc;
@@ -660,21 +657,16 @@ int main(int argc, char* argv[])
           bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_Mu34_TrkIsoVVL_v*");
           bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*"); 
           bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");
-          bool photonTrigger      = runPhotonSelection?patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale):false;
+          bool photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);
 
-          if(filterOnlyEE)       { mumuTrigger=false; emuTrigger=false;  }
-          if(filterOnlyMUMU)     { eeTrigger=false;   emuTrigger=false;  }
-          if(isSingleMuPD)       { eeTrigger=false;   emuTrigger=false;  if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
-          if(filterOnlyEMU)      { eeTrigger=false;   mumuTrigger=false; }
-          if(runPhotonSelection) { eeTrigger=false;   mumuTrigger=false; emuTrigger=false;}
+          if(filterOnlyEE)       { mumuTrigger=false; emuTrigger=false; photonTrigger=false; }
+          if(filterOnlyMUMU)     { eeTrigger=false;   emuTrigger=false; photonTrigger=false; }
+          if(isSingleMuPD)       { eeTrigger=false;   emuTrigger=false; photonTrigger=false; if( muTrigger && !mumuTrigger) mumuTrigger=true; else mumuTrigger=false; }
+          if(filterOnlyEMU)      { eeTrigger=false;   mumuTrigger=false;photonTrigger=false; }
+          if(filterOnlyPhoton)   { eeTrigger=false;   mumuTrigger=false; emuTrigger=false;}
 	
           //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-          if(!runPhotonSelection){
-             if(!(eeTrigger || mumuTrigger || emuTrigger))continue;
-          }else{
-	     if(!photonTriggerStudy && !photonTrigger)continue;
-          }
-  
+          if(!(eeTrigger || mumuTrigger || emuTrigger || photonTrigger) && !photonTriggerStudy)continue;
          mon.fillHisto("weight_eventflow","debug", 4, weight);
 
          //##############################################   EVENT PASSED THE TRIGGER   ######################################
@@ -684,7 +676,6 @@ int main(int argc, char* argv[])
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
          mon.fillHisto("weight_eventflow","debug", 5, weight);
-
 
           //load all the objects we will need to access
           reco::VertexCollection vtx;
@@ -793,8 +784,8 @@ int main(int argc, char* argv[])
          }
         
 
-         //Resolve G+jet/QCD mixing                                                                                                 
-         if (runPhotonSelection && (isMC_GJet || isMC_QCD) ) {
+         //Resolve G+jet/QCD mixing (avoid double counting of photons)
+         if (isMC_GJet || isMC_QCD ) {
            // iF GJet sample; accept only event with prompt photons                                                                 
            // if QCD sample; reject events with prompt photons in final state                                                       
              bool gPromptFound=false;
@@ -803,7 +794,7 @@ int main(int argc, char* argv[])
              }
              if ( (isMC_GJet) && (!gPromptFound) ) continue; //reject event
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
-         } // only if mctruthmode==22 
+         }
 
      		 //Electroweak corrections to ZZ and WZ(soon) simulations
      		 double ewkCorrectionsWeight = 1.;
@@ -838,13 +829,12 @@ int main(int argc, char* argv[])
  	    mon.fillHisto("phopt", "trg", photon.pt(), weight);
 	    mon.fillHisto("phoeta", "trg", photon.eta(), weight);
 
-            if(runPhotonSelection && photon.pt()<triggerThreshold)continue;
-            if(!runPhotonSelection &&  photon.pt()<20)continue;
+            if(photon.pt()<20)continue;
+            if(photonTrigger && photon.pt()<triggerThreshold)continue;
             if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
 	    if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
             selPhotons.push_back(photon);
-         }
-           
+         }           
 
          //
          // LEPTON ANALYSIS
@@ -858,8 +848,7 @@ int main(int argc, char* argv[])
 
          LorentzVector muDiff(0,0,0,0); 
          std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
-         for(size_t ilep=0; ilep<leptons.size(); ilep++)
-           {
+         for(size_t ilep=0; ilep<leptons.size(); ilep++){
              bool passKin(true),passId(true),passIso(true);
              bool passLooseLepton(true), passSoftMuon(true), passSoftElectron(true), passVetoElectron(true);
              int lid=leptons[ilep].pdgId();
@@ -985,16 +974,15 @@ int main(int argc, char* argv[])
          // ASSIGN CHANNEL
          //
          double initialWeight = weight;
-         for(unsigned int L=0;L<2;L++){  //Loop to assign a Z-->ll channel to photons
-            if(L==1 && !gammaWgtHandler)continue; //run it only for photon reweighting
+         for(unsigned int L=0;L<3;L++){  //Loop to assign a Z-->ll channel to photons
+            if(L>0 && (!photonTrigger || !gammaWgtHandler) )continue; //run it only for photon reweighting
             weight = initialWeight;  //make sure we do not modify the weight twice in this loop
           
             std::vector<TString> chTags;
             TString evCat;       
             int dilId(1);
             LorentzVector boson(0,0,0,0);
-            float photonWeightMain=1.0;
-            if(!runPhotonSelection && selLeptons.size()==2){
+            if(selLeptons.size()==2 && (eeTrigger || mumuTrigger || emuTrigger) && !gammaWgtHandler){  //this is not run if photon reweighting is activated to avoid mixing
                 for(size_t ilep=0; ilep<2; ilep++){
                     dilId *= selLeptons[ilep].pdgId();
                     int id(abs(selLeptons[ilep].pdgId()));
@@ -1010,16 +998,20 @@ int main(int argc, char* argv[])
                 weight *= isMC ? lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first : 1.0;
 
                 evCat=eventCategoryInst.GetCategory(selJets,boson);            
-            }else if(photonTrigger && selPhotons.size()){
+            }else if(selPhotons.size()>=1 && photonTrigger){
                 dilId=22;
-                chTags.push_back(L==0?"ee":"mumu");
-                chTags.push_back("ll");
+                if(L==0)                         {chTags.push_back("gamma");
+                }else if(L==1 && gammaWgtHandler){chTags.push_back("ee");   chTags.push_back("ll");
+                }else if(L==2 && gammaWgtHandler){chTags.push_back("mumu"); chTags.push_back("ll");
+                }else{ continue;
+                }
                 boson = selPhotons[0].p4();
                 evCat=eventCategoryInst.GetCategory(selJets,boson);            
-                boson = gammaWgtHandler->getMassiveP4(boson, string(L==0?"ee":"mumu")+evCat);
+                if(gammaWgtHandler)boson = gammaWgtHandler->getMassiveP4(boson, string(L==0?"ee":"mumu")+evCat);
                 std::vector<Float_t> photonVars;
                 photonVars.push_back(boson.pt());           
-                photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==0?"ee":"mumu")+evCat);
+                float photonWeightMain=1.0;
+                if(gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==0?"ee":"mumu")+evCat);
                 weight *= triggerPrescale * photonWeightMain;
             }
 
@@ -1032,7 +1024,7 @@ int main(int argc, char* argv[])
 
             // Photon trigger efficiencies
             // Must be run without the photonTrigger requirement on top of of the Analysis.
-            if (photonTriggerStudy && runPhotonSelection && selPhotons.size() ){
+            if (photonTriggerStudy && selPhotons.size() ){
               TString tag="trigger";
               pat::Photon iphoton = selPhotons[0];
          
@@ -1063,7 +1055,7 @@ int main(int argc, char* argv[])
             bool passBtags(nbtags==0); 
             bool passMinDphijmet( njets==0 || mindphijmet>0.5);
 
-            if(runPhotonSelection){
+            if(dilId==22){
                 passMass=photonTrigger;
                 passThirdLeptonVeto=(selLeptons.size()==0 && extraLeptons.size()==0);
             }
@@ -1080,7 +1072,7 @@ int main(int argc, char* argv[])
 
             if(chTags.size()==0) continue;
             mon.fillHisto("eventflow",  tags,1,weight);
-            if(!runPhotonSelection){
+            if(dilId!=22){
               mon.fillHisto("leadpt",      tags,selLeptons[0].pt(),weight); 
               mon.fillHisto("trailerpt",   tags,selLeptons[1].pt(),weight); 
               mon.fillHisto("leadeta",     tags,fabs(selLeptons[0].eta()),weight); 
@@ -1424,7 +1416,12 @@ int main(int argc, char* argv[])
   mon.Write();
   ofile->Close();
 
-  if(outTxtFile)fclose(outTxtFile);
+  if(!isMC){ 
+     TString outTxtUrl= outUrl + ".txt";    
+     FILE* outTxtFile = fopen(outTxtUrl.Data(), "w");
+     printf("TextFile URL = %s\n",outTxtUrl.Data());
+     if(outTxtFile)fclose(outTxtFile);
+  }
 
   //Now that everything is done, dump the list of lumiBlock that we processed in this job
   if(!isMC){
