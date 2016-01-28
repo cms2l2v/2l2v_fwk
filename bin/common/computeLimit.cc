@@ -39,7 +39,7 @@
 
 
 using namespace std;
-double NonResonnantSyst = 0.15;
+double NonResonnantSyst = 0.3;
 double GammaJetSyst = 0.25;
 double FakeLeptonDDSyst = 0.40;
 
