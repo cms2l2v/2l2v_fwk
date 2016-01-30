@@ -205,7 +205,7 @@ int main(int argc, char* argv[]){
 
    //FIXME these are currently hard-coded, but we should pass them via parameters using the code just bellow
    bool isData=true;
-   bool bfit=true;
+   bool bfit=false;
    int  rbin=5;
    bool asym=true;
    string gDataFile = "plotter_2016_01_18_forPhotonWeights.root";
@@ -232,7 +232,7 @@ int main(int argc, char* argv[]){
   std::vector<string> gDataDir;
   std::vector<string> zDataDir;
   if(isData){
-     gDataDir.push_back("#gamma data");
+     gDataDir.push_back("#gamma data._reweighted");
      zDataDir.push_back("data");
   }else{
      gDataDir.push_back("GJets_HT-40to100");

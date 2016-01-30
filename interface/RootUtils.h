@@ -115,7 +115,7 @@ namespace utils
    }
 
     void setStyleFromKeyword(std::string keyword, JSONWrapper::Object& SingleProcess, TH1* hist){
-      if(SingleProcess.isTagFromKeyword(keyword, "color" ) )hist->SetLineColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "color", 1)); else hist->SetLineColor  (1);
+      hist->SetLineColor  (1);
       if(SingleProcess.isTagFromKeyword(keyword, "color" ) )hist->SetMarkerColor((int)SingleProcess.getDoubleFromKeyword(keyword, "color", 1)); else hist->SetMarkerColor(1);
       if(SingleProcess.isTagFromKeyword(keyword, "color" ) )hist->SetFillColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "color", 1)); else hist->SetFillColor  (0);
       if(SingleProcess.isTagFromKeyword(keyword, "lcolor") )hist->SetLineColor  ((int)SingleProcess.getDoubleFromKeyword(keyword, "lcolor", 1));

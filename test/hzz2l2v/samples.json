@@ -21,59 +21,35 @@
       ]
     },
     {
-      "tag":"ZZ#rightarrow 2l2#nu",
+      "tag":"ZZ",
       "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
       "isdata":false,
       "color":592,
       "data":[
-        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"}
-      ]
-    },
-    { 
-      "tag":"ZZ#rightarrow 2l2q",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],      
-      "isdata":false,
-      "color":600,
-      "data":[
+        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
         { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     {
-      "tag":"WW#rightarrow 2l2#nu",
+      "tag":"WW",
       "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
       "isdata":false,
       "color":590,
       "data":[
-        { "dtag":"MC13TeV_WW2l2nu"                      ,  "xsec":12.178       , "br":[ 1 ]           , "dset":"/WWTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-      ]
-    },
-    { 
-      "tag":"WW#rightarrow lnu2q",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],   
-      "isdata":false,
-      "color":597,
-      "data":[
+        { "dtag":"MC13TeV_WW2l2nu"                      ,  "xsec":12.178       , "br":[ 1 ]           , "dset":"/WWTo2L2Nu_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
         { "dtag":"MC13TeV_WWlnu2q"                      ,  "xsec":49.997      , "br":[ 1 ]           , "dset":"/WWToLNuQQ_13TeV-powheg/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
     },
     { 
-      "tag":"WZ#rightarrow 3l#nu",
+      "tag":"WZ",
       "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],      
       "isdata":false,
       "color":594,
       "data":[
-        { "dtag":"MC13TeV_WZ3lnu"                      ,  "xsec":4.42965       , "br":[ 1 ]           , "dset":"/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-      ]
-    }, 
-    {
-      "tag":"WZ#rightarrow 2l2q",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
-      "isdata":false,
-      "color":602,
-      "data":[
+        { "dtag":"MC13TeV_WZ3lnu"                      ,  "xsec":4.42965       , "br":[ 1 ]           , "dset":"/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
         { "dtag":"MC13TeV_WZ2l2q"                      ,  "xsec":5.595       , "br":[ 1 ]           , "dset":"/WZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
       ]
-    },
+    }, 
     { 
       "tag":"ZVV",
       "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
@@ -108,7 +84,7 @@
       "2l2v_photonsOnly":{"suffix":"reweighted"},
       "data":[
         { "dtag":"MC13TeV_WJets"                            ,  "xsec":61526.7       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-       ],
+       ]
     },
     {
       "tag":"Z#rightarrow ll",
@@ -188,7 +164,7 @@
       ]
     },
     {
-      "tag":"Z#gamma #rightarrow l#nu#gamma",                                                                                   
+      "tag":"Z#gamma #rightarrow ll#gamma",                                                                                   
       "keys":["2l2v_photoncontrol", "2l2v_photonsOnly"],      
       "isdata":false,                                                                                                           
       "color":635,                                                                                                              
@@ -211,7 +187,7 @@
       ]
     },  
     {   
-      "tag":"#gamma data",                                                                                                                                          
+      "tag":"#gamma data",
       "keys":["2l2v_photoncontrol", "2l2v_photonsOnly"],           
       "isdata":true,                                                                                                                                                     
       "color":1,                                                                                                                                                   
@@ -233,174 +209,174 @@
       "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":-1.0}]
     },
     {
-      "tag":"ggH(400)#rightarrow ZZ",
+      "tag":"ggH(400)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":619,
+      "lcolor":619,
       "lwidth":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_GGtoH400toZZto2L2Nu_powheg15"     ,  "xsec":9.68      , "br":[0.269, 0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_GGtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[1.0]    , "dset":"/GluGluHToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
-      "tag":"qqH(400)#rightarrow ZZ",
+      "tag":"qqH(400)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":619,
+      "lcolor":619,
       "lwidth":2,
       "lstyle":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_VBFtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.55      , "br":[0.269, 0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_VBFtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[1.0]    , "dset":"/VBF_HToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
-      "tag":"ggH(600)#rightarrow ZZ",
+      "tag":"ggH(600)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":809,
+      "lcolor":809,
       "lwidth":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_GGtoH600toZZto2L2Nu_powheg15"     ,  "xsec":2.128      , "br":[0.272, 0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_GGtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[1.0]    , "dset":"/GluGluHToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
-      "tag":"qqH(600)#rightarrow ZZ",
+      "tag":"qqH(600)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":809,
+      "lcolor":809,
       "lwidth":2,
       "lstyle":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.288      , "br":[0.272, 0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[1.0]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
-      "tag":"ggH(1000)#rightarrow ZZ",
+      "tag":"ggH(1000)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":868,
+      "lcolor":868,
       "lwidth":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_GGtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.189      , "br":[0.311, 0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_GGtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[1.0]    , "dset":"/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
-      "tag":"qqH(1000)#rightarrow ZZ",
+      "tag":"qqH(1000)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":868,
+      "lcolor":868,
       "lwidth":2,
       "lstyle":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.066      , "br":[0.311, 0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[1.0]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
 
 
     {
-      "tag":"ggH(500)#rightarrow ZZ",
+      "tag":"ggH(500)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":2,
+      "lcolor":2,
       "lwidth":2,
       "fill":0,
-      "interpollation":[{"tagLeft":"ggH(400)#rightarrow ZZ", "massLeft":400, "mass":500, "tagRight":"ggH(600)#rightarrow ZZ", "massRight":600 }],
-      "data":[          { "dtag":"",  "xsec":4.724      , "br":[ 0.261, 0.029264 ] }      ]
+      "interpollation":[{"tagLeft":"ggH(400)", "massLeft":400, "mass":500, "tagRight":"ggH(600)", "massRight":600 }],
+      "data":[          { "dtag":"",  "xsec":0.001  , "br":[1.0] }      ]
     },
      {
-      "tag":"qqH(500)#rightarrow ZZ",
+      "tag":"qqH(500)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],   
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":2,
+      "lcolor":2,
       "lwidth":2,
       "lstyle":2,   
       "fill":0,
-      "interpollation":[{"tagLeft":"qqH(400)#rightarrow ZZ", "massLeft":400, "mass":500, "tagRight":"qqH(600)#rightarrow ZZ", "massRight":600 }],
-      "data":[          { "dtag":"",  "xsec":0.353      , "br":[ 0.261, 0.029264 ] }      ]
+      "interpollation":[{"tagLeft":"qqH(400)", "massLeft":400, "mass":500, "tagRight":"qqH(600)", "massRight":600 }],
+      "data":[          { "dtag":"",  "xsec":0.001  , "br":[1.0] }      ]
     },
     {
-      "tag":"ggH(750)#rightarrow ZZ",
+      "tag":"ggH(750)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],      
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":809,
+      "lcolor":809,
       "lwidth":2,
       "fill":0,
-      "interpollation":[{"tagLeft":"ggH(600)#rightarrow ZZ", "massLeft":600, "mass":750, "tagRight":"ggH(1000)#rightarrow ZZ", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.736      , "br":[ 0.290, 0.029264 ] }      ]
+      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":750, "tagRight":"ggH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.001  , "br":[1.0] }      ]
     },
     {
-      "tag":"qqH(750)#rightarrow ZZ",
+      "tag":"qqH(750)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],      
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":809,
+      "lcolor":809,
       "lwidth":2,
       "lstyle":2,   
       "fill":0,
-      "interpollation":[{"tagLeft":"qqH(600)#rightarrow ZZ", "massLeft":600, "mass":750, "tagRight":"qqH(1000)#rightarrow ZZ", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.131      , "br":[ 0.290, 0.029264 ] }      ]
+      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":750, "tagRight":"qqH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.001  , "br":[1.0] }      ]
     },
     {
-      "tag":"ggH(850)#rightarrow ZZ",
+      "tag":"ggH(850)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],      
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":809,
+      "lcolor":809,
       "lwidth":2,
       "fill":0,
-      "interpollation":[{"tagLeft":"ggH(600)#rightarrow ZZ", "massLeft":600, "mass":850, "tagRight":"ggH(1000)#rightarrow ZZ", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.4035     , "br":[ 0.300, 0.029264 ] }      ]
+      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":850, "tagRight":"ggH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.001  , "br":[1.0] }      ]
     },
     {
-      "tag":"qqH(850)#rightarrow ZZ",
+      "tag":"qqH(850)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],      
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "color":809,
+      "lcolor":809,
       "lwidth":2,
       "lstyle":2,
       "fill":0,
-      "interpollation":[{"tagLeft":"qqH(600)#rightarrow ZZ", "massLeft":600, "mass":850, "tagRight":"qqH(1000)#rightarrow ZZ", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.0962     , "br":[ 0.300, 0.029264 ] }      ]
+      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":850, "tagRight":"qqH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":0.001  , "br":[1.0] }      ]
     }
   ]
 }
