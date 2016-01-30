@@ -391,39 +391,39 @@ class LeptonEfficiencySF
 
      if(id==121){
 	if(etaCen<0.8){
-                 if(etaFwd<0.8){ eff.first=1.030; eff.second=0.031;
-           }else if(etaFwd<1.444){ eff.first=1.054; eff.second=0.034;
-           }else if(etaFwd<1.566){ eff.first=1.052; eff.second=0.099;
-           }else if(etaFwd<2.0){ eff.first=1.088; eff.second=0.058;
-           }else if(etaFwd<2.5){ eff.first=1.071; eff.second=0.066;
+                 if(etaFwd<0.8){ eff.first=0.998; eff.second=0.025;
+           }else if(etaFwd<1.444){ eff.first=1.004; eff.second=0.025;
+           }else if(etaFwd<1.566){ eff.first=0.996; eff.second=0.071;
+           }else if(etaFwd<2.0){ eff.first=1.006; eff.second=0.044;
+           }else if(etaFwd<2.5){ eff.first=1.004; eff.second=0.051;
            }
 	}else if(etaCen<1.444){
-                 if(etaFwd<0.8){ eff.first=1.034; eff.second=0.024;
-           }else if(etaFwd<1.444){ eff.first=1.036; eff.second=0.037;
-           }else if(etaFwd<1.566){ eff.first=1.030; eff.second=0.128;
-           }else if(etaFwd<2.0){ eff.first=1.076; eff.second=0.042;
-           }else if(etaFwd<2.5){ eff.first=1.061; eff.second=0.106;
+                 if(etaFwd<0.8){ eff.first=0.994; eff.second=0.019;
+           }else if(etaFwd<1.444){ eff.first=1.000; eff.second=0.030;
+           }else if(etaFwd<1.566){ eff.first=0.987; eff.second=0.091;
+           }else if(etaFwd<2.0){ eff.first=1.006; eff.second=0.035;
+           }else if(etaFwd<2.5){ eff.first=1.004; eff.second=0.072;
            }
 	}else if(etaCen<1.566){	//This block belongs to transition region 
-                 if(etaFwd<0.8){ eff.first=1.062; eff.second=0.083;
-           }else if(etaFwd<1.444){ eff.first=1.061; eff.second=0.064;
-           }else if(etaFwd<1.566){ eff.first=1.029; eff.second=0.149;
-           }else if(etaFwd<2.0){ eff.first=1.115; eff.second=0.156;
-           }else if(etaFwd<2.5){ eff.first=1.073; eff.second=0.085;
+                 if(etaFwd<0.8){ eff.first=1.003; eff.second=0.070;
+           }else if(etaFwd<1.444){ eff.first=1.000; eff.second=0.049;
+           }else if(etaFwd<1.566){ eff.first=0.973; eff.second=0.111;
+           }else if(etaFwd<2.0){ eff.first=1.012; eff.second=0.119;
+           }else if(etaFwd<2.5){ eff.first=1.000; eff.second=0.062;
            }
 	}else if(etaCen<2.0){
-                 if(etaFwd<0.8){ eff.first=1.064; eff.second=0.031;
-           }else if(etaFwd<1.444){ eff.first=1.108; eff.second=0.061;
-           }else if(etaFwd<1.566){ eff.first=1.076; eff.second=0.107;
-           }else if(etaFwd<2.0){ eff.first=1.118; eff.second=0.040;
-           }else if(etaFwd<2.5){ eff.first=1.065; eff.second=0.041;
+                 if(etaFwd<0.8){ eff.first=1.000; eff.second=0.024;
+           }else if(etaFwd<1.444){ eff.first=1.026; eff.second=0.050;
+           }else if(etaFwd<1.566){ eff.first=0.995; eff.second=0.077;
+           }else if(etaFwd<2.0){ eff.first=1.018; eff.second=0.030;
+           }else if(etaFwd<2.5){ eff.first=0.998; eff.second=0.031;
            }
 	}else if(etaCen<2.5){
-                 if(etaFwd<0.8){ eff.first=1.054; eff.second=0.055;
-           }else if(etaFwd<1.444){ eff.first=1.054; eff.second=0.071;
-           }else if(etaFwd<1.566){ eff.first=1.066; eff.second=0.075;
-           }else if(etaFwd<2.0){ eff.first=1.066; eff.second=0.041;
-           }else if(etaFwd<2.5){ eff.first=1.049; eff.second=0.043;
+                 if(etaFwd<0.8){ eff.first=0.991; eff.second=0.046;
+           }else if(etaFwd<1.444){ eff.first=1.009; eff.second=0.058;
+           }else if(etaFwd<1.566){ eff.first=0.994; eff.second=0.057;
+           }else if(etaFwd<2.0){ eff.first=1.000; eff.second=0.032;
+           }else if(etaFwd<2.5){ eff.first=1.000; eff.second=0.034;
            }
  	}        
      }else if(id==169){

@@ -156,7 +156,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   double XSecScaleFactor = 1.0;
   if(suffix.find("_cp")!=string::npos){
      sscanf(suffix.c_str()+suffix.find("_cp"), "_cp%lf_brn%lf", &cprime, &brnew);
-     XSecScaleFactor = pow(cprime,2) * (1-brnew);
+//     XSecScaleFactor = pow(cprime,2) * (1-brnew);
   }
   //XSecScaleFactor = 1.0/1000; //pb to fb
 
@@ -214,7 +214,9 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
     ThXSec[i]    *= XSecScaleFactor;
   }
 
-    
+  //FIXME strengthLimit=False
+
+
   //limits in terms of signal strength
   TCanvas* c = new TCanvas("c", "c",600,600);
   TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?150:150,1050);
@@ -252,7 +254,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
      SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      
      SMLine->Draw("same C");
   }else{
-     THXSec->Draw("same C");
+//     THXSec->Draw("same C");
   }
 
 
@@ -279,7 +281,7 @@ void plotLimit(TString outputDir="./", TString inputs="", TString inputXSec="", 
   LEG->SetFillStyle(0);
   LEG->SetTextFont(42);
   LEG->SetBorderSize(0);
-  if(!strengthLimit)LEG->AddEntry(THXSec  , "SM prediction"  ,"L");
+//  if(!strengthLimit)LEG->AddEntry(THXSec  , "TH prediction"  ,"L");
   LEG->AddEntry(TGExpLimit  , "median expected"  ,"L");
   LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
   LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");

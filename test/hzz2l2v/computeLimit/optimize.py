@@ -42,7 +42,7 @@ SUBMASS = MASS
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
-LandSArgCommonOptions=" --blind --rebin 10 --dropBckgBelow 0.00001  --subNRB "
+LandSArgCommonOptions=" --blind --rebin 20 --dropBckgBelow 0.00001  --subNRB "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
 for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
@@ -67,17 +67,17 @@ for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes
             #Run limit for ShapeBased GG+VBF
             signalSuffixVec += [ suffix ]
             OUTName         += ["SB13TeV"]
-            LandSArgOptions += [" --histo " + shape + "  --systpostfix _13TeV --shape "]
+            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape "]
             BIN             += [bin]
 
             signalSuffixVec += [ suffix ]
             OUTName         += ["SB13TeV_GGF"]
-            LandSArgOptions += [" --histo " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
+            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
             BIN             += [bin]
 
             signalSuffixVec += [ suffix ]
             OUTName         += ["SB13TeV_VBF"]
-            LandSArgOptions += [" --histo " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
             BIN             += [bin]
 
 
@@ -160,7 +160,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('ZZ#rightarrow 2l2#nu/all_optim_cut') 
+   cutsH = file.Get('ZZ/all_optim_cut') 
       
    ###################################################
    ##   OPTIMIZATION LOOP                           ##
@@ -297,6 +297,7 @@ for signalSuffix in signalSuffixVec :
            Cuts = ''
            for c in range(1, cutsH.GetYaxis().GetNbins()+1):
               Cuts += str(cutsH.GetBinContent(int(index),c)).rjust(7) + " ("+str(cutsH.GetYaxis().GetBinLabel(c))+")   "
+
            print "M=%04i : Index=% 5i --> Cuts: %s"  % (m, index, Cuts)
 
       while True:
@@ -341,7 +342,9 @@ for signalSuffix in signalSuffixVec :
                for line in listcuts :
                   vals=line.split(' ')
                   for c in range(1, cutsH.GetYaxis().GetNbins()+3):
-                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c+1]));
+                     #FIXME FORCE INDEX TO BE 16 (Met>125GeV)
+                     Gcut[c-1].SetPoint(mi, 16, float(125));
+#                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c+1]));
                   mi+=1
                for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
                listcuts.close();          
@@ -358,6 +361,8 @@ for signalSuffix in signalSuffixVec :
                if(not (SideMasses[0]==SideMasses[1])):
                   indexLString = str(findCutIndex(cutsH, Gcut, SideMasses[0]));
                   indexRString = str(findCutIndex(cutsH, Gcut, SideMasses[1]));
+
+           print indexString
 
            #all done with the bin treatment
            #cutStr = " --shapeMin " + str(Gcut[cutsH.GetYaxis().GetNbins()].Eval(m,0,"")) +" --shapeMax " + str(Gcut[cutsH.GetYaxis().GetNbins()+1].Eval(m,0,""));

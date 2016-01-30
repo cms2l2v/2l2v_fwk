@@ -1007,11 +1007,11 @@ int main(int argc, char* argv[])
                 }
                 boson = selPhotons[0].p4();
                 evCat=eventCategoryInst.GetCategory(selJets,boson);            
-                if(gammaWgtHandler)boson = gammaWgtHandler->getMassiveP4(boson, string(L==0?"ee":"mumu")+evCat);
+                if(L>0 && gammaWgtHandler)boson = gammaWgtHandler->getMassiveP4(boson, string(L==1?"ee":"mumu")+evCat);
                 std::vector<Float_t> photonVars;
                 photonVars.push_back(boson.pt());           
                 float photonWeightMain=1.0;
-                if(gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==0?"ee":"mumu")+evCat);
+                if(L>0 && gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
                 weight *= triggerPrescale * photonWeightMain;
             }
 

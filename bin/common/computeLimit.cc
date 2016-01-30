@@ -1513,7 +1513,7 @@ void initializeTGraph(){
                if(Process[i].getBool("spimpose", false) && (proc.Contains("ggH") || proc.Contains("qqH")))isSignal=true;
                //LQ bool isInSignal = Process[i].getBool("isinsignal", false);
                int color = Process[i].getInt("color", 1);
-               int lcolor = Process[i].getInt("lcolor", color);
+               int lcolor = Process[i].getInt("lcolor", 1);
                int mcolor = Process[i].getInt("mcolor", color);
                int lwidth = Process[i].getInt("lwidth", 1);
                int lstyle = Process[i].getInt("lstyle", 1);
@@ -1553,7 +1553,9 @@ void initializeTGraph(){
                     if(procSave.Contains("SandBandInterf"))proc+="_SBI";
                else if(procSave.Contains("SOnly"))         proc+="_S";
                else if(procSave.Contains("BOnly"))         proc+="_B";
-
+               
+               if(skipGGH && isSignal && mass>0 && proc.Contains("ggH") )continue;
+               if(skipQQH && isSignal && mass>0 && (proc.Contains("qqH") || proc.Contains("VBF")) )continue;
 
                TString shortName = proc;
                shortName.ToLower();
@@ -1577,12 +1579,14 @@ void initializeTGraph(){
                procInfo.mass   = procMass;
                procInfo.shortName = shortName.Data();
 
-               procInfo.xsec = procInfo.jsonObj["data"].daughters()[0].getDouble("xsec", 1);
-               if(procInfo.jsonObj["data"].daughters()[0].isTag("br")){
-                  std::vector<JSONWrapper::Object> BRs = procInfo.jsonObj["data"].daughters()[0]["br"].daughters();
-                  double totalBR=1.0; for(size_t ipbr=0; ipbr<BRs.size(); ipbr++){totalBR*=BRs[ipbr].toDouble();}   
-                  procInfo.br = totalBR;
-               }               
+               if(procInfo.isSign){
+                  procInfo.xsec = procInfo.jsonObj["data"].daughters()[0].getDouble("xsec", 1);
+                  if(procInfo.jsonObj["data"].daughters()[0].isTag("br")){
+                     std::vector<JSONWrapper::Object> BRs = procInfo.jsonObj["data"].daughters()[0]["br"].daughters();
+                     double totalBR=1.0; for(size_t ipbr=0; ipbr<BRs.size(); ipbr++){totalBR*=BRs[ipbr].toDouble();}   
+                     procInfo.br = totalBR;
+                  }               
+               }
 
                //Loop on all channels, bins and shape to load and store them in memory structure
                TH1* syst = (TH1*)pdir->Get("all_optim_systs");
@@ -1645,7 +1649,7 @@ void initializeTGraph(){
                      for(int x=0;x<=hshape->GetXaxis()->GetNbins()+1;x++){
                         if(hshape->GetXaxis()->GetBinCenter(x)<=minCut || hshape->GetXaxis()->GetBinCenter(x)>=maxCut){ hshape->SetBinContent(x,0); hshape->SetBinError(x,0); }
                      }
-                     if(histoVBF!="" && ch.Contains("vbf")){    hshape->Rebin(5);
+                     if(histoVBF!="" && ch.Contains("vbf")){    hshape->Rebin(30);
                      }else{                                     hshape->Rebin(rebinVal);
                      }
                      hshape->GetYaxis()->SetTitle("Entries (/25GeV)");
@@ -1778,8 +1782,8 @@ void initializeTGraph(){
                  }
                  hNRB->Scale(DDRescale);
                  hNRB->SetTitle(NRBProcName.Data());
-                 hNRB->SetFillStyle(1001);
-                 hNRB->SetFillColor(592);
+//                 hNRB->SetFillStyle(1001);
+//                 hNRB->SetFillColor(592);
 
                  //save values for printout
                  valDD = hNRB->IntegralAndError(1,hNRB->GetXaxis()->GetNbins()+1,valDD_err); if(valDD<1E-6){valDD=0.0; valDD_err=0.0;}
