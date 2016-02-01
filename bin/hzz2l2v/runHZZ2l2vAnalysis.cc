@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_ZZ2l2nu  = isMC && ( string(dtag.Data()).find("TeV_ZZ2l2nu")  != string::npos);
-	bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
  
@@ -128,6 +128,9 @@ int main(int argc, char* argv[])
     varNames.push_back("_lesup");    varNames.push_back("_lesdown");  
     varNames.push_back("_puup");     varNames.push_back("_pudown");  
     varNames.push_back("_btagup");   varNames.push_back("_btagdown");
+    varNames.push_back("_uncscaleup"); varNames.push_back("_uncscaledown");
+    varNames.push_back("_pdf");
+    varNames.push_back("_alpha");
     if(isMC_ZZ)             { varNames.push_back("_zzptup");   varNames.push_back("_zzptdown");     }
     if(isMC_WZ)             { varNames.push_back("_wzptup");   varNames.push_back("_wzptdown");     }
     if(isMC_GG || isMC_VBF) { varNames.push_back("_lshapeup"); varNames.push_back("_lshapedown"); }
@@ -1236,7 +1239,14 @@ int main(int argc, char* argv[])
               bool varyUmetDown( varNames[ivar]=="_umetdown" );
               bool varyLesUp( varNames[ivar]=="_lesup" );
               bool varyLesDown( varNames[ivar]=="_lesdown" );
-                      
+                     
+	      //Theoretical Uncertanties: PDF, Alpha and Scale
+              std::pair<double, double> scaleUncVar = patUtils::scaleVariation(ev);
+              if(varNames[ivar]=="_uncscaleup")    iweight *= scaleUncVar.first;
+              if(varNames[ivar]=="_uncscaledown")  iweight *= scaleUncVar.second;
+              if(varNames[ivar]=="_alpha")         iweight *= patUtils::alphaVariation(ev);
+              if(varNames[ivar]=="_pdf")           iweight *= patUtils::pdfVariation(ev);
+ 
               //pileup variations
               if(varNames[ivar]=="_puup") iweight *=TotalWeight_plus;
               if(varNames[ivar]=="_pudown") iweight *=TotalWeight_minus;
