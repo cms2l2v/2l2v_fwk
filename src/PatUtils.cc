@@ -191,7 +191,7 @@ namespace patUtils
     // CSA14 selection, conditions: 25ns, better detector alignment. 
     // Used Savvas Kyriacou's slides, mailed from Ilya. 
     
-    bool elevto = photon.hasPixelSeed();
+    //    bool elevto = photon.hasPixelSeed();
     
     // sigma ieta ieta
     // full5x5 is not ready in 720 yet 
@@ -209,7 +209,7 @@ namespace patUtils
     double eta=photon.superCluster()->eta();
 
     float chIso = photon.chargedHadronIso(); 
-    float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
+    //    float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
 
     float nhIso = photon.neutralHadronIso();
     float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
@@ -225,20 +225,20 @@ namespace patUtils
     case llvvPhotonId::Loose :
         
       if ( barrel
-	   && !elevto
-	   && hoe < 0.028
-	   && sigmaIetaIeta < 0.0107
-	   && TMath::Max(chIso-chArea*rho,0.0) < 2.67 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 7.23 + exp(0.0028*pt + 0.5408) 
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.11 + 0.0014*pt )
+	   //	   && !elevto
+	   && hoe < 0.05
+	   && sigmaIetaIeta < 0.0102
+	   && chIso < 3.32 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 1.92 + 0.014*pt + 0.000019*pt*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.81 + 0.0053*pt  )
 	return true; 
       if ( endcap
-	   && !elevto
-	   && hoe < 0.093
-	   && sigmaIetaIeta < 0.0272
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.79
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 8.89 + 0.01725*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 3.09 + 0.0091*pt )
+	   //	   && !elevto
+	   && hoe < 0.05
+	   && sigmaIetaIeta < 0.0274
+	   && chIso < 1.97
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 11.86 + 0.0139*pt+0.000025*pt*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.83 + 0.0034*pt  )
 	return true; 
             
       break;
@@ -246,44 +246,43 @@ namespace patUtils
     case llvvPhotonId::Medium :
 
       if ( barrel
-	   && !elevto
-	   && hoe < 0.012
-	   && sigmaIetaIeta < 0.0100
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.79 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.16 + exp(0.0028*pt+0.5408) 
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.90 + 0.0014*pt )
+	   //	   && !elevto
+	   && hoe < 0.05
+	   && sigmaIetaIeta < 0.0102
+	   && chIso < 1.37 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 1.06 + 0.014*pt + 0.000019*pt*pt 
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.28 + 0.0053*pt  )
 	return true; 
       if ( endcap
-	   && !elevto
-	   && hoe < 0.023
-	   && sigmaIetaIeta < 0.0267
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.09 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 4.31 + 0.0172*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.90 + 0.0091*pt )
+	   //	   && !elevto
+	   && hoe < 0.05
+	   && sigmaIetaIeta < 0.0268
+	   && chIso < 1.10 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.69 + 0.0139*pt+0.000025*pt*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.39 + 0.0034*pt  )
 	return true; 
             
       break;
     case llvvPhotonId::Tight :
-
-      if ( barrel
-	   && !elevto
-	   && hoe < 0.010
-	   && sigmaIetaIeta < 0.0100
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.66 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.14 + exp(0.0028*pt+0.5408) 
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.40 + 0.0014*pt )
-	return true; 
-      if ( endcap
-	   && !elevto
-	   && hoe < 0.015
-	   && sigmaIetaIeta < 0.0265
-	   && TMath::Max(chIso-chArea*rho,0.0) < 1.04 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 3.89 + 0.0172*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 1.40 + 0.0091*pt )
-	return true; 
-            
-      break;
       
+      if ( barrel    
+	   && hoe < 0.05      
+           && sigmaIetaIeta < 0.0100
+	   && chIso < 0.76
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.97 + 0.014*pt+0.000019*pt*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.08 + 0.0053*pt )
+	return true;
+
+      if ( endcap
+	   && hoe < 0.05 
+	   && sigmaIetaIeta < 0.0268
+	   && chIso < 0.56 
+	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.09 + 0.0139*pt + 0.000025*pt*pt
+	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.16 + 0.0034*pt ) 
+	return true; 
+
+      break;          
+
     default:
       printf("FIXME PhotonId llvvPhotonId::%i is unkown\n", IdLevel);
       return false;
