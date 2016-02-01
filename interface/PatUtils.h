@@ -79,7 +79,9 @@ namespace patUtils
 
    bool exclusiveDataEventFilter(const double&run, const bool& isMC, const bool& isPromptReco);
 
-
+   std::pair<double, double> scaleVariation(const fwlite::Event& ev);
+   double alphaVariation(const fwlite::Event& ev);
+   double pdfVariation(const fwlite::Event& ev);
 
    class MetFilter{
     private :
