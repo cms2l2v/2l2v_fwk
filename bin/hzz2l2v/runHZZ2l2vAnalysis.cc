@@ -351,7 +351,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
 
   // photon control
-  mon.addHistogram(new TH1F("npho", ";Number of Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("npho",   ";Number of Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("npho55", ";Number of Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("npho100",";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
 
@@ -413,10 +415,10 @@ int main(int argc, char* argv[])
       hbtagsJP->GetXaxis()->SetBinLabel(ibin,label);
   } 
 
-  mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmet25",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmet50",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
-  mon.addHistogram( new TH1F( "mindphijmetNM1",  ";min #Delta#phi(jet,E_{T}^{miss});Events",40,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmet",  ";min #Delta#phi(jet,E_{T}^{miss});Events",20,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmet25",  ";min #Delta#phi(jet,E_{T}^{miss});Events",20,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmet50",  ";min #Delta#phi(jet,E_{T}^{miss});Events",20,0,4) );
+  mon.addHistogram( new TH1F( "mindphijmetNM1",  ";min #Delta#phi(jet,E_{T}^{miss});Events",20,0,4) );
   mon.addHistogram( new TH1D( "balance",      ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
   mon.addHistogram( new TH1D( "balanceNM1",   ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
   mon.addHistogram( new TH1F( "axialmet",     ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
@@ -825,8 +827,8 @@ int main(int argc, char* argv[])
          //
          // PHOTON ANALYSIS
          //
-         pat::PhotonCollection selPhotons;	     
-	 mon.fillHisto("npho", "trg", photons.size(), weight);
+         pat::PhotonCollection selPhotons;	    
+         int nPho55=0; int nPho100=0;
          for(size_t ipho=0; ipho<photons.size(); ipho++){
 	    pat::Photon photon = photons[ipho]; 
  	    mon.fillHisto("phopt", "trg", photon.pt(), weight);
@@ -837,6 +839,8 @@ int main(int argc, char* argv[])
             if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
 	    if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
             selPhotons.push_back(photon);
+            if(photon.pt()>55)nPho55++;
+            if(photon.pt()>100)nPho100++;
          }           
 
          //
@@ -1024,6 +1028,9 @@ int main(int argc, char* argv[])
               tags.push_back( chTags[ich]+evCat );
             }
             mon.fillHisto("nleptons",tags,selLeptons.size(), weight);
+  	    mon.fillHisto("npho", tags, selPhotons.size(), weight);
+  	    mon.fillHisto("npho55", tags, nPho55, weight);
+  	    mon.fillHisto("npho100", tags, nPho100, weight);
 
             // Photon trigger efficiencies
             // Must be run without the photonTrigger requirement on top of of the Analysis.

@@ -29,7 +29,7 @@ phase=-1
 
 
 jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json --key 2l2v_datadriven'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2016_01_29.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
@@ -47,7 +47,7 @@ LandSArgCommonOptions=" --blind --rebin 20 --dropBckgBelow 0.00001  --subNRB "
 
 for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
    for bin in BINS:
-      for CP in [-1.0, 0.2, 0.4, 0.6, 0.8, 1.0]:  #-1 stands for SM
+      for CP in [-1.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:  #-1 stands for SM
          for BRN in [0.0]:
             CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
             #suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN)

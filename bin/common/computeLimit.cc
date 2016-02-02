@@ -39,7 +39,7 @@
 
 
 using namespace std;
-double NonResonnantSyst = 0.3;
+double NonResonnantSyst = 0.2;
 double GammaJetSyst = 0.25;
 double FakeLeptonDDSyst = 0.40;
 
@@ -165,6 +165,16 @@ class ShapeData_t
      uncShape[""] = nominal;
   }
 
+
+  void removeStatUnc(){
+     for(auto unc = uncShape.begin(); unc!= uncShape.end(); unc++){
+        TString name = unc->first.c_str();
+        if(name.Contains("stat") && (name.Contains("Up") || name.Contains("Down"))){
+           uncShape.erase(unc);
+           unc--;
+        }
+     }
+  }
 
   void makeStatUnc(string prefix="", string suffix="", string suffix2="", bool noBinByBin=false){
      if(!histo() || histo()->Integral()<=0)return;
@@ -302,6 +312,9 @@ class AllInfo_t
         // Make a summary plot
         void showShape(std::vector<TString>& selCh , TString histoName, TString SaveName);
 
+        // Make a summary plot of the uncertainties
+        void showUncertainty(std::vector<TString>& selCh , TString histoName, TString SaveName);
+
         // Turn to cut&count (rebin all histo to 1 bin only)
         void turnToCC(string histoName);
 
@@ -316,6 +329,9 @@ class AllInfo_t
 
         // replace MC NonResonnant Backgrounds by DataDriven estimate
         void doBackgroundSubtraction(FILE* pFile, std::vector<TString>& selCh,TString ctrlCh,TString mainHisto, TString sideBandHisto);
+
+        //add syst uncertainty to the instr. met background if it already exist in the file
+        void addInstrMetSyst(FILE* pFile, std::vector<TString>& selCh,TString ctrlCh,TString mainHisto);
 
         // replace MC Z+Jets Backgrounds by DataDriven Gamma+Jets estimate
         void doDYReplacement(FILE* pFile, std::vector<TString>& selCh,TString ctrlCh,TString mainHisto);
@@ -566,6 +582,8 @@ int main(int argc, char* argv[])
   fclose(pFile);
   }
 
+  allInfo.addInstrMetSyst(NULL, selCh,"gamma",histo);
+
   //replace Z+Jet background by Gamma+Jet estimates
   if(subDY){
   pFile = fopen("GammaJets.tex","w");
@@ -622,6 +640,10 @@ int main(int argc, char* argv[])
 
   //produce a plot
   allInfo.showShape(selCh,histo,"plot");
+
+  //produce a plot
+  allInfo.showUncertainty(selCh,histo,"plot");
+
 
   //prepare the output
   string limitFile=("hzz2l2v_"+massStr+systpostfix+".root").Data();
@@ -1195,6 +1217,177 @@ void initializeTGraph(){
          }
 
 
+         //
+        // Make a summary plot
+        //
+         void AllInfo_t::showUncertainty(std::vector<TString>& selCh , TString histoName, TString SaveName)
+         {
+           //loop on sorted proc
+           for(unsigned int p=0;p<sorted_procs.size();p++){
+              int NLegEntry = 0;
+              std::map<string, int               > map_legend;
+              std::vector<TH1*>                    toDelete;             
+              TLegend* legA  = new TLegend(0.03,0.89,0.97,0.95, "");
+
+              string procName = sorted_procs[p];
+              std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+              if(it==procs.end())continue;
+              if(it->first=="total" || it->first=="data")continue;  //only do samples which have systematics
+
+              int NBins = it->second.channels.size()/selCh.size();
+              TCanvas* c1 = new TCanvas("c1","c1",300*NBins,300*selCh.size());
+              c1->SetTopMargin(0.00); c1->SetRightMargin(0.00); c1->SetBottomMargin(0.00);  c1->SetLeftMargin(0.00);
+              TPad* t2 = new TPad("t2","t2", 0.03, 0.90, 1.00, 1.00, -1, 1);  t2->Draw();  c1->cd();
+              t2->SetTopMargin(0.00); t2->SetRightMargin(0.00); t2->SetBottomMargin(0.00);  t2->SetLeftMargin(0.00);
+              TPad* t1 = new TPad("t1","t1", 0.03, 0.03, 1.00, 0.90, 4, 1);  t1->Draw();  t1->cd();
+              t1->SetTopMargin(0.00); t1->SetRightMargin(0.00); t1->SetBottomMargin(0.00);  t1->SetLeftMargin(0.00);
+              t1->Divide(NBins, selCh.size(), 0, 0);
+
+              int I=1;
+              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++, I++){
+                 if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
+                 if(ch->second.shapes.find(histoName.Data())==(ch->second.shapes).end())continue;
+
+
+                 //add the stat uncertainty is there;
+                 ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );//add stat uncertainty to the uncertainty map;
+
+
+
+                 TVirtualPad* pad = t1->cd(I); 
+                 pad->SetTopMargin(0.06); pad->SetRightMargin(0.03); pad->SetBottomMargin(0.07);  pad->SetLeftMargin(0.06);
+//                 pad->SetLogy(true); 
+
+                 TH1* h = (TH1*)(ch->second.shapes[histoName.Data()].histo()->Clone((it->first+ch->first+"Nominal").c_str())); 
+                 toDelete.push_back(h);
+
+                 //print histograms
+                 TH1* axis = (TH1*)h->Clone("axis");
+                 axis->Reset();      
+                 axis->GetXaxis()->SetRangeUser(0, axis->GetXaxis()->GetXmax());
+                 axis->GetYaxis()->SetRangeUser(0.5, 1.5); //100% uncertainty
+                 if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
+                 axis->Draw();
+                 toDelete.push_back(axis);
+
+
+                 //print tab channel header
+                 TPaveText* Label = new TPaveText(0.1,0.81,0.94,0.89, "NDC");
+                 Label->SetFillColor(0);  Label->SetFillStyle(0);  Label->SetLineColor(0); Label->SetBorderSize(0);  Label->SetTextAlign(31);
+                 TString LabelText = ch->second.channel+"  -  "+ch->second.bin;
+                 LabelText.ReplaceAll("eq","="); LabelText.ReplaceAll("l=","#leq");LabelText.ReplaceAll("g=","#geq"); 
+                 LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
+                 Label->AddText(LabelText);  Label->Draw();
+
+                 TLine* line = new TLine(0.0, 1.0, axis->GetXaxis()->GetXmax(), 1.0);
+                 toDelete.push_back((TH1*)line);
+                 line->SetLineWidth(2);  line->SetLineColor(1); line->Draw("same");
+                 if(I==1){legA->AddEntry(line,"Nominal","L");  NLegEntry++;}
+
+                 int ColorIndex=3;
+
+                 //draw scale uncertainties
+                 for(std::map<string, double>::iterator var = ch->second.shapes[histoName.Data()].uncScale.begin(); var!=ch->second.shapes[histoName.Data()].uncScale.end(); var++){
+                    double ScaleChange   = var->second/h->Integral();
+                    double ScaleUp   = 1 + ScaleChange;
+                    double ScaleDn   = 1 - ScaleChange;
+                   
+                    TString systName = var->first.c_str();
+                    systName.ToLower();
+                    systName.ReplaceAll("cms","");
+                    systName.ReplaceAll("hzz2l2v","");
+                    systName.ReplaceAll("sys","");
+                    systName.ReplaceAll("13tev","");
+                    systName.ReplaceAll("_","");
+                    systName.ReplaceAll("up","");
+                    systName.ReplaceAll("down","");
+
+                    TLine* lineUp = new TLine(0.0, ScaleUp, axis->GetXaxis()->GetXmax(), ScaleUp);
+                    TLine* lineDn = new TLine(0.0, ScaleDn, axis->GetXaxis()->GetXmax(), ScaleDn);
+                    toDelete.push_back((TH1*)lineUp);  toDelete.push_back((TH1*)lineDn);
+                   
+
+                    int color = ColorIndex;
+                    if(map_legend.find(systName.Data())==map_legend.end()){
+                       map_legend[systName.Data()]=color;
+                       legA->AddEntry(lineUp,systName.Data(),"L");
+                       NLegEntry++;
+                       ColorIndex++;
+                    }else{
+                       color = map_legend[systName.Data()];
+                    }
+
+                    lineUp->SetLineWidth(2);  lineUp->SetLineColor(color); lineUp->Draw("same");
+                    lineDn->SetLineWidth(2);  lineDn->SetLineColor(color); lineDn->Draw("same");
+                 }
+
+                 //draw shape uncertainties
+                 for(std::map<string, TH1*>::iterator var = ch->second.shapes[histoName.Data()].uncShape.begin(); var!=ch->second.shapes[histoName.Data()].uncShape.end(); var++){
+                    if(var->first=="")continue;
+
+                    TH1* hvar = (TH1*)(var->second->Clone((it->first+ch->first+var->first).c_str())); 
+                    hvar->Divide(h);
+                    toDelete.push_back(hvar);
+
+                    TString systName = var->first.c_str();
+                    systName.ToLower();
+                    systName.ReplaceAll("cms","");
+                    systName.ReplaceAll("hzz2l2v","");
+                    systName.ReplaceAll("sys","");
+                    systName.ReplaceAll("13tev","");
+                    systName.ReplaceAll("_","");
+                    systName.ReplaceAll("up","");
+                    systName.ReplaceAll("down","");
+
+                    int color = ColorIndex;
+                     if(systName.Contains("stat")){systName = "stat"; color=2;}
+                    if(map_legend.find(systName.Data())==map_legend.end()){
+                       map_legend[systName.Data()]=color;
+                       legA->AddEntry(hvar,systName.Data(),"L");
+                       NLegEntry++;
+                       ColorIndex++;
+                    }else{
+                       color = map_legend[systName.Data()];
+                    }
+
+
+                    hvar->SetFillColor(0);                  
+                    hvar->SetLineStyle(1);
+                    hvar->SetLineColor(color);
+                    hvar->SetLineWidth(2);
+                    hvar->Draw("HIST same");                   
+                 }
+                 //remove the stat uncertainty
+                 ch->second.shapes[histoName.Data()].removeStatUnc();
+              }
+              //print legend
+              c1->cd(0);
+              legA->SetFillColor(0); legA->SetFillStyle(0); legA->SetLineColor(0);  legA->SetBorderSize(0); legA->SetHeader("");
+              legA->SetNColumns((NLegEntry/2) + 1);
+              legA->Draw("same");    legA->SetTextFont(42);
+
+              //print canvas header
+              t2->cd(0);
+              TPaveText* T = new TPaveText(0.1,0.7,0.9,1.0, "NDC");
+              T->SetFillColor(0);  T->SetFillStyle(0);  T->SetLineColor(0); T->SetBorderSize(0);  T->SetTextAlign(22);
+              if(systpostfix.Contains('3'))      { T->AddText((string("CMS preliminary, #sqrt{s}=13.0 TeV,   ")+it->first).c_str());
+              }else if(systpostfix.Contains('8')){ T->AddText((string("CMS preliminary, #sqrt{s}=8.0 TeV,   ")+it->first).c_str());
+              }else{                               T->AddText((string("CMS preliminary, #sqrt{s}=7.0 TeV,   ")+it->first).c_str());
+              }T->Draw();
+
+              //save canvas
+              c1->SaveAs(SaveName+"_Uncertainty_"+it->second.shortName+".png");
+              c1->SaveAs(SaveName+"_Uncertainty_"+it->second.shortName+".pdf");
+              c1->SaveAs(SaveName+"_Uncertainty_"+it->second.shortName+".C");
+              delete c1;             
+              
+              for(unsigned int i=0;i<toDelete.size();i++){delete toDelete[i];} //clear the objects
+           }
+        }
+
+        
+
+
         //
         // Turn to cut&count (rebin all histo to 1 bin only)
         //
@@ -1230,8 +1423,6 @@ void initializeTGraph(){
                }
             }
          }
-
-
 
         //
         // Make a summary plot
@@ -1788,7 +1979,9 @@ void initializeTGraph(){
                  //save values for printout
                  valDD = hNRB->IntegralAndError(1,hNRB->GetXaxis()->GetNbins()+1,valDD_err); if(valDD<1E-6){valDD=0.0; valDD_err=0.0;}
 
-                 //add syst uncertainty
+                 //remove all syst uncertainty
+                 chNRB->second.shapes[mainHisto.Data()].clearSyst();
+                 //add syst uncertainty                 
                  chNRB->second.shapes[mainHisto.Data()].uncScale[string("CMS_hzz2l2v_sys_topwww") + systpostfix.Data()] = valDD*NonResonnantSyst;
 
                  //printout
@@ -1815,6 +2008,40 @@ void initializeTGraph(){
                  fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{table}\n");
               }
          }
+
+
+         //
+         // properly assign syst uncertainty to the instr Met Background 
+         //
+         void AllInfo_t::addInstrMetSyst(FILE* pFile, std::vector<TString>& selCh,TString ctrlCh,TString mainHisto){
+           //check that the z+jets proc exist
+           std::map<string, ProcessInfo_t>::iterator instrMetIt=procs.find("");
+           for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
+              if(!it->second.isBckg || it->second.isData)continue;
+              TString procName = it->first.c_str();
+              if(!( procName.Contains("Instr.") ))continue;
+
+              it->second.isData = true;
+              it->second.isSign = false;
+              it->second.isBckg = true;
+
+
+              for(std::map<string, ChannelInfo_t>::iterator chMC = it->second.channels.begin(); chMC!=it->second.channels.end(); chMC++){
+                 if(std::find(selCh.begin(), selCh.end(), chMC->second.channel)==selCh.end())continue;
+
+                 TH1* histo = chMC ->second.shapes[mainHisto.Data()].histo();
+                 double val_err; double val = histo->IntegralAndError(1,histo->GetXaxis()->GetNbins()+1,val_err); if(val<1E-6){val=0.0; val_err=0.0;}
+
+                 //remove all syst uncertainty
+                 chMC->second.shapes[mainHisto.Data()].clearSyst();
+                 //add syst uncertainty                 
+                 chMC->second.shapes[mainHisto.Data()].uncScale[string("CMS_hzz2l2v_sys_zll") + systpostfix.Data()] = val*GammaJetSyst;
+              }
+           }
+         }
+
+
+
 
          //
          // replace MC Z+Jets Backgrounds by DataDriven Gamma+Jets estimate
