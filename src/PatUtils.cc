@@ -789,5 +789,97 @@ double alphaVariation(const fwlite::Event& ev){
 	//std::cout << "Alpha Uncertainties: " << alphaVar << std::endl;
         return alphaVar;
 }
+  
+                                                                                                                                              
+  double getHTScaleFactor(TString dtag, double lheHt)
+  {
+    // NNLO per-event weights as a function of generator level HT
+    // (from https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples )
+    // For DY-5to50, only LO is available.   
+
+    // Please look below for the code snippet necessary to run this.
+
+    double htScaleFactor(1.0);              
+    if(dtag.Contains("WJetsToLNu"))
+      {
+        // NNLO
+        // Valid for:                                                       xsection [pb]
+        // /WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8                  50690
+        // /WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8       1345
+        // /WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8        359.7
+        // /WJetsToLNu_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8         48.91
+        // /WJetsToLNu_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8         18.77
+        if     (lheHt<100              ) htScaleFactor=0.8520862372;
+        else if(lheHt>=100 && lheHt<200) htScaleFactor=0.1352710705;
+        else if(lheHt>=200 && lheHt<400) htScaleFactor=0.076142149 ;                                                
+        else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0326980819;
+        else if(lheHt>=600             ) htScaleFactor=0.0213743732;
+      }                                     
+    else if(dtag.Contains("DYJetsToLL_M-50"))
+      {                                     
+        // NNLO                             
+        // Valid for:                                                               xsection [pb]
+        // /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8                    4895
+        // /DYJetsToLL_M-50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8         139.4
+        // /DYJetsToLL_M-50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8          42.75
+        // /DYJetsToLL_M-50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8           5.497
+        // /DYJetsToLL_M-50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8           2.21
+        if     (lheHt<100              ) htScaleFactor=0.6655715203;
+        else if(lheHt>=100 && lheHt<200) htScaleFactor=0.0575124298;
+        else if(lheHt>=200 && lheHt<400) htScaleFactor=0.049972089 ;
+        else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0062770613;
+        else if(lheHt>=600             ) htScaleFactor=0.00271213  ;
+      }                                     
+    else if(dtag.Contains("DYJetsToLL_M-5to50"))
+      {
+        // LO                               
+        // Valid for:                                                               xsection [pb]
+        // /DYJetsToLL_M-5to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8                  71310
+        // /DYJetsToLL_M-5to50_HT-100to200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8        224.2
+        // /DYJetsToLL_M-5to50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8         37.2
+        // /DYJetsToLL_M-5to50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8          3.581
+        // /DYJetsToLL_M-5to50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8          1.124
+        if     (lheHt<100              ) htScaleFactor=7.5826225134;
+        else if(lheHt>=100 && lheHt<200) htScaleFactor=0.2149472503;
+        else if(lheHt>=200 && lheHt<400) htScaleFactor=0.0365903335;
+        else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0035837837;
+        else if(lheHt>=600             ) htScaleFactor=0.0011156801;
+      }                                     
+    return htScaleFactor;                   
+
+    // In order to use this stitching, you need to run a full set of HT-binned samples plus the inclusive one.
+    // You should *NOT* have the nhepup cut that was used for the stitching of jet-binned samples. Either one or the other.
+    
+    // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+    /*
+    double weightGen(1.0);
+    // do not correct for negative weights: these are LO samples
+      
+    bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
+    if(isV0JetsMC)
+      {
+        // access generator level HT               
+        fwlite::Handle<LHEEventProduct> lheEventProduct;
+        lheEventProduct.getByLabel(ev, "externalLHEProducer");
+        //edm::Handle<LHEEventProduct> lheEventProduct;
+        //ev.getByLabel( 'externalLHEProducer', lheEventProduct);
+        const lhef::HEPEUP& lheEvent = lheEventProduct->hepeup(); 
+        std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
+        double lheHt = 0.;
+        size_t numParticles = lheParticles.size();
+        for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle ) {
+          int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
+          int status = lheEvent.ISTUP[idxParticle];
+          if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) ) { // quarks and gluons
+            lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.)); // first entry is px, second py
+          }                                        
+        }
+        if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
+        weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+      }         
+
+      weight *= weightGen;
+    */
+  }                                               
 
 }
