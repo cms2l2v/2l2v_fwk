@@ -359,8 +359,7 @@ int main (int argc, char *argv[])
       if (dtag.Contains ("SingleEle"))  filterOnlySINGLEE  = true;
     }
 
-  // Reactivate when you will use exclusive W+jets and DY+Jets samples, in order to correctly merge the exclusive ones with the inclusive one 
-  //bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL_50toInf") || dtag.Contains ("WJets")));
+  bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
   // Reactivate for diboson shapes  
   // bool isMC_ZZ      (isMC && (string (dtag.Data ()).find ("TeV_ZZ") != string::npos));
   // bool isMC_WZ      (isMC && (string (dtag.Data ()).find ("TeV_WZ") != string::npos));
@@ -841,11 +840,43 @@ int main (int argc, char *argv[])
         double TotalWeight_minus(1.0);
         double puWeight         (1.0);
         
-        if(isNLOMC){
-          weight *= weightGen;
-          rawWeight *=weightGen;
-        }
-
+        
+        // This must remain deactivated if you use HT-binned samples (it was for pthat-binned samples)
+        // if (isV0JetsMC)
+        //   {
+        //     fwlite::Handle < LHEEventProduct > lheEPHandle;
+        //     lheEPHandle.getByLabel (ev, "externalLHEProducer");
+        //     mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
+        //     if (lheEPHandle->hepeup ().NUP > 5)  continue;
+        //     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
+        //   }
+        
+        // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
+        if(isV0JetsMC)
+          {
+            // access generator level HT               
+            fwlite::Handle<LHEEventProduct> lheEventProduct;
+            lheEventProduct.getByLabel(ev, "externalLHEProducer");
+            //edm::Handle<LHEEventProduct> lheEventProduct;
+            //ev.getByLabel( 'externalLHEProducer', lheEventProduct);
+            const lhef::HEPEUP& lheEvent = lheEventProduct->hepeup(); 
+            std::vector<lhef::HEPEUP::FiveVector> lheParticles = lheEvent.PUP;
+            double lheHt = 0.;
+            size_t numParticles = lheParticles.size();
+            for ( size_t idxParticle = 0; idxParticle < numParticles; ++idxParticle ) {
+              int absPdgId = TMath::Abs(lheEvent.IDUP[idxParticle]);
+              int status = lheEvent.ISTUP[idxParticle];
+              if ( status == 1 && ((absPdgId >= 1 && absPdgId <= 6) || absPdgId == 21) ) { // quarks and gluons
+                lheHt += TMath::Sqrt(TMath::Power(lheParticles[idxParticle][0], 2.) + TMath::Power(lheParticles[idxParticle][1], 2.)); // first entry is px, second py
+              }                                        
+            }
+            if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
+            weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
+          }         
+        
+        weight *= weightGen;
+        rawWeight *=weightGen;
+        
         reco::VertexCollection vtx;
         reco::Vertex goodPV;
         unsigned int nGoodPV(0);
@@ -1086,17 +1117,7 @@ int main (int argc, char *argv[])
         tausHandle.getByLabel(ev, "slimmedTaus");
         if(tausHandle.isValid() ) taus = *tausHandle;
         
-        // Reactivate when you will use exclusive W+jets and DY+Jets samples, in order to correctly merge the exclusive ones with the inclusive one
-        // if (isV0JetsMC)
-        //   {
-        //     fwlite::Handle < LHEEventProduct > lheEPHandle;
-        //     lheEPHandle.getByLabel (ev, "externalLHEProducer");
-        //     mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-        //     if (lheEPHandle->hepeup ().NUP > 5)  continue;
-        //     mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
-        //   }
-        
-        
+
         //
         //
         // BELOW FOLLOWS THE ANALYSIS OF THE MAIN SELECTION WITH N-1 PLOTS. Whatever that means
