@@ -839,7 +839,7 @@ double alphaVariation(const fwlite::Event& ev){
     // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
     /*
     double weightGen(1.0);
-    // correct for negative weights...
+    // do not correct for negative weights: these are LO samples
       
     bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
     if(isV0JetsMC)
