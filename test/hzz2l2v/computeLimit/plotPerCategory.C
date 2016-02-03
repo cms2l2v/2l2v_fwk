@@ -94,9 +94,10 @@ void plotPerCategory(){
       framework->SetTitle("");
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
 //      framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-      framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
+//      framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
+      framework->GetYaxis()->SetTitle("#sigma_{95%} (pp #rightarrow H #rightarrow ZZ) (fb)");        
       framework->GetYaxis()->SetTitleOffset(1.40);
-      framework->GetYaxis()->SetRangeUser(1E-1,100);
+      framework->GetYaxis()->SetRangeUser(1E1,1E4);
       framework->Draw();
 
       LEG = new TLegend(0.70,0.70,0.95,0.94);
@@ -150,9 +151,10 @@ void plotPerCategory(){
       framework->SetTitle("");
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
 //      framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-      framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
+//      framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
+      framework->GetYaxis()->SetTitle("#sigma_{95%} (pp #rightarrow H #rightarrow ZZ) (fb)");        
       framework->GetYaxis()->SetTitleOffset(1.40);
-      framework->GetYaxis()->SetRangeUser(1E-1,100);
+      framework->GetYaxis()->SetRangeUser(1E1,1E4);
       framework->Draw();
 
       LEG = new TLegend(0.70,0.70,0.95,0.94);

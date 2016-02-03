@@ -1222,6 +1222,8 @@ void initializeTGraph(){
         //
          void AllInfo_t::showUncertainty(std::vector<TString>& selCh , TString histoName, TString SaveName)
          {
+           string UncertaintyOnYield="";  char txtBuffer[4096];
+
            //loop on sorted proc
            for(unsigned int p=0;p<sorted_procs.size();p++){
               int NLegEntry = 0;
@@ -1233,6 +1235,10 @@ void initializeTGraph(){
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end())continue;
               if(it->first=="total" || it->first=="data")continue;  //only do samples which have systematics
+
+              std::map<string, std::map< string, double> > mapYieldPerBin;
+              sprintf(txtBuffer, "\n### %s ###\n", it->first.c_str());  UncertaintyOnYield+= txtBuffer;
+
 
               int NBins = it->second.channels.size()/selCh.size();
               TCanvas* c1 = new TCanvas("c1","c1",300*NBins,300*selCh.size());
@@ -1248,7 +1254,6 @@ void initializeTGraph(){
                  if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
                  if(ch->second.shapes.find(histoName.Data())==(ch->second.shapes).end())continue;
 
-
                  //add the stat uncertainty is there;
                  ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );//add stat uncertainty to the uncertainty map;
 
@@ -1260,6 +1265,7 @@ void initializeTGraph(){
 
                  TH1* h = (TH1*)(ch->second.shapes[histoName.Data()].histo()->Clone((it->first+ch->first+"Nominal").c_str())); 
                  toDelete.push_back(h);
+                 mapYieldPerBin[""][ch->first] = h->Integral();
 
                  //print histograms
                  TH1* axis = (TH1*)h->Clone("axis");
@@ -1288,6 +1294,8 @@ void initializeTGraph(){
 
                  //draw scale uncertainties
                  for(std::map<string, double>::iterator var = ch->second.shapes[histoName.Data()].uncScale.begin(); var!=ch->second.shapes[histoName.Data()].uncScale.end(); var++){
+                    mapYieldPerBin[var->first][ch->first] = var->second;
+
                     double ScaleChange   = var->second/h->Integral();
                     double ScaleUp   = 1 + ScaleChange;
                     double ScaleDn   = 1 - ScaleChange;
@@ -1326,6 +1334,7 @@ void initializeTGraph(){
                     if(var->first=="")continue;
 
                     TH1* hvar = (TH1*)(var->second->Clone((it->first+ch->first+var->first).c_str())); 
+                    mapYieldPerBin[var->first][ch->first] = hvar->Integral();
                     hvar->Divide(h);
                     toDelete.push_back(hvar);
 
@@ -1382,7 +1391,27 @@ void initializeTGraph(){
               delete c1;             
               
               for(unsigned int i=0;i<toDelete.size();i++){delete toDelete[i];} //clear the objects
+
+
+              //print uncertainty on yield
+              sprintf(txtBuffer, "%50s: ", "Uncertainty (%)  \\   Channels");
+              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s%10s ", txtBuffer, chIt->first.c_str()); } sprintf(txtBuffer, "%s\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
+              sprintf(txtBuffer, "%50s: ", "Nominal Yield (#events) ");
+              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s%10.4E ", txtBuffer, chIt->second); } sprintf(txtBuffer, "%s\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
+              for(auto varIt=mapYieldPerBin.begin();varIt!=mapYieldPerBin.end();varIt++){
+                 if(varIt->first == "")continue;
+                 sprintf(txtBuffer, "%50s: ", varIt->first.c_str());
+                 for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){
+                    if(varIt->second.find(chIt->first)==varIt->second.end()){ sprintf(txtBuffer, "%s%10s "   , txtBuffer, "-" );                        
+                    }else{                                                    sprintf(txtBuffer, "%s%+10.4f ", txtBuffer,100.0 * (1.0 - (varIt->second[chIt->first] / chIt->second)) ); 
+                    }
+                 }sprintf(txtBuffer, "%s\n", txtBuffer);
+                 UncertaintyOnYield += txtBuffer;
+              }
            }
+
+           FILE* pFile = fopen(SaveName+"_Uncertainty.txt", "w");
+           if(pFile){ fprintf(pFile, "%s\n", UncertaintyOnYield.c_str()); fclose(pFile);}
         }
 
         

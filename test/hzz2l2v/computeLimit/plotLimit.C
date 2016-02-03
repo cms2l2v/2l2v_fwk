@@ -194,7 +194,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   c->SetLogy(true);
   }else{
   framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
-  framework->GetYaxis()->SetRangeUser(1E-1,100);
+  framework->GetYaxis()->SetRangeUser(1E1,1E4);
   c->SetLogy(true);
   }
   framework->GetXaxis()->SetLabelOffset(0.007);

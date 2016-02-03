@@ -131,11 +131,9 @@ int main(int argc, char* argv[])
     varNames.push_back("_uncscaleup"); varNames.push_back("_uncscaledown");
     varNames.push_back("_pdf");
     varNames.push_back("_alpha");
-    if(isMC_ZZ)             { varNames.push_back("_zzptup");   varNames.push_back("_zzptdown");     }
-    if(isMC_WZ)             { varNames.push_back("_wzptup");   varNames.push_back("_wzptdown");     }
     if(isMC_GG || isMC_VBF) { varNames.push_back("_lshapeup"); varNames.push_back("_lshapedown"); }
-		if(isMC_ZZ2l2nu) { varNames.push_back("_ewkcorrectionsup"); varNames.push_back("_ewkcorrectionsdown"); }
-	}
+    if(isMC_ZZ2l2nu) { varNames.push_back("_ewkcorrectionsup"); varNames.push_back("_ewkcorrectionsdown"); }
+  }
   size_t nvarsToInclude=varNames.size();
   
   std::vector<std::string> allWeightsURL=runProcess.getParameter<std::vector<std::string> >("weightsFile");
@@ -143,21 +141,6 @@ int main(int argc, char* argv[])
 
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");      
   GammaWeightsHandler* gammaWgtHandler = (gammaPtWeightsFiles.size()>0 && gammaPtWeightsFiles[0]!="") ? new GammaWeightsHandler(runProcess,"",true) : NULL;
-
-  //shape uncertainties for dibosons
-  std::vector<TGraph *> vvShapeUnc;
-  if(isMC_ZZ || isMC_WZ){
-      TString weightsFile=weightsDir+"/zzQ2unc.root";
-      TString dist("zzpt");
-      if(isMC_WZ) { weightsFile.ReplaceAll("zzQ2","wzQ2"); dist.ReplaceAll("zzpt","wzpt"); }
-      gSystem->ExpandPathName(weightsFile);
-      TFile *q2UncF=TFile::Open(weightsFile);
-      if(q2UncF){
-	vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_up") ) );
-	vvShapeUnc.push_back( new TGraph( (TH1 *)q2UncF->Get(dist+"_down") ) );
-	q2UncF->Close();
-      }
-  }
 
   //HIGGS weights and uncertainties
   
@@ -185,10 +168,10 @@ int main(int argc, char* argv[])
 //    NRparams.push_back(std::make_pair<double,double>(25,0));
 //    NRparams.push_back(std::make_pair<double,double>(30,0));
   }else if(suffix=="" && (isMC_GG || isMC_VBF)){ //consider the other points only when no suffix is being used    
-    for(double cp=0.1;cp<=1.0;cp+=0.1){
-       for(double brn=0.0; brn<=0.0;brn+=0.1){ //brnew up to 0.5
-          NRparams.push_back(std::make_pair<double,double>((double)cp, (double)brn) );
-    }}
+      NRparams.push_back(std::make_pair<double,double>(1.0, 0.0) ); //cp, brnew
+      NRparams.push_back(std::make_pair<double,double>(0.6, 0.0) ); //cp, brnew
+      NRparams.push_back(std::make_pair<double,double>(0.3, 0.0) ); //cp, brnew
+      NRparams.push_back(std::make_pair<double,double>(0.1, 0.0) ); //cp, brnew
   }
 
 
@@ -1262,29 +1245,10 @@ int main(int argc, char* argv[])
               bool varyBtagUp( varNames[ivar]=="_btagup" );
               bool varyBtagDown( varNames[ivar]=="_btagdown" );
          
-         			//EwkCorrections variation
-         			if ( varNames[ivar]=="_ewkcorrectionsup")		iweight *= ewkCorrections_up;
-          	  if ( varNames[ivar]=="_ewkcorrectionsdown")	iweight *= ewkCorrections_down;
-         
-              //Q^2 variations on VV pT spectum
-              if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 ){
-                  size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
-                  TGraph *varGr=vvShapeUnc[idx];
-                  if(varGr==0) continue;
-                  std::vector<LorentzVector> vs;
-                  for(size_t ipart=0; ipart<gen.size(); ipart++){
-                      int status=gen[ipart].status();
-                      if(status!=3) continue;
-                      int pid=gen[ipart].pdgId();
-                      if(abs(pid)!=23 && abs(pid)!=24) continue;
-                      vs.push_back( gen[ipart].p4() );
-                    }
-                  if(vs.size()==2){
-                      LorentzVector vv=vs[0]+vs[1];
-                      iweight *= varGr->Eval(vv.pt());
-                    }
-               }
-              
+	      //EwkCorrections variation
+              if ( varNames[ivar]=="_ewkcorrectionsup")		iweight *= ewkCorrections_up;
+              if ( varNames[ivar]=="_ewkcorrectionsdown")	iweight *= ewkCorrections_down;
+                       
               //Higgs line shape
               if(varNames[ivar].Contains("lshape"))
                 {

@@ -146,7 +146,9 @@ void finalLimitPlot(){
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
 
+   std::cout<<"A\n";
    TGraph* higgsWidth = Hxswg::utils::getHWidth();
+   std::cout<<"B\n";
 
 
    TCanvas* c1;
@@ -155,7 +157,7 @@ void finalLimitPlot(){
    TLegend* LEG, *LEGTH;
    TGraph* Ref;
 
-   double CPs[] = {0.2,0.4,0.6,0.8,1.0};
+   double CPs[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
    double BRs[] = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
@@ -179,7 +181,10 @@ void finalLimitPlot(){
       colorMap[mapIndex(0.3, 0.0)] = 6;
       colorMap[mapIndex(0.2, 0.0)] = 8;
       colorMap[mapIndex(0.1, 0.0)] = 8;
-   
+  
+   std::cout<<"C\n";
+
+
       std::map<int, TGraph**> gCPBR;
       gCPBR[ mapIndex(-1.0, 0.0) ]=getGraphs("SM"                         , 1, 2, NULL  , NULL, Dir+               "/Stength_LimitSummary");     
       for(int CPi = 0; CPi<(sizeof(CPs)/sizeof(double));CPi++){
@@ -187,13 +192,13 @@ void finalLimitPlot(){
          double CP = CPs[CPi];  double BR = BRs[BRi]; 
          if ( CP*CP / (1-BR)>1.0 )continue; //skip point leading to a width larger than SM
          char limitpath[1024]; sprintf(limitpath, "%s_cp%4.2f_brn%4.2f/Stength_LimitSummary", Dir.c_str(), CP, BR);
-         char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f BRnew=%3.1f", CP, BR);
-         std::cout<<limitpath<< "\n";
+//         char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f BRnew=%3.1f", CP, BR);
+         char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f", CP);
+         std::cout<<limitpath<< "\n";         
          gCPBR[ mapIndex(CP, BR) ] = getGraphs(limitlegend, colorMap[mapIndex(CP, BR)], 2, NULL  , NULL, limitpath);
-
-
       }}
-      
+      std::cout<<"D\n";
+
       // build 2D graphs of Mass vs C' limits
       TGraph2D* g2dMassVsCp[7];    
       TGraph2D* g2dMassVsWidth[7];    
@@ -216,6 +221,9 @@ void finalLimitPlot(){
          g2dMassVsWidth[i]->Set(Ig2d);        
       } 
 
+   std::cout<<"E\n";
+
+
           ///////////////////////////////////////////////
           //limit Versus mass for different C' values
           ///////////////////////////////////////////////
@@ -229,23 +237,30 @@ void finalLimitPlot(){
          framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
          framework->GetYaxis()->SetTitle(string(("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
          framework->GetYaxis()->SetTitleOffset(1.40);
-         framework->GetYaxis()->SetRangeUser(0.1,500);
+         framework->GetYaxis()->SetRangeUser(1E1,1E4);
          framework->Draw();
+   std::cout<<"E1\n";
 
          LEG = new TLegend(0.50,0.70,0.75,0.94);
          LEG->SetFillStyle(0);
          LEG->SetBorderSize(0);
-         for(double cp=0.2;cp<=1.0;cp+=0.2){
+         for(double cp=0.1;cp<=1.0;cp+=0.1){
+   std::cout<<"E2 " << cp << "\n";
+
+            if(cp==0.2 || cp==0.4 || cp==0.6 || cp==0.9)continue;
+            if(!gCPBR[ mapIndex(cp, 0.0) ])continue;
             TGraph* g = (gCPBR[ mapIndex(cp, 0.0) ])[1+observed];
+            if(!g) continue;
             g->SetLineStyle(1);
             g->Draw("C same");
-            LEG->AddEntry(g, g->GetTitle(), "L");
+            LEG->AddEntry(g, g->GetTitle(), "L");            
+   std::cout<<"E3 " << cp << "\n";   
          }
          LEG->SetHeader(observed==0?"Expected @95% CL":"Observed @95% CL");
          LEG  ->Draw("same");
 
-         TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
-         SMLine->SetLineWidth(2); SMLine->SetLineStyle(2); SMLine->SetLineColor(1);
+//         TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
+//         SMLine->SetLineWidth(2); SMLine->SetLineStyle(2); SMLine->SetLineColor(1);
 //         SMLine->Draw("same C");
 
          utils::root::DrawPreliminary(2.215, 13);
@@ -258,9 +273,10 @@ void finalLimitPlot(){
             c1->SaveAs((Dir+"/Stength_FinalPlot_Obs.pdf").c_str());
             c1->SaveAs((Dir+"/Stength_FinalPlot_Obs.C"  ).c_str());
          }
+   std::cout<<"E3\n";   
      }
 
-      std::cout<<"D\n";
+      std::cout<<"F\n";
 
 
 
@@ -370,8 +386,8 @@ void finalLimitPlot(){
            framework2d->GetYaxis()->SetTitleOffset(1.40);
            framework2d->Draw("");
 
-            h2d->SetMaximum(15);
-           h2d->SetMinimum(1);
+           h2d->SetMaximum(1E4);
+           h2d->SetMinimum(1E1);
            h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} (" + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str() );
            h2d->GetZaxis()->SetTitleOffset(1.33);
            h2d->Draw("COLZ same");
