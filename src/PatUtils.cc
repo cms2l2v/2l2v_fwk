@@ -717,8 +717,8 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev){
 }
 
 std::pair<double, double> scaleVariation(const fwlite::Event& ev){
-	std::cout << " " << std::endl;
-	std::cout << "STARTING SCALE-VARIATION Estimation" << std::endl;
+	//std::cout << " " << std::endl;
+	//std::cout << "STARTING SCALE-VARIATION Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         double scaleUp = 1;
@@ -740,8 +740,8 @@ std::pair<double, double> scaleVariation(const fwlite::Event& ev){
 }
 
 double pdfVariation(const fwlite::Event& ev){
-	std::cout << "  " << std::endl;
-	std::cout << "STARTING PDF Estimation" << std::endl;
+	//std::cout << "  " << std::endl;
+	//std::cout << "STARTING PDF Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         std::vector<double> weight_vect;
@@ -753,21 +753,20 @@ double pdfVariation(const fwlite::Event& ev){
                         double id = std::stod( lheEPHandle->weights()[i].id, &sz);
                         for( unsigned int i_id = 2001; i_id<2101; i_id++){
                                 if( i_id == id ){
-					std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
+					//std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
                                         sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
                                         weight_vect.push_back(lheEPHandle->weights()[i].wgt);
                                 }
                         }
                 }
         }
-        pdfVar = 1+ std::sqrt( sum/ ( weight_vect.size() -1 ) ); //+1 variation
-	//std::cout << "Pdf Uncertainties: " << pdfVar << std::endl;
+        pdfVar = 1+ std::sqrt( sum/ ( weight_vect.size() -1 ) ); //+1 variation	
         return pdfVar;
 }
 
 double alphaVariation(const fwlite::Event& ev){
-        std::cout << "  " << std::endl;
-        std::cout << "STARTING ALPHA Estimation" << std::endl;
+        //std::cout << "  " << std::endl;
+        //std::cout << "STARTING ALPHA Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         double alphaVar = 0;
@@ -782,7 +781,7 @@ double alphaVariation(const fwlite::Event& ev){
                         } else if( ( id == 2102 ) ){
                                 local_alpha_two = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
                         }
-			std::cout << "alpha one: " << local_alpha_one << "; alpha two: " << local_alpha_two << "; Nominal: " << lheEPHandle->originalXWGTUP() << std::endl;
+			//std::cout << "alpha one: " << local_alpha_one << "; alpha two: " << local_alpha_two << "; Nominal: " << lheEPHandle->originalXWGTUP() << std::endl;
                 }
         }
         alphaVar = 1+std::sqrt(0.75)*std::abs( local_alpha_one - local_alpha_two )*0.5; //+1 variation
