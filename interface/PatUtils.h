@@ -83,6 +83,9 @@ namespace patUtils
    double alphaVariation(const fwlite::Event& ev);
    double pdfVariation(const fwlite::Event& ev);
 
+   double getHTScaleFactor(TString dtag, double lheHt);                                                                                               
+
+
    class MetFilter{
     private :
      struct RuLuEv {
