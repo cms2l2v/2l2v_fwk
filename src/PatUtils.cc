@@ -717,6 +717,8 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev){
 }
 
 std::pair<double, double> scaleVariation(const fwlite::Event& ev){
+	std::cout << " " << std::endl;
+	std::cout << "STARTING SCALE-VARIATION Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         double scaleUp = 1;
@@ -727,15 +729,19 @@ std::pair<double, double> scaleVariation(const fwlite::Event& ev){
                         if( lheEPHandle->weights()[i].id != "1001" || lheEPHandle->weights()[i].id != "1006" || lheEPHandle->weights()[i].id != "1008" ){
                                 double local_weight = 0;
                                 local_weight = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+				//std::cout << "Local weight: " << local_weight << std::endl; 
                                 scaleUp = std::max(scaleUp, local_weight);
                                 scaleDw = std::min(scaleDw, local_weight);
                         }
                  }
          }
+	 //std::cout << "ScaleUp Value: " << scaleUp << "; ScaleDwn Value: " << scaleDw << std::endl;
          return std::make_pair(scaleUp, scaleDw);
 }
 
 double pdfVariation(const fwlite::Event& ev){
+	std::cout << "  " << std::endl;
+	std::cout << "STARTING PDF Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         std::vector<double> weight_vect;
@@ -745,19 +751,23 @@ double pdfVariation(const fwlite::Event& ev){
                 for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
                         std::string::size_type sz;
                         double id = std::stod( lheEPHandle->weights()[i].id, &sz);
-                        for( unsigned int i_id = 2002; i_id<2101; i_id++){
+                        for( unsigned int i_id = 2001; i_id<2101; i_id++){
                                 if( i_id == id ){
+					std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
                                         sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
                                         weight_vect.push_back(lheEPHandle->weights()[i].wgt);
                                 }
                         }
                 }
         }
-        pdfVar = 1+sum/weight_vect.size(); //+1 variation
+        pdfVar = 1+ std::sqrt( sum/ ( weight_vect.size() -1 ) ); //+1 variation
+	//std::cout << "Pdf Uncertainties: " << pdfVar << std::endl;
         return pdfVar;
 }
 
 double alphaVariation(const fwlite::Event& ev){
+        std::cout << "  " << std::endl;
+        std::cout << "STARTING ALPHA Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         double alphaVar = 0;
@@ -765,14 +775,18 @@ double alphaVariation(const fwlite::Event& ev){
         double local_alpha_two = 0;
         if( lheEPHandle.isValid() ){
                 for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
-                        if( lheEPHandle->weights()[i].id != "2101" ){
+                        std::string::size_type sz;
+                        double id = std::stod( lheEPHandle->weights()[i].id, &sz);
+                        if( ( id == 2101 ) ){
                                 local_alpha_one = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
-                        } else if( lheEPHandle->weights()[i].id != "2102" ){
+                        } else if( ( id == 2102 ) ){
                                 local_alpha_two = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
                         }
+			std::cout << "alpha one: " << local_alpha_one << "; alpha two: " << local_alpha_two << "; Nominal: " << lheEPHandle->originalXWGTUP() << std::endl;
                 }
         }
         alphaVar = 1+std::sqrt(0.75)*std::abs( local_alpha_one - local_alpha_two )*0.5; //+1 variation
+	//std::cout << "Alpha Uncertainties: " << alphaVar << std::endl;
         return alphaVar;
 }
 
