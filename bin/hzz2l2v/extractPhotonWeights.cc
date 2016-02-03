@@ -232,7 +232,7 @@ int main(int argc, char* argv[]){
   std::vector<string> gDataDir;
   std::vector<string> zDataDir;
   if(isData){
-     gDataDir.push_back("#gamma data._reweighted");
+     gDataDir.push_back("#gamma data_reweighted");
      zDataDir.push_back("data");
   }else{
      gDataDir.push_back("GJets_HT-40to100");
