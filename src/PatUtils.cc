@@ -838,6 +838,9 @@ double alphaVariation(const fwlite::Event& ev){
     
     // HT-binned samples stitching: https://twiki.cern.ch/twiki/bin/viewauth/CMS/HiggsToTauTauWorking2015#MC_and_data_samples
     /*
+    double weightGen(1.0);
+    // correct for negative weights...
+      
     bool isV0JetsMC   (isMC && (dtag.Contains ("DYJetsToLL") || dtag.Contains ("WJets")));
     if(isV0JetsMC)
       {
@@ -860,6 +863,8 @@ double alphaVariation(const fwlite::Event& ev){
         if(debug) cout << "Sample: " << dtag << ", lheHt: " << lheHt << ", scale factor from spreadsheet: " << patUtils::getHTScaleFactor(dtag, lheHt) << endl;
         weightGen *=   patUtils::getHTScaleFactor(dtag, lheHt);
       }         
+
+      weight *= weightGen;
     */
   }                                               
 
