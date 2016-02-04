@@ -759,7 +759,7 @@ double pdfVariation(const fwlite::Event& ev){
 	//std::cout << "STARTING PDF Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
-        std::vector<double> weight_vect;
+        int N = 0;
         double pdfVar = 0;
         double sum = 0;
         bool check_in = false;
@@ -779,16 +779,14 @@ double pdfVariation(const fwlite::Event& ev){
                 if( check_in ){
                 	for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
                         	std::string::size_type sz;
-                        	double id = std::stod( lheEPHandle->weights()[i].id, &sz);
-                        	for( unsigned int i_id = 2001; i_id<2101; i_id++){
-                                	if( i_id == id ){
-						//std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
-                                        	sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
-                                        	weight_vect.push_back(lheEPHandle->weights()[i].wgt);
-                                	}
-                        	}
-                	}
-			pdfVar = 1+ std::sqrt( sum/ ( weight_vect.size() -1 ) ); //+1 variation
+                        	double id = std::stod( lheEPHandle->weights()[i].id, &sz); 
+                                if( id<2001 || id>2100 ) continue;	
+				//std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
+                                sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
+                                N++; 
+                                	
+                        }	
+			pdfVar = 1+ std::sqrt( sum/ ( N -1 ) ); //+1 variation
         	} else { pdfVar = 1.; }
 	}
         return pdfVar;
