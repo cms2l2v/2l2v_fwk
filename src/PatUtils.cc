@@ -883,6 +883,8 @@ double alphaVariation(const fwlite::Event& ev){
         else if(lheHt>=400 && lheHt<600) htScaleFactor=0.0035837837;
         else if(lheHt>=600             ) htScaleFactor=0.0011156801;
       }                                     
+
+    htScaleFactor /= 1000; // The scale factors are derived for 1/fb, whereas we normalize in picobarns
     return htScaleFactor;                   
 
     // In order to use this stitching, you need to run a full set of HT-binned samples plus the inclusive one.
