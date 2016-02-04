@@ -5,6 +5,7 @@
 #include "DataFormats/FWLite/interface/Event.h"
 //#include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
+
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
@@ -61,11 +62,10 @@ using namespace std;
 // Additional functions
 
 //**********************************************************************************************//
-LorentzVector getZCand(std::vector<patUtils::GenericLepton> selLeptons,LorentzVector& leadingLep,LorentzVector& trailerLep, bool& passBestZmass, double& BestMass,int& dilLep1,int& dilLep2, int& dilId,float rho)
+LorentzVector getZCand(std::vector<patUtils::GenericLepton> selLeptons,LorentzVector& leadingLep, LorentzVector &zlltmp,LorentzVector& trailerLep, bool& passBestZmass, double& BestMass,int& dilLep1,int& dilLep2, int& dilId,float rho)
 //**********************************************************************************************//
 {
   
-  LorentzVector zlltmp;
   dilLep1=-1; dilLep2=-1; dilId=-1;
   BestMass=0;
   passBestZmass=false;
@@ -410,6 +410,134 @@ double closestJet(LorentzVector obj, pat::JetCollection& selJets, int& closestJe
     if(dR<dRMin){dRMin=dR; closestJetIndex=j;}      
   }
   return dRMin;
+}
+
+//**********************************************************************************************//
+std::vector<patUtils::GenericLepton> getLepVariations(  std::vector<patUtils::GenericLepton>& selLeptons, float factor)
+//**********************************************************************************************//
+{
+  std::vector<patUtils::GenericLepton> selLeptonsNew;
+  for(size_t ilep=0; ilep<selLeptons.size(); ilep++){
+    if(abs(selLeptons[ilep].pdgId())!=15){
+      patUtils::GenericLepton selLeptonNew = selLeptons[ilep];
+      selLeptonNew.setP4(selLeptons[ilep].p4() * factor);
+      selLeptonsNew.push_back(selLeptonNew);
+    }else{
+      selLeptonsNew.push_back(selLeptons[ilep]);
+    }
+  }
+  std::sort(selLeptonsNew.begin(), selLeptonsNew.end(), utils::sort_CandidatesByPt);
+  return selLeptonsNew;
+}
+
+//**********************************************************************************************//
+std::vector<patUtils::GenericLepton> getTauVariations( std::vector<patUtils::GenericLepton>& selLeptons,float factor)
+//**********************************************************************************************//
+{
+  std::vector<patUtils::GenericLepton> selLeptonsNew;
+  for(size_t ilep=0; ilep<selLeptons.size(); ilep++){
+    if(abs(selLeptons[ilep].pdgId())==15){
+      patUtils::GenericLepton selLeptonNew = selLeptons[ilep];
+      selLeptonNew.setP4(selLeptons[ilep].p4() * factor);
+      selLeptonsNew.push_back(selLeptonNew);
+    }else{
+      selLeptonsNew.push_back(selLeptons[ilep]);
+    }
+  }
+  std::sort(selLeptonsNew.begin(), selLeptonsNew.end(), utils::sort_CandidatesByPt);
+  return selLeptonsNew;
+}
+
+//**********************************************************************************************//
+pat::JetCollection  getJesVariations( pat::JetCollection & selJets,TString var, JetCorrectionUncertainty *totalJESUnc,bool isMC)
+//**********************************************************************************************//
+{
+  pat::JetCollection selJetsNew;
+  pat::Jet tmpJet;
+  pat::Jet newJet;
+  
+  for(size_t ijet=0; ijet<selJets.size(); ijet++){
+    
+    std::vector<float>  smearPt=utils::cmssw::smearJES(selJets[ijet].pt(),selJets[ijet].eta(), totalJESUnc);
+    float jesup     = isMC ? smearPt[0] : selJets[ijet].pt();
+    float jesdown = isMC ? smearPt[1] : selJets[ijet].pt();
+    
+    if(var.EndsWith("up")){
+      tmpJet = selJets[ijet];
+
+      newJet = tmpJet;
+      newJet.setP4(tmpJet.p4()*(jesup/selJets[ijet].pt()));
+    }else{
+      tmpJet = selJets[ijet];
+
+      newJet = tmpJet;
+      newJet.setP4(tmpJet.p4()*(jesdown/selJets[ijet].pt()));
+    }
+    selJetsNew.push_back(newJet);
+  }
+  std::sort(selJetsNew.begin(), selJetsNew.end(), utils::sort_CandidatesByPt);
+  return selJetsNew;
+}
+
+//**********************************************************************************************//
+ pat::JetCollection  getJerVariations( pat::JetCollection & selJets,TString var,bool isMC)
+//**********************************************************************************************//
+{
+  pat::JetCollection  selJetsNew;
+  pat::Jet tmpJet;
+  pat::Jet newJet;
+  for(size_t ijet=0; ijet<selJets.size(); ijet++){
+
+    std::vector<float> smearPt=utils::cmssw::smearJER(selJets[ijet].pt(),selJets[ijet].eta(),selJets[ijet].genJet()->pt());
+    float jer        = isMC ? smearPt[0] : selJets[ijet].pt();
+    float jerup     = isMC ? smearPt[1] : selJets[ijet].pt();
+    float jerdown = isMC ? smearPt[2] : selJets[ijet].pt();
+
+    if(var.EndsWith("up")){
+      tmpJet = selJets[ijet];
+      newJet = tmpJet;
+      newJet.setP4(tmpJet.p4()*(jerup/selJets[ijet].pt()) );
+    }else{
+      tmpJet = selJets[ijet];
+      newJet = tmpJet;
+      newJet.setP4(tmpJet.p4()*(jerdown/selJets[ijet].pt()) );
+    }
+    selJetsNew.push_back(newJet);
+  }
+  std::sort(selJetsNew.begin(), selJetsNew.end(), utils::sort_CandidatesByPt);
+  return selJetsNew;
+}
+
+//**********************************************************************************************//
+  pat::MET getMetVariations(pat::MET & met,std::vector<patUtils::GenericLepton> & selLeptons, pat::JetCollection & selJets,TString var, JetCorrectionUncertainty *totalJESUnc,bool isMC)
+//**********************************************************************************************//
+{
+  pat::MET metNew=met;
+  pat::JetCollection selJetsNew=selJets;
+  std::vector<patUtils::GenericLepton> selLeptonsNew = selLeptons;
+  
+  if(var=="_tesup")     selLeptonsNew=getTauVariations(selLeptons,1.03);
+  if(var=="_tesdown") selLeptonsNew=getTauVariations(selLeptons,0.97);
+  if(var=="_lesup")     selLeptonsNew=getLepVariations(selLeptons,1.02);
+  if(var=="_lesdown") selLeptonsNew=getLepVariations(selLeptons,0.98);
+  if(var=="_jesup")     selJetsNew=getJesVariations(selJets,var,totalJESUnc,isMC);
+  if(var=="_jesdown") selJetsNew=getJesVariations(selJets,var,totalJESUnc,isMC);
+  if(var=="_jerup")      selJetsNew=getJerVariations(selJets,var,isMC);
+  if(var=="_jerdown")  selJetsNew=getJerVariations(selJets,var,isMC);
+  
+  for(size_t ilep=0; ilep<selLeptons.size(); ilep++){
+    metNew.setP4(metNew.p4()+selLeptons[ilep].p4());
+  }
+  for(size_t ijet=0; ijet<selJets.size(); ijet++){
+    metNew.setP4(metNew.p4()+selJets[ijet].p4());
+  }
+  for(size_t ilep=0; ilep<selLeptonsNew.size(); ilep++){
+    metNew.setP4(metNew.p4()-selLeptonsNew[ilep].p4());
+  }
+  for(size_t ijet=0; ijet<selJetsNew.size(); ijet++){
+    metNew.setP4(metNew.p4()-selJetsNew[ijet].p4());
+  }  
+  return metNew;
 }
 
 int main(int argc, char* argv[])
@@ -894,17 +1022,150 @@ int main(int argc, char* argv[])
   //
   //
 
-  //NEED FOR ALL OPTIMIZATION
+  //  std::vector<patUtils::llvvTauId::TauId> tauIDiso;
+  std::vector<const char*> tauIDiso;
+  tauIDiso.push_back("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+  // tauIDiso.push_back(patUtils::llvvTauId::byMediumCombinedIsolationDeltaBetaCorr3Hits);
+  
+  std::vector<float>    optim_Cuts_sumPt;
+  //std::vector<float>    optim_Cuts_taIso;
+  std::vector<const char*> optim_Cuts_taIso;
+  std::vector<float>    optim_Cuts_muIso;
+  std::vector<float>    optim_Cuts_elIso;
+  
+  //DEBUG
+  for(float elIso=0.30;elIso>=0.30;elIso-=0.1){
+    for(float muIso=0.3;muIso>=0.30;muIso-=0.1)
+      {
+	for(float taIso=0;taIso<tauIDiso.size();taIso++)
+	  {
+	    for(float sumPt=0;sumPt<=200;sumPt+=20)
+	      {
+		optim_Cuts_elIso.push_back(elIso);
+		optim_Cuts_muIso.push_back(muIso);
+		//	optim_Cuts_taIso.push_back(float(tauIDiso.at(taIso)));
+		optim_Cuts_taIso.push_back(tauIDiso.at(taIso));
+		optim_Cuts_sumPt.push_back(sumPt);
+	      }
+	  }
+      }
+  }
+  
+  TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(), 4, 0, 4)) ;
+  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "eIso<"); 
+  Hoptim_cuts->GetYaxis()->SetBinLabel(2, "muIso<");
+  Hoptim_cuts->GetYaxis()->SetBinLabel(3, "tauIso<"); 
+  Hoptim_cuts->GetYaxis()->SetBinLabel(4, "sumPt>"); 
+  
+  for(unsigned int index=0;index<optim_Cuts_sumPt.size();index++){
+    Hoptim_cuts->Fill(index,0.0,optim_Cuts_elIso[index]); 
+    Hoptim_cuts->Fill(index,1.0,optim_Cuts_muIso[index]); 
+    Hoptim_cuts->Fill(index,2.0,1.);//(float)optim_Cuts_taIso[index]); 
+    Hoptim_cuts->Fill(index,3.0,optim_Cuts_sumPt[index]); 
+  }
+  
   TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-      Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
+    Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
+    mon.addHistogram( new TH2F (TString("Hsvfit_shapes")+varNames[ivar],";cut index;M_{ll#tau#tau};Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),nbins,bins) );
+    mon.addHistogram( new TH2F (TString("Asvfit_shapes")+varNames[ivar],";cut index;M_{#tau#tau};Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),nbins,bins) );
+    mon.addHistogram( new TH2F (TString("HAsvfit_shapes")+varNames[ivar],";cut index;bins;Events",optim_Cuts_sumPt.size(),0,optim_Cuts_sumPt.size(),81,0,81) );
+    mon.addHistogram( new TH1F(TString("metsys")+varNames[ivar],                   ";#slash{E}_{T} (GeV);Events/10 GeV",50,0,500));
   }
+  
+  //create a tree and related variables to save higgs candidate info for each cutIndex values
+  unsigned int treeEventId;   
+  unsigned int treeLumiId;    
+  unsigned int treeRunId;     
+  int          treeHiggsId;    
+  int          treeZId;        
+  float        treeHVisMass;            
+  float        treeHSVFMass;
+  float        treeAVisMass;            
+  float        treeASVFMass;
+  int          treeLeg1Id;     
+  float        treeLeg1ClosestJetPt;     
+  float        treeLeg1ClosestJetEta;     
+  float        treeLeg1Pt;     
+  float        treeLeg1Eta;    
+  float        treeLeg1Iso;   
+  int          treeLeg1LepID_loose; 
+  int          treeLeg1LepID_tight; 
+  float        treeLeg1DeltaR; 
+  int          treeLeg2Id;     
+  float        treeLeg2ClosestJetPt;     
+  float        treeLeg2ClosestJetEta;     
+  float        treeLeg2Pt;     
+  float        treeLeg2Eta;    
+  float        treeLeg2Iso;
+  int          treeLeg2LepID_loose; 
+  int          treeLeg2LepID_tight; 
+  float        treeLeg2DeltaR; 
+  int          treeLeg1TauIsoLoose3; 
+  int          treeLeg1TauIsoMedium3; 
+  int          treeLeg1TauIsoLooseMVA; 
+  int          treeLeg1TauIsoMediumMVA; 
+  int          treeLeg2TauIsoLoose3; 
+  int          treeLeg2TauIsoMedium3; 
+  int          treeLeg2TauIsoLooseMVA; 
+  int          treeLeg2TauIsoMediumMVA; 
+  float        treeSumPt; 
+  float        treeWeight; 
+  float        treeLepEff1; 
+  float        treeLepEff2; 
+  
+  TTree* tree = new TTree("CandTree","CandTree");
+  tree->Branch("eventId", &treeEventId , string("eventId/i" ).c_str());
+  tree->Branch("lumiId" , &treeLumiId  , string("lumiId/i"  ).c_str());
+  tree->Branch("runId"  , &treeRunId   , string("runId/i"   ).c_str());
+  tree->Branch("higgsId", &treeHiggsId , string("higgsId/I" ).c_str());
+  tree->Branch("zId",     &treeZId     , string("zId/I" ).c_str());
+  tree->Branch("HvisMass", &treeHVisMass , string("HvisMass/F" ).c_str());
+  tree->Branch("HsvfMass", &treeHSVFMass , string("HsvfMass/F" ).c_str());
+  tree->Branch("AvisMass", &treeAVisMass , string("AvisMass/F" ).c_str());
+  tree->Branch("AsvfMass", &treeASVFMass , string("AsvfMass/F" ).c_str());
+  tree->Branch("leg1Id" , &treeLeg1Id  , string("leg1Id/I"  ).c_str());
+  tree->Branch("leg1ClosestJetPt" , &treeLeg1ClosestJetPt  , string("leg1ClosestJetPt/F"  ).c_str());
+  tree->Branch("leg1ClosestJetEta" , &treeLeg1ClosestJetEta  , string("leg1ClosestJetEta/F"  ).c_str());
+  tree->Branch("leg1Pt" , &treeLeg1Pt  , string("leg1Pt/F"  ).c_str());
+  tree->Branch("leg1Eta", &treeLeg1Eta , string("leg1Eta/F" ).c_str());
+  tree->Branch("leg1Iso", &treeLeg1Iso , string("leg1Iso/F" ).c_str());
+  tree->Branch("leg1LepIDloose", &treeLeg1LepID_loose , string("leg1LepIDloose/I" ).c_str());
+  tree->Branch("leg1LepIDtight", &treeLeg1LepID_tight , string("leg1LepIDtight/I" ).c_str());
+  tree->Branch("leg1DeltaR", &treeLeg1DeltaR , string("leg1DeltaR/F" ).c_str());
+  tree->Branch("leg2Id" , &treeLeg2Id  , string("leg2Id/I"  ).c_str());
+  tree->Branch("leg2ClosestJetPt" , &treeLeg2ClosestJetPt  , string("leg2ClosestJetPt/F"  ).c_str());
+  tree->Branch("leg2ClosestJetEta" , &treeLeg2ClosestJetEta  , string("leg2ClosestJetEta/F"  ).c_str());
+  tree->Branch("leg2Pt" , &treeLeg2Pt  , string("leg2Pt/F"  ).c_str());
+  tree->Branch("leg2Eta", &treeLeg2Eta , string("leg2Eta/F" ).c_str());
+  tree->Branch("leg2Iso", &treeLeg2Iso , string("leg2Iso/F" ).c_str());
+  tree->Branch("leg2LepIDloose", &treeLeg2LepID_loose , string("leg2LepIDloose/I" ).c_str());
+  tree->Branch("leg2LepIDtight", &treeLeg2LepID_tight , string("leg2LepIDtight/I" ).c_str());
+  tree->Branch("leg2DeltaR", &treeLeg2DeltaR , string("leg2DeltaR/F" ).c_str());
+  tree->Branch("tau1Loose3", &treeLeg1TauIsoLoose3 , string("tau1Loose3/i" ).c_str());
+  tree->Branch("tau1Medium3", &treeLeg1TauIsoMedium3 , string("tau1Medium3/i" ).c_str());
+  tree->Branch("tau1LooseMVA", &treeLeg1TauIsoLooseMVA , string("tau1LooseMVA/i" ).c_str());
+  tree->Branch("tau1MediumMVA", &treeLeg1TauIsoMediumMVA , string("tau1MediumMVA/i" ).c_str());
+  tree->Branch("tau2Loose3", &treeLeg2TauIsoLoose3 , string("tau2Loose3/i" ).c_str());
+  tree->Branch("tau2Medium3", &treeLeg2TauIsoMedium3 , string("tau2Medium3/i" ).c_str());
+  tree->Branch("tau2LooseMVA", &treeLeg2TauIsoLooseMVA , string("tau2LooseMVA/i" ).c_str());
+  tree->Branch("tau2MediumMVA", &treeLeg2TauIsoMediumMVA , string("tau2MediumMVA/i" ).c_str());
+  tree->Branch("sumPt" , &treeSumPt  , string("sumPt/F"  ).c_str());
+  tree->Branch("weight" , &treeWeight  , string("weight/F"  ).c_str());
+  tree->Branch("lepEff1" , &treeLepEff1  , string("lepEff1/F"  ).c_str());
+  tree->Branch("lepEff2" , &treeLepEff2  , string("lepEff2/F"  ).c_str());
 
-  std::vector<double> optim_Cuts1_met;
-  for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
-  TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
-  Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
-  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
+  //NEED FOR ALL OPTIMIZATION
+  // TH1F* Hoptim_systs     =  (TH1F*) mon.addHistogram( new TH1F ("optim_systs"    , ";syst;", nvarsToInclude,0,nvarsToInclude) ) ;
+  // for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+  //     Hoptim_systs->GetXaxis()->SetBinLabel(ivar+1, varNames[ivar]);
+  // }
+
+  // std::vector<double> optim_Cuts1_met;
+  // for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
+  // TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
+  // Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
+  // for(unsigned int index=0;index<optim_Cuts1_met.size();index++){ Hoptim_cuts    ->Fill(index, 0.0, optim_Cuts1_met[index]);  }
      
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
@@ -991,7 +1252,47 @@ int main(int argc, char* argv[])
 
           //Skip bad lumi
           if(!isMC && !goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock()))continue;
-
+	  
+	  // initialize the tree variables
+	  treeEventId=0;   
+	  treeLumiId=0;    
+	  treeRunId=0;     
+	  treeHiggsId=0;    
+	  treeZId=0;        
+	  treeHVisMass=0;        
+	  treeHSVFMass=0;
+	  treeAVisMass=0;        
+	  treeASVFMass=0;
+	  treeLeg1Id=0;     
+	  treeLeg1ClosestJetPt=0;     
+	  treeLeg1ClosestJetEta=0;     
+	  treeLeg1Pt=0;     
+	  treeLeg1Eta=0;    
+	  treeLeg1Iso=0;    
+	  treeLeg1LepID_loose=0;    
+	  treeLeg1LepID_tight=0;    
+	  treeLeg1DeltaR=0;    
+	  treeLeg2Id=0;     
+	  treeLeg2ClosestJetPt=0;     
+	  treeLeg2ClosestJetEta=0;     
+	  treeLeg2Pt=0;     
+	  treeLeg2Eta=0;    
+	  treeLeg2Iso=0;   
+	  treeLeg2LepID_loose=0;    
+	  treeLeg2LepID_tight=0;    
+	  treeLeg2DeltaR=0;    
+	  treeLeg1TauIsoLoose3=0; 
+	  treeLeg1TauIsoMedium3=0; 
+	  treeLeg1TauIsoLooseMVA=0; 
+	  treeLeg1TauIsoMediumMVA=0; 
+	  treeLeg2TauIsoLoose3=0; 
+	  treeLeg2TauIsoMedium3=0; 
+	  treeLeg2TauIsoLooseMVA=0; 
+	  treeSumPt=0; 
+	  treeWeight=0; 
+	  treeLepEff1=0; 
+	  treeLepEff2=0; 
+	  
          //WEIGHT for Pileup
          if(isMC){          
 	     int ngenITpu = 0;
@@ -1022,7 +1323,7 @@ int main(int argc, char* argv[])
           if(!(eeTrigger || mumuTrigger || emuTrigger))continue;  //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
    
           //##############################################   EVENT PASSED THE TRIGGER   #######################################
-	  int metFilterValue = metFiler.passMetFilterInt( ev); //, isPromptReco );
+	  int metFilterValue = metFiler.passMetFilterInt(ev); //, isPromptReco );
 	  mon.fillHisto("met_eventflow", "debug", metFilterValue, weight);
 	  if( metFilterValue!=0 ) continue;	 //Note this must also be applied on MC
         
@@ -1345,12 +1646,12 @@ int main(int argc, char* argv[])
          //
          std::vector<TString> chTags;
 
-	 LorentzVector leadingLep, trailerLep, zll;
+	 LorentzVector leadingLep, trailerLep, zll, zlltmp;
          int dilId(1);
 	 int dilLep1, dilLep2;
 	 double BestMass;
 	 bool passBestZmass;
-	 zll = getZCand(selLeptons,leadingLep,trailerLep,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
+	 zll = getZCand(selLeptons,leadingLep,trailerLep,zlltmp,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
 
          LorentzVector boson = zll;
          bool isDileptonCandidate = false;
@@ -1702,7 +2003,9 @@ int main(int argc, char* argv[])
 	 LorentzVector higgsCand;
 	 int HiggsShortId, higgsCandId;
 	 
-	 higgsCand = getHiggsCand(selLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,chTags);
+	 std::vector<TString> chTagsMain=chTags;
+
+	 higgsCand = getHiggsCand(selLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,chTagsMain);
 	 
 	 //reweight the event to account for lept eff.
 	 //	 if(isMC && higgsCandL1>=0 && abs(selLeptons[higgsCandL1].pdgId())<15)
@@ -1789,79 +2092,79 @@ int main(int argc, char* argv[])
 	 // patUtils::GenericLepton leadingLep = selLeptons[0];
 	 // patUtils::GenericLepton trailerLep = selLeptons[1];
 	   
-	 mon.fillHisto("eventflow2"       ,   tags,                 0, weight);
+	 mon.fillHisto("eventflow2"       , chTagsMain,                 0, weight);
 	 if(selLeptons.size()>=2){
 	   mon.fillHisto("nlep"           ,   chTags, selLeptons.size(), weight);
-	   mon.fillHisto("eventflow2"     ,   tags,                 1, weight);
-	   mon.fillHisto("zllmass"          ,   tags, zll.mass(),    weight);
+	   mon.fillHisto("eventflow2"     ,   chTagsMain,                 1, weight);
+	   mon.fillHisto("zllmass"          ,   chTagsMain, zll.mass(),    weight);
 	   if(passZmass){
-	     mon.fillHisto("eventflow2"   ,   tags,                 2, weight);
+	     mon.fillHisto("eventflow2"   ,   chTagsMain,                 2, weight);
 	     //pu control
-	     mon.fillHisto("nvtx2"        ,   tags, vtx.size(),      weight);
-	     mon.fillHisto("nvtxraw2"     ,   tags, vtx.size(),      weight/puWeight);
-	     mon.fillHisto("rho2"         ,   tags, rho,       weight);
+	     mon.fillHisto("nvtx2"        ,   chTagsMain, vtx.size(),      weight);
+	     mon.fillHisto("nvtxraw2"     ,   chTagsMain, vtx.size(),      weight/puWeight);
+	     mon.fillHisto("rho2"         ,   chTagsMain, rho,       weight);
 	     
 	     //Z kinematics control
-	     mon.fillHisto("leadpt2"      ,   tags, leadingLep.pt(), weight);      
-	     mon.fillHisto("leadeta2"     ,   tags, leadingLep.eta(), weight);      
-	     mon.fillHisto("trailerpt2"   ,   tags, trailerLep.pt(), weight);      
-	     mon.fillHisto("trailereta2"  ,   tags, trailerLep.eta(), weight);      
-	     mon.fillHisto("leppt2"       ,   tags, leadingLep.pt(), weight);      
-	     mon.fillHisto("leppt2"       ,   tags, trailerLep.pt(), weight);      
-	     mon.fillHisto("lepeta2"      ,   tags, leadingLep.eta(), weight);      
-	     mon.fillHisto("lepeta2"      ,   tags, trailerLep.eta(), weight);      
+	     mon.fillHisto("leadpt2"      ,   chTagsMain, leadingLep.pt(), weight);      
+	     mon.fillHisto("leadeta2"     ,   chTagsMain, leadingLep.eta(), weight);      
+	     mon.fillHisto("trailerpt2"   ,   chTagsMain, trailerLep.pt(), weight);      
+	     mon.fillHisto("trailereta2"  ,   chTagsMain, trailerLep.eta(), weight);      
+	     mon.fillHisto("leppt2"       ,   chTagsMain, leadingLep.pt(), weight);      
+	     mon.fillHisto("leppt2"       ,   chTagsMain, trailerLep.pt(), weight);      
+	     mon.fillHisto("lepeta2"      ,   chTagsMain, leadingLep.eta(), weight);      
+	     mon.fillHisto("lepeta2"      ,   chTagsMain, trailerLep.eta(), weight);      
 	     
 	     //analyze dilepton kinematics
-	     mon.fillHisto("zllpt"         ,   tags, zll.pt(),      weight);      
-	     mon.fillHisto("zlleta"        ,   tags, zll.eta(),     weight);
-	     mon.fillHisto("zlly"          ,   tags, zll.Rapidity(),weight);
+	     mon.fillHisto("zllpt"         ,   chTagsMain, zll.pt(),      weight);      
+	     mon.fillHisto("zlleta"        ,   chTagsMain, zll.eta(),     weight);
+	     mon.fillHisto("zlly"          ,   chTagsMain, zll.Rapidity(),weight);
 	     
 	     if(passZpt){
-	       mon.fillHisto("eventflow2",   tags,                 3, weight);
+	       mon.fillHisto("eventflow2",   chTagsMain,                 3, weight);
 	       
 	       mon.fillHisto("ntaus"           ,  chTags, selTaus.size(), weight);
-	       mon.fillHisto("tauleadpt"       ,  tags,   selTaus.size()>0?selTaus[0].pt():-1,  weight);
-	       mon.fillHisto("tauleadeta"      ,  tags,   selTaus.size()>0?selTaus[0].eta():-10, weight);
-	       mon.fillHisto("tautrailerpt"    ,  tags,   selTaus.size()>1?selTaus[1].pt():-1,  weight);
-	       mon.fillHisto("tautrailereta"   ,  tags,   selTaus.size()>1?selTaus[1].eta():-10, weight);
+	       mon.fillHisto("tauleadpt"       ,  chTagsMain,   selTaus.size()>0?selTaus[0].pt():-1,  weight);
+	       mon.fillHisto("tauleadeta"      ,  chTagsMain,   selTaus.size()>0?selTaus[0].eta():-10, weight);
+	       mon.fillHisto("tautrailerpt"    ,  chTagsMain,   selTaus.size()>1?selTaus[1].pt():-1,  weight);
+	       mon.fillHisto("tautrailereta"   ,  chTagsMain,   selTaus.size()>1?selTaus[1].eta():-10, weight);
 	       mon.fillHisto("taupt"           ,  chTags, selTaus.size()>0?selTaus[0].pt():-1, weight);
 	       mon.fillHisto("taupt"           ,  chTags, selTaus.size()>0?selTaus[1].pt():-1, weight);
-	       mon.fillHisto("taueta"          ,  tags,   selTaus.size()>0?selTaus[0].eta():-10, weight);
-	       mon.fillHisto("taueta"          ,  tags,   selTaus.size()>0?selTaus[0].eta():-10, weight);
+	       mon.fillHisto("taueta"          ,  chTagsMain,   selTaus.size()>0?selTaus[0].eta():-10, weight);
+	       mon.fillHisto("taueta"          ,  chTagsMain,   selTaus.size()>0?selTaus[0].eta():-10, weight);
 	       
 	       if(selLeptons.size()>=4){
-		 mon.fillHisto("eventflow2",   tags,                 4, weight);
+		 mon.fillHisto("eventflow2",   chTagsMain,                 4, weight);
 		 if(passLepVetoMain){
-		   mon.fillHisto("eventflow2", tags,                 5, weight);
+		   mon.fillHisto("eventflow2", chTagsMain,                 5, weight);
 		   mon.fillHisto("nbjets"    , chTags, nbjets,  weight);
 		   mon.fillHisto("njets2"     , chTags, njets,   weight);
 		   
 		   if(passBJetVetoMain){
-		     mon.fillHisto("eventflow2"	,   tags,                 6, weight);
+		     mon.fillHisto("eventflow2"	,   chTagsMain,                 6, weight);
 		     
-		     mon.fillHisto("dPhi_AZ"    , tags, deltaPhi(higgsCand.phi(), boson.phi()),    weight);
-		     mon.fillHisto("dPhi_AMet"  , tags, deltaPhi(higgsCand.phi(), met.phi()),    weight);
-		     mon.fillHisto("dPhi_ZMet"  , tags, deltaPhi(boson.phi(), met.phi()),    weight);
-		     mon.fillHisto("met2"      	, tags, met.pt()         , weight);
+		     mon.fillHisto("dPhi_AZ"    , chTagsMain, deltaPhi(higgsCand.phi(), boson.phi()),    weight);
+		     mon.fillHisto("dPhi_AMet"  , chTagsMain, deltaPhi(higgsCand.phi(), met.phi()),    weight);
+		     mon.fillHisto("dPhi_ZMet"  , chTagsMain, deltaPhi(boson.phi(), met.phi()),    weight);
+		     mon.fillHisto("met2"      	, chTagsMain, met.pt()         , weight);
 		     
 		     if(passDPhiCut){
-		       mon.fillHisto("eventflow2",   tags,                 7, weight);
+		       mon.fillHisto("eventflow2",   chTagsMain,                 7, weight);
 		       if(passHiggsLoose){
-			 mon.fillHisto("sumpt",   tags, selLeptons[higgsCandL1].pt()+selLeptons[higgsCandL2].pt(), weight);
+			 mon.fillHisto("sumpt",   chTagsMain, selLeptons[higgsCandL1].pt()+selLeptons[higgsCandL2].pt(), weight);
 			 if(passHiggsMain){
-			   mon.fillHisto("eventflow2"   ,tags,                 8, weight);
-			   mon.fillHisto("yields"          ,tags,                HiggsShortId, weight);
-			   mon.fillHisto("yieldsOS"     ,tags,                HiggsShortId, weight);
+			   mon.fillHisto("eventflow2"   ,chTagsMain,                 8, weight);
+			   mon.fillHisto("yields"          ,chTagsMain,                HiggsShortId, weight);
+			   mon.fillHisto("yieldsOS"     ,chTagsMain,                HiggsShortId, weight);
 			   
-			   mon.fillHisto("Apt"       	, tags, higgsCand.pt(),    weight);
-			   mon.fillHisto("Amass"           , tags, higgsCand.mass(),  weight);
-			   mon.fillHisto("Amasssvfit"      , tags, higgsCand_SVFit.mass(),  weight);
-			   mon.fillHisto("Hmass"           , tags, higgsCandH.mass(),  weight);
-			   mon.fillHisto("Hpt"             , tags, higgsCandH.pt(),  weight);
-			   mon.fillHisto("Hmasssvfit"   , tags, higgsCandH_SVFit.mass(),  weight);
+			   mon.fillHisto("Apt"       	, chTagsMain, higgsCand.pt(),    weight);
+			   mon.fillHisto("Amass"           , chTagsMain, higgsCand.mass(),  weight);
+			   mon.fillHisto("Amasssvfit"      , chTagsMain, higgsCand_SVFit.mass(),  weight);
+			   mon.fillHisto("Hmass"           , chTagsMain, higgsCandH.mass(),  weight);
+			   mon.fillHisto("Hpt"             , chTagsMain, higgsCandH.pt(),  weight);
+			   mon.fillHisto("Hmasssvfit"   , chTagsMain, higgsCandH_SVFit.mass(),  weight);
 			   
-			   mon.fillHisto("Anjets"    	, tags, NCleanedJetMain      , weight); 
-			   mon.fillHisto("Amet"      	, tags, met.pt()         , weight);
+			   mon.fillHisto("Anjets"    	, chTagsMain, NCleanedJetMain      , weight); 
+			   mon.fillHisto("Amet"      	, chTagsMain, met.pt()         , weight);
 			 } 
 		       }
 		     }
@@ -1871,6 +2174,159 @@ int main(int argc, char* argv[])
 	     }
 	   }  
 	 }  
+	 
+	 //SYSTEMATIC STUDY on all events passing the basic preselection
+	 if(selLeptons.size()>=2 && passZmass && passZpt && selLeptons.size()>=4 && passLepVetoMain && passBJetVetoMain && passDPhiCut && passHiggsLoose){
+	   //  if(examineThisEvent) cout << "TREE FILLING" << endl;
+	   treeEventId   = ev.eventAuxiliary().event();
+	   treeLumiId    = ev.eventAuxiliary().luminosityBlock();
+	   treeRunId     = ev.eventAuxiliary().run();
+	   //   if(examineThisEvent) cout << "ev/lumi/run -   " << treeEventId<<"/"<<treeLumiId<<"/"<<treeRunId<<endl;
+	   treeHiggsId   = higgsCandId;
+	   treeZId       = dilId;
+	   treeHVisMass  = higgsCandH.mass();
+	   treeHSVFMass  = higgsCandH_SVFit.mass();
+	   treeAVisMass  = higgsCand.mass();
+	   treeASVFMass  = higgsCand_SVFit.mass();
+	   //	   if(examineThisEvent) cout << "dilId/HiggsId -   " << treeZId <<"/"<<treeHiggsId<<endl;
+	   //use the pt of the closest jet
+	   int closestJetIndexL1=-1; double pTL1=-1; double etaL1=-1; double dRL1=-1;
+	   double dRminL1 = closestJet(selLeptons[higgsCandL1].p4(), selJets, closestJetIndexL1);
+	   if(closestJetIndexL1>=0 && dRminL1<0.5){pTL1=selJets[closestJetIndexL1].pt(); dRL1=dRminL1; etaL1=abs(selJets[closestJetIndexL1].eta());}
+	   else{pTL1=selLeptons[higgsCandL1].pt(); dRL1=-1; etaL1=abs(selLeptons[higgsCandL1].eta());}
+	   treeLeg1ClosestJetPt   = pTL1;
+	   treeLeg1ClosestJetEta  = etaL1;
+	   treeLeg1Pt             = selLeptons[higgsCandL1].pt();
+	   treeLeg1DeltaR         = dRL1;
+	   int closestJetIndexL2=-1; double pTL2=-1; double etaL2=-1; double dRL2=-1;
+	   double dRminL2 = closestJet(selLeptons[higgsCandL2].p4(), selJets, closestJetIndexL2);
+	   if(closestJetIndexL2>=0 && dRminL2<0.5){pTL2=selJets[closestJetIndexL2].pt(); dRL2=dRminL2; etaL2=abs(selJets[closestJetIndexL2].eta());}
+	   else{pTL2=selLeptons[higgsCandL2].pt(); etaL2=abs(selLeptons[higgsCandL2].eta()); dRL2=-1;}
+	   treeLeg2ClosestJetPt   = pTL2;
+	   treeLeg2ClosestJetEta  = etaL2;
+	   treeLeg2Pt             = selLeptons[higgsCandL2].pt();
+	   treeLeg2DeltaR         = dRL2;
+	   
+	   treeLeg1Eta  = selLeptons[higgsCandL1].eta();
+	   treeLeg2Eta  = selLeptons[higgsCandL2].eta();
+	   treeLeg1Id   = selLeptons[higgsCandL1].pdgId();
+	   treeLeg2Id   = selLeptons[higgsCandL2].pdgId();
+	   treeLeg1Iso  = (abs(treeLeg1Id)!=15)?patUtils::relIso(selLeptons[higgsCandL1],rho):-999.;
+	   treeLeg2Iso  = (abs(treeLeg2Id)!=15)?patUtils::relIso(selLeptons[higgsCandL2],rho):-999.;
+	   
+	   bool passLooseLepton1 = treeLeg1Id==11?patUtils::passId(selLeptons[higgsCandL1].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(selLeptons[higgsCandL1].mu, vtx[0], patUtils::llvvMuonId::Loose);
+	   bool passLooseLepton2 = treeLeg2Id==11?patUtils::passId(selLeptons[higgsCandL2].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(selLeptons[higgsCandL2].mu, vtx[0], patUtils::llvvMuonId::Loose);
+	   
+	   bool passTightLepton1 = treeLeg1Id==11?patUtils::passId(selLeptons[higgsCandL1].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(selLeptons[higgsCandL1].mu, vtx[0], patUtils::llvvMuonId::Tight);
+	   bool passTightLepton2 = treeLeg2Id==11?patUtils::passId(selLeptons[higgsCandL2].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(selLeptons[higgsCandL2].mu, vtx[0], patUtils::llvvMuonId::Tight);
+
+	   if((abs(treeLeg1Id)==11 || abs(treeLeg1Id)==13) && passLooseLepton1 ) treeLeg1LepID_loose = 1;
+	   if((abs(treeLeg1Id)==11 || abs(treeLeg1Id)==13) && passTightLepton1 )  treeLeg1LepID_tight = 1;
+	   if((abs(treeLeg2Id)==11 || abs(treeLeg2Id)==13) && passLooseLepton2 ) treeLeg2LepID_loose = 1;
+	   if((abs(treeLeg2Id)==11 || abs(treeLeg2Id)==13) && passTightLepton2 )  treeLeg2LepID_tight = 1;
+	   if(abs(treeLeg1Id)==15 && selLeptons[higgsCandL1].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits"))  treeLeg1TauIsoLoose3    = 1;
+	   if(abs(treeLeg1Id)==15 && selLeptons[higgsCandL1].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")) treeLeg1TauIsoMedium3   = 1;
+	   if(abs(treeLeg1Id)==15 && selLeptons[higgsCandL1].tau.tauID("byLooseIsolationMVA3oldDMwLT"))                treeLeg1TauIsoLooseMVA  = 1;
+	   if(abs(treeLeg1Id)==15 && selLeptons[higgsCandL1].tau.tauID("byMediumIsolationMVA3oldDMwLT"))               treeLeg1TauIsoMediumMVA = 1;
+	   if(abs(treeLeg2Id)==15 && selLeptons[higgsCandL2].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits"))  treeLeg2TauIsoLoose3    = 1;
+	   if(abs(treeLeg2Id)==15 && selLeptons[higgsCandL2].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")) treeLeg2TauIsoMedium3   = 1;
+	   if(abs(treeLeg2Id)==15 && selLeptons[higgsCandL2].tau.tauID("byLooseIsolationMVA3oldDMwLT"))                treeLeg2TauIsoLooseMVA  = 1;
+	   if(abs(treeLeg2Id)==15 && selLeptons[higgsCandL2].tau.tauID("byMediumIsolationMVA3oldDMwLT"))               treeLeg2TauIsoMediumMVA = 1;
+	   
+	   /*
+	   if(examineThisEvent){ 
+	     if(abs(treeLeg1Id)==11){
+	       cout << "(Max(" << selLeptons[higgsCandL1].lep.nhIso03<<"+"<<selLeptons[higgsCandL1].gIso03<<"-"<<rho<<"*"<<
+		 utils::cmssw::getEffectiveArea(11,selLeptons[higgsCandL1].lep.electronInfoRef->sceta)<<",0)+"<<
+		 selLeptons[higgsCandL1].lep.chIso03<<")/"<<selLeptons[higgsCandL1].lep.pt()<<"="<<
+		 patUtils::relIso(selLeptons[higgsCandL1].lep,rho) <<endl;
+	     }
+	     if(abs(treeLeg1Id)==13){
+	       cout << "(Max(" << selLeptons[higgsCandL1].lep.nhIso04<<"+"<<selLeptons[higgsCandL1].gIso04<<"-0.5*"<<
+		 selLeptons[higgsCandL1].lep.puchIso04<<",0)+"<<selLeptons[higgsCandL1].lep.chIso04<<")/"<<selLeptons[higgsCandL1].lep.pt()<<"="<<
+		 patUtils::relIso(selLeptons[higgsCandL1].lep,rho) <<endl;
+	     }
+	     if(abs(treeLeg2Id)==11){
+	       cout << "(Max(" << selLeptons[higgsCandL2].lep.nhIso03<<"+"<<selLeptons[higgsCandL2].gIso03<<"-"<<rho<<"*"<<
+		 utils::cmssw::getEffectiveArea(11,selLeptons[higgsCandL2].lep.electronInfoRef->sceta)<<",0)+"<<
+		 selLeptons[higgsCandL2].lep.chIso03<<")/"<<selLeptons[higgsCandL2].lep.pt()<<"="<<
+		 patUtils::relIso(selLeptons[higgsCandL2].lep,rho) <<endl;
+	     }
+	     if(abs(treeLeg2Id)==13){
+	       cout << "(Max(" << selLeptons[higgsCandL2].lep.nhIso04<<"+"<<selLeptons[higgsCandL2].gIso04<<"-0.5*"<<
+		 selLeptons[higgsCandL2].lep.puchIso04<<",0)+"<<selLeptons[higgsCandL2].lep.chIso04<<")/"<<selLeptons[higgsCandL2].lep.pt()<<"="<<
+		 patUtils::relIso(selLeptons[higgsCandL2].lep,rho) <<endl;
+	     }
+	   }
+	   if(examineThisEvent){ if(abs(treeLeg2Id)!=15) cout << "real iso 2 -   " << patUtils::relIso(selLeptons[higgsCandL2].lep,rho) <<endl;}
+	   if(examineThisEvent) cout << "iso/idL/idT 1 -   " << treeLeg1Iso<<"/"<<treeLeg1LepID_loose <<"/"<<treeLeg1LepID_tight<<endl;
+	   if(examineThisEvent) cout << "iso/idL/idT 2 -   " << treeLeg2Iso<<"/"<<treeLeg2LepID_loose <<"/"<<treeLeg2LepID_tight<<endl;
+	   if(examineThisEvent) cout << "iso/id tau 1 -   " << treeLeg1TauIsoLoose3 <<endl;
+	   if(examineThisEvent) cout << "iso/id tau 2 -   " << treeLeg2TauIsoLoose3 <<endl;
+	   */
+	   treeSumPt   = selLeptons[higgsCandL1].pt()+selLeptons[higgsCandL2].pt();
+	   treeWeight  = weight; //BeforeLepCorr;
+	   if(isMC && higgsCandL1>=0 && abs(selLeptons[higgsCandL1].pdgId())<15) treeLepEff1 = lepEff.getLeptonEfficiency( selLeptons[higgsCandL1].pt(), selLeptons[higgsCandL1].eta(), 
+															   abs(selLeptons[higgsCandL1].pdgId()), abs(selLeptons[higgsCandL1].pdgId()) ==11 ? "loose" : "loose" ).first;
+	   if(isMC && higgsCandL2>=0 && abs(selLeptons[higgsCandL2].pdgId())<15) treeLepEff2 = lepEff.getLeptonEfficiency( selLeptons[higgsCandL2].pt(), selLeptons[higgsCandL2].eta(), 
+															   abs(selLeptons[higgsCandL2].pdgId()), abs(selLeptons[higgsCandL2].pdgId()) ==11 ? "loose" : "loose" ).first;
+	   if(tree) tree->Fill();
+	   
+	   for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+	     float iweight = weight; //weightBeforeLepCorr; //nominal
+	     pat::MET imet  = mets[0];
+	     std::vector<patUtils::GenericLepton> iselLeptons = selLeptons;
+	     pat::JetCollection         iselJets    = selJets;
+	     std::vector<TString>    locTags     = chTagsMain;
+	     
+	     if(varNames[ivar]!=""){
+	       imet=getMetVariations(mets[0],iselLeptons,iselJets,varNames[ivar],totalJESUnc,isMC);
+	       if(varNames[ivar]=="_puup")    iweight *=TotalWeight_plus;    
+	       if(varNames[ivar]=="_pudown")  iweight *=TotalWeight_minus; 
+	       if(varNames[ivar]=="_tesup")   iselLeptons=getTauVariations(selLeptons,1.03);
+	       if(varNames[ivar]=="_tesdown") iselLeptons=getTauVariations(selLeptons,0.97);
+	       if(varNames[ivar]=="_lesup")   iselLeptons=getLepVariations(selLeptons,1.02);
+	       if(varNames[ivar]=="_lesdown") iselLeptons=getLepVariations(selLeptons,0.98);
+	       
+	       locTags.clear();
+	       zll = getZCand(iselLeptons,leadingLep,trailerLep,zlltmp,passBestZmass,BestMass,dilLep1,dilLep2,dilId,rho);
+	       
+	       locTags.push_back("all");
+	       if( abs(dilId)==121 && eeTrigger  ){ locTags.push_back("ee"); isDileptonCandidate=true; }
+	       if( abs(dilId)==169 && mumuTrigger){ locTags.push_back("mumu"); isDileptonCandidate=true; }
+	       
+	       if(!isDileptonCandidate) continue;
+	       passZmass = (passBestZmass && (fabs(zll.mass()-91.2)<15));
+	       passZpt   = (zll.pt()>20);
+	       
+	       higgsCand = getHiggsCand(iselLeptons,dilLep1,dilLep2,higgsCandL1,higgsCandL2,higgsCandId,HiggsShortId,locTags);
+	       passHiggsLoose = passHiggsCuts(iselLeptons, rho, higgsCandId, higgsCandL1, higgsCandL2, 0.5, 0.5, "decayModeFinding", 0., false,vtx); 
+	       higgsCand_SVFit = higgsCand;
+	       
+	       if(passZmass && passZpt && passDPhiCut && passHiggsLoose && passLepVetoMain && passBJetVetoMain){
+		 higgsCand_SVFit = getSVFit(imet, iselLeptons, higgsCandL1, higgsCandL2);  //compute svfit mass in a smart way
+	       }      
+	       higgsCandH           = zll + higgsCand;
+	       higgsCandH_SVFit = zll + higgsCand_SVFit;
+	     }
+	     
+	     for(unsigned int index=0; index<optim_Cuts_sumPt.size();index++){
+	       float jweight = iweight;
+	       bool passHiggs = passHiggsCuts(iselLeptons, rho, higgsCandId, higgsCandL1, higgsCandL2, optim_Cuts_elIso[index], optim_Cuts_muIso[index], optim_Cuts_taIso[index], optim_Cuts_sumPt[index],true,vtx);
+	       if(passHiggs){
+		 if(isMC && higgsCandL1>=0 && abs(iselLeptons[higgsCandL1].pdgId())<15)jweight *= lepEff.getLeptonEfficiency( iselLeptons[higgsCandL1].pt(), iselLeptons[higgsCandL1].eta(), abs(iselLeptons[higgsCandL1].pdgId()), abs(iselLeptons[higgsCandL1].pdgId()) ==11 ? "loose" : "loose" ).first;
+		 if(isMC && higgsCandL2>=0 && abs(iselLeptons[higgsCandL2].pdgId())<15)jweight *= lepEff.getLeptonEfficiency( iselLeptons[higgsCandL2].pt(), iselLeptons[higgsCandL2].eta(), abs(iselLeptons[higgsCandL2].pdgId()), abs(iselLeptons[higgsCandL2].pdgId()) ==11 ? "loose" : "loose" ).first;
+		 mon.fillHisto(TString("Asvfit_shapes")+varNames[ivar],locTags,index,higgsCand_SVFit.mass(),jweight);
+		 mon.fillHisto(TString("Hsvfit_shapes")+varNames[ivar],locTags,index,higgsCandH_SVFit.mass(),jweight);
+		 int bin = Hbins->FindBin(higgsCandH_SVFit.mass(),higgsCand_SVFit.mass());
+		 mon.fillHisto(TString("HAsvfit_shapes")+varNames[ivar],locTags,index,bin,jweight);
+	       }		   
+	       if(index==0 && iselLeptons.size()>=2 && passZmass && passZpt && iselLeptons.size()>=4 && passLepVetoMain && passBJetVetoMain ){
+		 mon.fillHisto(TString("metsys")+varNames[ivar], locTags, imet.pt(), jweight);
+	       }
+	     }//end of the loop on cutIndex 
+	   }//end of the loop on the systematics
+	 } 
 	 
          mon.fillHisto("eventflow",  tags,0,weight);
          mon.fillHisto("nvtxA",  tags,vtx.size(),1);
@@ -1989,11 +2445,11 @@ int main(int argc, char* argv[])
                         mon.fillHisto( "mt",icat,mt,iweight,true);               
                      }
 
-                     if(met.pt()>optim_Cuts1_met[0]) 
-                       {
-                         mon.fillHisto( "mtcheckpoint",  icat, mt,       iweight, true);
-                         mon.fillHisto( "metcheckpoint", icat, met.pt(), iweight, true);
-                       }
+                     // if(met.pt()>optim_Cuts1_met[0]) 
+                     //   {
+                     //     mon.fillHisto( "mtcheckpoint",  icat, mt,       iweight, true);
+                     //     mon.fillHisto( "metcheckpoint", icat, met.pt(), iweight, true);
+                     //   }
 
                      if(met.pt()>80){
                        mon.fillHisto("eventflow",icat,7,iweight);
@@ -2173,25 +2629,25 @@ int main(int argc, char* argv[])
              float mt =higgs::utils::transverseMass(iboson,zvv,true);
 
              //scan the MET cut and fill the shapes
-             for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
+             // for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
                
-               if(zvv.pt()>optim_Cuts1_met[index]){              
+             //   if(zvv.pt()>optim_Cuts1_met[index]){              
                    
-                   float nrweight=chWeight;
+             //       float nrweight=chWeight;
           
-                   if(passPreselection && ivar==0                                              )   mon.fillHisto("metcount", tags_full, index, nrweight);
-                   if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+varNames[ivar],tags_full,index, mt,nrweight);
-                   if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+varNames[ivar],tags_full,index, zvv.pt(),nrweight);                    
-                   if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,0,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,1,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,2,nrweight);
-                   if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,3,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,4,nrweight);
-                   if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,5,nrweight);
+             //       if(passPreselection && ivar==0                                              )   mon.fillHisto("metcount", tags_full, index, nrweight);
+             //       if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+varNames[ivar],tags_full,index, mt,nrweight);
+             //       if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+varNames[ivar],tags_full,index, zvv.pt(),nrweight);                    
+             //       if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,0,nrweight);
+             //       if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,1,nrweight);
+             //       if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,2,nrweight);
+             //       if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,3,nrweight);
+             //       if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,4,nrweight);
+             //       if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,5,nrweight);
 
                  
-               }
-             }
+             //   }
+             // }
            }
          }
      }
