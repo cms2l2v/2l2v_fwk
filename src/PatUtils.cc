@@ -717,62 +717,114 @@ bool MetFilter::passMetFilter(const fwlite::Event& ev){
 }
 
 std::pair<double, double> scaleVariation(const fwlite::Event& ev){
+	//std::cout << " " << std::endl;
+	//std::cout << "STARTING SCALE-VARIATION Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
-        double scaleUp = 1;
-        double scaleDw = 1;
-        std::vector<double> scaleVect;
-        if( lheEPHandle.isValid() ){
-                for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
-                        if( lheEPHandle->weights()[i].id != "1001" || lheEPHandle->weights()[i].id != "1006" || lheEPHandle->weights()[i].id != "1008" ){
-                                double local_weight = 0;
-                                local_weight = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
-                                scaleUp = std::max(scaleUp, local_weight);
-                                scaleDw = std::min(scaleDw, local_weight);
-                        }
-                 }
-         }
-         return std::make_pair(scaleUp, scaleDw);
-}
-
-double pdfVariation(const fwlite::Event& ev){
-        fwlite::Handle<LHEEventProduct> lheEPHandle;
-        lheEPHandle.getByLabel( ev, "externalLHEProducer");
-        std::vector<double> weight_vect;
-        double pdfVar;
-        double sum = 0;
+        double scaleUp = 1.;
+        double scaleDw = 1.;
+        bool check_in = false;
+        std::vector<int> idVect;
+	std::vector<int>::iterator it;
         if( lheEPHandle.isValid() ){
                 for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
                         std::string::size_type sz;
                         double id = std::stod( lheEPHandle->weights()[i].id, &sz);
-                        for( unsigned int i_id = 2002; i_id<2101; i_id++){
-                                if( i_id == id ){
-                                        sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
-                                        weight_vect.push_back(lheEPHandle->weights()[i].wgt);
-                                }
-                        }
+                        idVect.push_back( id );
                 }
-        }
-        pdfVar = 1+sum/weight_vect.size(); //+1 variation
+		for( unsigned int k=1001; k<1010; k++){
+			it = find( idVect.begin(), idVect.end(), k);
+			if( it != idVect.end() ){ check_in = true; }
+			else{ check_in = false; }
+		}
+		if( check_in ){
+                	for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        	if( lheEPHandle->weights()[i].id != "1001" || lheEPHandle->weights()[i].id != "1006" || lheEPHandle->weights()[i].id != "1008" ){
+                                	double local_weight = 0;
+                                	local_weight = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+					//std::cout << "Local weight: " << local_weight << std::endl; 
+                                	scaleUp = std::max(scaleUp, local_weight);
+                                	scaleDw = std::min(scaleDw, local_weight);
+                        	}
+                 	}
+			
+		 } else { scaleUp = 1.;  scaleDw = 1.;}
+         }
+	 //std::cout << "ScaleUp Value: " << scaleUp << "; ScaleDwn Value: " << scaleDw << std::endl;
+	 return std::make_pair(scaleUp, scaleDw);
+}
+
+double pdfVariation(const fwlite::Event& ev){
+	//std::cout << "  " << std::endl;
+	//std::cout << "STARTING PDF Estimation" << std::endl;
+        fwlite::Handle<LHEEventProduct> lheEPHandle;
+        lheEPHandle.getByLabel( ev, "externalLHEProducer");
+        int N = 0;
+        double pdfVar = 0;
+        double sum = 0;
+        bool check_in = false;
+        std::vector<int> idVect;
+        std::vector<int>::iterator it;
+        if( lheEPHandle.isValid() ){
+                for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        std::string::size_type sz;
+                        double id = std::stod( lheEPHandle->weights()[i].id, &sz);
+                        idVect.push_back( id );
+                }
+                for( unsigned int k=2001; k<2101; k++){
+                        it = find( idVect.begin(), idVect.end(), k);
+                        if( it != idVect.end() ){ check_in = true; }
+                        else{ check_in = false; }
+                }
+                if( check_in ){
+                	for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        	std::string::size_type sz;
+                        	double id = std::stod( lheEPHandle->weights()[i].id, &sz); 
+                                if( id<2001 || id>2100 ) continue;	
+				//std::cout << "Weight: " << lheEPHandle->weights()[i].wgt << "; Nominal Weight: " << lheEPHandle->originalXWGTUP() << std::endl;
+                                sum += std::pow( (lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() - 1 ), 2);
+                                N++; 
+                                	
+                        }	
+			pdfVar = 1+ std::sqrt( sum/ ( N -1 ) ); //+1 variation
+        	} else { pdfVar = 1.; }
+	}
         return pdfVar;
 }
 
 double alphaVariation(const fwlite::Event& ev){
+        //std::cout << "  " << std::endl;
+        //std::cout << "STARTING ALPHA Estimation" << std::endl;
         fwlite::Handle<LHEEventProduct> lheEPHandle;
         lheEPHandle.getByLabel( ev, "externalLHEProducer");
         double alphaVar = 0;
         double local_alpha_one = 0;
         double local_alpha_two = 0;
+	std::vector<int> idVect;
+        std::vector<int>::iterator itone, ittwo;
         if( lheEPHandle.isValid() ){
                 for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
-                        if( lheEPHandle->weights()[i].id != "2101" ){
-                                local_alpha_one = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
-                        } else if( lheEPHandle->weights()[i].id != "2102" ){
-                                local_alpha_two = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
-                        }
-                }
+                        std::string::size_type sz;
+                        double id = std::stod( lheEPHandle->weights()[i].id, &sz);		
+			idVect.push_back( id );
+		}
+		itone = find( idVect.begin(), idVect.end(), 2101);
+		ittwo = find( idVect.begin(), idVect.end(), 2102);
+		if( itone != idVect.end() && ittwo != idVect.end() ){
+			for (unsigned int i=0; i<lheEPHandle->weights().size(); i++) {
+                        	std::string::size_type sz;
+                        	double id = std::stod( lheEPHandle->weights()[i].id, &sz);	
+                        	if( ( id == 2101 ) ){
+                                	local_alpha_one = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+                        	} else if( ( id == 2102 ) ){
+                                	local_alpha_two = ( lheEPHandle->weights()[i].wgt / lheEPHandle->originalXWGTUP() );
+                        	}
+				//std::cout << "alpha one: " << local_alpha_one << "; alpha two: " << local_alpha_two << "; Nominal: " << lheEPHandle->originalXWGTUP() << std::endl;
+                	}
+			alphaVar = 1+std::sqrt(0.75)*std::abs( local_alpha_one - local_alpha_two )*0.5; //+1 variation
+		} else { alphaVar = 1; }
         }
-        alphaVar = 1+std::sqrt(0.75)*std::abs( local_alpha_one - local_alpha_two )*0.5; //+1 variation
+	//std::cout << "Alpha Uncertainties: " << alphaVar << std::endl;
         return alphaVar;
 }
   
