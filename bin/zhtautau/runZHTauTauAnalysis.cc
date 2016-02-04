@@ -488,7 +488,8 @@ pat::JetCollection  getJesVariations( pat::JetCollection & selJets,TString var, 
   pat::Jet newJet;
   for(size_t ijet=0; ijet<selJets.size(); ijet++){
 
-    std::vector<float> smearPt=utils::cmssw::smearJER(selJets[ijet].pt(),selJets[ijet].eta(),selJets[ijet].genJet()->pt());
+    std::vector<float> smearPt=utils::cmssw::smearJER(selJets[ijet].pt(),selJets[ijet].eta(), isMC ? selJets[ijet].genJet()->pt() : selJets[ijet].pt() );
+      
     float jer        = isMC ? smearPt[0] : selJets[ijet].pt();
     float jerup     = isMC ? smearPt[1] : selJets[ijet].pt();
     float jerdown = isMC ? smearPt[2] : selJets[ijet].pt();
@@ -1178,7 +1179,7 @@ int main(int argc, char* argv[])
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
   FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK4PFchs.txt").Data());
   
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
