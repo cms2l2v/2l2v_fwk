@@ -1264,9 +1264,10 @@ void initializeTGraph(){
 //                 pad->SetLogy(true); 
 
                  TH1* h = (TH1*)(ch->second.shapes[histoName.Data()].histo()->Clone((it->first+ch->first+"Nominal").c_str())); 
+                 double yield = h->Integral();
                  toDelete.push_back(h);
-                 mapYieldPerBin[""][ch->first] = h->Integral();
-
+                 mapYieldPerBin[""][ch->first] = yield;
+                  
                  //print histograms
                  TH1* axis = (TH1*)h->Clone("axis");
                  axis->Reset();      
@@ -1294,8 +1295,6 @@ void initializeTGraph(){
 
                  //draw scale uncertainties
                  for(std::map<string, double>::iterator var = ch->second.shapes[histoName.Data()].uncScale.begin(); var!=ch->second.shapes[histoName.Data()].uncScale.end(); var++){
-                    mapYieldPerBin[var->first][ch->first] = var->second;
-
                     double ScaleChange   = var->second/h->Integral();
                     double ScaleUp   = 1 + ScaleChange;
                     double ScaleDn   = 1 - ScaleChange;
@@ -1325,6 +1324,12 @@ void initializeTGraph(){
                        color = map_legend[systName.Data()];
                     }
 
+                    if(mapYieldPerBin[systName.Data()].find(ch->first)==mapYieldPerBin[systName.Data()].end()){
+                        mapYieldPerBin[systName.Data()][ch->first] = fabs( ScaleChange );
+                    }else{
+                       mapYieldPerBin[systName.Data()][ch->first] = std::max( ScaleChange , mapYieldPerBin[systName.Data()][ch->first]);
+                    }
+
                     lineUp->SetLineWidth(2);  lineUp->SetLineColor(color); lineUp->Draw("same");
                     lineDn->SetLineWidth(2);  lineDn->SetLineColor(color); lineDn->Draw("same");
                  }
@@ -1334,7 +1339,7 @@ void initializeTGraph(){
                     if(var->first=="")continue;
 
                     TH1* hvar = (TH1*)(var->second->Clone((it->first+ch->first+var->first).c_str())); 
-                    mapYieldPerBin[var->first][ch->first] = hvar->Integral();
+                    double varYield = hvar->Integral();
                     hvar->Divide(h);
                     toDelete.push_back(hvar);
 
@@ -1349,7 +1354,7 @@ void initializeTGraph(){
                     systName.ReplaceAll("down","");
 
                     int color = ColorIndex;
-                     if(systName.Contains("stat")){systName = "stat"; color=2;}
+                    if(systName.Contains("stat")){systName = "stat"; color=2;}
                     if(map_legend.find(systName.Data())==map_legend.end()){
                        map_legend[systName.Data()]=color;
                        legA->AddEntry(hvar,systName.Data(),"L");
@@ -1359,6 +1364,11 @@ void initializeTGraph(){
                        color = map_legend[systName.Data()];
                     }
 
+                    if(mapYieldPerBin[systName.Data()].find(ch->first)==mapYieldPerBin[systName.Data()].end()){
+                        mapYieldPerBin[systName.Data()][ch->first] = fabs( 1 - (varYield/yield));
+                    }else{
+                       mapYieldPerBin[systName.Data()][ch->first] = std::max(fabs( 1 - (varYield/yield) ), mapYieldPerBin[systName.Data()][ch->first]);
+                    }
 
                     hvar->SetFillColor(0);                  
                     hvar->SetLineStyle(1);
@@ -1403,7 +1413,7 @@ void initializeTGraph(){
                  sprintf(txtBuffer, "%50s: ", varIt->first.c_str());
                  for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){
                     if(varIt->second.find(chIt->first)==varIt->second.end()){ sprintf(txtBuffer, "%s%10s "   , txtBuffer, "-" );                        
-                    }else{                                                    sprintf(txtBuffer, "%s%+10.4f ", txtBuffer,100.0 * (1.0 - (varIt->second[chIt->first] / chIt->second)) ); 
+                    }else{                                                    sprintf(txtBuffer, "%s%+9.3f%% ", txtBuffer,100.0 * varIt->second[chIt->first] ); 
                     }
                  }sprintf(txtBuffer, "%s\n", txtBuffer);
                  UncertaintyOnYield += txtBuffer;

@@ -128,11 +128,11 @@ int main(int argc, char* argv[])
     varNames.push_back("_lesup");    varNames.push_back("_lesdown");  
     varNames.push_back("_puup");     varNames.push_back("_pudown");  
     varNames.push_back("_btagup");   varNames.push_back("_btagdown");
-    varNames.push_back("_uncscaleup"); varNames.push_back("_uncscaledown");
+    varNames.push_back("_scaleup");  varNames.push_back("_scaledown");
     varNames.push_back("_pdf");
     varNames.push_back("_alpha");
     if(isMC_GG || isMC_VBF) { varNames.push_back("_lshapeup"); varNames.push_back("_lshapedown"); }
-    if(isMC_ZZ2l2nu) { varNames.push_back("_ewkcorrectionsup"); varNames.push_back("_ewkcorrectionsdown"); }
+    if(isMC_ZZ2l2nu) { varNames.push_back("_ewkcorrup"); varNames.push_back("_ewkcorrdown"); }
   }
   size_t nvarsToInclude=varNames.size();
   
@@ -1217,6 +1217,7 @@ int main(int argc, char* argv[])
             // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
             //
             //Fill histogram for posterior optimization, or for control regions
+            std::pair<double, double> scaleUncVar = patUtils::scaleVariation(ev);  //compute it only once          
             for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
               float iweight = weight;                            //nominal
               
@@ -1231,11 +1232,10 @@ int main(int argc, char* argv[])
               bool varyLesDown( varNames[ivar]=="_lesdown" );
                      
 	      //Theoretical Uncertanties: PDF, Alpha and Scale
-              std::pair<double, double> scaleUncVar = patUtils::scaleVariation(ev);
-              if(varNames[ivar]=="_uncscaleup")    iweight *= scaleUncVar.first;
-              if(varNames[ivar]=="_uncscaledown")  iweight *= scaleUncVar.second;
-              if(varNames[ivar]=="_alpha")         iweight *= patUtils::alphaVariation(ev);
-              if(varNames[ivar]=="_pdf")           iweight *= patUtils::pdfVariation(ev);
+              if(varNames[ivar]=="_scaleup")    iweight *= std::max(0.9, std::min(scaleUncVar.first , 1.1)); 
+              if(varNames[ivar]=="_scaledown")  iweight *= std::max(0.9, std::min(scaleUncVar.second, 1.1));
+              if(varNames[ivar]=="_alpha")      iweight *= patUtils::alphaVariation(ev);
+              if(varNames[ivar]=="_pdf")        iweight *= patUtils::pdfVariation(ev);
  
               //pileup variations
               if(varNames[ivar]=="_puup") iweight *=TotalWeight_plus;
@@ -1246,12 +1246,11 @@ int main(int argc, char* argv[])
               bool varyBtagDown( varNames[ivar]=="_btagdown" );
          
 	      //EwkCorrections variation
-              if ( varNames[ivar]=="_ewkcorrectionsup")		iweight *= ewkCorrections_up;
-              if ( varNames[ivar]=="_ewkcorrectionsdown")	iweight *= ewkCorrections_down;
+              if ( varNames[ivar]=="_ewkcorrup")	iweight *= ewkCorrections_up;
+              if ( varNames[ivar]=="_ewkcorrdown")	iweight *= ewkCorrections_down;
                        
               //Higgs line shape
-              if(varNames[ivar].Contains("lshape"))
-                {
+              if(varNames[ivar].Contains("lshape")){
                   size_t idx( varNames[ivar].EndsWith("up") ? 1 : 2);
                   float shapeReWeight = lShapeWeights[idx];
                   if(lShapeWeights[0]==0) shapeReWeight=0;
