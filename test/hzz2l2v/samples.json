@@ -220,7 +220,7 @@
       "lwidth":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_GGtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_GGtoH400toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
@@ -235,7 +235,7 @@
       "lstyle":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_VBFtoH400toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_VBFtoH400toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M400_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
@@ -249,7 +249,7 @@
       "lwidth":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_GGtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_GGtoH600toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
@@ -264,7 +264,7 @@
       "lstyle":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
@@ -278,7 +278,7 @@
       "lwidth":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_GGtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_GGtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
     {
@@ -293,37 +293,8 @@
       "lstyle":2,
       "fill":0,
       "data":[
-        { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":0.001      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
+        { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
       ]
-    },
-
-
-    {
-      "tag":"ggH(500)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":true,
-      "isdata":false,
-      "issignal":true,
-      "spimpose":true,
-      "lcolor":2,
-      "lwidth":2,
-      "fill":0,
-      "interpollation":[{"tagLeft":"ggH(400)", "massLeft":400, "mass":500, "tagRight":"ggH(600)", "massRight":600 }],
-      "data":[          { "dtag":"",  "xsec":0.001  , "br":[0.029264] }      ]
-    },
-     {
-      "tag":"qqH(500)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],   
-      "isinvisible":true,
-      "isdata":false,
-      "issignal":true,
-      "spimpose":true,
-      "lcolor":2,
-      "lwidth":2,
-      "lstyle":2,   
-      "fill":0,
-      "interpollation":[{"tagLeft":"qqH(400)", "massLeft":400, "mass":500, "tagRight":"qqH(600)", "massRight":600 }],
-      "data":[          { "dtag":"",  "xsec":0.001  , "br":[0.029264] }      ]
     },
     {
       "tag":"ggH(750)",
@@ -336,7 +307,7 @@
       "lwidth":2,
       "fill":0,
       "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":750, "tagRight":"ggH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.001  , "br":[0.029264] }      ]
+      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
     },
     {
       "tag":"qqH(750)",
@@ -350,34 +321,7 @@
       "lstyle":2,   
       "fill":0,
       "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":750, "tagRight":"qqH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.001  , "br":[0.029264] }      ]
-    },
-    {
-      "tag":"ggH(850)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
-      "isinvisible":true,
-      "isdata":false,
-      "issignal":true,
-      "spimpose":true,
-      "lcolor":809,
-      "lwidth":2,
-      "fill":0,
-      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":850, "tagRight":"ggH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.001  , "br":[0.029264] }      ]
-    },
-    {
-      "tag":"qqH(850)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
-      "isinvisible":true,
-      "isdata":false,
-      "issignal":true,
-      "spimpose":true,
-      "lcolor":809,
-      "lwidth":2,
-      "lstyle":2,
-      "fill":0,
-      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":850, "tagRight":"qqH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":0.001  , "br":[0.029264] }      ]
+      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
     }
   ]
 }

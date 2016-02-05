@@ -61,6 +61,7 @@ bool showRatioBox=true;
 bool fixUnderflow=true;
 bool fixOverflow=true;
 double blind=-1E99;
+double signalScale=1.0;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
 string outDir  = "Img/";
@@ -330,7 +331,6 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
             TH2F* histo2DL = (TH2F*) objL;
             TH2F* histo2DR = (TH2F*) objR;
             if(!histo2DL or !histo2DR)continue;
-            if(histo2DL->GetSum() <=0 || histo2DR->GetSum()<=0)continue;  //Important
             histo2DL->Scale(1.0/xsecXbrL);
             histo2DR->Scale(1.0/xsecXbrR);
             TH2F* histo2D  = (TH2F*) histo2DL->Clone(histo2DL->GetName());
@@ -339,7 +339,8 @@ void InterpollateProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameA
             for(unsigned int cutIndex=0;cutIndex<=(unsigned int)(histo2DL->GetNbinsX()+1);cutIndex++){
                TH1D* histoL = histo2DL->ProjectionY("tempL", cutIndex, cutIndex);
                TH1D* histoR = histo2DR->ProjectionY("tempR", cutIndex, cutIndex);
-               if(histoL->Integral()>0 && histoR->Integral()>0){
+               if(histoL->GetSum() >0 && histoR->GetSum()>0){  //Important
+//               if(histoL->Integral()>0 && histoR->Integral()>0){
                   TH1D* histo  = th1fmorph("interpolTemp","interpolTemp", histoL, histoR, massL, massR, mass, (1-Ratio)*histoL->Integral() + Ratio*histoR->Integral(), 0);
                   for(unsigned int y=0;y<=(unsigned int)(histo2DL->GetNbinsY()+1);y++){
                     histo2D->SetBinContent(cutIndex, y, histo->GetBinContent(y));
@@ -667,6 +668,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
           if(!data){data = (TH1D*)hist->Clone("data");utils::root::checkSumw2(data);}else{data->Add(hist);}
       }else if(Process[i].getBoolFromKeyword(matchingKeyword, "spimpose", false)){
           legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "L" );
+          hist->Scale(signalScale);
           spimposeOpts.push_back( "hist" );
           spimpose.push_back(hist);
           if(SignalMin>hist->GetMaximum()*1E-2) SignalMin=hist->GetMaximum()*1E-2;
@@ -1029,6 +1031,7 @@ int main(int argc, char* argv[]){
 
      if(arg.find("--iLumi"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iLumi); i++; printf("Lumi = %f\n", iLumi); }
      if(arg.find("--iEcm"   )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iEcm); i++; printf("Ecm = %f TeV\n", iEcm); }
+     if(arg.find("--signalScale")!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&signalScale); i++; printf("scale signal by %f\n", signalScale); }
      if(arg.find("--blind"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&blind); i++; printf("Blind above = %f\n", blind); }
      if(arg.find("--inDir"  )!=string::npos && i+1<argc){ inDir    = argv[i+1];  i++;  printf("inDir = %s\n", inDir.c_str());  }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());  }
