@@ -33,16 +33,20 @@
 #include "UserCode/llvv_fwk/src/HxswgUtils.cc"
 
 
-TGraph2D* get2HDMLimitsTgVsAmB(TGraph2D* g2dMassVsWidth, TGraph* SMhiggsWidth, double OnlymH2){
+TGraph2D* get2HDMLimitsTgVsAmB(TGraph2D* g2dMassVsWidth, TGraph* SMhiggsWidth, double OnlymH2, bool getThXSec=false){
    FILE* pFile = fopen("Weight_2HDM_Model.txt","r");
    if(!pFile){printf("Can't open %s\n","Weight_2HDM_Model.txt"); exit(0);}
 
    TGraph2D* graph = new TGraph2D(9999);    int N=0;
-   double tgB, sinAmB, mH2, width, BRtoZZ;
-   while(fscanf(pFile,"tgBeta=%lf sinAmB=%lf MH2=%lf Width=%lf BrH2toZZ=%lf\n",&tgB, &sinAmB, &mH2, &width, &BRtoZZ) != EOF){
+   double tgB, sinAmB, mH2, width, BRtoZZ, XSec;
+   while(fscanf(pFile,"tgBeta=%lf sinAmB=%lf MH2=%lf Width=%lf BrH2toZZ=%lf XSec=%lf\n",&tgB, &sinAmB, &mH2, &width, &BRtoZZ, &XSec) != EOF){
       //printf("tgBeta=%f sinAmB=%f MH2=%f Width=%f (SM=%f) BrH2toZZ=%f\n", tgB, sinAmB, mH2, width, SMhiggsWidth->Eval(mH2), BRtoZZ);
       if(mH2==OnlymH2){
-         graph->SetPoint(N, tgB, sinAmB, g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2) ));  N++;
+         if(getThXSec){
+            graph->SetPoint(N, tgB, sinAmB, XSec);  N++;
+         }else{
+            graph->SetPoint(N, tgB, sinAmB, g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2)) / (XSec*BRtoZZ*1000)   );  N++;
+         }
       }
    }
    graph->Set(N);
@@ -157,36 +161,39 @@ void finalLimitPlot(){
    TLegend* LEG, *LEGTH;
    TGraph* Ref;
 
-   double CPs[] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
+   std::map<int, int> colorMap;
+   colorMap[mapIndex(1.0, 0.0)] = 1;
+   colorMap[mapIndex(0.9, 0.0)] = 1;
+   colorMap[mapIndex(0.8, 0.0)] = 6;
+   colorMap[mapIndex(0.7, 0.0)] = 6;
+   colorMap[mapIndex(0.6, 0.0)] = 4;
+   colorMap[mapIndex(0.5, 0.0)] = 4;
+   colorMap[mapIndex(0.4, 0.0)] = 3;
+   colorMap[mapIndex(0.3, 0.0)] = 3;
+   colorMap[mapIndex(0.2, 0.0)] = 2;
+   colorMap[mapIndex(0.1, 0.0)] = 2;
+
+   double CPs[] = {1.0,0.6,0.3,0.1};
    double BRs[] = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
    string Directories2[]={"cards_SB13TeV", "cards_SB13TeV_GGF", "cards_SB13TeV_VBF"};  //DEBUG
    for(unsigned int D=0;D<sizeof(Directories2)/sizeof(string);D++){
-      string Dir = Directories2[D];
+      string Dir     = Directories2[D];
+      char tmp[1024];sprintf(tmp, "%s_cp%4.2f_brn%4.2f/", Dir.c_str(), 1.0, 0.0);
+      string SaveDir = tmp;
 
       string prod = "pp";
       if(Dir.find("GGF")!=std::string::npos)prod="gg";
       if(Dir.find("VBF")!=std::string::npos)prod="qq";
+      bool strengthLimit = false;
+      if(prod=="pp")strengthLimit=true;
 
-
-      std::map<int, int> colorMap;
-      colorMap[mapIndex(1.0, 0.0)] = 2;
-      colorMap[mapIndex(0.9, 0.0)] = 2;
-      colorMap[mapIndex(0.8, 0.0)] = 3;
-      colorMap[mapIndex(0.7, 0.0)] = 3;
-      colorMap[mapIndex(0.6, 0.0)] = 4;
-      colorMap[mapIndex(0.5, 0.0)] = 4;
-      colorMap[mapIndex(0.4, 0.0)] = 6;
-      colorMap[mapIndex(0.3, 0.0)] = 6;
-      colorMap[mapIndex(0.2, 0.0)] = 8;
-      colorMap[mapIndex(0.1, 0.0)] = 8;
   
    std::cout<<"C\n";
 
 
       std::map<int, TGraph**> gCPBR;
-      gCPBR[ mapIndex(-1.0, 0.0) ]=getGraphs("SM"                         , 1, 2, NULL  , NULL, Dir+               "/Stength_LimitSummary");     
       for(int CPi = 0; CPi<(sizeof(CPs)/sizeof(double));CPi++){
       for(int BRi = 0; BRi<(sizeof(BRs)/sizeof(double));BRi++){
          double CP = CPs[CPi];  double BR = BRs[BRi]; 
@@ -231,47 +238,60 @@ void finalLimitPlot(){
       for(int observed=0;observed<=1;observed++){
          c1 = new TCanvas("c", "c",600,600);
          c1->SetLogy(true);
-         framework = new TH1F("Graph","Graph",1,150,1050);
+         framework = new TH1F("Graph","Graph",1,390,1010);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
-         framework->GetYaxis()->SetTitle(string(("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
+         if(strengthLimit){
+            framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
+            framework->GetYaxis()->SetRangeUser(1E-1,1E4);
+         }else{
+            framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
+            framework->GetYaxis()->SetRangeUser(1E1,1E5);
+         }
          framework->GetYaxis()->SetTitleOffset(1.40);
-         framework->GetYaxis()->SetRangeUser(1E1,1E4);
          framework->Draw();
-   std::cout<<"E1\n";
+
+         if(strengthLimit){
+            TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
+            SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      
+            SMLine->Draw("same C");
+         }
+
 
          LEG = new TLegend(0.50,0.70,0.75,0.94);
          LEG->SetFillStyle(0);
          LEG->SetBorderSize(0);
-         for(double cp=0.1;cp<=1.0;cp+=0.1){
-   std::cout<<"E2 " << cp << "\n";
-
-            if(cp==0.2 || cp==0.4 || cp==0.6 || cp==0.9)continue;
-            if(!gCPBR[ mapIndex(cp, 0.0) ])continue;
-            TGraph* g = (gCPBR[ mapIndex(cp, 0.0) ])[1+observed];
+         for(int CPi = 0; CPi<(sizeof(CPs)/sizeof(double));CPi++){
+         for(int BRi = 0; BRi<(sizeof(BRs)/sizeof(double));BRi++){
+            double CP = CPs[CPi];  double BR = BRs[BRi]; 
+            if(BR!=0.0)continue;
+            if(!gCPBR[ mapIndex(CP, BR) ])continue;
+            TGraph* g = (gCPBR[ mapIndex(CP, BR) ])[1+observed];
             if(!g) continue;
-            g->SetLineStyle(1);
+            g->SetLineStyle(2);
             g->Draw("C same");
             LEG->AddEntry(g, g->GetTitle(), "L");            
-   std::cout<<"E3 " << cp << "\n";   
-         }
+
+
+           if(!strengthLimit){
+              TGraph* THXSec = (gCPBR[ mapIndex(CP, BR) ])[0];
+              THXSec->SetLineStyle(1);  THXSec->SetLineWidth(1);
+              THXSec->Draw("same C");
+           }
+         }}
          LEG->SetHeader(observed==0?"Expected @95% CL":"Observed @95% CL");
          LEG  ->Draw("same");
 
-//         TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
-//         SMLine->SetLineWidth(2); SMLine->SetLineStyle(2); SMLine->SetLineColor(1);
-//         SMLine->Draw("same C");
-
          utils::root::DrawPreliminary(2.215, 13);
          if(observed==0){
-            c1->SaveAs((Dir+"/Stength_FinalPlot.png").c_str());
-            c1->SaveAs((Dir+"/Stength_FinalPlot.pdf").c_str());
-            c1->SaveAs((Dir+"/Stength_FinalPlot.C"  ).c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot.png").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot.pdf").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot.C"  ).c_str());
          }else{
-            c1->SaveAs((Dir+"/Stength_FinalPlot_Obs.png").c_str());
-            c1->SaveAs((Dir+"/Stength_FinalPlot_Obs.pdf").c_str());
-            c1->SaveAs((Dir+"/Stength_FinalPlot_Obs.C"  ).c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot_Obs.png").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot_Obs.pdf").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot_Obs.C"  ).c_str());
          }
    std::cout<<"E3\n";   
      }
@@ -351,9 +371,9 @@ void finalLimitPlot(){
         LEG->Draw();
 
         utils::root::DrawPreliminary(2.215, 13);                 
-        c1->SaveAs((Dir+"/Stength_FinalPlot_Cprime.png").c_str());
-        c1->SaveAs((Dir+"/Stength_FinalPlot_Cprime.pdf").c_str());
-        c1->SaveAs((Dir+"/Stength_FinalPlot_Cprime.C"  ).c_str());
+        c1->SaveAs((SaveDir+"/Stength_FinalPlot_Cprime.png").c_str());
+        c1->SaveAs((SaveDir+"/Stength_FinalPlot_Cprime.pdf").c_str());
+        c1->SaveAs((SaveDir+"/Stength_FinalPlot_Cprime.C"  ).c_str());
      }
 
 
@@ -385,20 +405,23 @@ void finalLimitPlot(){
            if(mode==1)framework2d->GetYaxis()->SetTitle("#Gamma/#Gamma_{SM}");          
            framework2d->GetYaxis()->SetTitleOffset(1.40);
            framework2d->Draw("");
-
-           h2d->SetMaximum(1E4);
-           h2d->SetMinimum(1E1);
-           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} (" + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str() );
            h2d->GetZaxis()->SetTitleOffset(1.33);
+           if(strengthLimit){
+              h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #mu = #sigma_{95%} / #sigma_{th}").c_str());
+              h2d->GetZaxis()->SetRangeUser(1E-1,1E2);
+           }else{
+              h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + string(" #sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
+              h2d->GetZaxis()->SetRangeUser(1E1,3E3);
+           }
            h2d->Draw("COLZ same");
 
             utils::root::DrawPreliminary(2.215, 13);         
             char massStr[512];
             if(mode==0)sprintf(massStr, "MassVsCp");
             if(mode==1)sprintf(massStr, "MassVsWidth");          
-            c1->SaveAs((Dir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
-            c1->SaveAs((Dir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
-            c1->SaveAs((Dir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
+            c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
          }//end of mode loop
       }//end of observed loop
 
@@ -411,15 +434,15 @@ void finalLimitPlot(){
       for(int observed=0;observed<=1;observed++){
          if(observed>0)continue;//DEBUG
          for(double mH=400; mH<=1000; mH+=200){
-           TH2D* grid   = new TH2D("grid2HDM"  , "grid"  , 200, 1, 10, 200, 0.9, 1);
+           TH2D* grid   = new TH2D("grid2HDM"  , "grid"  , 200, 1, 10, 200, 0.8, 1);
            TGraph2D* graph = get2HDMLimitsTgVsAmB(g2dMassVsWidth[1+observed], higgsWidth, mH);
            graph->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH"));
            TH2D* h2d = graph->GetHistogram();
 
            c1 = new TCanvas("c", "c",600,600);
-           //c1->SetLogz(true);      
+           c1->SetLogz(true);      
            c1->SetRightMargin(0.17);
-           framework2d = new TH2F("Graph","Graph",1,1, 10, 1,0.9,1.0);
+           framework2d = new TH2F("Graph","Graph",1,1, 10, 1,0.8,1.0);
            framework2d->SetStats(false);
            framework2d->SetTitle("");
            framework2d->GetXaxis()->SetTitle("tan( #beta )");
@@ -427,10 +450,10 @@ void finalLimitPlot(){
            framework2d->GetYaxis()->SetTitleOffset(1.60);
            framework2d->Draw("");
 
-//           h2d->SetMaximum(15);
-//           h2d->SetMinimum(1);
-           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} (" + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str() );
+//           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} (" + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str() );
+           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} / #sigma_{TH}").c_str() );
            h2d->GetZaxis()->SetTitleOffset(1.33);
+           h2d->GetZaxis()->SetRangeUser(1E-1,1E3);
            h2d->Draw("COLZ same");
 
  	   TPaveText* pave1 = new TPaveText(0.5, 0.82,0.65,0.76,"NDC");
@@ -447,9 +470,9 @@ void finalLimitPlot(){
             utils::root::DrawPreliminary(2.215, 13);         
             char massStr[512];
             sprintf(massStr, "mH%i", (int)mH);
-            c1->SaveAs((Dir+"/Stength_2HDM_"+massStr+".png").c_str());
-            c1->SaveAs((Dir+"/Stength_2HDM_"+massStr+".pdf").c_str());
-            c1->SaveAs((Dir+"/Stength_2HDM_"+massStr+".C").c_str());
+            c1->SaveAs((SaveDir+"/Stength_2HDM_"+massStr+".png").c_str());
+            c1->SaveAs((SaveDir+"/Stength_2HDM_"+massStr+".pdf").c_str());
+            c1->SaveAs((SaveDir+"/Stength_2HDM_"+massStr+".C").c_str());
          }//end of mode loop
       }//end of observed loop
 
@@ -580,9 +603,9 @@ void finalLimitPlot(){
                if(mode==2)sprintf(massStr, "%s_Width", massStr);
                if(mode==3)sprintf(massStr, "%s_WidthFrom1DInterpol", massStr);
                if(observed!=0)sprintf(massStr, "%s_Obs", massStr);
-               c1->SaveAs((Dir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
-               c1->SaveAs((Dir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
-               c1->SaveAs((Dir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
+               c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
+               c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
+               c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
             }//end of mass Loop
          }//end of mode loop
       }//end of observed loop
