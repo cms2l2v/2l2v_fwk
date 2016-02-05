@@ -989,7 +989,7 @@ int main(int argc, char* argv[])
          //JET/MET ANALYSIS
          //
          //add scale/resolution uncertainties and propagate to the MET      
-         //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);  //FIXME if still needed
+         utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC); 
          //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
 
          //select the jets
