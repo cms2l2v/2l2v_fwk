@@ -25,6 +25,8 @@
 #include "TStyle.h"
 #include "TMarker.h"
 //#include "tdrstyle.C"
+#include "UserCode/llvv_fwk/interface/HxswgUtils.h"
+#include "UserCode/llvv_fwk/src/HxswgUtils.cc"
 
 
 TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGraph* Ref, int type, string filePath){
@@ -62,6 +64,11 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
    return graph;
 }
 
+void scaleGraph(TGraph* Limit, double scale){
+   for(int i=0;i<Limit->GetN();i++){
+      Limit->SetPoint(i, Limit->GetX()[i], Limit->GetY()[i]*scale);
+   }   
+}
 
 void plotPerCategory(){
   gStyle->SetOptStat(0);
@@ -83,21 +90,30 @@ void plotPerCategory(){
    TLegend* LEG, *LEGTH;
    TGraph* Ref;
 
-   string Directories[]={"cards_SB13TeV", "cards_SB13TeV_GGF", "cards_SB13TeV_VBF"};
+   string Directories[]={"cards_SB13TeV_cp1.00_brn0.00", "cards_SB13TeV_GGF_cp1.00_brn0.00", "cards_SB13TeV_VBF_cp1.00_brn0.00"};
    for(unsigned int D=0;D<sizeof(Directories)/sizeof(string);D++){
       string Dir = Directories[D];
 
+     string prod = "pp";
+     if(Dir.find("GGF")!=std::string::npos)prod="gg";
+     if(Dir.find("VBF")!=std::string::npos)prod="qq";
+     bool strengthLimit = false;
+     if(prod=="pp")strengthLimit=true;
+
       c1 = new TCanvas("c", "c",600,600);
       c1->SetLogy(true);
-      framework = new TH1F("Graph","Graph",1,150,1050);
+      framework = new TH1F("Graph","Graph",1,390,1010);
       framework->SetStats(false);
       framework->SetTitle("");
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
-//      framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-//      framework->GetYaxis()->SetTitle("#sigma_{95%} (fb)");
-      framework->GetYaxis()->SetTitle("#sigma_{95%} (pp #rightarrow H #rightarrow ZZ) (fb)");        
+      if(strengthLimit){
+         framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
+         framework->GetYaxis()->SetRangeUser(1E-1,1E4);
+      }else{
+         framework->GetYaxis()->SetTitle("#sigma_{95%} (pp #rightarrow H #rightarrow ZZ) (fb)");        
+         framework->GetYaxis()->SetRangeUser(1E1,1E5);
+      }
       framework->GetYaxis()->SetTitleOffset(1.40);
-      framework->GetYaxis()->SetRangeUser(1E1,1E4);
       framework->Draw();
 
       LEG = new TLegend(0.70,0.70,0.95,0.94);
@@ -110,10 +126,10 @@ void plotPerCategory(){
       LEGTH->SetBorderSize(0);
       LEGTH->SetHeader("Theoretical");
 
-      getGraph("Combined"                     , 1, 2, 2, LEG  , NULL, 1, Dir+     "/Stength_LimitSummary")->Draw("C same");
-      getGraph("=0 Jet"                       , 2, 2, 2, LEG  , NULL, 1, Dir+"_eq0jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("Combined"                     , 1, 2, 2, LEG  , NULL, 1, Dir+         "/Stength_LimitSummary")->Draw("C same");
+      getGraph("=0 Jet"                       , 2, 2, 2, LEG  , NULL, 1, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
       getGraph("#geq1 Jets"                   , 4, 2, 2, LEG  , NULL, 1, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
-      getGraph("VBF"                          , 6, 2, 2, LEG  , NULL, 1, Dir+"_vbf/Stength_LimitSummary")->Draw("C same");
+      getGraph("VBF"                          , 6, 2, 2, LEG  , NULL, 1, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
 
    //   LEGTH->Draw("same");
       LEG  ->Draw("same");
@@ -128,10 +144,16 @@ void plotPerCategory(){
       pave->AddText(LumiLabel);
       pave->Draw("same");
 
-      TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
-      SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      
- //     SMLine->Draw("same C");
-
+      if(strengthLimit){
+         TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
+         SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      
+         SMLine->Draw("same C");
+      }else{
+         TGraph* THXSec   = Hxswg::utils::getXSec(Dir); 
+         THXSec->SetLineWidth(2); THXSec->SetLineStyle(1); THXSec->SetLineColor(4);
+         scaleGraph(THXSec, 1000);  //convert cross-section to fb
+         THXSec->Draw("same C");
+      }
 
       c1->SaveAs((Dir+"/perCat_FinalPlot.png").c_str());
       c1->SaveAs((Dir+"/perCat_FinalPlot.pdf").c_str());
@@ -140,7 +162,7 @@ void plotPerCategory(){
 
 
 
-
+/*
    for(unsigned int D=0;D<sizeof(Directories)/sizeof(string);D++){
       string Dir = Directories[D];
 
@@ -196,7 +218,7 @@ void plotPerCategory(){
       c1->SaveAs((Dir+"/perC_FinalPlot.pdf").c_str());
       c1->SaveAs((Dir+"/perC_FinalPlot.C"  ).c_str());
    }
-
+*/
 }
 
 

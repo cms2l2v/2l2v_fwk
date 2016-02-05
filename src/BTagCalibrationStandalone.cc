@@ -382,6 +382,7 @@ double BTagCalibrationReader::eval(BTagEntry::JetFlavor jf,
   // search linearly through eta, pt and discr ranges and eval
   // future: find some clever data structure based on intervals
   const std::vector<TmpEntry> &entries = tmpData_.at(jf);
+
   for (unsigned i=0; i<entries.size(); ++i) {
     const BTagCalibrationReader::TmpEntry &e = entries.at(i);
     if (
@@ -396,6 +397,7 @@ double BTagCalibrationReader::eval(BTagEntry::JetFlavor jf,
         return e.func.Eval(pt);
       }
     }
+   
   }
 
   return 0.;  // default value

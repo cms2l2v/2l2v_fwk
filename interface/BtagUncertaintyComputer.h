@@ -78,23 +78,16 @@ bool BTagSFUtil::applySF(bool& isBTagged, float Btag_SF, float Btag_eff){
   float coin = rand_->Uniform(1.);    
   
   if(Btag_SF > 1){  // use this if SF>1
-
     if( !isBTagged ) {
-
       //fraction of jets that need to be upgraded
       float mistagPercent = (1.0 - Btag_SF) / (1.0 - (Btag_SF/Btag_eff) );
-
       //upgrade to tagged
       if( coin < mistagPercent ) {newBTag = true;}
     }
-
-  }else{  // use this if SF<1
-      
+  }else{  // use this if SF<1      
     //downgrade tagged to untagged
     if( isBTagged && coin > Btag_SF ) {newBTag = false;}
-
   }
-
   return newBTag;
 }
 
