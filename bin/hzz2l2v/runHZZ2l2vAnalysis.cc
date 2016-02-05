@@ -62,6 +62,98 @@
 
 using namespace std;
 
+namespace utils
+{
+    namespace cmssw
+    {
+        
+        
+        std::vector<double> smearJER(double pt, double eta, double genPt)
+        {
+            std::vector<double> toReturn(3,pt);
+            if(genPt<=0) return toReturn;
+            
+            // FIXME: These are the 8 TeV values.
+            //
+            eta=fabs(eta);
+            double ptSF(1.0), ptSF_err(0.06);
+            if(eta<0.8)                  { ptSF=1.061; ptSF_err=sqrt(pow(0.012,2)+pow(0.023,2)); }
+            else if(eta>=0.8 && eta<1.3) { ptSF=1.088; ptSF_err=sqrt(pow(0.012,2)+pow(0.029,2)); }
+            else if(eta>=1.3 && eta<1.9) { ptSF=1.106; ptSF_err=sqrt(pow(0.017,2)+pow(0.030,2)); }
+            else if(eta>=1.9 && eta<2.5) { ptSF=1.126; ptSF_err=sqrt(pow(0.035,2)+pow(0.094,2)); }
+            else if(eta>=2.5 && eta<3.0) { ptSF=1.343; ptSF_err=sqrt(pow(0.127,2)+pow(0.123,2)); }
+            else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
+            else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
+            
+            toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
+            toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
+            toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
+            return toReturn;
+        }
+        
+        //
+        std::vector<float> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
+        {
+            jecUnc->setJetEta(eta);
+            jecUnc->setJetPt(pt);
+            double relShift=fabs(jecUnc->getUncertainty(true));
+            std::vector<float> toRet;
+            toRet.push_back((1.0+relShift)*pt);
+            toRet.push_back((1.0-relShift)*pt);
+            return toRet;
+        }
+        
+        void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
+        {
+            for(size_t ijet=0; ijet<jets.size(); ijet++)
+            {
+                pat::Jet jet = jets[ijet];
+                
+                //correct JES
+                LorentzVector rawJet = jet.correctedP4("Uncorrected");
+                //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
+                //LorentzVector rawJet(jet*toRawSF);
+                jesCor->setJetEta(rawJet.eta());
+                jesCor->setJetPt(rawJet.pt());
+                jesCor->setJetA(jet.jetArea());
+                jesCor->setRho(rho);
+                jesCor->setNPV(nvtx);
+                double newJECSF=jesCor->getCorrection();
+                rawJet *= newJECSF;
+                jet.setP4(rawJet);
+                //smear JER
+                double newJERSF(1.0);
+                if(isMC)
+                {
+                    const reco::GenJet* genJet=jet.genJet();
+                    double genjetpt( genJet ? genJet->pt(): 0.);
+                    std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
+                    newJERSF=smearJER[0]/jet.pt();
+                    rawJet *= newJERSF;
+                    jet.setP4(rawJet);
+                    
+                    // //set the JER up/down alternatives
+                    jet.addUserFloat( "jerup", smearJER[1]);
+                    jet.addUserFloat("jerdown", smearJER[2] );
+                }
+                
+                ////set the JES up/down pT alternatives
+                std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+                jet.addUserFloat("jesup",    ptUnc[0] );
+                jet.addUserFloat("jesdown",  ptUnc[1] );
+                
+                // FIXME: this is not to be re-set. Check that this is a desired non-feature.
+                // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
+                //to get the raw jet again
+                //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
+            }
+        }
+        
+    }
+    
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -490,8 +582,9 @@ int main(int argc, char* argv[])
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
   FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/MC_Uncertainty_AK5PFchs.txt").Data());
-  
+  TString pf(isMC ? "MC" : "DATA");
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
+    
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
@@ -896,7 +989,7 @@ int main(int argc, char* argv[])
          //JET/MET ANALYSIS
          //
          //add scale/resolution uncertainties and propagate to the MET      
-         //utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);  //FIXME if still needed
+         utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC); 
          //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
 
          //select the jets
@@ -1247,10 +1340,10 @@ int main(int argc, char* argv[])
                 float pt=jets[ijet].pt();
 
                 //FIXME
-                //if(varNames[ivar]=="_jesup")    pt=jets[ijet].getVal("jesup");
-                //if(varNames[ivar]=="_jesdown")  pt=jets[ijet].getVal("jesdown");
-                //if(varNames[ivar]=="_jerup")    pt=jets[ijet].getVal("jerup");
-                //if(varNames[ivar]=="_jerdown")  pt=jets[ijet].getVal("jerdown");
+                if(varNames[ivar]=="_jesup")    pt= jets[ijet].userFloat("jesup");
+                if(varNames[ivar]=="_jesdown")  pt= jets[ijet].userFloat("jesdown");
+                if(varNames[ivar]=="_jerup")    pt= jets[ijet].userFloat("jerup");
+                if(varNames[ivar]=="_jerdown")  pt= jets[ijet].userFloat("jerdown");
 
                 if( pt < 30 ) continue;
        
