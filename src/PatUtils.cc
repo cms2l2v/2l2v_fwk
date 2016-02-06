@@ -191,7 +191,7 @@ namespace patUtils
     // CSA14 selection, conditions: 25ns, better detector alignment. 
     // Used Savvas Kyriacou's slides, mailed from Ilya. 
     
-    //    bool elevto = photon.hasPixelSeed();
+    bool elevto = photon.hasPixelSeed();  //LQ  REACTIVATED FOR TIGHT ID, OTHERWISE MANY ELECtRONS pass the photon Id
     
     // sigma ieta ieta
     // full5x5 is not ready in 720 yet 
@@ -265,7 +265,8 @@ namespace patUtils
       break;
     case llvvPhotonId::Tight :
       
-      if ( barrel    
+      if ( barrel   
+           && !elevto 
 	   && hoe < 0.05      
            && sigmaIetaIeta < 0.0100
 	   && chIso < 0.76
@@ -274,6 +275,7 @@ namespace patUtils
 	return true;
 
       if ( endcap
+           && !elevto 
 	   && hoe < 0.05 
 	   && sigmaIetaIeta < 0.0268
 	   && chIso < 0.56 

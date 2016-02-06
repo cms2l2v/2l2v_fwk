@@ -69,8 +69,7 @@ namespace utils
     {
         
         
-        std::vector<double> smearJER(double pt, double eta, double genPt)
-        {
+        std::vector<double> smearJER(double pt, double eta, double genPt){
             std::vector<double> toReturn(3,pt);
             if(genPt<=0) return toReturn;
             
@@ -86,32 +85,30 @@ namespace utils
             else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
             else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
             
-            toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
-            toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
-            toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
+            toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
+            toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
+            toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
             return toReturn;
         }
         
         //
-        std::vector<float> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
-        {
+        std::vector<float> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc){
             jecUnc->setJetEta(eta);
             jecUnc->setJetPt(pt);
             double relShift=fabs(jecUnc->getUncertainty(true));
             std::vector<float> toRet;
-            toRet.push_back((1.0+relShift)*pt);
-            toRet.push_back((1.0-relShift)*pt);
+            toRet.push_back((1.0+relShift));
+            toRet.push_back((1.0-relShift));
             return toRet;
         }
         
-        void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
-        {
-            for(size_t ijet=0; ijet<jets.size(); ijet++)
-            {
-                pat::Jet jet = jets[ijet];
+        void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC){
+            for(size_t ijet=0; ijet<jets.size(); ijet++){
+                pat::Jet& jet = jets[ijet];
                 
                 //correct JES
                 LorentzVector rawJet = jet.correctedP4("Uncorrected");
+
                 //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
                 //LorentzVector rawJet(jet*toRawSF);
                 jesCor->setJetEta(rawJet.eta());
@@ -122,10 +119,10 @@ namespace utils
                 double newJECSF=jesCor->getCorrection();
                 rawJet *= newJECSF;
                 jet.setP4(rawJet);
+
                 //smear JER
                 double newJERSF(1.0);
-                if(isMC)
-                {
+                if(isMC){
                     const reco::GenJet* genJet=jet.genJet();
                     double genjetpt( genJet ? genJet->pt(): 0.);
                     std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
@@ -134,14 +131,16 @@ namespace utils
                     jet.setP4(rawJet);
                     
                     // //set the JER up/down alternatives
-                    jet.addUserFloat( "jerup", smearJER[1]);
+                    jet.addUserFloat("jerup", smearJER[1]);
                     jet.addUserFloat("jerdown", smearJER[2] );
                 }
-                
-                ////set the JES up/down pT alternatives
-                std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-                jet.addUserFloat("jesup",    ptUnc[0] );
-                jet.addUserFloat("jesdown",  ptUnc[1] );
+
+                if(isMC){
+                   ////set the JES up/down pT alternatives
+                   std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+                   jet.addUserFloat("jesup",    ptUnc[0] );
+                   jet.addUserFloat("jesdown",  ptUnc[1] );
+                }
                 
                 // FIXME: this is not to be re-set. Check that this is a desired non-feature.
                 // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
@@ -216,23 +215,23 @@ int main(int argc, char* argv[])
   std::vector<TString> varNames(1,"");
   if(runSystematics){
      if(true){
-        varNames.push_back("_jerup");    varNames.push_back("_jerdown");     //jet energy resolution
-        varNames.push_back("_jesup");    varNames.push_back("_jesdown");     //jet energy scale
-        varNames.push_back("_umetup");   varNames.push_back("_umetdown");    //unclustered met
-        varNames.push_back("_mesup");    varNames.push_back("_mesdown");     //muon energy scale
-        varNames.push_back("_eesup");    varNames.push_back("_eesdown");     //electron energy scale
-        varNames.push_back("_puup");     varNames.push_back("_pudown");      //pileup uncertainty 
-        varNames.push_back("_btagup");   varNames.push_back("_btagdown");    //btag veto
-        varNames.push_back("_scaleup");  varNames.push_back("_scaledown");   //factorization and renormalization scales
-        varNames.push_back("_pdf");                                          //pdf
-        varNames.push_back("_alpha");                                        //alpha_s (QCD)
+        varNames.push_back("_scale_umetup"); varNames.push_back("_scale_umetdown");    //unclustered met
+        varNames.push_back("_res_jup");      varNames.push_back("_res_jdown");    //jet energy resolution
+        varNames.push_back("_scale_jup");    varNames.push_back("_scale_jdown");  //jet energy scale
+        varNames.push_back("_scale_mup");    varNames.push_back("_scale_mdown");  //muon energy scale
+        varNames.push_back("_scale_eup");    varNames.push_back("_scale_edown");  //electron energy scale
+        varNames.push_back("_puup");         varNames.push_back("_pudown");      //pileup uncertainty 
+        varNames.push_back("_eff_bup");      varNames.push_back("_eff_bdown");    //btag veto
+        varNames.push_back("_th_factup");    varNames.push_back("_th_factdown"); //factorization and renormalization scales
+        varNames.push_back("_th_pdf");                                           //pdf
+        varNames.push_back("_th_alphas");                                         //alpha_s (QCD)
      }
      if(isMC_GG || isMC_VBF){
-        varNames.push_back("_lshapeup"); varNames.push_back("_lshapedown"); //signal line shape (NNLO + interf)
-        varNames.push_back("_interfup"); varNames.push_back("_interfdown"); //signal scale      (NNLO + interf)
+        varNames.push_back("_signal_lshapeup"); varNames.push_back("_signal_lshapedown"); //signal line shape (NNLO + interf)
+        varNames.push_back("_signal_normup"); varNames.push_back("_signal_normdown"); //signal scale      (NNLO + interf)
      }
      if(isMC_ZZ2l2nu){
-        varNames.push_back("_ewkcorrup"); varNames.push_back("_ewkcorrdown"); //EWK+QCD corrections
+        varNames.push_back("_th_ewkup"); varNames.push_back("_th_ewkdown"); //EWK+QCD corrections
      }
   }
   size_t nvarsToInclude=varNames.size();
@@ -242,6 +241,7 @@ int main(int argc, char* argv[])
 
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");      
   GammaWeightsHandler* gammaWgtHandler = (gammaPtWeightsFiles.size()>0 && gammaPtWeightsFiles[0]!="") ? new GammaWeightsHandler(runProcess,"",true) : NULL;
+  if(gammaWgtHandler)printf("gammaWgtHandler is activated\n");
 
   //HIGGS weights and uncertainties
   
@@ -757,6 +757,8 @@ int main(int argc, char* argv[])
           //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
           if(!(eeTrigger || mumuTrigger || emuTrigger || photonTrigger) && !photonTriggerStudy)continue;
 
+//          printf("DEBUG event %6i w=%6.2e trigger=%i %i %i %i %i\n", iev, weight, int(eeTrigger?1:0), int(mumuTrigger?1:0), int(emuTrigger?1:0), int(photonTrigger?1:0), int(photonTriggerStudy?1:0) ); 
+
          //##############################################   EVENT PASSED THE TRIGGER   ######################################
           int metFilterValue = metFiler.passMetFilterInt( ev );
           mon.fillHisto("metFilter_eventflow", "", metFilterValue, weight);
@@ -914,11 +916,19 @@ int main(int argc, char* argv[])
 	    pat::Photon photon = photons[ipho]; 
  	    mon.fillHisto("phopt", "trg", photon.pt(), weight);
 	    mon.fillHisto("phoeta", "trg", photon.eta(), weight);
+            //printf("photon pt=%6.2f eta=%+6.2f\n", photon.pt(), photon.eta());
+
+            if(photonTrigger && photon.pt()<triggerThreshold)continue;
+            //printf("A\n");
 
             if(photon.pt()<20)continue;
-            if(photonTrigger && photon.pt()<triggerThreshold)continue;
+            //printf("B\n");
             if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
+            //printf("C\n");
+
 	    if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
+            //printf("D\n");
+
             selPhotons.push_back(photon);
             if(photon.pt()>55)nPho55++;
             if(photon.pt()>100)nPho100++;
@@ -962,11 +972,15 @@ int main(int argc, char* argv[])
              lid=abs(lid);
              TString lepStr( lid==13 ? "mu" : "e");
 
+
+
              //veto nearby photon (loose electrons are many times photons...)
              double minDRlg(9999.);
              for(size_t ipho=0; ipho<selPhotons.size(); ipho++){
                minDRlg=TMath::Min(minDRlg,deltaR(leptons[ilep].p4(),selPhotons[ipho].p4()));
              }
+             //printf("lepton pt=%6.2f eta=%+6.2f %3i drtoPhoton%6.2f\n", leptons[ilep].pt(), leptons[ilep].eta(), lid, minDRlg);
+
              if(minDRlg<0.1) continue;
 
              //kinematics
@@ -1064,9 +1078,9 @@ int main(int argc, char* argv[])
                                                 btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalLDn.eval(BTagEntry::FLAV_UDSG, eta, jets[ijet].pt()), leff);
                      }
 
-                     if(hasCSVtag    )jets[ijet].addUserFloat("_btag"    , 1.0);
-                     if(hasCSVtagUp  )jets[ijet].addUserFloat("_btagup"  , 1.0);
-                     if(hasCSVtagDown)jets[ijet].addUserFloat("_btagdown", 1.0);                   
+                     if(hasCSVtag    )jets[ijet].addUserFloat("_eff_b"    , 1.0);
+                     if(hasCSVtagUp  )jets[ijet].addUserFloat("_eff_bup"  , 1.0);
+                     if(hasCSVtagDown)jets[ijet].addUserFloat("_eff_bdown", 1.0);                   
                  }
                  if( hasCSVtag ) nbtags++;
                }
@@ -1074,12 +1088,14 @@ int main(int argc, char* argv[])
          }
          std::sort(selJets.begin(), selJets.end(), utils::sort_CandidatesByPt);
 
+//          printf("DEBUG event %6i w=%6.2e nphotons=%2i nleptons=%2i\n", iev, weight, int(selPhotons.size()), int(selLeptons.size())); 
+
          //
          // ASSIGN CHANNEL
          //
          double initialWeight = weight;
          for(unsigned int L=0;L<3;L++){  //Loop to assign a Z-->ll channel to photons
-            if(L>0 && (!photonTrigger || !gammaWgtHandler) )continue; //run it only for photon reweighting
+            if(L>0 && !(photonTrigger && gammaWgtHandler) )continue; //run it only for photon reweighting
             weight = initialWeight;  //make sure we do not modify the weight twice in this loop
           
             std::vector<TString> chTags;
@@ -1090,7 +1106,7 @@ int main(int argc, char* argv[])
                 for(size_t ilep=0; ilep<2; ilep++){
                     dilId *= selLeptons[ilep].pdgId();
                     int id(abs(selLeptons[ilep].pdgId()));
-                    weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"    ).first : 1.0; //ID
+                    weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"    ).first : 1.0; //ID 
                     weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso" ).first : 1.0; //ISO w.r.t ID
                     boson += selLeptons[ilep].p4();
                   }        
@@ -1100,6 +1116,9 @@ int main(int argc, char* argv[])
                 if( abs(dilId)==143 && emuTrigger){  chTags.push_back("emu");  }           
 
                 weight *= isMC ? lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first : 1.0;
+
+//          printf("DEBUG event %6i weight=%6.2e L=%i llchannel %s\n", iev, weight, int(L), chTags.size()>0?chTags[0].Data():"unassigned"); 
+
 
                 evCat=eventCategoryInst.GetCategory(selJets,boson);            
             }else if(selPhotons.size()>=1 && photonTrigger){
@@ -1117,6 +1136,9 @@ int main(int argc, char* argv[])
                 float photonWeightMain=1.0;
                 if(L>0 && gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
                 weight *= triggerPrescale * photonWeightMain;
+
+//          printf("DEBUG event %6i weight=%6.2e L=%i photonChannel\n", iev, weight, int(L)); 
+
             }
 
             std::vector<TString> tags(1,"all");
@@ -1337,77 +1359,72 @@ int main(int argc, char* argv[])
               //start from a nominal
               float iweight = weight;
 
-//            printf("iweight = %6.2e\n", iweight);
-             
-
 	      //Theoretical Uncertanties: PDF, Alpha and Scale
-              if(varNames[ivar]=="_scaleup")       iweight *= std::max(0.9, std::min(scaleUncVar.first , 1.1)); 
-              if(varNames[ivar]=="_scaledown")     iweight *= std::max(0.9, std::min(scaleUncVar.second, 1.1));
-              if(varNames[ivar]=="_alpha")         iweight *= patUtils::alphaVariation(ev);
-              if(varNames[ivar]=="_pdf")           iweight *= patUtils::pdfVariation(ev);
- 
+              if(varNames[ivar]=="_th_factup")     iweight *= std::max(0.9, std::min(scaleUncVar.first , 1.1)); 
+              if(varNames[ivar]=="_th_factdown")   iweight *= std::max(0.9, std::min(scaleUncVar.second, 1.1));
+              if(varNames[ivar]=="_th_alphas")     iweight *= patUtils::alphaVariation(ev);
+              if(varNames[ivar]=="_th_pdf")        iweight *= patUtils::pdfVariation(ev);
+
+              //EwkCorrections variation
+              if ( varNames[ivar]=="_th_ewkup")    iweight *= ewkCorrections_up;
+              if ( varNames[ivar]=="_th_ewkdown")  iweight *= ewkCorrections_down;
+
               //pileup variations
               if(varNames[ivar]=="_puup")          iweight *= puWeightUp;
               if(varNames[ivar]=="_pudown")        iweight *= puWeightDown;
-         
-	      //EwkCorrections variation
-              if ( varNames[ivar]=="_ewkcorrup")   iweight *= ewkCorrections_up;
-              if ( varNames[ivar]=="_ewkcorrdown") iweight *= ewkCorrections_down;
              
               //recompute MET with variation
               LorentzVector imet = met.p4();
-              if(varNames[ivar]=="_jesup")    imet = met.shiftedP4(pat::MET::METUncertainty::JetEnUp);
-              if(varNames[ivar]=="_jesdown")  imet = met.shiftedP4(pat::MET::METUncertainty::JetEnDown);
-              if(varNames[ivar]=="_jerup")    imet = met.shiftedP4(pat::MET::METUncertainty::JetResUp);
-              if(varNames[ivar]=="_jerdown")  imet = met.shiftedP4(pat::MET::METUncertainty::JetResDown);
-              if(varNames[ivar]=="_umetup")   imet = met.shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);              
-              if(varNames[ivar]=="_umetdown") imet = met.shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
-              
-              if(varNames[ivar]=="_mesup")    imet = met.shiftedP4(pat::MET::METUncertainty::MuonEnUp);
-              if(varNames[ivar]=="_medown")   imet = met.shiftedP4(pat::MET::METUncertainty::MuonEnDown);             
-              if(varNames[ivar]=="_eesup")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp); 
-              if(varNames[ivar]=="_eedown")   imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown);
-
-//            printf("iweight2 = %6.2e\n", iweight);
-
+              if(varNames[ivar]=="_scale_jup")      imet = met.shiftedP4(pat::MET::METUncertainty::JetEnUp);
+              if(varNames[ivar]=="_scale_jdown")    imet = met.shiftedP4(pat::MET::METUncertainty::JetEnDown);
+              if(varNames[ivar]=="_res_jup")        imet = met.shiftedP4(pat::MET::METUncertainty::JetResUp);
+              if(varNames[ivar]=="_res_jdown")      imet = met.shiftedP4(pat::MET::METUncertainty::JetResDown);
+              if(varNames[ivar]=="_scale_umetup")   imet = met.shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);              
+              if(varNames[ivar]=="_scale_umetdown") imet = met.shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);              
+              if(varNames[ivar]=="_scale_mup")      imet = met.shiftedP4(pat::MET::METUncertainty::MuonEnUp);
+              if(varNames[ivar]=="_scale_mdown")    imet = met.shiftedP4(pat::MET::METUncertainty::MuonEnDown);             
+              if(varNames[ivar]=="_scale_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp); 
+              if(varNames[ivar]=="_scale_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown);
 
               int inbtags = nbtags;             
               pat::JetCollection tightVarJets;
               for(size_t ijet=0; ijet<jets.size(); ijet++){
-                if( fabs(jets[ijet].eta())>4.7 || jets[ijet].pt()<15 ) continue;
-                float pt=jets[ijet].pt();
+                pat::Jet jet = jets[ijet]; //copy the jet, such that we can update it
 
-                //FIXME
-                if(varNames[ivar]=="_jesup")    pt= jets[ijet].userFloat("jesup");
-                if(varNames[ivar]=="_jesdown")  pt= jets[ijet].userFloat("jesdown");
-                if(varNames[ivar]=="_jerup")    pt= jets[ijet].userFloat("jerup");
-                if(varNames[ivar]=="_jerdown")  pt= jets[ijet].userFloat("jerdown");
+                if( fabs(jet.eta())>4.7 || jet.pt()<15 ) continue;
 
-                if( pt < 30 ) continue;
+                if(varNames[ivar]=="_scale_jup")    jet.setP4(jet.p4() * jet.userFloat("jesup"));
+                if(varNames[ivar]=="_scale_jdown")  jet.setP4(jet.p4() * jet.userFloat("jesdown"));
+                if(varNames[ivar]=="_res_jup")      jet.setP4(jet.p4() * jet.userFloat("jerup"));
+                if(varNames[ivar]=="_res_jdown")    jet.setP4(jet.p4() * jet.userFloat("jerdown"));
+
+                if( jet.pt() < 30 ) continue;
+                
        
                 //cross-clean with selected leptons and photons
                 double minDRlj(9999.),minDRlg(9999.);
                 for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-                  minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet].p4(),selLeptons[ilep].p4()) );
+                  minDRlj = TMath::Min( minDRlj, deltaR(jet.p4(),selLeptons[ilep].p4()) );
                 for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-                  minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
+                  minDRlg = TMath::Min( minDRlg, deltaR(jet.p4(),selPhotons[ipho].p4()) );
                 if(minDRlj<0.4 || minDRlg<0.4) continue;
                 
                 //jet id
-                bool         passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
-                float     PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
+                bool         passPFloose = patUtils::passPFJetID("Loose", jet);
+                float     PUDiscriminant = jet.userFloat("pileupJetId:fullDiscriminant");
                 
-                //bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
-                if(!passPFloose /*|| !passLooseSimplePuId */) continue; //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
+                bool passLooseSimplePuId = patUtils::passPUJetID(jet);
+                passLooseSimplePuId = true; //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
+                if(!passPFloose || !passLooseSimplePuId) continue; 
                
                 //jet is selected
-                tightVarJets.push_back(jets[ijet]);
+                tightVarJets.push_back(jet);
 
                 //check b-tag
-                if( pt > 30 && fabs(jets[ijet].eta()) < 2.5 ){
-                   if      (varNames[ivar]=="_btagup"   && jets[ijet].hasUserData("_btagup"  )){ inbtags++;
-                   }else if(varNames[ivar]=="_btagdown" && jets[ijet].hasUserData("_btagdown")){ inbtags++;                   
-                   }else if(                               jets[ijet].hasUserData("_btag"    )){ inbtags++;
+                if( jet.pt() > 30 && fabs(jet.eta()) < 2.5 ){
+                   if      (varNames[ivar]=="_eff_bup"   && jet.hasUserData("_eff_bup"  )){ inbtags++;
+                   }else if(varNames[ivar]=="_eff_bdown" && jet.hasUserData("_eff_bdown")){ inbtags++;                   
+                   }else if(                                jet.hasUserData("_eff_b"    )){ inbtags++;
                    }
                 }
               }
@@ -1445,10 +1462,10 @@ int main(int argc, char* argv[])
 
                           //if(ivar==0)printf("nri=%i weight change %6.2e --> %6.2e\n", nri, chWeight, shapeWeight);
 
-                          if(varNames[ivar]=="_interfdown") shapeWeight*=lShapeWeights[nri][2];
-                          if(varNames[ivar]=="_lshapedown") shapeWeight*=lShapeWeights[nri][3];
-                          if(varNames[ivar]=="_interfup"  ) shapeWeight*=lShapeWeights[nri][4];
-                          if(varNames[ivar]=="_lshapeup"  ) shapeWeight*=lShapeWeights[nri][5];
+                          if(varNames[ivar]=="_signal_normdown") shapeWeight*=lShapeWeights[nri][2];
+                          if(varNames[ivar]=="_signal_lshapedown") shapeWeight*=lShapeWeights[nri][3];
+                          if(varNames[ivar]=="_signal_normup"  ) shapeWeight*=lShapeWeights[nri][4];
+                          if(varNames[ivar]=="_signal_lshapeup"  ) shapeWeight*=lShapeWeights[nri][5];
             
                           if(passPreselection && ivar==0 && nri==0                                    )   mon.fillHisto("metcount", tags_full, index, shapeWeight);
                           if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags_full,index, mt,shapeWeight);
