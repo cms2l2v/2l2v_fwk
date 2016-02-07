@@ -34,10 +34,11 @@ BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to Fal
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-MASS = [400,500, 600, 750, 850, 1000]
+
+MASS = [400, 600, 1000]
 #MASS = [400, 600, 1000]
 SUBMASS = MASS
-#SUBMASS = [400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
+SUBMASS = [400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
@@ -47,7 +48,8 @@ LandSArgCommonOptions=" --blind --rebin 20 --dropBckgBelow 0.00001  --subNRB "
 
 for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
    for bin in BINS:
-      for CP in [-1.0, 0.2, 0.4, 0.6, 0.8, 1.0]:  #-1 stands for SM
+      for CP in [1.0, 0.6, 0.3, 0.1]:
+         if(CP!=1.0 and not ',' in bin):continue  #only do subchannel for SM
          for BRN in [0.0]:
             CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
             #suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN)
@@ -57,17 +59,11 @@ for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes
             if ( CPSQ<=0 and not BRN==0.0):continue #SM case
             if ( (CPSQ / (1-BRN))>1.0 ):continue
 
-      
-#           #Run limit for Cut&Count GG+VBF
-#           signalSuffixVec += [ "" ]
-#           OUTName         += ["CC13TeV"]
-#           LandSArgOptions += [" --histo " + shape + " --systpostfix _13TeV "]
-#           BIN             += [bin]
 
             #Run limit for ShapeBased GG+VBF
             signalSuffixVec += [ suffix ]
             OUTName         += ["SB13TeV"]
-            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape "]
+            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
             BIN             += [bin]
 
             signalSuffixVec += [ suffix ]
@@ -337,17 +333,26 @@ for signalSuffix in signalSuffixVec :
 
                INbinSuffix = "_" + bin
                IN = CWD+'/JOBS/'+OUTName[iConf]+signalSuffix+INbinSuffix+'/'
-               listcuts = open(IN+'cuts.txt',"r")
-               mi=0
-               for line in listcuts :
-                  vals=line.split(' ')
-                  for c in range(1, cutsH.GetYaxis().GetNbins()+3):
-                     #FIXME FORCE INDEX TO BE 16 (Met>125GeV)
-                     Gcut[c-1].SetPoint(mi, 16, float(125));
-#                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c+1]));
-                  mi+=1
-               for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
-               listcuts.close();          
+               try:
+                  listcuts = open(IN+'cuts.txt',"r")
+                  mi=0
+                  for line in listcuts :
+                     vals=line.split(' ')
+                     for c in range(1, cutsH.GetYaxis().GetNbins()+3):
+                        #FIXME FORCE INDEX TO BE 16 (Met>125GeV)
+                        Gcut[c-1].SetPoint(mi, 16, float(125));
+   #                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c+1]));
+                     mi+=1
+                  for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
+                  listcuts.close();          
+               except:
+                  mi=0
+                  for mtmp in SUBMASS:
+                     for c in range(1, cutsH.GetYaxis().GetNbins()+3):
+                        #FIXME FORCE INDEX TO BE 16 (Met>125GeV)
+                        Gcut[c-1].SetPoint(mi, 16, float(125));
+                     mi+=1
+                  for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
 
                #add comma to index string if it is not empty
                if(indexString!=' '):
