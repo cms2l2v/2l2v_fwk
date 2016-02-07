@@ -1445,7 +1445,7 @@ int main(int argc, char* argv[])
 
                  //Id+Trigger efficiencies combined
                  if(!it->second.isData){
-                    if(chbin.Contains("ee"  ))  shapeInfo.uncScale["CMS_eff_e"] = integral*0.0424;  //4% (trigger) + 1% (Id) +1% (Iso)
+                    if(chbin.Contains("ee"  ))  shapeInfo.uncScale["CMS_eff_e"] = integral*0.05;    //4% (trigger) + 3% (Id+Iso)
                     if(chbin.Contains("mumu"))  shapeInfo.uncScale["CMS_eff_m"] = integral*0.0424;  //4% (trigger) + 1% (Id) +1% (Iso)
                  }
    

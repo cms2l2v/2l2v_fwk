@@ -116,9 +116,7 @@ namespace utils
                 jesCor->setJetA(jet.jetArea());
                 jesCor->setRho(rho);
                 jesCor->setNPV(nvtx);
-                double newJECSF=jesCor->getCorrection();
-                rawJet *= newJECSF;
-                jet.setP4(rawJet);
+                jet.setP4(rawJet*jesCor->getCorrection());
 
                 //smear JER
                 double newJERSF(1.0);
@@ -126,9 +124,7 @@ namespace utils
                     const reco::GenJet* genJet=jet.genJet();
                     double genjetpt( genJet ? genJet->pt(): 0.);
                     std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
-                    newJERSF=smearJER[0]/jet.pt();
-                    rawJet *= newJERSF;
-                    jet.setP4(rawJet);
+                    jet.setP4(rawJet*smearJER[0]);
                     
                     // //set the JER up/down alternatives
                     jet.addUserFloat("jerup", smearJER[1]);
@@ -478,6 +474,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
   mon.addHistogram( new TH1F("fwdjeteta",    ";Pseudo-rapidity;Events",25,0,5) );
   mon.addHistogram( new TH1F("cenjeteta",       ";Pseudo-rapidity;Events",25,0,5) );
+  mon.addHistogram( new TH1F("jetId",       ";Pseudo-rapidity;Events",25,0,5) );
   Double_t mjjaxis[32];
   mjjaxis[0]=0.01;
   for(size_t i=1; i<20; i++)  mjjaxis[i]   =50*i;        //0-1000
@@ -1023,7 +1020,6 @@ int main(int argc, char* argv[])
          //
          //add scale/resolution uncertainties and propagate to the MET      
          utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC); 
-         //std::vector<LorentzVector> met=utils::cmssw::getMETvariations(recoMet,jets,selLeptons,isMC); //FIXME if still needed
 
          //select the jets
          pat::JetCollection selJets;
@@ -1051,9 +1047,9 @@ int main(int argc, char* argv[])
              passLooseSimplePuId = true; //FIXME Broken in miniAOD V2 : waiting for JetMET fix. (Hugo)
              if(jets[ijet].pt()>30){
                  mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),0);
-                 if(passPFloose)                        mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),1);
-                 if(passLooseSimplePuId)                mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),2);
-                 if(passPFloose && passLooseSimplePuId) mon.fillHisto(jetType,"",fabs(jets[ijet].eta()),3);
+                 if(passPFloose)                        mon.fillHisto("jetId", jetType,fabs(jets[ijet].eta()),1);
+                 if(passLooseSimplePuId)                mon.fillHisto("jetId", jetType,fabs(jets[ijet].eta()),2);
+                 if(passPFloose && passLooseSimplePuId) mon.fillHisto("jetId", jetType,fabs(jets[ijet].eta()),3);
              }
              if(!passPFloose || !passLooseSimplePuId) continue; 
              selJets.push_back(jets[ijet]);
@@ -1077,7 +1073,6 @@ int main(int argc, char* argv[])
                                                 btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalLUp.eval(BTagEntry::FLAV_UDSG, eta, jets[ijet].pt()), leff);
                                                 btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalLDn.eval(BTagEntry::FLAV_UDSG, eta, jets[ijet].pt()), leff);
                      }
-
                      if(hasCSVtag    )jets[ijet].addUserFloat("_eff_b"    , 1.0);
                      if(hasCSVtagUp  )jets[ijet].addUserFloat("_eff_bup"  , 1.0);
                      if(hasCSVtagDown)jets[ijet].addUserFloat("_eff_bdown", 1.0);                   
