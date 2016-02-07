@@ -177,9 +177,10 @@
     },	   
      {
       "tag":"#gamma+jets",
-      "keys":["2l2v_photoncontrol"],           
+      "keys":["2l2v_photoncontrol", "2l2v_photonsOnly"],           
       "isdata":false,
       "color":390,
+"suffix":"reweighted",	
       "data":[                                                                     
              { "dtag":"MC13TeV_GJet_HT-40to100"                  ,  "xsec":20730.0, "br":[ 1.0 ],      "dset":"/GJets_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
              { "dtag":"MC13TeV_GJet_HT-100to200"                 ,  "xsec":9226.0 , "br":[ 1.0 ],      "dset":"/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
@@ -211,6 +212,15 @@
       "color":831,
       "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":-1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":-1.0}]
     },
+  {                                                                                                                                                     
+      "tag":"Instr. mcMET",                                                                                                                                
+      "keys":["2l2v_mcbased"],                                                                                                                          
+      "isdata":false,                                                                                                                                      
+      "isdatadriven":false,                                                                                                                                
+      "color":831,                                                                                                                                         
+      "mixing":[{"tag":"#gamma+jets_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted","scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}]       
+                                                                                                                                                           
+    },        
     {
       "tag":"ggH(400)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
