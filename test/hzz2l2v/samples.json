@@ -26,8 +26,10 @@
       "isdata":false,
       "color":592,
       "data":[
-        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
-        { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZZ2l2nu"                         ,  "xsec":0.564            , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
+        { "dtag":"MC13TeV_ggZZ2mu2nu"                      ,  "xsec":0.01898          , "br":[ 1.0 ]           , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluToContinToZZTo2mu2nu_MINIAODv2/"}, 
+        { "dtag":"MC13TeV_ggZZ2e2nu"                       ,  "xsec":0.01898          , "br":[ 1.0 ]           , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluToContinToZZTo2e2nu_MINIAODv2/"}
       ]
     },
     {
@@ -207,7 +209,7 @@
       "isdata":false,
       "isdatadriven":true,
       "color":831,
-      "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":-1.0}]
+      "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":-1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":-1.0}]
     },
     {
       "tag":"ggH(400)",
