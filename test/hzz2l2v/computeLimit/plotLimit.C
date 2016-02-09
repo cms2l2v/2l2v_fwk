@@ -148,8 +148,17 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
 
   strengthLimit = false;
   if(prod=="pp")strengthLimit=true;
-  
-  //scale TH cross-section and limits according to scale factor 
+ 
+
+  scaleGraph(ObsLimit  , 1000); //pb to fb
+  scaleGraph(ExpLimitm2, 1000); //pb to fb
+  scaleGraph(ExpLimitm1, 1000); //pb to fb
+  scaleGraph(ExpLimit  , 1000); //pb to fb
+  scaleGraph(ExpLimitp1, 1000); //pb to fb
+  scaleGraph(ExpLimitp2, 1000); //pb to fb
+
+
+  //scal eTH cross-section and limits according to scale factor 
   //this only apply to NarrowResonnance case
   if(strengthLimit){
      Hxswg::utils::divideGraph(ObsLimit   , THXSec);
@@ -171,7 +180,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-  framework->GetYaxis()->SetRangeUser(1E-1,1E4);
+  framework->GetYaxis()->SetRangeUser(1E-2,1E3);
   c->SetLogy(true);
   }else{
   framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());

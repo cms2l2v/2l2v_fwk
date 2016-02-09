@@ -323,12 +323,20 @@ int main(int argc, char* argv[])
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       }
 
+
+
       //loop over possible scenarios: SM or BSM
       for(size_t nri=0; nri<NRparams.size(); nri++){
          //recompute weights depending on the scenario (SM or BSM)
-         TGraph* shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);
-         TGraph* shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);
-         TGraph* shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0);
+         TGraph* shapeWgtsGr      = new TGraph; shapeWgtsGr->SetName("shapeWgts_"+ NRsuffix[nri]);          float shapeNorm(0);     double signalNorm(1.0);
+         TGraph* shapeWgts_upGr   = new TGraph; shapeWgts_upGr->SetName("shapeWgtsUp_"+ NRsuffix[nri]);     float shapeUpNorm(0);   double signalUpNorm(1.0);
+         TGraph* shapeWgts_downGr = new TGraph; shapeWgts_downGr->SetName("shapeWgtsDown_"+ NRsuffix[nri]); float shapeDownNorm(0); double signalDownNorm(1.0);
+
+         TGraph* nrWgtGr     = (mctruthmode!=125 && NRparams[nri].first>=0)?higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalNorm    ,""     ) : NULL;
+         TGraph* nrWgtUpGr   = (mctruthmode!=125 && NRparams[nri].first>=0)?higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalUpNorm  ,"_up"  ) : NULL;          
+         TGraph* nrWgtDownGr = (mctruthmode!=125 && NRparams[nri].first>=0)?higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalDownNorm,"_down") : NULL; 
+         if(!nrWgtUpGr){nrWgtUpGr=nrWgtGr;  signalUpNorm=signalNorm;}
+         if(!nrWgtDownGr){nrWgtDownGr=nrWgtGr;  signalDownNorm=signalNorm;}
 
          double hySum=0;
          for(int ip=1; ip<=hGen->GetXaxis()->GetNbins(); ip++){
@@ -345,10 +353,6 @@ int main(int argc, char* argv[])
 	        shapeWgtUp     = shapeWgt;
 	        shapeWgtDown   = shapeWgt;
  	     }else if(NRparams[nri].first>=0){ //reweighting to Narrow reasonnance or EWS model
-                TGraph* nrWgtGr     = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile);
-                TGraph* nrWgtUpGr   = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_up");          
-                TGraph* nrWgtDownGr = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, hmass, NRparams[nri].first, NRparams[nri].second, hLineShapeNominal,decayProbPdf,nrLineShapesFile,"_down"); 
-
                 shapeWgt       = nrWgtGr    ->Eval(hmass);
                 shapeWgtUp     = nrWgtUpGr  ->Eval(hmass);
                 shapeWgtDown   = nrWgtDownGr->Eval(hmass);                       
@@ -372,7 +376,7 @@ int main(int argc, char* argv[])
      	    }
 
             //fix possible normalization issues
-            printf("C'=%6.2f  BRNew=%6.2f shapeNorm = %f Up=%f Down=%f\n", NRparams[nri].first, NRparams[nri].second, shapeNorm, shapeUpNorm, shapeDownNorm);
+            printf("C'=%6.2f  BRNew=%6.2f shapeNorm = %f Up=%f Down=%f  signalNorm=%f Up=%f Down=%f\n", NRparams[nri].first, NRparams[nri].second, shapeNorm, shapeUpNorm, shapeDownNorm, signalNorm, signalUpNorm, signalDownNorm);
  	    for(Int_t ip=0; ip<shapeWgtsGr->GetN(); ip++){
   	         Double_t x,y;
 	         shapeWgtsGr->GetPoint(ip,x,y);
@@ -385,7 +389,7 @@ int main(int argc, char* argv[])
          }
 
          //all done here...
-	 std::vector<std::pair<double, TGraph*> > inrWgts = {std::make_pair(shapeNorm, shapeWgtsGr), std::make_pair(shapeUpNorm,shapeWgts_upGr), std::make_pair(shapeDownNorm,shapeWgts_downGr)};
+	 std::vector<std::pair<double, TGraph*> > inrWgts = {std::make_pair(signalNorm/signalNorm, shapeWgtsGr), std::make_pair(signalUpNorm/signalNorm,shapeWgts_upGr), std::make_pair(signalDownNorm/signalNorm,shapeWgts_downGr)};
 	 hLineShapeGrVec[ NRparams[nri] ] = inrWgts;
       }	  
       if(nrLineShapesFile){nrLineShapesFile->Close(); delete nrLineShapesFile;}
@@ -437,9 +441,9 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("npho100",";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
-
-  mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 40, 0, 4) );
-  mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 40, 0, 4) );
+  mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 80, -4, 4) );
+  mon.addHistogram(new TH1F("bosonphiHG", ";Photon #phi;Events", 800, -4, 4) );
+  mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 80, -4, 4) );
   mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(#gamma,MET);Events", 40, 0, 4) );
   
   //lepton control
@@ -454,6 +458,7 @@ int main(int argc, char* argv[])
   Double_t zptaxis[]= {0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975};
   Int_t nzptAxis=sizeof(zptaxis)/sizeof(Double_t);
   mon.addHistogram( new TH1F( "zpt_rebin",  ";Transverse momentum [GeV];Events / GeV", nzptAxis-1,zptaxis));
+  mon.addHistogram( new TH1F( "zptMet125",        ";Transverse momentum [GeV];Events",100,0,1500));
   mon.addHistogram( new TH1F( "qmass",      ";Mass [GeV];Events / (1 GeV)",100,76,106));
   mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
   mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / (1 GeV)",1500,0,1500));
@@ -718,7 +723,7 @@ int main(int argc, char* argv[])
                         lShapeWeights[nri][iwgt*2+0]=shapeWgtGr[iwgt].first;
                         lShapeWeights[nri][iwgt*2+1]=shapeWgtGr[iwgt].second?shapeWgtGr[iwgt].second->Eval(higgs.mass()):1.0;
                      }
-                     mon.fillHisto(TString("higgsMass_shape"      )              , "all", higgs.mass(), weight*lShapeWeights[nri][1] );
+                     mon.fillHisto(TString("higgsMass_shape"      )+NRsuffix[nri], "all", higgs.mass(), weight*lShapeWeights[nri][1] );
                      mon.fillHisto(TString("higgsMass_shape&scale")+NRsuffix[nri], "all", higgs.mass(), weight*lShapeWeights[nri][1]*lShapeWeights[nri][0] );
 
                      //printf("NRI BW=%i --> %6.2e %6.2e %6.2e %6.2e %6.2e %6.2e\n", nri, lShapeWeights[nri][0], lShapeWeights[nri][1], lShapeWeights[nri][2], lShapeWeights[nri][3], lShapeWeights[nri][4], lShapeWeights[nri][5]);
@@ -1205,6 +1210,8 @@ int main(int argc, char* argv[])
               mon.fillHisto("eventflow",tags, 2,weight);
               mon.fillHisto("zpt",      tags, boson.pt(),weight);
               mon.fillHisto("zpt_rebin",tags, boson.pt(),weight,true);
+              if(met.pt()>125)mon.fillHisto("zptMet125",      tags, boson.pt(),weight);
+
 
               //these two are used to reweight photon -> Z, the 3rd is a control
               mon.fillHisto("qt",       tags, boson.pt(),weight,true); 
@@ -1256,6 +1263,7 @@ int main(int argc, char* argv[])
                       double b_dphi=fabs(deltaPhi(boson.phi(),met.phi()));
                       mon.fillHisto( "metphi",tags,met.phi(),weight,true);                                                                    
                       mon.fillHisto( "bosonphi",tags,boson.phi(),weight,true);                                                               
+                      mon.fillHisto( "bosonphiHG",tags,boson.phi(),weight,true);                                                               
                       mon.fillHisto( "dphi_boson_met",tags,b_dphi,weight,true);
  
                       mon.fillHisto( "met",tags,met.pt(),weight,true);
