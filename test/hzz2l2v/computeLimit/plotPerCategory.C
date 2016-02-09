@@ -108,9 +108,9 @@ void plotPerCategory(){
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
       if(strengthLimit){
          framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-         framework->GetYaxis()->SetRangeUser(1E-1,1E4);
+         framework->GetYaxis()->SetRangeUser(1E-2,1E3);
       }else{
-         framework->GetYaxis()->SetTitle("#sigma_{95%} (pp #rightarrow H #rightarrow ZZ) (fb)");        
+         framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod + " #rightarrow H #rightarrow ZZ) (fb)").c_str());        
          framework->GetYaxis()->SetRangeUser(1E1,1E5);
       }
       framework->GetYaxis()->SetTitleOffset(1.40);

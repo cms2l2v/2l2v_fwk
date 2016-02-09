@@ -273,7 +273,7 @@ int main(int argc, char* argv[]){
         if(!hist)continue;
 
         hist->GetSumw2();
-        if(rbin>1){ hist->Rebin(rbin);}
+        if(rbin>1){ hist->Rebin(rbin);  hist->Scale(1.0, "width"); }
         hist->GetXaxis()->SetTitleSize(.055);
         hist->GetYaxis()->SetTitleSize(.055);
         hist->GetXaxis()->SetLabelSize(.05);

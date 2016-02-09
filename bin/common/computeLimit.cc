@@ -1022,7 +1022,7 @@ int main(int argc, char* argv[])
               //print histograms
               TH1* axis = (TH1*)map_data[p->first]->Clone("axis");
               axis->Reset();      
-              axis->GetXaxis()->SetRangeUser(0, axis->GetXaxis()->GetXmax());
+              axis->GetXaxis()->SetRangeUser(axis->GetXaxis()->GetXmin(), axis->GetXaxis()->GetXmax());
               axis->SetMinimum(1E-3);
               double signalHeight=0; for(unsigned int s=0;s<map_signals[p->first].size();s++){signalHeight = std::max(signalHeight, map_signals[p->first][s]->GetMaximum());}
               axis->SetMaximum(1.5*std::max(signalHeight , std::max( map_unc[p->first]->GetMaximum(), map_data[p->first]->GetMaximum())));
@@ -1123,7 +1123,7 @@ int main(int argc, char* argv[])
                  //print histograms
                  TH1* axis = (TH1*)h->Clone("axis");
                  axis->Reset();      
-                 axis->GetXaxis()->SetRangeUser(0, axis->GetXaxis()->GetXmax());
+                 axis->GetXaxis()->SetRangeUser(axis->GetXaxis()->GetXmin(), axis->GetXaxis()->GetXmax());
                  axis->GetYaxis()->SetRangeUser(0.5, 1.5); //100% uncertainty
                  if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
                  axis->Draw();
@@ -1744,10 +1744,12 @@ int main(int argc, char* argv[])
                      for(int x=0;x<=hshape->GetXaxis()->GetNbins()+1;x++){
                         if(hshape->GetXaxis()->GetBinCenter(x)<=minCut || hshape->GetXaxis()->GetBinCenter(x)>=maxCut){ hshape->SetBinContent(x,0); hshape->SetBinError(x,0); }
                      }
-                     if(histoVBF!="" && ch.Contains("vbf")){    hshape->Rebin(30);
-                     }else{                                     hshape->Rebin(rebinVal);
-                     }
-                     hshape->GetYaxis()->SetTitle("Entries (/25GeV)");
+
+                     if(rebinVal>1){ hshape->Rebin(rebinVal); }
+//                     if(histoVBF!="" && ch.Contains("vbf")){    hshape->Rebin(30);
+//                     }else{                                     hshape->Rebin(rebinVal);
+//                     }
+                     hshape->GetYaxis()->SetTitle("Entries");// (/25GeV)");
 
                   }
                   hshape->Scale(MCRescale);
@@ -2257,27 +2259,9 @@ int main(int argc, char* argv[])
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];      
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
-                     TH1* histo = unc->second;
-                     double* xbins = NULL;  int nbins=0;
-                     if(ch->first.find("vbf")!=string::npos && histoVBF!="" ){
-                        nbins = 3;
-                        xbins = new double[nbins+1];
-                        xbins[0] =  0;
-                        xbins[1] = 70;
-                        xbins[2] = histo->GetXaxis()->GetBinLowEdge(histo->GetXaxis()->FindBin(150));
-                        xbins[3] = histo->GetXaxis()->GetBinLowEdge(histo->GetNbinsX()+1);
-                     }else{
-//                        nbins = histo->GetXaxis()->FindBin(1000)+1;
-//                        xbins = new double[nbins+1];
-//                        for(int x=0;x<=histo->GetXaxis()->FindBin(1000)+1;x++){xbins[x]=histo->GetXaxis()->GetBinLowEdge(x);}
-//                        xbins[nbins] = histo->GetXaxis()->GetBinLowEdge(histo->GetNbinsX()+1);
-
-                        nbins = histo->GetXaxis()->FindBin(800)+1;
-                        xbins = new double[nbins+1];
-                        for(int x=0;x<=histo->GetXaxis()->FindBin(800)+1;x++){xbins[x]=histo->GetXaxis()->GetBinLowEdge(x);}
-                        xbins[nbins] = histo->GetXaxis()->GetBinLowEdge(histo->GetNbinsX()+1);
-                     }
-                     unc->second = histo->Rebin(nbins, histo->GetName(), (double*)xbins);
+                  TH1* histo = unc->second;
+                  double xbins[] = {150, 300, 450, 600, 750, 1250};  int nbins=sizeof(xbins)/sizeof(double);
+                  unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
                  }
               }
            }
@@ -2400,7 +2384,7 @@ int main(int argc, char* argv[])
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
-                     unc->second->Scale(scale);
+                    if(unc->second)unc->second->Scale(scale);
                  }
               }
            }
