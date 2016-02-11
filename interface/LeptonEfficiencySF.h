@@ -7,7 +7,6 @@
 class LeptonEfficiencySF
 {
  public:
-
   //
   LeptonEfficiencySF() { }
 
@@ -451,6 +450,40 @@ class LeptonEfficiencySF
    return eff;
  }
 
+
+/* 
+void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron) const 
+{
+    static TRandom* rng_ = new TRandom(1234);  //define as statis so it is created only one
+
+    isMC_ == electron.isMC();
+    float smear = 0.0, scale = 1.0;
+    float aeta = std::abs(electron.eta()), r9 = electron.getR9();
+    bool bad = (r9 < 0.94), gold = !bad;
+    if      (0.0    <= aeta && aeta < 1.0    && bad ) { smear = smearings_[0]; scale = scales_[0]; }
+    else if (0.0    <= aeta && aeta < 1.0    && gold) { smear = smearings_[1]; scale = scales_[1]; }
+    else if (1.0    <= aeta && aeta < 1.4442 && bad ) { smear = smearings_[2]; scale = scales_[2]; }
+    else if (1.0    <= aeta && aeta < 1.4442 && gold) { smear = smearings_[3]; scale = scales_[3]; }
+    else if (1.566  <= aeta && aeta < 2.0    && bad ) { smear = smearings_[4]; scale = scales_[4]; }
+    else if (1.566  <= aeta && aeta < 2.0    && gold) { smear = smearings_[5]; scale = scales_[5]; }
+    else if (2.0    <= aeta && aeta < 2.5    && bad ) { smear = smearings_[6]; scale = scales_[6]; }
+    else if (2.0    <= aeta && aeta < 2.5    && gold) { smear = smearings_[7]; scale = scales_[7]; }
+    else if (1.4442 <= aeta && aeta < 1.566  && bad ) { smear = smearings_[8]; scale = scales_[8]; } 
+    else if (1.4442 <= aeta && aeta < 1.566  && gold) { smear = smearings_[9]; scale = scales_[9]; } 
+
+    double newEcalEnergy, newEcalEnergyError;
+    if (isMC_) {
+        double corr = 1.0 + smear * rng_->Gauss();
+        newEcalEnergy      = electron.getNewEnergy() * corr;
+        newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
+    } else {
+        newEcalEnergy      = electron.getNewEnergy() / scale;
+        newEcalEnergyError = std::hypot(electron.getNewEnergyError() / scale, smear * newEcalEnergy);
+    }
+    electron.setNewEnergy(newEcalEnergy); 
+    electron.setNewEnergyError(newEcalEnergyError); 
+}
+*/
  private:
 
 };
