@@ -647,7 +647,7 @@ int main(int argc, char* argv[])
   if(isMC) xsecWeight=xsec/utils::getTotalNumberOfEvents(urls, false, true);//need to use the slow method in order to take NLO negative events into account
 
   //MET CORRection level
-  pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1;
+  pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
 
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
@@ -665,6 +665,7 @@ int main(int argc, char* argv[])
   std::vector<double> EGammaSmearings = {0.013654,0.014142,0.020859,0.017120,0.028083,0.027289,0.031793,0.030831,0.028083, 0.027289};
   std::vector<double> EGammaScales    = {0.99544,0.99882,0.99662,1.0065,0.98633,0.99536,0.97859,0.98567,0.98633, 0.99536};
   PhotonEnergyCalibratorRun2 PhotonEnCorrector(isMC, false, EGammaSmearings, EGammaScales);
+  PhotonEnCorrector.initPrivateRng(new TRandom(1234));
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;

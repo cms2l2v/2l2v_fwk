@@ -1,8 +1,8 @@
 # Installation
 ```bash 
 export SCRAM_ARCH=slc6_amd64_gcc491
-scramv1 project CMSSW CMSSW_7_4_14
-cd CMSSW_7_4_14/src/
+scramv1 project CMSSW CMSSW_7_4_16
+cd CMSSW_7_4_16/src/
 cmsenv
 wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
 ```
