@@ -218,5 +218,25 @@ namespace higgs{
 
       return nrGr;
    }
+
+
+    TGraph* weightGGZZContinuum(std::string SampleName, TFile *nrLineShapesFile, double& Norm, TString pf){
+      //1st check if is in the file
+      if(!nrLineShapesFile){
+         printf("LineShapeFile not ok for ggZZ Continuum\n");  fflush(stdout);
+         return NULL;
+      }
+
+      char nrShapeBuf[100];
+      sprintf(nrShapeBuf,"%d_%3.1f_%3.1f/%s%s",int(1000) ,1.0, 0.0, "kFactors", pf.Data());
+      TGraph* nrGr = (TGraph*)nrLineShapesFile->Get(nrShapeBuf);
+      for(int i=0;i<nrGr->GetN();i++){double x, y; nrGr->GetPoint(i, x, y);  if(y<0 || y>1000){y=0;} nrGr->SetPoint(i, x, y);} //make sure weights are not crazy
+
+      Norm = 1.0;
+
+      return nrGr;
+   }
+
+
   }
 }

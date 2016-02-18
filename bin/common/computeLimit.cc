@@ -2260,7 +2260,7 @@ int main(int argc, char* argv[])
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];      
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                   TH1* histo = unc->second;
-                  double xbins[] = {150, 300, 450, 600, 750, 1250};  int nbins=sizeof(xbins)/sizeof(double);
+                  double xbins[] = {150, 300, 450, 600, 1250};  int nbins=sizeof(xbins)/sizeof(double);
                   unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
                  }
               }

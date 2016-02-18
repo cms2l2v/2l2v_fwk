@@ -217,6 +217,35 @@
       "color":831,
       "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":-1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":-1.0}]
     },
+     {
+      "tag":"ggH(200)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "fill":0,
+      "data":[
+      { "dtag":"MC13TeV_GGtoH200toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluHToZZTo2L2Nu_M200_MINIAODv2/" }
+      ]
+    },
+    {
+      "tag":"qqH(200)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH200toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M200_MINIAODv2/" }
+      ]
+    },   
     {
       "tag":"ggH(400)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
@@ -304,6 +333,64 @@
         { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
+     {
+      "tag":"ggH(1500)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH1500toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluHToZZTo2L2Nu_M1500_MINIAODv2/" }
+      ]
+    },
+    {
+      "tag":"qqH(1500)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH1500toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M1500_MINIAODv2/" }
+      ]
+    },  
+     {
+      "tag":"ggH(2000)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH2000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluHToZZTo2L2Nu_M2000_MINIAODv2/" }
+      ]
+    },
+    {
+      "tag":"qqH(2000)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH2000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M2000_MINIAODv2/" }
+      ]
+    },   
     {
       "tag":"ggH(750)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],      
