@@ -52,7 +52,8 @@ namespace higgs{
 
     //reweight the resonance
     TGraph* weightNarrowResonnance(std::string SampleName, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile, double& Norm, TString pf);
-   
+    TGraph* weightGGZZContinuum(std::string SampleName, TFile *nrLineShapesFile, double& Norm, TString pf);
+  
 
     //reweight to H125 interference
     double weightToH125Interference(double mass,double width,TFile *intFile,TString var); 
