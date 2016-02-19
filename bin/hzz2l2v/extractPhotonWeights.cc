@@ -206,7 +206,7 @@ int main(int argc, char* argv[]){
    //FIXME these are currently hard-coded, but we should pass them via parameters using the code just bellow
    bool isData=true;
    bool bfit=false;
-   int  rbin=5;
+   int  rbin=1;
    bool asym=true;
    string gDataFile = "plotter_2016_01_18_forPhotonWeights.root";
    string zDataFile = "plotter_2016_01_18_forPhotonWeights.root";
@@ -295,7 +295,7 @@ int main(int argc, char* argv[]){
 
    //non fixed-width rebins
   if(asym){
-     double xbins[] = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 175, 200, 300, 400, 500, 700, 1000, 1500};    
+     double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
      for(unsigned int v=0;v<var.size();v++){
         if(var[v]!="_qt")continue;
         for(unsigned int b=0;b<bin.size();b++){
@@ -312,8 +312,6 @@ int main(int argc, char* argv[]){
         var.push_back(var[v]+"rebin");
      }
   }
-
-
 
   //compute the weight
   for(unsigned int v=0;v<var.size();v++){
@@ -340,8 +338,8 @@ int main(int argc, char* argv[]){
   for(unsigned int v=0;v<var.size();v++){
      double xmin,xmax;
      double ymin=0.5, ymax=1E6;
-     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=45.01; xmax=1000.01;
-     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=45.01; xmax=1000.01; ymin=0.0001;  ymax=0.5;
+     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=55.00; xmax=1000.00;
+     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=55.00; xmax=1000.00; ymin=0.0001;  ymax=0.5;
      } else if( (var[v]=="_met") || var[v]=="_mt") {               xmin=1.; xmax=1000.0;
      } else{                                                       xmin=1.; xmax=1000.0;    
      }

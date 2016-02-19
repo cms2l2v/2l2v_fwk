@@ -102,7 +102,7 @@ void plotPerCategory(){
 
       c1 = new TCanvas("c", "c",600,600);
       c1->SetLogy(true);
-      framework = new TH1F("Graph","Graph",1,390,1010);
+      framework = new TH1F("Graph","Graph",1,190,1510);
       framework->SetStats(false);
       framework->SetTitle("");
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");

@@ -284,7 +284,7 @@ void finalLimitPlot(){
       for(int observed=0;observed<=1;observed++){
          c1 = new TCanvas("c", "c",600,600);
          c1->SetLogy(true);
-         framework = new TH1F("Graph","Graph",1,390,1010);
+         framework = new TH1F("Graph","Graph",1,190,1510);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
@@ -352,7 +352,7 @@ void finalLimitPlot(){
            //mode=0 --> Mass versus C'     interpolated from 2D limit(CPrime, BRNew)
            //mode=1 --> Mass versus Gamma  interpolated from 2D limit(CPrime, BRNew)
  
-           TH2D* grid   = new TH2D("grid"  , "grid"  , 200, 0, 1006, 200, 0, 1);
+           TH2D* grid   = new TH2D("grid"  , "grid"  , 200, 0, 1506, 200, 0, 1);
            TGraph2D*   graph = g2dMassVsCp   [1+observed];
            if(mode==1) graph = g2dMassVsWidth[1+observed];
            graph->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
@@ -361,7 +361,7 @@ void finalLimitPlot(){
            c1 = new TCanvas("c", "c",600,600);
            c1->SetLogz(true);      
            c1->SetRightMargin(0.17);
-           framework2d = new TH2F("Graph","Graph",1,400, 1000, 1,0,1.0);
+           framework2d = new TH2F("Graph","Graph",1,200, 1500, 1,0,1.0);
            framework2d->SetStats(false);
            framework2d->SetTitle("");
            framework2d->GetXaxis()->SetTitle("H mass (GeV)");
@@ -423,7 +423,7 @@ void finalLimitPlot(){
       for(int observed=0;observed<=1;observed++){
          if(observed>0)continue;//DEBUG
          for(double cosBmA=0.1; cosBmA<=0.1; cosBmA+=0.1){
-           TH2D* grid   = new TH2D("grid2HDM"  , "grid"  , 1000, 400, 1000, 1000, 0.5, 60);
+           TH2D* grid   = new TH2D("grid2HDM"  , "grid"  , 1000, 200, 1500, 1000, 0.5, 60);
            TGraph2D* graph = get2HDMLimitsTgVsAmB(g2dMassVsWidth[1+observed], higgsWidth, cosBmA);
            graph->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH"));
            TH2D* h2d = graph->GetHistogram();

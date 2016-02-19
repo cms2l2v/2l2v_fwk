@@ -1088,8 +1088,8 @@ int main(int argc, char* argv[])
               if(it==procs.end())continue;
               if(it->first=="total" || it->first=="data")continue;  //only do samples which have systematics
 
+              std::map<string, bool> mapUncType;
               std::map<string, std::map< string, double> > mapYieldPerBin;
-              sprintf(txtBuffer, "\n### %s ###\n", it->first.c_str());  UncertaintyOnYield+= txtBuffer;
 
 
               int NBins = it->second.channels.size()/selCh.size();
@@ -1138,7 +1138,7 @@ int main(int argc, char* argv[])
                  LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
                  Label->AddText(LabelText);  Label->Draw();
 
-                 TLine* line = new TLine(0.0, 1.0, axis->GetXaxis()->GetXmax(), 1.0);
+                 TLine* line = new TLine(axis->GetXaxis()->GetXmin(), 1.0, axis->GetXaxis()->GetXmax(), 1.0);
                  toDelete.push_back((TH1*)line);
                  line->SetLineWidth(2);  line->SetLineColor(1); line->Draw("same");
                  if(I==1){legA->AddEntry(line,"Nominal","L");  NLegEntry++;}
@@ -1161,8 +1161,8 @@ int main(int argc, char* argv[])
                     systName.ReplaceAll("up","");
                     systName.ReplaceAll("down","");
 
-                    TLine* lineUp = new TLine(0.0, ScaleUp, axis->GetXaxis()->GetXmax(), ScaleUp);
-                    TLine* lineDn = new TLine(0.0, ScaleDn, axis->GetXaxis()->GetXmax(), ScaleDn);
+                    TLine* lineUp = new TLine(axis->GetXaxis()->GetXmin(), ScaleUp, axis->GetXaxis()->GetXmax(), ScaleUp);
+                    TLine* lineDn = new TLine(axis->GetXaxis()->GetXmin(), ScaleDn, axis->GetXaxis()->GetXmax(), ScaleDn);
                     toDelete.push_back((TH1*)lineUp);  toDelete.push_back((TH1*)lineDn);
                    
 
@@ -1178,6 +1178,7 @@ int main(int argc, char* argv[])
 
                     if(mapYieldPerBin[systName.Data()].find(ch->first)==mapYieldPerBin[systName.Data()].end()){
                         mapYieldPerBin[systName.Data()][ch->first] = fabs( ScaleChange );
+                        mapUncType[systName.Data()] = false;
                     }else{
                        mapYieldPerBin[systName.Data()][ch->first] = std::max( ScaleChange , mapYieldPerBin[systName.Data()][ch->first]);
                     }
@@ -1216,10 +1217,13 @@ int main(int argc, char* argv[])
                        color = map_legend[systName.Data()];
                     }
 
-                    if(mapYieldPerBin[systName.Data()].find(ch->first)==mapYieldPerBin[systName.Data()].end()){
-                        mapYieldPerBin[systName.Data()][ch->first] = fabs( 1 - (varYield/yield));
-                    }else{
-                       mapYieldPerBin[systName.Data()][ch->first] = std::max(fabs( 1 - (varYield/yield) ), mapYieldPerBin[systName.Data()][ch->first]);
+                    if(yield>0){
+                       if(mapYieldPerBin[systName.Data()].find(ch->first)==mapYieldPerBin[systName.Data()].end()){
+                           mapYieldPerBin[systName.Data()][ch->first] = fabs( 1 - (varYield/yield));
+                           mapUncType[systName.Data()] = true;                        
+                       }else{
+                          mapYieldPerBin[systName.Data()][ch->first] = std::max(fabs( 1 - (varYield/yield) ), mapYieldPerBin[systName.Data()][ch->first]);
+                       }
                     }
 
                     hvar->SetFillColor(0);                  
@@ -1256,20 +1260,22 @@ int main(int argc, char* argv[])
 
 
               //print uncertainty on yield
-              sprintf(txtBuffer, "%50s: ", "Uncertainty (%)  \\   Channels");
-              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s%10s ", txtBuffer, chIt->first.c_str()); } sprintf(txtBuffer, "%s\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
-              sprintf(txtBuffer, "%50s: ", "Nominal Yield (#events) ");
-              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s%10.4E ", txtBuffer, chIt->second); } sprintf(txtBuffer, "%s\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
+              //
+              //
+              sprintf(txtBuffer, "\\multicolumn{%i}{'c'}{\\bf{%s}}\\\\ \n", I+1, it->first.c_str());  UncertaintyOnYield+= txtBuffer;
+              sprintf(txtBuffer, "%10s & %25s", "Type", "Uncertainty");
+              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s & %10s ", txtBuffer, chIt->first.c_str()); } sprintf(txtBuffer, "%s\\\\ \\hline\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
+              sprintf(txtBuffer, "%10s & %25s", "", "Nominal yields ");
+              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s & %10.4E ", txtBuffer, chIt->second); } sprintf(txtBuffer, "%s\\\\ \n", txtBuffer);  UncertaintyOnYield += txtBuffer;
               for(auto varIt=mapYieldPerBin.begin();varIt!=mapYieldPerBin.end();varIt++){
                  if(varIt->first == "")continue;
-                 sprintf(txtBuffer, "%50s: ", varIt->first.c_str());
+                 sprintf(txtBuffer, "%10s & %25s", mapUncType[varIt->first.c_str()]?"shape":"scale", varIt->first.c_str());
                  for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){
-                    if(varIt->second.find(chIt->first)==varIt->second.end()){ sprintf(txtBuffer, "%s%10s "   , txtBuffer, "-" );                        
-                    }else{                                                    sprintf(txtBuffer, "%s%+9.3f%% ", txtBuffer,100.0 * varIt->second[chIt->first] ); 
+                    if(varIt->second.find(chIt->first)==varIt->second.end()){ sprintf(txtBuffer, "%s & %10s   "    , txtBuffer, "-" );                        
+                    }else{                                                    sprintf(txtBuffer, "%s & %+9.3f\\%% ", txtBuffer,100.0 * varIt->second[chIt->first] ); 
                     }
-                 }sprintf(txtBuffer, "%s\n", txtBuffer);
-                 UncertaintyOnYield += txtBuffer;
-              }
+                 }sprintf(txtBuffer, "%s\\\\ \n", txtBuffer);   UncertaintyOnYield += txtBuffer;
+              }sprintf(txtBuffer, "\\hline \n"); UncertaintyOnYield += txtBuffer;
            }
 
            FILE* pFile = fopen(SaveName+"_Uncertainty.txt", "w");
@@ -1406,13 +1412,22 @@ int main(int argc, char* argv[])
          // add hardcoded uncertainties
          //
          void AllInfo_t::addHardCodedUncertainties(string histoName){
+            //7/8 TeV values
             //#FIXME: extrapolated from 600 to 1TeVmissing points from 650GeV to 1TeV
-            double QCDScaleMass   [] = {200, 250, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000};
-            double QCDScaleK0ggH0 [] = {1.15 , 1.16, 1.17, 1.20, 1.17, 1.19, 1.22, 1.24, 1.25, 1.25, 1.25, 1.25, 1.25};
-            double QCDScaleK0ggH1 [] = {0.88, 0.86, 0.84, 0.83, 0.82, 0.81, 0.80, 0.78, 0.78, 0.78, 0.78, 0.78, 0.78};
-            double QCDScaleK1ggH1 [] = {1.27, 1.27, 1.27, 1.27, 1.26, 1.26, 1.25, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26};
-            double QCDScaleK1ggH2 [] = {0.96, 0.96, 0.95, 0.95, 0.95, 0.95, 0.95,  0.95, 0.94, 0.94, 0.94, 0.94, 0.94};
-            double QCDScaleK2ggH2 [] = { 1.20, 1.17, 1.20, 1.21, 1.20, 1.20, 1.17, 1.19, 1.19, 1.19, 1.19, 1.19, 1.19};
+//            double QCDScaleMass   [] = {200, 250, 300, 350, 400, 450, 500, 550, 600, 700, 800, 900, 1000};
+//            double QCDScaleK0ggH0 [] = {1.15 , 1.16, 1.17, 1.20, 1.17, 1.19, 1.22, 1.24, 1.25, 1.25, 1.25, 1.25, 1.25};
+//            double QCDScaleK0ggH1 [] = {0.88, 0.86, 0.84, 0.83, 0.82, 0.81, 0.80, 0.78, 0.78, 0.78, 0.78, 0.78, 0.78};
+//            double QCDScaleK1ggH1 [] = {1.27, 1.27, 1.27, 1.27, 1.26, 1.26, 1.25, 1.26, 1.26, 1.26, 1.26, 1.26, 1.26};
+//            double QCDScaleK1ggH2 [] = {0.96, 0.96, 0.95, 0.95, 0.95, 0.95, 0.95,  0.95, 0.94, 0.94, 0.94, 0.94, 0.94};
+//            double QCDScaleK2ggH2 [] = { 1.20, 1.17, 1.20, 1.21, 1.20, 1.20, 1.17, 1.19, 1.19, 1.19, 1.19, 1.19, 1.19};
+
+            //13TeV values  
+            double QCDScaleMass   [] = {200, 400, 600, 800, 1000, 9999};
+            double QCDScaleK0ggH0 [] = {1.189, 1.341, 1.453, 1.680, 1.641, 1.641};
+            double QCDScaleK0ggH1 [] = {0.928, 0.913, 0.905, 0.902, 0.905, 0.905};
+            double QCDScaleK1ggH1 [] = {1.078, 1.096, 1.105, 1.108, 1.104, 1.104};
+            double QCDScaleK1ggH2 [] = {1.000, 1.000, 1.000, 1.000, 1.000, 1.000};
+            double QCDScaleK2ggH2 [] = {0.982, 0.983, 0.994, 0.979, 1.000, 1.000};
 
             double UEPSf0 []         = {0.952, 0.955, 0.958, 0.964, 0.966, 0.954, 0.946, 0.931, 0.920, 0.920, 0.920, 0.920, 0.920};
             double UEPSf1 []         = {1.055, 1.058, 1.061, 1.068, 1.078, 1.092, 1.102, 1.117, 1.121, 1.121, 1.121, 1.121, 1.121};
@@ -1463,10 +1478,10 @@ int main(int argc, char* argv[])
                     //}
 
                     //underlying events
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf0->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf1->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf0->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf1->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
 
                     //bin migration at th level
                     if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(1.0-TG_QCDScaleK0ggH0->Eval(mass,NULL,"S"));}

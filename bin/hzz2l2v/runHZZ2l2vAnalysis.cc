@@ -30,6 +30,9 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 //#include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneAlgorithm.h" //for svfit
 
+#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"  
+#include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibratorRun2.h" 
+
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
@@ -156,55 +159,6 @@ namespace utils
 }
 
 
-
-   #include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"  
-   #include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibratorRun2.h" 
-
-   /*
-   void applyElectronCorrection(pat::Electron& el, unsigned int runNumber, bool isMC){
-      EpCombinationTool theEpCombinationTool;  
-      ElectronEnergyCalibratorRun2 theEnCorrectorRun2;  
-      std::vector<double> smearings;
-      std::vector<double> scales;
-      theEnCorrectorRun2(theEpCombinationTool, conf.getParameter<bool>("isMC"), conf.getParameter<bool>("isSynchronization"), conf.getParameter<std::vector<double> >("smearings"), conf.getParameter<std::vector<double> >("scales"))       
-      SimpleElectron simple(el, runNumber, isMC);
-   }*/
-
-
-
-/*    
-   void ElectronEnergyCalibratorRun2::calibrate(SimpleElectron &electron) const 
-   {
-       static TRandom* rng_ = new TRandom(1234);  //define as statis so it is created only one
-
-       isMC_ == electron.isMC();
-       float smear = 0.0, scale = 1.0;
-       float aeta = std::abs(electron.eta()), r9 = electron.getR9();
-       bool bad = (r9 < 0.94), gold = !bad;
-       if      (0.0    <= aeta && aeta < 1.0    && bad ) { smear = smearings_[0]; scale = scales_[0]; }
-       else if (0.0    <= aeta && aeta < 1.0    && gold) { smear = smearings_[1]; scale = scales_[1]; }
-       else if (1.0    <= aeta && aeta < 1.4442 && bad ) { smear = smearings_[2]; scale = scales_[2]; }
-       else if (1.0    <= aeta && aeta < 1.4442 && gold) { smear = smearings_[3]; scale = scales_[3]; }
-       else if (1.566  <= aeta && aeta < 2.0    && bad ) { smear = smearings_[4]; scale = scales_[4]; }
-       else if (1.566  <= aeta && aeta < 2.0    && gold) { smear = smearings_[5]; scale = scales_[5]; }
-       else if (2.0    <= aeta && aeta < 2.5    && bad ) { smear = smearings_[6]; scale = scales_[6]; }
-       else if (2.0    <= aeta && aeta < 2.5    && gold) { smear = smearings_[7]; scale = scales_[7]; }
-       else if (1.4442 <= aeta && aeta < 1.566  && bad ) { smear = smearings_[8]; scale = scales_[8]; } 
-       else if (1.4442 <= aeta && aeta < 1.566  && gold) { smear = smearings_[9]; scale = scales_[9]; } 
-
-       double newEcalEnergy, newEcalEnergyError;
-       if (isMC_) {
-           double corr = 1.0 + smear * rng_->Gauss();
-           newEcalEnergy      = electron.getNewEnergy() * corr;
-           newEcalEnergyError = std::hypot(electron.getNewEnergyError() * corr, smear * newEcalEnergy);
-       } else {
-           newEcalEnergy      = electron.getNewEnergy() / scale;
-           newEcalEnergyError = std::hypot(electron.getNewEnergyError() / scale, smear * newEcalEnergy);
-       }
-       electron.setNewEnergy(newEcalEnergy); 
-       electron.setNewEnergyError(newEcalEnergyError);        
-   }
-*/   
 
 
 
@@ -517,6 +471,7 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("npho",   ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("npho55", ";Number of Photons;Events", 20, 0, 20) ); 
   mon.addHistogram(new TH1F("npho100",";Number of Photons;Events", 20, 0, 20) ); 
+  mon.addHistogram(new TH1F("photonpt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
   mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 80, -4, 4) );
@@ -837,13 +792,14 @@ int main(int argc, char* argv[])
           edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
           if(!tr.isValid())return false;
 
-          float triggerPrescale(1.0),triggerThreshold(0);
+          float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
+          char photonTriggerTreshName[255];
           bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");                  
           bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*", "HLT_IsoMu27_v*");                                               
           bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");       
           bool eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf_v*", "HLT_Ele22_eta2p1_WP75_Gsf_v*");                                          
           bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");  
-          bool photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale);                                                                        
+          bool photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                                        
           bool passTrigger        = mumuTrigger||muTrigger||eeTrigger||eTrigger||emuTrigger||photonTrigger;
 
           if(  mumuTrigger)mon.fillHisto("trigger", "raw", 0 , weight);
@@ -871,6 +827,7 @@ int main(int argc, char* argv[])
              if(photonTrigger)mon.fillHisto("trigger", "cleaned", 5 , weight);
           }
 
+          if(photonTrigger){sprintf(photonTriggerTreshName, "PhoTrg%i", int(triggerThreshold));}
 
           //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
            if(!passTrigger && !photonTriggerStudy)continue;        
@@ -1034,10 +991,11 @@ int main(int argc, char* argv[])
          for(size_t ipho=0; ipho<photons.size(); ipho++){
 	    pat::Photon photon = photons[ipho]; 
  	    mon.fillHisto("phopt", "trg", photon.pt(), weight);
-	    mon.fillHisto("phoeta", "trg", photon.eta(), weight);
+	    mon.fillHisto("phoeta", "trg", photon.eta(), weight);           
             //printf("photon pt=%6.2f eta=%+6.2f\n", photon.pt(), photon.eta());
 
-            if(photonTrigger && photon.pt()<triggerThreshold)continue;
+//            if(photonTrigger && (photon.pt()<triggerThreshold || photon.pt()>triggerThresholdHigh))continue;
+             if(photonTrigger && (photon.pt()<(triggerThreshold) || photon.pt()>(triggerThresholdHigh+10)))continue;           //add 5GeV to avoid trigger inefficiencies
             //printf("A\n");
 
             //calibrate photon energy
@@ -1095,7 +1053,7 @@ int main(int argc, char* argv[])
                 elDiff -= leptons[ilep].p4();                   
                 ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
                 leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
-                elDiff += leptons[ilep].p4();                                 
+                elDiff += leptons[ilep].p4();                 
              }
 
              //no need for charge info any longer
@@ -1144,9 +1102,11 @@ int main(int argc, char* argv[])
            std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
 
            //update the met for lepton energy scales
-           met.setP4(met.p4() - muDiff); //note this also propagates to all MET uncertainties
+           met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
            met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
            met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
+           met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
+           met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
 
          //
          //JET/MET ANALYSIS
@@ -1248,7 +1208,7 @@ int main(int argc, char* argv[])
                 if( abs(dilId)==143){  chTags.push_back("emu");  }           
                
 
-                if(isMC)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first;
+                if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
 
 //          printf("DEBUG event %6i weight=%6.2e L=%i llchannel %s\n", iev, weight, int(L), chTags.size()>0?chTags[0].Data():"unassigned"); 
 
@@ -1284,6 +1244,8 @@ int main(int argc, char* argv[])
   	    mon.fillHisto("npho", tags, selPhotons.size(), weight);
   	    mon.fillHisto("npho55", tags, nPho55, weight);
   	    mon.fillHisto("npho100", tags, nPho100, weight);
+            if(photonTrigger && selPhotons.size()>0)mon.fillHisto("photonpt", tags[tags.size()-1]+photonTriggerTreshName,   selPhotons[0].pt(), weight);
+           
 
             // Photon trigger efficiencies
             // Must be run without the photonTrigger requirement on top of of the Analysis.
