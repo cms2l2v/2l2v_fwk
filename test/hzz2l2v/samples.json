@@ -220,7 +220,7 @@
      {
       "tag":"ggH(200)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":false,
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -234,7 +234,7 @@
     {
       "tag":"qqH(200)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":false,
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -304,6 +304,33 @@
         { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
+     {
+      "tag":"ggH(750)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":809,
+      "lwidth":2,
+      "fill":0,
+      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":750, "tagRight":"ggH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
+    },
+    {
+      "tag":"qqH(750)",
+      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":809,
+      "lwidth":2,
+      "lstyle":2,   
+      "fill":0,
+      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":750, "tagRight":"qqH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
+    },   
     {
       "tag":"ggH(1000)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
@@ -336,7 +363,7 @@
      {
       "tag":"ggH(1500)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":false,
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -350,7 +377,7 @@
     {
       "tag":"qqH(1500)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":false,
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -365,7 +392,7 @@
      {
       "tag":"ggH(2000)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":false,
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -379,7 +406,7 @@
     {
       "tag":"qqH(2000)",
       "keys":["2l2v_mcbased", "2l2v_datadriven"],
-      "isinvisible":false,
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -390,33 +417,6 @@
       "data":[
         { "dtag":"MC13TeV_VBFtoH2000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M2000_MINIAODv2/" }
       ]
-    },   
-    {
-      "tag":"ggH(750)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
-      "isinvisible":false,
-      "isdata":false,
-      "issignal":true,
-      "spimpose":true,
-      "lcolor":809,
-      "lwidth":2,
-      "fill":0,
-      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":750, "tagRight":"ggH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
-    },
-    {
-      "tag":"qqH(750)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
-      "isinvisible":false,
-      "isdata":false,
-      "issignal":true,
-      "spimpose":true,
-      "lcolor":809,
-      "lwidth":2,
-      "lstyle":2,   
-      "fill":0,
-      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":750, "tagRight":"qqH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
-    }
+    } 
   ]
 }
