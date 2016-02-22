@@ -102,7 +102,7 @@ void plotPerCategory(){
 
       c1 = new TCanvas("c", "c",600,600);
       c1->SetLogy(true);
-      framework = new TH1F("Graph","Graph",1,190,1510);
+      framework = new TH1F("Graph","Graph",1,190,1010);
       framework->SetStats(false);
       framework->SetTitle("");
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
@@ -126,10 +126,16 @@ void plotPerCategory(){
       LEGTH->SetBorderSize(0);
       LEGTH->SetHeader("Theoretical");
 
-      getGraph("Combined"                     , 1, 2, 2, LEG  , NULL, 1, Dir+         "/Stength_LimitSummary")->Draw("C same");
-      getGraph("=0 Jet"                       , 2, 2, 2, LEG  , NULL, 1, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
-      getGraph("#geq1 Jets"                   , 4, 2, 2, LEG  , NULL, 1, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
-      getGraph("VBF"                          , 6, 2, 2, LEG  , NULL, 1, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
+      getGraph("Combined"                     , 1, 2, 1, LEG  , NULL, 2, Dir+         "/Stength_LimitSummary")->Draw("C same");
+      getGraph("=0 Jet"                       , 2, 2, 1, LEG  , NULL, 2, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("#geq1 Jets"                   , 4, 2, 1, LEG  , NULL, 2, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("VBF"                          , 6, 2, 1, LEG  , NULL, 2, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
+
+      getGraph("Combined"                     , 1, 2, 2, NULL  , NULL, 1, Dir+         "/Stength_LimitSummary")->Draw("C same");
+      getGraph("=0 Jet"                       , 2, 2, 2, NULL  , NULL, 1, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("#geq1 Jets"                   , 4, 2, 2, NULL  , NULL, 1, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("VBF"                          , 6, 2, 2, NULL  , NULL, 1, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
+
 
    //   LEGTH->Draw("same");
       LEG  ->Draw("same");
