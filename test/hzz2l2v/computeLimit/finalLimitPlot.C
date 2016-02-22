@@ -33,19 +33,26 @@
 #include "UserCode/llvv_fwk/src/HxswgUtils.cc"
 
 
-TGraph2D* get2HDMLimitsTgVsAmB(TGraph2D* g2dMassVsWidth, TGraph* SMhiggsWidth, double OnlyCosAmB, bool getThXSec=false){
-   FILE* pFile = fopen("Weight_2HDM_Model.txt","r");
-   if(!pFile){printf("Can't open %s\n","Weight_2HDM_Model.txt"); exit(0);}
+TGraph2D* get2HDMLimitsTgVsAmB(string FilePath, TGraph2D* g2dMassVsWidth, TGraph* SMhiggsWidth, double OnlyCosAmB, bool getThXSec=false){
+   if(FilePath=="")FilePath="Weight_2HDM_Model.txt";
+   FILE* pFile = fopen(FilePath.c_str(),"r");
+   if(!pFile){printf("Can't open %s\n",FilePath.c_str()); exit(0);}
 
    TGraph2D* graph = new TGraph2D(9999);    int N=0;
-   double tgB, cosAmB, mH2, width, BRtoZZ, XSec;
-   while(fscanf(pFile,"tgBeta=%lf cosAmB=%lf MH2=%lf Width=%lf BrH2toZZ=%lf XSec=%lf\n",&tgB, &cosAmB, &mH2, &width, &BRtoZZ, &XSec) != EOF){
+   char line[4096];
+   double tgB, cosAmB=OnlyCosAmB, mH2, width, BRtoZZ, XSec, unused;
+   while(fgets(line, 4096, pFile)){
+      if(line[0]=='\\' && line[1]=='\\')continue;
+//      sscanf(line,"tgBeta=%lf cosAmB=%lf MH2=%lf Width=%lf BrH2toZZ=%lf XSec=%lf\n",&tgB, &cosAmB, &mH2, &width, &BRtoZZ, &XSec);
+         // tanBeta mH  xs_bbH   width_H   mH    xs_ggH  br_HW+H- br_Htautau br_Hss   br_Hgg   br_Hbb  br_HZgamma br_Htt br_HZA   br_Hmumu br_Hgammagamma br_Hee   br_HWW    br_HZZ  br_HZh   br_Hhh   br_Hcc
+       sscanf(line,"%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", &tgB, &mH2, &unused, &width, &unused, &XSec, &unused, &unused,   &unused, &unused, &unused, &unused, &unused, &unused, &unused, &unused,      &unused, &unused, &BRtoZZ, &unused, &unused, &unused);     
+//       printf("line=%s\n--> tan=%f mh=%f w=%f xsec=%f br=%f\n", line, tgB, mH2, width, XSec, BRtoZZ);
       if(fabs(cosAmB-OnlyCosAmB)<0.05){
          if(getThXSec){
             graph->SetPoint(N, mH2, tgB, 1000*XSec*BRtoZZ);  N++;
-         }else{
+        }else{
             graph->SetPoint(N, mH2, tgB, g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2)) / (XSec*BRtoZZ*1000)   );  N++;
-//            printf("Signal Strength limit = %f = %f/%f\n",  g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2)) / (XSec*BRtoZZ*1000),  g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2)) , (XSec*BRtoZZ*1000) );
+//             printf("Signal Strength limit = %f = %f/%f\n",  g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2)) / (XSec*BRtoZZ*1000),  g2dMassVsWidth->Interpolate(mH2, width/SMhiggsWidth->Eval(mH2)) , (XSec*BRtoZZ*1000) );
          }
       }
    }fclose(pFile);
@@ -75,7 +82,7 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
 //   filePath+="/LimitSummary";
    FILE* pFile = fopen(filePath.c_str(),"r");
    if(!pFile){printf("Can't open %s\n",filePath.c_str()); exit(0);}
-   double mass, th, exp, obs, unused;// char buffer[1024];
+   double mass=0, th, exp=0, obs=0, unused=0;// char buffer[1024];
    double explow2, explow1, expup1, expup2;
 
    TGraph* graph = new TGraph(100);
@@ -165,7 +172,7 @@ TGraph* getContour(TH2D* inputHisto, TCanvas* goodCanvas, int Width, int Style, 
 	if(list->GetSize()<=0)return new TGraph(0);
 
 	TGraph* EXCLUSION = new TGraph(0);
-	for(unsigned int i=0;i<list->GetSize();i++){
+	for(int i=0;i<list->GetSize();i++){
 		EXCLUSION   = (TGraph*)(list->At(i)->Clone("copy"));
 		EXCLUSION->SetLineColor(Color);
 		EXCLUSION->SetLineWidth(Width);
@@ -195,9 +202,9 @@ void finalLimitPlot(){
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
 
-   std::cout<<"A\n";
+   std::cout<<"DEBUG A\n";
    TGraph* higgsWidth = Hxswg::utils::getHWidth();
-   std::cout<<"B\n";
+   std::cout<<"DEBUG B\n";
 
 
    TCanvas* c1;
@@ -218,8 +225,8 @@ void finalLimitPlot(){
    colorMap[mapIndex(0.2, 0.0)] = 2;
    colorMap[mapIndex(0.1, 0.0)] = 2;
 
-   double CPs[] = {1.0,0.6,0.3,0.1};
-   double BRs[] = {0.0};
+   std::vector<double> CPs = {1.0,0.6,0.3,0.1};
+   std::vector<double> BRs = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
    string Directories2[]={"cards_SB13TeV", "cards_SB13TeV_GGF", "cards_SB13TeV_VBF"};  //DEBUG
@@ -236,14 +243,14 @@ void finalLimitPlot(){
 
   
       std::map<int, TGraph**> gCPBR;
-      for(int CPi = 0; CPi<(sizeof(CPs)/sizeof(double));CPi++){
-      for(int BRi = 0; BRi<(sizeof(BRs)/sizeof(double));BRi++){
+      for(unsigned int CPi = 0; CPi<CPs.size();CPi++){
+      for(unsigned int BRi = 0; BRi<BRs.size();BRi++){
          double CP = CPs[CPi];  double BR = BRs[BRi]; 
          if ( CP*CP / (1-BR)>1.0 )continue; //skip point leading to a width larger than SM
          char limitpath[1024]; sprintf(limitpath, "%s_cp%4.2f_brn%4.2f/Stength_LimitSummary", Dir.c_str(), CP, BR);
 //         char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f BRnew=%3.1f", CP, BR);
          char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f", CP);
-         std::cout<<limitpath<< "\n";         
+         std::cout<<"LIMITPATH="<<limitpath<< "\n";         
          gCPBR[ mapIndex(CP, BR) ] = getGraphs(limitlegend, colorMap[mapIndex(CP, BR)], 2, NULL  , NULL, limitpath);
 
          //overwrite the theory graph with a higher granularity one
@@ -257,18 +264,21 @@ void finalLimitPlot(){
       // build 2D graphs of Mass vs C' limits
       TGraph2D* g2dMassVsCp[7];    
       TGraph2D* g2dMassVsWidth[7];    
-      for(int i=0;i<7;i++){
+      for(unsigned int i=0;i<7;i++){
          g2dMassVsCp[i]    = new TGraph2D( 9999 ); 
          g2dMassVsWidth[i] = new TGraph2D( 9999 );        
          int Ig2d=0;
-         for(int CPi = 0; CPi<(sizeof(CPs)/sizeof(double));CPi++){
+         std::cout<< "build2DGraph for limit = " << i << "\n";
+         for(unsigned int CPi = 0; CPi<CPs.size();CPi++){
             double CP = CPs[CPi];  double BR = 0.0;             
-            TGraph* graph = gCPBR[ mapIndex(CP, BR) ][i];           
+            TGraph* graph = gCPBR[ mapIndex(CP, BR) ][i];          
+            std::cout<<" - build2DGraph from "<<  CP <<" " << BR << "\n";
             for(int p=0;p<graph->GetN ();p++){
                double mass, limit;
                graph->GetPoint(p, mass, limit);
                g2dMassVsCp[i]   ->SetPoint(Ig2d, mass, CP   , limit);
                g2dMassVsWidth[i]->SetPoint(Ig2d, mass, CP*CP, limit);
+               std::cout<<" - - add value for mass="<<mass<<"\n";
                Ig2d++;              
             }
          }
@@ -277,14 +287,14 @@ void finalLimitPlot(){
       } 
 
 
+      for(int observed=0;observed<=1;observed++){
       ///////////////////////////////////////////////
       //limit Versus mass for different C' values
       ///////////////////////////////////////////////
 
-      for(int observed=0;observed<=1;observed++){
          c1 = new TCanvas("c", "c",600,600);
          c1->SetLogy(true);
-         framework = new TH1F("Graph","Graph",1,190,1510);
+         framework = new TH1F("Graph","Graph",1,190,1010);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
@@ -308,8 +318,8 @@ void finalLimitPlot(){
          LEG = new TLegend(0.50,0.70,0.75,0.94);
          LEG->SetFillStyle(0);
          LEG->SetBorderSize(0);
-         for(int CPi = 0; CPi<(sizeof(CPs)/sizeof(double));CPi++){
-         for(int BRi = 0; BRi<(sizeof(BRs)/sizeof(double));BRi++){
+         for(unsigned int CPi = 0; CPi<CPs.size();CPi++){
+         for(unsigned int BRi = 0; BRi<BRs.size();BRi++){
             double CP = CPs[CPi];  double BR = BRs[BRi]; 
             if(BR!=0.0)continue;
             if(!gCPBR[ mapIndex(CP, BR) ])continue;
@@ -339,20 +349,16 @@ void finalLimitPlot(){
             c1->SaveAs((SaveDir+"/Stength_FinalPlot_Obs.pdf").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot_Obs.C"  ).c_str());
          }
-     }
-
 
       ///////////////////////////////////////////////
      //Mass Versus Cprime limits  2D
      ///////////////////////////////////////////////
 
-      for(int observed=0;observed<=1;observed++){
-         if(observed>0)continue;//DEBUG
          for(int mode=0; mode<=1; mode++){
            //mode=0 --> Mass versus C'     interpolated from 2D limit(CPrime, BRNew)
            //mode=1 --> Mass versus Gamma  interpolated from 2D limit(CPrime, BRNew)
  
-           TH2D* grid   = new TH2D("grid"  , "grid"  , 200, 0, 1506, 200, 0, 1);
+           TH2D* grid   = new TH2D("grid"  , "grid"  , 200, 0, 1006, 200, 0, 1);
            TGraph2D*   graph = g2dMassVsCp   [1+observed];
            if(mode==1) graph = g2dMassVsWidth[1+observed];
            graph->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
@@ -361,7 +367,7 @@ void finalLimitPlot(){
            c1 = new TCanvas("c", "c",600,600);
            c1->SetLogz(true);      
            c1->SetRightMargin(0.17);
-           framework2d = new TH2F("Graph","Graph",1,200, 1500, 1,0,1.0);
+           framework2d = new TH2F("Graph","Graph",1,200, 1000, 1,0,1.0);
            framework2d->SetStats(false);
            framework2d->SetTitle("");
            framework2d->GetXaxis()->SetTitle("H mass (GeV)");
@@ -387,9 +393,9 @@ void finalLimitPlot(){
               TGraph* THXSec   = Hxswg::utils::getXSec(Dir); 
               scaleGraph(THXSec, 1000);  //convert cross-section to fb
               TH2D* THXSec2D   = (TH2D*)grid->Clone("ThXSec");
-              for(unsigned int x=1;x<=THXSec2D->GetNbinsX();x++){
+              for(int x=1;x<=THXSec2D->GetNbinsX();x++){
                  double mass = THXSec2D->GetXaxis()->GetBinCenter(x);
-                 for(unsigned int y=1;y<=THXSec2D->GetNbinsY();y++){
+                 for(int y=1;y<=THXSec2D->GetNbinsY();y++){
                     double CP = THXSec2D->GetYaxis()->GetBinCenter(y);  double BR=0.0;
                     if(mode==1){CP = sqrt(CP);}  //go from width=C'² --> to C'
                     double XSecScaleFactor = pow(CP,2) * (1-BR);
@@ -404,66 +410,66 @@ void finalLimitPlot(){
 
             utils::root::DrawPreliminary(2215, 13);         
             char massStr[512];
-            if(mode==0)sprintf(massStr, "MassVsCp");
-            if(mode==1)sprintf(massStr, "MassVsWidth");          
+            if(mode==0)sprintf(massStr, "MassVsCp%s", observed==0?"":"_Obs");
+            if(mode==1)sprintf(massStr, "MassVsWidth%s", observed==0?"":"_Obs");          
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
          }//end of mode loop
-      }//end of observed loop
-
  
 
       ///////////////////////////////////////////////
      //Limits on 2HDM
      ///////////////////////////////////////////////
 
-      if(prod!="gg")continue;
+      if(prod=="gg"){
 
-      for(int observed=0;observed<=1;observed++){
-         if(observed>0)continue;//DEBUG
-         for(double cosBmA=0.1; cosBmA<=0.1; cosBmA+=0.1){
-           TH2D* grid   = new TH2D("grid2HDM"  , "grid"  , 1000, 200, 1500, 1000, 0.5, 60);
-           TGraph2D* graph = get2HDMLimitsTgVsAmB(g2dMassVsWidth[1+observed], higgsWidth, cosBmA);
-           graph->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH"));
-           TH2D* h2d = graph->GetHistogram();
+         for(int type=1;type<=2;type++){
+            for(double cosBmA=0.1; cosBmA<=0.1; cosBmA+=0.1){
+              TH2D* grid   = new TH2D("grid2HDM"  , "grid"  , 1300, 200, 1500, 1000, 0.5, 60);
+              TGraph2D* graph = get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", g2dMassVsWidth[1+observed], higgsWidth, cosBmA);
+              graph->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH"));
+              TH2D* h2d = graph->GetHistogram();
 
-           c1 = new TCanvas("c", "c",600,600);
-           c1->SetLogz(true);      
-           c1->SetLogy(true);      
-           c1->SetRightMargin(0.17);
-           framework2d = new TH2F("Graph","Graph",1,400, 1000, 1,0.5,60.0);
-           framework2d->SetStats(false);
-           framework2d->SetTitle("");
-           framework2d->GetYaxis()->SetTitle("mH2 [GeV]");          
-           framework2d->GetYaxis()->SetTitle("tan( #beta )");
-           framework2d->GetYaxis()->SetTitleOffset(1.60);
-           framework2d->Draw("");
+              c1 = new TCanvas("c", "c",600,600);
+              c1->SetLogz(true);      
+              c1->SetLogy(true);      
+              c1->SetRightMargin(0.17);
+              framework2d = new TH2F("Graph","Graph",1,200,  600, 1,0.5,60.0);
+              framework2d->SetStats(false);
+              framework2d->SetTitle("");
+              framework2d->GetYaxis()->SetTitle("mH2 [GeV]");          
+              framework2d->GetYaxis()->SetTitle("tan( #beta )");
+              framework2d->GetYaxis()->SetTitleOffset(1.60);
+              framework2d->Draw("");
 
-//           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} (" + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str() );
-           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} / #sigma_{TH}").c_str() );
-           h2d->GetZaxis()->SetTitleOffset(1.33);
-           h2d->Draw("COLZ same");
+   //           h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} (" + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str() );
+              h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #sigma_{95%} / #sigma_{TH}").c_str() );
+              h2d->GetZaxis()->SetTitleOffset(1.33);
+              h2d->Draw("COLZ same");
+              h2d->GetZaxis()->SetRangeUser(1E-1,1E4);
 
- 	   TPaveText* pave1 = new TPaveText(0.5, 0.82,0.65,0.76,"NDC");
-  	   pave1->SetBorderSize(0);
- 	   pave1->SetFillStyle(0);
-	   pave1->SetTextAlign(22);
-  	   pave1->SetTextFont(62);
-	   pave1->SetTextSize(0.04);
- 	   pave1->AddText("2HDM Type-2");
-           char textBuffer[512]; sprintf(textBuffer, "cos(#beta - #alpha) = %6.2f", cosBmA);
-	   pave1->AddText(textBuffer);
-           pave1->Draw("same");
+              TPaveText* pave1 = new TPaveText(0.5, 0.82,0.65,0.76,"NDC");
+              pave1->SetBorderSize(0);
+              pave1->SetFillStyle(0);
+              pave1->SetTextAlign(22);
+              pave1->SetTextFont(62);
+              pave1->SetTextSize(0.04);
+              pave1->AddText(type==1?"2HDM Type-1":"2HDM Type-2");
+              char textBuffer[512]; sprintf(textBuffer, "cos(#beta - #alpha) = %6.2f", cosBmA);
+              pave1->AddText(textBuffer);
+              pave1->Draw("same");
 
-           drawPointOnGrid(graph);           
-            utils::root::DrawPreliminary(2215, 13);         
-            char Str[512];
-            sprintf(Str, "cos%3.1f", cosBmA);
-            c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".png").c_str());
-            c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".pdf").c_str());
-            c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".C").c_str());
-         }//end of mode loop
+              //drawPointOnGrid(graph);           
+               utils::root::DrawPreliminary(2215, 13);         
+               char Str[512];
+               sprintf(Str, "type_%i_cos%3.1f%s", type, cosBmA,observed==0?"":"_Obs");
+               c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".png").c_str());
+               c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".pdf").c_str());
+            }//end of mode loop
+         }//end of type loop
+      }//gg production
+
       }//end of observed loop
 
 

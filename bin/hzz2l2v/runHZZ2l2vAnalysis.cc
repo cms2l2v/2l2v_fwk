@@ -695,6 +695,8 @@ int main(int argc, char* argv[])
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
   }
 
+  string debugText = "";
+
   //##############################################
   //########           EVENT LOOP         ########
   //##############################################
@@ -1208,7 +1210,7 @@ int main(int argc, char* argv[])
                 if( abs(dilId)==143){  chTags.push_back("emu");  }           
                
 
-                if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
+//                if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
 
 //          printf("DEBUG event %6i weight=%6.2e L=%i llchannel %s\n", iev, weight, int(L), chTags.size()>0?chTags[0].Data():"unassigned"); 
 
@@ -1389,6 +1391,17 @@ int main(int argc, char* argv[])
 
                       if(met.corP4(metcor).pt()>125){
                         mon.fillHisto("eventflow",tags,8,weight);
+
+
+                        if(!isMC){
+                           char buffer[1024];
+                           sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer; 
+                           sprintf(buffer, " - nLep=%2i nSoftLept=%2i nPhotons=%2i  nJets=%2i\n", int(selLeptons.size()), int(extraLeptons.size()), int(selPhotons.size()), int(selJets.size())  ); debugText+=buffer;                               
+                           sprintf(buffer, " - MET=%8.2f mT=%8.2f nvtx=%3i\n", met.corP4(metcor).pt(), mt, int(vtx.size()) ); debugText+=buffer;
+                           sprintf(buffer, " - Z pT=%6.2f eta=%+6.2f phi=%+6.2f\n", boson.pt(), boson.eta(), boson.phi() ); debugText+=buffer;
+                           if(selLeptons.size()>0)sprintf(buffer, " - lep0 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[0].pdgId(), selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[0].phi()  ); debugText+=buffer;
+                           if(selLeptons.size()>1)sprintf(buffer, " - lep1 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[1].pdgId(), selLeptons[1].pt(), selLeptons[1].eta(), selLeptons[1].phi()  ); debugText+=buffer;                                
+                         }
                       }
 
                       if(mt>500){
@@ -1426,6 +1439,14 @@ int main(int argc, char* argv[])
                               mon.fillHisto("vbfcjv",tags,countJetVeto,        weight);
                             }
                           }
+
+                          if(!isMC){
+                              char buffer[1024];                           
+                              sprintf(buffer, " - VBF mjj=%8.2f  dEta=%+6.2f dPhi=%+6.2f\n", dijet.mass(), deta, dphi   ); debugText+=buffer;
+                              sprintf(buffer, " - VBF jet1 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[0].pt(), selJets[0].eta(), selJets[0].phi()   ); debugText+=buffer;                                
+                              sprintf(buffer, " - VBF jet2 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[1].pt(), selJets[1].eta(), selJets[1].phi()   ); debugText+=buffer;                                                            
+                          }
+
                         }
                       }
                     }
@@ -1610,6 +1631,7 @@ int main(int argc, char* argv[])
   if(!isMC){ 
      TString outTxtUrl= outUrl + ".txt";    
      FILE* outTxtFile = fopen(outTxtUrl.Data(), "w");
+     fprintf(outTxtFile, "%s", debugText.c_str());
      printf("TextFile URL = %s\n",outTxtUrl.Data());
      if(outTxtFile)fclose(outTxtFile);
   }
