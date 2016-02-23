@@ -43,7 +43,8 @@ elif [ "${1}" = "lumi" ]; then
     #cat ${OUTDIR}/*SingleMuon*.json > myjson.json
     cat ${OUTDIR}/Data13TeV_SingleMuon2015D_*.json > myjson.json
     STARTINGJSON="data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-    STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    #STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
     sed -i -e "s#}{#, #g" myjson.json; 
     sed -i -e "s#, ,#, #g" myjson.json;
     echo "myjson.json has been recreated and the additional \"}{\" have been fixed."
