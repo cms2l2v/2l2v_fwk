@@ -29,7 +29,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2016_02_15
+SUFFIX=_2016_02_23
 #SUFFIX=_debug
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -98,7 +98,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	echo "COMPUTE INTEGRATED LUMINOSITY"
 	export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH
 	pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
-	brilcalc lumi --normtag ~lumipro/public/normtag_file/OfflineNormtagV2.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
+	brilcalc lumi --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	tail -n 3 $RESULTSDIR/LUMI.txt  
      fi
   fi     
@@ -108,7 +108,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [ -f $RESULTSDIR/LUMI.txt ]; then
       INTLUMI=`tail -n 1 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
-      INTLUMI=2215.182 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON
+      INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON
       echo "WARNING: $RESULTSDIR/LUMI.txt file is missing so use fixed integrated luminosity value, this might be different than the dataset you ran on"
     fi
 
@@ -117,6 +117,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption RECREATE --key 2l2v_mcbased                     $arguments        
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_mcbased --doInterpollation  $arguments       
         cp  ${PLOTTER}.root  ${PLOTTER}_MCOnly.root
+#        cp  ${PLOTTER}_MCOnly.root ${PLOTTER}.root 
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_photoncontrol               $arguments 
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_photonsOnly                 $arguments
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadriven                  $arguments 
@@ -144,5 +145,6 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_datadriven --fileOption READ --blind 100 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_datadriven --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
     fi
+
 fi
 
