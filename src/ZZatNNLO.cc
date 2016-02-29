@@ -33,27 +33,23 @@ namespace ZZatNNLO
 
 
 	//Find the right correction in the file	
-	double findCorrection(const std::vector<std::vector<float>> & Table, double dphi){
+	double findCorrection(const std::vector<std::vector<float>> & Table, double mzz){
 		
 		double kFactor = 1.;
-		if(dphi >= 3.1416) return 1.;
-		for( int i = 0 ; i <= 29; i++){
+	
+		unsigned int sizeTable = Table.size();
 
-			if(dphi == i*0.1){
-				return Table[i][1];
-			}
-			else if(dphi < i*0.1){
-				return Table[i-1][1];
-			}
+		if( mzz > Table[sizeTable-1][0]) return Table[sizeTable-1][1];
+		for( unsigned int i = 0; i < sizeTable-1 ; i++){
+			if ( Table[i][0] < mzz && mzz <= Table[i+1][0]) return Table[i][1];
 		}
-		if(dphi >= 2.9) kFactor = Table[29][1];
-		
+	
 		return kFactor ;
 	}
 
 
 	//The main function, will return the kfactor
-	double getNNLOCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table){
+	double getNNLOCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, double & mzz){
 		double kFactor = 1.;
 
 		reco::GenParticleCollection genLeptons;
@@ -74,10 +70,10 @@ namespace ZZatNNLO
 		LorentzVector Z1 = genLeptons[0].p4() + genLeptons[1].p4(); //First Z : charged leptons
 		LorentzVector Z2 = genNeutrinos[0].p4() + genNeutrinos[1].p4(); //Second Z : neutrinos
 
-    double dphi=fabs(deltaPhi(Z1.phi(),Z2.phi()));
+    mzz=(Z1+Z2).M();
 
 
-		kFactor = findCorrection( Table, dphi ); //Extract the corrections for the values of s and t computed
+		kFactor = findCorrection( Table, mzz ); //Extract the corrections for the value of mzz
 
 		return kFactor;
 	}
