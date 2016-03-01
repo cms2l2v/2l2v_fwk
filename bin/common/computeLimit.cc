@@ -644,7 +644,6 @@ int main(int argc, char* argv[])
   //produce a plot
   allInfo.showUncertainty(selCh,histo,"plot");
 
-
   //prepare the output
   string limitFile=("hzz2l2v_"+massStr+systpostfix+".root").Data();
   TFile *fout=TFile::Open(limitFile.c_str(),"recreate");
@@ -655,7 +654,6 @@ int main(int argc, char* argv[])
 
   //all done
   fout->Close();
-
 }
 
 
@@ -1090,6 +1088,7 @@ int main(int argc, char* argv[])
 
               std::map<string, bool> mapUncType;
               std::map<string, std::map< string, double> > mapYieldPerBin;
+              std::map<string, std::pair< double, double> > mapYieldInc;
 
 
               int NBins = it->second.channels.size()/selCh.size();
@@ -1102,6 +1101,7 @@ int main(int argc, char* argv[])
               t1->Divide(NBins, selCh.size(), 0, 0);
 
               int I=1;
+              mapYieldInc[""].first = 0;  mapYieldInc[""].second = 0;
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++, I++){
                  if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
                  if(ch->second.shapes.find(histoName.Data())==(ch->second.shapes).end())continue;
@@ -1119,7 +1119,9 @@ int main(int argc, char* argv[])
                  double yield = h->Integral();
                  toDelete.push_back(h);
                  mapYieldPerBin[""][ch->first] = yield;
-                  
+                 mapYieldInc[""].first  += yield;
+                 mapYieldInc[""].second = 1;
+                
                  //print histograms
                  TH1* axis = (TH1*)h->Clone("axis");
                  axis->Reset();      
@@ -1147,6 +1149,7 @@ int main(int argc, char* argv[])
 
                  //draw scale uncertainties
                  for(std::map<string, double>::iterator var = ch->second.shapes[histoName.Data()].uncScale.begin(); var!=ch->second.shapes[histoName.Data()].uncScale.end(); var++){
+                    if(h->Integral()<=0)continue;
                     double ScaleChange   = var->second/h->Integral();
                     double ScaleUp   = 1 + ScaleChange;
                     double ScaleDn   = 1 - ScaleChange;
@@ -1177,11 +1180,15 @@ int main(int argc, char* argv[])
                     }
 
                     if(mapYieldPerBin[systName.Data()].find(ch->first)==mapYieldPerBin[systName.Data()].end()){
-                        mapYieldPerBin[systName.Data()][ch->first] = fabs( ScaleChange );
+                        mapYieldPerBin[systName.Data()][ch->first] = fabs( ScaleChange );                       
                         mapUncType[systName.Data()] = false;
                     }else{
                        mapYieldPerBin[systName.Data()][ch->first] = std::max( ScaleChange , mapYieldPerBin[systName.Data()][ch->first]);
                     }
+
+                    if(mapYieldInc.find(systName.Data())==mapYieldInc.end()){ mapYieldInc[systName.Data()].first = 0; mapYieldInc[systName.Data()].second = 0;  }
+                    mapYieldInc[systName.Data()].first += ScaleChange*h->Integral();
+                    mapYieldInc[systName.Data()].second += h->Integral();
 
                     lineUp->SetLineWidth(2);  lineUp->SetLineColor(color); lineUp->Draw("same");
                     lineDn->SetLineWidth(2);  lineDn->SetLineColor(color); lineDn->Draw("same");
@@ -1224,6 +1231,10 @@ int main(int argc, char* argv[])
                        }else{
                           mapYieldPerBin[systName.Data()][ch->first] = std::max(fabs( 1 - (varYield/yield) ), mapYieldPerBin[systName.Data()][ch->first]);
                        }
+
+                       if(mapYieldInc.find(systName.Data())==mapYieldInc.end()){ mapYieldInc[systName.Data()].first = 0; mapYieldInc[systName.Data()].second = 0;  }
+                       mapYieldInc[systName.Data()].first +=  fabs( 1 - (varYield/yield))*yield;
+                       mapYieldInc[systName.Data()].second += yield;
                     }
 
                     hvar->SetFillColor(0);                  
@@ -1258,21 +1269,23 @@ int main(int argc, char* argv[])
               
               for(unsigned int i=0;i<toDelete.size();i++){delete toDelete[i];} //clear the objects
 
-
-              //print uncertainty on yield
+              
+              //add inclusive uncertainty as a channel
               //
+              for(auto systIt=mapYieldInc.begin(); systIt!=mapYieldInc.end(); systIt++){ mapYieldPerBin[systIt->first][" Inc"] = systIt->second.first/systIt->second.second;  }
+              //print uncertainty on yield            
               //
               sprintf(txtBuffer, "\\multicolumn{%i}{'c'}{\\bf{%s}}\\\\ \n", I+1, it->first.c_str());  UncertaintyOnYield+= txtBuffer;
               sprintf(txtBuffer, "%10s & %25s", "Type", "Uncertainty");
-              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s & %10s ", txtBuffer, chIt->first.c_str()); } sprintf(txtBuffer, "%s\\\\ \\hline\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
+              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s & %12s ", txtBuffer, chIt->first.c_str()); } sprintf(txtBuffer, "%s\\\\ \\hline\n", txtBuffer);  UncertaintyOnYield += txtBuffer;
               sprintf(txtBuffer, "%10s & %25s", "", "Nominal yields ");
-              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s & %10.4E ", txtBuffer, chIt->second); } sprintf(txtBuffer, "%s\\\\ \n", txtBuffer);  UncertaintyOnYield += txtBuffer;
+              for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){ sprintf(txtBuffer, "%s & %12.4E ", txtBuffer, chIt->second); } sprintf(txtBuffer, "%s\\\\ \n", txtBuffer);  UncertaintyOnYield += txtBuffer;
               for(auto varIt=mapYieldPerBin.begin();varIt!=mapYieldPerBin.end();varIt++){
                  if(varIt->first == "")continue;
                  sprintf(txtBuffer, "%10s & %25s", mapUncType[varIt->first.c_str()]?"shape":"scale", varIt->first.c_str());
                  for(auto chIt=mapYieldPerBin[""].begin();chIt!=mapYieldPerBin[""].end();chIt++){
                     if(varIt->second.find(chIt->first)==varIt->second.end()){ sprintf(txtBuffer, "%s & %10s   "    , txtBuffer, "-" );                        
-                    }else{                                                    sprintf(txtBuffer, "%s & %+9.3f\\%% ", txtBuffer,100.0 * varIt->second[chIt->first] ); 
+                    }else{                                                    sprintf(txtBuffer, "%s & %+10.3f\\%% ", txtBuffer,100.0 * varIt->second[chIt->first] ); 
                     }
                  }sprintf(txtBuffer, "%s\\\\ \n", txtBuffer);   UncertaintyOnYield += txtBuffer;
               }sprintf(txtBuffer, "\\hline \n"); UncertaintyOnYield += txtBuffer;
@@ -1422,12 +1435,12 @@ int main(int argc, char* argv[])
 //            double QCDScaleK2ggH2 [] = { 1.20, 1.17, 1.20, 1.21, 1.20, 1.20, 1.17, 1.19, 1.19, 1.19, 1.19, 1.19, 1.19};
 
             //13TeV values  
-            double QCDScaleMass   [] = {200, 400, 600, 800, 1000, 9999};
-            double QCDScaleK0ggH0 [] = {1.189, 1.341, 1.453, 1.680, 1.641, 1.641};
-            double QCDScaleK0ggH1 [] = {0.928, 0.913, 0.905, 0.902, 0.905, 0.905};
-            double QCDScaleK1ggH1 [] = {1.078, 1.096, 1.105, 1.108, 1.104, 1.104};
-            double QCDScaleK1ggH2 [] = {1.000, 1.000, 1.000, 1.000, 1.000, 1.000};
-            double QCDScaleK2ggH2 [] = {0.982, 0.983, 0.994, 0.979, 1.000, 1.000};
+            double QCDScaleMass   [] = {200, 400, 600, 800, 1000, 1050, 1100, 9999};
+            double QCDScaleK0ggH0 [] = {1.189, 1.341, 1.453, 1.680, 1.641, 1.641, 1.641, 1.641};
+            double QCDScaleK0ggH1 [] = {0.928, 0.913, 0.905, 0.902, 0.905, 0.905, 0.905, 0.905};
+            double QCDScaleK1ggH1 [] = {1.078, 1.096, 1.105, 1.108, 1.104, 1.104, 1.104, 1.104};
+            double QCDScaleK1ggH2 [] = {1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000};
+            double QCDScaleK2ggH2 [] = {0.982, 0.983, 0.994, 0.979, 1.000, 1.000, 1.000, 1.000};
 
             double UEPSf0 []         = {0.952, 0.955, 0.958, 0.964, 0.966, 0.954, 0.946, 0.931, 0.920, 0.920, 0.920, 0.920, 0.920};
             double UEPSf1 []         = {1.055, 1.058, 1.061, 1.068, 1.078, 1.092, 1.102, 1.117, 1.121, 1.121, 1.121, 1.121, 1.121};
@@ -1454,7 +1467,7 @@ int main(int argc, char* argv[])
                  double integral = shapeInfo.histo()->Integral();
 
                  //lumi
-                 if(!it->second.isData && systpostfix.Contains('3'))shapeInfo.uncScale["lumi_13TeV"] = integral*0.046;
+                 if(!it->second.isData && systpostfix.Contains('3'))shapeInfo.uncScale["lumi_13TeV"] = integral*0.027;
                  if(!it->second.isData && systpostfix.Contains('8'))shapeInfo.uncScale["lumi_8TeV" ] = integral*0.026;
                  if(!it->second.isData && systpostfix.Contains('7'))shapeInfo.uncScale["lumi_7TeV" ] = integral*0.022;
 
@@ -1484,16 +1497,18 @@ int main(int argc, char* argv[])
                     //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
 
                     //bin migration at th level
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(TG_QCDScaleK0ggH0->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK0ggH1->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK1ggH1->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK1ggH2->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S"));}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S"));}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(TG_QCDScaleK0ggH0->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK0ggH1->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK1ggH1->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK1ggH2->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S")-1);}
                  }//end of uncertainties to be applied only in higgs analyses
 
                  //if(it->second.shortName.find("ww")==0){shapeInfo.uncScale["XSec_sys_WW"] = integral*(systpostfix.Contains('8')?0.097:0.097);}
                  //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["XSec_sys_WZ"] = integral*(systpostfix.Contains('8')?0.056:0.056);}
+                 
+                 if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["_th_wzmissingewk"] = integral*0.03;}                 
               }
            }
          }
@@ -1642,11 +1657,16 @@ int main(int argc, char* argv[])
                   }else if(proc.Contains("h(")){sscanf(proc.Data()+proc.First("(")+1,"%lf",&procMass);
                   }
 
-                  printf("%s --> %f\n",  proc.Data(), procMass);
+                  //printf("%s --> %f\n",  proc.Data(), procMass);
 
-                  if(!(procMass==mass || procMass==massL || procMass==massR))continue; //skip signal sample not concerned 
+                  //skip signal sample not needed
+                  if(massL!=-1 && massR!=-1){
+                     if(procMass!=massL && procMass!=massR)continue; 
+                  }else{
+                     if(procMass!=mass)continue;
+                  }
                   sprintf(procMassStr,"%i",(int)procMass);
-                  printf("found signal to be %s\n",  proc.Data());
+                  //printf("found signal to be %s\n",  proc.Data());
                }
 
                if(!isSignal &&  mass>0 && proc.Contains("XH(") && proc.Contains(")#rightarrow WW")){
@@ -1742,7 +1762,7 @@ int main(int argc, char* argv[])
                   histoName.ReplaceAll(ch,ch+"_proj"+procCtr);
                   hshape   = hshape2D->ProjectionY(histoName,cutBinUsed,cutBinUsed);
                   filterBinContent(hshape);
-                  printf("%s %s %s Integral = %f\n", ch.Data(), shortName.Data(), varName.Data(), hshape->Integral() );
+                  //printf("%s %s %s Integral = %f\n", ch.Data(), shortName.Data(), varName.Data(), hshape->Integral() );
                   //if(hshape->Integral()<=0 && varName=="" && !isData){hshape->Reset(); hshape->SetBinContent(1, 1E-10);} //TEST FOR HIGGS WIDTH MEASUREMENTS, MUST BE UNCOMMENTED ASAP
 
                   if(isnan((float)hshape->Integral())){hshape->Reset();}

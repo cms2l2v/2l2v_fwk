@@ -27,6 +27,7 @@
 //#include "tdrstyle.C"
 #include "UserCode/llvv_fwk/interface/HxswgUtils.h"
 #include "UserCode/llvv_fwk/src/HxswgUtils.cc"
+#include "UserCode/llvv_fwk/interface/RootUtils.h"
 
 
 TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGraph* Ref, int type, string filePath){
@@ -102,7 +103,7 @@ void plotPerCategory(){
 
       c1 = new TCanvas("c", "c",600,600);
       c1->SetLogy(true);
-      framework = new TH1F("Graph","Graph",1,190,1010);
+      framework = new TH1F("Graph","Graph",1,190,1510);
       framework->SetStats(false);
       framework->SetTitle("");
       framework->GetXaxis()->SetTitle("Higgs boson mass [GeV]");
@@ -119,37 +120,43 @@ void plotPerCategory(){
       LEG = new TLegend(0.70,0.70,0.95,0.94);
       LEG->SetFillStyle(0);
       LEG->SetBorderSize(0);
-//      LEG->SetHeader("Expected @95% C.L.");
+      LEG->SetHeader("Observed:");
 
-      LEGTH = new TLegend(0.45,0.70,0.70,0.94);
-      LEGTH->SetFillStyle(0);
-      LEGTH->SetBorderSize(0);
-      LEGTH->SetHeader("Theoretical");
+      TLegend* LEGExp = NULL;
+      LEGExp = new TLegend(0.45,0.70,0.70,0.94);
+      LEGExp->SetFillStyle(0);
+      LEGExp->SetBorderSize(0);
+      LEGExp->SetHeader("Expected:");
 
-      getGraph("Combined"                     , 1, 2, 1, LEG  , NULL, 2, Dir+         "/Stength_LimitSummary")->Draw("C same");
+
       getGraph("=0 Jet"                       , 2, 2, 1, LEG  , NULL, 2, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
       getGraph("#geq1 Jets"                   , 4, 2, 1, LEG  , NULL, 2, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
       getGraph("VBF"                          , 6, 2, 1, LEG  , NULL, 2, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
+      getGraph("Combined"                     , 1, 2, 1, LEG  , NULL, 2, Dir+         "/Stength_LimitSummary")->Draw("C same");
 
-      getGraph("Combined"                     , 1, 2, 2, NULL  , NULL, 1, Dir+         "/Stength_LimitSummary")->Draw("C same");
-      getGraph("=0 Jet"                       , 2, 2, 2, NULL  , NULL, 1, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
-      getGraph("#geq1 Jets"                   , 4, 2, 2, NULL  , NULL, 1, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
-      getGraph("VBF"                          , 6, 2, 2, NULL  , NULL, 1, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
+      getGraph("=0 Jet"                       , 2, 2, 2, LEGExp  , NULL, 1, Dir+ "_eq0jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("#geq1 Jets"                   , 4, 2, 2, LEGExp  , NULL, 1, Dir+"_geq1jets/Stength_LimitSummary")->Draw("C same");
+      getGraph("VBF"                          , 6, 2, 2, LEGExp  , NULL, 1, Dir+     "_vbf/Stength_LimitSummary")->Draw("C same");
+      getGraph("Combined"                     , 1, 2, 2, LEGExp  , NULL, 1, Dir+         "/Stength_LimitSummary")->Draw("C same");
 
 
    //   LEGTH->Draw("same");
+      LEGExp  ->Draw("same");
       LEG  ->Draw("same");
 
+
+      /*
       char LumiLabel[1024];
-      sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}",13.0,2.2);
+      sprintf(LumiLabel,"CMS preliminary,  #sqrt{s}=%.0f TeV #scale[0.5]{#int} L=%6.1ffb^{-1}",13.0,2.3);
       TPaveText *pave = new TPaveText(0.1,0.96,0.94,0.99,"NDC");
       pave->SetBorderSize(0);
       pave->SetFillStyle(0);
       pave->SetTextAlign(32);
       pave->SetTextFont(42);
       pave->AddText(LumiLabel);
-      pave->Draw("same");
+      pave->Draw("same");*/
 
+      utils::root::DrawPreliminary(2268.759, 13, gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin()+0.025);     
       if(strengthLimit){
          TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
          SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      

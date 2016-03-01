@@ -458,11 +458,6 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(6,"#gamma"); 
 
   //pu control
-  mon.addHistogram( new TH1F( "nvtxA",";Vertices;Events",50,0,50) ); 
-  mon.addHistogram( new TH1F( "nvtxB",";Vertices;Events",50,0,50) ); 
-  mon.addHistogram( new TH1F( "nvtxC",";Vertices;Events",50,0,50) ); 
-  mon.addHistogram( new TH1F( "nvtxD",";Vertices;Events",50,0,50) ); 
-
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
@@ -474,6 +469,8 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("photonpt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
+  mon.addHistogram(new TH1F("bosonnvtx", ";Photon #eta;Events", 50, 0, 50) );
+  mon.addHistogram(new TH1F("bosoneta", ";Photon #eta;Events", 100, -5, 5) );
   mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 80, -4, 4) );
   mon.addHistogram(new TH1F("bosonphiHG", ";Photon #phi;Events", 800, -4, 4) );
   mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 80, -4, 4) );
@@ -524,6 +521,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfdphijj"    , ";Azimuthal angle difference;Events",20,0,3.5) );
   mon.addHistogram( new TH1F("vbfdetajj"    , ";Pseudo-rapidity span;Events",20,0,10) );
   mon.addHistogram( new TH1F("vbfcjv"       , ";Central jet multiplicity;Events",5,0,5) );
+  TH1F* hjetsfinal   = (TH1F*) mon.addHistogram( new TH1F("njetsfinal",   ";Jet multiplicity;Events",5,0,5) );
   TH1F* hjets   = (TH1F*) mon.addHistogram( new TH1F("njets",   ";Jet multiplicity;Events",5,0,5) );
   TH1F* hbtags  = (TH1F*) mon.addHistogram( new TH1F("nbtags",  ";b-tag multiplicity;Events",5,0,5) );
   for(int ibin=1; ibin<=hjets->GetXaxis()->GetNbins(); ibin++){
@@ -531,6 +529,7 @@ int main(int argc, char* argv[])
       if(ibin==h->GetXaxis()->GetNbins()) label +="#geq";
       label += (ibin-1);
       hjets   ->GetXaxis()->SetBinLabel(ibin,label);
+      hjetsfinal->GetXaxis()->SetBinLabel(ibin,label);      
       hbtags  ->GetXaxis()->SetBinLabel(ibin,label);
   } 
 
@@ -555,7 +554,13 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events / GeV",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events / GeV",100,0,500) );
 
-	mon.addHistogram( new TH1F( "mzz",   ";M_{ZZ} [GeV];Events / GeV", 20, 0, 500) ); //The binning is the same than the one for the corrections.
+  mon.addHistogram( new TH1F( "mtfinal"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "metfinal",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
+  mon.addHistogram( new TH1F( "mindphijmetfinal",  ";min #Delta#phi(jet,E_{T}^{miss});Events",20,0,4) );
+  mon.addHistogram( new TH1F("vbfmjjfinal"       , ";Dijet invariant mass [GeV];Events / GeV",31,mjjaxis) );
+  mon.addHistogram( new TH1F("vbfdetajjfinal"    , ";Pseudo-rapidity span;Events",20,0,10) );
+  
+  mon.addHistogram( new TH1F( "mzz",   ";M_{ZZ} [GeV];Events / GeV", 20, 0, 500) ); //The binning is the same than the one for the corrections.
 
 
   //
@@ -1040,30 +1045,6 @@ int main(int argc, char* argv[])
              bool passLooseLepton(true), passSoftMuon(true), passSoftElectron(true), passVetoElectron(true);
              int lid=leptons[ilep].pdgId();
 
-             //apply muon corrections
-             if(abs(lid)==13){
-                 passSoftMuon=false;
-                 if(muCor){
-                   float qter;
-                   TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-                   if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
-                   }else{   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
-                   }
-
-
-                   muDiff -= leptons[ilep].p4();
-                   leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
-                   muDiff += leptons[ilep].p4();
-                 }
-               }
-
-             if(abs(lid)==11){
-                elDiff -= leptons[ilep].p4();                   
-                ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
-                leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
-                elDiff += leptons[ilep].p4();                 
-             }
-
              //no need for charge info any longer
              lid=abs(lid);
              TString lepStr( lid==13 ? "mu" : "e");
@@ -1079,7 +1060,47 @@ int main(int argc, char* argv[])
 
              if(minDRlg<0.1) continue;
 
-             //kinematics
+             //Cut based identification
+             passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+             passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
+             passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft);
+
+             //isolation
+             passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
+             passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
+
+
+             //apply muon corrections
+             if(abs(lid)==13 && passIso && passId){
+                 passSoftMuon=false;
+                 if(muCor){
+                   float qter;
+                   TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                   if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+                   }else{   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
+                   }
+
+
+                   if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
+                      printf("\nevent = %lli %i lepton pt, eta, phi %f %f %f --> %f %f %f\n", ev.eventAuxiliary().event(), int(ilep), leptons[ilep].pt(),leptons[ilep].eta(),leptons[ilep].phi(), p4.Pt(),p4.Eta(),p4.Phi() );
+                   }
+
+                   muDiff -= leptons[ilep].p4();
+                   leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
+                   muDiff += leptons[ilep].p4();
+                 }
+               }
+
+             //apply electron corrections             
+             if(abs(lid)==11  && passIso && passId){
+                elDiff -= leptons[ilep].p4();                   
+                ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+                leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                elDiff += leptons[ilep].p4();                 
+             }
+
+
+              //kinematics
              float leta = fabs(lid==11 ?  leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta());
              if(leta> (lid==11 ? 2.5 : 2.4) )            passKin=false;
              if(lid==11 && (leta>1.4442 && leta<1.5660)) passKin=false;
@@ -1092,18 +1113,16 @@ int main(int argc, char* argv[])
                if(leptons[ilep].pt()<10) passLooseLepton=false;
              }
              if(leptons[ilep].pt()<25) passKin=false;
+            
 
-             //Cut based identification
-             passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
-             passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
-             passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft);
-
-             //isolation
-             passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
-             passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
 
              if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]); 
              else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
+
+             if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
+                if(lid==13)printf("muon%i Id=%i Iso=%i LooseId=%i kin=%i\n", int(ilep), passId?1:0, passIso?1:0, passLooseLepton?1:0, passKin?1:0);
+             }
+
 
            }
            std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
@@ -1367,6 +1386,8 @@ int main(int argc, char* argv[])
                       double b_dphi=fabs(deltaPhi(boson.phi(),met.corP4(metcor).phi()));
                       mon.fillHisto( "metphi",tags,met.corP4(metcor).phi(),weight);
                       mon.fillHisto( "metphiUnCor",tags,met.corP4(pat::MET::METCorrectionLevel::Type1).phi(),weight);
+                      mon.fillHisto( "bosonnvtx",tags,vtx.size(),weight);                                                               
+                      mon.fillHisto( "bosoneta",tags,boson.eta(),weight);                                                                                
                       mon.fillHisto( "bosonphi",tags,boson.phi(),weight);                                                               
                       mon.fillHisto( "bosonphiHG",tags,boson.phi(),weight);
                       mon.fillHisto( "dphi_boson_met",tags,b_dphi,weight);
@@ -1398,12 +1419,19 @@ int main(int argc, char* argv[])
                       if(met.corP4(metcor).pt()>125){
                         mon.fillHisto("eventflow",tags,8,weight);
 
+                        mon.fillHisto( "metfinal",tags,met.corP4(metcor).pt(),weight,true);                      
+                        mon.fillHisto( "mtfinal",tags,mt,weight,true);
+                        mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
+                        mon.fillHisto( "njetsfinal",tags,njets,weight);
+
 
                         if(!isMC){
                            char buffer[1024];
                            sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer; 
                            sprintf(buffer, " - nLep=%2i nSoftLept=%2i nPhotons=%2i  nJets=%2i\n", int(selLeptons.size()), int(extraLeptons.size()), int(selPhotons.size()), int(selJets.size())  ); debugText+=buffer;                               
                            sprintf(buffer, " - MET=%8.2f mT=%8.2f nvtx=%3i\n", met.corP4(metcor).pt(), mt, int(vtx.size()) ); debugText+=buffer;
+                           sprintf(buffer, " - MET type1XY=%8.2f type1=%8.2f uncorrected=%8.2f\n", met.corP4(pat::MET::METCorrectionLevel::Type1XY).pt(), met.corP4(pat::MET::METCorrectionLevel::Type1).pt(), met.corP4(pat::MET::METCorrectionLevel::Raw).pt() ); debugText+=buffer;
+                           sprintf(buffer, " - LeptonScale changes on MET mu=%8.2f  el=%8.2f\n", muDiff.pt(), elDiff.pt() ); debugText+=buffer;                        
                            sprintf(buffer, " - Z pT=%6.2f eta=%+6.2f phi=%+6.2f\n", boson.pt(), boson.eta(), boson.phi() ); debugText+=buffer;
                            if(selLeptons.size()>0)sprintf(buffer, " - lep0 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[0].pdgId(), selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[0].phi()  ); debugText+=buffer;
                            if(selLeptons.size()>1)sprintf(buffer, " - lep1 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[1].pdgId(), selLeptons[1].pt(), selLeptons[1].eta(), selLeptons[1].phi()  ); debugText+=buffer;                                
@@ -1446,11 +1474,17 @@ int main(int argc, char* argv[])
                             }
                           }
 
-                          if(!isMC){
-                              char buffer[1024];                           
-                              sprintf(buffer, " - VBF mjj=%8.2f  dEta=%+6.2f dPhi=%+6.2f\n", dijet.mass(), deta, dphi   ); debugText+=buffer;
-                              sprintf(buffer, " - VBF jet1 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[0].pt(), selJets[0].eta(), selJets[0].phi()   ); debugText+=buffer;                                
-                              sprintf(buffer, " - VBF jet2 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[1].pt(), selJets[1].eta(), selJets[1].phi()   ); debugText+=buffer;                                                            
+                          if(met.corP4(metcor).pt()>125){
+
+                              mon.fillHisto("vbfdetajjfinal",tags,deta,        weight);                          
+                              if(deta>4.0){mon.fillHisto("vbfdphijjfinal",tags,dphi,        weight);}
+
+                              if(!isMC){
+                                 char buffer[1024];                           
+                                 sprintf(buffer, " - VBF mjj=%8.2f  dEta=%+6.2f dPhi=%+6.2f\n", dijet.mass(), deta, dphi   ); debugText+=buffer;
+                                 sprintf(buffer, " - VBF jet1 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[0].pt(), selJets[0].eta(), selJets[0].phi()   ); debugText+=buffer;                                
+                                 sprintf(buffer, " - VBF jet2 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[1].pt(), selJets[1].eta(), selJets[1].phi()   ); debugText+=buffer;                                                            
+                              }
                           }
 
                         }

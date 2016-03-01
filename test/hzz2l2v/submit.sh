@@ -29,7 +29,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 #--------------------------------------------------
 # Global Variables
 #--------------------------------------------------
-SUFFIX=_2016_02_23
+SUFFIX=_2016_02_26
 #SUFFIX=_debug
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -127,23 +127,23 @@ if [[ $step > 2.999 && $step < 4 ]]; then
    
 
     if [[ $step == 3 || $step == 3.1 ]]; then  # make plots and combine root files for photon + jet study    
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/       --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_mcbased --fileOption READ $arguments
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_mcbased --fileOption READ --blind 100 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_mcbased --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ --blind 100 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
       
     fi
 
     if [[ $step == 3 || $step == 3.15 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_photoncontrol --fileOption READ --only "(all|ll|mumu|ee|emu|gamma)(_qt|_qmass|_met|_mt|npho.*)"  $arguments 
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_photoncontrol --fileOption READ --only "gamma.*"  $arguments 
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_photoncontrol --fileOption READ --only "trg.*"  $arguments 
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_photoncontrol --fileOption READ --only "(all|ll|mumu|ee|emu|gamma)(_qt|_qmass|_met|_mt|npho.*)"  $arguments 
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_photoncontrol --fileOption READ --only "gamma.*"  $arguments 
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_photoncontrol --fileOption READ --only "trg.*"  $arguments 
     fi
 
     if [[ $step == 3 || $step == 3.2 ]]; then # make plots and combine root files for photon + jet study   
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven/       --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_datadriven --fileOption READ $arguments
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_datadriven --fileOption READ --blind 100 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --key 2l2v_datadriven --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ --blind 100 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
     fi
 
 fi
