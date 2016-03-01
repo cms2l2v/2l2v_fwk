@@ -42,7 +42,7 @@ TGraph* getLimitGraph(TTree* tree, float Quantil){
      if(TquantExp==Quantil){
         //printf("Quantil = %f - mH=%f --> %f\n",TquantExp,Tmh,Tlimit);
         //
-        if(Tmh>1000)continue;
+  //      if(Tmh>1000)continue;
         toReturn->SetPoint(i, Tmh, Tlimit);
         i++;
      }
@@ -175,7 +175,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
 
   //limits in terms of signal strength
   TCanvas* c = new TCanvas("c", "c",800,800);
-  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?190:190,1010);
+  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?190:190,1510);
   framework->SetStats(false);
   framework->SetTitle("");
   framework->GetXaxis()->SetTitle("Higgs boson mass (GeV)");
