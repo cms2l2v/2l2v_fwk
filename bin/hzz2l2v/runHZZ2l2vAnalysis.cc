@@ -555,6 +555,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events / GeV",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events / GeV",100,0,500) );
 
+	mon.addHistogram( new TH1F( "mzz",   ";M_{ZZ} [GeV];Events / GeV", 20, 0, 500) ); //The binning is the same than the one for the corrections.
+
+
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
   //
@@ -974,10 +977,13 @@ int main(int argc, char* argv[])
     
     		 //NNLO corrections on ZZ2l2nu
     		 double ZZ_NNLOcorrectionsWeight =1.;
-    		 if(isMC_ZZ2l2nu) ZZ_NNLOcorrectionsWeight = ZZatNNLO::getNNLOCorrections(dtag, gen, ZZ_NNLOTable);
+				 double mzz = - 404; // will be filled by getNNLOCorrections 
+    		 if(isMC_ZZ2l2nu) ZZ_NNLOcorrectionsWeight = ZZatNNLO::getNNLOCorrections(dtag, gen, ZZ_NNLOTable, mzz);
 				 
 				 //final event weight
+				 if(isMC_ZZ2l2nu) mon.fillHisto("mzz", "qqZZ_atNLO", mzz, weight);
 				 weight *= ZZ_NNLOcorrectionsWeight;
+				 if(isMC_ZZ2l2nu) mon.fillHisto("mzz", "qqZZ_atNNLO", mzz, weight);
 
          //
          //
