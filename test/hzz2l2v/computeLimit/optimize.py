@@ -157,7 +157,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('ZZ/all_optim_cut') 
+   cutsH = file.Get('WZ/all_optim_cut') 
       
    ###################################################
    ##   OPTIMIZATION LOOP                           ##

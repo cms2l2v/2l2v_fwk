@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
         varNames.push_back("_signal_lshapeup"); varNames.push_back("_signal_lshapedown"); //signal line shape (NNLO + interf)
         varNames.push_back("_signal_normup"); varNames.push_back("_signal_normdown"); //signal scale      (NNLO + interf)
      }
-     if(isMC_ZZ2l2nu){
+     if(isMC_ZZ){
         varNames.push_back("_th_ewkup"); varNames.push_back("_th_ewkdown"); //EWK+QCD corrections
      }
   }
@@ -560,7 +560,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfmjjfinal"       , ";Dijet invariant mass [GeV];Events / GeV",31,mjjaxis) );
   mon.addHistogram( new TH1F("vbfdetajjfinal"    , ";Pseudo-rapidity span;Events",20,0,10) );
   
-  mon.addHistogram( new TH1F( "mzz",   ";M_{ZZ} [GeV];Events / GeV", 20, 0, 500) ); //The binning is the same than the one for the corrections.
+  mon.addHistogram( new TH1F( "mzz",   ";M_{ZZ} [GeV];Events / GeV", 150, 0, 1500) ); //The binning is the same than the one for the corrections.
 
 
   //
@@ -758,7 +758,16 @@ int main(int argc, char* argv[])
             puWeightDown = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
             weight *= puWeight;
 
-    
+
+            if(isMC && (mctruthmode==15 || mctruthmode==1113)){// && (string(dtag.Data()).find("Z#rightarrow")==0 || isMC_ZZ2l2nu)){
+                int prodId = 1;
+                for( unsigned int k=0; k<gen.size(); ++k){	
+                        if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 || abs( gen[k].pdgId() )==15 ) ) prodId*=gen[k].pdgId(); 
+                }
+                if(mctruthmode==15   && abs(prodId)!=225)continue; //skip not tautau
+                if(mctruthmode==1113 && abs(prodId)==225)continue; //skip tautau
+            }
+
             if(isMC_VBF || isMC_GG || mctruthmode==125){
                LorentzVector higgs(0,0,0,0);
   	       for(unsigned int igen=0; igen<gen.size(); igen++){

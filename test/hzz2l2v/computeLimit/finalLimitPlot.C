@@ -426,16 +426,48 @@ void finalLimitPlot(){
            h2d->GetZaxis()->SetTitleOffset(1.33);
            if(strengthLimit){
               h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #mu = #sigma_{95%} / #sigma_{th}").c_str());
-              h2d->GetZaxis()->SetRangeUser(1E-1,1E2);
+              h2d->GetZaxis()->SetRangeUser(1E-2,1E2);
            }else{
               h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + string(" #sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
-              h2d->GetZaxis()->SetRangeUser(1E1,3E3);
+              h2d->GetZaxis()->SetRangeUser(1E0,3E3);
            }
            h2d->Draw("COLZ same");
 
 
            if(strengthLimit){
               getContour(h2d, c1, 3, 1, 1);
+
+              TPaveText* pave1 = NULL;
+              TGraph* indirectLimit = new TGraph(2);
+              indirectLimit->SetLineColor(17);
+              indirectLimit->SetFillColor(17);
+              indirectLimit->SetLineWidth(502);
+              indirectLimit->SetFillStyle(3005);
+
+              //µ_h125 = 1.00 +- 0.14 --> C'²<0.28 at 95% C.L.
+              if(mode==0){
+                 indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), sqrt(0.28) );
+                 indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), sqrt(0.28) );
+
+                  pave1 = new TPaveText(framework2d->GetXaxis()->GetXmax()*0.7, sqrt(0.28)*1.25, framework2d->GetXaxis()->GetXmax(),sqrt(0.28));
+              }else{
+                 indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), 0.28 );
+                 indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), 0.28 );
+
+                 pave1 = new TPaveText(framework2d->GetXaxis()->GetXmax()*0.7, 0.28*1.25, framework2d->GetXaxis()->GetXmax(),0.28);
+              }
+              indirectLimit->Draw("same");
+
+              pave1->SetBorderSize(0);
+              pave1->SetFillStyle(0);
+              pave1->SetTextAlign(11);
+              pave1->SetTextFont(62);
+              pave1->SetTextSize(0.03);
+              pave1->SetTextColor(15);
+              pave1->AddText("#mu_{h(125)} = 1.0 #pm 0.14");
+              pave1->Draw("same");
+
+
            }else{
               //build th cross-section 2D plane
               TGraph* THXSec   = Hxswg::utils::getXSec(Dir); 

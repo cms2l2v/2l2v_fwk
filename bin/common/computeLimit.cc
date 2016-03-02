@@ -678,8 +678,8 @@ int main(int argc, char* argv[])
            sorted_procs.clear();
            sorted_procs.insert(sorted_procs.end(), bckg_procs.begin(), bckg_procs.end());
            if(isTotal)sorted_procs.push_back("total");
-           sorted_procs.insert(sorted_procs.end(), sign_procs.begin(), sign_procs.end());
            if(isData)sorted_procs.push_back("data");
+           sorted_procs.insert(sorted_procs.end(), sign_procs.begin(), sign_procs.end());
         }
 
 
@@ -781,6 +781,7 @@ int main(int argc, char* argv[])
         //
         // Print the Yield table
         //
+/*
          void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc){
            if(!pFileInc)pFileInc=pFile;
 
@@ -852,6 +853,165 @@ int main(int argc, char* argv[])
            }
            fprintf(pFileInc,"\\hline\n");
            fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
+         }
+*/
+           void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, string histoName, FILE* pFileInc){
+           if(!pFileInc)pFileInc=pFile;
+
+           std::vector<string> VectorProc;
+           std::map<string, bool> MapChannel;
+           std::map<string, std::map<string, string> > MapProcChYields;         
+           std::map<string, bool> MapChannelBin;
+           std::map<string, std::map<string, string> > MapProcChYieldsBin;         
+
+           std::map<string, string> rows;
+           std::map<string, string> rowsBin;
+           string rows_header = "\\begin{tabular}{|c|";
+           string rows_title  = "channel";
+
+           //order the proc first
+           sortProc();
+
+           for(unsigned int p=0;p<sorted_procs.size();p++){
+              string procName = sorted_procs[p];
+              std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+              if(it==procs.end())continue;
+              rows_header += "c|";
+              rows_title  += "& " + it->second.shortName;
+              std::map<string, double> bin_valerr;
+              std::map<string, double> bin_val;
+              std::map<string, double> bin_syst;
+
+              VectorProc.push_back(it->first);
+              for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
+                 if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
+                 if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
+                 TH1* h = ch->second.shapes[histoName].histo();
+                 double valerr;
+                 double val  = h->IntegralAndError(1,h->GetXaxis()->GetNbins(),valerr);
+                 double syst = ch->second.shapes[histoName].getScaleUncertainty();
+                 if(val<1E-5 && valerr>=10*val){val=0.0; syst=-1;}
+                 else if(val<1E-6){val=0.0; valerr=0.0; syst=-1;}
+                 if(it->first=="data"){valerr=-1.0; syst=-1;}
+                 string YieldText = "";
+
+                 if(it->first=="data" || it->first=="total")YieldText += "\\boldmath ";
+                 if(it->first=="data"){char tmp[256];sprintf(tmp, "%.0f", val); YieldText += tmp;
+                 }else{                YieldText += utils::toLatexRounded(val,valerr, syst);     }
+ 
+                 if(rows.find(ch->first)==rows.end())rows[ch->first] = string("$ ")+ch->first+" $";
+                 rows[ch->first] += string("&") + YieldText;
+
+                 TString LabelText = TString("$") + ch->second.channel+ " - " +ch->second.bin + TString("$");
+                 LabelText.ReplaceAll("eq"," ="); LabelText.ReplaceAll("g =","#geq"); LabelText.ReplaceAll("l =","#leq"); 
+                 LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
+
+                 TString BinText = TString("$") + ch->second.bin + TString("$");
+                 BinText.ReplaceAll("eq"," ="); BinText.ReplaceAll("g =","#geq"); BinText.ReplaceAll("l =","#leq");
+                 BinText.ReplaceAll("_OS","OS "); BinText.ReplaceAll("el","e"); BinText.ReplaceAll("mu","#mu");  BinText.ReplaceAll("ha","#tau_{had}");
+
+
+                 bin_val   [BinText.Data()] += val;
+                 bin_valerr[BinText.Data()] += pow(valerr,2);
+                 bin_syst  [BinText.Data()] += syst>=0?pow(syst,2):-1;
+                 if(syst<0)bin_syst  [ch->second.bin]=-1;
+
+                 bin_val   [" Inc."] += val;
+                 bin_valerr[" Inc."] += pow(valerr,2);
+                 bin_syst  [" Inc."] += syst>=0?pow(syst,2):-1;
+                 if(syst<0)bin_syst  ["Inc"]=-1;
+
+                 MapChannel[LabelText.Data()] = true;
+                 MapProcChYields[it->first][LabelText.Data()] = YieldText;
+              }
+
+              for(std::map<string, double>::iterator bin=bin_val.begin(); bin!=bin_val.end(); bin++){
+                 string YieldText = "";                 
+                 if(it->first=="data" || it->first=="total" || bin->first==" Inc.")YieldText += "\\boldmath ";
+                 if(it->first=="data"){char tmp[256];sprintf(tmp, "%.0f", bin_val[bin->first]); YieldText += tmp;  //unblinded
+//                 if(it->first=="data"){char tmp[256];sprintf(tmp, "-"); rowsBin[bin->first] += tmp;  //blinded
+                 }else{                YieldText += utils::toLatexRounded(bin_val[bin->first],sqrt(bin_valerr[bin->first]), bin_syst[bin->first]<0?-1:sqrt(bin_syst[bin->first]));   }
+
+                 if(rowsBin.find(bin->first)==rowsBin.end())rowsBin[bin->first] = string("$ ")+bin->first+" $";
+                 rowsBin[bin->first] += string("&") + YieldText;
+
+                 MapChannelBin[bin->first] = true;
+                 MapProcChYieldsBin[it->first][bin->first] = YieldText;                
+
+                 if(bin->first==" Inc."){
+                    MapChannel[bin->first] = true;
+                    MapProcChYields[it->first][bin->first] = YieldText;                
+                 }
+              }
+           }
+
+              
+//           //All Channels
+//           fprintf(pFile,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+//           fprintf(pFile, "%s}\\\\\n", rows_header.c_str());
+//           fprintf(pFile, "%s\\\\\n", rows_title .c_str());
+//           for(std::map<string, string>::iterator row = rows.begin(); row!= rows.end(); row++){
+//              fprintf(pFile, "%s\\\\\n", row->second.c_str());
+//           }
+//           fprintf(pFile,"\\hline\n");
+//           fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
+
+//           //All Bins
+//           fprintf(pFileInc,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+//           fprintf(pFileInc, "%s}\\\\\n", rows_header.c_str());
+//           fprintf(pFileInc, "%s\\\\\n", rows_title .c_str());
+//           for(std::map<string, string>::iterator row = rowsBin.begin(); row!= rowsBin.end(); row++){
+//              fprintf(pFileInc, "%s\\\\\n", row->second.c_str());
+//           }
+//           fprintf(pFileInc,"\\hline\n");
+//           fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
+
+
+
+            //All Channels
+           fprintf(pFile,"\\begin{table}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+           fprintf(pFile, "\\begin{tabular}{|c|"); for(auto ch = MapChannel.begin(); ch!=MapChannel.end();ch++){ fprintf(pFile, "c|"); } fprintf(pFile, "}\\\\\n");
+           fprintf(pFile, "channel");   for(auto ch = MapChannel.begin(); ch!=MapChannel.end();ch++){ fprintf(pFile, " & %s", ch->first.c_str()); } fprintf(pFile, "\\\\\\hline\n");
+           for(auto proc = VectorProc.begin();proc!=VectorProc.end(); proc++){
+              if(*proc=="data" || *proc=="total")fprintf(pFile, "\\hline\n");
+              auto ChannelYields = MapProcChYields.find(*proc);
+              if(ChannelYields == MapProcChYields.end())continue;
+              fprintf(pFile, "%s ", proc->c_str()); 
+              for(auto ch = MapChannel.begin(); ch!=MapChannel.end();ch++){ 
+                 fprintf(pFile, " & ");
+                 if(ChannelYields->second.find(ch->first)!=ChannelYields->second.end()){
+                    fprintf(pFile, " %s", (ChannelYields->second)[ch->first].c_str());
+                 }
+              }
+              fprintf(pFile, "\\\\\n");
+              if(*proc=="data")fprintf(pFile, "\\hline\n");             
+           }
+           fprintf(pFile,"\\hline\n");
+           fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{table}\n");
+
+            //All Bins
+           fprintf(pFileInc,"\\begin{table}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+           fprintf(pFileInc, "\\begin{tabular}{|c|"); for(auto ch = MapChannelBin.begin(); ch!=MapChannelBin.end();ch++){ fprintf(pFileInc, "c|"); } fprintf(pFileInc, "}\\\\\n");
+           fprintf(pFileInc, "channel");   for(auto ch = MapChannelBin.begin(); ch!=MapChannelBin.end();ch++){ fprintf(pFileInc, " & %s", ch->first.c_str()); } fprintf(pFileInc, "\\\\\\hline\n");
+           for(auto proc = VectorProc.begin();proc!=VectorProc.end(); proc++){
+              if(*proc=="data" || *proc=="total")fprintf(pFileInc, "\\hline\n");
+              auto ChannelYields = MapProcChYieldsBin.find(*proc);
+              if(ChannelYields == MapProcChYieldsBin.end())continue;
+              fprintf(pFileInc, "%s ", proc->c_str()); 
+              for(auto ch = MapChannelBin.begin(); ch!=MapChannelBin.end();ch++){ 
+                 fprintf(pFileInc, " & ");
+                 if(ChannelYields->second.find(ch->first)!=ChannelYields->second.end()){
+                    fprintf(pFileInc, " %s", (ChannelYields->second)[ch->first].c_str());
+                 }
+              }
+              fprintf(pFileInc, "\\\\\n");
+              if(*proc=="data")fprintf(pFileInc, "\\hline\n");             
+           }
+           fprintf(pFileInc,"\\hline\n");
+           fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{table}\n");
+
+
+             
          }
 
         //
@@ -1623,12 +1783,21 @@ int main(int argc, char* argv[])
            //iterate over the processes required
            std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
            for(unsigned int i=0;i<Process.size();i++){
-              if(!matchKeyword(Process[i], keywords))continue; //only consider samples passing key filtering
-             
+              string matchingKeyword="";
+              if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+
+
                TString procCtr(""); procCtr+=i;
                TString proc=Process[i].getString("tag", "noTagFound");
-               TDirectory *pdir = (TDirectory *)inF->Get(proc);         
-               if(!pdir){printf("Directory for proc=%s is not in the file!\n", proc.Data()); continue;}
+
+               string dirName = proc.Data();
+               if(Process[i].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i].getIntFromKeyword(matchingKeyword, "mctruthmode", 0)); dirName += buf; }
+               string procSuffix = Process[i].getStringFromKeyword(matchingKeyword, "suffix", "");
+               if(procSuffix!=""){dirName += "_" + procSuffix;}
+               while(dirName.find("/")!=std::string::npos)dirName.replace(dirName.find("/"),1,"-");         
+
+               TDirectory *pdir = (TDirectory *)inF->Get(dirName.c_str());         
+               if(!pdir){printf("Directory (%s) for proc=%s is not in the file!\n", dirName.c_str(), proc.Data()); continue;}
 
                bool isData = Process[i].getBool("isdata", false);
                if(onlyData && !isData)continue; //just here to speedup the NRB prediction
@@ -1853,7 +2022,7 @@ int main(int argc, char* argv[])
               for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
                  if(!it->second.isBckg || it->second.isData)continue;
                  TString procName = it->first.c_str();
-                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("Top") || procName.Contains("WWW") || procName.Contains("WW") || procName.Contains("WW#rightarrow 2l2#nu") ||  procName.Contains("WW#rightarrow lnu2q") || procName.Contains("W#rightarrow l#nu") || procName.Contains("W,multijets") || procName.Contains("Z#rightarrow #tau#tau") ))continue;
+                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("Top") || procName.Contains("WWW") || procName.Contains("WW") || procName.Contains("WW#rightarrow 2l2#nu") ||  procName.Contains("WW#rightarrow lnu2q") || procName.Contains("W#rightarrow l#nu") || procName.Contains("W,multijets") || procName.Contains("Z#rightarrow #tau#tau") || procName.Contains("ZZ#rightarrow Z#tau#tau") ))continue;
                  addProc(procInfo_NRB, it->second);
                  for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)==it->first){sorted_procs.erase(p);break;}}
                  toBeDelete.push_back(it->first);
@@ -1861,7 +2030,7 @@ int main(int argc, char* argv[])
               for(std::vector<string>::iterator p=toBeDelete.begin();p!=toBeDelete.end();p++){procs.erase(procs.find((*p)));}
 
 
-              for(std::map<string, ChannelInfo_t>::iterator chData = dataProcIt->second.channels.begin(); chData!=dataProcIt->second.channels.end(); chData++){            
+              for(std::map<string, ChannelInfo_t>::iterator chData = dataProcIt->second.channels.begin(); chData!=dataProcIt->second.channels.end(); chData++){
                  if(std::find(selCh.begin(), selCh.end(), chData->second.channel)==selCh.end())continue;
 
                  std::map<string, ChannelInfo_t>::iterator chNRB  = procInfo_NRB.channels.find(chData->first);  
