@@ -153,16 +153,16 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                     MissingFiles[dtag].push_back(FileName);
                     continue; 
                  }else{
-                    DSetFiles[dtag].push_back(FileName);
+                    DSetFiles[dtag+filtExt].push_back(FileName);
                  }
 
-                 if(fileProcessed>0){File->Close();continue;} //only consider the first file of each sample to get the list of object 
-                 fileProcessed++;
+                 if(fileProcessed%5!=0){File->Close();fileProcessed++;continue;} //only consider 1file every 5 of each sample to get the list of object 
 
                  //just to make it faster, only consider the first 3 sample of a same kind
-                 if(isData){if(dataProcessed>=5){ File->Close(); continue;}else{dataProcessed++;}}
-                 if(isSign){if(signProcessed>=2){ File->Close(); continue;}else{signProcessed++;}}
-                 if(isMC  ){if(bckgProcessed>=2){ File->Close(); continue;}else{bckgProcessed++;}}
+                 if(fileProcessed==0 && isData){if(dataProcessed>=8 ){ File->Close(); continue;}else{dataProcessed++;}}
+                 if(fileProcessed==0 && isSign){if(signProcessed>=4 ){ File->Close(); continue;}else{signProcessed++;}}
+                 if(fileProcessed==0 && isMC  ){if(bckgProcessed>=6 ){ File->Close(); continue;}else{bckgProcessed++;}}
+                 fileProcessed++;
 
                  printf("Adding all objects from %25s to the list of considered objects:\n",  FileName.c_str());
                  GetListOfObject(Root,RootDir,histlist,"", (TDirectory*)File );
@@ -405,6 +405,11 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
 
+
+       string filtExt("");
+       if(Process[i].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i].getIntFromKeyword(matchingKeyword, "mctruthmode")); filtExt += buf; }
+
+
 //      time_t now = time(0);
 
       string dirName = getDirName(Process[i], matchingKeyword);
@@ -423,7 +428,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
       float  Weight = 1.0;     
       std::vector<JSONWrapper::Object> Samples = (Process[i])["data"].daughters();
       for(unsigned int j=0;j<Samples.size();j++){
-         std::vector<string>& fileList = DSetFiles[(Samples[j])["dtag"].toString()];
+         std::vector<string>& fileList = DSetFiles[(Samples[j])["dtag"].toString()+filtExt];
          if(!Process[i].getBoolFromKeyword(matchingKeyword, "isdata", false) && !Process[i].getBoolFromKeyword(matchingKeyword, "isdatadriven", false)){Weight= iLumi/fileList.size();}else{Weight=1.0;}
 
          for(int f=0;f<fileList.size();f++){
@@ -492,8 +497,6 @@ void Draw2DHistogramSplitCanvas(JSONWrapper::Object& Root, TFile* File, NameAndT
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering      
       if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
-      string filtExt("");
-      if(Process[i].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i].getIntFromKeyword(matchingKeyword, "mctruthmode", 0)); filtExt += buf; }
 
       TCanvas* c1 = new TCanvas("c1","c1",500,500);
       c1->SetLogz(true);
