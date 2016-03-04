@@ -401,16 +401,38 @@ void finalLimitPlot(){
       ///////////////////////////////////////////////
      //Mass Versus Cprime limits  2D
      ///////////////////////////////////////////////
-      for(int observed=0;observed<=1;observed++){
-         for(int mode=0; mode<=1; mode++){
-           //mode=0 --> Mass versus C'     interpolated from 2D limit(CPrime, BRNew)
-           //mode=1 --> Mass versus Gamma  interpolated from 2D limit(CPrime, BRNew)
- 
-           TH2D* grid   = new TH2D("grid"  , "grid"  , 500, 0, 1510, 200, 0, 1);
-           TGraph2D*   graph = g2dMassVsCp   [1+observed];
-           if(mode==1) graph = g2dMassVsWidth[1+observed];
-           graph->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
-           TH2D* h2d = graph->GetHistogram();
+     for(int mode=0; mode<=1; mode++){
+     //mode=0 --> Mass versus C'     interpolated from 2D limit(CPrime, BRNew)
+     //mode=1 --> Mass versus Gamma  interpolated from 2D limit(CPrime, BRNew)
+     
+        TH2D* grid   = new TH2D("grid"  , "grid"  , 300, 0, 1500, 100, 0, 1);
+        TGraph2D*   graph[] = {g2dMassVsCp   [1], g2dMassVsCp   [2]};
+        if(mode==1){ graph[0] = g2dMassVsWidth[1]; graph[1] = g2dMassVsWidth[2];}
+        graph[0]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
+        graph[1]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
+
+
+        //build th cross-section 2D plane
+        TGraph* THXSec   = Hxswg::utils::getXSec(Dir); 
+        scaleGraph(THXSec, 1000);  //convert cross-section to fb
+        TH2D* THXSec2D   = (TH2D*)grid->Clone("ThXSec");
+        for(int x=1;x<=THXSec2D->GetNbinsX();x++){
+           double mass = THXSec2D->GetXaxis()->GetBinCenter(x);
+           for(int y=1;y<=THXSec2D->GetNbinsY();y++){
+              double CP = THXSec2D->GetYaxis()->GetBinCenter(y);  double BR=0.0;
+              if(mode==1){CP = sqrt(CP);}  //go from width=C'² --> to C'
+              double XSecScaleFactor = pow(CP,2) * (1-BR);
+              THXSec2D->SetBinContent(x,y,THXSec->Eval(mass)*XSecScaleFactor);
+        }}
+        TH2D* signalStrength[] = { (TH2D*) (graph[0]->GetHistogram()->Clone("signalStrengthExp")),  (TH2D*) (graph[1]->GetHistogram()->Clone("signalStrengthObs"))};
+        if(!strengthLimit){
+           signalStrength[0]->Divide(THXSec2D);
+           signalStrength[1]->Divide(THXSec2D);
+        }
+           
+       for(int observed=0;observed<=1;observed++){
+           TH2D* h2d = graph[observed]->GetHistogram();
+           
 
            c1 = new TCanvas("c", "c",600,600);
            c1->SetLogz(true);      
@@ -433,10 +455,11 @@ void finalLimitPlot(){
            }
            h2d->Draw("COLZ same");
 
-
+           //strength contour
+           getContour(signalStrength[0], c1, 2, 1, 17); //exp
+           if(observed==1) getContour(signalStrength[observed], c1, 3, 1, 1); //obs
+          
            if(strengthLimit){
-              getContour(h2d, c1, 3, 1, 1);
-
               TPaveText* pave1 = NULL;
               TGraph* indirectLimit = new TGraph(2);
               indirectLimit->SetLineColor(17);
@@ -466,25 +489,6 @@ void finalLimitPlot(){
               pave1->SetTextColor(15);
               pave1->AddText("#mu_{h(125)} = 1.0 #pm 0.14");
               pave1->Draw("same");
-
-
-           }else{
-              //build th cross-section 2D plane
-              TGraph* THXSec   = Hxswg::utils::getXSec(Dir); 
-              scaleGraph(THXSec, 1000);  //convert cross-section to fb
-              TH2D* THXSec2D   = (TH2D*)grid->Clone("ThXSec");
-              for(int x=1;x<=THXSec2D->GetNbinsX();x++){
-                 double mass = THXSec2D->GetXaxis()->GetBinCenter(x);
-                 for(int y=1;y<=THXSec2D->GetNbinsY();y++){
-                    double CP = THXSec2D->GetYaxis()->GetBinCenter(y);  double BR=0.0;
-                    if(mode==1){CP = sqrt(CP);}  //go from width=C'² --> to C'
-                    double XSecScaleFactor = pow(CP,2) * (1-BR);
-                    THXSec2D->SetBinContent(x,y,THXSec->Eval(mass)*XSecScaleFactor);
-              }}
-
-              TH2D* signalStrength = (TH2D*) h2d->Clone("signalStrength");
-              signalStrength->Divide(THXSec2D);
-              getContour(signalStrength, c1, 3, 1, 1);
            }
 
 
@@ -496,8 +500,9 @@ void finalLimitPlot(){
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
-         }//end of mode loop
-       }//end of observed loop
+         }//end of observed loop
+
+      }//end of mode loop
 
 
       ///////////////////////////////////////////////

@@ -851,6 +851,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        denRelUncH->GetYaxis()->SetTitleSize(0.035 * yscale);
        denRelUncH->GetYaxis()->SetTitleOffset(0.3);
       
+
        //add comparisons
        for(size_t icd=0; icd<compDists.size(); icd++){
 	   TString name("CompHistogram"); name+=icd;
@@ -865,6 +866,16 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
          blinding_box->SetFillColor(15);         blinding_box->SetFillStyle(3013);         blinding_box->Draw("same F");
          ObjectToDelete.push_back(blinding_box);
       }
+
+       TLegend *legR = new TLegend(0.75,0.75,0.93,0.96, "NDC");
+       legR->SetHeader("");
+       legR->SetBorderSize(0);
+       legR->SetTextFont(42);   legR->SetTextSize(0.03 * yscale);
+       legR->SetLineColor(0);   legR->SetLineStyle(1);   legR->SetLineWidth(1);
+       legR->SetFillColor(0);   legR->SetFillStyle(0);//blind>-1E99?1001:0);
+      legR->AddEntry(denRelUnc, "Stat. Unc.", "F");
+      legR->Draw("same");
+
 
 
    }
