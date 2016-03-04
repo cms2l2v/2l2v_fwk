@@ -896,19 +896,19 @@ int main(int argc, char* argv[])
                  string YieldText = "";
 
                  if(it->first=="data" || it->first=="total")YieldText += "\\boldmath ";
-                 if(it->first=="data"){char tmp[256];sprintf(tmp, "%.0f", val); YieldText += tmp;
+                 if(it->first=="data"){char tmp[256];sprintf(tmp, "$%.0f$", val); YieldText += tmp;
                  }else{                YieldText += utils::toLatexRounded(val,valerr, syst);     }
  
                  if(rows.find(ch->first)==rows.end())rows[ch->first] = string("$ ")+ch->first+" $";
                  rows[ch->first] += string("&") + YieldText;
 
-                 TString LabelText = TString("$") + ch->second.channel+ " - " +ch->second.bin + TString("$");
-                 LabelText.ReplaceAll("eq"," ="); LabelText.ReplaceAll("g =","#geq"); LabelText.ReplaceAll("l =","#leq"); 
-                 LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
+                 TString LabelText = TString("$") + ch->second.channel+ " " +ch->second.bin + TString("$");
+                 LabelText.ReplaceAll("eq"," ="); LabelText.ReplaceAll("g =","\\geq"); LabelText.ReplaceAll("l =","\\leq"); 
+                 LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","\\mu");  LabelText.ReplaceAll("ha","\\tau_{had}");
 
                  TString BinText = TString("$") + ch->second.bin + TString("$");
-                 BinText.ReplaceAll("eq"," ="); BinText.ReplaceAll("g =","#geq"); BinText.ReplaceAll("l =","#leq");
-                 BinText.ReplaceAll("_OS","OS "); BinText.ReplaceAll("el","e"); BinText.ReplaceAll("mu","#mu");  BinText.ReplaceAll("ha","#tau_{had}");
+                 BinText.ReplaceAll("eq"," ="); BinText.ReplaceAll("g =","\\geq"); BinText.ReplaceAll("l =","\\leq");
+                 BinText.ReplaceAll("_OS","OS "); BinText.ReplaceAll("el","e"); BinText.ReplaceAll("mu","\\mu");  BinText.ReplaceAll("ha","\\tau_{had}");
 
 
                  bin_val   [BinText.Data()] += val;
@@ -969,11 +969,11 @@ int main(int argc, char* argv[])
 
 
             //All Channels
-           fprintf(pFile,"\\begin{table}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+           fprintf(pFile,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
            fprintf(pFile, "\\begin{tabular}{|c|"); for(auto ch = MapChannel.begin(); ch!=MapChannel.end();ch++){ fprintf(pFile, "c|"); } fprintf(pFile, "}\\\\\n");
            fprintf(pFile, "channel");   for(auto ch = MapChannel.begin(); ch!=MapChannel.end();ch++){ fprintf(pFile, " & %s", ch->first.c_str()); } fprintf(pFile, "\\\\\\hline\n");
            for(auto proc = VectorProc.begin();proc!=VectorProc.end(); proc++){
-              if(*proc=="data" || *proc=="total")fprintf(pFile, "\\hline\n");
+              if(*proc=="total")fprintf(pFile, "\\hline\n");
               auto ChannelYields = MapProcChYields.find(*proc);
               if(ChannelYields == MapProcChYields.end())continue;
               fprintf(pFile, "%s ", proc->c_str()); 
@@ -987,14 +987,14 @@ int main(int argc, char* argv[])
               if(*proc=="data")fprintf(pFile, "\\hline\n");             
            }
            fprintf(pFile,"\\hline\n");
-           fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{table}\n");
+           fprintf(pFile,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
 
             //All Bins
-           fprintf(pFileInc,"\\begin{table}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
-           fprintf(pFileInc, "\\begin{tabular}{|c|"); for(auto ch = MapChannelBin.begin(); ch!=MapChannelBin.end();ch++){ fprintf(pFileInc, "c|"); } fprintf(pFileInc, "}\\\\\n");
+           fprintf(pFileInc,"\\begin{sidewaystable}[htp]\n\\begin{center}\n\\caption{Event yields expected for background and signal processes and observed in data.}\n\\label{tab:table}\n");
+           fprintf(pFileInc, "\\begin{tabular}{|c|"); for(auto ch = MapChannelBin.begin(); ch!=MapChannelBin.end();ch++){ fprintf(pFileInc, "c|"); } fprintf(pFileInc, "}\\\\\\hline\n");
            fprintf(pFileInc, "channel");   for(auto ch = MapChannelBin.begin(); ch!=MapChannelBin.end();ch++){ fprintf(pFileInc, " & %s", ch->first.c_str()); } fprintf(pFileInc, "\\\\\\hline\n");
            for(auto proc = VectorProc.begin();proc!=VectorProc.end(); proc++){
-              if(*proc=="data" || *proc=="total")fprintf(pFileInc, "\\hline\n");
+              if(*proc=="total")fprintf(pFileInc, "\\hline\n");
               auto ChannelYields = MapProcChYieldsBin.find(*proc);
               if(ChannelYields == MapProcChYieldsBin.end())continue;
               fprintf(pFileInc, "%s ", proc->c_str()); 
@@ -1008,7 +1008,7 @@ int main(int argc, char* argv[])
               if(*proc=="data")fprintf(pFileInc, "\\hline\n");             
            }
            fprintf(pFileInc,"\\hline\n");
-           fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{table}\n");
+           fprintf(pFileInc,"\\end{tabular}\n\\end{center}\n\\end{sidewaystable}\n");
 
 
              

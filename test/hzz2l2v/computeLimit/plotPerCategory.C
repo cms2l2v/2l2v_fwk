@@ -36,7 +36,7 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
    if(!pFile){printf("Can't open %s\n",filePath.c_str()); exit(0);}
    double mass, th, exp, obs, unused;// char buffer[1024];
 
-   TGraph* graph = new TGraph(100);
+   TGraph* graph = new TGraph(250);
    int N=0;
    while(fscanf(pFile,"$%le$ & $%le$ & $[%le,%le]$ & $[%le,%le]$ & $%le$ & Th=$%le$ & pValue=$%le$\\\\\\hline\n",&mass, &exp, &unused, &unused, &unused,&unused,&obs, &th, &unused) != EOF){
 //      printf("%i %f - %f - %f\n",N,mass,exp, th);
@@ -53,7 +53,7 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
 
       if(Ref){value/=Ref->Eval(mass);}
       graph->SetPoint(N, mass, value);N++;
-      if(N>25)break;
+      if(N>100)break;
    }
    graph->Set(N);
 
