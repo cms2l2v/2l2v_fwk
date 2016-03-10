@@ -765,6 +765,7 @@ int main(int argc, char* argv[])
 
             //WEIGHT for NLO negative interference
             weight *= eventInfo.weight(); 
+       
 
             //WEIGHT for Pileup
 	    int ngenITpu = 0;
@@ -778,8 +779,7 @@ int main(int argc, char* argv[])
             puWeightDown = PuShifters[utils::cmssw::PUDOWN]->Eval(ngenITpu) * (PUNorm[1]/PUNorm[0]);
             weight *= puWeight;
 
-
-            if(isMC && (mctruthmode==15 || mctruthmode==1113)){// && (string(dtag.Data()).find("Z#rightarrow")==0 || isMC_ZZ2l2nu)){
+            if(isMC && (mctruthmode==15 || mctruthmode==1113)){// && (string(dtag.Data()).find("Z#rightarrow")==0 || isMC_ZZ2l2nu))
                 int prodId = 1;
                 for( unsigned int k=0; k<gen.size(); ++k){	
                         if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 || abs( gen[k].pdgId() )==15 ) ) prodId*=gen[k].pdgId(); 
@@ -1734,7 +1734,7 @@ int main(int argc, char* argv[])
   mon.Write();
   ofile->Close();
 
-  if(!isMC && debugText.Length()>0){ 
+  if(!isMC && debugText!=""){ 
      TString outTxtUrl= outUrl + ".txt";    
      terminationCmd += TString("mv out.txt ") + outTxtUrl + ";";
      FILE* outTxtFile = fopen("out.txt", "w");
@@ -1750,6 +1750,6 @@ int main(int argc, char* argv[])
      goodLumiFilter.DumpToJson("out.json");
   }
 
-  system(terminationCmd.Data())
+  system(terminationCmd.Data());
 
 }  
