@@ -349,13 +349,13 @@ int main(int argc, char* argv[])
 
          TGraph* nrWgtGr=NULL; TGraph* nrWgtUpGr=NULL; TGraph* nrWgtDownGr=NULL;
          if(isGGZZContinuum){
-            nrWgtGr     = higgs::utils::weightGGZZContinuum(VBFString,nrLineShapesFile,signalNorm    ,""  );
-            nrWgtUpGr   = higgs::utils::weightGGZZContinuum(VBFString,nrLineShapesFile,signalUpNorm  ,"Up");         
-            nrWgtDownGr = higgs::utils::weightGGZZContinuum(VBFString,nrLineShapesFile,signalDownNorm,"Dn");        
+            nrWgtGr     = higgs::utils::weightGGZZContinuum(nrLineShapesFile,signalNorm    ,""  );
+            nrWgtUpGr   = higgs::utils::weightGGZZContinuum(nrLineShapesFile,signalUpNorm  ,"Up");         
+            nrWgtDownGr = higgs::utils::weightGGZZContinuum(nrLineShapesFile,signalDownNorm,"Dn");        
          }else if(mctruthmode!=125 && NRparams[nri].first>=0){
-            nrWgtGr     = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalNorm    ,""     );
-            nrWgtUpGr   = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalUpNorm  ,"_up"  );          
-            nrWgtDownGr = higgs::utils::weightNarrowResonnance(VBFString,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalDownNorm,"_down"); 
+            nrWgtGr     = higgs::utils::weightNarrowResonnance(isMC_VBF,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalNorm    ,""     );
+            nrWgtUpGr   = higgs::utils::weightNarrowResonnance(isMC_VBF,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalUpNorm  ,"_up"  );          
+            nrWgtDownGr = higgs::utils::weightNarrowResonnance(isMC_VBF,HiggsMass, NRparams[nri].first, NRparams[nri].second, nrLineShapesFile,signalDownNorm,"_down"); 
          }
          if(!nrWgtUpGr){nrWgtUpGr=nrWgtGr;  signalUpNorm=signalNorm;}
          if(!nrWgtDownGr){nrWgtDownGr=nrWgtGr;  signalDownNorm=signalNorm;}
@@ -485,6 +485,12 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "trailereta", ";Pseudo-rapidity;Events", 50,0,2.6) );
   mon.addHistogram( new TH1F( "zy",         ";Rapidity;Events", 50,0,3) );
   mon.addHistogram( new TH1F( "zmass",      ";Mass [GeV];Events / 2 GeV", 100,40,240) );
+  mon.addHistogram( new TH1F( "zmass_btag50", ";Mass [GeV];Events / 2 GeV", 100,40,240) );
+  mon.addHistogram( new TH1F( "zmass_bveto50",";Mass [GeV];Events / 2 GeV", 100,40,240) );
+  mon.addHistogram( new TH1F( "zmass_btag80", ";Mass [GeV];Events / 2 GeV", 100,40,240) );
+  mon.addHistogram( new TH1F( "zmass_bveto80",";Mass [GeV];Events / 2 GeV", 100,40,240) );
+  mon.addHistogram( new TH1F( "zmass_btag125", ";Mass [GeV];Events / 2 GeV", 100,40,240) );
+  mon.addHistogram( new TH1F( "zmass_bveto125",";Mass [GeV];Events / 2 GeV", 100,40,240) );
   mon.addHistogram( new TH1F( "zpt",        ";Transverse momentum [GeV];Events",100,0,1500));
   Double_t zptaxis[]= {0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975};
   Int_t nzptAxis=sizeof(zptaxis)/sizeof(Double_t);
@@ -553,6 +559,20 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mtresponse",   ";Transverse mass response [GeV];Events / GeV", 100,0,2) );
   mon.addHistogram( new TH1F( "mtcheckpoint"  ,         ";Transverse mass [GeV];Events / GeV",160,150,1750) );
   mon.addHistogram( new TH1F( "metcheckpoint" ,         ";Missing transverse energy [GeV];Events / GeV",100,0,500) );
+
+  mon.addHistogram( new TH1F( "mt_Inbtag50"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Inbveto50"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Inbtag80"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Inbveto80"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Inbtag125"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Inbveto125"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Outbtag50"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Outbveto50"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Outbtag80"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Outbveto80"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Outbtag125"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  mon.addHistogram( new TH1F( "mt_Outbveto125"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+
 
   mon.addHistogram( new TH1F( "mtfinal"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "metfinal",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
@@ -984,7 +1004,7 @@ int main(int argc, char* argv[])
      		 double ewkCorrections_error = 0.;
      		 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
      		 double ewkCorrections_up = (ewkCorrectionsWeight + ewkCorrections_error)/ewkCorrectionsWeight;
-     		 double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
+     	         double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
      
        	 //final event weight
        	 weight *= ewkCorrectionsWeight;
@@ -1433,7 +1453,6 @@ int main(int argc, char* argv[])
                         mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
                         mon.fillHisto( "njetsfinal",tags,njets,weight);
 
-
                         if(!isMC){
                            char buffer[1024];
                            sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer; 
@@ -1503,6 +1522,42 @@ int main(int argc, char* argv[])
                 }
               }        
             }
+
+            bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );              
+            if(passQt && passThirdLeptonVeto && passMinDphijmet && (isZsideBand||passMass)){
+               double mt=higgs::utils::transverseMass(boson,met.corP4(metcor),true);             
+               if(passBtags){                                      
+                  if(met.corP4(metcor).pt()>50 )mon.fillHisto("zmass_bveto50" , tags,boson.mass(),weight); 
+                  if(met.corP4(metcor).pt()>80 )mon.fillHisto("zmass_bveto80" , tags,boson.mass(),weight); 
+                  if(met.corP4(metcor).pt()>125)mon.fillHisto("zmass_bveto125", tags,boson.mass(),weight); 
+                  if(passMass){
+                     if(met.corP4(metcor).pt()>50 )mon.fillHisto("mt_Inbveto50" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>80 )mon.fillHisto("mt_Inbveto80" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>125)mon.fillHisto("mt_Inbveto125", tags,mt,weight); 
+                  }else{
+                     if(met.corP4(metcor).pt()>50 )mon.fillHisto("mt_Outbveto50" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>80 )mon.fillHisto("mt_Outbveto80" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>125)mon.fillHisto("mt_Outbveto125", tags,mt,weight); 
+                  }
+               }else{
+                  if(met.corP4(metcor).pt()>50 )mon.fillHisto("zmass_btag50" , tags,boson.mass(),weight); 
+                  if(met.corP4(metcor).pt()>80 )mon.fillHisto("zmass_btag80" , tags,boson.mass(),weight); 
+                  if(met.corP4(metcor).pt()>125)mon.fillHisto("zmass_btag125", tags,boson.mass(),weight); 
+                  if(passMass){
+                     if(met.corP4(metcor).pt()>50 )mon.fillHisto("mt_Inbtag50" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>80 )mon.fillHisto("mt_Inbtag80" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>125)mon.fillHisto("mt_Inbtag125", tags,mt,weight); 
+                  }else{
+                     if(met.corP4(metcor).pt()>50 )mon.fillHisto("mt_Outbtag50" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>80 )mon.fillHisto("mt_Outbtag80" , tags,mt,weight); 
+                     if(met.corP4(metcor).pt()>125)mon.fillHisto("mt_Outbtag125", tags,mt,weight); 
+                  }
+               }
+            }
+
+
+              
+ 
 
 
 //           printf("event weight before loop = %6.2e\n", weight);
@@ -1669,17 +1724,20 @@ int main(int argc, char* argv[])
   //##############################################
   //########     SAVING HISTO TO FILE     ########
   //##############################################
+  TString terminationCmd = "";
   //save control plots to file
-  printf("Results save in %s\n", outUrl.Data());
+  printf("Results save in local directory and moved to %s\n", outUrl.Data());
   
   //save all to the file
-  TFile *ofile=TFile::Open(outUrl, "recreate");
+  terminationCmd += TString("mv out.root ") + outUrl + ";";
+  TFile *ofile=TFile::Open("out.root", "recreate");
   mon.Write();
   ofile->Close();
 
-  if(!isMC){ 
+  if(!isMC && debugText.Length()>0){ 
      TString outTxtUrl= outUrl + ".txt";    
-     FILE* outTxtFile = fopen(outTxtUrl.Data(), "w");
+     terminationCmd += TString("mv out.txt ") + outTxtUrl + ";";
+     FILE* outTxtFile = fopen("out.txt", "w");
      fprintf(outTxtFile, "%s", debugText.c_str());
      printf("TextFile URL = %s\n",outTxtUrl.Data());
      if(outTxtFile)fclose(outTxtFile);
@@ -1687,7 +1745,11 @@ int main(int argc, char* argv[])
 
   //Now that everything is done, dump the list of lumiBlock that we processed in this job
   if(!isMC){
+     terminationCmd += TString("mv out.json ") + ((outUrl.ReplaceAll(".root",""))+".json") + ";";
      goodLumiFilter.FindLumiInFiles(urls);
-     goodLumiFilter.DumpToJson(((outUrl.ReplaceAll(".root",""))+".json").Data());
+     goodLumiFilter.DumpToJson("out.json");
   }
+
+  system(terminationCmd.Data())
+
 }  

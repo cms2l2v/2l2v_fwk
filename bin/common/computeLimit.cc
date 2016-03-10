@@ -29,6 +29,7 @@
 #include "TObjArray.h"
 #include "THStack.h"
 #include "TGraphErrors.h"
+#include "TLatex.h"
 
 #include<iostream>
 #include<fstream>
@@ -1148,6 +1149,7 @@ int main(int argc, char* argv[])
                  }else if(it->first=="data"){
                     h->SetFillStyle(0);
                     h->SetFillColor(0);
+                    h->SetMarkerSize(0.7);
                     h->SetMarkerStyle(20);
                     h->SetMarkerColor(1);
                     map_data[ch->first] = h;
@@ -1174,17 +1176,27 @@ int main(int argc, char* argv[])
            for(std::map<string, THStack*>::iterator p = map_stack.begin(); p!=map_stack.end(); p++){
               //init tab
               TVirtualPad* pad = t1->cd(I);
-              pad->SetTopMargin(0.06); pad->SetRightMargin(0.03); pad->SetBottomMargin(0.07);  pad->SetLeftMargin(0.06);
+              pad->SetTopMargin(0.06); pad->SetRightMargin(0.03); pad->SetBottomMargin(I<=NBins?0.09:0.12);  pad->SetLeftMargin((I-1)%NBins!=0?0.09:0.12);
               pad->SetLogy(true); 
 
               //print histograms
               TH1* axis = (TH1*)map_data[p->first]->Clone("axis");
               axis->Reset();      
               axis->GetXaxis()->SetRangeUser(axis->GetXaxis()->GetXmin(), axis->GetXaxis()->GetXmax());
-              axis->SetMinimum(1E-3);
+              axis->SetMinimum(1E-2);
               double signalHeight=0; for(unsigned int s=0;s<map_signals[p->first].size();s++){signalHeight = std::max(signalHeight, map_signals[p->first][s]->GetMaximum());}
               axis->SetMaximum(1.5*std::max(signalHeight , std::max( map_unc[p->first]->GetMaximum(), map_data[p->first]->GetMaximum())));
+
+              //hard code the range for HZZ2l2nu
+              if(procs["data"].channels[p->first].bin.find("vbf")!=string::npos){
+                 axis->SetMinimum(1E-2);              
+                 axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
+              }else{
+                 axis->SetMinimum(1E-1);              
+                 axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
+              }
               if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
+              if(I<=NBins)axis->GetXaxis()->SetTitle("");
               axis->Draw();
               p->second->Draw("same");
               map_unc [p->first]->Draw("2 same");
@@ -1193,14 +1205,44 @@ int main(int argc, char* argv[])
               }
               map_data[p->first]->Draw("P same");
 
+
+              bool printBinContent = false;
+              if(printBinContent){
+                 TLatex* tex = new TLatex();
+                 tex->SetTextSize(0.04); tex->SetTextFont(42);
+                 tex->SetTextAngle(60);
+                 TH1* histdata = map_data[p->first];
+                 double Xrange = axis->GetXaxis()->GetXmax()-axis->GetXaxis()->GetXmin();
+                 for(int xi=1;xi<=histdata->GetNbinsX();++xi){
+                    double x=histdata->GetBinCenter(xi);
+                    double y=histdata->GetBinContent(xi);
+                    double yData=histdata->GetBinContent(xi);
+
+                    int graphBin=-1;  for(int k=0;k<map_unc[p->first]->GetN();k++){if(fabs(map_unc[p->first]->GetX()[k] - x)<histdata->GetBinWidth(xi)){graphBin=k;}} 
+                    if(graphBin<0){
+                       printf("MC bin not found for X=%f\n", x);
+                    }else{
+                       double yMC =  map_unc[p->first]->GetY()[graphBin];
+                       double yMCerr = map_unc[p->first]->GetErrorY(graphBin);
+                       y = std::max(y, yMC+yMCerr);
+                       if(yMC>=1){tex->DrawLatex(x-0.02*Xrange,y*1.15,Form("#color[4]{B=%.1f#pm%.1f}",yMC, yMCerr));
+                       }else{     tex->DrawLatex(x-0.02*Xrange,y*1.15,Form("#color[4]{B=%.2f#pm%.2f}",yMC, yMCerr));
+                       }
+                    }
+                    tex->DrawLatex(x+0.02*Xrange,y*1.15,Form("D=%.0f",yData));                 
+                 }
+              }
+
               //print tab channel header
               TPaveText* Label = new TPaveText(0.1,0.81,0.94,0.89, "NDC");
               Label->SetFillColor(0);  Label->SetFillStyle(0);  Label->SetLineColor(0); Label->SetBorderSize(0);  Label->SetTextAlign(31);
-              TString LabelText = procs["data"].channels[p->first].channel+"  -  "+procs["data"].channels[p->first].bin;
+              TString LabelText = procs["data"].channels[p->first].channel+"  "+procs["data"].channels[p->first].bin;
               LabelText.ReplaceAll("eq","="); LabelText.ReplaceAll("l=","#leq");LabelText.ReplaceAll("g=","#geq"); 
               LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
               Label->AddText(LabelText);  Label->Draw();
- 
+
+              gPad->RedrawAxis();
+
               I++;
            }
            //print legend
@@ -2066,8 +2108,20 @@ int main(int argc, char* argv[])
                  double valMC, valMC_err;
                  valMC = hNRB->IntegralAndError(1,hNRB->GetXaxis()->GetNbins(),valMC_err);  if(valMC<1E-6){valMC=0.0; valMC_err=0.0;}
 
-                 //for VBF stat in emu is too low, so take the shape from MC and scale it to the expected yield
-                 if(chData->second.bin.find("vbf")==0){
+                 if(hCtrl_SI->Integral(1, hCtrl_SI->GetXaxis()->GetNbins()+1)<=0){ //if no data in emu: take the shape from MC and fix integral of upper stat uncertainty to 1.8events
+                    double ErrInt = 0;
+                    for(int bi=1;bi<=hNRB->GetXaxis()->GetNbins()+1;bi++){                       
+                       double val = hNRB->GetBinContent(bi);
+                       double err = hNRB->GetBinError(bi);
+                       double ratio = 1.8/valMC;
+                       double newval = 1E-7;
+                       double newerr = sqrt(pow(val*ratio,2) + pow(err*ratio,2));
+                       hNRB->SetBinContent(bi, newval );
+                       hNRB->SetBinError  (bi, newerr );
+                       ErrInt += newerr;
+                    }
+                    printf("err Int = %f\n", ErrInt);
+                 }else if(chData->second.bin.find("vbf")==0){                   //for VBF stat in emu is too low, so take the shape from MC and scale it to the expected yield
                     hNRB->Scale(hCtrl_SI->Integral(1, hCtrl_SI->GetXaxis()->GetNbins()+1) / hNRB->Integral(1,hNRB->GetXaxis()->GetNbins()+1));
                  }else{
                     hNRB->Reset();
