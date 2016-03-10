@@ -1186,7 +1186,15 @@ int main(int argc, char* argv[])
               axis->SetMinimum(1E-2);
               double signalHeight=0; for(unsigned int s=0;s<map_signals[p->first].size();s++){signalHeight = std::max(signalHeight, map_signals[p->first][s]->GetMaximum());}
               axis->SetMaximum(1.5*std::max(signalHeight , std::max( map_unc[p->first]->GetMaximum(), map_data[p->first]->GetMaximum())));
-              axis->SetMaximum(std::max(axis->GetMaximum(), 5E2));  //hard code the max to 100;
+
+              //hard code the range for HZZ2l2nu
+              if(procs["data"].channels[p->first].bin.find("vbf")!=string::npos){
+                 axis->SetMinimum(1E-2);              
+                 axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
+              }else{
+                 axis->SetMinimum(1E-1);              
+                 axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
+              }
               if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
               if(I<=NBins)axis->GetXaxis()->SetTitle("");
               axis->Draw();
@@ -1198,34 +1206,37 @@ int main(int argc, char* argv[])
               map_data[p->first]->Draw("P same");
 
 
-              TLatex* tex = new TLatex();
-              tex->SetTextSize(0.04); tex->SetTextFont(42);
-              tex->SetTextAngle(60);
-              TH1* histdata = map_data[p->first];
-              for(int xi=1;xi<=histdata->GetNbinsX();++xi){
-                 double x=histdata->GetBinCenter(xi);
-                 double y=histdata->GetBinContent(xi);
-                 double yData=histdata->GetBinContent(xi);
+              bool printBinContent = false;
+              if(printBinContent){
+                 TLatex* tex = new TLatex();
+                 tex->SetTextSize(0.04); tex->SetTextFont(42);
+                 tex->SetTextAngle(60);
+                 TH1* histdata = map_data[p->first];
+                 double Xrange = axis->GetXaxis()->GetXmax()-axis->GetXaxis()->GetXmin();
+                 for(int xi=1;xi<=histdata->GetNbinsX();++xi){
+                    double x=histdata->GetBinCenter(xi);
+                    double y=histdata->GetBinContent(xi);
+                    double yData=histdata->GetBinContent(xi);
 
-
-                 int graphBin=-1;  for(int k=0;k<map_unc[p->first]->GetN();k++){if(fabs(map_unc[p->first]->GetX()[k] - x)<histdata->GetBinWidth(xi)){graphBin=k;}} 
-                 if(graphBin<0){
-                    printf("MC bin not found for X=%f\n", x);
-                 }else{
-                    double yMC =  map_unc[p->first]->GetY()[graphBin];
-                    double yMCerr = map_unc[p->first]->GetErrorY(graphBin);
-                    y = std::max(y, yMC+yMCerr);
-                    if(yMC>=1){tex->DrawLatex(x-0.15*histdata->GetBinWidth(xi),y*1.15,Form("#color[4]{B=%.1f#pm%.1f}",yMC, yMCerr));
-                    }else{     tex->DrawLatex(x-0.15*histdata->GetBinWidth(xi),y*1.15,Form("#color[4]{B=%.2f#pm%.2f}",yMC, yMCerr));
+                    int graphBin=-1;  for(int k=0;k<map_unc[p->first]->GetN();k++){if(fabs(map_unc[p->first]->GetX()[k] - x)<histdata->GetBinWidth(xi)){graphBin=k;}} 
+                    if(graphBin<0){
+                       printf("MC bin not found for X=%f\n", x);
+                    }else{
+                       double yMC =  map_unc[p->first]->GetY()[graphBin];
+                       double yMCerr = map_unc[p->first]->GetErrorY(graphBin);
+                       y = std::max(y, yMC+yMCerr);
+                       if(yMC>=1){tex->DrawLatex(x-0.02*Xrange,y*1.15,Form("#color[4]{B=%.1f#pm%.1f}",yMC, yMCerr));
+                       }else{     tex->DrawLatex(x-0.02*Xrange,y*1.15,Form("#color[4]{B=%.2f#pm%.2f}",yMC, yMCerr));
+                       }
                     }
+                    tex->DrawLatex(x+0.02*Xrange,y*1.15,Form("D=%.0f",yData));                 
                  }
-                 tex->DrawLatex(x+0.15*histdata->GetBinWidth(xi),y*1.15,Form("D=%.0f",yData));                 
               }
 
               //print tab channel header
               TPaveText* Label = new TPaveText(0.1,0.81,0.94,0.89, "NDC");
               Label->SetFillColor(0);  Label->SetFillStyle(0);  Label->SetLineColor(0); Label->SetBorderSize(0);  Label->SetTextAlign(31);
-              TString LabelText = procs["data"].channels[p->first].channel+"  -  "+procs["data"].channels[p->first].bin;
+              TString LabelText = procs["data"].channels[p->first].channel+"  "+procs["data"].channels[p->first].bin;
               LabelText.ReplaceAll("eq","="); LabelText.ReplaceAll("l=","#leq");LabelText.ReplaceAll("g=","#geq"); 
               LabelText.ReplaceAll("_OS","OS "); LabelText.ReplaceAll("el","e"); LabelText.ReplaceAll("mu","#mu");  LabelText.ReplaceAll("ha","#tau_{had}");
               Label->AddText(LabelText);  Label->Draw();

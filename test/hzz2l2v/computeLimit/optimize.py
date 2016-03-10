@@ -29,7 +29,7 @@ phase=-1
 
 
 jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json --key 2l2v_datadriven'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2016_02_26tau.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
@@ -316,7 +316,7 @@ for signalSuffix in signalSuffixVec :
 
 
    elif(phase == 4 ):
-      LaunchOnCondor.Jobs_RunHere        = 1
+      LaunchOnCondor.Jobs_RunHere        = 0
       print '# FINAL COMBINED LIMITS  for ' + DataCardsDir + '#\n'
       LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+binSuffix+OUTName[iConf])
       for m in SUBMASS:
@@ -381,10 +381,10 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines('cd ' + CMSSW_BASE + ';\n')
            SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc6_amd64_gcc491")+";\n")
            SCRIPT.writelines("eval `scram r -sh`;\n")
-           SCRIPT.writelines('cd ' + CWD + ';\n')
+           SCRIPT.writelines('cd -;\n')
 
            cardsdir=DataCardsDir+"/"+('%04.0f' % float(m));
-           SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
+           SCRIPT.writelines('mkdir -p out;\ncd out;\n')
            SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("sh combineCards.sh;\n")
 
@@ -420,6 +420,8 @@ for signalSuffix in signalSuffixVec :
               SCRIPT.writelines("hadd -f higgsCombineTest.HybridNewMerged.mH"+str(m)+".root  higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
               SCRIPT.writelines("rm higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
 
+           SCRIPT.writelines('mkdir -p ' + CWD+'/'+cardsdir+';\n')
+           SCRIPT.writelines('mv * ' + CWD+'/'+cardsdir+'/.;\n')
            SCRIPT.writelines('cd ..;\n\n') 
            SCRIPT.close()
            #os.system('sh ' + OUT+'script_mass_'+str(m)+'.sh ')  #uncomment this line to launch interactively (this may take a lot of time)

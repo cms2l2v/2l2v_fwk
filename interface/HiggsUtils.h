@@ -51,8 +51,8 @@ namespace higgs{
     TH1D* getHistoFromNRfile(std::string histoName, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile);       
 
     //reweight the resonance
-    TGraph* weightNarrowResonnance(std::string SampleName, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile, double& Norm, TString pf);
-    TGraph* weightGGZZContinuum(std::string SampleName, TFile *nrLineShapesFile, double& Norm, TString pf);
+    TGraph* weightNarrowResonnance(bool isVBF, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile, double& Norm, TString pf);
+    TGraph* weightGGZZContinuum(TFile *nrLineShapesFile, double& Norm, TString pf);
   
 
     //reweight to H125 interference

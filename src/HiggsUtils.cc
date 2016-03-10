@@ -182,7 +182,7 @@ namespace higgs{
 
 
     //    
-    TGraph* weightNarrowResonnance(std::string SampleName, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile, double& Norm, TString pf){
+    TGraph* weightNarrowResonnance(bool isVBF, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile, double& Norm, TString pf){
       if((Cprime<0 || BRnew<0) || (Cprime==0 && BRnew==0)){
          TGraph* g = new TGraph(2);
          g->SetPoint(0,    0, 1.0);
@@ -208,7 +208,12 @@ namespace higgs{
 
       TH1D* original  = getHistoFromNRfile("mH_S_NR"                  , mass, 1.0, 0.0, nrLineShapesFile);  // SM signal only
 //      TH1D* lineshape = getHistoFromNRfile(TString("mH_SI_NR_nnlo")+pf, mass, Csecond, BRnew2, nrLineShapesFile);  // (signal + interference) * NNLOKFactors   
-      TH1D* lineshape = getHistoFromNRfile((TString("mH_S_NR_nnlo")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);  // (signal) * NNLOKFactors   /      
+      TH1D* lineshape = NULL;
+      if(isVBF){
+         lineshape = getHistoFromNRfile((TString("mH_S_NR")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);  // (signal)  /               
+      }else{
+         lineshape = getHistoFromNRfile((TString("mH_S_NR_nnlo")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);  // (signal) * NNLOKFactors   /      
+      }
       if(!original || !lineshape)return NULL;
 
       Norm = lineshape->Integral()/original->Integral();
@@ -216,11 +221,18 @@ namespace higgs{
       TGraph* nrGr = getWeightGraphFromShapes(lineshape, original, mass);
       for(int i=0;i<nrGr->GetN();i++){double x, y; nrGr->GetPoint(i, x, y);  if(y<0 || y>1000){y=0;} nrGr->SetPoint(i, x, y);} //make sure weights are not crazy
 
+      //add 20% uncertainty on VBF lineshape
+      if(isVBF){
+         if(pf.Contains("up"  )){        for(int i=0;i<nrGr->GetN();i++){double x, y; nrGr->GetPoint(i, x, y);  nrGr->SetPoint(i, x, y*1.2);}      }
+         if(pf.Contains("down")){        for(int i=0;i<nrGr->GetN();i++){double x, y; nrGr->GetPoint(i, x, y);  nrGr->SetPoint(i, x, y*0.8);}      }
+      }
+
+
       return nrGr;
    }
 
 
-    TGraph* weightGGZZContinuum(std::string SampleName, TFile *nrLineShapesFile, double& Norm, TString pf){
+    TGraph* weightGGZZContinuum(TFile *nrLineShapesFile, double& Norm, TString pf){
       //1st check if is in the file
       if(!nrLineShapesFile){
          printf("LineShapeFile not ok for ggZZ Continuum\n");  fflush(stdout);
