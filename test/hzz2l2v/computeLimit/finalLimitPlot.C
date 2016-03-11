@@ -108,7 +108,7 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
    FILE* pFile = fopen(filePath.c_str(),"r");
    if(!pFile){printf("Can't open %s\n",filePath.c_str()); exit(0);}
    double mass=0, th, exp=0, obs=0, unused=0;// char buffer[1024];
-   double explow2, explow1, expup1, expup2;
+   double explow2=0, explow1=0, expup1=0, expup2=0;
 
    TGraph* graph = new TGraph(100);
    int N=0;
@@ -197,11 +197,16 @@ TGraph* getContour(TH2D* inputHisto, TCanvas* goodCanvas, int Width, int Style, 
 	if(list->GetSize()<=0)return new TGraph(0);
 
 	TGraph* EXCLUSION = new TGraph(0);
-	for(int i=0;i<list->GetSize();i++){
+	for(int i=0;i<list->GetSize();i++){               
 		EXCLUSION   = (TGraph*)(list->At(i)->Clone("copy"));
 		EXCLUSION->SetLineColor(Color);
 		EXCLUSION->SetLineWidth(Width);
 		EXCLUSION->SetLineStyle(Style);
+
+
+                printf("EXCLUSION->GetMean = %f\n", EXCLUSION->GetMean(2));
+                if(EXCLUSION->GetMean(2)<=0.15)continue; //BUGFIX
+
 		EXCLUSION->Draw("CL same");
 	}
 
@@ -286,10 +291,8 @@ void finalLimitPlot(){
 
       // build 2D graphs of Mass vs C' limits
       TGraph2D* g2dMassVsCp[7];    
-      TGraph2D* g2dMassVsWidth[7];    
       for(unsigned int i=0;i<7;i++){
          g2dMassVsCp[i]    = new TGraph2D( 9999 ); 
-         g2dMassVsWidth[i] = new TGraph2D( 9999 );        
          int Ig2d=0;
          for(unsigned int CPi = 0; CPi<CPs.size();CPi++){
             double CP = CPs[CPi];  double BR = 0.0;             
@@ -298,11 +301,31 @@ void finalLimitPlot(){
                double mass, limit;
                graph->GetPoint(p, mass, limit);
                g2dMassVsCp[i]   ->SetPoint(Ig2d, mass, CP   , limit);
-               g2dMassVsWidth[i]->SetPoint(Ig2d, mass, CP*CP, limit);
                Ig2d++;              
             }
          }
          g2dMassVsCp   [i]->Set(Ig2d);
+//
+//         char buffer[255]; sprintf(buffer, "%s%i", "gridMvsC",i);
+//         TH2D* histGrid  = new TH2D(buffer  , buffer  , 26, 200, 1500, 20, 0.1, 1.0);
+//         histGrid->SetDirectory(0);
+//         g2dMassVsCp   [i]->SetHistogram(histGrid);
+      } 
+
+      TGraph2D* g2dMassVsWidth[7];  
+      std::vector<  double> WidthVect = {0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+
+      for(unsigned int i=0;i<7;i++){
+         g2dMassVsWidth[i] = new TGraph2D( 9999 );        
+         int Ig2d=0;
+
+         for(unsigned int W=0;W<WidthVect.size();W++){
+         for(double Mass = 200; Mass<=1500;Mass+=50){
+               double Width = WidthVect[W];
+               double limit= g2dMassVsCp[i]->Interpolate(Mass, sqrt(Width));
+               g2dMassVsWidth[i]->SetPoint(Ig2d, Mass, Width, limit);
+               Ig2d++;              
+         }}
          g2dMassVsWidth[i]->Set(Ig2d);        
       } 
 
@@ -389,6 +412,8 @@ void finalLimitPlot(){
 
          utils::root::DrawPreliminary(2268.759, 13, gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin()+0.03);
 //         if(observed==0){
+
+            gPad->RedrawAxis();
             c1->SaveAs((SaveDir+"/Stength_FinalPlot.png").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot.pdf").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot.C"  ).c_str());
@@ -456,7 +481,7 @@ void finalLimitPlot(){
            h2d->Draw("COLZ same");
 
            //strength contour
-           getContour(signalStrength[0], c1, 2, 1, 17); //exp
+           getContour(signalStrength[0], c1, 2, 1, 15); //exp
            if(observed==1) getContour(signalStrength[observed], c1, 3, 1, 1); //obs
           
            if(strengthLimit){
@@ -497,6 +522,8 @@ void finalLimitPlot(){
             char massStr[512];
             if(mode==0)sprintf(massStr, "MassVsCp%s", observed==0?"":"_Obs");
             if(mode==1)sprintf(massStr, "MassVsWidth%s", observed==0?"":"_Obs");          
+
+            gPad->RedrawAxis();
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".png").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".pdf").c_str());
             c1->SaveAs((SaveDir+"/Stength_FinalPlot2D_"+massStr+".C").c_str());
@@ -551,7 +578,7 @@ void finalLimitPlot(){
                 framework2d = new TH2F("Graph","Graph",1,200,  600, 1,0.5, 60);
                 framework2d->SetStats(false);
                 framework2d->SetTitle("");
-                framework2d->GetYaxis()->SetTitle("mH2 [GeV]");          
+                framework2d->GetXaxis()->SetTitle("mH2 [GeV]");          
                 framework2d->GetYaxis()->SetTitle("tan( #beta )");
                 framework2d->GetYaxis()->SetTitleOffset(1.60);
                 framework2d->Draw("");
@@ -583,9 +610,9 @@ void finalLimitPlot(){
                 pave1->AddText(textBuffer);
                 pave1->Draw("same");
 
-                if(Limittype==4 || Limittype==6){ getContour(h2ds[6], c1, 2, 1, 17); }
+                if(Limittype==4 || Limittype==6){ getContour(h2ds[6], c1, 2, 1, 15); }
                 if(Limittype==5 || Limittype==7){ getContour(h2ds[7], c1, 3, 1, 1); }
-                if(Limittype==5 || Limittype==7){ getContour(h2ds[6], c1, 2, 1, 17); }  //add expected contour
+                if(Limittype==5 || Limittype==7){ getContour(h2ds[6], c1, 2, 1, 15); }  //add expected contour
               
                //drawPointOnGrid(graph);           
                utils::root::DrawPreliminary(2268.759, 13, gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin()+0.03);
@@ -601,7 +628,8 @@ void finalLimitPlot(){
                if(Limittype==5)sprintf(Str, "%s_Obs", Str);            
                if(Limittype==6)sprintf(Str, "%s_Strength", Str);            
                if(Limittype==7)sprintf(Str, "%s_Obs_Strength", Str);            
-              
+
+               gPad->RedrawAxis();
                c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".png").c_str());
                c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".pdf").c_str());
                //c1->SaveAs((SaveDir+"/Stength_2HDM_"+Str+".C").c_str());

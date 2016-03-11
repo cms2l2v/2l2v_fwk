@@ -60,6 +60,7 @@ bool onlyCutIndex = false;
 bool showRatioBox=true;
 bool fixUnderflow=true;
 bool fixOverflow=true;
+int rebin=-1;
 double blind=-1E99;
 double signalScale=1.0;
 string inDir   = "OUTNew/";
@@ -609,7 +610,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    t1->SetFillColor(0);
    t1->SetBorderMode(0);
    t1->SetBorderSize(2);
-   t1->SetLogy();
    t1->SetTickx(1);
    t1->SetTicky(1);
    t1->SetLeftMargin(0.10);
@@ -656,7 +656,20 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       if(Process[i].getBoolFromKeyword(matchingKeyword, "isinvisible", false))continue;
       string dirName = getDirName(Process[i], matchingKeyword);
       TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);
-      if(!hist)continue;
+      if(!hist){
+         //special case to make sure that we always have data on the legend
+         if(Process[i].getBoolFromKeyword(matchingKeyword, "isdata", false)){
+            TH1D* dummy = new TH1D("dummy", "dummy", 1, 0, 1);
+            utils::root::setStyleFromKeyword(matchingKeyword,Process[i], dummy);        
+            legA->AddEntry(dummy, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "P E");
+            ObjectToDelete.push_back(dummy);
+         }
+
+         continue;
+      }
+      if(rebin>0){hist = hist->Rebin(rebin); hist->Scale(1.0/rebin);}
+
+
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
      
       utils::root::fixExtremities(hist,fixOverflow,fixUnderflow); 
@@ -719,14 +732,24 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    t1->Update();
 
    if(showUnc && mc){
-      mcPlusRelUnc = (TH1 *) mc->Clone("totalmcwithunc");utils::root::checkSumw2(mcPlusRelUnc); mcPlusRelUnc->SetDirectory(0); 
+      TGraphErrors* errBand = new TGraphErrors(mc->GetNbinsX()); int IPoint=0;
+      mcPlusRelUnc = (TH1 *) mc->Clone("totalmcwithunc");utils::root::checkSumw2(mcPlusRelUnc); mcPlusRelUnc->SetDirectory(0);        
       for(int ibin=1; ibin<=mcPlusRelUnc->GetXaxis()->GetNbins(); ibin++){
          Double_t error=sqrt(pow(mcPlusRelUnc->GetBinError(ibin),2)+pow(mcPlusRelUnc->GetBinContent(ibin)*baseRelUnc,2));
          mcPlusRelUnc->SetBinError(ibin,error);
-      }
+         errBand->SetPoint     (IPoint, mcPlusRelUnc->GetBinCenter(ibin), mcPlusRelUnc->GetBinContent(ibin) );
+         errBand->SetPointError(IPoint, mcPlusRelUnc->GetBinWidth(ibin)/2, error );
+         IPoint++;
+      }errBand->Set(IPoint);
       mcPlusRelUnc->SetFillStyle(3427);
       mcPlusRelUnc->SetFillColor(kGray+1);
       mcPlusRelUnc->SetMarkerStyle(1);
+
+      errBand->SetFillStyle(3004);
+      errBand->SetFillColor(kGray);
+      errBand->SetMarkerStyle(1);
+      errBand->Draw("same 2");
+      legA->AddEntry(errBand, "Stat. Unc.", "F");
    }
 
    if(data){
@@ -1047,6 +1070,7 @@ int main(int argc, char* argv[]){
      if(arg.find("--iEcm"   )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iEcm); i++; printf("Ecm = %f TeV\n", iEcm); }
      if(arg.find("--signalScale")!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&signalScale); i++; printf("scale signal by %f\n", signalScale); }
      if(arg.find("--blind"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&blind); i++; printf("Blind above = %f\n", blind); }
+     if(arg.find("--rebin"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%i",&rebin); i++; printf("Rebin by %i\n",rebin); }
      if(arg.find("--inDir"  )!=string::npos && i+1<argc){ inDir    = argv[i+1];  i++;  printf("inDir = %s\n", inDir.c_str());  }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());  }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
