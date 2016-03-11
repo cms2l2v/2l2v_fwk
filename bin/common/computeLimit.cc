@@ -891,7 +891,8 @@ int main(int argc, char* argv[])
                  double valerr;
                  double val  = h->IntegralAndError(1,h->GetXaxis()->GetNbins(),valerr);
                  double syst = ch->second.shapes[histoName].getScaleUncertainty();
-                 if(val<1E-5 && valerr>=10*val){val=0.0; syst=-1;}
+                 if(val<1E-5 && valerr>=10*val && procName.find("ww")!=std::string::npos){val=0.0;}
+                 else if(val<1E-5 && valerr>=10*val){val=0.0; syst=-1;}
                  else if(val<1E-6){val=0.0; valerr=0.0; syst=-1;}
                  if(it->first=="data"){valerr=-1.0; syst=-1;}
                  string YieldText = "";
@@ -2146,7 +2147,7 @@ int main(int argc, char* argv[])
                  //remove all syst uncertainty
                  chNRB->second.shapes[mainHisto.Data()].clearSyst();
                  //add syst uncertainty                 
-                 chNRB->second.shapes[mainHisto.Data()].uncScale[string("CMS_hzz2l2v_sys_topwww") + systpostfix.Data()] = valDD*NonResonnantSyst;
+                 chNRB->second.shapes[mainHisto.Data()].uncScale[string("CMS_hzz2l2v_sys_topwww") + systpostfix.Data()] =valDD>=1E-4?valDD*NonResonnantSyst:1.8*valDD;
 
                  //printout
                  sprintf(Lcol    , "%s%s"  ,Lcol,    "|c");
