@@ -130,9 +130,14 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [[ $step == 3 || $step == 3.1 ]]; then  # make plots and combine root files for photon + jet study    
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ $arguments
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ --blind 100 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
-      
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments      
     fi
+
+
+    if [[ $step == 3 || $step == 3.11 ]]; then  # make plots and combine root files for photon + jet study    
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/       --outFile ${PLOTTER}.root  --json samplesNoSign.json --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ --showUnc 0.0   --only "emu(|eq0jets|geq1jets|vbf)_mt_(In|Out)b.*" --rebin 3  --noLog --removeRatioPlot  $arguments 
+    fi
+
 
     if [[ $step == 3 || $step == 3.15 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for Photon sample"
@@ -143,7 +148,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
 
     if [[ $step == 3 || $step == 3.16 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for GenuineMet in photon sample"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photonsGM/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key genuineMet --fileOption READ --only "(ll|gamma)(_.*)" $arguments 
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photonsGM/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key genuineMet --fileOption READ --only "(ll|gamma)(|eq0jets|geq1jets|vbf)(_.*)" $arguments 
     fi
 
     if [[ $step == 3 || $step == 3.2 ]]; then # make plots and combine root files for photon + jet study   
