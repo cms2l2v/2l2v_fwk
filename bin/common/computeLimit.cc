@@ -1153,12 +1153,13 @@ int main(int argc, char* argv[])
                     h->SetMarkerSize(0.7);
                     h->SetMarkerStyle(20);
                     h->SetMarkerColor(1);
+                    h->SetBinErrorOption(TH1::kPoisson);
                     map_data[ch->first] = h;
                  }
 
                  if(map_legend.find(it->first)==map_legend.end()){
                     map_legend[it->first]=1;
-                    legA->AddEntry(h,it->first.c_str(),it->first=="data"?"P":it->second.isSign?"L":"F");
+                    legA->AddEntry(h,it->first.c_str(),it->first=="data"?"PE0":it->second.isSign?"L":"F");
                     NLegEntry++;
                  }
               }

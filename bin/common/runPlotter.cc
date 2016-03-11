@@ -667,7 +667,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
          continue;
       }
-      if(rebin>0){hist = hist->Rebin(rebin); hist->Scale(1.0/rebin);}
+      if(rebin>0){hist = hist->Rebin(rebin);}// hist->Scale(1.0/rebin);}
 
 
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
@@ -698,7 +698,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    if(mc   && Maximum<mc  ->GetMaximum()) Maximum=mc  ->GetMaximum()*1.1;
    if(data && Maximum<data->GetMaximum()) Maximum=data->GetMaximum()*1.1;
    Maximum = noLog?Maximum*1.5:Maximum*2E3;
-   Minimum = std::min(SignalMin, std::max(5E-2, Minimum)) * 0.9;  //important when there are negative content
+   Minimum = noLog?0:std::min(SignalMin, std::max(5E-2, Minimum)) * 0.9;  //important when there are negative content
  
    if(stack->GetNhists()<=0){//add a dummy histogram to make sure that we have something to draw
       TH1* dummy = NULL;

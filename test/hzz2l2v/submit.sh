@@ -148,7 +148,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
 
     if [[ $step == 3 || $step == 3.16 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for GenuineMet in photon sample"
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photonsGM/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key genuineMet --fileOption READ --only "(ll|gamma)(_.*)" $arguments 
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photonsGM/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key genuineMet --fileOption READ --only "(ll|gamma)(|eq0jets|geq1jets|vbf)(_.*)" $arguments 
     fi
 
     if [[ $step == 3 || $step == 3.2 ]]; then # make plots and combine root files for photon + jet study   
