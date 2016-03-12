@@ -24,6 +24,7 @@
 #include "TPaveText.h"
 #include "TStyle.h"
 #include "TMarker.h"
+#include "TColor.h"
 
 #include "UserCode/llvv_fwk/interface/tdrstyle.h"
 #include "UserCode/llvv_fwk/src/tdrstyle.C"
@@ -227,10 +228,32 @@ void finalLimitPlot(){
    gStyle->SetTitleSize(0.04, "XYZ");
    gStyle->SetTitleXOffset(1.1);
    gStyle->SetTitleYOffset(1.45);
-   gStyle->SetPalette(1);
+//   gStyle->SetPalette(1);
    gStyle->SetNdivisions(505);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
+
+
+
+     //grey color palette
+     const Int_t NRGBs = 2;
+     const Int_t NCont = 255;
+     Double_t stops[NRGBs] = { 0.00, 1.00 };
+     Double_t red[NRGBs]   = { 1., 0.5 };
+     Double_t green[NRGBs] = { 1., 0.5 }; 
+     Double_t blue[NRGBs]  = { 1., 0.5 }; 
+     if(false){ //shift
+       for(int i=0; i<NRGBs; i++){
+         red  [i] -= 0.10;
+         green[i] -= 0.10;
+         blue [i] -= 0.10;
+       }
+     }
+     TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+     gStyle->SetNumberContours(NCont);
+
+
+
 
    TGraph* higgsWidth = Hxswg::utils::getHWidthExtended();
 
@@ -336,7 +359,7 @@ void finalLimitPlot(){
 
          c1 = new TCanvas("c", "c",600,600);
          c1->SetLogy(true);
-         framework = new TH1F("Graph","Graph",1,190,1510);
+         framework = new TH1F("Graph","Graph",1,250,1510);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
@@ -430,7 +453,7 @@ void finalLimitPlot(){
      //mode=0 --> Mass versus C'     interpolated from 2D limit(CPrime, BRNew)
      //mode=1 --> Mass versus Gamma  interpolated from 2D limit(CPrime, BRNew)
      
-        TH2D* grid   = new TH2D("grid"  , "grid"  , 300, 0, 1500, 100, 0, 1);
+        TH2D* grid   = new TH2D("grid"  , "grid"  , 300, 0, 1500, 500, 0, 1);
         TGraph2D*   graph[] = {g2dMassVsCp   [1], g2dMassVsCp   [2]};
         if(mode==1){ graph[0] = g2dMassVsWidth[1]; graph[1] = g2dMassVsWidth[2];}
         graph[0]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
@@ -449,11 +472,14 @@ void finalLimitPlot(){
               double XSecScaleFactor = pow(CP,2) * (1-BR);
               THXSec2D->SetBinContent(x,y,THXSec->Eval(mass)*XSecScaleFactor);
         }}
-        TH2D* signalStrength[] = { (TH2D*) (graph[0]->GetHistogram()->Clone("signalStrengthExp")),  (TH2D*) (graph[1]->GetHistogram()->Clone("signalStrengthObs"))};
+        TH2D* signalStrength[] = { (TH2D*) (graph[0]->GetHistogram()->Clone("signalStrengthExp")),  (TH2D*) (graph[1]->GetHistogram()->Clone("signalStrengthObs")),  (TH2D*) (graph[2]->GetHistogram()->Clone("signalStrengthExpM1")), (TH2D*) (graph[3]->GetHistogram()->Clone("signalStrengthExpP1")) };
         if(!strengthLimit){
            signalStrength[0]->Divide(THXSec2D);
            signalStrength[1]->Divide(THXSec2D);
+           signalStrength[2]->Divide(THXSec2D);
+           signalStrength[3]->Divide(THXSec2D);
         }
+
            
        for(int observed=0;observed<=1;observed++){
            TH2D* h2d = graph[observed]->GetHistogram();
@@ -462,7 +488,7 @@ void finalLimitPlot(){
            c1 = new TCanvas("c", "c",600,600);
            c1->SetLogz(true);      
            c1->SetRightMargin(0.17);
-           framework2d = new TH2F("Graph","Graph",1,200, 1500, 1,0,1.0);
+           framework2d = new TH2F("Graph","Graph",1,250, 1500, 1,0,1.0);
            framework2d->SetStats(false);
            framework2d->SetTitle("");
            framework2d->GetXaxis()->SetTitle("H mass (GeV)");
@@ -481,7 +507,9 @@ void finalLimitPlot(){
            h2d->Draw("COLZ same");
 
            //strength contour
-           getContour(signalStrength[0], c1, 2, 1, 15); //exp
+           getContour(signalStrength[0], c1, 2, 2, 15); //exp
+           getContour(signalStrength[2], c1, 2, 3, 1); //expM1
+           getContour(signalStrength[3], c1, 2, 3, 1); //expP1
            if(observed==1) getContour(signalStrength[observed], c1, 3, 1, 1); //obs
           
            if(strengthLimit){
@@ -547,7 +575,9 @@ void finalLimitPlot(){
                 get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", NULL                      , higgsWidth, cosBmA, 2),  //2 --> sigma(gg-->H2-->ZZ)
                 get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", NULL                      , higgsWidth, cosBmA, 3),  //3 --> Gamma/Gamma_SM
                 get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", g2dMassVsWidth[1+0]       , higgsWidth, cosBmA, 4),  //4 --> Exp Limit on sigma(gg-->H2-->ZZ)
-                get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", g2dMassVsWidth[1+1]       , higgsWidth, cosBmA, 4)   //5 --> Obs Limit on sigma(gg-->H2-->ZZ)
+                get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", g2dMassVsWidth[1+1]       , higgsWidth, cosBmA, 4),  //5 --> Obs Limit on sigma(gg-->H2-->ZZ)
+                get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", g2dMassVsWidth[1+2]       , higgsWidth, cosBmA, 4),  //6 --> Exp M1 Limit on sigma(gg-->H2-->ZZ)
+                get2HDMLimitsTgVsAmB(type==1?"2HDM_type1_H.txt":"2HDM_type2_H.txt", g2dMassVsWidth[1+3]       , higgsWidth, cosBmA, 4)   //7 --> Exp P1 Limit on sigma(gg-->H2-->ZZ)
              };
 
              graph[0]->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH0"));
@@ -556,6 +586,8 @@ void finalLimitPlot(){
              graph[3]->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH0"));
              graph[4]->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH0"));
              graph[5]->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH0"));
+             graph[6]->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH0"));
+             graph[7]->SetHistogram((TH2D*)grid->Clone("GRID2HDMmH0"));
 
              TH2D* h2ds[] = {
                 graph[0]->GetHistogram(),
@@ -565,17 +597,22 @@ void finalLimitPlot(){
                 graph[4]->GetHistogram(),
                 graph[5]->GetHistogram(),
                 (TH2D*)(graph[4]->GetHistogram()->Clone("Strength")),
-                (TH2D*)(graph[5]->GetHistogram()->Clone("StrengthObs"))
+                (TH2D*)(graph[5]->GetHistogram()->Clone("StrengthObs")),
+                graph[6]->GetHistogram(),
+                graph[7]->GetHistogram()
+
              };
              h2ds[6]->Divide(h2ds[2]); //signal strength
              h2ds[7]->Divide(h2ds[2]); //signal strength
+             h2ds[8]->Divide(h2ds[2]); //signal strength
+             h2ds[9]->Divide(h2ds[2]); //signal strength
 
              for(int Limittype=0;Limittype<8;Limittype++){
                 c1 = new TCanvas("c", "c",600,600);              
                 c1->SetLogz(true);      
                 c1->SetLogy(true);      
                 c1->SetRightMargin(0.17);
-                framework2d = new TH2F("Graph","Graph",1,200,  600, 1,0.5, 60);
+                framework2d = new TH2F("Graph","Graph",1,200,  600, 1,0.5, 10);
                 framework2d->SetStats(false);
                 framework2d->SetTitle("");
                 framework2d->GetXaxis()->SetTitle("mH2 [GeV]");          
@@ -610,9 +647,9 @@ void finalLimitPlot(){
                 pave1->AddText(textBuffer);
                 pave1->Draw("same");
 
-                if(Limittype==4 || Limittype==6){ getContour(h2ds[6], c1, 2, 1, 15); }
+
+                if(Limittype>=4 && Limittype<=7){ getContour(h2ds[6], c1, 2, 2, 15);  getContour(h2ds[8], c1, 2, 3, 1);  getContour(h2ds[9], c1, 2, 3, 1);    }//expected contour
                 if(Limittype==5 || Limittype==7){ getContour(h2ds[7], c1, 3, 1, 1); }
-                if(Limittype==5 || Limittype==7){ getContour(h2ds[6], c1, 2, 1, 15); }  //add expected contour
               
                //drawPointOnGrid(graph);           
                utils::root::DrawPreliminary(2268.759, 13, gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin()+0.03);

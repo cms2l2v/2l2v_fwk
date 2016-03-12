@@ -851,7 +851,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        denRelUncH->SetTitle("");
        denRelUncH->SetStats(kFALSE);
        denRelUncH->Draw();
-       denRelUnc->Draw("3");
+       denRelUnc->Draw("3 0");
        float yscale = (1.0-0.2)/(0.2);       
        denRelUncH->GetYaxis()->SetTitle("Data/#Sigma MC");
        denRelUncH->GetXaxis()->SetTitle(""); //drop the tile to gain space

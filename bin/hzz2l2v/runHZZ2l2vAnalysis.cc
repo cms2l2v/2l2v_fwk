@@ -565,6 +565,12 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "met_Outbtag",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "met_Outbveto",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
 
+  for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
+     mon.addHistogram( new TH1F( (TString("metSyst")+varNames[ivar]),          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
+     mon.addHistogram( new TH1F( (TString("mtSyst")+varNames[ivar]),         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
+  }
+
+
   mon.addHistogram( new TH1F( "mt_Inbtag50"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mt_Inbveto50"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mt_Inbtag80"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
@@ -1693,6 +1699,9 @@ int main(int argc, char* argv[])
                   LorentzVector iboson(boson);
                   //updet the transverse mass
                   float mt =higgs::utils::transverseMass(iboson,imet,true);
+
+                 if(passPreselection )   mon.fillHisto(TString("mtSyst")+varNames[ivar],tags_full, mt,chWeight);
+                 if(passPreselection )   mon.fillHisto(TString("metSyst")+varNames[ivar],tags_full, imet.pt(),chWeight);                    
 
                   //scan the MET cut and fill the shapes
                   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
