@@ -2664,6 +2664,7 @@ int main(int argc, char* argv[])
   //save all to the file
   TFile *ofile=TFile::Open(outUrl, "recreate");
   mon.Write();
+  if(tree){tree->SetDirectory(ofile); tree->Write();}
   ofile->Close();
 
   if(outTxtFile)fclose(outTxtFile);
