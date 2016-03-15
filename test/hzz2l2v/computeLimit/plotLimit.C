@@ -178,7 +178,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?190:190,1510);
   framework->SetStats(false);
   framework->SetTitle("");
-  framework->GetXaxis()->SetTitle("Higgs boson mass (GeV)");
+  framework->GetXaxis()->SetTitle("M_{H} [GeV]");
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
