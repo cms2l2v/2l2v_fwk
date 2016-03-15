@@ -356,7 +356,7 @@ void finalLimitPlot(){
          framework = new TH1F("Graph","Graph",1,190,1510);
          framework->SetStats(false);
          framework->SetTitle("");
-         framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
+         framework->GetXaxis()->SetTitle("M_{H} [GeV]");
          if(strengthLimit){
             framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
             framework->GetYaxis()->SetRangeUser(1E-2,1E3);
@@ -490,7 +490,7 @@ void finalLimitPlot(){
            framework2d = new TH2F("Graph","Graph",1,250, 1500, 1,0,1.0);
            framework2d->SetStats(false);
            framework2d->SetTitle("");
-           framework2d->GetXaxis()->SetTitle("H mass (GeV)");
+           framework2d->GetXaxis()->SetTitle("M_{H} [GeV]");
            if(mode==0)framework2d->GetYaxis()->SetTitle("C'");
            if(mode==1)framework2d->GetYaxis()->SetTitle("#Gamma/#Gamma_{SM}");          
            framework2d->GetYaxis()->SetTitleOffset(1.40);
@@ -520,7 +520,7 @@ void finalLimitPlot(){
               indirectLimit->SetFillStyle(3005);
 
               //µ_h125 = 1.00 +- 0.14 --> C'²<0.28 at 95% C.L.
-              //µ_h125 = 1.90 +- 0.1  --> C'²<13 at 95% C.L.
+              //µ_h125 = 1.09 +- 0.1  --> C'²<13 at 95% C.L.
               if(mode==0){
                  indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), sqrt(0.13) );
                  indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), sqrt(0.13) );
@@ -540,7 +540,7 @@ void finalLimitPlot(){
               pave1->SetTextFont(62);
               pave1->SetTextSize(0.03);
               pave1->SetTextColor(17);
-              pave1->AddText("#mu_{h(125)} = 1.9 #pm 0.14");
+              pave1->AddText("#mu_{h(125)} = 1.09 #pm 0.11");
               pave1->Draw("same");
            }
 
@@ -618,7 +618,7 @@ void finalLimitPlot(){
                 framework2d = new TH2F("Graph","Graph",1,200,  600, 1,0.5, 10);
                 framework2d->SetStats(false);
                 framework2d->SetTitle("");
-                framework2d->GetXaxis()->SetTitle("mH2 [GeV]");          
+                framework2d->GetXaxis()->SetTitle("M_{H2} [GeV]");          
                 framework2d->GetYaxis()->SetTitle("tan( #beta )");
                 framework2d->GetYaxis()->SetTitleOffset(1.60);
                 framework2d->Draw("");
