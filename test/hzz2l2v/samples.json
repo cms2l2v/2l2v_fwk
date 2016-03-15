@@ -28,7 +28,7 @@
     },
     {
       "tag":"ZZ#rightarrow Z#tau#tau",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "keys":["2l2v_mcbased", "2l2v_photoncontrol"],
       "isdata":false,
       "color":595,
       "mctruthmode":15,         
@@ -52,7 +52,7 @@
     },
     {
       "tag":"WW",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "keys":["2l2v_mcbased", "2l2v_photoncontrol"],
       "isdata":false,
       "color":590,
       "data":[
@@ -83,7 +83,7 @@
     },
     {
       "tag":"Top",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "keys":["2l2v_mcbased", "2l2v_photoncontrol"],
       "isdata":false,
       "color":8,
       "data":[
@@ -98,7 +98,7 @@
     },
     {
       "tag":"W#rightarrow l#nu",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol", "2l2v_photonsOnly"],
+      "keys":["2l2v_mcbased", "2l2v_photoncontrol", "2l2v_photonsOnly"],
       "isdata":false,
       "color":809,
       "2l2v_photonsOnly":{"suffix":"reweighted"},
@@ -239,6 +239,16 @@
       ]
     },                                                                                                                                                          
     {
+      "tag":"Top/W/WW",
+      "keys":["2l2v_datadriven"],
+      "isdata":false,
+      "isdatadriven":true,
+      "color":8,
+      "syst":[0.21],
+      "nosample":true,
+      "NRB":[{"tag":"data", "scale":1.0}]
+    },
+    {
       "tag":"Genuine (ewk) MET inv",
       "keys":["genuineMet"],
       "isinvisible":true,      
@@ -259,6 +269,7 @@
       "isdata":false,
       "isdatadriven":true,
       "color":831,
+      "syst":[0.25],
       "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"Genuine (ewk) MET inv", "scale":-1.0}]
     },
      {

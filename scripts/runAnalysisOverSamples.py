@@ -189,6 +189,7 @@ for procBlock in procList :
     #run over processes
     for proc in procBlock[1] :
         #run over items in process
+        if(getByLabel(proc,'nosample'      , '')!=''):continue #skip processes which do not have a real sample
         if(getByLabel(proc,'interpollation', '')!=''):continue #skip interpollated processes
         if(getByLabel(proc,'mixing'        , '')!=''):continue #skip mixed processes
         keywords = getByLabel(proc,'keys',[])

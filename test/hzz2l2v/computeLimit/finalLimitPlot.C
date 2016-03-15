@@ -113,7 +113,7 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
 
    TGraph* graph = new TGraph(100);
    int N=0;
-   while(fscanf(pFile,"$%le$ & $%le$ & $[%le,%le]$ & $[%le,%le]$ & $%le$ & Th=$%le$ & pValue=$%le$\\\\\\hline\n",&mass, &exp, &unused, &unused, &unused,&unused,&obs, &th, &unused) != EOF){
+   while(fscanf(pFile,"$%le$ & $%le$ & $[%le,%le]$ & $[%le,%le]$ & $%le$ & Th=$%le$ & pValue=$%le$\\\\\\hline\n",&mass, &exp, &explow1, &expup1, &explow2,&expup2,&obs, &th, &unused) != EOF){
 
 //      printf("%i %f - %f - %f\n",N,mass,exp, th);
 
@@ -126,6 +126,7 @@ TGraph* getGraph(string name, int color, int width, int style, TLegend* LEG, TGr
       else if(abs(type)==5) value = explow2;
       else if(abs(type)==6) value = expup2;
       else value = obs;
+
 
 //      if(type<0 && filePath.find("cp0.80")!=string::npos) value *= pow(0.8, 2);
 //      if(type<0 && filePath.find("cp0.60")!=string::npos) value *= pow(0.6, 2);
@@ -235,22 +236,15 @@ void finalLimitPlot(){
 
 
 
-     //grey color palette
-     const Int_t NRGBs = 2;
-     const Int_t NCont = 255;
-     Double_t stops[NRGBs] = { 0.00, 1.00 };
-     Double_t red[NRGBs]   = { 1., 0.5 };
-     Double_t green[NRGBs] = { 1., 0.5 }; 
-     Double_t blue[NRGBs]  = { 1., 0.5 }; 
-     if(false){ //shift
-       for(int i=0; i<NRGBs; i++){
-         red  [i] -= 0.10;
-         green[i] -= 0.10;
-         blue [i] -= 0.10;
-       }
-     }
-     TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
-     gStyle->SetNumberContours(NCont);
+     //inverted deep blue color palette
+//      Double_t stops[9] = { 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000};
+      Double_t stops[2] = { 0.0000, 1.0000};
+      Double_t red[2]   = {180./255.,0./255.};
+      Double_t green[2] = {245./255.,0./255.};
+      Double_t blue[2]  = {245./255.,255./255.};
+      TColor::CreateGradientColorTable(2, stops, red, green, blue, 255);
+
+//   gStyle->SetPalette(51);
 
 
 
@@ -276,7 +270,7 @@ void finalLimitPlot(){
    colorMap[mapIndex(0.2, 0.0)] = 2;
    colorMap[mapIndex(0.1, 0.0)] = 2;
 
-   std::vector<double> CPs = {1.0,0.6,0.3,0.1};
+   std::vector<double> CPs = {1.0,0.6,0.3,0.1,0.0};
    std::vector<double> BRs = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
@@ -298,7 +292,7 @@ void finalLimitPlot(){
       for(unsigned int BRi = 0; BRi<BRs.size();BRi++){
          double CP = CPs[CPi];  double BR = BRs[BRi]; 
          if ( CP*CP / (1-BR)>1.0 )continue; //skip point leading to a width larger than SM
-         char limitpath[1024]; sprintf(limitpath, "%s_cp%4.2f_brn%4.2f/Stength_LimitSummary", Dir.c_str(), CP, BR);
+         char limitpath[1024]; sprintf(limitpath, "%s_cp%4.2f_brn%4.2f/Stength_LimitSummary", Dir.c_str(), CP<=0.1?0.1:CP, BR);
 //         char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f BRnew=%3.1f", CP, BR);
          char limitlegend[1024]; sprintf(limitlegend, "C'=%3.1f", CP);
          std::cout<<"LIMITPATH="<<limitpath<< "\n";         
@@ -336,14 +330,14 @@ void finalLimitPlot(){
       } 
 
       TGraph2D* g2dMassVsWidth[7];  
-      std::vector<  double> WidthVect = {0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+      std::vector<  double> WidthVect = {0.000001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 
       for(unsigned int i=0;i<7;i++){
          g2dMassVsWidth[i] = new TGraph2D( 9999 );        
          int Ig2d=0;
 
          for(unsigned int W=0;W<WidthVect.size();W++){
-         for(double Mass = 200; Mass<=1500;Mass+=50){
+         for(double Mass = 200; Mass<=1500;Mass+=25){
                double Width = WidthVect[W];
                double limit= g2dMassVsCp[i]->Interpolate(Mass, sqrt(Width));
                g2dMassVsWidth[i]->SetPoint(Ig2d, Mass, Width, limit);
@@ -359,7 +353,7 @@ void finalLimitPlot(){
 
          c1 = new TCanvas("c", "c",600,600);
          c1->SetLogy(true);
-         framework = new TH1F("Graph","Graph",1,250,1510);
+         framework = new TH1F("Graph","Graph",1,190,1510);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV/c^{2}]");
@@ -396,7 +390,7 @@ void finalLimitPlot(){
          if(!strengthLimit){
             LEGTh = new TLegend(0.40,0.70,0.55,0.94);
             LEGTh->SetTextFont(43); LEGTh->SetTextSize(15);   LEGTh->SetTextAlign(12);         
-            LEGTh->SetHeader("Theoretical");
+            LEGTh->SetHeader("Predicted");
             LEGTh->SetFillStyle(0);
             LEGTh->SetBorderSize(0);
          }
@@ -405,6 +399,9 @@ void finalLimitPlot(){
          for(unsigned int CPi = 0; CPi<CPs.size();CPi++){
          for(unsigned int BRi = 0; BRi<BRs.size();BRi++){
             double CP = CPs[CPi];  double BR = BRs[BRi]; 
+            if(CP<0.1)continue;
+
+
             if(BR!=0.0)continue;
             if(!gCPBR[ mapIndex(CP, BR) ])continue;
             TGraph* g = (gCPBR[ mapIndex(CP, BR) ])[1+1];
@@ -454,10 +451,12 @@ void finalLimitPlot(){
      //mode=1 --> Mass versus Gamma  interpolated from 2D limit(CPrime, BRNew)
      
         TH2D* grid   = new TH2D("grid"  , "grid"  , 300, 0, 1500, 500, 0, 1);
-        TGraph2D*   graph[] = {g2dMassVsCp   [1], g2dMassVsCp   [2]};
-        if(mode==1){ graph[0] = g2dMassVsWidth[1]; graph[1] = g2dMassVsWidth[2];}
-        graph[0]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
-        graph[1]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCp"));
+        TGraph2D*   graph[] = {g2dMassVsCp   [1], g2dMassVsCp   [2], g2dMassVsCp   [3], g2dMassVsCp   [4]};
+        if(mode==1){ graph[0] = g2dMassVsWidth[1]; graph[1] = g2dMassVsWidth[2]; graph[2] = g2dMassVsWidth[3]; graph[3] = g2dMassVsWidth[4];}
+        graph[0]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCpA"));
+        graph[1]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCpB"));
+        graph[2]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCpC"));
+        graph[3]->SetHistogram((TH2D*)grid->Clone("GRIDg2dMassVsCpD"));
 
 
         //build th cross-section 2D plane
@@ -496,20 +495,20 @@ void finalLimitPlot(){
            if(mode==1)framework2d->GetYaxis()->SetTitle("#Gamma/#Gamma_{SM}");          
            framework2d->GetYaxis()->SetTitleOffset(1.40);
            framework2d->Draw("");
-           h2d->GetZaxis()->SetTitleOffset(1.33);
+           h2d->GetZaxis()->SetTitleOffset(1.60);
            if(strengthLimit){
               h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + " #mu = #sigma_{95%} / #sigma_{th}").c_str());
-              h2d->GetZaxis()->SetRangeUser(1E-2,1E2);
+              h2d->GetZaxis()->SetRangeUser(1E-1,1E2);
            }else{
               h2d->GetZaxis()->SetTitle((string(observed==0?"Expected":"Observed") + string(" #sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
-              h2d->GetZaxis()->SetRangeUser(1E0,3E3);
+              h2d->GetZaxis()->SetRangeUser(1E1,1E3);
            }
            h2d->Draw("COLZ same");
 
            //strength contour
-           getContour(signalStrength[0], c1, 2, 2, 15); //exp
-           getContour(signalStrength[2], c1, 2, 3, 1); //expM1
-           getContour(signalStrength[3], c1, 2, 3, 1); //expP1
+           getContour(signalStrength[0], c1, 2, 7, 1); //exp
+           getContour(signalStrength[2], c1, 1, 2, 1); //expM1
+           getContour(signalStrength[3], c1, 1, 2, 1); //expP1
            if(observed==1) getContour(signalStrength[observed], c1, 3, 1, 1); //obs
           
            if(strengthLimit){
@@ -521,16 +520,17 @@ void finalLimitPlot(){
               indirectLimit->SetFillStyle(3005);
 
               //µ_h125 = 1.00 +- 0.14 --> C'²<0.28 at 95% C.L.
+              //µ_h125 = 1.90 +- 0.1  --> C'²<13 at 95% C.L.
               if(mode==0){
-                 indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), sqrt(0.28) );
-                 indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), sqrt(0.28) );
+                 indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), sqrt(0.13) );
+                 indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), sqrt(0.13) );
 
-                  pave1 = new TPaveText(framework2d->GetXaxis()->GetXmax()*0.7, sqrt(0.28)*1.25, framework2d->GetXaxis()->GetXmax(),sqrt(0.28));
+                  pave1 = new TPaveText(framework2d->GetXaxis()->GetXmax()*0.7, sqrt(0.13)+0.10, framework2d->GetXaxis()->GetXmax(),sqrt(0.13));
               }else{
-                 indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), 0.28 );
-                 indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), 0.28 );
+                 indirectLimit->SetPoint(0, framework2d->GetXaxis()->GetXmin(), 0.13 );
+                 indirectLimit->SetPoint(1, framework2d->GetXaxis()->GetXmax(), 0.13 );
 
-                 pave1 = new TPaveText(framework2d->GetXaxis()->GetXmax()*0.7, 0.28*1.25, framework2d->GetXaxis()->GetXmax(),0.28);
+                 pave1 = new TPaveText(framework2d->GetXaxis()->GetXmax()*0.7, 0.13+0.10, framework2d->GetXaxis()->GetXmax(),0.13);
               }
               indirectLimit->Draw("same");
 
@@ -539,8 +539,8 @@ void finalLimitPlot(){
               pave1->SetTextAlign(11);
               pave1->SetTextFont(62);
               pave1->SetTextSize(0.03);
-              pave1->SetTextColor(15);
-              pave1->AddText("#mu_{h(125)} = 1.0 #pm 0.14");
+              pave1->SetTextColor(17);
+              pave1->AddText("#mu_{h(125)} = 1.9 #pm 0.14");
               pave1->Draw("same");
            }
 
@@ -607,6 +607,9 @@ void finalLimitPlot(){
              h2ds[8]->Divide(h2ds[2]); //signal strength
              h2ds[9]->Divide(h2ds[2]); //signal strength
 
+
+             printf("DEBUG 2HDM %f %f %f\n", graph[6]->Interpolate(300, 1.0), graph[4]->Interpolate(300, 1.0), graph[7]->Interpolate(300, 1.0));
+
              for(int Limittype=0;Limittype<8;Limittype++){
                 c1 = new TCanvas("c", "c",600,600);              
                 c1->SetLogz(true);      
@@ -623,7 +626,7 @@ void finalLimitPlot(){
                 TH2D* h2d = h2ds[Limittype];
                 if(Limittype>=4)HideUnexplored(h2d, h2ds[3]);
 
-                double zmin=1E-1; double zmax=1E5;
+                double zmin=1E-1; double zmax=1E3;
                 if(Limittype==0){ h2d->GetZaxis()->SetTitle("#sigma(gg #rightarrow H2) (fb)" );  zmin=1E-2; zmax=1E5; }
                 if(Limittype==1){ h2d->GetZaxis()->SetTitle("BR(H2 #rightarrow ZZ)" );  zmin=1E-4; zmax=1;  }
                 if(Limittype==2){ h2d->GetZaxis()->SetTitle("#sigma(gg #rightarrow H2 #rightarrow ZZ) (fb)");  zmin=1E-3; zmax=1E5;  }
@@ -632,7 +635,7 @@ void finalLimitPlot(){
                 if(Limittype==5){ h2d->GetZaxis()->SetTitle("Observed #sigma_{95%} (gg #rightarrow H2 #rightarrow ZZ) (fb)"); }
                 if(Limittype==6){ h2d->GetZaxis()->SetTitle("Expected #sigma_{95%} (gg #rightarrow H2 #rightarrow ZZ) / #sigma_{th}"); }
                 if(Limittype==7){ h2d->GetZaxis()->SetTitle("Observed #sigma_{95%} (gg #rightarrow H2 #rightarrow ZZ) / #sigma_{th}"); }
-                h2d->GetZaxis()->SetTitleOffset(1.33);
+                h2d->GetZaxis()->SetTitleOffset(1.55);
                 h2d->Draw("COLZ same");
                 if(zmin!=zmax)h2d->GetZaxis()->SetRangeUser(zmin, zmax);
 
@@ -648,7 +651,7 @@ void finalLimitPlot(){
                 pave1->Draw("same");
 
 
-                if(Limittype>=4 && Limittype<=7){ getContour(h2ds[6], c1, 2, 2, 15);  getContour(h2ds[8], c1, 2, 3, 1);  getContour(h2ds[9], c1, 2, 3, 1);    }//expected contour
+                if(Limittype>=4 && Limittype<=7){ getContour(h2ds[6], c1, 2, 7, 1);  getContour(h2ds[8], c1, 1, 2, 1);  getContour(h2ds[9], c1, 1, 2, 1);    }//expected contour
                 if(Limittype==5 || Limittype==7){ getContour(h2ds[7], c1, 3, 1, 1); }
               
                //drawPointOnGrid(graph);           

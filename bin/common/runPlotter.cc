@@ -16,6 +16,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TLegend.h"
+#include "TLegendEntry.h"
 #include "TGraph.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -44,7 +45,7 @@ double iLumi = 2007;
 double iEcm=8;
 bool showChi2 = false;
 bool showUnc=false;
-double baseRelUnc=0.044;
+double baseRelUnc=0.0;
 bool noLog=false;
 bool isSim=false;
 bool doTree = true;
@@ -108,7 +109,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
       std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
       for(size_t ip=0; ip<Process.size(); ip++){
-         if(Process[ip].isTag("interpollation") || Process[ip].isTag("mixing"))continue; //treated in a specific function after the loop on Process
+         if(Process[ip].isTag("interpollation") || Process[ip].isTag("mixing") || Process[ip].isTag("nosample"))continue; //treated in a specific function after the loop on Process
          string matchingKeyword="";
          if(!utils::root::getMatchingKeyword(Process[ip], keywords, matchingKeyword))continue; //only consider samples passing key filtering
          string dirName = getDirName(Process[ip], matchingKeyword);
@@ -214,6 +215,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
 
 }
 
+
 void MixProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& histlist){    
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
    for(unsigned int i=0;i<Process.size();i++){
@@ -245,7 +247,6 @@ void MixProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& 
       subdir = File->mkdir(dirName.c_str());
       subdir->cd();
 
-
       int ictr = 0;
       int TreeStep = std::max(1,(int)(histlist.size()/50));
       printf("Mixing %20s :", dirName.c_str());
@@ -273,6 +274,139 @@ void MixProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& 
       }printf("\n");
    }
 }
+
+
+
+void NRBProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& histlist){    
+   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+   for(unsigned int i=0;i<Process.size();i++){
+      if(!Process[i].isTag("NRB"))continue; //only consider intepollated processes
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+
+      string dirName = getDirName(Process[i], matchingKeyword);
+      File->cd();
+ 
+      TDirectory* subdir = File->GetDirectory(dirName.c_str());
+      if(subdir && subdir!=File){
+         printf("Skip process %s as it seems to be already processed\n", dirName.c_str());
+         continue;  //skip this process as it already exist in the file
+      }
+
+      
+      //check that the subProcess actually point to an existing directory
+      std::vector<JSONWrapper::Object> subProcess = Process[i]["NRB"].daughters();     
+      std::vector<std::pair<string, double> > subProcList;
+      for(unsigned int sp=0;sp<subProcess.size();sp++){
+         string subProcDir = subProcess[sp].getString("tag", "");
+         if(!File->GetDirectory(subProcDir.c_str())){printf("subprocess directory not found: %s\n", subProcDir.c_str()); continue;}
+         subProcList.push_back(std::make_pair(subProcDir, subProcess[sp].getDouble("scale", 1.0)) );
+      }
+      if(subProcList.size()<=0){printf("No subProcess defined to construct the mixed process %s\n", dirName.c_str()); continue;  };
+
+      //create the directory to host the results
+      subdir = File->mkdir(dirName.c_str());
+      subdir->cd();
+
+      int ictr = 0;
+      int TreeStep = std::max(1,(int)(histlist.size()/50));
+      printf("NRB %20s :", dirName.c_str());
+      for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
+         if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+         NameAndType& HistoProperties = *it;        
+        
+         TH1* obj1 = (TH1*)utils::root::GetObjectFromPath(File,subProcList[0].first + "/" + HistoProperties.name);      
+         if(!obj1)continue;
+         obj1 = (TH1*)obj1->Clone(HistoProperties.name.c_str());
+         utils::root::checkSumw2(obj1);
+         obj1->Reset();
+
+         std::vector<std::pair<string,double>> channels = {std::make_pair("ee",0.36), std::make_pair("mumu",0.77), std::make_pair("ll",0.36+0.77)};
+         for(auto ch=channels.begin();ch!=channels.end();ch++){
+            if(HistoProperties.name.find(ch->first)==0){
+               std::string emName = HistoProperties.name;  emName.replace(0,ch->first.size(),"emu");
+               for(unsigned int sp=0;sp<subProcList.size();sp++){
+                  TH1* obj2 = (TH1*)utils::root::GetObjectFromPath(File,subProcList[sp].first + "/" + emName);
+                  if(!obj2)continue;
+                  obj1->Add(obj2, subProcList[sp].second*ch->second);
+               }
+            }
+         }
+         utils::root::setStyleFromKeyword(matchingKeyword,Process[i], obj1);
+        
+         subdir->cd();
+         obj1->Write(HistoProperties.name.c_str());
+         gROOT->cd();
+         delete obj1;
+      }printf("\n");
+   }
+}
+
+
+
+void SumBins(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& histlist){    
+   std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
+   for(unsigned int i=0;i<Process.size();i++){
+      string matchingKeyword="";
+      if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
+
+      string dirName = getDirName(Process[i], matchingKeyword);
+      File->cd();
+ 
+      TDirectory* subdir = File->GetDirectory(dirName.c_str());
+      if(! (subdir && subdir!=File)){
+         printf("skip missing process %s\n", dirName.c_str());
+         continue;
+      }
+      subdir->cd();
+
+      int ictr = 0;
+      int TreeStep = std::max(1,(int)(histlist.size()/50));
+      printf("Sum %20s :", dirName.c_str());
+      for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
+         if(ictr%TreeStep==0){printf(".");fflush(stdout);}
+         NameAndType& HistoProperties = *it;        
+
+         if( HistoProperties.name.find("geq1jets_")!=std::string::npos){  //only consider llgeq1jets
+
+            TString Incname = HistoProperties.name.c_str();   Incname.ReplaceAll("geq1jets_", "_");
+            if(utils::root::GetObjectFromPath(File,dirName + "/" + Incname.Data())!=NULL)continue; //inc. histo already exist
+
+        
+            TH1* obj1 = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name);      
+            if(!obj1)continue;
+            obj1 = (TH1*)obj1->Clone(HistoProperties.name.c_str());
+            utils::root::checkSumw2(obj1);
+
+            //add eq0jets
+            if(true){
+               TString name = HistoProperties.name.c_str();   name.ReplaceAll("geq1jets_", "eq0jets_");
+               TH1* obj2 = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + name.Data());
+               if(!obj2)continue;
+               obj1->Add(obj2, 1);
+            }
+
+            //add vbf
+            if(true){
+               TString name = HistoProperties.name.c_str();   name.ReplaceAll("geq1jets_", "vbf_");
+               TH1* obj2 = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + name.Data());
+               if(!obj2)continue;
+               obj1->Add(obj2, 1);
+            }
+
+            utils::root::setStyleFromKeyword(matchingKeyword,Process[i], obj1);
+           
+            subdir->cd();
+
+            obj1->Write(Incname.Data());
+            gROOT->cd();
+            delete obj1;
+         }
+      }printf("\n");
+   }
+}
+
+
 
 
 
@@ -402,7 +536,7 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
    printf("Processing input root files  :");
 
    for(unsigned int i=0;i<Process.size();i++){
-      if(Process[i].isTag("interpollation") || Process[i].isTag("mixing"))continue; //treated in a specific function after the loop on Process
+      if(Process[i].isTag("interpollation") || Process[i].isTag("mixing") || Process[i].isTag("nosample"))continue; //treated in a specific function after the loop on Process
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
 
@@ -600,6 +734,24 @@ void Draw2DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    delete c1;
 }
 
+void addShapeUnc(TFile* File, string& dirName, NameAndType& HistoProperties, TH1* systHist){
+      TH1* syst = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + "all_optim_systs");
+      if(!syst){printf("all_optim_systs histogram is not there\n"); return;}
+
+      //loop over all shape syst      
+      for(int ivar = 1; ivar<=syst->GetNbinsX();ivar++){
+         TH1* hist = (TH1*)utils::root::GetObjectFromPath(File,dirName + "/" + HistoProperties.name + syst->GetXaxis()->GetBinLabel(ivar) );        
+//         if(!hist){printf("histo for %s is not found\n", (dirName + "/" + HistoProperties.name + syst->GetXaxis()->GetBinLabel(ivar)).c_str() );}
+         if(!hist){continue;}
+         if(abs(rebin)>0){hist = hist->Rebin(abs(rebin)); hist->Scale(1.0/abs(rebin), rebin<0?"width":""); }
+         for(int ibin=1; ibin<=systHist->GetXaxis()->GetNbins(); ibin++){
+            systHist->SetBinError(ibin, sqrt(pow(systHist->GetBinError(ibin),2)+pow(systHist->GetBinContent(ibin) - hist->GetBinContent(ibin),2)));
+         }
+      }
+}
+
+
+
 void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoProperties){
    
    if(HistoProperties.isIndexPlot && cutIndex<0)return;
@@ -639,6 +791,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    THStack* stack = new THStack("MC","MC");
    TH1*     data  = NULL;
    TH1 *     mc   = NULL;
+   TH1 *     mcPlusSyst   = NULL;
    TH1 *     mcPlusRelUnc = NULL;
    std::vector<TH1*> spimpose;
    std::vector<TString> spimposeOpts;
@@ -650,6 +803,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    double SignalMin = 5E-2;
    ObjectToDelete.push_back(stack);
 
+   std::vector<TLegendEntry*> legEntries;  //needed to have the entry in reverse order
    for(unsigned int i=0;i<Process.size();i++){
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
@@ -667,7 +821,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 
          continue;
       }
-      if(rebin>0){hist = hist->Rebin(rebin);}// hist->Scale(1.0/rebin);}
+      if(abs(rebin)>0){hist = hist->Rebin(abs(rebin)); hist->Scale(1.0/abs(rebin), rebin<0?"width":""); }
+
 
 
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
@@ -683,17 +838,59 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
           if(!data){legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "P E");}
           if(!data){data = (TH1D*)hist->Clone("data");utils::root::checkSumw2(data);}else{data->Add(hist);}
       }else if(Process[i].getBoolFromKeyword(matchingKeyword, "spimpose", false)){
-          legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "L" );
+          legEntries.insert(legEntries.begin(), new TLegendEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "L") );   
           hist->Scale(signalScale);
           spimposeOpts.push_back( "hist" );
           spimpose.push_back(hist);
           if(SignalMin>hist->GetMaximum()*1E-2) SignalMin=hist->GetMaximum()*1E-2;
       }else{
 	 stack->Add(hist, "HIST"); //Add to Stack
-         legA->AddEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "F");	 
+         legEntries.push_back(new TLegendEntry(hist, Process[i].getStringFromKeyword(matchingKeyword, "tag", "").c_str(), "F"));
          if(!mc){mc = (TH1D*)hist->Clone("mc");utils::root::checkSumw2(mc);}else{mc->Add(hist);}      
+
+         //
+         // take care of systematic error
+         //
+         if(showUnc){
+            TH1* histPlusSyst = (TH1D*)hist->Clone("histPlusSyst");
+
+            double syst = 0.0;       
+
+            //default unc.
+            if(baseRelUnc>0){
+               syst+=pow(baseRelUnc,2);
+            }
+
+            //double syst unc. from json
+            if(Process[i].isTagFromKeyword(matchingKeyword, "syst")){
+               std::vector<JSONWrapper::Object> systs = Process[i]["syst"].daughters();
+               for(size_t isyst=0; isyst<systs.size(); isyst++){syst+=pow(systs[isyst].toDouble(),2);}
+            }
+
+            if(syst>0){
+               syst = sqrt(syst);
+               for(int ibin=1; ibin<=histPlusSyst->GetXaxis()->GetNbins(); ibin++){
+                  histPlusSyst->SetBinError(ibin, sqrt(pow(histPlusSyst->GetBinError(ibin),2)+pow(histPlusSyst->GetBinContent(ibin)*syst,2)));
+               }
+            }
+
+
+            addShapeUnc(File, dirName, HistoProperties, histPlusSyst);
+
+  
+            if(!mcPlusSyst){ mcPlusSyst = (TH1D*)hist->Clone("mcPlusSyst");mcPlusSyst->Reset(); utils::root::checkSumw2(mcPlusSyst);}
+            mcPlusSyst->Add(histPlusSyst);
+         }
       }
    }
+
+   //fill the legend in reverse order
+   while(!legEntries.empty()){
+      legA->AddEntry(legEntries.back()->GetObject(), legEntries.back()->GetLabel(), legEntries.back()->GetOption());
+      ObjectToDelete.push_back(legEntries.back());
+      legEntries.pop_back();      
+   }
+
 
    if(mc   && Maximum<mc  ->GetMaximum()) Maximum=mc  ->GetMaximum()*1.1;
    if(data && Maximum<data->GetMaximum()) Maximum=data->GetMaximum()*1.1;
@@ -732,24 +929,38 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    t1->Update();
 
    if(showUnc && mc){
-      TGraphErrors* errBand = new TGraphErrors(mc->GetNbinsX()); int IPoint=0;
+      TGraphErrors* systBand = new TGraphErrors(mc->GetNbinsX()); int IPoint=0;
+      for(int ibin=1; ibin<=mcPlusSyst->GetXaxis()->GetNbins(); ibin++){
+         systBand->SetPoint     (IPoint, mcPlusSyst->GetBinCenter(ibin), mcPlusSyst->GetBinContent(ibin) );
+         systBand->SetPointError(IPoint, mcPlusSyst->GetBinWidth(ibin)/2, mcPlusSyst->GetBinError(ibin) );
+         IPoint++;
+      }systBand->Set(IPoint);
+      mcPlusSyst->SetFillStyle(3004);
+      mcPlusSyst->SetFillColor(kGray+2);
+      mcPlusSyst->SetMarkerStyle(1);
+
+      systBand->SetFillStyle(3004);
+      systBand->SetFillColor(kGray+2);
+      systBand->SetMarkerStyle(1);
+      systBand->Draw("same 2 0");
+
+      TGraphErrors* errBand = new TGraphErrors(mc->GetNbinsX()); IPoint=0;
       mcPlusRelUnc = (TH1 *) mc->Clone("totalmcwithunc");utils::root::checkSumw2(mcPlusRelUnc); mcPlusRelUnc->SetDirectory(0);        
       for(int ibin=1; ibin<=mcPlusRelUnc->GetXaxis()->GetNbins(); ibin++){
-         Double_t error=sqrt(pow(mcPlusRelUnc->GetBinError(ibin),2)+pow(mcPlusRelUnc->GetBinContent(ibin)*baseRelUnc,2));
-         mcPlusRelUnc->SetBinError(ibin,error);
          errBand->SetPoint     (IPoint, mcPlusRelUnc->GetBinCenter(ibin), mcPlusRelUnc->GetBinContent(ibin) );
-         errBand->SetPointError(IPoint, mcPlusRelUnc->GetBinWidth(ibin)/2, error );
+         errBand->SetPointError(IPoint, mcPlusRelUnc->GetBinWidth(ibin)/2, mcPlusRelUnc->GetBinError(ibin) );
          IPoint++;
       }errBand->Set(IPoint);
-      mcPlusRelUnc->SetFillStyle(3427);
-      mcPlusRelUnc->SetFillColor(kGray+1);
+      mcPlusRelUnc->SetFillStyle(3005); //3427
+      mcPlusRelUnc->SetFillColor(kGray+3); //Gray+1
       mcPlusRelUnc->SetMarkerStyle(1);
 
-      errBand->SetFillStyle(3004);
-      errBand->SetFillColor(kGray);
+      errBand->SetFillStyle(3005);
+      errBand->SetFillColor(kGray+3);
       errBand->SetMarkerStyle(1);
-      errBand->Draw("same 2");
+      errBand->Draw("same 2 0");
       legA->AddEntry(errBand, "Stat. Unc.", "F");
+      legA->AddEntry(systBand, "Syst + Stat.", "F");
    }
 
    if(data){
@@ -764,7 +975,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
          legA->AddEntry(blinding_box, "blinded area" , "F");
          ObjectToDelete.push_back(blinding_box);
       }
-
       data->Draw("E1 same");
    }
 
@@ -829,29 +1039,91 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        t2->SetGridy(true);
        t2->SetPad(0,0.0,1.0,0.2);
 
+
+       //mc stats+syst
+       TH1D *denSystUncH=0;
+       if(mcPlusSyst)        denSystUncH=(TH1D *) mcPlusSyst  ->Clone("mcrelunc");
+       else if (mcPlusRelUnc)denSystUncH=(TH1D *) mcPlusRelUnc->Clone("mcrelunc");
+       else                  denSystUncH=(TH1D *) mc          ->Clone("mcrelunc");
+       utils::root::checkSumw2(denSystUncH);
+
+       int GPoint=0;
+       TGraphErrors *denSystUnc=new TGraphErrors(denSystUncH->GetXaxis()->GetNbins());  
+       for(int xbin=1; xbin<=denSystUncH->GetXaxis()->GetNbins(); xbin++){
+           denSystUnc->SetPoint(GPoint, denSystUncH->GetBinCenter(xbin), 1.0);
+           denSystUnc->SetPointError(GPoint,  denSystUncH->GetBinWidth(xbin)/2, denSystUncH->GetBinContent(xbin)!=0?denSystUncH->GetBinError(xbin)/denSystUncH->GetBinContent(xbin):0);
+           GPoint++;
+
+	   if(denSystUncH->GetBinContent(xbin)==0) continue;
+	   Double_t err=denSystUncH->GetBinError(xbin)/denSystUncH->GetBinContent(xbin);
+	   denSystUncH->SetBinContent(xbin,1);
+	   denSystUncH->SetBinError(xbin,err);
+       }denSystUnc->Set(GPoint);
+       denSystUnc->SetLineColor(1);
+       denSystUnc->SetFillStyle(3004);
+       denSystUnc->SetFillColor(kGray+2);
+       denSystUnc->SetMarkerColor(1);
+       denSystUnc->SetMarkerStyle(1);
+       denSystUncH->Reset("ICE");       
+       denSystUncH->SetTitle("");
+       denSystUncH->SetStats(kFALSE);
+       denSystUncH->Draw();
+       denSystUnc->Draw("2 0 same");
+       float yscale = (1.0-0.2)/(0.2);       
+       denSystUncH->GetYaxis()->SetTitle("Data/#Sigma Bkg.");
+       denSystUncH->GetXaxis()->SetTitle(""); //drop the tile to gain space
+       //denSystUncH->GetYaxis()->CenterTitle(true);
+       denSystUncH->SetMinimum(0.4);
+       denSystUncH->SetMaximum(1.6);
+       //denSystUncH->SetMinimum(0);
+       //denSystUncH->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.10);
+
+       denSystUncH->GetXaxis()->SetLabelFont(42);
+       denSystUncH->GetXaxis()->SetLabelOffset(0.007);
+       denSystUncH->GetXaxis()->SetLabelSize(0.03 * yscale);
+       denSystUncH->GetXaxis()->SetTitleFont(42);
+       denSystUncH->GetXaxis()->SetTitleSize(0.035 * yscale);
+       denSystUncH->GetXaxis()->SetTitleOffset(0.8);
+       denSystUncH->GetYaxis()->SetLabelFont(42);
+       denSystUncH->GetYaxis()->SetLabelOffset(0.007);
+       denSystUncH->GetYaxis()->SetLabelSize(0.03 * yscale);
+       denSystUncH->GetYaxis()->SetTitleFont(42);
+       denSystUncH->GetYaxis()->SetTitleSize(0.035 * yscale);
+       denSystUncH->GetYaxis()->SetTitleOffset(0.3);
+ 
+
+
+
        //mc stats
        TH1D *denRelUncH=0;
        if(mcPlusRelUnc) denRelUncH=(TH1D *) mcPlusRelUnc->Clone("mcrelunc");
        else             denRelUncH=(TH1D *) mc->Clone("mcrelunc");
        utils::root::checkSumw2(denRelUncH);
-       for(int xbin=1; xbin<=denRelUncH->GetXaxis()->GetNbins(); xbin++)
-	 {
+
+       GPoint=0;
+       TGraphErrors *denRelUnc=new TGraphErrors(denRelUncH->GetXaxis()->GetNbins());  
+       for(int xbin=1; xbin<=denRelUncH->GetXaxis()->GetNbins(); xbin++) {
+           denRelUnc->SetPoint(GPoint, denRelUncH->GetBinCenter(xbin), 1.0);
+           denRelUnc->SetPointError(GPoint,  denRelUncH->GetBinWidth(xbin)/2, denRelUncH->GetBinContent(xbin)!=0?denRelUncH->GetBinError(xbin)/denRelUncH->GetBinContent(xbin):0);
+           GPoint++;
+
 	   if(denRelUncH->GetBinContent(xbin)==0) continue;
 	   Double_t err=denRelUncH->GetBinError(xbin)/denRelUncH->GetBinContent(xbin);
 	   denRelUncH->SetBinContent(xbin,1);
 	   denRelUncH->SetBinError(xbin,err);
-	 }
-       TGraphErrors *denRelUnc=new TGraphErrors(denRelUncH);
+	 }denRelUnc->Set(GPoint);
        denRelUnc->SetLineColor(1);
-       denRelUnc->SetFillStyle(3001);
-       denRelUnc->SetFillColor(kGray);
+       denRelUnc->SetFillStyle(3005);
+       denRelUnc->SetFillColor(kGray+3);
        denRelUnc->SetMarkerColor(1);
        denRelUnc->SetMarkerStyle(1);
-       denRelUncH->Reset("ICE");       
+/*       denRelUncH->Reset("ICE");       
        denRelUncH->SetTitle("");
        denRelUncH->SetStats(kFALSE);
        denRelUncH->Draw();
-       denRelUnc->Draw("3 0");
+*/
+       denRelUnc->Draw("2 0 same");
+/*
        float yscale = (1.0-0.2)/(0.2);       
        denRelUncH->GetYaxis()->SetTitle("Data/#Sigma MC");
        denRelUncH->GetXaxis()->SetTitle(""); //drop the tile to gain space
@@ -873,7 +1145,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        denRelUncH->GetYaxis()->SetTitleFont(42);
        denRelUncH->GetYaxis()->SetTitleSize(0.035 * yscale);
        denRelUncH->GetYaxis()->SetTitleOffset(0.3);
-      
+*/      
 
        //add comparisons
        for(size_t icd=0; icd<compDists.size(); icd++){
@@ -881,7 +1153,11 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
 	   TH1D *dataToObsH = (TH1D*)compDists[icd]->Clone(name);
 	   utils::root::checkSumw2(dataToObsH);
 	   dataToObsH->Divide(mc);
-	   dataToObsH->Draw("same");
+           TGraphErrors* dataToObs = new TGraphErrors(dataToObsH);
+           dataToObs->SetMarkerColor(dataToObsH->GetMarkerColor());
+           dataToObs->SetMarkerStyle(dataToObsH->GetMarkerStyle());
+           dataToObs->SetMarkerSize(dataToObsH->GetMarkerSize());
+	   dataToObs->Draw("P 0 same");
        }
 
       if(data && blind>-1E99){
@@ -890,14 +1166,17 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
          ObjectToDelete.push_back(blinding_box);
       }
 
-       TLegend *legR = new TLegend(0.75,0.75,0.93,0.96, "NDC");
+       TLegend *legR = new TLegend(0.56,0.78,0.93,0.96, "NDC");
        legR->SetHeader("");
-       legR->SetBorderSize(0);
+       legR->SetNColumns(2);
+       legR->SetBorderSize(1);
        legR->SetTextFont(42);   legR->SetTextSize(0.03 * yscale);
-       legR->SetLineColor(0);   legR->SetLineStyle(1);   legR->SetLineWidth(1);
-       legR->SetFillColor(0);   legR->SetFillStyle(0);//blind>-1E99?1001:0);
+       legR->SetLineColor(1);   legR->SetLineStyle(1);   legR->SetLineWidth(1);
+       legR->SetFillColor(0);   legR->SetFillStyle(1001);//blind>-1E99?1001:0);
       legR->AddEntry(denRelUnc, "Stat. Unc.", "F");
-      legR->Draw("same");
+      legR->AddEntry(denSystUnc, "Syst. + Stat.", "F");
+      //legR->Draw("same");
+      gPad->RedrawAxis();
 
 
 
@@ -1089,7 +1368,7 @@ int main(int argc, char* argv[]){
 	     i++;
 	   }
        }
-       printf("Uncertainty band will be included for MC with base relative uncertainty of: %3.2f",baseRelUnc);
+       printf("Uncertainty band will be included for MC with base relative uncertainty of: %3.2f\n",baseRelUnc);
      }
      if(arg.find("--isSim")!=string::npos){ isSim = true;    }
      if(arg.find("--noLog")!=string::npos){ noLog = true;    }
@@ -1144,7 +1423,9 @@ int main(int argc, char* argv[]){
    if(fileOption!="READ"){
       SavingToFile(Root,inDir,OutputFile, histlist);       
       if(doInterpollation)InterpollateProcess(Root, OutputFile, histlist);
+      SumBins(Root, OutputFile, histlist);
       MixProcess(Root, OutputFile, histlist);
+      NRBProcess(Root, OutputFile, histlist);
    }
 
 

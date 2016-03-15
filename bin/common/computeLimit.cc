@@ -25,11 +25,15 @@
 #include "TCanvas.h"
 #include "TPad.h"
 #include "TLegend.h"
+#include "TLegendEntry.h"
 #include "TPaveText.h"
 #include "TObjArray.h"
 #include "THStack.h"
 #include "TGraphErrors.h"
 #include "TLatex.h"
+#include "Math/QuantFuncMathCore.h"
+#include "TMath.h"
+#include "TGraphAsymmErrors.h"
 
 #include<iostream>
 #include<fstream>
@@ -900,6 +904,9 @@ int main(int argc, char* argv[])
                  if(it->first=="data" || it->first=="total")YieldText += "\\boldmath ";
                  if(it->first=="data"){char tmp[256];sprintf(tmp, "$%.0f$", val); YieldText += tmp;
                  }else{                YieldText += utils::toLatexRounded(val,valerr, syst);     }
+
+
+                 printf("%f %f %f --> %s\n", val, valerr, syst, utils::toLatexRounded(val,valerr, syst).c_str());
  
                  if(rows.find(ch->first)==rows.end())rows[ch->first] = string("$ ")+ch->first+" $";
                  rows[ch->first] += string("&") + YieldText;
@@ -1097,12 +1104,14 @@ int main(int argc, char* argv[])
            std::map<string, THStack*          > map_stack;
            std::map<string, TGraphErrors*     > map_unc;
            std::map<string, TH1*              > map_data;
+           std::map<string, TGraphAsymmErrors*> map_dataE;
            std::map<string, std::vector<TH1*> > map_signals;
            std::map<string, int               > map_legend;
 //           TLegend* legA  = new TLegend(0.6,0.5,0.99,0.85, "NDC");
 //           TLegend* legA  = new TLegend(0.03,0.00,0.97,0.70, "NDC");
 //           TLegend* legA  = new TLegend(0.03,0.99,0.97,0.89, "NDC");
-           TLegend* legA  = new TLegend(0.03,0.89,0.97,0.95, "");
+           TLegend* legA  = new TLegend(0.08,0.89,0.97,0.95, "");
+           std::vector<TLegendEntry*> legEntries;  //needed to have the entry in reverse order
 
            //order the proc first
            sortProc();
@@ -1155,14 +1164,40 @@ int main(int argc, char* argv[])
                     h->SetMarkerColor(1);
                     h->SetBinErrorOption(TH1::kPoisson);
                     map_data[ch->first] = h;
+
+                    //poisson error bars
+                    const double alpha = 1 - 0.6827;
+                    TGraphAsymmErrors * g = new TGraphAsymmErrors(h);
+                    g->SetMarkerSize(0.5);
+                    g->SetMarkerStyle (20);
+
+                    for (int i = 0; i < g->GetN(); ++i) {
+                       int N = g->GetY()[i];
+                       double L =  (N==0) ? 0  : (ROOT::Math::gamma_quantile(alpha/2,N,1.));
+                       double U =  ROOT::Math::gamma_quantile_c(alpha/2,N+1,1) ;
+                       g->SetPointEYlow(i, N-L);
+                       g->SetPointEYhigh(i, U-N);
+                    }
+                    map_dataE[ch->first] = g;
                  }
 
                  if(map_legend.find(it->first)==map_legend.end()){
                     map_legend[it->first]=1;
-                    legA->AddEntry(h,it->first.c_str(),it->first=="data"?"PE0":it->second.isSign?"L":"F");
+                    if(it->first=="data"){
+                       legA->AddEntry(h,it->first.c_str(),"PE0");
+                    }else if(it->second.isSign){
+                       legEntries.insert(legEntries.begin(), new TLegendEntry(h, it->first.c_str(), "L") );
+                    }else{
+                       legEntries.push_back(new TLegendEntry(h, it->first.c_str(), "F") );
+                    }
                     NLegEntry++;
                  }
               }
+           }
+           //fill the legend in reverse order
+           while(!legEntries.empty()){
+              legA->AddEntry(legEntries.back()->GetObject(), legEntries.back()->GetLabel(), legEntries.back()->GetOption());
+              legEntries.pop_back();      
            }
 
            int NBins = map_data.size()/selCh.size();
@@ -1205,7 +1240,7 @@ int main(int argc, char* argv[])
               for(unsigned int i=0;i<map_signals[p->first].size();i++){
               map_signals[p->first][i]->Draw("HIST same");
               }
-              map_data[p->first]->Draw("P same");
+              map_dataE[p->first]->Draw("P0 same");
 
 
               bool printBinContent = false;
@@ -1254,6 +1289,7 @@ int main(int argc, char* argv[])
            legA->Draw("same");    legA->SetTextFont(42);
 
            //print canvas header
+/*
            t2->cd(0);
 //           TPaveText* T = new TPaveText(0.1,0.995,0.84,0.95, "NDC");
            TPaveText* T = new TPaveText(0.1,0.7,0.9,1.0, "NDC");
@@ -1262,6 +1298,36 @@ int main(int argc, char* argv[])
            }else if(systpostfix.Contains('8')){ T->AddText("CMS preliminary, #sqrt{s}=8.0 TeV");
            }else{                               T->AddText("CMS preliminary, #sqrt{s}=7.0 TeV");
            }T->Draw();
+
+*/
+
+           c1->cd(0);
+           double L=0.03, R=0.03, T=0.02, B=0.0;
+           char LumiText[1024];
+           if(systpostfix.Contains('3'))      { double iLumi= 2269;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 13.0);
+           }else if(systpostfix.Contains('8')){ double iLumi=20000;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 8.0);
+           }else{                               double iLumi= 5000;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 7.0); 
+           }
+           TPaveText* T1 = new TPaveText(1.0-R-0.50, 1.0-T-0.05, 1.02-R, 1.0-T-0.005, "NDC");
+           T1->SetTextFont(43); T1->SetTextSize(23);   T1->SetTextAlign(31);
+           T1->SetFillColor(0); T1->SetFillStyle(0);   T1->SetBorderSize(0);
+           T1->AddText(LumiText);  T1->Draw();
+
+           //TOP LEFT IN-FRAME
+           TPaveText* T2 = new TPaveText(L+0.005, 1.0-T-0.05, L+0.20, 1.0-T-0.005, "NDC");
+           T2->SetTextFont(63); T2->SetTextSize(30);   T2->SetTextAlign(11);
+           T2->SetFillColor(0); T2->SetFillStyle(0);   T2->SetBorderSize(0);
+           T2->AddText("CMS"); T2->Draw();
+
+           if(true){ //Right to CMS
+           TPaveText* T3 = new TPaveText(L+0.095, 1.0-T-0.05, L+0.50, 1.0-T-0.005, "NDC");
+           T3->SetTextFont(53); T3->SetTextSize(23);   T3->SetTextAlign(11);
+           T3->SetFillColor(0); T3->SetFillStyle(0);   T3->SetBorderSize(0);
+           T3->AddText("Preliminary"); T3->Draw();
+           }
+
+
+
 
            //save canvas
            c1->SaveAs(SaveName+"_Shape.png");
@@ -2552,7 +2618,9 @@ int main(int argc, char* argv[])
          
            double Ratio = ((double)mass - massL); Ratio/=(massR - massL); 
            for(std::map<string, std::pair<string, string> >::iterator procLR = procLeftRight.begin(); procLR!=procLeftRight.end();procLR++){
-              TString signProcName =  procLR->first; signProcName+=(int)mass;
+              TString signProcName =  procLR->first;
+              signProcName.ReplaceAll("()","(");              
+              signProcName+=(int)mass; signProcName+=")";
               printf("Interpolate %s  based on %s and %s\n", signProcName.Data(), procLR->second.first.c_str(), procLR->second.second.c_str());
 
               ProcessInfo_t& procL = procs[ procLR->second.first ];
