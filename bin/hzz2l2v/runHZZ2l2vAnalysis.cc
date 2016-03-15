@@ -1542,7 +1542,7 @@ int main(int argc, char* argv[])
                   if(met.corP4(metcor).pt()>80 )mon.fillHisto("zmass_bveto80" , tags,boson.mass(),weight); 
                   if(met.corP4(metcor).pt()>125)mon.fillHisto("zmass_bveto125", tags,boson.mass(),weight); 
                   if(passMass){
-                      mon.fillHisto( "met_Outbveto",tags,met.corP4(metcor).pt(),weight);
+                      mon.fillHisto( "met_Inbveto",tags,met.corP4(metcor).pt(),weight);
                      if(met.corP4(metcor).pt()>50 )mon.fillHisto("mt_Inbveto50" , tags,mt,weight); 
                      if(met.corP4(metcor).pt()>80 )mon.fillHisto("mt_Inbveto80" , tags,mt,weight); 
                      if(met.corP4(metcor).pt()>125)mon.fillHisto("mt_Inbveto125", tags,mt,weight); 
@@ -1689,9 +1689,6 @@ int main(int argc, char* argv[])
               TString evCat  = eventCategoryInst.GetCategory(tightVarJets,boson);
               
               for(size_t ich=0; ich<chTags.size(); ich++){
-                 if(chTags[ich]=="ll")continue; //save time
-                 if(chTags[ich]=="emu" && (isMC_GG || isMC_VBF))continue; //save time 
-
                   TString tags_full=chTags[ich]+evCat; 
                   float chWeight(iweight); //used for shape dependent weights (avoid overwritting iWeights)
 
@@ -1703,6 +1700,9 @@ int main(int argc, char* argv[])
                  if(passPreselection )   mon.fillHisto(TString("mtSyst")+varNames[ivar],tags_full, mt,chWeight);
                  if(passPreselection )   mon.fillHisto(TString("metSyst")+varNames[ivar],tags_full, imet.pt(),chWeight);                    
 
+                 if(chTags[ich]=="ll")continue; //save time
+                 if(chTags[ich]=="emu" && (isMC_GG || isMC_VBF))continue; //save time 
+                
                   //scan the MET cut and fill the shapes
                   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
                   
