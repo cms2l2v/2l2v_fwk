@@ -1130,10 +1130,12 @@ int main(int argc, char* argv[])
                     double Uncertainty = std::max(0.0, ch->second.shapes[histoName.Data()].getScaleUncertainty() / h->Integral() );;
                     double Maximum = 0;
                     TGraphErrors* errors = new TGraphErrors(h->GetXaxis()->GetNbins());
-                    errors->SetFillStyle(3427);
-                    errors->SetFillColor(kGray+1);
+//                    errors->SetFillStyle(3427);
+//                    errors->SetFillColor(kGray+1);
+                    errors->SetFillStyle(3005);
+                    errors->SetFillColor(kGray+3);                    
                     errors->SetLineStyle(1);
-                    errors->SetLineColor(2);
+                    errors->SetLineColor(1);
                     int icutg=0;
                     for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){
                         if(h->GetBinContent(ibin)>0)
@@ -1199,6 +1201,8 @@ int main(int argc, char* argv[])
               legA->AddEntry(legEntries.back()->GetObject(), legEntries.back()->GetLabel(), legEntries.back()->GetOption());
               legEntries.pop_back();      
            }
+           if(map_unc.begin()!=map_unc.end())legA->AddEntry(map_unc.begin()->second, "Syst. + Stat.", "F");
+
 
            int NBins = map_data.size()/selCh.size();
            TCanvas* c1 = new TCanvas("c1","c1",300*NBins,300*selCh.size());
@@ -2132,7 +2136,7 @@ int main(int argc, char* argv[])
               for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
                  if(!it->second.isBckg || it->second.isData)continue;
                  TString procName = it->first.c_str();
-                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("Top") || procName.Contains("WWW") || procName.Contains("WW") || procName.Contains("WW#rightarrow 2l2#nu") ||  procName.Contains("WW#rightarrow lnu2q") || procName.Contains("W#rightarrow l#nu") || procName.Contains("W,multijets") || procName.Contains("Z#rightarrow #tau#tau") || procName.Contains("ZZ#rightarrow Z#tau#tau") ))continue;
+                 if(!( procName.Contains("t#bar{t}") || procName.Contains("Single top") || procName.Contains("Top") || procName.Contains("WWW") || procName.Contains("WW") || procName.Contains("WW#rightarrow 2l2#nu") ||  procName.Contains("WW#rightarrow lnu2q") || procName.Contains("W#rightarrow l#nu") || procName.Contains("W,multijets") || procName.Contains("Z#rightarrow #tau#tau") || procName.Contains("ZZ#rightarrow Z#tau#tau") ||procName.Contains("Top/W/WW") ))continue;
                  addProc(procInfo_NRB, it->second);
                  for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)==it->first){sorted_procs.erase(p);break;}}
                  toBeDelete.push_back(it->first);
