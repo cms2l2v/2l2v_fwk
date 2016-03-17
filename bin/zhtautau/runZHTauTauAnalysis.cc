@@ -488,7 +488,7 @@ pat::JetCollection  getJesVariations( pat::JetCollection & selJets,TString var, 
   pat::Jet newJet;
   for(size_t ijet=0; ijet<selJets.size(); ijet++){
 
-    std::vector<float> smearPt=utils::cmssw::smearJER(selJets[ijet].pt(),selJets[ijet].eta(), isMC ? selJets[ijet].genJet()->pt() : selJets[ijet].pt() );
+    std::vector<double> smearPt=utils::cmssw::smearJER(selJets[ijet].pt(),selJets[ijet].eta(), isMC ? selJets[ijet].genJet()->pt() : selJets[ijet].pt() );
       
     float jer        = isMC ? smearPt[0] : selJets[ijet].pt();
     float jerup     = isMC ? smearPt[1] : selJets[ijet].pt();

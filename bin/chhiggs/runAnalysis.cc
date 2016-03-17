@@ -69,88 +69,6 @@ namespace utils
 {
   namespace cmssw
   {
-    std::vector<double> smearJER(double pt, double eta, double genPt)
-    {
-      std::vector<double> toReturn(3,pt);
-      if(genPt<=0) return toReturn;
-      
-      // FIXME: These are the 8 TeV values.
-      //
-      eta=fabs(eta);
-      double ptSF(1.0), ptSF_err(0.06);
-      if(eta<0.5)                  { ptSF=1.052; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.062+0.061),2)); }
-      else if(eta>=0.5 && eta<1.1) { ptSF=1.057; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.056+0.055),2)); }
-      else if(eta>=1.1 && eta<1.7) { ptSF=1.096; ptSF_err=sqrt(pow(0.017,2)+pow(0.5*(0.063+0.062),2)); }
-      else if(eta>=1.7 && eta<2.3) { ptSF=1.134; ptSF_err=sqrt(pow(0.035,2)+pow(0.5*(0.087+0.085),2)); }
-      else if(eta>=2.3 && eta<5.0) { ptSF=1.288; ptSF_err=sqrt(pow(0.127,2)+pow(0.5*(0.155+0.153),2)); }
-      
-      toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
-      toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
-      toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
-      return toReturn;
-    }
-
-    //
-    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
-    {
-      jecUnc->setJetEta(eta);
-      jecUnc->setJetPt(pt);
-      double relShift=fabs(jecUnc->getUncertainty(true));
-      std::vector<double> toRet;
-      toRet.push_back((1.0+relShift)*pt);
-      toRet.push_back((1.0-relShift)*pt);
-      return toRet;
-    }
-    
-    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
-    {
-      for(size_t ijet=0; ijet<jets.size(); ijet++)
-        {
-          pat::Jet jet = jets[ijet];
-          //correct JES
-          LorentzVector rawJet = jet.correctedP4("Uncorrected");
-          //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
-          //LorentzVector rawJet(jet*toRawSF);
-          jesCor->setJetEta(rawJet.eta());
-          jesCor->setJetPt(rawJet.pt());
-          jesCor->setJetA(jet.jetArea());
-          jesCor->setRho(rho);
-          jesCor->setNPV(nvtx);
-          double newJECSF=jesCor->getCorrection();
-          rawJet *= newJECSF;
-          //jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
-          jet.setP4(rawJet);
-
-          //smear JER
-          double newJERSF(1.0);
-          if(isMC)
-            {
-              const reco::GenJet* genJet=jet.genJet();
-              double genjetpt( genJet ? genJet->pt(): 0.);
-              std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
-              newJERSF=smearJER[0]/jet.pt();
-              rawJet *= newJERSF;
-              //jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
-              jet.setP4(rawJet);
-              // FIXME: change the way this is stored (to not storing it)
-              // //set the JER up/down alternatives 
-              // jets[ijet].setVal("jerup",   smearJER[1] );
-              // jets[ijet].setVal("jerdown", smearJER[2] );
-            }
-      
-          // FIXME: change the way this is stored (to not storing it)
-          ////set the JES up/down pT alternatives
-          //std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-          //jets[ijet].setVal("jesup",    ptUnc[0] );
-          //jets[ijet].setVal("jesdown",  ptUnc[1] );
-      
-          // FIXME: this is not to be re-set. Check that this is a desired non-feature.
-          // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine. 
-          //to get the raw jet again
-          //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));  
-        }
-    }
-
     enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };    
     //
     std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
@@ -1560,16 +1478,16 @@ int main (int argc, char *argv[])
                     double pt = jet.pt();
                     if(isMC)
                       {
-                        std::vector<double> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
-                        if(varyJesUp)   pt = varPt[0];
-                        if(varyJesDown) pt = varPt[1];
+                        std::vector<float> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+                        if(varyJesUp)   pt = varPt[0] * jet.pt();
+                        if(varyJesDown) pt = varPt[1] * jet.pt();
                         //  smearJER(float pt, float eta, float genPt)
                         //  float newJERSF(1.0);
                         //if(isMC)
                         //  {
                         //    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
                         //    std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
-                        //    newJERSF=smearJER[0]/jets[ijet].pt();
+                        //    newJERSF=smearJER[0];
                         //    rawJet *= newJERSF;
                         // if(varyJerUp)    pt=jets[ijet].getVal("jerup");
                         // if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
@@ -1800,16 +1718,16 @@ int main (int argc, char *argv[])
                     double pt = jet.pt();
                     if(isMC)
                       {
-                        std::vector<double> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
-                        if(varyJesUp)   pt = varPt[0];
-                        if(varyJesDown) pt = varPt[1];
+                        std::vector<float> varPt = utils::cmssw::smearJES(pt, eta, totalJESUnc);
+                        if(varyJesUp)   pt = varPt[0] * jet.pt();
+                        if(varyJesDown) pt = varPt[1] * jet.pt();
                         //  smearJER(float pt, float eta, float genPt)
                         //  float newJERSF(1.0);
                         //if(isMC)
                         //  {
                         //    const data::PhysicsObject_t &genJet=jets[ijet].getObject("genJet");
                         //    std::vector<float> smearJER=utils::cmssw::smearJER(jets[ijet].pt(),jets[ijet].eta(),genJet.pt());
-                        //    newJERSF=smearJER[0]/jets[ijet].pt();
+                        //    newJERSF=smearJER[0];
                         //    rawJet *= newJERSF;
                         // if(varyJerUp)    pt=jets[ijet].getVal("jerup");
                         // if(varyJerDown)  pt=jets[ijet].getVal("jerdown");
