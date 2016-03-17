@@ -2,37 +2,57 @@
   "proc":[
     {
       "tag":"data",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isdata":true,
       "color":1,
       "fill":0,
       "marker":20,
       "msize":0.7,
       "data":[
-        { "dtag":"Data13TeV_DoubleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
-        { "dtag":"Data13TeV_DoubleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
-        { "dtag":"Data13TeV_MuEG2015C_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"          ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"            ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleElectron2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2015D"                       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_MuEG2015D"                           ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
+        { "dtag":"Data13TeV_DoubleElectron2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"          ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D"                       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleElectron2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleElectron/Run2015D-PromptReco-v4/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleMu2015D"                       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },       
+        { "dtag":"Data13TeV_MuEG2015D"                           ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"            ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleElectron/Run2015D-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },      
+        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"             ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_DoubleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_SingleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleElectron/Run2015C_25ns-05Oct2015-v1/MINIAOD",  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_SingleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },              
+        { "dtag":"Data13TeV_MuEG2015C_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
+      ]
+    },
+    {
+      "tag":"ZZ#rightarrow Z#tau#tau",
+      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "isdata":false,
+      "color":595,
+      "mctruthmode":15,         
+      "data":[
+        { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZZ2l2nu"                         ,  "xsec":0.564            , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"}
       ]
     },
     {
       "tag":"ZZ",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "keys":["2l2v_mcbased","2l2v_datadrivenplot",  "2l2v_datadriven", "2l2v_photoncontrol"],
       "isdata":false,
       "color":592,
+      "mctruthmode":1113,         
       "data":[
-        { "dtag":"MC13TeV_ZZ2l2nu"                          ,  "xsec":0.564             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
-        { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
+        { "dtag":"MC13TeV_ZZ2l2q"                          ,  "xsec":3.22             , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Q_13TeV_amcatnloFXFX_madspin_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+        { "dtag":"MC13TeV_ZZ2l2nu"                         ,  "xsec":0.564            , "br":[ 1.0 ]           , "dset":"/ZZTo2L2Nu_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM"},
+        { "dtag":"MC13TeV_ggZZ2mu2nu"                      ,  "xsec":0.01898          , "br":[ 1.0 ]           , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluToContinToZZTo2mu2nu_MINIAODv2/"}, 
+        { "dtag":"MC13TeV_ggZZ2e2nu"                       ,  "xsec":0.01898          , "br":[ 1.0 ]           , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluToContinToZZTo2e2nu_MINIAODv2/"}
       ]
     },
     {
       "tag":"WW",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "keys":["2l2v_mcbased",  "2l2v_datadriven", "2l2v_photoncontrol"],
       "isdata":false,
       "color":590,
       "data":[
@@ -42,7 +62,7 @@
     },
     { 
       "tag":"WZ",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],      
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven", "2l2v_photoncontrol"],      
       "isdata":false,
       "color":594,
       "data":[
@@ -52,7 +72,7 @@
     }, 
     { 
       "tag":"ZVV",
-      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven", "2l2v_photoncontrol"],
       "isdata":false,
       "color":869,
       "data":[
@@ -86,10 +106,22 @@
         { "dtag":"MC13TeV_WJets"                            ,  "xsec":61526.7       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
        ]
     },
+     {
+      "tag":"Z#rightarrow #tau#tau",
+      "keys":["2l2v_mcbased", "2l2v_datadriven", "2l2v_photoncontrol"],      
+      "mctruthmode":15,    
+      "isdata":false,
+      "color":833,
+      "data":[
+             { "dtag":"MC13TeV_DYJetsToLL_10to50"                ,  "xsec":18610     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
+             { "dtag":"MC13TeV_DYJetsToLL_50toInf"               ,  "xsec":6025.3    , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
+      ]
+    },   
     {
-      "tag":"Z#rightarrow ll",
+      "tag":"Z#rightarrow ee/#mu#mu",
       "keys":["2l2v_mcbased", "2l2v_photoncontrol"],      
       "isdata":false,
+      "mctruthmode":1113,    
       "color":831,
       "data":[
              { "dtag":"MC13TeV_DYJetsToLL_10to50"                ,  "xsec":18610     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"},
@@ -125,9 +157,14 @@
       "isdata":false,
       "color":52,
       "suffix":"reweighted",
-      "data":[
+      "dataUNUSED":[
              { "dtag":"MC13TeV_WGToLNuG" , "xsec":405.271, "br":[ 1.0 ] , "dset":"/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"}
-      ]
+      ],
+      "data":[
+             { "dtag":"MC13TeV_WGToLNuG_A" , "xsec":405.271, "br":[ 0.3333 ] , "miniAOD":"/storage/data/cms/store/mc/RunIISpring15MiniAODv2/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/20000/"},
+             { "dtag":"MC13TeV_WGToLNuG_B" , "xsec":405.271, "br":[ 0.3333 ] , "miniAOD":"/storage/data/cms/store/mc/RunIISpring15MiniAODv2/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/60000/"},
+             { "dtag":"MC13TeV_WGToLNuG_C" , "xsec":405.271, "br":[ 0.3333 ] , "miniAOD":"/storage/data/cms/store/mc/RunIISpring15MiniAODv2/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/80000/"}
+      ]      
     },
         {
       "tag":"QCD, HT>100",
@@ -188,7 +225,7 @@
     },  
     {   
       "tag":"#gamma data",
-      "keys":["2l2v_photoncontrol", "2l2v_photonsOnly"],           
+      "keys":["2l2v_photoncontrol", "2l2v_photonsOnly", "genuineMet"],           
       "isdata":true,                                                                                                                                                     
       "color":1,                                                                                                                                                   
       "fill":0,                                                                                                                                                    
@@ -200,18 +237,73 @@
              { "dtag":"Data13TeV_SinglePhoton2015D_05Oct2015",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":"/SinglePhoton/Run2015D-05Oct2015-v1/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" },
              { "dtag":"Data13TeV_SinglePhoton2015D"          ,  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":"/SinglePhoton/Run2015D-PromptReco-v4/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt" }    
       ]
-    },                                                                                                                                                            
+    },                                                                                                                                                          
+    {
+      "tag":"Top/W/WW",
+      "keys":["2l2v_datadrivenplot"],
+      "isdata":false,
+      "isdatadriven":true,
+      "color":8,
+      "syst":[0.21],
+      "nosample":true,
+      "NRB":[{"tag":"data", "scale":1.0}]
+    },
+    {
+      "tag":"Genuine (ewk) MET inv",
+      "keys":["genuineMet"],
+      "isinvisible":true,      
+      "isdata":false,
+      "color":41,
+      "mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}]
+    },
+    {
+      "tag":"Genuine (ewk) MET",
+      "keys":["genuineMet"],
+      "isdata":false,
+      "color":41,
+      "mixing":[{"tag":"Genuine (ewk) MET inv", "scale":1.0}]
+    },
     {
       "tag":"Instr. MET",
-      "keys":["2l2v_datadriven"],
+      "keys":["2l2v_datadrivenplot", "2l2v_datadriven", "genuineMet"],
       "isdata":false,
       "isdatadriven":true,
       "color":831,
-      "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#gamma #rightarrow l#nu#gamma_reweighted", "scale":-1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":-1.0}]
+      "syst":[0.25],
+      "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"Genuine (ewk) MET inv", "scale":-1.0}]
+    },
+     {
+      "tag":"ggH(200)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "fill":0,
+      "data":[
+      { "dtag":"MC13TeV_GGtoH200toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluHToZZTo2L2Nu_M200_MINIAODv2/" }
+      ]
     },
     {
+      "tag":"qqH(200)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH200toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M200_MINIAODv2/" }
+      ]
+    },   
+    {
       "tag":"ggH(400)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
@@ -225,7 +317,7 @@
     },
     {
       "tag":"qqH(400)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
@@ -240,7 +332,7 @@
     },
     {
       "tag":"ggH(600)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -254,7 +346,7 @@
     },
     {
       "tag":"qqH(600)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -267,9 +359,36 @@
         { "dtag":"MC13TeV_VBFtoH600toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M600_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
+     {
+      "tag":"ggH(750)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],      
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":809,
+      "lwidth":2,
+      "fill":0,
+      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":750, "tagRight":"ggH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
+    },
+    {
+      "tag":"qqH(750)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],      
+      "isinvisible":false,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":809,
+      "lwidth":2,
+      "lstyle":2,   
+      "fill":0,
+      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":750, "tagRight":"qqH(1000)", "massRight":1000 }],
+      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
+    },   
     {
       "tag":"ggH(1000)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
@@ -283,7 +402,7 @@
     },
     {
       "tag":"qqH(1000)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
       "isinvisible":false,
       "isdata":false,
       "issignal":true,
@@ -296,32 +415,63 @@
         { "dtag":"MC13TeV_VBFtoH1000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":"/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg_JHUgen_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v2/MINIAODSIM", "dbsURL":"prod/global" }
       ]
     },
-    {
-      "tag":"ggH(750)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
-      "isinvisible":false,
+     {
+      "tag":"ggH(1500)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "lcolor":809,
+      "lcolor":619,
       "lwidth":2,
       "fill":0,
-      "interpollation":[{"tagLeft":"ggH(600)", "massLeft":600, "mass":750, "tagRight":"ggH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
+      "data":[
+        { "dtag":"MC13TeV_GGtoH1500toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluHToZZTo2L2Nu_M1500_MINIAODv2/" }
+      ]
     },
     {
-      "tag":"qqH(750)",
-      "keys":["2l2v_mcbased", "2l2v_datadriven"],      
-      "isinvisible":false,
+      "tag":"qqH(1500)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
+      "isinvisible":true,
       "isdata":false,
       "issignal":true,
       "spimpose":true,
-      "lcolor":809,
+      "lcolor":619,
       "lwidth":2,
-      "lstyle":2,   
+      "lstyle":2,
       "fill":0,
-      "interpollation":[{"tagLeft":"qqH(600)", "massLeft":600, "mass":750, "tagRight":"qqH(1000)", "massRight":1000 }],
-      "data":[          { "dtag":"",  "xsec":1.0  , "br":[0.029264] }      ]
-    }
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH1500toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M1500_MINIAODv2/" }
+      ]
+    },  
+     {
+      "tag":"ggH(2000)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_GGtoH2000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/GluGluHToZZTo2L2Nu_M2000_MINIAODv2/" }
+      ]
+    },
+    {
+      "tag":"qqH(2000)",
+      "keys":["2l2v_mcbased", "2l2v_datadrivenplot", "2l2v_datadriven"],
+      "isinvisible":true,
+      "isdata":false,
+      "issignal":true,
+      "spimpose":true,
+      "lcolor":619,
+      "lwidth":2,
+      "lstyle":2,
+      "fill":0,
+      "data":[
+        { "dtag":"MC13TeV_VBFtoH2000toZZto2L2Nu_powheg15"     ,  "xsec":1.0      , "br":[0.029264]    , "miniAOD":"/storage/data/cms/users/quertenmont/Higgs/HZZ2l2v_Samples/VBF_HToZZTo2L2Nu_M2000_MINIAODv2/" }
+      ]
+    } 
   ]
 }

@@ -153,11 +153,11 @@ namespace EwkCorrections
 		rho = rho/(genLeptons[0].pt() + genLeptons[1].pt() + genNeutrinos[0].pt() + genNeutrinos[1].pt());
 
 		if(rho<0.3) ewkCorrections_error = fabs((kFactor-1)*(kFactor_QCD -1));
-		else ewkCorrections_error = 1;
+		else ewkCorrections_error = fabs(1-kFactor);
 
 		//At this point, we have the relative error on the delta_ewk ( = k_ewk -1 )
 		//Let's - instead - return the absolute error on k: we do delta_ewk* the_relative_errir_on_it. This gives absolute error on delta, and so on k
-		ewkCorrections_error = fabs(ewkCorrections_error*(kFactor-1));
+		ewkCorrections_error = fabs(ewkCorrections_error*kFactor);
 		
 		return kFactor;
 	}

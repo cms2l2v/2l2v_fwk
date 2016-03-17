@@ -392,6 +392,8 @@ namespace utils
     }
   
   }
+
+
   //
   std::string toLatexRounded(double value, double error, double systError,bool doPowers)
   {
@@ -431,19 +433,27 @@ namespace utils
     if(ValueWasNull){value=0.0;}
 
     char tmpchar[255];
-    if(power!=0){
-      if(systError<0){
-        sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
-      }else{
-        sprintf(tmpchar,"$(%.*f\\pm%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,power);
-      }
-      
+    if(value<=1E-4){
+        //sum in quadrature errors
+        double erroSum = 0;
+        if(error>0){erroSum+=error*error;}
+        if(systError>0){erroSum+=systError*systError;}
+        sprintf(tmpchar,"$<%.*f$",ErrorFloating,sqrt(erroSum));
     }else{
-      if(systError<0){
-        sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
-      }else{
-        sprintf(tmpchar,"$%.*f\\pm%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError);
-      }
+       if(power!=0){
+         if(systError<0){
+           sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
+         }else{
+           sprintf(tmpchar,"$(%.*f\\pm%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,power);
+         }
+         
+       }else{
+         if(systError<0){
+           sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
+         }else{
+           sprintf(tmpchar,"$%.*f\\pm%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError);
+         }
+       }
     }
     return string(tmpchar);
   }

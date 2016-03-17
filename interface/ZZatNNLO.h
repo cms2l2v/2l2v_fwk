@@ -46,8 +46,8 @@
 namespace ZZatNNLO
 {
 	std::vector<std::vector<float>> readFile_and_loadTable(TString dtag);
-	double findCorrection(const std::vector<std::vector<float>> & Table, double dphi);
-	double getNNLOCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table);
+	double findCorrection(const std::vector<std::vector<float>> & Table, double mzz);
+	double getNNLOCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, double & mzz);
 
 }
 

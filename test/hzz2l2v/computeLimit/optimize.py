@@ -35,15 +35,16 @@ ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead o
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
 
-MASS = [400, 600, 1000]
+MASS = [200, 400, 600, 1000, 1500]
 #MASS = [400, 600, 1000]
 SUBMASS = MASS
-SUBMASS = [400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
+SUBMASS = [200, 225, 250, 275, 300, 350, 400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350, 1400, 1450, 1500]
+
 #MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
 #SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
-LandSArgCommonOptions=" --blind --rebin 20 --dropBckgBelow 0.00001  --subNRB "
+LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB " #--blind "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
 for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
@@ -156,7 +157,7 @@ for signalSuffix in signalSuffixVec :
 
    #get the cuts
    file = ROOT.TFile(inUrl)
-   cutsH = file.Get('ZZ/all_optim_cut') 
+   cutsH = file.Get('WZ/all_optim_cut') 
       
    ###################################################
    ##   OPTIMIZATION LOOP                           ##
@@ -315,7 +316,7 @@ for signalSuffix in signalSuffixVec :
 
 
    elif(phase == 4 ):
-      LaunchOnCondor.Jobs_RunHere        = 1
+      LaunchOnCondor.Jobs_RunHere        = 0
       print '# FINAL COMBINED LIMITS  for ' + DataCardsDir + '#\n'
       LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + "_"+signalSuffix+binSuffix+OUTName[iConf])
       for m in SUBMASS:
@@ -380,10 +381,10 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines('cd ' + CMSSW_BASE + ';\n')
            SCRIPT.writelines("export SCRAM_ARCH="+os.getenv("SCRAM_ARCH","slc6_amd64_gcc491")+";\n")
            SCRIPT.writelines("eval `scram r -sh`;\n")
-           SCRIPT.writelines('cd ' + CWD + ';\n')
+           SCRIPT.writelines('cd -;\n')
 
            cardsdir=DataCardsDir+"/"+('%04.0f' % float(m));
-           SCRIPT.writelines('mkdir -p ' + cardsdir+';\ncd ' + cardsdir+';\n')
+           SCRIPT.writelines('mkdir -p out;\ncd out;\n')
            SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("sh combineCards.sh;\n")
 
@@ -419,8 +420,11 @@ for signalSuffix in signalSuffixVec :
               SCRIPT.writelines("hadd -f higgsCombineTest.HybridNewMerged.mH"+str(m)+".root  higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
               SCRIPT.writelines("rm higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
 
+           SCRIPT.writelines('mkdir -p ' + CWD+'/'+cardsdir+';\n')
+           SCRIPT.writelines('mv * ' + CWD+'/'+cardsdir+'/.;\n')
            SCRIPT.writelines('cd ..;\n\n') 
            SCRIPT.close()
+           #os.system('sh ' + OUT+'script_mass_'+str(m)+'.sh ')  #uncomment this line to launch interactively (this may take a lot of time)
 	   LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_mass_'+str(m)+'.sh'])
       LaunchOnCondor.SendCluster_Submit()
 
@@ -438,7 +442,7 @@ for signalSuffix in signalSuffixVec :
       else:
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
 
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, true, 13 , 2.215 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  true, false, 13 , 2269 )'")
       #os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
       #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 13 , 19.8 )'")
       #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/XSec_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  false, false, 13 , 19.8 )'")
