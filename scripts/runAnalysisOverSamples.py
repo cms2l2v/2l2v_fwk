@@ -47,11 +47,9 @@ def initProxy():
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       if(not os.path.isfile(os.path.expanduser('~/.globus/mysecret.txt'))):
-         if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
-         else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+         os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
       else:
-         if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt')
-         else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
+         os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
    initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
 def getFileList(procData,DefaultNFilesPerJob):
