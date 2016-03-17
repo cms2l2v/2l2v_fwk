@@ -88,19 +88,25 @@ namespace utils
                 
                     //printf("jet pt=%f gen pt = %f smearing %f %f %f\n", jet.pt(), genjetpt, smearJER[0], smearJER[1], smearJER[2]);
                     // //set the JER up/down alternatives
-                    jet.addUserFloat("jerup", smearJER[1]);
-                    jet.addUserFloat("jerdown", smearJER[2] );
+                    jet.addUserFloat("jerup", smearJER[1]);  //kept for backward compatibility
+                    jet.addUserFloat("jerdown", smearJER[2] ); //kept for backward compatibility
+                    jet.addUserFloat("_res_jup", smearJER[1]);
+                    jet.addUserFloat("_res_jdown", smearJER[2] );
                  }else{
-                    jet.addUserFloat("jerup", 1.0);
-                    jet.addUserFloat("jerdown", 1.0);
+                    jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
+                    jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
+                    jet.addUserFloat("_res_jup", 1.0);
+                    jet.addUserFloat("_res_jdown", 1.0 );
                  }
              }
 
              if(isMC){
                 ////set the JES up/down pT alternatives
                 std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-                jet.addUserFloat("jesup",    ptUnc[0] );
-                jet.addUserFloat("jesdown",  ptUnc[1] );
+                jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
+                jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
+                jet.addUserFloat("_scale_jup",    ptUnc[0] );
+                jet.addUserFloat("_scale_jdown",  ptUnc[1] );
              }
              
              // FIXME: this is not to be re-set. Check that this is a desired non-feature.
