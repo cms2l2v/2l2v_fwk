@@ -918,105 +918,14 @@ int main(int argc, char* argv[])
 
   //(TH2F*)mon.addHistogram(new TProfile2D("svfitmass2D",      ";M_{#tau#tau ll,SVFit}; M_{#tau#tau,SVFit}",9,bins,9,bins));
   
-  float ptbinsJets1[] = {10., 20., 30., 40., 60., 165.};
-  float ptbinsJets2[] = {20., 25., 45., 65., 85., 105., 125., 145., 165.};
-  
+
+
+
   //fake rate histograms
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorJet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Jet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Jet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Jet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorJet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Jet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Jet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Jet",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorJet", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLJet",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMJet",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorLep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Lep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Lep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Lep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorLep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Lep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Lep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Lep",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorLep", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLLep",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMLep",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorJet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Jet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Jet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Jet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorJet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Jet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Jet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Jet_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorJet_TMCut", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLJet_TMCut",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMJet_TMCut",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorLep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Lep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Lep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Lep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorLep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Lep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Lep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Lep_TMCut",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorLep_TMCut", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLLep_TMCut",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMLep_TMCut",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  
-  //fake rate histograms BARREL (|eta|<1.4)
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorJet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Jet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Jet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Jet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorJet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Jet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Jet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Jet_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorJet_B", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLJet_B",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMJet_B",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorLep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Lep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Lep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Lep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorLep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Lep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Lep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Lep_B",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorLep_B", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLLep_B",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMLep_B",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-   
-  //fake rate histograms ENDCAP (|eta|>1.4)
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorJet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Jet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Jet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Jet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorJet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Jet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Jet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Jet_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorJet_E", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLJet_E",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMJet_E",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToEleDenominatorLep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator01Lep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator02Lep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToEleNumerator03Lep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuDenominatorLep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator01Lep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator02Lep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToMuNumerator03Lep_E",  ";p_{T} (GeV);Events",5,ptbinsJets1));
-  mon.addHistogram( new TH1F( "closestJetToTauDenominatorLep_E", ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorLLep_E",  ";p_{T} (GeV);Events",8,ptbinsJets2));
-  mon.addHistogram( new TH1F( "closestJetToTauNumeratorMLep_E",  ";p_{T} (GeV);Events",8,ptbinsJets2));
+  float ptbinsJets[] = {10., 20., 25., 30., 40., 45., 60., 65., 85., 105., 125., 145., 165.};
+  int ptbinsJetsN = sizeof(ptbinsJets)/sizeof(float)-1;
+  mon.addHistogram( new TH1F( "FR_JetPt",  ";Jet p_{T} (GeV);Events",sizeof(ptbinsJets)/sizeof(float)-1,ptbinsJets));
+  mon.addHistogram( new TH1F( "FR_LepPt",  ";Lep p_{T} (GeV);Events",sizeof(ptbinsJets)/sizeof(float)-1,ptbinsJets));
    
   //
   // HISTOGRAMS FOR OPTIMIZATION and STATISTICAL ANALYSIS
@@ -1706,293 +1615,61 @@ int main(int argc, char* argv[])
 	       if(abs(selLeptons[i].pdgId())==11||abs(selLeptons[i].pdgId())==13||abs(selLeptons[i].pdgId())==15){
 	 	 tmass = TMath::Sqrt(2*selLeptons[i].pt()*met.pt()*(1-TMath::Cos(deltaPhi(met.phi(), selLeptons[i].phi()))));
 	       }
-	       if(abs(selLeptons[i].pdgId())==11){
+	       if(abs(selLeptons[i].pdgId())==11 || abs(selLeptons[i].pdgId())==13 || abs(selLeptons[i].pdgId())==15){
 	 	 int closestJetIndexL1=-1; double pTL1=-1; double etaL1=-1;
 	 	 double dRminL1 = closestJet(selLeptons[i].p4(), selJets, closestJetIndexL1);
 	 	 if(closestJetIndexL1>=0 && dRminL1<0.5){pTL1=selJets[closestJetIndexL1].pt(); etaL1=abs(selJets[closestJetIndexL1].eta());}
 	 	 else{pTL1=selLeptons[i].pt(); etaL1=abs(selLeptons[i].eta());}
-	 	 if(etaL1<1.4){
-	 	   mon.fillHisto("closestJetToEleDenominatorJet", "FR", pTL1, weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToEleDenominatorJet_TMCut", "FR", pTL1, weight);  //
-	 	   mon.fillHisto("closestJetToEleDenominatorJet_B", "FR", pTL1, weight); //
-		   
-	 	   bool passId = patUtils::passId(selLeptons[i].el, vtx[0], patUtils::llvvElecId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator01Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator01Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToEleNumerator01Jet_B", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator02Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator02Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToEleNumerator02Jet_B", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator03Jet", "FR", pTL1, weight); 
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator03Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToEleNumerator03Jet_B", "FR", pTL1, weight); 
-	 	   }
-	 	 }
-	 	 if(abs(selLeptons[i].eta())<1.4){
-	 	   mon.fillHisto("closestJetToEleDenominatorLep", "FR", selLeptons[i].pt(), weight);  
-	 	   if(tmass<30) mon.fillHisto("closestJetToEleDenominatorLep_TMCut", "FR", selLeptons[i].pt(), weight);  
-	 	   mon.fillHisto("closestJetToEleDenominatorLep_B", "FR", selLeptons[i].pt(), weight); 
-	 	   bool passId = patUtils::passId(selLeptons[i].el, vtx[0], patUtils::llvvElecId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator01Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator01Lep_TMCut", "FR", selLeptons[i].pt(), weight);  
-	 	     mon.fillHisto("closestJetToEleNumerator01Lep_B", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator02Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator02Lep_TMCut", "FR", selLeptons[i].pt(), weight);  
-	 	     mon.fillHisto("closestJetToEleNumerator02Lep_B", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator03Lep", "FR", selLeptons[i].pt(), weight); 
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator03Lep_TMCut", "FR", selLeptons[i].pt(), weight);  
-	 	     mon.fillHisto("closestJetToEleNumerator03Lep_B", "FR", selLeptons[i].pt(), weight); 
-	 	   }
-	 	 }
-	 	 if(etaL1>1.4){
-	 	   mon.fillHisto("closestJetToEleDenominatorJet", "FR", pTL1, weight);  
-	 	   if(tmass<30) mon.fillHisto("closestJetToEleDenominatorJet_TMCut", "FR", pTL1, weight);  
-	 	   mon.fillHisto("closestJetToEleDenominatorJet_E", "FR", pTL1, weight); 
-	 	   bool passId = patUtils::passId(selLeptons[i].el, vtx[0], patUtils::llvvElecId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator01Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator01Jet_TMCut", "FR", pTL1, weight);  
-	 	     mon.fillHisto("closestJetToEleNumerator01Jet_E", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator02Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator02Jet_TMCut", "FR", pTL1, weight);  
-	 	     mon.fillHisto("closestJetToEleNumerator02Jet_E", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator03Jet", "FR", pTL1, weight); 
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator03Jet_TMCut", "FR", pTL1, weight);  
-	 	     mon.fillHisto("closestJetToEleNumerator03Jet_E", "FR", pTL1, weight); 
-	 	   }
-	 	 }
-	 	 if(abs(selLeptons[i].eta())>1.4){
-	 	   mon.fillHisto("closestJetToEleDenominatorLep", "FR", selLeptons[i].pt(), weight);  
-	 	   if(tmass<30) mon.fillHisto("closestJetToEleDenominatorLep_TMCut", "FR", selLeptons[i].pt(), weight);  
-	 	   mon.fillHisto("closestJetToEleDenominatorLep_E", "FR", selLeptons[i].pt(), weight); 
-	 	   bool passId = patUtils::passId(selLeptons[i].el, vtx[0], patUtils::llvvElecId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator01Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator01Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToEleNumerator01Lep_E", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator02Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator02Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToEleNumerator02Lep_E", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToEleNumerator03Lep", "FR", selLeptons[i].pt(), weight); 
-	 	     if(tmass<30) mon.fillHisto("closestJetToEleNumerator03Lep_TMCut", "FR", selLeptons[i].pt(), weight); 
-	 	     mon.fillHisto("closestJetToEleNumerator03Lep_E", "FR", selLeptons[i].pt(), weight); 
-	 	   }
-	 	 }
-	       }
-	       // starts here the muon part
-	       if(abs(selLeptons[i].pdgId())==13){
-	 	 int closestJetIndexL1=-1; double pTL1=-1; double etaL1=-1;
-	 	 double dRminL1 = closestJet(selLeptons[i].p4(), selJets, closestJetIndexL1);
-	 	 if(closestJetIndexL1>=0 && dRminL1<0.5){pTL1=selJets[closestJetIndexL1].pt(); etaL1=abs(selJets[closestJetIndexL1].eta());}
-	 	 else{pTL1=selLeptons[i].pt(); etaL1=abs(selLeptons[i].eta());}
-	 	 if(etaL1<1.4){
-	 	   mon.fillHisto("closestJetToMuDenominatorJet", "FR", pTL1, weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToMuDenominatorJet_TMCut", "FR", pTL1, weight);  //
-	 	   mon.fillHisto("closestJetToMuDenominatorJet_B", "FR", pTL1, weight);  //
-	 	   bool passId = patUtils::passId(selLeptons[i].mu, vtx[0], patUtils::llvvMuonId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator01Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator01Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToMuNumerator01Jet_B", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator02Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator02Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToMuNumerator02Jet_B", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator03Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator03Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToMuNumerator03Jet_B", "FR", pTL1, weight);
-	 	   }
-	 	 }
-	 	 if(abs(selLeptons[i].eta())<1.4){
-	 	   mon.fillHisto("closestJetToMuDenominatorLep", "FR", selLeptons[i].pt(), weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToMuDenominatorLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	   mon.fillHisto("closestJetToMuDenominatorLep_B", "FR", selLeptons[i].pt(), weight);  //
-	 	   bool passId = patUtils::passId(selLeptons[i].mu, vtx[0], patUtils::llvvMuonId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator01Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator01Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToMuNumerator01Lep_B", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator02Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator02Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToMuNumerator02Lep_B", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator03Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator03Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToMuNumerator03Lep_B", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	 }
-	 	 if(etaL1>1.4){
-	 	   mon.fillHisto("closestJetToMuDenominatorJet", "FR", pTL1, weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToMuDenominatorJet_TMCut", "FR", pTL1, weight);  //
-	 	   mon.fillHisto("closestJetToMuDenominatorJet_E", "FR", pTL1, weight);  //
-	 	   bool passId = patUtils::passId(selLeptons[i].mu, vtx[0], patUtils::llvvMuonId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator01Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator01Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToMuNumerator01Jet_E", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator02Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator02Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToMuNumerator02Jet_E", "FR", pTL1, weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator03Jet", "FR", pTL1, weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator03Jet_TMCut", "FR", pTL1, weight);
-	 	     mon.fillHisto("closestJetToMuNumerator03Jet_E", "FR", pTL1, weight);
-	 	   }
-	 	 }
-	 	 if(abs(selLeptons[i].eta())>1.4){
-	 	   mon.fillHisto("closestJetToMuDenominatorLep", "FR", selLeptons[i].pt(), weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToMuDenominatorLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	   mon.fillHisto("closestJetToMuDenominatorLep_E", "FR", selLeptons[i].pt(), weight);  //
-	 	   bool passId = patUtils::passId(selLeptons[i].mu, vtx[0], patUtils::llvvMuonId::Loose);
-	 	   float relIso = patUtils::relIso(selLeptons[i], rho);
-	 	   if(passId && relIso<=0.1){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator01Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator01Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToMuNumerator01Lep_E", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.2){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator02Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator02Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToMuNumerator02Lep_E", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	   if(passId && relIso<=0.3){
-	 	     IdentifiedThirdLepton=true;
-	 	     mon.fillHisto("closestJetToMuNumerator03Lep", "FR", selLeptons[i].pt(), weight);
-	 	     if(tmass<30) mon.fillHisto("closestJetToMuNumerator03Lep_TMCut", "FR", selLeptons[i].pt(), weight);
-	 	     mon.fillHisto("closestJetToMuNumerator03Lep_E", "FR", selLeptons[i].pt(), weight);
-	 	   }
-	 	 }
-	       }
-	       if(abs(selLeptons[i].pdgId())==15){
-	 	 int closestJetIndexL1=-1; double pTL1=-1; double etaL1=-1;
-	 	 double dRminL1 = closestJet(selLeptons[i].p4(), selJets, closestJetIndexL1);
-	 	 if(closestJetIndexL1>=0 && dRminL1<0.5){pTL1=selJets[closestJetIndexL1].pt(); etaL1=abs(selJets[closestJetIndexL1].eta());}
-	 	 else{pTL1=selLeptons[i].pt(); etaL1=abs(selLeptons[i].eta());}
-	 	 if(etaL1<1.4){
-	 	   mon.fillHisto("closestJetToTauDenominatorJet", "FR", pTL1, weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToTauDenominatorJet_TMCut", "FR", pTL1, weight);  //
-	 	   mon.fillHisto("closestJetToTauDenominatorJet_B", "FR", pTL1, weight); //
-	 	   if(selLeptons[i].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorLJet", "FR", pTL1, weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorLJet_TMCut", "FR", pTL1, weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorLJet_B", "FR", pTL1, weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	   if(selLeptons[i].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorMJet", "FR", pTL1, weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorMJet_TMCut", "FR", pTL1, weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorMJet_B", "FR", pTL1, weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	 }
-	 	 if(abs(selLeptons[i].eta())<1.4){
-	 	   mon.fillHisto("closestJetToTauDenominatorLep", "FR", selLeptons[i].pt(), weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToTauDenominatorLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	   mon.fillHisto("closestJetToTauDenominatorLep_B", "FR", selLeptons[i].pt(), weight); //
-	 	   if(selLeptons[i].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorLLep", "FR", selLeptons[i].pt(), weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorLLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorLLep_B", "FR", selLeptons[i].pt(), weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	   if(selLeptons[i].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorMLep", "FR", selLeptons[i].pt(), weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorMLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorMLep_B", "FR", selLeptons[i].pt(), weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	 }
-	 	 if(etaL1>1.4){
-	 	   mon.fillHisto("closestJetToTauDenominatorJet", "FR", pTL1, weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToTauDenominatorJet_TMCut", "FR", pTL1, weight);  //
-	 	   mon.fillHisto("closestJetToTauDenominatorJet_E", "FR", pTL1, weight);  //
-	 	   if(selLeptons[i].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorLJet", "FR", pTL1, weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorLJet_TMCut", "FR", pTL1, weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorLJet_E", "FR", pTL1, weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	   if(selLeptons[i].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorMJet", "FR", pTL1, weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorMJet_TMCut", "FR", pTL1, weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorMJet_E", "FR", pTL1, weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	 }
-	 	 if(abs(selLeptons[i].eta())>1.4){
-	 	   mon.fillHisto("closestJetToTauDenominatorLep", "FR", selLeptons[i].pt(), weight);  //
-	 	   if(tmass<30) mon.fillHisto("closestJetToTauDenominatorLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	   mon.fillHisto("closestJetToTauDenominatorLep_E", "FR", selLeptons[i].pt(), weight);  //
-	 	   if(selLeptons[i].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorLLep", "FR", selLeptons[i].pt(), weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorLLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorLLep_E", "FR", selLeptons[i].pt(), weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	   if(selLeptons[i].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")){ 
-	 	     mon.fillHisto("closestJetToTauNumeratorMLep", "FR", selLeptons[i].pt(), weight);  //
-	 	     if(tmass<30) mon.fillHisto("closestJetToTauNumeratorMLep_TMCut", "FR", selLeptons[i].pt(), weight);  //
-	 	     mon.fillHisto("closestJetToTauNumeratorMLep_E", "FR", selLeptons[i].pt(), weight);  //
-	 	     IdentifiedThirdLepton=true;
-	 	   }
-	 	 }
+
+
+                 TString PartName = "";
+                 if(abs(selLeptons[i].pdgId())==11)PartName = "El";
+                 if(abs(selLeptons[i].pdgId())==13)PartName = "Mu";
+                 if(abs(selLeptons[i].pdgId())==15)PartName = "Ta";
+
+
+   	         std::vector<TString> TagsFR;
+
+                 if(abs(selLeptons[i].pdgId())==11 || abs(selLeptons[i].pdgId())==13){
+     	            bool passId = false;
+                    if(abs(selLeptons[i].pdgId())==11) passId = patUtils::passId(selLeptons[i].el, vtx[0], patUtils::llvvElecId::Loose);
+                    if(abs(selLeptons[i].pdgId())==13) passId = patUtils::passId(selLeptons[i].mu, vtx[0], patUtils::llvvMuonId::Loose);
+ 	     	    float relIso = patUtils::relIso(selLeptons[i], rho);
+
+                    if(true                 )TagsFR.push_back(TString("FR_"));
+                    if(passId && relIso<=0.1)TagsFR.push_back(TString("FR_")+PartName+("_Id_Iso01"));
+                    if(passId && relIso<=0.2)TagsFR.push_back(TString("FR_")+PartName+("_Id_Iso02"));
+                    if(passId && relIso<=0.3)TagsFR.push_back(TString("FR_")+PartName+("_Id_Iso03"));
+
+                     if(passId && relIso<=0.3)IdentifiedThirdLepton=true;
+                 }else{
+	            bool IdL = selLeptons[i].tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+ 	            bool IdM = selLeptons[i].tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits");
+
+                    if(true                 )TagsFR.push_back(TString("FR_"));
+                    if(IdL                  )TagsFR.push_back(TString("FR_")+PartName+("_Id_IsoLo"));
+                    if(IdM                  )TagsFR.push_back(TString("FR_")+PartName+("_Id_IsoMe"));
+                 }
+
+                  if(tmass<30){
+                     int NTags = TagsFR.size();
+                     for(unsigned int iTags=0;iTags<NTags;iTags++){
+                        TagsFR.push_back(TagsFR[iTags]+TString("_TMCut"));
+                     }
+                  }
+
+                  auto TagsFRJet = TagsFR;
+                  for(unsigned int iTags=0;iTags<TagsFR.size();iTags++){
+                     TagsFRJet.push_back(TagsFR[iTags]+(etaL1<1.4?TString("_B"):TString("_E")));
+                  }
+
+                  auto TagsFRLep = TagsFR;
+                  for(unsigned int iTags=0;iTags<TagsFR.size();iTags++){
+                     TagsFRLep.push_back(TagsFR[iTags]+(abs(selLeptons[i].eta())<1.4?TString("_B"):TString("_E")));
+                  }
+
+	 	   mon.fillHisto("FR_JetPt", TagsFRJet, pTL1              , weight);
+	 	   mon.fillHisto("FR_LepPt", TagsFRLep, selLeptons[i].pt(), weight);
 	       }
 	     }//close for
 	   }//close selLepton size == 3
@@ -2489,166 +2166,6 @@ int main(int argc, char* argv[])
                  }
                }
              }
-           }        
-         }
-
-
-         //
-         // HISTOS FOR STATISTICAL ANALYSIS (include systematic variations)
-         //
-         //Fill histogram for posterior optimization, or for control regions
-         for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
-           float iweight = weight;                            //nominal
-           
-           //energy scale/resolution
-           bool varyJesUp( varNames[ivar]=="_jesup" );
-           bool varyJesDown( varNames[ivar]=="_jesdown" );
-           bool varyJerUp( varNames[ivar]=="_jerup" );
-           bool varyJerDown( varNames[ivar]=="_jerdown" );
-           bool varyUmetUp( varNames[ivar]=="_umetup" );
-           bool varyUmetDown( varNames[ivar]=="_umetdown" );
-           bool varyLesUp( varNames[ivar]=="_lesup" );
-           bool varyLesDown( varNames[ivar]=="_lesdown" );
-                   
-           //pileup variations
-           if(varNames[ivar]=="_puup") iweight *=TotalWeight_plus;
-           if(varNames[ivar]=="_pudown") iweight *=TotalWeight_minus;
-           
-           //btag
-           bool varyBtagUp( varNames[ivar]=="_btagup" );
-           bool varyBtagDown( varNames[ivar]=="_btagdown" );
-           
-           //Q^2 variations on VV pT spectum
-           if( ( (isMC_ZZ && (varNames[ivar]=="_zzptup" || varNames[ivar]=="_zzptdown")) || (isMC_WZ && (varNames[ivar]=="_wzptup" || varNames[ivar]=="_wzptdown") ) ) && vvShapeUnc.size()==2 )
-             {
-               size_t idx( varNames[ivar].EndsWith("up") ? 0 : 1 );
-               TGraph *varGr=vvShapeUnc[idx];
-               if(varGr==0) continue;
-               std::vector<LorentzVector> vs;
-               for(size_t ipart=0; ipart<gen.size(); ipart++)
-                 {
-                   int status=gen[ipart].status();
-                   if(status!=3) continue;
-                   int pid=gen[ipart].pdgId();
-                   if(abs(pid)!=23 && abs(pid)!=24) continue;
-                   vs.push_back( gen[ipart].p4() );
-                 }
-               if(vs.size()==2)
-                 {
-                   LorentzVector vv=vs[0]+vs[1];
-                   iweight *= varGr->Eval(vv.pt());
-                 }
-             }
-           
-
-           //recompute MET/MT if JES/JER was varied
-           LorentzVector    zvv = mets[0].p4();
-
-           //FIXME
-           if(varyJesUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-           if(varyJesDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnDown);
-           if(varyJerUp)    zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResUp);
-           if(varyJerDown)  zvv = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
-           if(varyUmetUp)   zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
-           if(varyUmetDown) zvv = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
-           //if(varyLesUp)    zvv = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
-           //if(varyLesDown)  zvv = met[utils::cmssw::LESDOWN];
-
-           pat::JetCollection tightVarJets;
-           int nbtagsjets = 0; 
-           for(size_t ijet=0; ijet<jets.size(); ijet++){
-
-             float eta=jets[ijet].eta();
-             if( fabs(eta)>4.7 ) continue;
-             float pt=jets[ijet].pt();
-
-             //FIXME
-             /*if(varyJesUp)    pt=jets[ijet].getVal("jesup");
-             if(varyJesDown)  pt=jets[ijet].getVal("jesdown");
-             if(varyJerUp)    pt=jets[ijet].getVal("jerup");
-             if(varyJerDown)  pt=jets[ijet].getVal("jerdown");*/
-
-             if( pt < 30 ) continue;
-    
-             //cross-clean with selected leptons and photons
-             double minDRlj(9999.),minDRlg(9999.);
-             for(size_t ilep=0; ilep<selLeptons.size(); ilep++)
-               minDRlj = TMath::Min( minDRlj, deltaR(jets[ijet].p4(),selLeptons[ilep].p4()) );
-             for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-               minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet].p4(),selPhotons[ipho].p4()) );
-             if(minDRlj<0.4 || minDRlg<0.4) continue;
-             
-             //jet id
-             bool         passPFloose = patUtils::passPFJetID("Loose", jets[ijet]);
-             float     PUDiscriminant = jets[ijet].userFloat("pileupJetId:fullDiscriminant");
-             bool passLooseSimplePuId = patUtils::passPUJetID(jets[ijet]); //Uses recommended value of HZZ, will update this as soon my analysis is done. (Hugo)
-             if(!passPFloose || !passLooseSimplePuId) continue;
-            
-             //jet is selected
-             tightVarJets.push_back(jets[ijet]);
-
-             //check b-tag
-             if( pt < 30 || fabs(eta) > 2.5 ) continue;
-             if(!isMC && ivar>0 ) continue;
-             //if(!varyBtagUp && !varyBtagDown) continue;
-             int flavId=jets[ijet].partonFlavour();
-             bool hasCSVtag (jets[ijet].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>0.423);
-
-             if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb,beff);
-             else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5,beff);
-             else		            btsfutil.modifyBTagsWithSF(hasCSVtag,sfl,leff);
-
-             /*if(varyBtagUp) {
-               if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb+sfbunc,beff);
-               else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5+2*sfbunc,beff);
-               else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl+sflunc,leff);
-             }
-             else if(varyBtagDown) {
-               if(abs(flavId)==5)        btsfutil.modifyBTagsWithSF(hasCSVtag,sfb-sfbunc,beff);
-               else if(abs(flavId)==4)   btsfutil.modifyBTagsWithSF(hasCSVtag,sfb/5-2*sfbunc,beff);
-               else		      btsfutil.modifyBTagsWithSF(hasCSVtag,sfl-sflunc,leff);
-             }*/
-
-             if(hasCSVtag) nbtagsjets++;
-           }
-
-           bool passLocalBveto( nbtagsjets == 0 );	
-           bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
-           bool isZsideBandPlus( (boson.mass()>110 && boson.mass()<200) );
-           bool passPreselection                 (passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passLocalBveto);
-           bool passPreselectionMbvetoMzmass     (            passQt && passThirdLeptonVeto && passMinDphijmet                  );         
-         
-           for(size_t ich=0; ich<chTags.size(); ich++){
-
-             TString tags_full=chTags[ich]; 
-             float chWeight(iweight);
-
-             //update weight and mass for photons
-             LorentzVector iboson(boson);
-             
-             //updet the transverse mass
-             float mt =higgs::utils::transverseMass(iboson,zvv,true);
-
-             //scan the MET cut and fill the shapes
-             // for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
-               
-             //   if(zvv.pt()>optim_Cuts1_met[index]){              
-                   
-             //       float nrweight=chWeight;
-          
-             //       if(passPreselection && ivar==0                                              )   mon.fillHisto("metcount", tags_full, index, nrweight);
-             //       if(passPreselection                                                         )   mon.fillHisto(TString("mt_shapes")+varNames[ivar],tags_full,index, mt,nrweight);
-             //       if(passPreselection                                                         )   mon.fillHisto(TString("met_shapes")+varNames[ivar],tags_full,index, zvv.pt(),nrweight);                    
-             //       if(passPreselectionMbvetoMzmass && passMass          && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,0,nrweight);
-             //       if(passPreselectionMbvetoMzmass && isZsideBand       && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,1,nrweight);
-             //       if(passPreselectionMbvetoMzmass && isZsideBandPlus   && passLocalBveto      )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,2,nrweight);
-             //       if(passPreselectionMbvetoMzmass && passMass          && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,3,nrweight);
-             //       if(passPreselectionMbvetoMzmass && isZsideBand       && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,4,nrweight);
-             //       if(passPreselectionMbvetoMzmass && isZsideBandPlus   && !passLocalBveto     )   mon.fillHisto("mt_shapes_NRBctrl"+varNames[ivar],tags_full,index,5,nrweight);
-
-                 
-             //   }
-             // }
            }
          }
      }

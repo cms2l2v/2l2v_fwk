@@ -1142,14 +1142,11 @@ int main(int argc, char* argv[])
                                              btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalLUp.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
                                              btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalLDn.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
                   }
-                  if(hasCSVtag    )jet.addUserFloat("_eff_b"    , 1.0);
-                  if(hasCSVtagUp  )jet.addUserFloat("_eff_bup"  , 1.0);
-                  if(hasCSVtagDown)jet.addUserFloat("_eff_bdown", 1.0);                   
-
-                  if(hasCSVtag    )nbtagsVar[""          ]++;
-                  if(hasCSVtagUp  )nbtagsVar["_eff_bup"  ]++;
-                  if(hasCSVtagDown)nbtagsVar["_eff_bdown"]++;
               }
+
+              if(hasCSVtag    )nbtagsVar[""          ]++;
+              if(hasCSVtagUp  )nbtagsVar["_eff_bup"  ]++;
+              if(hasCSVtagDown)nbtagsVar["_eff_bdown"]++;
             }
 
 
