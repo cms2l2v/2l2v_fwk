@@ -1095,7 +1095,9 @@ int main(int argc, char* argv[])
          std::map<string, int   > njetsVar;
          std::map<string, int   > nbtagsVar;
          std::map<string, double> mindphijmetVar;
+         for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){njetsVar[jetVarNames[ivar]] = 0;}  //initialize
          for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){mindphijmetVar[jetVarNames[ivar]] = 9999.0;}  //initialize
+         nbtagsVar[""] = 0; nbtagsVar["_eff_bup"] = 0; nbtagsVar["_eff_bdown"] = 0;  //initialize
 
          for(size_t ijet=0; ijet<jets.size(); ijet++){
              pat::Jet jet = jets[ijet]; //copy the jet, such that we can update it
@@ -1542,10 +1544,14 @@ int main(int argc, char* argv[])
                }
 
 
+               if(ivar==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E %i %i %i %i %i\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), "NOSYST", imet.pt(), higgs::utils::transverseMass(boson,imet,true), weight, passBtags?1:0, passMass?1:0, passQt?1:0, passThirdLeptonVeto?1:0, passMinDphijmet?1:0 ); 
+
                if(passBtags && passMass && passQt && passThirdLeptonVeto && passMinDphijmet){
 
                   mon.fillHisto(TString("mtSyst")+varNames[ivar],tags, mt,weight);
                   mon.fillHisto(TString("metSyst")+varNames[ivar],tags, imet.pt(),weight);                    
+
+
 
 
                   //scan the MET cut and fill the shapes
@@ -1561,7 +1567,9 @@ int main(int argc, char* argv[])
                           if(varNames[ivar]=="_signal_lshapedown") shapeWeight*=lShapeWeights[nri][3];
                           if(varNames[ivar]=="_signal_normup"  ) shapeWeight*=lShapeWeights[nri][4];
                           if(varNames[ivar]=="_signal_lshapeup"  ) shapeWeight*=lShapeWeights[nri][5];
-            
+
+                          if(nri==0 && index==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), varNames[ivar].Data(), imet.pt(), mt, weight ); 
+
                           mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags,index, mt,shapeWeight);
                           mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags,index, imet.pt(),shapeWeight);                    
                        }

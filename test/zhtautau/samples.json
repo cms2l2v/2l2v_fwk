@@ -8,15 +8,30 @@
       "marker":20,
       "msize":0.7,
       "data":[
-        { "dtag":"Data13TeV_PromptReco_DoubleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
-        { "dtag":"Data13TeV_PromptReco_DoubleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
-        { "dtag":"Data13TeV_PromptReco_MuEG2015C_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"          ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"            ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_PromptReco_DoubleElectron2015D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"                   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_PromptReco_DoubleMu2015D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"                 ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
-        { "dtag":"Data13TeV_PromptReco_MuEG2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"                     ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
+        { "dtag":"Data13TeV_DoubleElectron2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-PromptReco-v4/MINIAOD"          ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D"                       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-PromptReco-v4/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleElectron2015D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleElectron/Run2015D-PromptReco-v4/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleMu2015D"                       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleMuon/Run2015D-PromptReco-v4/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },       
+        { "dtag":"Data13TeV_MuEG2015D"                           ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-PromptReco-v4/MINIAOD"            ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015D-05Oct2015-v1/MINIAOD"           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015D-05Oct2015-v1/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleElectron2015D_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleElectron/Run2015D-05Oct2015-v1/MINIAOD"     ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleMu2015D_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleMuon/Run2015D-05Oct2015-v1/MINIAOD"         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },      
+        { "dtag":"Data13TeV_MuEG2015D_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015D-05Oct2015-v2/MINIAOD"             ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_DoubleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/DoubleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_SingleElectron2015C_05Oct2015"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleElectron/Run2015C_25ns-05Oct2015-v1/MINIAOD",  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },        
+        { "dtag":"Data13TeV_SingleMu2015C_05Oct2015"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/SingleMuon/Run2015C_25ns-05Oct2015-v1/MINIAOD"    ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   },              
+        { "dtag":"Data13TeV_MuEG2015C_05Oct2015"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":"/MuonEG/Run2015C_25ns-05Oct2015-v1/MINIAOD"        ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/test/zhtautau/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"   }
+      ]
+    },
+    {		
+      "tag":"ZH#rightarrow ll#tau#tau",
+      "isdata":false,
+      "color":4,
+      "lcolor":1,
+      "data":[
+             { "dtag":"ZHToTauTau_M125_13TeV_powheg_pythia8"  ,  "xsec":0.00265 , "br":[ 1.0 ]            , "dset":"/ZHToTauTau_M125_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
       ]
     },
     {	
@@ -129,17 +144,8 @@
              { "dtag":"MC13TeV_DYJetsToLL_50toInf"               ,  "xsec":6025.3     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
       ]
     },
-    {		
-      "tag":"ZH#rightarrow ll#tau#tau",
-      "isdata":false,
-      "color":4,
-      "lcolor":1,
-      "data":[
-             { "dtag":"ZHToTauTau_M125_13TeV_powheg_pythia8"  ,  "xsec":0.00265 , "br":[ 1.0 ]            , "dset":"/ZHToTauTau_M125_13TeV_powheg_pythia8/RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/MINIAODSIM"} 
-      ]
-    },
     {	
-      "tag":"H(200GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(200)#rightarrow ZA(50)",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -150,7 +156,7 @@
       ]
     },
     {
-      "tag":"H(200GeV)#rightarrow ZA(100GeV)",
+      "tag":"H(200)#rightarrow ZA(100)",
       "isinvisible":true,	  
       "isdata":false,
       "issignal":true,
@@ -162,7 +168,7 @@
       ]
     },
     {
-      "tag":"H(250GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(250)#rightarrow ZA(50)",
       "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
@@ -174,7 +180,7 @@
       ]
     },
     {
-      "tag":"H(300GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(300)#rightarrow ZA(50)",
       "isinvisible":true,		
       "isdata":false,
       "issignal":true,
@@ -186,7 +192,7 @@
       ]
     },
     {
-      "tag":"H(300GeV)#rightarrow ZA(100GeV)",
+      "tag":"H(300)#rightarrow ZA(100)",
       "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
@@ -198,7 +204,7 @@
       ]
     },
     {
-      "tag":"H(300GeV)#rightarrow ZA(200GeV)",
+      "tag":"H(300)#rightarrow ZA(200)",
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -210,7 +216,7 @@
       ]
     },
     {
-      "tag":"H(500GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(500)#rightarrow ZA(50)",
       "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
@@ -222,7 +228,7 @@
       ]
     },
     {
-      "tag":"H(500GeV)#rightarrow ZA(100GeV)",
+      "tag":"H(500)#rightarrow ZA(100)",
       "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
@@ -234,7 +240,7 @@
       ]
     },
     {
-      "tag":"H(500GeV)#rightarrow ZA(200GeV)",
+      "tag":"H(500)#rightarrow ZA(200)",
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -246,7 +252,7 @@
       ]
     },
     {
-      "tag":"H(500GeV)#rightarrow ZA(300GeV)",
+      "tag":"H(500)#rightarrow ZA(300)",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -257,7 +263,7 @@
       ]
     },
     {
-      "tag":"H(650GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(650)#rightarrow ZA(50)",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -268,7 +274,7 @@
       ]
     },
     {
-      "tag":"H(800GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(800)#rightarrow ZA(50)",
       "isinvisible":true,		  
       "isdata":false,
       "issignal":true,
@@ -280,7 +286,7 @@
       ]
     },
     {
-      "tag":"H(800GeV)#rightarrow ZA(100GeV)",
+      "tag":"H(800)#rightarrow ZA(100)",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
@@ -291,7 +297,7 @@
       ]
     },
     {
-      "tag":"H(800GeV)#rightarrow ZA(200GeV)",
+      "tag":"H(800)#rightarrow ZA(200)",
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -303,7 +309,7 @@
       ]
     },
     {
-      "tag":"H(800GeV)#rightarrow ZA(400GeV)",
+      "tag":"H(800)#rightarrow ZA(400)",
        "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -315,7 +321,7 @@
       ]
     },
     {
-      "tag":"H(1000GeV)#rightarrow ZA(50GeV)",
+      "tag":"H(1000)#rightarrow ZA(50)",
       "isinvisible":true,	   
       "isdata":false,
       "issignal":true,
@@ -327,7 +333,7 @@
       ]
     },
     {
-      "tag":"H(1000GeV)#rightarrow ZA(200GeV)",
+      "tag":"H(1000)#rightarrow ZA(200)",
       "isinvisible":true,
       "isdata":false,
       "issignal":true,
@@ -339,7 +345,7 @@
       ]
     },
     {
-      "tag":"H(1000GeV)#rightarrow ZA(500GeV)",
+      "tag":"H(1000)#rightarrow ZA(500)",
       "isinvisible":true,		   
       "isdata":false,
       "issignal":true,
@@ -351,7 +357,7 @@
       ]
     },
     {
-      "tag":"H(2000GeV)#rightarrow ZA(1000GeV)",
+      "tag":"H(2000)#rightarrow ZA(1000)",
       "isdata":false,
       "issignal":true,
       "spimpose":true,
