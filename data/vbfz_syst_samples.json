@@ -7,8 +7,8 @@
       "lcolor":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_DYToMuMu_M20_powheg"              , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":"/DYToMuMu_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        },
-        { "dtag":"MC8TeV_DYToEE_M20_powheg"                , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":"/DYToEE_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DYToMuMu_M20_powheg"              , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":["/DYToMuMu_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        },
+        { "dtag":"MC8TeV_DYToEE_M20_powheg"                , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":["/DYToEE_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
@@ -22,8 +22,8 @@
       "lwidth":3,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_eejj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/eejj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        },
-        { "dtag":"MC8TeV_mmjj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        }
+        { "dtag":"MC8TeV_eejj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/eejj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        },
+        { "dtag":"MC8TeV_mmjj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        }
       ]
     },
     {
@@ -37,7 +37,7 @@
       "lwidth":3,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_mmjj_powheg_pythia"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/PYTHIA" ]        }
+        { "dtag":"MC8TeV_mmjj_powheg_pythia"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/PYTHIA" ]        }
       ]
     },
     {
@@ -51,7 +51,7 @@
       "lwidth":3,
       "marker":1,
       "data":[
-        { "dtag":"MC8TeV_mmjj_powheg_herwig"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/HERWIG" ]        }
+        { "dtag":"MC8TeV_mmjj_powheg_herwig"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/HERWIG" ]        }
       ]
     }
   ]
