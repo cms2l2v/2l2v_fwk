@@ -4,1082 +4,1082 @@
       "tag":"Data8TeV_DoubleElectron2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleElectron2012A"            , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleElectron2012A"            , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleElectron/Run2012A-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleElectron2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleElectron2012B"            , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012B-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleElectron2012B"            , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleElectron/Run2012B-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleElectron2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleElectron2012C"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012C-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleElectron2012C"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleElectron/Run2012C-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleElectron2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleElectron2012D"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleElectron/Run2012D-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleElectron2012D"            , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleElectron/Run2012D-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleMu2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMu/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleMu/Run2012A-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleMu2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012B-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleMuParked/Run2012B-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleMu2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleMu2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012C-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleMu2012C"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleMuParked/Run2012C-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_DoubleMu2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_DoubleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/DoubleMuParked/Run2012D-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_MuEG2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_MuEG2012A"                      , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_MuEG2012A"                      , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/MuEG/Run2012A-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_MuEG2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_MuEG2012B"                      , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012B-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_MuEG2012B"                      , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/MuEG/Run2012B-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_MuEG2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_MuEG2012C"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012C-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_MuEG2012C"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/MuEG/Run2012C-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_MuEG2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_MuEG2012D"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/MuEG/Run2012D-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_MuEG2012D"                      , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/MuEG/Run2012D-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_Photon2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_Photon2012A"                    , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/Photon/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_Photon2012A"                    , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/Photon/Run2012A-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleMu/Run2012A-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012B-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleMu/Run2012B-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012C"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012C-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012C"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleMu/Run2012C-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleMu2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleMu/Run2012D-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleMu2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleMu/Run2012D-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleElectron2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleElectron2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleElectron/Run2012A-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleElectron2012A"                  , "split":2, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleElectron/Run2012A-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleElectron2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleElectron2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleElectron/Run2012B-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleElectron2012B"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleElectron/Run2012B-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleElectron2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleElectron2012C"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleElectron/Run2012C-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleElectron2012C"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleElectron/Run2012C-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_SingleElectron2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_SingleElectron2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/SingleElectron/Run2012D-22Jan2013-v1/AOD"        }
+        { "dtag":"Data8TeV_SingleElectron2012D"                  , "split":6, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/SingleElectron/Run2012D-22Jan2013-v1/AOD"]        }
       ]
     },
     {
       "tag":"Data8TeV_TauPlusX2012A",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_TauPlusX2012A"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012A-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012A"                  , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/TauPlusX/Run2012A-22Jan2013-v1/AOD"]}
       ]
     },
     {
       "tag":"Data8TeV_TauPlusX2012B",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_TauPlusX2012B"                  , "split":35, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012B-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012B"                  , "split":35, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/TauPlusX/Run2012B-22Jan2013-v1/AOD"]}
       ]
     },
     {
       "tag":"Data8TeV_TauPlusX2012C",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_TauPlusX2012C"                  , "split":35, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012C-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012C"                  , "split":35, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/TauPlusX/Run2012C-22Jan2013-v1/AOD"]}
       ]
     },
     {
       "tag":"Data8TeV_TauPlusX2012D",
       "isdata":true,
       "data":[
-        { "dtag":"Data8TeV_TauPlusX2012D"                  , "split":45, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"/TauPlusX/Run2012D-22Jan2013-v1/AOD"}
+        { "dtag":"Data8TeV_TauPlusX2012D"                  , "split":45, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["/TauPlusX/Run2012D-22Jan2013-v1/AOD"]}
       ]
     },
     {
       "tag":"MC8TeV_DY1JetsToLL_50toInf",
       "data":[
-        { "dtag":"MC8TeV_DY1JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.1901694915 ]        , "dset":"/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DY1JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.1901694915 ]        , "dset":["/DY1JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DY2JetsToLL_50toInf",
       "data":[
-        { "dtag":"MC8TeV_DY2JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0613559322 ]        , "dset":"/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DY2JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0613559322 ]        , "dset":["/DY2JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DY3JetsToLL_50toInf",
       "data":[
-        { "dtag":"MC8TeV_DY3JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0173220339 ]        , "dset":"/DY3JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DY3JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0173220339 ]        , "dset":["/DY3JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DY4JetsToLL_50toInf",
       "data":[
-        { "dtag":"MC8TeV_DY4JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0078101695 ]        , "dset":"/DY4JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DY4JetsToLL_50toInf"              , "split":10, "xsec":3503.71     , "br":[ 0.0078101695 ]        , "dset":["/DY4JetsToLL_M-50_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DYJJ",
       "data":[
-        { "dtag":"MC8TeV_DYJJ"                             , "split":2, "xsec":0.8938      , "br":[ 1.0 ]                 , "dset":"/ZVBF_Mqq-120_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DYJJ"                             , "split":2, "xsec":0.8938      , "br":[ 1.0 ]                 , "dset":["/ZVBF_Mqq-120_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DYJetsToLL_10to50",
       "data":[
-        { "dtag":"MC8TeV_DYJetsToLL_10to50"                , "split":10, "xsec":860.5       , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DYJetsToLL_10to50"                , "split":10, "xsec":860.5       , "br":[ 1.0 ]                 , "dset":["/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DYJetsToLL_50toInf",
       "data":[
-        { "dtag":"MC8TeV_DYJetsToLL_50toInf"               , "split":15, "xsec":3503.71     , "br":[ 1.0 ]                 , "dset":"/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DYJetsToLL_50toInf"               , "split":15, "xsec":3503.71     , "br":[ 1.0 ]                 , "dset":["/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DYToEE_M20_powheg",
       "data":[
-        { "dtag":"MC8TeV_DYToEE_M20_powheg"                , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":"/DYToEE_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DYToEE_M20_powheg"                , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":["/DYToEE_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DYToMuMu_M20_powheg",
       "data":[
-        { "dtag":"MC8TeV_DYToMuMu_M20_powheg"              , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":"/DYToMuMu_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DYToMuMu_M20_powheg"              , "split":10, "xsec":1510.0      , "br":[ 1.0 ]                 , "dset":["/DYToMuMu_M-20_CT10_TuneZ2star_v2_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_DiPhotons",
       "data":[
-        { "dtag":"MC8TeV_DiPhotons"                        , "split":2, "xsec":75.39       , "br":[ 1.3 ]                 , "dset":"/DiPhotonJets_8TeV-madgraph-tarball-v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_DiPhotons"                        , "split":2, "xsec":75.39       , "br":[ 1.3 ]                 , "dset":["/DiPhotonJets_8TeV-madgraph-tarball-v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_EWKWminusjj",
       "data":[
-        { "dtag":"MC8TeV_EWKWminusjj"                      , "split":4, "xsec":4.09        , "br":[ 1.0 ]                 , "dset":"/LminusNubarVBF_Mqq-120_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_EWKWminusjj"                      , "split":4, "xsec":4.09        , "br":[ 1.0 ]                 , "dset":["/LminusNubarVBF_Mqq-120_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_EWKWplusjj",
       "data":[
-        { "dtag":"MC8TeV_EWKWplusjj"                       , "split":4, "xsec":6.48        , "br":[ 1.0 ]                 , "dset":"/LplusNuVBF_Mqq-120_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_EWKWplusjj"                       , "split":4, "xsec":6.48        , "br":[ 1.0 ]                 , "dset":["/LplusNuVBF_Mqq-120_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH1000toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH1000toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.03163     , "br":[ 0.311, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-1000_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 18.6, -16.7 ]        }
+        { "dtag":"MC8TeV_GGtoH1000toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.03163     , "br":[ 0.311, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-1000_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 18.6, -16.7 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH200toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH200toZZto2L2Nu_powheg15"     , "split":1, "xsec":7.127       , "br":[ 0.255, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-200_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 13.4, -14.5 ]        }
+        { "dtag":"MC8TeV_GGtoH200toZZto2L2Nu_powheg15"     , "split":1, "xsec":7.127       , "br":[ 0.255, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-200_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 13.4, -14.5 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH250toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH250toZZto2L2Nu_powheg15"     , "split":1, "xsec":4.802       , "br":[ 0.297, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-250_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 13.2, -14.1 ]        }
+        { "dtag":"MC8TeV_GGtoH250toZZto2L2Nu_powheg15"     , "split":1, "xsec":4.802       , "br":[ 0.297, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-250_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 13.2, -14.1 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH300toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH300toZZto2L2Nu_powheg15"     , "split":1, "xsec":3.606       , "br":[ 0.307, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-300_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 13.4, -14.0 ]        }
+        { "dtag":"MC8TeV_GGtoH300toZZto2L2Nu_powheg15"     , "split":1, "xsec":3.606       , "br":[ 0.307, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-300_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 13.4, -14.0 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH350toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH350toZZto2L2Nu_powheg15"     , "split":1, "xsec":3.406       , "br":[ 0.307, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-350_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 13.7, -14.1 ]        }
+        { "dtag":"MC8TeV_GGtoH350toZZto2L2Nu_powheg15"     , "split":1, "xsec":3.406       , "br":[ 0.307, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-350_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 13.7, -14.1 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH400toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH400toZZto2L2Nu_powheg15"     , "split":1, "xsec":2.924       , "br":[ 0.269, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-400_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 14.0, -13.6 ]        }
+        { "dtag":"MC8TeV_GGtoH400toZZto2L2Nu_powheg15"     , "split":1, "xsec":2.924       , "br":[ 0.269, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-400_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 14.0, -13.6 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH450toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH450toZZto2L2Nu_powheg15"     , "split":1, "xsec":2.003       , "br":[ 0.259, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-450_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 14.4, -13.6 ]        }
+        { "dtag":"MC8TeV_GGtoH450toZZto2L2Nu_powheg15"     , "split":1, "xsec":2.003       , "br":[ 0.259, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-450_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 14.4, -13.6 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH500toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH500toZZto2L2Nu_powheg15"     , "split":1, "xsec":1.283       , "br":[ 0.261, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-500_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 14.9, -13.6 ]        }
+        { "dtag":"MC8TeV_GGtoH500toZZto2L2Nu_powheg15"     , "split":1, "xsec":1.283       , "br":[ 0.261, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-500_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 14.9, -13.6 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH550toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH550toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.8144      , "br":[ 0.266, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-550_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 11.05, -10.09 ]        }
+        { "dtag":"MC8TeV_GGtoH550toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.8144      , "br":[ 0.266, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-550_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 11.05, -10.09 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH600toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH600toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.5230      , "br":[ 0.272, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-600_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 15.4, -13.8 ]        }
+        { "dtag":"MC8TeV_GGtoH600toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.5230      , "br":[ 0.272, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-600_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 15.4, -13.8 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH650toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH650toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.3424      , "br":[ 0.279, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-650_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 11.35, 10.29 ]        }
+        { "dtag":"MC8TeV_GGtoH650toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.3424      , "br":[ 0.279, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-650_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 11.35, 10.29 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH700toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH700toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.2288      , "br":[ 0.285, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-700_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 16.1, -14.4 ]        }
+        { "dtag":"MC8TeV_GGtoH700toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.2288      , "br":[ 0.285, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-700_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 16.1, -14.4 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH800toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH800toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.1095      , "br":[ 0.296, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-800_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 16.7, -15.0 ]        }
+        { "dtag":"MC8TeV_GGtoH800toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.1095      , "br":[ 0.296, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-800_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 16.7, -15.0 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GGtoH900toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_GGtoH900toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.05684     , "br":[ 0.304, 0.0403896 ]    , "dset":"/GluGluToHToZZTo2L2Nu_M-900_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 17.4, -15.5 ]        }
+        { "dtag":"MC8TeV_GGtoH900toZZto2L2Nu_powheg15"     , "split":1, "xsec":0.05684     , "br":[ 0.304, 0.0403896 ]    , "dset":["/GluGluToHToZZTo2L2Nu_M-900_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 17.4, -15.5 ]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_120to170",
       "data":[
-        { "dtag":"MC8TeV_GJets_120to170"                   , "split":5, "xsec":108.0068    , "br":[ 1.3 ]                 , "dset":"/G_Pt-120to170_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_120to170"                   , "split":5, "xsec":108.0068    , "br":[ 1.3 ]                 , "dset":["/G_Pt-120to170_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_1400to1800",
       "data":[
-        { "dtag":"MC8TeV_GJets_1400to1800"                 , "split":5, "xsec":0.00004510327, "br":[ 1.3 ]                 , "dset":"/G_Pt-1400to1800_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_1400to1800"                 , "split":5, "xsec":0.00004510327, "br":[ 1.3 ]                 , "dset":["/G_Pt-1400to1800_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_15to30",
       "data":[
-        { "dtag":"MC8TeV_GJets_15to30"                     , "split":3, "xsec":200061.7    , "br":[ 1.3 ]                 , "dset":"/G_Pt-15to30_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_15to30"                     , "split":3, "xsec":200061.7    , "br":[ 1.3 ]                 , "dset":["/G_Pt-15to30_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_170to300",
       "data":[
-        { "dtag":"MC8TeV_GJets_170to300"                   , "split":5, "xsec":30.12207    , "br":[ 1.3 ]                 , "dset":"/G_Pt-170to300_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_170to300"                   , "split":5, "xsec":30.12207    , "br":[ 1.3 ]                 , "dset":["/G_Pt-170to300_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_1800toInf",
       "data":[
-        { "dtag":"MC8TeV_GJets_1800toInf"                  , "split":5, "xsec":0.000001867141, "br":[ 1.3 ]                 , "dset":"/G_Pt-1800_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_1800toInf"                  , "split":5, "xsec":0.000001867141, "br":[ 1.3 ]                 , "dset":["/G_Pt-1800_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_300to470",
       "data":[
-        { "dtag":"MC8TeV_GJets_300to470"                   , "split":5, "xsec":2.138632    , "br":[ 1.3 ]                 , "dset":"/G_Pt-300to470_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_300to470"                   , "split":5, "xsec":2.138632    , "br":[ 1.3 ]                 , "dset":["/G_Pt-300to470_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_30to50",
       "data":[
-        { "dtag":"MC8TeV_GJets_30to50"                     , "split":5, "xsec":19931.62    , "br":[ 1.3 ]                 , "dset":"/G_Pt-30to50_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_30to50"                     , "split":5, "xsec":19931.62    , "br":[ 1.3 ]                 , "dset":["/G_Pt-30to50_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_470to800",
       "data":[
-        { "dtag":"MC8TeV_GJets_470to800"                   , "split":5, "xsec":0.2119244   , "br":[ 1.3 ]                 , "dset":"/G_Pt-470to800_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_470to800"                   , "split":5, "xsec":0.2119244   , "br":[ 1.3 ]                 , "dset":["/G_Pt-470to800_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_50to80",
       "data":[
-        { "dtag":"MC8TeV_GJets_50to80"                     , "split":5, "xsec":3322.309    , "br":[ 1.3 ]                 , "dset":"/G_Pt-50to80_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_50to80"                     , "split":5, "xsec":3322.309    , "br":[ 1.3 ]                 , "dset":["/G_Pt-50to80_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_800to1400",
       "data":[
-        { "dtag":"MC8TeV_GJets_800to1400"                  , "split":5, "xsec":0.007077847 , "br":[ 1.3 ]                 , "dset":"/G_Pt-800to1400_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_800to1400"                  , "split":5, "xsec":0.007077847 , "br":[ 1.3 ]                 , "dset":["/G_Pt-800to1400_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_GJets_80to120",
       "data":[
-        { "dtag":"MC8TeV_GJets_80to120"                    , "split":5, "xsec":558.2865    , "br":[ 1.3 ]                 , "dset":"/G_Pt-80to120_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_GJets_80to120"                    , "split":5, "xsec":558.2865    , "br":[ 1.3 ]                 , "dset":["/G_Pt-80to120_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-180_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-180_8TeV-pythia6"           , "split":1, "xsec":45.395      , "br":[ 0.168148 ]            , "dset":"/HplusToTBbar_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-180_8TeV-pythia6"           , "split":1, "xsec":45.395      , "br":[ 0.168148 ]            , "dset":["/HplusToTBbar_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-200_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-200_8TeV-pythia6"           , "split":1, "xsec":36.9622     , "br":[ 0.771436 ]            , "dset":"/HplusToTBbar_M-200_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-200_8TeV-pythia6"           , "split":1, "xsec":36.9622     , "br":[ 0.771436 ]            , "dset":["/HplusToTBbar_M-200_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-220_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-220_8TeV-pythia6"           , "split":1, "xsec":30.8054     , "br":[ 0.893554 ]            , "dset":"/HplusToTBbar_M-220_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-220_8TeV-pythia6"           , "split":1, "xsec":30.8054     , "br":[ 0.893554 ]            , "dset":["/HplusToTBbar_M-220_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-240_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-240_8TeV-pythia6"           , "split":1, "xsec":25.9684     , "br":[ 0.95097477 ]          , "dset":"/HplusToTBbar_M-240_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-240_8TeV-pythia6"           , "split":1, "xsec":25.9684     , "br":[ 0.95097477 ]          , "dset":["/HplusToTBbar_M-240_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-250_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6"           , "split":1, "xsec":23.8826     , "br":[ 0.95870217 ]          , "dset":"/HplusToTBbar_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-250_8TeV-pythia6"           , "split":1, "xsec":23.8826     , "br":[ 0.95870217 ]          , "dset":["/HplusToTBbar_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-260_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-260_8TeV-pythia6"           , "split":1, "xsec":21.9758     , "br":[ 0.9638012 ]           , "dset":"/HplusToTBbar_M-260_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-260_8TeV-pythia6"           , "split":1, "xsec":21.9758     , "br":[ 0.9638012 ]           , "dset":["/HplusToTBbar_M-260_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-280_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-280_8TeV-pythia6"           , "split":1, "xsec":18.63216    , "br":[ 0.97015566 ]          , "dset":"/HplusToTBbar_M-280_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-280_8TeV-pythia6"           , "split":1, "xsec":18.63216    , "br":[ 0.97015566 ]          , "dset":["/HplusToTBbar_M-280_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-300_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-300_8TeV-pythia6"           , "split":1, "xsec":15.83804    , "br":[ 0.97485758 ]          , "dset":"/HplusToTBbar_M-300_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-300_8TeV-pythia6"           , "split":1, "xsec":15.83804    , "br":[ 0.97485758 ]          , "dset":["/HplusToTBbar_M-300_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-350_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-350_8TeV-pythia6"           , "split":1, "xsec":10.73242    , "br":[ 0.981614 ]            , "dset":"/HplusToTBbar_M-350_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-350_8TeV-pythia6"           , "split":1, "xsec":10.73242    , "br":[ 0.981614 ]            , "dset":["/HplusToTBbar_M-350_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-400_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-400_8TeV-pythia6"           , "split":1, "xsec":7.43808     , "br":[ 0.985974 ]            , "dset":"/HplusToTBbar_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-400_8TeV-pythia6"           , "split":1, "xsec":7.43808     , "br":[ 0.985974 ]            , "dset":["/HplusToTBbar_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-500_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6"           , "split":1, "xsec":3.75644     , "br":[ 0.993732 ]            , "dset":"/HplusToTBbar_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-500_8TeV-pythia6"           , "split":1, "xsec":3.75644     , "br":[ 0.993732 ]            , "dset":["/HplusToTBbar_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-600_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-600_8TeV-pythia6"           , "split":1, "xsec":2.0143      , "br":[ 0.995194 ]            , "dset":"/HplusToTBbar_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-600_8TeV-pythia6"           , "split":1, "xsec":2.0143      , "br":[ 0.995194 ]            , "dset":["/HplusToTBbar_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HTB_M-700_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_HTB_M-700_8TeV-pythia6"           , "split":1, "xsec":1.13362     , "br":[ 0.995767 ]            , "dset":"/HplusToTBbar_M-700_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_HTB_M-700_8TeV-pythia6"           , "split":1, "xsec":1.13362     , "br":[ 0.995767 ]            , "dset":["/HplusToTBbar_M-700_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoBB_350_15",
       "data":[
-        { "dtag":"MC8TeV_HZAtoBB_350_15"                   , "split":1, "xsec":0.00074328, "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_15_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoBB_350_15"                   , "split":1, "xsec":0.00074328, "br":[ 1 ]                   , "dset":["EOS"], "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_15_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoBB_350_30",
       "data":[
-        { "dtag":"MC8TeV_HZAtoBB_350_30"                   , "split":1, "xsec":0.00078903, "br":[ 1 ]                   ,  "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_30_RECO/" ]        }    
+        { "dtag":"MC8TeV_HZAtoBB_350_30"                   , "split":1, "xsec":0.00078903, "br":[ 1 ]                   ,  "dset":["EOS"], "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_30_RECO/" ]        }    
        ]
     },
     {
       "tag":"MC8TeV_HZAtoBB_350_70",
       "data":[
-        { "dtag":"MC8TeV_HZAtoBB_350_70"                   , "split":1, "xsec":0.00081211, "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_70_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoBB_350_70"                   , "split":1, "xsec":0.00081211, "br":[ 1 ]                   , "dset":["EOS"], "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/llbb_350_70_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoTauTau_350_15",
       "data":[
-        { "dtag":"MC8TeV_HZAtoTauTau_350_15"               , "split":1, "xsec":0.000036009, "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_15_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoTauTau_350_15"               , "split":1, "xsec":0.000036009, "br":[ 1 ]                   , "dset":["EOS"], "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_15_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoTauTau_350_30",
       "data":[
-        { "dtag":"MC8TeV_HZAtoTauTau_350_30"               , "split":1, "xsec":0.000031267, "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_30_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoTauTau_350_30"               , "split":1, "xsec":0.000031267, "br":[ 1 ]                   , "dset":["EOS"], "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_30_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_HZAtoTauTau_350_70",
       "data":[
-        { "dtag":"MC8TeV_HZAtoTauTau_350_70"               , "split":1, "xsec":0.000033050, "br":[ 1 ]                   , "dset":"EOS", "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_70_RECO/" ]        }
+        { "dtag":"MC8TeV_HZAtoTauTau_350_70"               , "split":1, "xsec":0.000033050, "br":[ 1 ]                   , "dset":["EOS"], "aoddir":[ "/storage/data/cms/users/quertenmont/Higgs/i2HDM_Samples/14_04_22/lltautau_350_70_RECO/" ]        }
       ]
     },
     {
       "tag":"MC8TeV_QCDMuPt20toInf",
       "data":[
-        { "dtag":"MC8TeV_QCDMuPt20toInf"                   , "split":2, "xsec":364000000   , "br":[ 0.00037 ]             , "dset":"/QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCDMuPt20toInf"                   , "split":2, "xsec":364000000   , "br":[ 0.00037 ]             , "dset":["/QCD_Pt_20_MuEnrichedPt_15_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_QCDPt170to250",
       "data":[
-        { "dtag":"MC8TeV_QCDPt170to250"                    , "split":2, "xsec":30990       , "br":[ 0.148 ]               , "dset":"/QCD_Pt_170_250_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCDPt170to250"                    , "split":2, "xsec":30990       , "br":[ 0.148 ]               , "dset":["/QCD_Pt_170_250_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_QCDPt250to350",
       "data":[
-        { "dtag":"MC8TeV_QCDPt250to350"                    , "split":2, "xsec":4250        , "br":[ 0.131 ]               , "dset":"/QCD_Pt_250_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCDPt250to350"                    , "split":2, "xsec":4250        , "br":[ 0.131 ]               , "dset":["/QCD_Pt_250_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_QCDPt30to80",
       "data":[
-        { "dtag":"MC8TeV_QCDPt30to80"                      , "split":2, "xsec":74330000    , "br":[ 0.0621 ]              , "dset":"/QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCDPt30to80"                      , "split":2, "xsec":74330000    , "br":[ 0.0621 ]              , "dset":["/QCD_Pt_30_80_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_QCDPt350toInf",
       "data":[
-        { "dtag":"MC8TeV_QCDPt350toInf"                    , "split":2, "xsec":810         , "br":[ 0.11 ]                , "dset":"/QCD_Pt_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCDPt350toInf"                    , "split":2, "xsec":810         , "br":[ 0.11 ]                , "dset":["/QCD_Pt_350_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_QCDPt80to170",
       "data":[
-        { "dtag":"MC8TeV_QCDPt80to170"                     , "split":2, "xsec":1191000     , "br":[ 0.1539 ]              , "dset":"/QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_QCDPt80to170"                     , "split":2, "xsec":1191000     , "br":[ 0.1539 ]              , "dset":["/QCD_Pt_80_170_EMEnriched_TuneZ2star_8TeV_pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_SingleT_s",
       "data":[
-        { "dtag":"MC8TeV_SingleT_s"                        , "split":1, "xsec":3.79        , "br":[ 1.0 ]                 , "dset":"/T_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_SingleT_s"                        , "split":1, "xsec":3.79        , "br":[ 1.0 ]                 , "dset":["/T_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_SingleT_t",
       "data":[
-        { "dtag":"MC8TeV_SingleT_t"                        , "split":1, "xsec":56.4        , "br":[ 1.0 ]                 , "dset":"/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_SingleT_t"                        , "split":1, "xsec":56.4        , "br":[ 1.0 ]                 , "dset":["/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_SingleT_tW",
       "data":[
-        { "dtag":"MC8TeV_SingleT_tW"                       , "split":1, "xsec":11.1        , "br":[ 1.0 ]                 , "dset":"/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_SingleT_tW"                       , "split":1, "xsec":11.1        , "br":[ 1.0 ]                 , "dset":["/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_SingleTbar_s",
       "data":[
-        { "dtag":"MC8TeV_SingleTbar_s"                     , "split":1, "xsec":1.76        , "br":[ 1.0 ]                 , "dset":"/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_SingleTbar_s"                     , "split":1, "xsec":1.76        , "br":[ 1.0 ]                 , "dset":["/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_SingleTbar_t",
       "data":[
-        { "dtag":"MC8TeV_SingleTbar_t"                     , "split":1, "xsec":30.7        , "br":[ 1.0 ]                 , "dset":"/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_SingleTbar_t"                     , "split":1, "xsec":30.7        , "br":[ 1.0 ]                 , "dset":["/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_SingleTbar_tW",
       "data":[
-        { "dtag":"MC8TeV_SingleTbar_tW"                    , "split":1, "xsec":11.1        , "br":[ 1.0 ]                 , "dset":"/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_SingleTbar_tW"                    , "split":1, "xsec":11.1        , "br":[ 1.0 ]                 , "dset":["/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-180_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-180_8TeV-pythia6"           , "split":1, "xsec":1.0      , "br":[ 1.0 ]            , "dset":"/HplusTB_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-180_8TeV-pythia6"           , "split":1, "xsec":1.0      , "br":[ 1.0 ]            , "dset":["/HplusTB_M-180_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-190_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-190_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-190_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-190_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]            , "dset":["/HplusTB_M-190_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-200_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-200_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-200_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-200_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]            , "dset":["/HplusTB_M-200_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-220_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-220_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]            , "dset":"/HplusTB_M-220_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-220_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]            , "dset":["/HplusTB_M-220_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-250_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]          , "dset":"/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-250_8TeV-pythia6"           , "split":1, "xsec":1.0     , "br":[ 1.0 ]          , "dset":["/HplusTB_M-250_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-300_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-300_8TeV-pythia6"           , "split":1, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-300_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-300_8TeV-pythia6"           , "split":1, "xsec":1.0    , "br":[ 1.0 ]          , "dset":["/HplusTB_M-300_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-400_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6"           , "split":9, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-400_8TeV-pythia6"           , "split":9, "xsec":1.0    , "br":[ 1.0 ]          , "dset":["/HplusTB_M-400_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TBH_M-500_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6"           , "split":8, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-500_8TeV-pythia6"           , "split":8, "xsec":1.0    , "br":[ 1.0 ]          , "dset":["/HplusTB_M-500_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
 
     {
       "tag":"MC8TeV_TBH_M-600_8TeV-pythia6",
       "data":[
-        { "dtag":"MC8TeV_TBH_M-600_8TeV-pythia6"           , "split":10, "xsec":1.0    , "br":[ 1.0 ]          , "dset":"/HplusTB_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TBH_M-600_8TeV-pythia6"           , "split":10, "xsec":1.0    , "br":[ 1.0 ]          , "dset":["/HplusTB_M-600_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TTJetsFullLeptMGDecays",
       "data":[
-        { "dtag":"MC8TeV_TTJetsFullLeptMGDecays"           , "split":10, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM"        }
+        { "dtag":"MC8TeV_TTJetsFullLeptMGDecays"           , "split":10, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":["/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TTWJets",
       "data":[
-        { "dtag":"MC8TeV_TTWJets"                          , "split":1, "xsec":0.232       , "br":[ 1.0 ]                 , "dset":"/TTWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TTWJets"                          , "split":1, "xsec":0.232       , "br":[ 1.0 ]                 , "dset":["/TTWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_TTZJets",
       "data":[
-        { "dtag":"MC8TeV_TTZJets"                          , "split":1, "xsec":0.208       , "br":[ 1.0 ]                 , "dset":"/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_TTZJets"                          , "split":1, "xsec":0.208       , "br":[ 1.0 ]                 , "dset":["/TTZJets_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH1000toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH1000toZZto2L2Nu_powheg15"   , "split":1, "xsec":0.02399     , "br":[ 0.311, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-1000_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 6.3, -7.2 ]        }
+        { "dtag":"MC8TeV_VBFtoH1000toZZto2L2Nu_powheg15"   , "split":1, "xsec":0.02399     , "br":[ 0.311, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-1000_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 6.3, -7.2 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH200toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH200toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.8685      , "br":[ 0.255, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-200_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 2.8, -2.8 ]        }
+        { "dtag":"MC8TeV_VBFtoH200toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.8685      , "br":[ 0.255, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-200_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 2.8, -2.8 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH250toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH250toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.6225      , "br":[ 0.297, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-250_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 2.8, -2.7 ]        }
+        { "dtag":"MC8TeV_VBFtoH250toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.6225      , "br":[ 0.297, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-250_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 2.8, -2.7 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH300toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH300toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.4408      , "br":[ 0.307, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-300_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 2.8, -2.8 ]        }
+        { "dtag":"MC8TeV_VBFtoH300toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.4408      , "br":[ 0.307, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-300_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 2.8, -2.8 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH350toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH350toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.3200      , "br":[ 0.307, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-350_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 2.8, -2.9 ]        }
+        { "dtag":"MC8TeV_VBFtoH350toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.3200      , "br":[ 0.307, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-350_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 2.8, -2.9 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH400toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH400toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.2543      , "br":[ 0.269, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-400_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 2.9, -3.2 ]        }
+        { "dtag":"MC8TeV_VBFtoH400toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.2543      , "br":[ 0.269, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-400_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 2.9, -3.2 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH450toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH450toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.2002      , "br":[ 0.259, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-450_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 3.1, -3.6 ]        }
+        { "dtag":"MC8TeV_VBFtoH450toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.2002      , "br":[ 0.259, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-450_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 3.1, -3.6 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH500toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH500toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.1561      , "br":[ 0.261, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-500_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 3.4, -3.7 ]        }
+        { "dtag":"MC8TeV_VBFtoH500toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.1561      , "br":[ 0.261, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-500_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 3.4, -3.7 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH550toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH550toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.1223      , "br":[ 0.266, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-550_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 3.21, -3.55 ]        }
+        { "dtag":"MC8TeV_VBFtoH550toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.1223      , "br":[ 0.266, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-550_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 3.21, -3.55 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH600toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH600toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.09688     , "br":[ 0.272, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-600_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 3.9, -4.3 ]        }
+        { "dtag":"MC8TeV_VBFtoH600toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.09688     , "br":[ 0.272, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-600_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 3.9, -4.3 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH650toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH650toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.07784     , "br":[ 0.279, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-650_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 3.82, 4.08 ]        }
+        { "dtag":"MC8TeV_VBFtoH650toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.07784     , "br":[ 0.279, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-650_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 3.82, 4.08 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH700toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH700toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.06330     , "br":[ 0.285, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-700_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 4.4, -5.0 ]        }
+        { "dtag":"MC8TeV_VBFtoH700toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.06330     , "br":[ 0.285, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-700_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 4.4, -5.0 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH800toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH800toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.04365     , "br":[ 0.296, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-800_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 5.0, -5.7 ]        }
+        { "dtag":"MC8TeV_VBFtoH800toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.04365     , "br":[ 0.296, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-800_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 5.0, -5.7 ]        }
       ]
     },
     {
       "tag":"MC8TeV_VBFtoH900toZZto2L2Nu_powheg15",
       "data":[
-        { "dtag":"MC8TeV_VBFtoH900toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.03164     , "br":[ 0.304, 0.0403896 ]    , "dset":"/VBF_HToZZTo2L2Nu_M-900_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM", "xsecunc":[ 5.6, -6.5 ]        }
+        { "dtag":"MC8TeV_VBFtoH900toZZto2L2Nu_powheg15"    , "split":1, "xsec":0.03164     , "br":[ 0.304, 0.0403896 ]    , "dset":["/VBF_HToZZTo2L2Nu_M-900_8TeV-powheg-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"], "xsecunc":[ 5.6, -6.5 ]        }
       ]
     },
     {
       "tag":"MC8TeV_W1Jets",
       "data":[
-        { "dtag":"MC8TeV_W1Jets"                           , "split":10, "xsec":37509       , "br":[ 0.178 ]               , "dset":"/W1JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_W1Jets"                           , "split":10, "xsec":37509       , "br":[ 0.178 ]               , "dset":["/W1JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_W2Jets",
       "data":[
-        { "dtag":"MC8TeV_W2Jets"                           , "split":10, "xsec":37509       , "br":[ 0.058 ]               , "dset":"/W2JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_W2Jets"                           , "split":10, "xsec":37509       , "br":[ 0.058 ]               , "dset":["/W2JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_W3Jets",
       "data":[
-        { "dtag":"MC8TeV_W3Jets"                           , "split":10, "xsec":37509       , "br":[ 0.017 ]               , "dset":"/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_W3Jets"                           , "split":10, "xsec":37509       , "br":[ 0.017 ]               , "dset":["/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_W4Jets",
       "data":[
-        { "dtag":"MC8TeV_W4Jets"                           , "split":10, "xsec":37509       , "br":[ 0.007 ]               , "dset":"/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_W4Jets"                           , "split":10, "xsec":37509       , "br":[ 0.007 ]               , "dset":["/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WG",
       "data":[
-        { "dtag":"MC8TeV_WG"                               , "split":1, "xsec":461.6       , "br":[ 1.0 ]                 , "dset":"/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WG"                               , "split":1, "xsec":461.6       , "br":[ 1.0 ]                 , "dset":["/WGToLNuG_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WJets",
       "data":[
-        { "dtag":"MC8TeV_WJets"                            , "split":10, "xsec":37509       , "br":[ 1.0 ]                 , "dset":"/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WJets"                            , "split":10, "xsec":37509       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WW",
       "data":[
-        { "dtag":"MC8TeV_WW"                               , "split":4, "xsec":57.1097     , "br":[ 0.104976 ]            , "dset":"/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WW"                               , "split":4, "xsec":57.1097     , "br":[ 0.104976 ]            , "dset":["/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WWWJets",
       "data":[
-        { "dtag":"MC8TeV_WWWJets"                          , "split":1, "xsec":0.08217     , "br":[ 1.0 ]                 , "dset":"/WWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WWWJets"                          , "split":1, "xsec":0.08217     , "br":[ 1.0 ]                 , "dset":["/WWWJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WWZJets",
       "data":[
-        { "dtag":"MC8TeV_WWZJets"                          , "split":1, "xsec":0.0633      , "br":[ 1.0 ]                 , "dset":"/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WWZJets"                          , "split":1, "xsec":0.0633      , "br":[ 1.0 ]                 , "dset":["/WWZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WZ",
       "data":[
-        { "dtag":"MC8TeV_WZ"                               , "split":4, "xsec":1.057       , "br":[ 1.0 ]                 , "dset":"/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WZ"                               , "split":4, "xsec":1.057       , "br":[ 1.0 ]                 , "dset":["/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_WZZJets",
       "data":[
-        { "dtag":"MC8TeV_WZZJets"                          , "split":1, "xsec":0.01922     , "br":[ 1.0 ]                 , "dset":"/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_WZZJets"                          , "split":1, "xsec":0.01922     , "br":[ 1.0 ]                 , "dset":["/WZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH100toWW",
       "data":[
-        { "dtag":"MC8TeV_XH100toWW"                        , "split":1, "xsec":0.0006755326, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-100_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH100toWW"                        , "split":1, "xsec":0.0006755326, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-100_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH110toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH110toTauTau"                    , "split":1, "xsec":1.8706      , "br":[ 0.0795 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-110_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH110toTauTau"                    , "split":1, "xsec":1.8706      , "br":[ 0.0795 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-110_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH110toWW",
       "data":[
-        { "dtag":"MC8TeV_XH110toWW"                        , "split":1, "xsec":0.0021784923, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-110_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH110toWW"                        , "split":1, "xsec":0.0021784923, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-110_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH115toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH115toTauTau"                    , "split":1, "xsec":1.6275      , "br":[ 0.0758 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-115_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH115toTauTau"                    , "split":1, "xsec":1.6275      , "br":[ 0.0758 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-115_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH120toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH120toTauTau"                    , "split":1, "xsec":1.4221      , "br":[ 0.0704 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-120_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH120toTauTau"                    , "split":1, "xsec":1.4221      , "br":[ 0.0704 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-120_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH120toWW",
       "data":[
-        { "dtag":"MC8TeV_XH120toWW"                        , "split":1, "xsec":0.0048655819, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-120_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH120toWW"                        , "split":1, "xsec":0.0048655819, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-120_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH125toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH125toTauTau"                    , "split":1, "xsec":1.2492      , "br":[ 0.0632 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH125toTauTau"                    , "split":1, "xsec":1.2492      , "br":[ 0.0632 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH125toWW",
       "data":[
-        { "dtag":"MC8TeV_XH125toWW"                        , "split":1, "xsec":0.0065034022, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-125_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH125toWW"                        , "split":1, "xsec":0.0065034022, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-125_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH130toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH130toTauTau"                    , "split":1, "xsec":1.0989      , "br":[ 0.0545 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-130_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH130toTauTau"                    , "split":1, "xsec":1.0989      , "br":[ 0.0545 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-130_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH130toWW",
       "data":[
-        { "dtag":"MC8TeV_XH130toWW"                        , "split":1, "xsec":0.0080415887, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-130_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH130toWW"                        , "split":1, "xsec":0.0080415887, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-130_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH135toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH135toTauTau"                    , "split":1, "xsec":0.9699      , "br":[ 0.0449 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-135_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH135toTauTau"                    , "split":1, "xsec":0.9699      , "br":[ 0.0449 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-135_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH140toTauTau",
       "data":[
-        { "dtag":"MC8TeV_XH140toTauTau"                    , "split":1, "xsec":0.8581      , "br":[ 0.0352 ]              , "dset":"/WH_ZH_TTH_HToTauTau_M-140_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH140toTauTau"                    , "split":1, "xsec":0.8581      , "br":[ 0.0352 ]              , "dset":["/WH_ZH_TTH_HToTauTau_M-140_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH140toWW",
       "data":[
-        { "dtag":"MC8TeV_XH140toWW"                        , "split":1, "xsec":0.0103245786, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-140_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH140toWW"                        , "split":1, "xsec":0.0103245786, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-140_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH145toWW",
       "data":[
-        { "dtag":"MC8TeV_XH145toWW"                        , "split":1, "xsec":0.0109537681, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-145_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH145toWW"                        , "split":1, "xsec":0.0109537681, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-145_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH150toWW",
       "data":[
-        { "dtag":"MC8TeV_XH150toWW"                        , "split":1, "xsec":0.0112621915, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-150_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH150toWW"                        , "split":1, "xsec":0.0112621915, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-150_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH160toWW",
       "data":[
-        { "dtag":"MC8TeV_XH160toWW"                        , "split":1, "xsec":0.0113339697, "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-160_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH160toWW"                        , "split":1, "xsec":0.0113339697, "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-160_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_XH90toWW",
       "data":[
-        { "dtag":"MC8TeV_XH90toWW"                         , "split":1, "xsec":0.0001740   , "br":[ 1 ]                   , "dset":"/WH_ZH_TTH_HToWW_M-90_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_XH90toWW"                         , "split":1, "xsec":0.0001740   , "br":[ 1 ]                   , "dset":["/WH_ZH_TTH_HToWW_M-90_lepdecay_8TeV-pythia6/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZG",
       "data":[
-        { "dtag":"MC8TeV_ZG"                               , "split":1, "xsec":123.9       , "br":[ 1.0 ]                 , "dset":"/ZG_Inclusive_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZG"                               , "split":1, "xsec":123.9       , "br":[ 1.0 ]                 , "dset":["/ZG_Inclusive_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH100toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH100toTauTau"                    , "split":1, "xsec":0.0067748697, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-100_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH100toTauTau"                    , "split":1, "xsec":0.0067748697, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-100_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH105toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH105toTauTau"                    , "split":1, "xsec":0.00579377  , "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-105_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH105toTauTau"                    , "split":1, "xsec":0.00579377  , "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-105_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH110toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH110toTauTau"                    , "split":1, "xsec":0.0049175818, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-110_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH110toTauTau"                    , "split":1, "xsec":0.0049175818, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-110_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH115toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH115toTauTau"                    , "split":1, "xsec":0.0041015715, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-115_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH115toTauTau"                    , "split":1, "xsec":0.0041015715, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-115_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH120toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH120toTauTau"                    , "split":1, "xsec":0.0033486668, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-120_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH120toTauTau"                    , "split":1, "xsec":0.0033486668, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-120_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH125toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH125toTauTau"                    , "split":1, "xsec":0.0026506805, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH125toTauTau"                    , "split":1, "xsec":0.0026506805, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-125_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH130toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH130toTauTau"                    , "split":1, "xsec":0.0020205019, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-130_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH130toTauTau"                    , "split":1, "xsec":0.0020205019, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-130_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH135toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH135toTauTau"                    , "split":1, "xsec":0.0014777776, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-135_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH135toTauTau"                    , "split":1, "xsec":0.0014777776, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-135_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH140toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH140toTauTau"                    , "split":1, "xsec":0.001030195 , "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-140_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH140toTauTau"                    , "split":1, "xsec":0.001030195 , "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-140_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH145toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH145toTauTau"                    , "split":1, "xsec":0.0006808372, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-145_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH145toTauTau"                    , "split":1, "xsec":0.0006808372, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-145_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V7C-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH150toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH150toTauTau"                    , "split":1, "xsec":0.0004148912, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-150_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH150toTauTau"                    , "split":1, "xsec":0.0004148912, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-150_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH155toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH155toTauTau"                    , "split":1, "xsec":0.0002195957, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-155_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH155toTauTau"                    , "split":1, "xsec":0.0002195957, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-155_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH160toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH160toTauTau"                    , "split":1, "xsec":"7.262554464E-005", "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-160_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH160toTauTau"                    , "split":1, "xsec":"7.262554464E-005", "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-160_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH90toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH90toTauTau"                     , "split":1, "xsec":0.009186414 , "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-90_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH90toTauTau"                     , "split":1, "xsec":0.009186414 , "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-90_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZH95toTauTau",
       "data":[
-        { "dtag":"MC8TeV_ZH95toTauTau"                     , "split":1, "xsec":0.0078839419, "br":[ 1 ]                   , "dset":"/ZH_HToTauTau_M-95_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZH95toTauTau"                     , "split":1, "xsec":0.0078839419, "br":[ 1 ]                   , "dset":["/ZH_HToTauTau_M-95_lepdecay_8TeV-pythia6-tauola/Summer12_DR53X-PU_S10_START53_V19-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZZ",
       "data":[
-        { "dtag":"MC8TeV_ZZ"                               , "split":4, "xsec":0.380       , "br":[ 1.0 ]                 , "dset":"/ZZJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v3/AODSIM"        }
+        { "dtag":"MC8TeV_ZZ"                               , "split":4, "xsec":0.380       , "br":[ 1.0 ]                 , "dset":["/ZZJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v3/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZZ4l",
       "data":[
-        { "dtag":"MC8TeV_ZZ4l"                             , "split":2, "xsec":7.920       , "br":[ 0.0403896 ]           , "dset":"/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZZ4l"                             , "split":2, "xsec":7.920       , "br":[ 0.0403896 ]           , "dset":["/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ZZZJets",
       "data":[
-        { "dtag":"MC8TeV_ZZZJets"                          , "split":1, "xsec":0.004587    , "br":[ 1.0 ]                 , "dset":"/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ZZZJets"                          , "split":1, "xsec":0.004587    , "br":[ 1.0 ]                 , "dset":["/ZZZNoGstarJets_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ajj",
       "data":[
-        { "dtag":"MC8TeV_ajj"                              , "split":1, "xsec":2.72        , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM" ]        }
+        { "dtag":"MC8TeV_ajj"                              , "split":1, "xsec":2.72        , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/ajj_8TeV/AODSIM" ]        }
       ]
     },
     {
       "tag":"MC8TeV_eejj_VBFNLO",
       "data":[
-        { "dtag":"MC8TeV_eejj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/eejj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        }
+        { "dtag":"MC8TeV_eejj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/eejj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        }
       ]
     },
     {
       "tag":"MC8TeV_ggZZ2l2L",
       "data":[
-        { "dtag":"MC8TeV_ggZZ2l2L"                         , "split":2, "xsec":0.01203     , "br":[ 1 ]                   , "dset":"/GluGluToZZTo2L2L_TuneZ2star_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ggZZ2l2L"                         , "split":2, "xsec":0.01203     , "br":[ 1 ]                   , "dset":["/GluGluToZZTo2L2L_TuneZ2star_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_ggZZ4l",
       "data":[
-        { "dtag":"MC8TeV_ggZZ4l"                           , "split":2, "xsec":0.0048      , "br":[ 1 ]                   , "dset":"/GluGluToZZTo4L_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"        }
+        { "dtag":"MC8TeV_ggZZ4l"                           , "split":2, "xsec":0.0048      , "br":[ 1 ]                   , "dset":["/GluGluToZZTo4L_8TeV-gg2zz-pythia6/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM"]        }
       ]
     },
     {
       "tag":"MC8TeV_lljj",
       "data":[
-        { "dtag":"MC8TeV_lljj"                             , "split":1, "xsec":0.8938      , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM" ]        }
+        { "dtag":"MC8TeV_lljj"                             , "split":1, "xsec":0.8938      , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/ZVBF_Mqq-120_8TeV-madgraph/AODSIM" ]        }
       ]
     },
     {
       "tag":"MC8TeV_llvvjj",
       "data":[
-        { "dtag":"MC8TeV_llvvjj"                           , "split":1, "xsec":0.002258    , "br":100                     , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/llvvjj_8TeV/AODSIM" ]        }
+        { "dtag":"MC8TeV_llvvjj"                           , "split":1, "xsec":0.002258    , "br":100                     , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/llvvjj_8TeV/AODSIM" ]        }
       ]
     },
     {
       "tag":"MC8TeV_mmjj_VBFNLO",
       "data":[
-        { "dtag":"MC8TeV_mmjj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        }
+        { "dtag":"MC8TeV_mmjj_VBFNLO"                      , "split":2, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-vbfnlo/AODSIM" ]        }
       ]
     },
     {
       "tag":"MC8TeV_mmjj_powheg_herwig",
       "data":[
-        { "dtag":"MC8TeV_mmjj_powheg_herwig"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/HERWIG" ]        }
+        { "dtag":"MC8TeV_mmjj_powheg_herwig"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/HERWIG" ]        }
       ]
     },
     {
       "tag":"MC8TeV_mmjj_powheg_pythia",
       "data":[
-        { "dtag":"MC8TeV_mmjj_powheg_pythia"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":"EOS", "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/PYTHIA" ]        }
+        { "dtag":"MC8TeV_mmjj_powheg_pythia"               , "split":1, "xsec":0.168       , "br":[ 1.0 ]                 , "dset":["EOS"], "aoddir":[ "/store/group/phys_diffraction/FSQ-12-035/lljj_8TeV/mmjj_Mqq-120_8TeV-powheg/PYTHIA" ]        }
       ]
     },
     {
       "tag":"MC8TeV_TStauStau",
       "data":[
-        { "dtag":"MC8TeV_TStauStau"                        , "isfastsim":1 , "split":20, "xsec":1        , "br":[ 1.0 ]                 , "dset":"/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM" }
+        { "dtag":"MC8TeV_TStauStau"                        , "isfastsim":1 , "split":20, "xsec":1        , "br":[ 1.0 ]                 , "dset":["/SMS-TStauStau_mStau-50to500_mLSP-1to480_TuneZ2star_8TeV-pythia6-tauolapp/Summer12-START53_V19_FSIM_PU_S12-v1/AODSIM"] }
       ]
     }
   ]

@@ -8,7 +8,7 @@
             "mctruthmode":22,
             "isinvisible":true,
             "data":[
-                { "dtag":"MC13TeV_GJet_Pt-15To6000", "split":33, "xsec":365896    , "br":[ 1.3 ] , "dset":"/GJet_Pt-15To6000_TuneCUETP8M1-Flat_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"  }
+                { "dtag":"MC13TeV_GJet_Pt-15To6000", "split":33, "xsec":365896    , "br":[ 1.3 ] , "dset":["/GJet_Pt-15To6000_TuneCUETP8M1-Flat_13TeV_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v3/MINIAODSIM"]  }
             ]
         }
     ]

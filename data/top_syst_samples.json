@@ -9,7 +9,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT2l_R1_nops"                     , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown", "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R1_nops/" ]        }
+        { "dtag":"MC8TeV_TT2l_R1_nops"                     , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"], "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R1_nops/" ]        }
       ]
     },
     {
@@ -21,7 +21,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT2l_R1"                          , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown", "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R1/" ]        }
+        { "dtag":"MC8TeV_TT2l_R1"                          , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"], "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R1/" ]        }
       ]
     },
     {
@@ -33,7 +33,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT2l_R05a"                        , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown", "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R05a/" ]        }
+        { "dtag":"MC8TeV_TT2l_R05a"                        , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"], "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R05a/" ]        }
       ]
     },
     {
@@ -45,7 +45,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT2l_R05b"                        , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown", "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R05b/" ]        }
+        { "dtag":"MC8TeV_TT2l_R05b"                        , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"], "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R05b/" ]        }
       ]
     },
     {
@@ -57,7 +57,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT2l_R0"                          , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown", "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R0/" ]        }
+        { "dtag":"MC8TeV_TT2l_R0"                          , "split":1, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"], "aoddir":[ "/store/cmst3/user/psilva/PYTHIA/TTbar_TuneZ2star_pythia6_tauola_8TeV/R0/" ]        }
       ]
     },
     {
@@ -69,7 +69,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT_Z2star_powheg_pythia"          , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TT_Z2star_powheg_pythia"          , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -81,7 +81,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TT_AUET2_powheg_herwig"           , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TT_AUET2_powheg_herwig"           , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -92,7 +92,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_TuneP11"                   , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_TuneP11"                   , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":["Unknown"]        }
       ]
     },
     {
@@ -103,7 +103,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_TuneP11TeV"                , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_TuneP11TeV"                , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":["Unknown"]        }
       ]
     },
     {
@@ -114,7 +114,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_TuneP11noCR"               , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_TuneP11noCR"               , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":["Unknown"]        }
       ]
     },
     {
@@ -125,7 +125,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_TuneP11mpiHi"              , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_TuneP11mpiHi"              , "split":5, "xsec":245.8       , "br":[ 0.10608049 ]          , "dset":["Unknown"]        }
       ]
     },
     {
@@ -135,7 +135,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_scaledown"                 , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_scaledown"                 , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -145,7 +145,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_scaleup"                   , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_scaleup"                   , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -155,7 +155,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_matchingdown"              , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_matchingdown"              , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -165,7 +165,7 @@
       "lcolor":1,
       "isinvisible":true,
       "data":[
-        { "dtag":"MC8TeV_TTJets_matchingup"                , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_matchingup"                , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -177,7 +177,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_161v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_161v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -189,7 +189,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_163v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_163v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -201,7 +201,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_166v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_166v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -213,7 +213,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_169v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_169v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -226,7 +226,7 @@
       "lwidth":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_172v5"                     , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_172v5"                     , "split":5, "xsec":1.0         , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -238,7 +238,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_175v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_175v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -250,7 +250,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_178v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_178v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -262,7 +262,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_181v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_181v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     },
     {
@@ -274,7 +274,7 @@
       "spimpose":1,
       "mctruthmode":1,
       "data":[
-        { "dtag":"MC8TeV_TTJets_184v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":"Unknown"        }
+        { "dtag":"MC8TeV_TTJets_184v5"                     , "split":5, "xsec":245.8       , "br":[ 1.0 ]                 , "dset":["Unknown"]        }
       ]
     }
   ]

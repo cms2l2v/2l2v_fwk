@@ -33,8 +33,13 @@ bool SmartSelectionMonitor::fillHisto(TString name, std::vector<TString> tags, d
   return true;
 }
 
+bool SmartSelectionMonitor::fillHisto(TString name, std::vector<TString> tags, double val, std::vector<double> weights, bool useBinWidth){
+  for(unsigned int i=0;i<tags.size();i++){fillHisto(name, tags[i], val, weights[i], useBinWidth);}
+  return true;
+}
 
-// takes care of filling an histogram
+
+// takes care of filling a 2d histogram
 bool SmartSelectionMonitor::fillHisto(TString name, TString tag, double valx, double valy, double weight, bool useBinWidth)
 {
   TH2 *h = (TH2 *)getHisto(name,tag);
@@ -49,9 +54,13 @@ bool SmartSelectionMonitor::fillHisto(TString name, std::vector<TString> tags, d
   return true; 
 }
 
+bool SmartSelectionMonitor::fillHisto(TString name, std::vector<TString> tags, double valx, double valy, std::vector<double> weights, bool useBinWidth){
+  for(unsigned int i=0;i<tags.size();i++){fillHisto(name, tags[i], valx, valy, weights[i], useBinWidth);}
+  return true; 
+}
 
 
-// takes care of filling an histogram
+// takes care of filling a profile
 bool SmartSelectionMonitor::fillProfile(TString name, TString tag, double valx, double valy, double weight)
 {
   TProfile *h = (TProfile *)getHisto(name,tag);
@@ -66,6 +75,10 @@ bool SmartSelectionMonitor::fillProfile(TString name, std::vector<TString> tags,
   return true;
 }
 
+bool SmartSelectionMonitor::fillProfile(TString name, std::vector<TString> tags, double valx, double valy, std::vector<double> weights){
+  for(unsigned int i=0;i<tags.size();i++){fillProfile(name, tags[i], valx, valy, weights[i]);}
+  return true;
+}
 
 
 
