@@ -102,5 +102,9 @@ case $step in
 	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/ --outFile $PLOTTER.root  --json $JSON --no2D $arguments
 	ln -s -f $PLOTTER.root $MAINDIR/plotter.root
 	;;
+
+    4)  # make plots and combined root files
+        extractFRWeights --inFile $PLOTTER.root --outFile FR_Weights.root --outDir $PLOTSDIR/FakeRateWeights
+
 esac
 

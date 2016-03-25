@@ -31,8 +31,7 @@ int main(int argc, char* argv[]){
    bool isData=true;
    int  rbin=1;
    bool asym=true;
-   string gDataFile = "plotter_2016_01_18_forPhotonWeights.root";
-   string zDataFile = "plotter_2016_01_18_forPhotonWeights.root";
+   string DataFilePath  = "plotter_2016_01_18_forPhotonWeights.root";
    string outDir    = "photonWeights/";
    string outFile   = outDir + "photonWeights.root";
 
@@ -45,55 +44,71 @@ int main(int argc, char* argv[]){
         printf("--outFile --> path of the output summary .root file\n");
 	return 0;
      }
-     if(arg.find("--inFile" )!=string::npos && i+1<argc){ zDataFile= argv[i+1];  gDataFile= argv[i+1]; i++; printf("input file = %s\n", zDataFile.c_str()); }
+     if(arg.find("--inFile" )!=string::npos && i+1<argc){ DataFilePath = argv[i+1];  i++; printf("input file = %s\n", DataFilePath.c_str()); }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++; printf("outDir = %s\n", outDir.c_str());  }
    }
    system( (string("mkdir -p ") + outDir).c_str());
 
 
-  std::vector<string> gDataDir;
-  std::vector<string> zDataDir;
+  std::vector<string> fDataDir;  //fake data
+  std::vector<string> tDataDir;  //true lepton data (contamination to be subtracted)
   if(isData){
-     gDataDir.push_back("#gamma data_reweighted");
-     zDataDir.push_back("data");
+     fDataDir.push_back("data");
+     tDataDir.push_back("ZH#rightarrow ll#tau#tau");
+     tDataDir.push_back("ZZ#rightarrow 4l");
+     tDataDir.push_back("WZ#rightarrow 2l+X");
+     tDataDir.push_back("VVV");
   }else{
-     gDataDir.push_back("GJets_HT-40to100");
-     gDataDir.push_back("GJets_HT-100to200");
-     gDataDir.push_back("GJets_HT-200to400");
-     gDataDir.push_back("GJets_HT-400to600");
-     gDataDir.push_back("GJets_HT-600toInf");
-     zDataDir.push_back("Z#rightarrow ll");
+     fDataDir.push_back("ZH#rightarrow ll#tau#tau");
+     fDataDir.push_back("ZZ#rightarrow 4l");
+     fDataDir.push_back("ZZ#rightarrow 2l+X");
+     fDataDir.push_back("WW#rightarrow l#nu+X");
+     fDataDir.push_back("WZ#rightarrow 2l+X");
+     fDataDir.push_back("VVV");
+     fDataDir.push_back("Top");
+     fDataDir.push_back("W#rightarrow l#nu");
+     fDataDir.push_back("Z#rightarrow ll");
+     tDataDir.push_back("ZH#rightarrow ll#tau#tau");
+     tDataDir.push_back("ZZ#rightarrow 4l");
+     tDataDir.push_back("WZ#rightarrow 2l+X");
+     tDataDir.push_back("VVV");
+     tDataDir.push_back("Z#rightarrow ll");
   }
 
-  std::vector<int> catColor = {4     , 2   , 8   , 1    };
-  std::vector<string> catL  = {"#mu#mu", "ee", "ll", "#gamma"};
-  std::vector<string> binL  = {"=0jet", "#geq1jets", "vbf"};
 
-  std::vector<string> cat   = {"mumu", "ee", "ll", "gamma"};
-  std::vector<string> bin   = {"eq0jets","geq1jets","vbf"};
-  std::vector<string> var   = {"_qt", "_qmass", "_met", "_mt"};
+  std::vector<int> catColor = {4     , 2   , 8  };
+  std::vector<string> catL  = {"Fake e", "Fake #mu", "Fake #tau_{had}"};
+  std::vector<string> binL  = {"Inc.", "Barrel", "Endcap", "Inc. (m_{T}>30)", "Barrel (m_{T}>30)", "Endcap (m_{T}>30)"};
+
+  std::vector<string> cat   = {"FR_El", "FR_Mu", "FR_Ta"};
+  std::vector<string> bin   = {"","_B","_E", "_TMCut", "_TMCut_B", "_TMCut_E"};
+  std::vector<string> var   = {"", "_Id_Iso01", "_Id_Iso02", "_Id_Iso03", "_Id_IsoLo", "_Id_IsoMe"};
+  std::vector<string> wrt   = {"_wrtJetPt", "_wrtLepPt"};
+
+
 
   std::map<string, TH1D*> DataHistos;
   for(unsigned int c=0;c<cat.size();c++){
   for(unsigned int b=0;b<bin.size();b++){
   for(unsigned int v=0;v<var.size();v++){
-     string& DataFile             = (cat[c]=="gamma")?gDataFile:zDataFile;
-     std::vector<string>& DataDir = (cat[c]=="gamma")?gDataDir :zDataDir;
+  for(unsigned int w=0;w<wrt.size();w++){
+     string& DataFile             = DataFilePath;
+     std::vector<string>& DataDir = fDataDir;
+
+
 
      TFile* File = new TFile(DataFile.c_str(), "READ");
+
      if(!File || File->IsZombie() || !File->IsOpen() || File->TestBit(TFile::kRecovered) ){
         printf("File %s coudn't be opened\n", DataFile.c_str());
      }
 
      for(unsigned int d=0;d<DataDir.size();d++){
-        TH1D* hist = NULL;
-//        if(cat[c]=="photon"){ //read photon info form ee channel
-//           hist = (TH1D*) File->Get((DataDir[d]+"/"+"ee"+bin[b]+var[v]).c_str());        
-//        }else{
-           hist = (TH1D*) File->Get((DataDir[d]+"/"+cat[c]+bin[b]+var[v]).c_str());        
-//        }
+        TH1D* hist = (TH1D*) File->Get((DataDir[d]+"/"+cat[c]+var[v]+bin[b]+wrt[w]).c_str());        
         if(!hist)continue;
+
+
 
         hist->GetSumw2();
         if(rbin>1){ hist->Rebin(rbin);  hist->Scale(1.0, "width"); }
@@ -106,73 +121,58 @@ int main(int argc, char* argv[]){
         hist->SetMarkerColor(catColor[c]);
         hist->SetStats(kFALSE);
 
-        if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){
+
+
+        if(DataHistos.find(cat[c]+var[v]+bin[b])==DataHistos.end()){
            gROOT->cd(); //make sure that the file is saved in memory and not in file
-           DataHistos[cat[c]+bin[b]+var[v]] = (TH1D*)hist->Clone();; //create a new histo, since it's not found
+           DataHistos[cat[c]+var[v]+bin[b]+wrt[w]] = (TH1D*)hist->Clone();; //create a new histo, since it's not found
         }else{
-           DataHistos[cat[c]+bin[b]+var[v]]->Add(hist); //add to existing histogram
+           DataHistos[cat[c]+var[v]+bin[b]+wrt[w]]->Add(hist); //add to existing histogram
         }
+
+
+
      }
      File->Close();
-  }}}//all histos are now loaded
+  }}}}//all histos are now loaded
 
-   //non fixed-width rebins
-  if(asym){
-     double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
-     for(unsigned int v=0;v<var.size();v++){
-        if(var[v]!="_qt")continue;
-        for(unsigned int b=0;b<bin.size();b++){
-           for(unsigned int c=0;c<cat.size();c++){
-              if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){continue;}
-              TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];        
-              hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"rebin").c_str());
-              hist = (TH1D*)hist->Rebin((sizeof(xbins)/sizeof(double))-1, hist->GetName(), xbins);             
-              hist->Scale(1.0, "width");
-              DataHistos[cat[c]+bin[b]+var[v]+"rebin"] = hist;
-           }
-        }
-        printf("add variable %s\n", (var[v]+"rebin").c_str());
-        var.push_back(var[v]+"rebin");
-     }
-  }
 
-  //compute the weight
+  //compute the FR
+  for(unsigned int w=0;w<wrt.size();w++){
   for(unsigned int v=0;v<var.size();v++){
-     if(var[v]!="_qt" && var[v]!="_qtrebin")continue;
+     if(var[v]=="" || var[v].find("weight")!=std::string::npos)continue;
      for(unsigned int b=0;b<bin.size();b++){     
-        if(DataHistos.find(string("gamma")+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (string("gamma")+bin[b]+var[v]).c_str()); continue;}
-        TH1D* histgamma = DataHistos[string("gamma")+bin[b]+var[v]];
+        for(unsigned int c=0;c<cat.size();c++){           
+           if(DataHistos.find(cat[c]+""+bin[b]+wrt[w])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+""+bin[b]+wrt[w]).c_str()); continue;}
+           TH1D* histDen = DataHistos[cat[c]+""+bin[b]+wrt[w] ];
 
-        for(unsigned int c=0;c<cat.size();c++){
-           if(cat[c]=="gamma")continue;
-           if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
-           TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
-           hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"weight").c_str());
-           hist->Divide(histgamma);
-           DataHistos[cat[c]+bin[b]+var[v]+"weight"] = hist;
+           if(DataHistos.find(cat[c]+var[v]+bin[b]+wrt[w])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+var[v]+bin[b]+wrt[w]).c_str()); continue;}
+           TH1D* histNum = DataHistos[cat[c]+var[v]+bin[b]+wrt[w]];
+           histNum = (TH1D*)histNum->Clone((cat[c]+var[v]+"weight"+bin[b]+wrt[w]).c_str());
+           histNum->Divide(histDen);
+           DataHistos[cat[c]+var[v]+"weight"+bin[b]+wrt[w]] = histNum;
         }
      }
      printf("add variable %s\n", (var[v]+"weight").c_str());
      var.push_back(var[v]+"weight");
-  }
+  }}
 
 
   //make the plots
+  for(unsigned int w=0;w<wrt.size();w++){
   for(unsigned int v=0;v<var.size();v++){
      double xmin,xmax;
      double ymin=0.5, ymax=1E6;
-     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=55.00; xmax=1000.00;
-     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=55.00; xmax=1000.00; ymin=0.0001;  ymax=0.5;
-     } else if( (var[v]=="_met") || var[v]=="_mt") {               xmin=1.; xmax=1000.0;
-     } else{                                                       xmin=1.; xmax=1000.0;    
-     }
+     xmin=1.; xmax=1000.0;   
+     if(var[v].find("weight")!=std::string::npos){ymin=0;  ymax=1.0;}
 
-     TCanvas* c1 =new TCanvas("c1","c1",500*bin.size(), 500);
-     c1->Divide(bin.size(),1);
+//     TCanvas* c1 =new TCanvas("c1","c1",500*bin.size(), 500);
+//     c1->Divide(bin.size(),1);
 
      for(unsigned int b=0;b<bin.size();b++){
-        c1->cd(1+b);
-        if(var[v]!="_qtweight" || var[v]!="_qtrebinweight") gPad->SetLogy(); if(var[v]=="_qt" || var[v]=="_qtrebin")gPad->SetLogx();
+//        c1->cd(1+b);
+        TCanvas* c1 =new TCanvas("c1","c1",500, 500);       
+        if(var[v].find("weight")==std::string::npos) gPad->SetLogy();
         TLegend* leg = new TLegend(0.52,0.67,0.92,0.90);
         leg->SetFillStyle(0);
         leg->SetBorderSize(0);
@@ -182,10 +182,9 @@ int main(int argc, char* argv[]){
 
         bool axisDrawn=false;
         for(unsigned int c=0;c<cat.size();c++){
-           if(cat[c]=="ll")continue;  //do not ll on the plots
 
-           if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
-           TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
+           if(DataHistos.find(cat[c]+var[v]+bin[b]+wrt[w])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+var[v]+bin[b]+wrt[w]).c_str()); continue;}
+           TH1D* hist = DataHistos[cat[c]+var[v]+bin[b]+wrt[w]];
            hist->GetXaxis()->SetRangeUser(xmin,xmax);
            hist->GetYaxis()->SetRangeUser(ymin,ymax);
 
@@ -194,38 +193,25 @@ int main(int argc, char* argv[]){
            leg->AddEntry(hist, catL[c].c_str(), "LP"); 
         }
         leg->Draw("SAME");
+        c1->SaveAs((outDir + "/LeptonFR"+var[v]+bin[b]+wrt[w]+".png").c_str());
      }
-     c1->SaveAs((outDir + "/PhotonWeight"+var[v]+".png").c_str());
-  }
+  }}
 
   //SAVE THE material to the weight file
   TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
   OutputFile->cd();
   for(unsigned int c=0;c<cat.size();c++){
-     if(cat[c]=="gamma")continue;
      for(unsigned int b=0;b<bin.size();b++){
      for(unsigned int v=0;v<var.size();v++){
-        if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
-        TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
+     if(var[v].find("weight")==std::string::npos)continue;     
+     for(unsigned int w=0;w<wrt.size();w++){
+        if(DataHistos.find(cat[c]+var[v]+bin[b]+wrt[w])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+var[v]+bin[b]+wrt[w]).c_str()); continue;}
+        TH1D* hist = DataHistos[cat[c]+var[v]+bin[b]+wrt[w]];
 
-        if(var[v]=="_qtweight"){
-           TGraphErrors* graph = new TGraphErrors(hist);
-           graph->Write((cat[c]+bin[b]+"_qt_datafitwgts").c_str());
-        }else if(var[v]=="_qtrebinweight"){
-           TGraphErrors* graph = new TGraphErrors(hist);
-           graph->Write((cat[c]+bin[b]+"_qt_datafitwgtsrebin").c_str());
-          
-        }else if(var[v]=="_qmass"){
-           //replace VBF by geq1jets has there is no stat in VBF for Z candidates
-           if(bin[b]=="vbf")continue;  
-           if(bin[b]=="geq1jets"){
-              hist->Write((cat[c]+"vbf"+"_zmass").c_str());  
-           }
-
-
-           hist->Write((cat[c]+bin[b]+"_zmass").c_str());
-        }
-     }}
+        TGraphErrors* graph = new TGraphErrors(hist);
+        graph->Write((cat[c]+"FRWeights"+bin[b]+wrt[w]).c_str());
+        }}
+     }
   }
   OutputFile->Write(); OutputFile->Close();
 }
