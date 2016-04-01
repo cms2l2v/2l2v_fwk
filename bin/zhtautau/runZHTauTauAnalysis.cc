@@ -1358,7 +1358,6 @@ int main(int argc, char* argv[])
   terminationCmd += TString("mv out.root ") + outUrl + ";";
   TFile *ofile=TFile::Open("out.root", "recreate");
   mon.Write();
-  if(tree){tree->SetDirectory(ofile); tree->Write();}
   ofile->Close();
 
   if(!isMC && debugText!=""){ 
