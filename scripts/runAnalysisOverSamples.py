@@ -112,7 +112,7 @@ def getFileList(procData,DefaultNFilesPerJob):
 
       else:
          print "Processing private local sample: " + sample 
-         list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
+         list = storeTools.fillFromStore(sample,0,-1,True);                  
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
