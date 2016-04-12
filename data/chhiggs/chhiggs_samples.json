@@ -9,7 +9,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-180", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-180_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-180", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_HplusTB_HplusToTauNu_M-180_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -21,7 +21,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-200", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-200_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-200", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_HplusTB_HplusToTauNu_M-200_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -34,7 +34,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-220", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-220_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-220", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_HplusTB_HplusToTauNu_M-220_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -47,7 +47,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-300", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-300_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-300", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_HplusTB_HplusToTauNu_M-300_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -60,7 +60,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-350", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-350_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-350", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_HplusTB_HplusToTauNu_M-350_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -73,7 +73,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-500", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_HplusTB_HplusToTauNu_M-500_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_HplusTB_HplusToTauNu_M-500", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_HplusTB_HplusToTauNu_M-500_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -86,7 +86,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-100", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-100_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-100", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-100_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -99,7 +99,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-140", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-140_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-140", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-140_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -112,7 +112,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-150", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-150_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-150", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-150_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -125,7 +125,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-155", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-155_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-155", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-155_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -138,7 +138,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-160", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-160_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-160", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-160_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -151,7 +151,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-80", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-80_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-80", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-80_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     },
     { 
@@ -164,7 +164,7 @@
         "lcolor":2,
         "comment":"taunu decay mode only",
         "data":[        
-                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-90", "split":25, "xsec":2.0, "br":[1.0], "dset":"/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-90_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"}
+                      { "dtag":"MC13TeV_ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-90", "split":25, "xsec":2.0, "br":[1.0], "dset":["/ChargedHiggs_TTToHplusBWB_HplusToTauNu_M-90_13TeV_amcatnlo_pythia8/RunIISpring15DR74-Asympt25ns_MCRUN2_74_V9-v1/MINIAODSIM"]}
       ]
     }
   ]

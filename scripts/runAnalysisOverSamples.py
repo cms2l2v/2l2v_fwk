@@ -23,7 +23,6 @@ def getByLabel(proc,key,defaultVal=None) :
     except KeyError:
         return defaultVal
 
-
 def getByLabelFromKeyword(proc,keyword,key,defaultVal=None) :
     try:
        print "found keyword option %s" % str(proc[keyword][key])
@@ -58,12 +57,19 @@ def getFileList(procData,DefaultNFilesPerJob):
    isLocalSample = False
 
    FileList = [];
-   miniAODSamples = getByLabel(procData,'miniAOD','')
-   isMINIAODDataset = ("/MINIAOD" in getByLabel(procData,'dset','')) or  ("amagitte" in getByLabel(procData,'dset',''))
-   if(isMINIAODDataset or len(getByLabel(procData,'miniAOD',''))>0):
+   nonMiniAODSamples = []
+   miniAODSamples = getByLabel(procData,'miniAOD',[])
+   dsetSamples = getByLabel(procData,'dset',[])
+   for s in dsetSamples:
+      print s
+      if("/MINIAOD" in s): miniAODSamples+=[s]
+      else: nonMiniAODSamples+=[s]
+
+   for sample in miniAODSamples:
+      
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
-      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(procData,'dset','') + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
+      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+sample + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
       IsOnLocalTier=False
       MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
@@ -77,23 +83,24 @@ def getFileList(procData,DefaultNFilesPerJob):
 
       if(FractionOnLocal == MaxFraction):
             IsOnLocalTier=True            
-            print ("Sample is found to be on the local grid tier %s (%f%%) for %s") %(localTier, FractionOnLocal, getByLabel(procData,'dset',''))
+            print ("Sample is found to be on the local grid tier %s (%f%%) for %s") %(localTier, FractionOnLocal, sample)
 
       isLocalSample = IsOnLocalTier
 
       if(localTier != "" and not IsOnLocalTier):
-         nonLocalSamples += [getByLabel(procData,'dset','')]
+         nonLocalSamples += [sample]
 
       list = []
-      if(IsOnLocalTier or isMINIAODDataset):
+      #if("/MINIAOD" in sample):
+      if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
-            list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
+            list = commands.getstatusoutput('das_client.py --query="file dataset='+sample + ' ' + instance + '" --limit=0')[1].split()
          elif(DatasetFileDB=="DBS"):
             curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
             dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
             sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
-            list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+            list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+sample+'"'+sedTheList)[1].split()
 
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
@@ -106,14 +113,11 @@ def getFileList(procData,DefaultNFilesPerJob):
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
               #list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
 
-      elif(len(getByLabel(procData,'miniAOD',''))>0):
-         print "Processing private local sample: " + getByLabel(procData,'miniAOD','')
-         list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
       else:
-         print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
-         list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
+         print "Processing private local sample: " + sample 
+         list = storeTools.fillFromStore(sample,0,-1,True);                  
 
-      list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
+      #list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
       if(split>0):
          NFilesPerJob = max(1,len(list)/split)
@@ -126,7 +130,7 @@ def getFileList(procData,DefaultNFilesPerJob):
             groupList += '"'+f+'",\\n';
          FileList.append(groupList)
 
-   else:
+   for sample in nonMiniAODSamples:
       print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
       for segment in range(0,split) :
          eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
@@ -223,7 +227,7 @@ for procBlock in procList :
 
 
             if(opt.resubmit==False):
-               FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
+               FileList = getByLabel(procData,'dset',['"UnknownDataset"'])
                LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
                if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
                if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
