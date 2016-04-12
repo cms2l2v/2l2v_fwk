@@ -217,24 +217,25 @@ def keepOnlyFilesFromGoodRun(fileList, jsonPath):
 
    outFileList = []
    for F in fileList:
+      ## To be fixed: new way to store the data is different compared to the one used for 74X
       #check if the file contains at least one good lumi section using DAS_CLIENT --> commented out because VERY SLOW!
-      #print 'das_client.py --limit=0 --query "lumi file='+f+' |  grep lumi.run_number,lumi.number"'      
-      #containsGoodLumi = False
-      #for run in commands.getstatusoutput('das_client.py --limit=0 --query "run file='+f+'"')[1].replace('[','').replace(']','').split(','):
-      #   if(not IsGoodRun(int(run))):continue
-      #   for lumi in commands.getstatusoutput('das_client.py --limit=0 --query "lumi file='+f+'"')[1].replace('[','').replace(']','').split(','):
-      #      if(IsGoodLumi(run, lumi)):return True
+      print 'das_client.py --limit=0 --query "lumi file='+f+' |  grep lumi.run_number,lumi.number"'      
+      containsGoodLumi = False
+      for run in commands.getstatusoutput('das_client.py --limit=0 --query "run file='+f+'"')[1].replace('[','').replace(']','').split(','):
+         if(not IsGoodRun(int(run))):continue
+         for lumi in commands.getstatusoutput('das_client.py --limit=0 --query "lumi file='+f+'"')[1].replace('[','').replace(']','').split(','):
+            if(IsGoodLumi(run, lumi)):return True
 
       
       #FASTER technique only based on run number and file name parsing
-      if '/00000/' in F:
-          Fsplit = F.split('/00000/')[0].split('/')
-          run = int(Fsplit[-2])*1000+int(Fsplit[-1])
-          if(run in goodLumis): outFileList.extend([F])
-      else:
-          outFileList.extend([F])
+      #if '/00000/' in F:
+       #   Fsplit = F.split('/00000/')[0].split('/')
+       #   run = int(Fsplit[-2])*1000+int(Fsplit[-1])
+       #   if(run in goodLumis): outFileList.extend([F])
+      #else:
+       #   outFileList.extend([F])
 
-   return outFileList
+   #return outFileList
 
 
 """

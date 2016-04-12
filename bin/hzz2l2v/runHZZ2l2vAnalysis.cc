@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
   bool runSystematics                        = runProcess.getParameter<bool>("runSystematics");
   std::vector<TString> varNames(1,"");
 
-  std::vector<string> jetVarNames = {"", "_scale_jup","_scale_jdown", "_res_jup", "_res_jdown"};
+  std::vector<string> jetVarNames = {""};//, "_scale_jup","_scale_jdown", "_res_jup", "_res_jdown"};
 
 
   if(runSystematics){
@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "wdecays",     ";W decay channel",5,0,5) );
   mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
 
-  mon.addHistogram( new TH1F( "metFilter_eventflow",     ";metEventflow",15,0,15) );
+  mon.addHistogram( new TH1F( "metFilter_eventflow",     ";metEventflow",20,0,20) );
 
   //event selection
   TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 10,0,10) );
@@ -577,15 +577,15 @@ int main(int argc, char* argv[])
   gSystem->ExpandPathName(muscleDir);
   rochcor2015* muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
 
-  //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework)
-  std::vector<double> EGammaSmearings = {0.013654,0.014142,0.020859,0.017120,0.028083,0.027289,0.031793,0.030831,0.028083, 0.027289};
-  std::vector<double> EGammaScales    = {0.99544,0.99882,0.99662,1.0065,0.98633,0.99536,0.97859,0.98567,0.98633, 0.99536};
-  PhotonEnergyCalibratorRun2 PhotonEnCorrector(isMC, false, EGammaSmearings, EGammaScales);
+  //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework) 
+
+  string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
+  PhotonEnergyCalibratorRun2 PhotonEnCorrector(isMC, false, EGammaEnergyCorrectionFile);
   PhotonEnCorrector.initPrivateRng(new TRandom(1234));
 
   EpCombinationTool theEpCombinationTool;
-  theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC
-  ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaSmearings, EGammaScales);
+  theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
   ElectronEnCorrector.initPrivateRng(new TRandom(1234));
 
 
@@ -961,7 +961,7 @@ int main(int argc, char* argv[])
             //printf("A\n");
 
             //calibrate photon energy
-            PhotonEnCorrector.calibrate(photon, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+            //PhotonEnCorrector.calibrate(photon, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
 
             if(photon.pt()<55)continue;
             //printf("B\n");

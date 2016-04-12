@@ -61,10 +61,12 @@ def getFileList(procData,DefaultNFilesPerJob):
    miniAODSamples = getByLabel(procData,'miniAOD',[])
    dsetSamples = getByLabel(procData,'dset',[])
    for s in dsetSamples:
+      print s
       if("/MINIAOD" in s): miniAODSamples+=[s]
       else: nonMiniAODSamples+=[s]
 
    for sample in miniAODSamples:
+      
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
       listSites = commands.getstatusoutput('das_client.py --query="site dataset='+sample + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
@@ -89,6 +91,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          nonLocalSamples += [sample]
 
       list = []
+      #if("/MINIAOD" in sample):
       if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
@@ -114,7 +117,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          print "Processing private local sample: " + sample 
          list = storeTools.fillFromStore(sample,0,-1,True);                  
 
-      list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
+      #list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
       if(split>0):
          NFilesPerJob = max(1,len(list)/split)
