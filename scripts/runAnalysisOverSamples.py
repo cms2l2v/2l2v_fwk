@@ -60,8 +60,7 @@ def getFileList(procData,DefaultNFilesPerJob):
    nonMiniAODSamples = []
    miniAODSamples = getByLabel(procData,'miniAOD',[])
    dsetSamples = getByLabel(procData,'dset',[])
-   for s in dsetSamples:
-      print s
+   for s in dsetSamples: 
       if("/MINIAOD" in s): miniAODSamples+=[s]
       else: nonMiniAODSamples+=[s]
 
@@ -90,8 +89,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       if(localTier != "" and not IsOnLocalTier):
          nonLocalSamples += [sample]
 
-      list = []
-      #if("/MINIAOD" in sample):
+      list = [] 
       if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
