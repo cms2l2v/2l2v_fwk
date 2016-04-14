@@ -2,7 +2,6 @@
 #git cms-merge-topic -u cms-met:METCorUnc74X  #DOOES NOT WORK ANYMORE
 
 #for Electron/Photon energy scale correction  from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer
-#git cms-merge-topic matteosan1:smearer        #74X version
 git cms-merge-topic matteosan1:smearer_76X   #76X version
 
 #higgs combined tool for 742 is required to performed limit computation or cut optimization
@@ -12,7 +11,7 @@ git checkout remotes/origin/74x-root6
 cd ../..
 
 #SVFit package  (optional --> needed only if you plan to use SVfit tau mass reconstruction
-git clone git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
+git clone -b svFit_2015Apr03 git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
 
 #our framework
 git clone git@github.com:cms2l2v/2l2v_fwk.git UserCode/llvv_fwk

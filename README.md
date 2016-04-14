@@ -1,8 +1,8 @@
 # Installation
 ```bash 
-export SCRAM_ARCH=slc6_amd64_gcc491
-scramv1 project CMSSW CMSSW_7_4_16
-cd CMSSW_7_4_16/src/
+export SCRAM_ARCH=slc6_amd64_gcc493
+scramv1 project CMSSW CMSSW_7_6_3
+cd CMSSW_7_6_3/src/
 cmsenv
 wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
 ```
@@ -14,7 +14,7 @@ We have decided to use pull-request mode for the master development.
 - Fork the code with your personal github ID. See [details](https://help.github.com/articles/fork-a-repo/)
 - Make a clean git clone in the UserCode directory
 ```
-cd path/to/CMSSW_7_4_14/src/UserCode 
+cd path/to/CMSSW_7_6_3/src/UserCode 
 git clone git@github.com:yourgithubid/2l2v_fwk.git llvv_fwk
 cd llvv_fwk
 git remote add upstream git@github.com:cms2l2v/2l2v_fwk.git
@@ -30,7 +30,7 @@ git push
 
 
 # For creating private samples
-Just use official recipe and produce MINIAOD samples in 74X
+Just use official recipe and produce MINIAOD samples in 76X
 
 
 # Analysing
