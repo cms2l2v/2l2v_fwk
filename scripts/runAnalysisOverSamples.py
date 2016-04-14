@@ -115,7 +115,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          print "Processing private local sample: " + sample 
          list = storeTools.fillFromStore(sample,0,-1,True);                  
 
-      #list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
+      list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
       if(split>0):
          NFilesPerJob = max(1,len(list)/split)
