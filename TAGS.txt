@@ -1,8 +1,9 @@
 # MET recommended tag
-#git cms-merge-topic -u cms-met:METCorUnc74X  #DOOES NOT WORK ANYMORE
+#git cms-merge-topic -u cms-met:METCorUnc74X  #DOES NOT WORK ANYMORE
 
 #for Electron/Photon energy scale correction  from https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer
-git cms-merge-topic matteosan1:smearer_76X   #76X version
+#76X version
+git cms-merge-topic -u matteosan1:smearer_76X
 
 #higgs combined tool for 742 is required to performed limit computation or cut optimization
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
