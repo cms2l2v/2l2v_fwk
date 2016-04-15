@@ -121,7 +121,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          NFilesPerJob = max(1,len(list)/split)
       else:
          NFilesPerJob = DefaultNFilesPerJob
-         if((len(list)/NFilesPerJob)>100)NFilesPerJob=len(list)/100;  #make sure the number of jobs isn't too big
+         if((len(list)/NFilesPerJob)>100):NFilesPerJob=len(list)/100;  #make sure the number of jobs isn't too big
 
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
