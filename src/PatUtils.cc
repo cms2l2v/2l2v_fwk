@@ -194,13 +194,9 @@ namespace patUtils
     bool elevto = photon.hasPixelSeed();  //LQ  REACTIVATED FOR TIGHT ID, OTHERWISE MANY ELECtRONS pass the photon Id
     
     // sigma ieta ieta
-    // full5x5 is not ready in 720 yet 
-    // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
-    // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
-    
-    // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
-    float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
-
+    // taken from https://indico.cern.ch/event/370513/contributions/1790193/attachments/1183744/1715032/SP15_25_4th_final.pdf 
+    float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
+   
     // H/E 
     float hoe = photon.hadTowOverEm();
 
@@ -672,19 +668,20 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     // Documentation:    
     // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
     // Flag_trackingFailureFilter
-    // Flag_goodVertices        -------> Recommended by PAG
-    // Flag_CSCTightHaloFilter  -------> Recommended by PAG
+    // Flag_goodVertices                        -------> Recommended by PAG
+    // Flag_CSCTightHaloFilter                  -------> Recommended by PAG
     // Flag_trkPOGFilters
     // Flag_trkPOG_logErrorTooManyClusters
-    // Flag_EcalDeadCellTriggerPrimitiveFilter
+    // Flag_EcalDeadCellTriggerPrimitiveFilter  -------> Recommended by PAG
     // Flag_ecalLaserCorrFilter
     // Flag_trkPOG_manystripclus53X
-    // Flag_eeBadScFilter       -------> Recommended by PAG
+    // Flag_eeBadScFilter                       -------> Recommended by PAG
     // Flag_METFilters
-    // Flag_HBHENoiseFilter     -------> Recommended by PAG
+    // Flag_HBHENoiseFilter                     -------> Recommended by PAG
     // Flag_trkPOG_toomanystripclus53X
     // Flag_hcalLaserEventFilter
-    //
+ 
+
     // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
     // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
     // - For Run2015B PromptReco Data, the process name is RECO.
@@ -693,9 +690,10 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
     // -------------------------------------------------
 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return 2; 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return 3;
-    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return 4;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter"                     )) return 2; 
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"                           )) return 3;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"                          )) return 4;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_EcalDeadCellTriggerPrimitiveFilter"     )) return 5;
 
     // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
     //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
@@ -707,18 +705,18 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     if(summaryHandle.isValid()) summary=*summaryHandle;
 
     //HBHE NOISE
-    if(summary.maxHPDHits() >= 17)return 5;
-    if(summary.maxHPDNoOtherHits() >= 10)return 6;
-    if( summary.maxZeros() >= 9e9) return 7;
-    if(summary.HasBadRBXRechitR45Loose())return 8;  //for 25ns only!  CHeck the recipe for 50ns.
+    if(summary.maxHPDHits() >= 17)return 6;
+    if(summary.maxHPDNoOtherHits() >= 10)return 7;
+    if( summary.maxZeros() >= 9e9) return 8;
+    if(summary.HasBadRBXRechitR45Loose())return 9;  //for 25ns only!  CHeck the recipe for 50ns.
 //    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
 //    if((failCommon || summary.HasBadRBXRechitR45Loose() )) return 5;  //for 25ns only
    
      //HBHE ISO NOISE
-     if(summary.numIsolatedNoiseChannels() >=10)return 9;
-     if(summary.isolatedNoiseSumE() >=50) return 10;
-     if(summary.isolatedNoiseSumEt() >=25) return 11;
+     if(summary.numIsolatedNoiseChannels() >=10)return 10;
+     if(summary.isolatedNoiseSumE() >=50) return 11;
+     if(summary.isolatedNoiseSumEt() >=25) return 12;
 
      return 0;
    }
