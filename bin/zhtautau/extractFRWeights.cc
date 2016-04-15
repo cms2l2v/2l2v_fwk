@@ -209,7 +209,7 @@ int main(int argc, char* argv[]){
         TH1D* hist = DataHistos[cat[c]+var[v]+bin[b]+wrt[w]];
 
         TGraphErrors* graph = new TGraphErrors(hist);
-        graph->Write((cat[c]+"FRWeights"+bin[b]+wrt[w]).c_str());
+        graph->Write((cat[c]+var[v]+bin[b]+wrt[w]).c_str());
         }}
      }
   }
