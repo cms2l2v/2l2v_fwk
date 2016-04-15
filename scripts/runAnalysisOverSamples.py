@@ -68,7 +68,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
-      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+sample + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
+      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+sample + ' ' + instance + ' | grep site.name,site.replica_fraction " --limit=0')[1]
       IsOnLocalTier=False
       MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
