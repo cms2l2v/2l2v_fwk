@@ -194,13 +194,9 @@ namespace patUtils
     bool elevto = photon.hasPixelSeed();  //LQ  REACTIVATED FOR TIGHT ID, OTHERWISE MANY ELECtRONS pass the photon Id
     
     // sigma ieta ieta
-    // full5x5 is not ready in 720 yet 
+    // taken from https://indico.cern.ch/event/370513/contributions/1790193/attachments/1183744/1715032/SP15_25_4th_final.pdf 
     float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
-    // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
-    
-    // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
-    //float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
-
+   
     // H/E 
     float hoe = photon.hadTowOverEm();
 
