@@ -48,8 +48,7 @@
 #include "UserCode/llvv_fwk/interface/TrigUtils.h"
 #include "UserCode/llvv_fwk/interface/EwkCorrections.h"
 #include "UserCode/llvv_fwk/interface/ZZatNNLO.h"
-
-
+#include "UserCode/llvv_fwk/interface/FRWeights.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -452,9 +451,12 @@ int main(int argc, char* argv[])
   ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaSmearings, EGammaScales);
   ElectronEnCorrector.initPrivateRng(new TRandom(1234));
 
-
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
+
+  // FR weights
+  FRWeights theFRWeightTool;
+  theFRWeightTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/test/zhtautau/FR_Weights.root").c_str());
 
   //b-tagging: beff and leff must be derived from the MC sample using the discriminator vs flavor
   //the scale factors are taken as average numbers from the pT dependent curves see:

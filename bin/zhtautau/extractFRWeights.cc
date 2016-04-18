@@ -125,7 +125,7 @@ int main(int argc, char* argv[]){
 
         if(DataHistos.find(cat[c]+var[v]+bin[b])==DataHistos.end()){
            gROOT->cd(); //make sure that the file is saved in memory and not in file
-           DataHistos[cat[c]+var[v]+bin[b]+wrt[w]] = (TH1D*)hist->Clone();; //create a new histo, since it's not found
+           DataHistos[cat[c]+var[v]+bin[b]+wrt[w]] = (TH1D*)hist->Clone(); //create a new histo, since it's not found
         }else{
            DataHistos[cat[c]+var[v]+bin[b]+wrt[w]]->Add(hist); //add to existing histogram
         }
