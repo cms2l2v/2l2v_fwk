@@ -24,7 +24,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/FWLite/interface/FWLiteEnabler.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
@@ -66,8 +66,6 @@
 
 using namespace std;
 
-       
-
 
 int main(int argc, char* argv[])
 {
@@ -81,7 +79,9 @@ int main(int argc, char* argv[])
   
   // load framework libraries
   gSystem->Load( "libFWCoreFWLite" );
-  AutoLibraryLoader::enable();
+//  AutoLibraryLoader::enable();
+  FWLiteEnabler::enable();
+
   
   // configure the process
   const edm::ParameterSet &runProcess = edm::readPSetsFrom(argv[1])->getParameter<edm::ParameterSet>("runProcess");
@@ -1544,7 +1544,7 @@ int main(int argc, char* argv[])
                }
 
 
-               if(ivar==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E %i %i %i %i %i\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), "NOSYST", imet.pt(), higgs::utils::transverseMass(boson,imet,true), weight, passBtags?1:0, passMass?1:0, passQt?1:0, passThirdLeptonVeto?1:0, passMinDphijmet?1:0 ); 
+               //if(ivar==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E %i %i %i %i %i\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), "NOSYST", imet.pt(), higgs::utils::transverseMass(boson,imet,true), weight, passBtags?1:0, passMass?1:0, passQt?1:0, passThirdLeptonVeto?1:0, passMinDphijmet?1:0 ); 
 
                if(passBtags && passMass && passQt && passThirdLeptonVeto && passMinDphijmet){
 
@@ -1568,7 +1568,7 @@ int main(int argc, char* argv[])
                           if(varNames[ivar]=="_signal_normup"  ) shapeWeight*=lShapeWeights[nri][4];
                           if(varNames[ivar]=="_signal_lshapeup"  ) shapeWeight*=lShapeWeights[nri][5];
 
-                          if(nri==0 && index==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), varNames[ivar].Data(), imet.pt(), mt, weight ); 
+                          //if(nri==0 && index==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), varNames[ivar].Data(), imet.pt(), mt, weight ); 
 
                           mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags,index, mt,shapeWeight);
                           mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags,index, imet.pt(),shapeWeight);                    
