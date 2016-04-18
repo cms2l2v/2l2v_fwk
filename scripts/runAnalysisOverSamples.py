@@ -227,7 +227,7 @@ for procBlock in procList :
 
             if(opt.resubmit==False):
                FileList = getByLabel(procData,'dset',['"UnknownDataset"'])
-               LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
+               LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag+filt)
                if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
                if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 
