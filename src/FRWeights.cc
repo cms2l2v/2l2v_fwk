@@ -34,7 +34,7 @@ bool FRWeights::init(const string& WeightsFileName)
     
     std::vector<string> cat   = {"FR_El", "FR_Mu", "FR_Ta"};
     std::vector<string> bin   = {"","_B","_E", "_TMCut", "_TMCut_B", "_TMCut_E"};
-    std::vector<string> var   = {"", "_Id_Iso01", "_Id_Iso02", "_Id_Iso03", "_Id_IsoLo", "_Id_IsoMe"};
+    std::vector<string> var   = {"", "_Id_Iso01weight", "_Id_Iso02weight", "_Id_Iso03weight", "_Id_IsoLoweight", "_Id_IsoMeweight"};
     std::vector<string> wrt   = {"_wrtJetPt", "_wrtLepPt"};
     
     for(unsigned int c=0;c<cat.size();c++){
