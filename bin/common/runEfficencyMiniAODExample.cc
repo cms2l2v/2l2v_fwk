@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
           std::vector<float> mcPileupDistribution;
           // Temporary hack for nvtx-based pileup           
           //utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
-          utils::getMCPileupDistributionFromMiniAODtemp(urls,dataPileupDistribution.size(), mcPileupDistribution);          
+          utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);          
           while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
           while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
           gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
