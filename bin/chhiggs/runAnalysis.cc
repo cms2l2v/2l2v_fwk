@@ -819,7 +819,7 @@ int main (int argc, char *argv[])
             puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
             for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
               {
-                if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+                if (it->getBunchCrossing () == 0) ngenITpu += it->getTrueNumInteractions(); //it->getPU_NumInteractions ();
               }
             
             //ngenITpu = nGoodPV; // based on nvtx
