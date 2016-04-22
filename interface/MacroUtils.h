@@ -177,6 +177,7 @@ namespace utils
   double getTotalNumberOfEvents(std::vector<std::string>& urls, bool fast=false, bool weightSum=false);
 
   unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
+  double getMCPileupDistributionAndTotalEventFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
   void getMCPileupDistributionFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
   bool isGoodVertex(reco::Vertex& vtx);
   void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);

@@ -199,8 +199,8 @@ def CreateTheShellFile(argv):
 		shell_file.write(Jobs_FinalCmds[i]+'\n')
         if Jobs_RunHere==0:
            outDir = Farm_Directories[3]
-           if(not os.path.isabs(Path_Shell)): outDir = os.getcwd()+'/'+outDir;
- 	   shell_file.write('mv '+ Jobs_Name+'* '+outDir+'\n')
+#           if(not os.path.isabs(Path_Shell)): outDir = os.getcwd()+'/'+outDir;
+# 	   shell_file.write('mv '+ Jobs_Name+'* '+outDir+'\n')
 	shell_file.close()
 	os.system("chmod 777 "+Path_Shell)
 
@@ -283,6 +283,7 @@ def CreateTheCmdFile():
            cmd_file.write('Universe                = vanilla\n')
 	   cmd_file.write('Environment             = CONDORJOBID=$(Process)\n')
 	   cmd_file.write('notification            = Error\n')
+           cmd_file.write('on_exit_remove          = ((ExitBySignal == False) && (ExitCode == 0)) || (JobRunCount > 3)\n')
 	   #site specific code
   	   if  (commands.getstatusoutput("hostname -f")[1].find("ucl.ac.be" )!=-1): cmd_file.write('requirements            = (CMSFARM=?=True)&&(Memory > 200)\n')
            elif(commands.getstatusoutput("uname -n"   )[1].find("purdue.edu")!=-1): cmd_file.write('requirements            = (request_memory > 200)\n')
@@ -337,10 +338,11 @@ def AddJobToCmdFile():
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/"+absoluteShellPath
                 Jobs_List.extend([absoluteShellPath])
         else:
+                os.system('rm -f ' +os.path.relpath(Path_Log) + '.log') #delete log file to be sure there is no overlap
         	cmd_file.write('\n')
 	        cmd_file.write('Executable              = %s\n'     % os.path.relpath(Path_Shell) )
         	cmd_file.write('output                  = %s.out\n' % os.path.relpath(Path_Log) )
-	        cmd_file.write('error                   = %s.err\n' % os.path.relpath(Path_Log) )
+	        cmd_file.write('error                   = %s.out\n' % os.path.relpath(Path_Log) )
                 cmd_file.write('log                     = %s.log\n' % os.path.relpath(Path_Log) ) 
 	        cmd_file.write('Queue 1\n')
         cmd_file.close()

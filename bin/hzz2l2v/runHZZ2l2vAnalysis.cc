@@ -64,6 +64,8 @@
 #include "TLorentzVector.h"
 #include <Math/VectorUtil.h>
 
+#include <time.h>
+
 using namespace std;
 
 
@@ -558,9 +560,6 @@ int main(int argc, char* argv[])
   //##############################################
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
-  //MC normalization (to 1/pb)
-  double xsecWeight = 1.0;
-  if(isMC) xsecWeight=xsec/utils::getTotalNumberOfEvents(urls, false, true);//need to use the slow method in order to take NLO negative events into account
 
   //MET CORRection level
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
@@ -616,12 +615,18 @@ int main(int argc, char* argv[])
   edm::LumiReWeighting* LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
   double PUNorm[] = {1,1,1};
+
+  //MC normalization (to 1/pb)
+  double xsecWeight = 1.0;
   if(isMC){
           std::vector<double> dataPileupDistributionDouble = runProcess.getParameter< std::vector<double> >("datapileup");
           std::vector<float> dataPileupDistribution; for(unsigned int i=0;i<dataPileupDistributionDouble.size();i++){dataPileupDistribution.push_back(dataPileupDistributionDouble[i]);}
           std::vector<float> mcPileupDistribution;
 
-	  utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
+          double totalNumEvent = utils::getMCPileupDistributionAndTotalEventFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
+          xsecWeight=xsec/totalNumEvent;
+
+	  //utils::getMCPileupDistributionFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
           while(mcPileupDistribution.size()<dataPileupDistribution.size())  mcPileupDistribution.push_back(0.0);
           while(mcPileupDistribution.size()>dataPileupDistribution.size())dataPileupDistribution.push_back(0.0);
           gROOT->cd();  //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -636,13 +641,15 @@ int main(int argc, char* argv[])
   higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
 
   patUtils::MetFilter metFiler;
-  if(!isMC) { 
+  if(!isMC){ 
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
 	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+
+        //FIXME, we need to add here the single mu, single el, and gamma path
   }
 
   string debugText = "";
@@ -686,6 +693,7 @@ int main(int argc, char* argv[])
             if(genEventInfoHandle.isValid()){ eventInfo = *genEventInfoHandle;}
 
             //WEIGHT for NLO negative interference
+            //totalNumEvent+=eventInfo.weight();
             weight *= eventInfo.weight(); 
        
 
@@ -1582,9 +1590,16 @@ int main(int argc, char* argv[])
      printf("\n"); 
      delete file;
   } 
+
   //##############################################
   //########     SAVING HISTO TO FILE     ########
   //##############################################
+  //
+ 
+  //scale all events by 1/N to avoid the initial loop to stupidly count the events
+  //mon.Scale(1.0/totalNumEvent);
+
+  
   TString terminationCmd = "";
   //save control plots to file
   printf("Results save in local directory and moved to %s\n", outUrl.Data());
