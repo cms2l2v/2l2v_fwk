@@ -123,7 +123,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
-            list = DASQuery('file dataset='+sample + ' ' + instance)[1].split()
+            list = DASQuery('file dataset='+sample + ' ' + instance).split()
          elif(DatasetFileDB=="DBS"):
             curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
             dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
