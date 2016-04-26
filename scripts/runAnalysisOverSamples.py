@@ -5,13 +5,24 @@ import optparse
 import commands
 import LaunchOnCondor
 import UserCode.llvv_fwk.storeTools_cff as storeTools
+import sqlite3
 
 PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
+cachedQueryDB = sqlite3.connect(os.path.expandvars('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/das_query_cache.db') )
+cachedQueryDBcursor = cachedQueryDB.cursor()
+cachedQueryDBcursor.execute("""CREATE TABLE IF NOT EXISTS queries(id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, date TEXT, query TEXT, result TEXT)""")
+cachedQueryDB.commit()
+#cachedQueryDBcursor.close()
+#cachedQueryDB.close()
+
+
 isLocalSample = False
 nonLocalSamples = []
+
+
 
 """
 Gets the value of a given item
@@ -33,6 +44,25 @@ def getByLabelFromKeyword(proc,keyword,key,defaultVal=None) :
        except KeyError:
            return defaultVal
 
+def DASQuery(query):
+   cachedQueryDB = sqlite3.connect(os.path.expandvars('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/das_query_cache.db') )
+   cachedQueryDBcursor = cachedQueryDB.cursor()
+
+   cachedQueryDBcursor.execute("""SELECT result FROM queries WHERE query=?""", (query,) )
+   fetched = cachedQueryDBcursor.fetchall()
+   if(len(fetched)>1):print("WARNING:  More than one query result found in cached DAS query DB, return first one")
+   if(len(fetched)>=1):
+      cachedQueryDB.commit()
+      cachedQueryDB.close()
+      return fetched[0][0]
+
+   #get the result from DAS and cache it for future usage (only if there was no error with DAS)
+   outputs = commands.getstatusoutput('das_client.py --query="' + query + '" --limit=0')
+   result = outputs[1]
+   if(outputs[0]==0):cachedQueryDBcursor.execute("""INSERT INTO queries(date, query, result) VALUES(?, ?, ?)""", (time.strftime('%Y-%m-%d %H:%M:%S'), query, result))
+   cachedQueryDB.commit()  #commit changes to the DB
+
+   return result 
 
 initialCommand = '';
 def initProxy():
@@ -68,7 +98,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
-      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+sample + ' ' + instance + ' | grep site.name,site.replica_fraction " --limit=0')[1]
+      listSites = DASQuery('site dataset='+sample + ' ' + instance + ' | grep site.name,site.replica_fraction')
       IsOnLocalTier=False
       MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
@@ -93,7 +123,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
-            list = commands.getstatusoutput('das_client.py --query="file dataset='+sample + ' ' + instance + '" --limit=0')[1].split()
+            list = DASQuery('file dataset='+sample + ' ' + instance)[1].split()
          elif(DatasetFileDB=="DBS"):
             curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
             dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
@@ -137,6 +167,22 @@ def getFileList(procData,DefaultNFilesPerJob):
          FileList.append('"'+eventsFile+'"')
    return FileList
 
+
+def CacheInputs(FileList):
+   NewList = ""
+   CopyCommand = ""
+   DeleteCommand = ""
+   List = FileList.replace('"','').replace(',','').split('\\n')
+   for l in List:
+      if(len(l)<2):continue
+      CopyCommand += "cp " + l + " " + l[l.rfind('/')+1:] + ";\n"
+      DeleteCommand += "rm -f " + l[l.rfind('/')+1:] + ";\n"
+      NewList += '"' +  l[l.rfind('/')+1:] + '",\\n'
+   return (NewList, CopyCommand, DeleteCommand)
+
+   
+
+
 #configure
 usage = 'usage: %prog [options]'
 parser = optparse.OptionParser(usage)
@@ -172,6 +218,9 @@ if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 FarmDirectory                      = opt.outdir+"/FARM"
 PROXYDIR                           = FarmDirectory+"/inputs/"
 initProxy()
+doCacheInputs                      = False
+if("IIHE" in localTier): doCacheInputs = True
+
 
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 0
@@ -207,9 +256,7 @@ for procBlock in procList :
         procSuffix=getByLabelFromKeyword(proc,opt.onlykeyword,'suffix' ,"")
         data = proc['data']
 
-        for procData in data :
-            LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
- 
+        for procData in data : 
             origdtag = getByLabel(procData,'dtag','')
             if(origdtag=='') : continue
             dtag = origdtag         
@@ -229,12 +276,21 @@ for procBlock in procList :
                FileList = getByLabel(procData,'dset',['"UnknownDataset"'])
                LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag+filt)
                if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
-               if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 
                for s in range(0,len(FileList)):
+                   LaunchOnCondor.Jobs_FinalCmds= []
+                   LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
+                   if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
+
                    #create the cfg file
                    eventsFile = FileList[s]
                    eventsFile = eventsFile.replace('?svcClass=default', '')
+                   if(doCacheInputs and isLocalSample):
+                      result = CacheInputs(eventsFile)
+                      eventsFile = result[0]
+                      LaunchOnCondor.Jobs_InitCmds.append(result[1])
+                      LaunchOnCondor.Jobs_FinalCmds.append(result[2])
+
                    prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + filt
                	   sedcmd = 'sed \''
                    sedcmd += 's%"@dtag"%"' + dtag +'"%;'

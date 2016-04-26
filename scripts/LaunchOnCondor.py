@@ -140,18 +140,17 @@ def CreateTheShellFile(argv):
 	shell_file.write('cd ' + os.getcwd() + '\n')
 	shell_file.write('eval `scramv1 runtime -sh`\n')
 
+	if Jobs_RunHere==0:
+               	shell_file.write('cd -\n')
+
         for i in range(len(Jobs_InitCmds)):
                 #shell_file.write('echo ' + Jobs_InitCmds[i]+'\n')
 		shell_file.write(Jobs_InitCmds[i]+'\n')
 
 	if   argv[0]=='BASH':                 
-		if Jobs_RunHere==0:
-                	shell_file.write('cd -\n')
                 shell_file.write(argv[1] + " %s\n" % function_argument)
         elif argv[0]=='ROOT':
      	        function_argument='('+function_argument+')'
-		if Jobs_RunHere==0:
-                	shell_file.write('cd -\n')
 	        shell_file.write('root -l -b << EOF\n')
 	        shell_file.write('   TString makeshared(gSystem->GetMakeSharedLib());\n')
 	        shell_file.write('   TString dummy = makeshared.ReplaceAll("-W ", "-Wno-deprecated-declarations -Wno-deprecated ");\n')
@@ -164,8 +163,6 @@ def CreateTheShellFile(argv):
 	        shell_file.write('EOF\n\n')
         elif argv[0]=='FWLITE':                 
                 function_argument='('+function_argument+')'
-		if Jobs_RunHere==0:
-                	shell_file.write('cd -\n')
 	        shell_file.write('root -l -b << EOF\n')
                 shell_file.write('   TString makeshared(gSystem->GetMakeSharedLib());\n')
                 shell_file.write('   TString dummy = makeshared.ReplaceAll("-W ", "-Wno-deprecated-declarations -Wno-deprecated ");\n')
@@ -186,8 +183,6 @@ def CreateTheShellFile(argv):
 	        shell_file.write('EOF\n\n')
         elif argv[0]=='CMSSW' or argv[0]=='LIP':
 		CreateTheConfigFile(argv);
-		if Jobs_RunHere==0:
-			shell_file.write('cd -\n')
 		shell_file.write('cmsRun ' + os.getcwd() + '/'+Path_Cfg + '\n')
 	else:
 		print #Program to use is not specified... Guess it is bash command		
