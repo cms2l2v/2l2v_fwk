@@ -86,8 +86,6 @@ int main(int argc, char* argv[]){
   std::vector<string> var   = {"", "_Id_Iso01", "_Id_Iso02", "_Id_Iso03", "_Id_IsoLo", "_Id_IsoMe"};
   std::vector<string> wrt   = {"_wrtJetPt", "_wrtLepPt"};
 
-
-
   std::map<string, TH1D*> DataHistos;
   for(unsigned int c=0;c<cat.size();c++){
   for(unsigned int b=0;b<bin.size();b++){
@@ -95,8 +93,6 @@ int main(int argc, char* argv[]){
   for(unsigned int w=0;w<wrt.size();w++){
      string& DataFile             = DataFilePath;
      std::vector<string>& DataDir = fDataDir;
-
-
 
      TFile* File = new TFile(DataFile.c_str(), "READ");
 
@@ -107,8 +103,6 @@ int main(int argc, char* argv[]){
      for(unsigned int d=0;d<DataDir.size();d++){
         TH1D* hist = (TH1D*) File->Get((DataDir[d]+"/"+cat[c]+var[v]+bin[b]+wrt[w]).c_str());        
         if(!hist)continue;
-
-
 
         hist->GetSumw2();
         if(rbin>1){ hist->Rebin(rbin);  hist->Scale(1.0, "width"); }
@@ -121,16 +115,12 @@ int main(int argc, char* argv[]){
         hist->SetMarkerColor(catColor[c]);
         hist->SetStats(kFALSE);
 
-
-
         if(DataHistos.find(cat[c]+var[v]+bin[b])==DataHistos.end()){
            gROOT->cd(); //make sure that the file is saved in memory and not in file
            DataHistos[cat[c]+var[v]+bin[b]+wrt[w]] = (TH1D*)hist->Clone(); //create a new histo, since it's not found
         }else{
            DataHistos[cat[c]+var[v]+bin[b]+wrt[w]]->Add(hist); //add to existing histogram
         }
-
-
 
      }
      File->Close();
