@@ -289,7 +289,7 @@ for procBlock in procList :
                    if(doCacheInputs and isLocalSample):
                       result = CacheInputs(eventsFile)
                       eventsFile = result[0]
-                      LaunchOnCondor.Jobs_InitCmds.append('if [ -d $TMPDIR ] ; then cd $TMPDIR ; fi;\n')
+                      if("IIHE" in localTier): LaunchOnCondor.Jobs_InitCmds.append('if [ -d $TMPDIR ] ; then cd $TMPDIR ; fi;\n')
                       LaunchOnCondor.Jobs_InitCmds.append(result[1])
                       LaunchOnCondor.Jobs_FinalCmds.append(result[2])
 
