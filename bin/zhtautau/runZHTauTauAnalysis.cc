@@ -67,7 +67,12 @@
 using namespace std;
 
 // Additional functions
-
+enum CRTypes { 
+  CR10, 
+  CR01, 
+  CR11,
+  DEFAULT
+};
 
 LorentzVector getSVFit(pat::MET met, std::vector<patUtils::GenericLepton> selLeptons, int higgsCandL1, int higgsCandL2){       
   if(higgsCandL1<0 || higgsCandL2<0) return LorentzVector(0,0,0,0);
@@ -123,10 +128,10 @@ bool passHiggsCuts(std::vector<patUtils::GenericLepton> selLeptons, int higgsCan
 } 
 
 //**********************************************************************************************//
-std::string checkBkgCR(std::vector<patUtils::GenericLepton> selLeptons, int higgsCandL1, int higgsCandL2, float isoElCut, float isoMuCut, const char* isoHaCut, float sumPtCut, reco::VertexCollection vtx){
+CRTypes checkBkgCR(std::vector<patUtils::GenericLepton> selLeptons, int higgsCandL1, int higgsCandL2, float isoElCut, float isoMuCut, const char* isoHaCut, float sumPtCut, reco::VertexCollection vtx){
 //**********************************************************************************************//
 
-  std::string theCR="null";
+  CRTypes theCR = CRTypes::DEFAULT;
   std::vector<patUtils::GenericLepton*> HiggsLegs = {&(selLeptons[higgsCandL1]), &(selLeptons[higgsCandL2])};
   
   std::vector<bool> passId;  
@@ -150,13 +155,15 @@ std::string checkBkgCR(std::vector<patUtils::GenericLepton> selLeptons, int higg
   }
   
   if( (!passId[0] || !passIso[0]) && (passId[1]&&passIso[1]) ) {
-    theCR="CR10";
+    theCR=CRTypes::CR10;
   } else if (  (passId[0] || passIso[0]) && (!passId[1] || !passIso[1] ) ) {
-    theCR="CR01";
+    theCR=CRTypes::CR01;
   } else if (  (!passId[0] || !passIso[0]) && (!passId[1] || !passIso[1])  ) {
-    theCR="CR11";
+    theCR=CRTypes::CR11;
   }
+  
   return theCR;
+
 }
 
 //**********************************************************************************************//
@@ -1428,18 +1435,18 @@ int main(int argc, char* argv[])
                     mon.fillHisto(TString("Asvfit_shapes")+varNames[ivar],chTagsMain,index,higgsCand_SVFit.mass(),weight);
                   } else {
 		    
-		    std::string theCR =  checkBkgCR(selLeptons, higgsCandL1, higgsCandL2, optim_Cuts_elIso[index], optim_Cuts_muIso[index], tauIDiso[optim_Cuts_taIso[index]], optim_Cuts_sumPt[index],vtx);
+		    CRTypes theCR =  checkBkgCR(selLeptons, higgsCandL1, higgsCandL2, optim_Cuts_elIso[index], optim_Cuts_muIso[index], tauIDiso[optim_Cuts_taIso[index]], optim_Cuts_sumPt[index],vtx);
 		    
 		    float theFRWeight=1;
 
-		    if(theCR=="CR10"){
+		    if(theCR==CRTypes::CR10){
 		      // CR10
 		      theFRWeight*=getTheFRWeight(selLeptons, selJets, higgsCandL1, higgsCandL2, theFRWeightTool, optim_Cuts_elIso[index], optim_Cuts_muIso[index], tauIDiso[optim_Cuts_taIso[index]], optim_Cuts_sumPt[index],"CR10");
 
 		      mon.fillHisto(TString("Hsvfit_shapes_CR10")+varNames[ivar],chTagsMain,index,higgsCandH_SVFit.mass(),weight);
 		      mon.fillHisto(TString("Asvfit_shapes_CR10")+varNames[ivar],chTagsMain,index,higgsCand_SVFit.mass(),weight);
 
-		    } else if (theCR=="CR01") {
+		    } else if (theCR==CRTypes::CR01) {
 		      // CR01
 		      theFRWeight*=getTheFRWeight(selLeptons, selJets, higgsCandL1, higgsCandL2, theFRWeightTool, optim_Cuts_elIso[index], optim_Cuts_muIso[index], tauIDiso[optim_Cuts_taIso[index]], optim_Cuts_sumPt[index],"CR01");
 
