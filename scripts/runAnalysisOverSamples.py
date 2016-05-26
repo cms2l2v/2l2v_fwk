@@ -133,7 +133,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               if  (hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
+               if  (hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be/pnfs/iihe/cms/ph/sc4"+list[i]
                elif(hostname.find("ucl.ac.be" )!=-1): list[i] = "/storage/data/cms"+list[i]
                else:                                  list[i] = "root://eoscms//eos/cms"+list[i]            
             else:
@@ -175,7 +175,8 @@ def CacheInputs(FileList):
    List = FileList.replace('"','').replace(',','').split('\\n')
    for l in List:
       if(len(l)<2):continue
-      CopyCommand += "cp " + l + " " + l[l.rfind('/')+1:] + ";\n"
+      if("IIHE" in localTier): CopyCommand += "dccp " + l + " " + l[l.rfind('/')+1:] + ";\n"
+      else: CopyCommand += "cp " + l + " " + l[l.rfind('/')+1:] + ";\n"
       DeleteCommand += "rm -f " + l[l.rfind('/')+1:] + ";\n"
       NewList += '"' +  l[l.rfind('/')+1:] + '",\\n'
    return (NewList, CopyCommand, DeleteCommand)
@@ -288,6 +289,7 @@ for procBlock in procList :
                    if(doCacheInputs and isLocalSample):
                       result = CacheInputs(eventsFile)
                       eventsFile = result[0]
+                      if("IIHE" in localTier): LaunchOnCondor.Jobs_InitCmds.append('if [ -d $TMPDIR ] ; then cd $TMPDIR ; fi;\n')
                       LaunchOnCondor.Jobs_InitCmds.append(result[1])
                       LaunchOnCondor.Jobs_FinalCmds.append(result[2])
 
