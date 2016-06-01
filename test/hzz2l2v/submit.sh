@@ -30,7 +30,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_04_25
+SUFFIX=_2016_05_25
 
 #SUFFIX=_2016_04_19
 #SUFFIX=_debug
