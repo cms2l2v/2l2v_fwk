@@ -1228,8 +1228,10 @@ int main(int argc, char* argv[])
             //
             // ASSIGN CHANNEL
             //
+            double weightBefLoop = weight;
             for(unsigned int L=0;L<3;L++){  //Loop to assign a Z-->ll channel to photons
                if(L>0 && !(photonTrigger && gammaWgtHandler) )continue; //run it only for photon reweighting
+               weight = weightBefLoop;
              
                std::vector<TString> chTags;
                TString evCat;       
@@ -1263,6 +1265,7 @@ int main(int argc, char* argv[])
                    photonVars.push_back(boson.pt());           
                    float photonWeightMain=1.0;
                    if(L>0 && gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
+                   //if(L>0 && gammaWgtHandler)printf("Photon pT = %6.2f --> prescale=%6.2f weight=%6.2E forL=%i  cat=%s\n", boson.pt(), triggerPrescale, photonWeightMain, L, (string(L==1?"ee":"mumu")+evCat).Data());
                    weight *= triggerPrescale * photonWeightMain;
                }else{
                   continue;
