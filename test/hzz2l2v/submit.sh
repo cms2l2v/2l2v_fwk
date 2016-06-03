@@ -30,7 +30,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_05_25
+SUFFIX=_2016_05_24
 
 #SUFFIX=_2016_04_19
 #SUFFIX=_debug
@@ -127,9 +127,12 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadriven                  $arguments 
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadrivenplot              $arguments 
 	ln -s -f ${PLOTTER}.root plotter.root 
-        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
     fi        
    
+    if [[ $step == 3 || $step == 3.01 ]]; then  # make plots and combine root files for photon + jet study    
+        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
+    fi
+
 
     if [[ $step == 3 || $step == 3.1 ]]; then  # make plots and combine root files for photon + jet study    
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ $arguments

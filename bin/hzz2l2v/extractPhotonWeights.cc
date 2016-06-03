@@ -57,17 +57,18 @@ TH1D* SetLogHisto(TH1D *hf){
         return loghf;
 }
 
-TH1D* FillHistoWgts(TF1* flep, TF1* fphot, bool cutOnBinContent){
-    TH1D *hweights = new TH1D( "", "", 450, 50,500);
+TGraphErrors* FillHistoWgts(TF1* flep, TF1* fphot, bool cutOnBinContent){
+    TGraphErrors *hweights = new TGraphErrors(3000);
     int n=0;
-    for(int k=5;k<450;k++){
-	double mom = (50 + k);
-        if( std::pow(10, flep->Eval(mom))<1 && cutOnBinContent ){ n++; }
-        else if( std::pow(10, flep->Eval(mom))<15 && !cutOnBinContent ){ n++; }
-	if(n>0) continue;
-        hweights->SetBinContent(k, std::pow(10,flep->Eval(mom))/std::pow(10,fphot->Eval(mom)));
-	hweights->SetBinError(k,0);
-    }
+    int I=0;
+    for(double mom = 55; mom<3000; mom += 1){
+//        if( std::pow(10, flep->Eval(mom))<1 && cutOnBinContent ){ n++; }
+//        else if( std::pow(10, flep->Eval(mom))<15 && !cutOnBinContent ){ n++; }
+//	if(n>0) continue;
+	hweights->SetPoint(I, mom, std::pow(10, flep->Eval(mom) - fphot->Eval(mom) ) ); 
+	hweights->SetPointError(I, 1, 0);
+        I++;
+    }hweights->Set(I);
     return hweights;
 }  
 
@@ -136,7 +137,7 @@ int main(int argc, char* argv[]){
 
   std::map<string, TH1D*> DataHistos;
   std::map<string, TF1* > FitFunctionMap;
-  std::map<string, TH1D*> WeightsFitFunction;
+  std::map<string, TGraphErrors*> WeightsFitFunction;
  
   for(unsigned int c=0;c<cat.size();c++){
   for(unsigned int b=0;b<bin.size();b++){
@@ -348,9 +349,8 @@ int main(int argc, char* argv[]){
 
              TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
              if(bfit){
-                 if(var[v]=="_qtweight"){ 
-			   TH1D* histweight = WeightsFitFunction[cat[c]+bin[b]+"_qtweight"]; 
-			   TGraphErrors* graph = new TGraphErrors(histweight);
+                 if(var[v]=="_qtweight"){ 			   
+			   TGraphErrors* graph = WeightsFitFunction[cat[c]+bin[b]+"_qtweight"];
 			   graph->Write((cat[c]+bin[b]+"_qt_datafitfunctionwgts").c_str()); 
                  }
              } else if(!bfit) { 
