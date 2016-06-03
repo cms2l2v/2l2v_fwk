@@ -30,7 +30,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_04_25
+SUFFIX=_2016_05_25
 
 #SUFFIX=_2016_04_19
 #SUFFIX=_debug
@@ -127,7 +127,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadriven                  $arguments 
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadrivenplot              $arguments 
 	ln -s -f ${PLOTTER}.root plotter.root 
-        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights
+        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
     fi        
    
 

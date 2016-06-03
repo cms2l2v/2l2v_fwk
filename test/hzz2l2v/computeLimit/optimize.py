@@ -15,6 +15,7 @@ signalSuffixVec = []
 OUTName         = []
 LandSArgOptions = []
 BIN             = []
+MODEL           = []
 
 LaunchOnCondor.Jobs_Queue='8nh'
 FarmDirectory  = "FARM"
@@ -27,56 +28,76 @@ phase=-1
 ##   VALUES TO BE EDITED BY THE USE ARE BELLOW   ##
 ###################################################
 
-
-jsonUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json --key 2l2v_datadriven'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
+MODELS=["SM","RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
+based_key="2l2v_mcbased_"
+jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2016_05_08.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-
-MASS = [200, 400, 600, 1000, 1500]
-#MASS = [400, 600, 1000]
+MASS = [600, 800, 1000, 1200, 1400, 1600, 1800, 2500, 3000, 3500, 4000, 4500]
 SUBMASS = MASS
-SUBMASS = [200, 225, 250, 275, 300, 350, 400,450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350, 1400, 1450, 1500]
-
-#MASS = [200,250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800, 900, 1000]
-#SUBMASS = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250, 255, 260, 265, 270, 275, 280, 285, 290, 295, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 420, 440, 460, 480, 500, 520, 540, 560, 580, 600, 700, 800, 900, 1000]
+SUBMASS = [600, 650, 700, 750, 800, 850, 900, 950, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2500, 3000, 3500, 4000, 4500]
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
 LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB " #--blind "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
-for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
-   for bin in BINS:
-      for CP in [1.0, 0.6, 0.3, 0.1]:
-         if(CP!=1.0 and not ',' in bin):continue  #only do subchannel for SM
-         for BRN in [0.0]:
-            CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
-            #suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN)
-            suffix = "_cp%4.2f_brn%4.2f" % (CP, BRN)
-            if(CPSQ<=0): suffix="" #SM case
+for model in MODELS:
+   for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
+      for bin in BINS:
+         if(model=="SM"):
+            for CP in [1.0, 0.6, 0.3, 0.1]:
+               if(CP!=1.0 and not ',' in bin):continue  #only do subchannel for SM
+               for BRN in [0.0]:
+                   CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
+                   suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN)
+                   suffix = "_cp%4.2f_brn%4.2f" % (CP, BRN)
+                   if(CPSQ<=0): suffix="" #SM case
 
-            if ( CPSQ<=0 and not BRN==0.0):continue #SM case
-            if ( (CPSQ / (1-BRN))>1.0 ):continue
+                   if ( CPSQ<=0 and not BRN==0.0):continue #SM case
+                   if ( (CPSQ / (1-BRN))>1.0 ):continue
 
+                   #Run limit for ShapeBased GG+VBF
+                   signalSuffixVec += [ "" ]
+                   OUTName         += ["SB13TeV_SM"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
+                   BIN             += [bin]
+                   MODEL           += [model]
 
-            #Run limit for ShapeBased GG+VBF
-            signalSuffixVec += [ suffix ]
-            OUTName         += ["SB13TeV"]
-            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
-            BIN             += [bin]
+                   signalSuffixVec += [ "" ]
+                   OUTName         += ["SB13TeV_SM_GGF"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
+                   BIN             += [bin]
+                   MODEL          += [model]
 
-            signalSuffixVec += [ suffix ]
-            OUTName         += ["SB13TeV_GGF"]
-            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
-            BIN             += [bin]
+                   signalSuffixVec += [ "" ]
+                   OUTName         += ["SB13TeV_SM_VBF"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   BIN             += [bin]
+                   MODEL           += [model]
 
-            signalSuffixVec += [ suffix ]
-            OUTName         += ["SB13TeV_VBF"]
-            LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
-            BIN             += [bin]
+         elif(model=="RsGrav"):
+                   signalSuffixVec += [ "" ]
+                   OUTName         += ["SB13TeV_RsGrav"]
+                   LandSArgOptions += [" --histo " + shape + " --systpostfix _13TeV --shape"]
+                   BIN             += [bin]
+                   MODEL           += [model]
 
+         elif(model=="BulkGrav"):
+                   signalSuffixVec += [ "" ]
+                   OUTName         += ["SB13TeV_BulkGrav"]
+                   LandSArgOptions += [" --histo " + shape + " --systpostfix _13TeV --shape"]
+                   BIN             += [bin]
+                   MODEL           += [model]
+
+         elif(model=="Rad"):
+                   signalSuffixVec += [ "" ]
+                   OUTName         += ["SB13TeV_Rad"]
+                   LandSArgOptions += [" --histo " + shape + " --systpostfix _13TeV --shape"]
+                   BIN             += [bin]
+                   MODEL           += [model]
 
 ###################################################
 ##   MAIN  CODE : MODIFY AT YOUR OWN RISK        ##
@@ -141,9 +162,9 @@ def findSideMassPoint(mass):
 iConf = -1
 for signalSuffix in signalSuffixVec :
    iConf+=1;
-
    if(phase<=3 and ',' in BIN[iConf]):continue #only need individual bin for these phases
 
+   jsonUrl = jsonPath + " --key " + based_key + MODEL[iConf]
    LandSArg = LandSArgCommonOptions + ' ' + LandSArgOptions[iConf];
    if(signalSuffix != ""):LandSArg+=' --signalSufix \"' + signalSuffix +'\" '
    binSuffix = ""
@@ -196,7 +217,7 @@ for signalSuffix in signalSuffixVec :
           i = i+1#increment the cut index
       FILE.close()
       LaunchOnCondor.SendCluster_Submit()
-         
+      
    ###################################################
    ##   WRAPPING UP RESULTS                         ##
    ###################################################
@@ -254,8 +275,8 @@ for signalSuffix in signalSuffixVec :
       Gcut  = []
       for c in range(1, cutsH.GetYaxis().GetNbins()+1):
          Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #add a graph for each cut
-	 Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMin
-	 Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax
+         Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMin
+         Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax
 
       fileName = OUT+"/OPTIM"+signalSuffix
       fileName+=".txt"
@@ -301,7 +322,7 @@ for signalSuffix in signalSuffixVec :
            #ans = raw_input('Use this fit and compute final limits? (y or n)\n')
            ans='y'
            if(ans=='y' or ans == 'Y'): break;
-           else:			    sys.exit(0);           
+           else:			       sys.exit(0);           
       print 'YES'
 
       listcuts = open(OUT+'cuts.txt',"w")
@@ -425,7 +446,7 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines('cd ..;\n\n') 
            SCRIPT.close()
            #os.system('sh ' + OUT+'script_mass_'+str(m)+'.sh ')  #uncomment this line to launch interactively (this may take a lot of time)
-	   LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_mass_'+str(m)+'.sh'])
+           LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_mass_'+str(m)+'.sh'])
       LaunchOnCondor.SendCluster_Submit()
 
 

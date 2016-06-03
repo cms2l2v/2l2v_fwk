@@ -1904,7 +1904,8 @@ int main(int argc, char* argv[])
                TString procCtr(""); procCtr+=i;
                TString proc=Process[i].getString("tag", "noTagFound");
 
-               string dirName = proc.Data();
+               string dirName = proc.Data(); 
+	       //std::<TString> keys = Process[i].getString("keys", "noKeysFound");
                if(Process[i].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i].getIntFromKeyword(matchingKeyword, "mctruthmode", 0)); dirName += buf; }
                string procSuffix = Process[i].getStringFromKeyword(matchingKeyword, "suffix", "");
                if(procSuffix!=""){dirName += "_" + procSuffix;}
@@ -1933,12 +1934,14 @@ int main(int argc, char* argv[])
                }
 
                double procMass=0;  char procMassStr[128] = "";
-               if(isSignal &&  mass>0 && (proc.Contains("H(") || proc.Contains("h(") || proc.Contains("A("))){
+               if(isSignal &&  mass>0 && (proc.Contains("H(") || proc.Contains("h(") || proc.Contains("A(") || proc.Contains("Rad(") || proc.Contains("RsGrav(") || proc.Contains("BulkGrav(") )){
                         if(proc.Contains("H(") && proc.Contains("A(")){sscanf(proc.Data()+proc.First("A")+2,"%lf",&procMass);
                   }else if(proc.Contains("H(")){sscanf(proc.Data()+proc.First("H")+2,"%lf",&procMass);
                   }else if(proc.Contains("A(")){sscanf(proc.Data()+proc.First("A")+2,"%lf",&procMass);
                   }else if(proc.Contains("h(")){sscanf(proc.Data()+proc.First("(")+1,"%lf",&procMass);
-                  }
+                  }else if(proc.Contains("Rad(")){sscanf(proc.Data()+proc.First("(")+1,"%lf",&procMass);
+		  }else if(proc.Contains("RsGrav(")){sscanf(proc.Data()+proc.First("(")+1,"%lf",&procMass);
+                  }else if(proc.Contains("BulkGrav(")){sscanf(proc.Data()+proc.First("(")+1,"%lf",&procMass);}
 
                   //printf("%s --> %f\n",  proc.Data(), procMass);
 

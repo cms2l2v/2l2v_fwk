@@ -14,182 +14,62 @@
 
 using namespace std;
 
+std::string function_used = "([0] + [1]*x + [2]*x^2 + [3]*x^3 + [4]*x^4 )";
 
-Double_t fermipow(Double_t *x, Double_t *par) {
+TF1* FitFunction(TH1D *hf, bool cutOnBinContent){
 
-  const Int_t n=6;
-  Double_t thr[n]={22,36,50,75,90,300};
+        TH1D *loghf = new TH1D("","", 1500, 0, 1500);
+        int  ncells = hf->GetSize();
 
-  Double_t fland=0;
-  Double_t fpow, ffermi;
+        double min = 55;
+        double max = 0;
 
-  Double_t alpha,beta,gamma,delta;
-  
-  Int_t j=1;
-  
-  for (Int_t i=0; i<n; i++) {
+        for(int bin=0;bin<(ncells-1);bin++){
+           if(hf->GetBinContent(bin)>0){ 
+               loghf->SetBinContent( bin, log10(hf->GetBinContent(bin)));
+               loghf->SetBinError( bin, (hf->GetBinError(bin)/hf->GetBinContent(bin)));	
+               if( hf->GetBinContent(bin)>1 && cutOnBinContent ){ max = hf->GetXaxis()->GetBinCenter(bin); }
+	       else if( hf->GetBinContent(bin)>15 && !cutOnBinContent ){ max = hf->GetXaxis()->GetBinCenter(bin); }
+           }
+        }
+        TF1 *f1 = new TF1( "fit1", function_used.c_str(), min, max);
+        loghf->Fit( f1, "R");
+        TF1 *fit = loghf->GetFunction("fit1");
 
-    alpha=par[j]; beta=par[j+1];
-    gamma=par[j+2]; delta=par[j+3];
+	TF1 *ffit1 = new TF1( "ffit1", function_used.c_str(), min, max);
+        ffit1->SetParameters( fit->GetParameter(0), fit->GetParameter(1), fit->GetParameter(2), fit->GetParameter(3), fit->GetParameter(4));
+
+	return ffit1;   
+}
+
+TH1D* SetLogHisto(TH1D *hf){
+
+        TH1D *loghf = new TH1D("","", 1500, 0, 1500);
+        int  ncells = hf->GetSize();
+
+        for(int bin=0;bin<(ncells-1);bin++){
+           if(hf->GetBinContent(bin)>0){
+               loghf->SetBinContent( bin, log10(hf->GetBinContent(bin)));
+               loghf->SetBinError( bin, (hf->GetBinError(bin)/hf->GetBinContent(bin)));
+           }
+        }
     
-    fpow = TMath::Power( (x[0]/alpha), beta);
-    ffermi = (TMath::Exp(-x[0]/alpha) / (1.+TMath::Exp( (gamma-x[0])/delta )));
-     
-    //fland += TMath::Floor(x[0]) * fpow * ffermi;
-    if (x[0]>=thr[i]) {
-      fland += fpow * ffermi;
-    } else { fland += 0.;}
-    
-    j+=4;
-  }
-  //return fland;
-  return par[0]*fland;
+        return loghf;
 }
 
-// Exponentially modified Gaussian
-Double_t expgaus(Double_t *x, Double_t *par) {
-
-      // Numeric constants
-      Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-      Double_t mpshift  = -0.22278298;       // Landau maximum location
-
-      // Control constants
-      Double_t np = 50.0;      // number of convolution steps
-      Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
-
-      // Variables
-      Double_t xx;
-      Double_t mpc;
-      Double_t fland;
-      Double_t sum = 0.0;
-      Double_t xlow,xupp;
-      Double_t step;
-      Double_t i;
-      bool x_initial = false;
-
-      // MP shift correction
-      //   mpc = par[1] - mpshift * par[0]; 
-
-      // Range of convolution integral
-      //      xlow = x[0] - sc * par[2];
-      //xupp = x[0] + sc * par[2];
-      xlow = par[4];
-      xupp=x[0];
-      step = (xupp-xlow) / np;
-
-      // Convolution integral of Landau and Gaussian by sum
-      for(i=1.0; i<=np/2; i++) {
-         xx = xlow + (i-.5) * step;
-
-         //cout << xx << endl;
-	 fland = (par[3]/2.)*TMath::Exp( (par[3]/2.)*(2.*par[1]+par[3]*par[2]*par[2]-2.*xx) ); 
-         sum += fland * TMath::Erfc( (par[1]+par[3]*par[2]*par[2]-xx)/(sqrt(2.)*par[2]) );
-	   //errorFun(xx,&par[5]); //TMath::Gaus(x[0],xx,par[3]);
-
-         xx = xupp - (i-.5) * step;
-
-
-         //cout << xx << endl;
-         //cout << "=========" << endl;
-	 fland = (par[3]/2.)*TMath::Exp( (par[3]/2.)*(2.*par[1]+par[3]*par[2]*par[2]-2.*xx) ); 
-         sum += fland * TMath::Erfc( (par[1]+par[3]*par[2]*par[2]-xx)/(sqrt(2.)*par[2]) );
-         //cout << "Par 3  " << par[3] << " x value " << *x << endl;
-      }
-
-
-
-      return (par[0] *step * sum ); //* invsq2pi / par[3]);
-}
-
-
-//FUNCTION BELOW IS NOT USED and NOT COMPILLING, so I (LQ) commented out
-/*
-TGraphAsymmErrors* drawEff(TString hname1, TString hname2, TString filename, TString nameDir, TString header, TString xtitle, int rebin, bool asymBin, float xlow, float xhigh, float xmin, float xmax, int icol, int imark, TString draw, double mup){//,double y, double c) {
-
-  TH1D *ref = readHist(hname1, filename, nameDir, rebin);
-  TH1D *sel = readHist(hname2, filename, nameDir, rebin);
-
-  ref->SetName(hname1+header);
-  sel->SetName(hname2+header);
-
-  TGraphAsymmErrors *Eff = new TGraphAsymmErrors();
-  if (asymBin) {
-    Double_t xbins[14]={0.,4.,6.,8.,10.,12.,14.,18.,
-		      22.,28.,34.,42.,52.,100.};
-
-    sel->Rebin(14,"nsel",xbins);
-    ref->Rebin(14,"nref",xbins);
-    Eff->BayesDivide(nsel, nref);
-  } else {
-    Eff->BayesDivide(sel, ref);
-    //Eff->Divide(sel,ref,"cl=0.683 b(1,1) mode");
-    //Eff->Divide(sel,ref,"cl=0.683 b(1,1) mode v n");
-
-  }
-
-  Double_t Nbins=(double)ref->GetNbinsX();
-  Double_t Nconv=(xhigh-xlow)/100.;
-
-  if (Nbins>=Nconv) {
-    cout << "Histo bins >= Nconvolution steps; OK" << endl;
-  } else {
-    cout << "Histo bins < Nconvolution steps!!! Not OK" << endl;
-  }
-
-
-  // gStyle->SetOptStat(1);
-  gStyle->SetOptFit(0);
-
-  TF1 *fermiFunction = new TF1("fermiFunction",expgaus,xlow,xhigh,5);
-
-  Double_t params[5] = {1.,mup,20.,1.,xlow};
-  fermiFunction->SetParameters(params);
-  fermiFunction->SetParNames("#epsilon","#mu","#sigma","#lambda","xlow");
-  if (hname2 != "L1JetAnalysis/SumEt60"  ){ 
-    fermiFunction->FixParameter(4,xlow);
-    // fermiFunction->SetParLimits(1,100.,150.);
-  }
-  //  fermiFunction->SetParLimits(1,100.,150.);
-  fermiFunction->SetParLimits(0,0.0,1.0);
-   fermiFunction->SetLineColor(icol);
-  fermiFunction->SetLineWidth(3);
-  
-  for(int i=0; i != 1 ; i++){  
-    Eff->Fit("fermiFunction","RS+");
-  }
-
-  Eff->SetLineWidth(2);
-  Eff->SetMarkerStyle(imark); Eff->SetMarkerSize(0.5);
-  Eff->SetMarkerColor(icol);
-  Eff->SetLineColor(icol);
-  Eff->GetXaxis()->SetTitle(xtitle);
-  Eff->GetYaxis()->SetTitle("Trigger Efficiency");
-  // Eff->GetXaxis()->SetLabelSize(0.03);
-  // Eff->GetYaxis()->SetLabelSize(0.03);
-  Eff->GetXaxis()->SetTitleSize(0.05);
-  Eff->GetYaxis()->SetTitleSize(0.05);
-  Eff->GetXaxis()->SetTitleOffset(1.);
-
-  Eff->GetYaxis()->SetRangeUser(0.,1.1);
-  Eff->GetXaxis()->SetRangeUser((xmin+0.01),xmax);
-  Eff->GetXaxis()->SetMoreLogLabels();
-
-  Double_t xpoint;
-  Double_t ypoint;
-
-  TF1 *fit = Eff->GetFunction("fermiFunction");
-  if (draw=="") {
-    Eff->Draw("AP");
-  } else {
-    Eff->Draw("P");
-  }
-  
-  return Eff;
-
-}
-*/
-
-
+TH1D* FillHistoWgts(TF1* flep, TF1* fphot, bool cutOnBinContent){
+    TH1D *hweights = new TH1D( "", "", 450, 50,500);
+    int n=0;
+    for(int k=5;k<450;k++){
+	double mom = (50 + k);
+        if( std::pow(10, flep->Eval(mom))<1 && cutOnBinContent ){ n++; }
+        else if( std::pow(10, flep->Eval(mom))<15 && !cutOnBinContent ){ n++; }
+	if(n>0) continue;
+        hweights->SetBinContent(k, std::pow(10,flep->Eval(mom))/std::pow(10,fphot->Eval(mom)));
+	hweights->SetBinError(k,0);
+    }
+    return hweights;
+}  
 
 int main(int argc, char* argv[]){
    setTDRStyle();  
@@ -207,7 +87,8 @@ int main(int argc, char* argv[]){
    bool isData=true;
    bool bfit=false;
    int  rbin=1;
-   bool asym=true;
+   bool asym=false;
+   int rebin=1;
    string gDataFile = "plotter_2016_01_18_forPhotonWeights.root";
    string zDataFile = "plotter_2016_01_18_forPhotonWeights.root";
    string outDir    = "photonWeights/";
@@ -216,15 +97,17 @@ int main(int argc, char* argv[]){
    for(int i=1;i<argc;i++){
      string arg(argv[i]);
      if(arg.find("--help")!=string::npos){
-        printf("--help   --> print this helping text\n");
+        printf("--help    --> print this helping text\n");
         printf("--inFile  --> path of the plotter .root file with inputs\n");
         printf("--outDir  --> path of the output directory to save the plots\n");
         printf("--outFile --> path of the output summary .root file\n");
+        printf("--fitf    --> use fitting functions to compute weights\n");
 	return 0;
      }
      if(arg.find("--inFile" )!=string::npos && i+1<argc){ zDataFile= argv[i+1];  gDataFile= argv[i+1]; i++; printf("input file = %s\n", zDataFile.c_str()); }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++; printf("outDir = %s\n", outDir.c_str());  }
+     if(arg.find("--fitf")!=string::npos && i+1<argc){ bfit = argv[i+1];  i++; }
    }
    system( (string("mkdir -p ") + outDir).c_str());
 
@@ -252,6 +135,9 @@ int main(int argc, char* argv[]){
   std::vector<string> var   = {"_qt", "_qmass", "_met", "_mt"};
 
   std::map<string, TH1D*> DataHistos;
+  std::map<string, TF1* > FitFunctionMap;
+  std::map<string, TH1D*> WeightsFitFunction;
+ 
   for(unsigned int c=0;c<cat.size();c++){
   for(unsigned int b=0;b<bin.size();b++){
   for(unsigned int v=0;v<var.size();v++){
@@ -285,15 +171,28 @@ int main(int argc, char* argv[]){
 
         if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){
            gROOT->cd(); //make sure that the file is saved in memory and not in file
-           DataHistos[cat[c]+bin[b]+var[v]] = (TH1D*)hist->Clone();; //create a new histo, since it's not found
+           DataHistos[cat[c]+bin[b]+var[v]] = (TH1D*)hist->Clone(); //create a new histo, since it's not found
         }else{
            DataHistos[cat[c]+bin[b]+var[v]]->Add(hist); //add to existing histogram
         }
-     }
+     
+        //Compute the fitting function for evey histogram in eq0jets and geq1jets, in ee-mumu-gamma channel. For VBF, we used geq1jets fuctions reweighted in such a way the integral is still ok.
+        if( var[v]!="_qt" ) continue; //Considering only qt distribution
+	if( bin[b] == "vbf" && ( cat[c] == "ee" || cat[c] == "mumu" || cat[c] == "ll" )){
+		TH1D *hvbf = (TH1D*) File->Get((DataDir[d]+"/"+cat[c]+"vbf"+var[v]).c_str());
+		hist = (TH1D*) File->Get((DataDir[d]+"/"+cat[c]+"geq1jets"+var[v]).c_str());	
+		hist->Scale(hvbf->Integral()/hist->Integral());
+		FitFunctionMap[cat[c]+"vbf"+var[v]] = FitFunction( hist, true);
+	}else if( bin[b] !="vbf" || cat[c] == "gamma" ){
+                FitFunctionMap[cat[c]+bin[b]+var[v]] =  FitFunction( hist, false);
+	}
+     } 
+
      File->Close();
   }}}//all histos are now loaded
 
-   //non fixed-width rebins
+  
+  //non fixed-width rebins
   if(asym){
      double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
      for(unsigned int v=0;v<var.size();v++){
@@ -312,29 +211,43 @@ int main(int argc, char* argv[]){
         var.push_back(var[v]+"rebin");
      }
   }
-
+ 
   //compute the weight
   for(unsigned int v=0;v<var.size();v++){
      if(var[v]!="_qt" && var[v]!="_qtrebin")continue;
      for(unsigned int b=0;b<bin.size();b++){     
-        if(DataHistos.find(string("gamma")+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (string("gamma")+bin[b]+var[v]).c_str()); continue;}
+	if(DataHistos.find(string("gamma")+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (string("gamma")+bin[b]+var[v]).c_str()); continue;}
         TH1D* histgamma = DataHistos[string("gamma")+bin[b]+var[v]];
+	if(FitFunctionMap.find(string("gamma")+bin[b]+var[v])==FitFunctionMap.end()){printf("Function missing for %s\n", (string("gamma")+bin[b]+var[v]).c_str()); continue;}
+        TF1 *fphot = FitFunctionMap[string("gamma")+bin[b]+var[v]];
 
         for(unsigned int c=0;c<cat.size();c++){
            if(cat[c]=="gamma")continue;
-           if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
-           TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
-           hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"weight").c_str());
-           hist->Divide(histgamma);
-           DataHistos[cat[c]+bin[b]+var[v]+"weight"] = hist;
+	    
+           if(bfit){
+	       if(FitFunctionMap.find(cat[c]+bin[b]+var[v])==FitFunctionMap.end()){printf("Function missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
+	       TF1  *flep = FitFunctionMap[cat[c]+bin[b]+var[v]]; 
+	       if( bin[b] == "vbf" && ( cat[c] == "ee" || cat[c] == "mumu" || cat[c] == "ll" )){
+                   WeightsFitFunction[ cat[c]+bin[b]+var[v]+"weight"]= FillHistoWgts(flep,fphot, true);
+	       } else if( bin[b] !="vbf" || cat[c] == "gamma" ){
+                   WeightsFitFunction[ cat[c]+bin[b]+var[v]+"weight"]= FillHistoWgts(flep,fphot, false);
+	       }
+	        
+	   } else if(!bfit){
+               if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
+               TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
+               hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"weight").c_str());
+               hist->Divide(histgamma);
+               DataHistos[cat[c]+bin[b]+var[v]+"weight"] = hist;
+           }
         }
      }
      printf("add variable %s\n", (var[v]+"weight").c_str());
      var.push_back(var[v]+"weight");
   }
 
-
   //make the plots
+  if(!bfit){
   for(unsigned int v=0;v<var.size();v++){
      double xmin,xmax;
      double ymin=0.5, ymax=1E6;
@@ -360,7 +273,6 @@ int main(int argc, char* argv[]){
         bool axisDrawn=false;
         for(unsigned int c=0;c<cat.size();c++){
            if(cat[c]=="ll")continue;  //do not ll on the plots
-
            if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
            TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
            hist->GetXaxis()->SetRangeUser(xmin,xmax);
@@ -368,19 +280,61 @@ int main(int argc, char* argv[]){
 
            if(!axisDrawn){hist->Draw("AXIS"); axisDrawn=true;}
            hist->Draw("HIST E1 same");           
-           if(bfit && (var[v]=="_qt" || var[v]=="_qtrebin")){
-//             TF1* fitFunc = new TF1("myPol2","pol2",60,500);
-             TF1* fitFunc = new TF1("myFunc", expgaus, 60, 500, 5);
-             hist->Fit(fitFunc,"FR+","EHISTSAME",60.,500.);
-             fitFunc->SetLineColor(catColor[c]);
-             fitFunc->SetLineWidth(2);
-             fitFunc->Draw("same");
-           }
            leg->AddEntry(hist, catL[c].c_str(), "LP"); 
-        }
-        leg->Draw("SAME");
-     }
-     c1->SaveAs((outDir + "/PhotonWeight"+var[v]+".png").c_str());
+       }
+       leg->Draw("SAME");
+    }
+    c1->SaveAs((outDir + "/PhotonWeight"+var[v]+".png").c_str());
+   }
+   }
+
+  //Save Fit
+  if(bfit){ 
+    for(unsigned int v=0;v<var.size();v++){
+       if(var[v]=="_qtrebin" || var[v]=="_qtweight" || var[v]=="_qtrebinweight" ) continue;
+       for(unsigned int c=0;c<cat.size();c++){
+	  string canvas_name;
+          TCanvas* c1 =new TCanvas("c1","c1",500*bin.size(), 500);
+          c1->Divide(bin.size(),1);
+          for(unsigned int b=0;b<bin.size();b++){
+	     c1->cd(1+b);
+             TLegend* leg = new TLegend(0.52,0.67,0.92,0.90);
+             leg->SetFillStyle(0);
+             leg->SetBorderSize(0);
+             leg->SetTextSize(0.04);
+             leg->SetTextFont(42);
+             leg->SetHeader(binL[b].c_str());
+	     TH1D* hist = NULL;
+             if(var[v]=="_qt"){
+		TF1 *f1 = NULL;
+		hist = SetLogHisto(DataHistos[cat[c]+bin[b]+var[v]]); 
+		f1 = FitFunctionMap[cat[c]+bin[b]+var[v]];
+		f1->SetParameter(0, rebin*f1->GetParameter(0));
+                f1->SetLineColor(kRed);
+                f1->SetLineWidth(2);
+	        hist->SetStats(false);
+		hist->Rebin(rebin);
+		hist->Draw("AP");
+		f1->Draw("same");
+        	hist->GetXaxis()->SetTitle("q_{T} [GeV]");
+		hist->GetXaxis()->SetRangeUser(55,500); 
+		hist->GetXaxis()->SetTitleOffset(0.8);
+        	hist->GetYaxis()->SetTitle("Events");
+		hist->GetYaxis()->SetTitleOffset(0.8); 
+		canvas_name = "/FittingFunction_"+cat[c]+var[v];
+	     } else {
+		hist = DataHistos[cat[c]+bin[b]+var[v]];
+                hist->GetXaxis()->SetRangeUser(  1., 1000);
+                hist->GetYaxis()->SetRangeUser( 0.5,  1E6);
+		hist->Draw("HIST E1 same`");
+		canvas_name = "/PhotonDistribution_"+cat[c]+var[v];
+	     }
+             leg->AddEntry(hist, catL[c].c_str(), "LP");
+	     leg->Draw("SAME");
+	  } 
+          c1->SaveAs((outDir + canvas_name +".png").c_str());
+       }
+    }
   }
 
   //SAVE THE material to the weight file
@@ -390,27 +344,35 @@ int main(int argc, char* argv[]){
      if(cat[c]=="gamma")continue;
      for(unsigned int b=0;b<bin.size();b++){
      for(unsigned int v=0;v<var.size();v++){
-        if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;}
-        TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
+             if(!bfit){ if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){printf("Histo missing for %s\n", (cat[c]+bin[b]+var[v]).c_str()); continue;} }
 
-        if(var[v]=="_qtweight"){
-           TGraphErrors* graph = new TGraphErrors(hist);
-           graph->Write((cat[c]+bin[b]+"_qt_datafitwgts").c_str());
-        }else if(var[v]=="_qtrebinweight"){
-           TGraphErrors* graph = new TGraphErrors(hist);
-           graph->Write((cat[c]+bin[b]+"_qt_datafitwgtsrebin").c_str());
-          
-        }else if(var[v]=="_qmass"){
-           //replace VBF by geq1jets has there is no stat in VBF for Z candidates
-           if(bin[b]=="vbf")continue;  
-           if(bin[b]=="geq1jets"){
-              hist->Write((cat[c]+"vbf"+"_zmass").c_str());  
-           }
+             TH1D* hist = DataHistos[cat[c]+bin[b]+var[v]];
+             if(bfit){
+                 if(var[v]=="_qtweight"){ 
+			   TH1D* histweight = WeightsFitFunction[cat[c]+bin[b]+"_qtweight"]; 
+			   TGraphErrors* graph = new TGraphErrors(histweight);
+			   graph->Write((cat[c]+bin[b]+"_qt_datafitfunctionwgts").c_str()); 
+                 }
+             } else if(!bfit) { 
+             	 if(var[v]=="_qtweight"){
+                	   TGraphErrors* graph = new TGraphErrors(hist);
+                	   graph->Write((cat[c]+bin[b]+"_qt_datafitwgts").c_str());
+            	 }else if(var[v]=="_qtrebinweight"){
+                 	   TGraphErrors* graph = new TGraphErrors(hist);
+                	   graph->Write((cat[c]+bin[b]+"_qt_datafitwgtsrebin").c_str()); 
+             	}
+             }
 
-
-           hist->Write((cat[c]+bin[b]+"_zmass").c_str());
+             if(var[v]=="_qmass"){
+                     //replace VBF by geq1jets has there is no stat in VBF for Z candidates
+                     if(bin[b]=="vbf")continue;  
+                     if(bin[b]=="geq1jets"){
+                          hist->Write((cat[c]+"vbf"+"_zmass").c_str());  
+                     }
+                     hist->Write((cat[c]+bin[b]+"_zmass").c_str());
+             }
         }
-     }}
+     }
   }
   OutputFile->Write(); OutputFile->Close();
 }
