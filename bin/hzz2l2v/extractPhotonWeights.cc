@@ -305,8 +305,8 @@ int main(int argc, char* argv[]){
              leg->SetTextSize(0.04);
              leg->SetTextFont(42);
              leg->SetHeader(binL[b].c_str());
-	     TH1D* hist = NULL;
-             if(var[v]=="_qt"){
+             TH1D* hist = NULL; 
+             if(var[v]=="_qt"){	
 		TF1 *f1 = NULL;
 		hist = SetLogHisto(DataHistos[cat[c]+bin[b]+var[v]]); 
 		f1 = FitFunctionMap[cat[c]+bin[b]+var[v]];
@@ -315,22 +315,26 @@ int main(int argc, char* argv[]){
                 f1->SetLineWidth(2);
 	        hist->SetStats(false);
 		hist->Rebin(rebin);
-		hist->Draw("AP");
+                hist->GetXaxis()->SetTitleSize(.055);
+                hist->GetYaxis()->SetTitleSize(.055);
+                hist->GetXaxis()->SetLabelSize(.05);
+                hist->GetYaxis()->SetLabelSize(.05);
+                hist->GetXaxis()->SetTitle("Z Boson pT [GeV]");
+                hist->GetYaxis()->SetTitle("Events"); 
+		hist->Draw("P");
 		f1->Draw("same");
-        	hist->GetXaxis()->SetTitle("q_{T} [GeV]");
-		hist->GetXaxis()->SetRangeUser(55,500); 
-		hist->GetXaxis()->SetTitleOffset(0.8);
-        	hist->GetYaxis()->SetTitle("Events");
-		hist->GetYaxis()->SetTitleOffset(0.8); 
+                leg->AddEntry(hist, catL[c].c_str(), "LP");
+                leg->AddEntry ( f1, "Fit", "LP"); 
 		canvas_name = "/FittingFunction_"+cat[c]+var[v];
 	     } else {
 		hist = DataHistos[cat[c]+bin[b]+var[v]];
                 hist->GetXaxis()->SetRangeUser(  1., 1000);
                 hist->GetYaxis()->SetRangeUser( 0.5,  1E6);
 		hist->Draw("HIST E1 same`");
+                leg->AddEntry(hist, catL[c].c_str(), "LP");
 		canvas_name = "/PhotonDistribution_"+cat[c]+var[v];
 	     }
-             leg->AddEntry(hist, catL[c].c_str(), "LP");
+             //leg->AddEntry(hist, catL[c].c_str(), "LP");
 	     leg->Draw("SAME");
 	  } 
           c1->SaveAs((outDir + canvas_name +".png").c_str());
