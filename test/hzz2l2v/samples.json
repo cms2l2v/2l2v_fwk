@@ -241,7 +241,8 @@
       "data":[
         { "dtag":"Data13TeV_SinglePhoton2015B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2015B-27Jan2016-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt" },
         { "dtag":"Data13TeV_SinglePhoton2015C",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2015C_25ns-27Jan2016-v2/MINIAOD"]  ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt" },
-        { "dtag":"Data13TeV_SinglePhoton2015D",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2015D-16Dec2015-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt" }
+        { "dtag":"Data13TeV_SinglePhoton2015D",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2015D-16Dec2015-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_13TeV_16Dec2015ReReco_Collisions15_25ns_JSON_v2.txt" },
+        { "dtag":"Data13TeV_SinglePhoton2016B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016B-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt" }
       ]
     }, 
     {
