@@ -564,25 +564,19 @@ int main(int argc, char* argv[])
 
   //MET CORRection level
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
-	std::cout<<"1"<<std::endl;
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
   FactorizedJetCorrector *jesCor = new FactorizedJetCorrector();
-	std::cout<<"2"<<std::endl;
   if(isMC || is2015data) FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
   TString pf(isMC ? "MC" : "DATA");
-	std::cout<<"3"<<std::endl;
   JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty();
-	std::cout<<"4"<<std::endl;
   if(isMC || is2015data) JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
-	std::cout<<"5"<<std::endl;
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
   rochcor2015* muCor = false;
   if(isMC || is2015data) muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
-	std::cout<<"6"<<std::endl;
   //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework) 
 
 	ElectronEnergyCalibratorRun2 ElectronEnCorrector;
@@ -590,13 +584,11 @@ int main(int argc, char* argv[])
   string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
   PhotonEnergyCalibratorRun2 PhotonEnCorrector(isMC, false, EGammaEnergyCorrectionFile);
   PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-	std::cout<<"7"<<std::endl;
   EpCombinationTool theEpCombinationTool;
   theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
   ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
   ElectronEnCorrector.initPrivateRng(new TRandom(1234));
 }
-std::cout<<"8"<<std::endl;
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -648,7 +640,6 @@ std::cout<<"8"<<std::endl;
 
 
   higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
-	std::cout<<"9"<<std::endl;
   patUtils::MetFilter metFiler;
   if(!isMC){ 
 		if(is2015data){
@@ -664,7 +655,6 @@ std::cout<<"8"<<std::endl;
 		}
         //FIXME, we need to add here the single mu, single el, and gamma path
   }
-std::cout<<"10"<<std::endl;
   string debugText = "";
 
   //##############################################
@@ -1039,7 +1029,6 @@ std::cout<<"10"<<std::endl;
              passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
              passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
 
-						 std::cout<<"11"<<std::endl;
              //apply muon corrections
              if(abs(lid)==13 && passIso && passId){
                  passSoftMuon=false;
@@ -1104,7 +1093,6 @@ std::cout<<"10"<<std::endl;
            met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
            met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
            met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
-					 std::cout<<"12"<<std::endl;
          //
          //JET/MET ANALYSIS
          //
@@ -1151,7 +1139,6 @@ std::cout<<"10"<<std::endl;
               bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>btagLoose);
               bool hasCSVtagUp = hasCSVtag;  
               bool hasCSVtagDown = hasCSVtag;
-							std::cout<<"13"<<std::endl;
               //update according to the SF measured by BTV
               if(isMC){
                   int flavId=jet.partonFlavour();  double eta=jet.eta();
@@ -1198,7 +1185,6 @@ std::cout<<"10"<<std::endl;
          //compute scale uncertainty once and for all
          std::pair<double, double> scaleUncVar = patUtils::scaleVariation(ev);  //compute it only once          
 
-				 std::cout<<"14"<<std::endl;
          // LOOP ON SYSTEMATIC VARIATION FOR THE STATISTICAL ANALYSIS
          for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
           if(!isMC && ivar>0 ) continue; //loop on variation only for MC samples
@@ -1245,7 +1231,6 @@ std::cout<<"10"<<std::endl;
             for(unsigned int L=0;L<3;L++){  //Loop to assign a Z-->ll channel to photons
                if(L>0 && !(photonTrigger && gammaWgtHandler) )continue; //run it only for photon reweighting
                weight = weightBefLoop;
-							 std::cout<<"15"<<std::endl;
                std::vector<TString> chTags;
                TString evCat;       
                int dilId(1);
@@ -1459,7 +1444,6 @@ std::cout<<"10"<<std::endl;
                               mon.fillHisto( "mtfinal",tags,mt,weight,true);
                               mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
                               mon.fillHisto( "njetsfinal",tags,njets,weight);
-															std::cout<<"16"<<std::endl;
                               if(!isMC){
                                  char buffer[1024];
                                  sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer; 
