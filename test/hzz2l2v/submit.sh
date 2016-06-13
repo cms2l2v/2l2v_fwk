@@ -30,7 +30,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_04_21test
+SUFFIX=_2016_05_24
 
 #SUFFIX=_2016_04_19
 #SUFFIX=_debug
@@ -65,17 +65,17 @@ fi #end of step0
 if [[ $step > 0.999 &&  $step < 2 ]]; then
    if [[ $step == 1 || $step == 1.0 ]]; then        #submit jobs for 2l2v analysis
 	echo "JOB SUBMISSION"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysisOptimized -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_mcbased $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_mcbased $arguments
    fi
 
    if [[ $step == 1 || $step == 1.1 ]]; then        #submit jobs for 2l2v photon jet analysis
 	echo "JOB SUBMISSION for Photon + Jet analysis"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysisOptimized -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
    fi
 
    if [[ $step == 1 || $step == 1.2 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                                   
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysisOptimized -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi                              
 fi
 
@@ -127,9 +127,12 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadriven                  $arguments 
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadrivenplot              $arguments 
 	ln -s -f ${PLOTTER}.root plotter.root 
-        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights
     fi        
    
+    if [[ $step == 3 || $step == 3.01 ]]; then  # make plots and combine root files for photon + jet study    
+        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
+    fi
+
 
     if [[ $step == 3 || $step == 3.1 ]]; then  # make plots and combine root files for photon + jet study    
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/mcbased/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_mcbased --fileOption READ $arguments
