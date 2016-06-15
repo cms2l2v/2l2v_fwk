@@ -336,7 +336,7 @@ for procBlock in procList :
                               LaunchOnCondor.Jobs_CRABStorageSite = 'T2_PT_NCG_Lisbon'
                           else:
                               LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
-                          LaunchOnCondor.Jobs_CRABname     = dtag
+                          LaunchOnCondor.Jobs_CRABname     = dtag + '_' + str(s)
                           LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
                           if(split>0):
                               LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 
