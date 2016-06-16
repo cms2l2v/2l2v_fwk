@@ -37,13 +37,20 @@
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 //#include "TauAnalysis/SVfitStandalone/interface/SVfitStandaloneAlgorithm.h" //for svfit
 
+#include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"  
+#include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibratorRun2.h" 
+
+
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "UserCode/llvv_fwk/interface/SmartSelectionMonitor.h"
 #include "UserCode/llvv_fwk/interface/TMVAUtils.h"
+#include "UserCode/llvv_fwk/interface/rochcor2015.h"
+#include "UserCode/llvv_fwk/interface/muresolution_run2.h"
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/MuScleFitCorrector.h"
+#include "UserCode/llvv_fwk/interface/BTagCalibrationStandalone.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
 #include "UserCode/llvv_fwk/interface/GammaWeightsHandler.h"
 
@@ -296,21 +303,25 @@ int main (int argc, char *argv[])
   TString dirname = runProcess.getParameter < std::string > ("dirName");
   
   //systematics
+
+  std::vector<string> jetVarNames = {""};;//, "_scale_jup","_scale_jdown", "_res_jup", "_res_jdown"}; // Whaddafuck
+  
   std::vector<TString> systVars(1,"");
   if(runSystematics && isMC)
     {
-      systVars.push_back("jerup" );     systVars.push_back("jerdown"   );
-      systVars.push_back("jesup" );     systVars.push_back("jesdown"   );
-      //systVars.push_back("lesup" );   systVars.push_back("lesdown"   );
-      systVars.push_back("leffup");     systVars.push_back("leffdown"  );
-      systVars.push_back("puup"  );     systVars.push_back("pudown"   );
-      systVars.push_back("umetup");     systVars.push_back("umetdown" );
-      systVars.push_back("btagup");     systVars.push_back("btagdown" );
+      systVars.push_back("jerup" );     systVars.push_back("jerdown"    );
+      systVars.push_back("jesup" );     systVars.push_back("jesdown"    );
+      systVars.push_back("mesup" );     systVars.push_back("mesdown"    ); // Muon energy scale
+      systVars.push_back("eesup" );     systVars.push_back("eesdown"    ); // Electron energy scale
+      systVars.push_back("leffup");     systVars.push_back("leffdown"   );
+      systVars.push_back("puup"  );     systVars.push_back("pudown"     );
+      systVars.push_back("umetup");     systVars.push_back("umetdown"   );
+      systVars.push_back("btagup");     systVars.push_back("btagdown"   );
       systVars.push_back("unbtagup");   systVars.push_back("unbtagdown" );
+      systVars.push_back("thfactup");   systVars.push_back("thfactdown" );
+      systVars.push_back("pdfup"); systVars.push_back("pdfdown"); 
       if(isTTbarMC) {systVars.push_back("topptuncup"); systVars.push_back("topptuncdown"); }
-      //      systVars.push_back(); systVars.push_back();
 
-      if(isTTbarMC) { systVars.push_back("pdfup"); systVars.push_back("pdfdown"); }
       cout << "Systematics will be computed for this analysis - this will take a bit" << endl;
     }
 
@@ -351,6 +362,8 @@ int main (int argc, char *argv[])
   normhist->GetXaxis()->SetBinLabel (3, "PU central");
   normhist->GetXaxis()->SetBinLabel (4, "PU up");
   normhist->GetXaxis()->SetBinLabel (5, "PU down");
+
+  mon.addHistogram( new TH1F( "metFilter_eventflow",     ";metEventflow",20,0,20) );
 
   //event selection - charged Higgs
   TH1D* h = (TH1D*) mon.addHistogram (new TH1D ("chhiggseventflowdilep", ";;Events", 6, 0., 6.));
@@ -422,7 +435,7 @@ int main (int argc, char *argv[])
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlemu_pileup", ";;Events", 100, 0., 100.));
   h = (TH1D*) mon.addHistogram( new TH1D("nvtx_singlee_pileup" , ";;Events", 100, 0., 100.));
 
-  
+    
   // Setting up control categories to be analyzed
   std::vector < TString > controlCats;
   controlCats.clear ();
@@ -534,7 +547,6 @@ int main (int argc, char *argv[])
       mon.addHistogram (new TH1D (icat + "axialmet",       ";Axial missing transvere energy [GeV];Events", 50, -100.,  400.  ));
       mon.addHistogram (new TH1D (icat + "axialmetNM1",    ";Axial missing transvere energy [GeV];Events", 50, -100.,  400.  ));
       mon.addHistogram (new TH1D (icat + "met",            ";Missing transverse energy [GeV];Events",      50,    0., 1000.  ));
-      mon.addHistogram (new TH1D (icat + "recomet",        ";Missing transverse energy [GeV];Events",      50,    0., 1000.  ));
       mon.addHistogram (new TH1D (icat + "mt",             ";Transverse mass;Events",                      50,    0.,  500.  ));
       mon.addHistogram (new TH1D (icat + "mtresponse",     ";Transverse mass response;Events",            100,    0.,    2.  ));
       mon.addHistogram (new TH1D (icat + "mtcheckpoint",   ";Transverse mass [GeV];Events",               160,  150., 1750.  ));
@@ -604,15 +616,30 @@ int main (int argc, char *argv[])
   //MC normalization (to 1/pb)
   if(debug) cout << "DEBUG: xsec: " << xsec << endl;
 
+
+
+  // MET Correction level
+  pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
+
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter < std::string > ("jecDir");
   gSystem->ExpandPathName (jecDir);
-  FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector (jecDir, isMC);
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/MC_Uncertainty_AK4PFchs.txt").Data ());
+  FactorizedJetCorrector *jesCor = utils::cmssw::getJetCorrector(jecDir, isMC);
+  TString pf(isMC ? "MC" : "DATA");
+  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty ((jecDir + "/"+pf+"_Uncertainty_AK4PFchs.txt").Data ());
   
   //muon energy scale and uncertainties
-  MuScleFitCorrector *muCor = NULL; // FIXME: MuScle fit corrections for 13 TeV not available yet (more Zs are needed) getMuonCorrector (jecDir, dtag);
+  TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
+  gSystem->ExpandPathName(muscleDir);
+  rochcor2015* muCor = new rochcor2015(); // This replaces the old MusScleFitCorrector that was used at RunI
 
+  // Electron energy scale, based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer and adapted to this framework
+  string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
+  EpCombinationTool theEpCombinationTool;
+  theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
+  ElectronEnCorrector.initPrivateRng(new TRandom(1234));
+  
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
   
@@ -639,9 +666,22 @@ int main (int argc, char *argv[])
 
 
   // Btag SF and eff from https://indico.cern.ch/event/437675/#preview:1629681
+  //sfb is not actually used as it's taken from btagCal
+  // beff = 0.747; sfb = 0.899; //for Loose WP
   sfb = 0.861;
   // sbbunc =;
   beff = 0.559;
+  
+  // Setup calibration readers
+  BTagCalibration btagCalib("CSVv2", string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/btagSF_CSVv2.csv");
+  BTagCalibrationReader btagCal   (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "central");  // calibration instance, operating point, measurement type, systematics type
+  BTagCalibrationReader btagCalUp (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "up"     );  // sys up
+  BTagCalibrationReader btagCalDn (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "down"   );  // sys down
+  BTagCalibrationReader btagCalL  (&btagCalib, BTagEntry::OP_LOOSE, "comb", "central");  // calibration instance, operating point, measurement type, systematics type
+  BTagCalibrationReader btagCalLUp(&btagCalib, BTagEntry::OP_LOOSE, "comb", "up"     );  // sys up
+  BTagCalibrationReader btagCalLDn(&btagCalib, BTagEntry::OP_LOOSE, "comb", "down"   );  // sys down
+
+
 
 
   TString
@@ -652,6 +692,7 @@ int main (int argc, char *argv[])
   edm::LumiReWeighting * LumiWeights = NULL;
   utils::cmssw::PuShifter_t PuShifters;
   double PUNorm[] = { 1, 1, 1 };
+  double xsecWeight(1.0);
   if (isMC)
     {
       std::vector<double> dataPileupDistributionDouble = runProcess.getParameter < std::vector < double >>("datapileup");
@@ -661,7 +702,9 @@ int main (int argc, char *argv[])
           dataPileupDistribution.push_back (dataPileupDistributionDouble[i]);
         }
       std::vector<float> mcPileupDistribution;
-      utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
+      double totalNumEvent = utils::getMCPileupDistributionAndTotalEventFromMiniAOD(urls,dataPileupDistribution.size(), mcPileupDistribution);
+      xsecWeight=xsec/totalNumEvent;
+      //utils::getMCPileupDistributionFromMiniAOD(urls, dataPileupDistribution.size (), mcPileupDistribution);
       while(mcPileupDistribution.size() < dataPileupDistribution.size()) mcPileupDistribution.push_back(0.0);
       while(mcPileupDistribution.size() > dataPileupDistribution.size()) dataPileupDistribution.push_back(0.0);
       gROOT->cd ();             //THIS LINE IS NEEDED TO MAKE SURE THAT HISTOGRAM INTERNALLY PRODUCED IN LumiReWeighting ARE NOT DESTROYED WHEN CLOSING THE FILE
@@ -752,7 +795,7 @@ int main (int argc, char *argv[])
         //
         
         //pileup weight
-        double weight           (1.0);
+        double weight           (xsecWeight);
         double rawWeight        (1.0);
         double TotalWeight_plus (1.0);
         double TotalWeight_minus(1.0);
@@ -819,7 +862,7 @@ int main (int argc, char *argv[])
             puInfoH.getByLabel (ev, "slimmedAddPileupInfo");
             for (std::vector < PileupSummaryInfo >::const_iterator it = puInfoH->begin (); it != puInfoH->end (); it++)
               {
-                if (it->getBunchCrossing () == 0) ngenITpu += it->getPU_NumInteractions ();
+                if (it->getBunchCrossing () == 0) ngenITpu += it->getTrueNumInteractions(); //it->getPU_NumInteractions ();
               }
             
             //ngenITpu = nGoodPV; // based on nvtx
@@ -838,12 +881,6 @@ int main (int argc, char *argv[])
         
         //##############################################   EVENT LOOP STARTS   ##############################################
 
-        // Orthogonalize Run2015B PromptReco+17Jul15 mix
-        if(isRun2015B)
-          {
-            if(!patUtils::exclusiveDataEventFilter(ev.eventAuxiliary().run(), isMC, isPromptReco ) ) continue;
-          }
-        
         // Skip bad lumi
         if(!goodLumiFilter.isGoodLumi(ev.eventAuxiliary().run(),ev.eventAuxiliary().luminosityBlock())) continue; 
         
@@ -882,8 +919,10 @@ int main (int argc, char *argv[])
         if (!(eTrigger || muTrigger)) continue;         //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
 
         // ------------ Apply MET filters ------------
-        if( !isMC && !metFiler.passMetFilter( ev)) continue;
- 
+        int metFilterValue(metFiler.passMetFilterInt(ev));
+        mon.fillHisto("metFilter_eventflow", "", metFilterValue, weight);
+        if(metFilterValue!=0) continue; // MET Filters must be applied to both data and MC
+
         //load all the objects we will need to access
 
         double rho = 0;
@@ -1020,15 +1059,7 @@ int main (int argc, char *argv[])
         fwlite::Handle<pat::METCollection> metsHandle;
         metsHandle.getByLabel(ev, "slimmedMETs");
         if(metsHandle.isValid() ) mets = *metsHandle;
-        LorentzVector met = mets[0].p4 ();
-        
-        if(debug){
-          // MET try:
-          double mypt = mets[0].shiftedPt(pat::MET::METUncertainty::JetEnUp);
-          cout << "MET = " << mets[0].pt() << ", JetEnUp: " << mypt << endl;
-          LorentzVector myshiftedMet = mets[0].shiftedP4(pat::MET::METUncertainty::JetEnUp);
-          cout << "MET = " << mets[0].pt() << ", JetEnUp: " << myshiftedMet.pt() << endl;
-        }
+        pat::MET met = mets[0];
         
         pat::TauCollection taus;
         fwlite::Handle<pat::TauCollection> tausHandle;
@@ -1054,7 +1085,9 @@ int main (int argc, char *argv[])
         for(size_t l=0; l<muons.size(); ++l)     leptons.push_back(patUtils::GenericLepton (muons[l]     ));
         std::sort(leptons.begin(), leptons.end(), utils::sort_CandidatesByPt);
 
-        LorentzVector muDiff(0., 0., 0., 0.);
+        LorentzVector
+          muDiff(0., 0., 0., 0.),
+          elDiff(0., 0., 0., 0.);
         std::vector<patUtils::GenericLepton> selLeptons;
         unsigned int nVetoE(0), nVetoMu(0);
         for(size_t ilep=0; ilep<leptons.size (); ++ilep)
@@ -1067,19 +1100,35 @@ int main (int argc, char *argv[])
             
             int lid(lepton.pdgId());
             
-            //apply muon corrections
+            // Apply muon corrections
             if(abs(lid) == 13)
             {
               if(muCor)
                 {
-                  TLorentzVector p4(lepton.px(), lepton.py(), lepton.pz(), lepton.energy());
-                  muCor->applyPtCorrection(p4, lid < 0 ? -1 : 1);
-                  if(isMC) muCor->applyPtSmearing(p4, lid < 0 ? -1 : 1, false);
-                  muDiff -= lepton.p4();
-                  lepton.setP4(LorentzVector(p4.Px(), p4.Py(), p4.Pz(), p4.E()));
-                  muDiff += lepton.p4();
+                  float qter;
+                  TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                  if(isMC)
+                    {
+                      muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+                    }
+                  else
+                    {
+                      muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
+                    }
+                  muDiff -= leptons[ilep].p4();
+                  leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
+                  muDiff += leptons[ilep].p4();
                 }
             }
+            
+            // Apply electron corrections
+            if(abs(lid)==11)
+              {
+                elDiff -= leptons[ilep].p4();                   
+                ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+                leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                elDiff += leptons[ilep].p4();                 
+              }
             
           //no need for charge info any longer
           lid = abs(lid);
@@ -1095,7 +1144,7 @@ int main (int argc, char *argv[])
           double leta(fabs(lid==11 ? lepton.el.superCluster()->eta() : lepton.eta()));
           
           // Main leptons kin
-          if(lepton.pt() < 30.)                      passKin = false;
+          if(lepton.pt() < 25.)                      passKin = false;
           if(leta > 2.1)                                    passKin = false;
           if(lid == 11 && (leta > 1.4442 && leta < 1.5660)) passKin = false; // Crack veto
           
@@ -1108,21 +1157,29 @@ int main (int argc, char *argv[])
           
           //std::vector<pat::Electron> dummyShit; dummyShit.push_back(leptons[ilep].el);
           
-          
-          passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
-          passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
+          passId      = lid==11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
+          passVetoId = lid==11 ? patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
+
+          //passId     = lid == 11 ? patUtils::passId(electronVidMainId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdTight);
+          //passVetoId = lid == 11 ? patUtils::passId(electronVidVetoId, myEvent, lepton.el) : patUtils::passId(lepton.mu, goodPV, patUtils::llvvMuonId::StdLoose);
 
           //isolation
-          passIso     = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight); // Electron iso is included within the ID
-          passVetoIso = lid == 11 ? true : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose); // Electron iso is included within the ID
+          passIso     = lid == 11 ? patUtils::passIso(leptons[ilep].el, patUtils::llvvElecIso::Tight) : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Tight);
+          passVetoIso = lid == 11 ? patUtils::passIso(leptons[ilep].el, patUtils::llvvElecIso::Loose) : patUtils::passIso(lepton.mu, patUtils::llvvMuonIso::Loose);
 
           if     (passKin     && passId     && passIso)     selLeptons.push_back(lepton);
           else if(passVetoKin && passVetoId && passVetoIso) lid==11 ? nVetoE++ : nVetoMu++;
           
         }
       std::sort(selLeptons.begin(),   selLeptons.end(),   utils::sort_CandidatesByPt);
-      LorentzVector recoMET = met;// FIXME REACTIVATE IT - muDiff;
-      
+
+
+      // Propagate lepton energy scale to MET
+      met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
+      met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
+      met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
+      met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
+      met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
       
       //select the taus
       pat::TauCollection selTaus;
@@ -1174,10 +1231,19 @@ int main (int argc, char *argv[])
       if(debug) cout << "Now update Jet Energy Corrections" << endl;
       //add scale/resolution uncertainties and propagate to the MET      
       utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,nGoodPV,isMC);
-      if(debug) cout << "Update also MET" << endl;
-      std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
-      met=newMet[utils::cmssw::METvariations::NOMINAL];
+
+      /// if(debug) cout << "Update also MET" << endl;
+      /// std::vector<LorentzVector> newMet=utils::cmssw::getMETvariations(met/*recoMet*/,jets,selLeptons,isMC); // FIXME: Must choose a lepton collection. Perhaps loose leptons?
+      /// met=newMet[utils::cmssw::METvariations::NOMINAL];
       if(debug) cout << "Jet Energy Corrections updated" << endl;
+      
+      std::map<string, pat::JetCollection> selJetsVar;
+      std::map<string, int   > njetsVar;
+      std::map<string, int   > nbtagsVar;
+      std::map<string, double> mindphijmetVar;
+      for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){njetsVar[jetVarNames[ivar]] = 0;}  //initialize
+      for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){mindphijmetVar[jetVarNames[ivar]] = 9999.0;}  //initialize
+      nbtagsVar[""] = 0; nbtagsVar["_eff_bup"] = 0; nbtagsVar["_eff_bdown"] = 0;  //initialize
       
       // Select the jets. I need different collections because of tau cleaning, but this is needed only for the single lepton channels, so the tau cleaning is performed later.
       pat::JetCollection
@@ -1192,29 +1258,18 @@ int main (int argc, char *argv[])
           //mc truth for this jet
           const reco::GenJet * genJet = jet.genJet();
           TString jetType (genJet && genJet->pt() > 0 ? "truejetsid" : "pujetsid");
-
+          
           //cross-clean with selected leptons and photons
           double minDRlj (9999.), minDRlg (9999.), minDRljSingleLep(9999.);
 
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRlj = TMath::Min(minDRlj, reco::deltaR (jet, selLeptons[ilep]));
-          // don't want to mess with photon ID // for(size_t ipho=0; ipho<selPhotons.size(); ipho++)
-          // don't want to mess with photon ID //   minDRlg = TMath::Min( minDRlg, deltaR(jets[ijet],selPhotons[ipho]) );
-          //          if (minDRlj < 0.4 /*|| minDRlg<0.4 */ ) continue;
           
           for (size_t ilep = 0; ilep < selLeptons.size(); ilep++)
             minDRljSingleLep = TMath::Min(minDRljSingleLep, reco::deltaR (jet, selLeptons[ilep]));
           
           //jet id
           bool passPFloose = passPFJetID("Loose", jet); 
-          // FIXME: check when pileup ID will come out
-          //if (jets[ijet].pt() > 30)
-          //  {
-          //    mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 0);
-          //    if (passPFloose)                        mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 1);
-          //    if (passLooseSimplePuId)                mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 2);
-          //    if (passPFloose && passLooseSimplePuId) mon.fillHisto (jetType, "", fabs (jets[ijet].eta()), 3);
-          //  }
           if (!passPFloose || jet.pt() <30. || fabs(jet.eta()) > 2.5) continue;
           if (minDRlj < 0.4) continue;
           
@@ -1223,19 +1278,50 @@ int main (int argc, char *argv[])
           double dphijmet = fabs (deltaPhi (met.phi(), jet.phi()));
           if (dphijmet < mindphijmet) mindphijmet = dphijmet;
           bool hasCSVtag(jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > btagMedium);
+          bool hasCSVtagUp(hasCSVtag);
+          bool hasCSVtagDown(hasCSVtag);
           
-          if (isMC)
-            {
-              int flavId = jet.partonFlavour();
-              if      (abs(flavId)==5) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb,   beff);
-              else if (abs(flavId)==4) btsfutil.modifyBTagsWithSF(hasCSVtag, sfb/5, beff);
-              else                     btsfutil.modifyBTagsWithSF(hasCSVtag, sfl,   leff);
+          //update according to the SF measured by BTV
+          if(isMC){
+            int flavId=jet.partonFlavour();  double eta=jet.eta();
+            if      (abs(flavId)==5){  btsfutil.modifyBTagsWithSF(hasCSVtag    , btagCal   .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+              btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalUp .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+              btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
+            }else if(abs(flavId)==4){  btsfutil.modifyBTagsWithSF(hasCSVtag    , btagCal   .eval(BTagEntry::FLAV_C   , eta, jet.pt()), beff);
+              btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalUp .eval(BTagEntry::FLAV_C   , eta, jet.pt()), beff);
+              btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_C   , eta, jet.pt()), beff);
+            }else{                     btsfutil.modifyBTagsWithSF(hasCSVtag    , btagCalL  .eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
+              btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalLUp.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
+              btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalLDn.eval(BTagEntry::FLAV_UDSG, eta, jet.pt()), leff);
             }
+          }
+          
+          if(hasCSVtag    )nbtagsVar[""          ]++;
+          if(hasCSVtagUp  )nbtagsVar["_eff_bup"  ]++;
+          if(hasCSVtagDown)nbtagsVar["_eff_bdown"]++;
+          
+          for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){
+            pat::Jet varJet = jet;
+            if(ivar!=0) varJet.setP4(jet.p4() * jet.userFloat(jetVarNames[ivar]));
+            selJetsVar[jetVarNames[ivar]].push_back(varJet);
+            
+            if(varJet.pt()>30){
+              njetsVar[jetVarNames[ivar]]++;
+              
+              float dphijmet=fabs(deltaPhi(met.corP4(metcor).phi(), varJet.phi()));
+              if(dphijmet<mindphijmetVar[jetVarNames[ivar]]) mindphijmetVar[jetVarNames[ivar]]=dphijmet;
+            }
+          }
           
           if(!hasCSVtag) continue;
           selBJets.push_back(jet);
         }
-
+      
+      //sort all jet collection by pT
+      for(auto jetCollIt = selJetsVar.begin(); jetCollIt!=selJetsVar.end(); jetCollIt++){
+        std::sort(jetCollIt->second.begin(), jetCollIt->second.end(), utils::sort_CandidatesByPt);
+      }
+      
       std::sort (selJets.begin(),  selJets.end(),  utils::sort_CandidatesByPt);
       std::sort (selBJets.begin(), selBJets.end(), utils::sort_CandidatesByPt);
       
@@ -1344,13 +1430,12 @@ int main (int argc, char *argv[])
           double thetall(utils::cmssw::getArcCos<patUtils::GenericLepton>(selLeptons[0],selLeptons[1]));
           double sumpt(selLeptons[0].pt()+selLeptons[1].pt());
           // double mtsum(utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[0],met)+utils::cmssw::getMT<patUtils::GenericLepton,LorentzVector>(selLeptons[1],met));
-          double mtsum(higgs::utils::transverseMass(selLeptons[0].p4(),met,false)+higgs::utils::transverseMass(selLeptons[1].p4(),met,false));
+          double mtsum(higgs::utils::transverseMass(selLeptons[0].p4(),met.p4(),false)+higgs::utils::transverseMass(selLeptons[1].p4(),met.p4(),false));
 
           mon.fillHisto(icat+"yll",          tags, fabs(dileptonSystem.Rapidity()), weight);
           mon.fillHisto(icat+"mll",          tags, dileptonSystem.mass(),           weight);
           mon.fillHisto(icat+"ptll",         tags, dileptonSystem.pt(),             weight);
           mon.fillHisto(icat+"met",          tags, met.pt(),                        weight);
-          mon.fillHisto(icat+"recomet",      tags, recoMET.pt(),                    weight);
           mon.fillHisto(icat+"dilarccosine", tags, thetall,                         weight);
           mon.fillHisto(icat+"sumpt",        tags, sumpt,                           weight);
           mon.fillHisto(icat+"mtsum",        tags, mtsum,                           weight);
@@ -1442,8 +1527,10 @@ int main (int argc, char *argv[])
                 bool varyJerDown  (systVars[ivar] == "_jerdown" );
                 bool varyUmetUp   (systVars[ivar] == "_umetup"  );
                 bool varyUmetDown (systVars[ivar] == "_umetdown");
-                bool varyLesUp    (systVars[ivar] == "_lesup"   );
-                bool varyLesDown  (systVars[ivar] == "_lesdown" );
+                bool varyMesUp    (systVars[ivar] == "_mesup"   );
+                bool varyMesDown  (systVars[ivar] == "_mesdown" );
+                bool varyEesUp    (systVars[ivar] == "_eesup"   );
+                bool varyEesDown  (systVars[ivar] == "_eesdown" );
                 
                 //pileup variations
                 if (systVars[ivar] == "_puup")   iweight *= TotalWeight_plus;
@@ -1465,8 +1552,21 @@ int main (int argc, char *argv[])
                 if(varyJerDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::JetResDown);
                 if(varyUmetUp)   newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnUp);
                 if(varyUmetDown) newMET = mets[0].shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown);
+                if(varyMesUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::MuonEnUp);
+                if(varyMesDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::MuonEnDown);
+                if(varyEesUp)    newMET = mets[0].shiftedP4(pat::MET::METUncertainty::ElectronEnUp);
+                if(varyEesDown)  newMET = mets[0].shiftedP4(pat::MET::METUncertainty::ElectronEnDown);
+                
                 //if(varyLesUp)    newMET = met[utils::cmssw::LESUP]; //FIXME  must vary all leptons separately: MuonEnUp/MuonEnDown/ElectronEnUp/ElectronEnDown/TauEnUp/TauEnDown
                 //if(varyLesDown)  newMET = met[utils::cmssw::LESDOWN];
+
+
+                auto& selJets      = selJetsVar[""];        if(selJetsVar    .find(systVars[ivar].Data())!=selJetsVar    .end())selJets     = selJetsVar    [systVars[ivar].Data()];            
+                auto& njets        = njetsVar [""];         if(njetsVar      .find(systVars[ivar].Data())!=njetsVar      .end())njets       = njetsVar      [systVars[ivar].Data()];
+                auto& nbtags       = nbtagsVar[""];         if(nbtagsVar     .find(systVars[ivar].Data())!=nbtagsVar     .end())nbtags      = nbtagsVar     [systVars[ivar].Data()];
+                auto& mindphijmet  = mindphijmetVar[""];    if(mindphijmetVar.find(systVars[ivar].Data())!=mindphijmetVar.end())mindphijmet = mindphijmetVar[systVars[ivar].Data()];
+
+           
                 
                 pat::JetCollection finalSelJets;
                 pat::JetCollection finalSelBJets;
@@ -1627,7 +1727,6 @@ int main (int argc, char *argv[])
           mon.fillHisto(icat+"trailereta", tags, fabs(selLeptons[1].eta()),          weight   );
           mon.fillHisto(icat+"ntaus",      tags, ntaus,                              weight   );
           mon.fillHisto(icat+"met",        tags, met.pt(),                           weight   );
-          mon.fillHisto(icat+"recomet",    tags, recoMET.pt(),                       weight   );
           if(selSingleLepJets.size()>0){
             mon.fillHisto(icat+"leadjetpt",      tags, selSingleLepJets[0].pt(),         weight);
             //mon.fillHisto(icat+"trailerpt",   tags, selLeptons[1].pt(),         weight);
