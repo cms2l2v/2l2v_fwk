@@ -57,7 +57,7 @@ def DASQuery(query):
       return fetched[0][0]
 
    #get the result from DAS and cache it for future usage (only if there was no error with DAS)
-   outputs = commands.getstatusoutput('das_client.py --query="' + query + '" --limit=0')
+   outputs = commands.getstatusoutput('/cvmfs/cms.cern.ch/common/das_client --query="' + query + '" --limit=0')
    result = outputs[1]
    if(outputs[0]==0):cachedQueryDBcursor.execute("""INSERT INTO queries(date, query, result) VALUES(?, ?, ?)""", (time.strftime('%Y-%m-%d %H:%M:%S'), query, result))
    cachedQueryDB.commit()  #commit changes to the DB

@@ -575,7 +575,7 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
-  rochcor2015* muCor = false;
+  rochcor2015* muCor = new rochcor2015(); //need to be updated for 2016
   if(isMC || is2015data) muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
   //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework) 
 
