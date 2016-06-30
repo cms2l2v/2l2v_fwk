@@ -567,28 +567,30 @@ int main(int argc, char* argv[])
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
-  FactorizedJetCorrector *jesCor = new FactorizedJetCorrector();
-  if(isMC || is2015data) FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
+  FactorizedJetCorrector *jesCor = NULL;
+  if(isMC || is2015data) jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
   TString pf(isMC ? "MC" : "DATA");
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty();
-  if(isMC || is2015data) JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
+  JetCorrectionUncertainty *totalJESUnc = NULL;
+  if(isMC || is2015data) totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
-  rochcor2015* muCor = new rochcor2015(); //need to be updated for 2016
+  rochcor2015* muCor = NULL; //need to be updated for 2016
   if(isMC || is2015data) muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
   //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework) 
 
 	ElectronEnergyCalibratorRun2 ElectronEnCorrector;
+	string EGammaEnergyCorrectionFile = "";
+	PhotonEnergyCalibratorRun2 PhotonEnCorrector;
+  	EpCombinationTool theEpCombinationTool;
 	if(isMC || is2015data){
-  string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
-  PhotonEnergyCalibratorRun2 PhotonEnCorrector(isMC, false, EGammaEnergyCorrectionFile);
-  PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-  EpCombinationTool theEpCombinationTool;
-  theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
-  ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
-  ElectronEnCorrector.initPrivateRng(new TRandom(1234));
-}
+  	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
+  	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
+  	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
+  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
+  	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
+	}
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -1053,11 +1055,12 @@ int main(int argc, char* argv[])
              //apply electron corrections             
              if(abs(lid)==11  && passIso && passId){
                 elDiff -= leptons[ilep].p4();                   
-                if (isMC || is2015data) ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
-                leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                if (isMC || is2015data){
+                	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+                	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                }
                 elDiff += leptons[ilep].p4();                 
              }
-
 
               //kinematics
              float leta = fabs(lid==11 ?  leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta());
