@@ -1,4 +1,4 @@
-# Installation
+# Installation for 76X (2015)
 ```bash 
 export SCRAM_ARCH=slc6_amd64_gcc493
 scramv1 project CMSSW CMSSW_7_6_3_patch2
@@ -7,6 +7,55 @@ cmsenv
 wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
 ```
 
+# Installation for 80X (2016)
+```bash 
+export SCRAM_ARCH=slc6_amd64_gcc530
+cmsrel CMSSW_8_0_14
+cd CMSSW_8_0_14/src/
+cmsenv
+
+# The following fail for the moment:
+#git cms-merge-topic -u matteosan1:smearer_76X
+
+# This fails also: (see https://hypernews.cern.ch/HyperNews/CMS/get/sw-develtools/2414.html )
+#git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+#cd HiggsAnalysis/CombinedLimit
+#git checkout remotes/origin/74x-root6 
+#cd ../..
+
+git clone -b svFit_2015Apr03 git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
+
+git clone git@github.com:cms2l2v/2l2v_fwk.git UserCode/llvv_fwk
+cd UserCode/llvv_fwk
+git checkout -b modified #copy the branch to a new one to host future modifications (ease pull request and code merging)
+cd ../..
+
+#since HiggsAnalysis is broken in 80X, copy one of the missing file to allow compilation and change some paths
+wget https://raw.githubusercontent.com/cms-analysis/HiggsAnalysis-CombinedLimit/74x-root6/src/th1fmorph.cc -P UserCode/llvv_fwk/src/
+wget https://raw.githubusercontent.com/cms-analysis/HiggsAnalysis-CombinedLimit/74x-root6/interface/th1fmorph.h -P UserCode/llvv_fwk/interface/
+find UserCode/llvv_fwk/ -type f -name '*.cc' -exec sed -i -e 's/HiggsAnalysis\/CombinedLimit\/interface\/th1fmorph.h/UserCode\/llvv_fwk\/interface\/th1fmorph.h/g' {} \;
+
+scramv1 b -j 16
+```
+
+# An important note about PR in 80X (2016)
+Please before doing your PR, be sure to:
+ - test your changes
+ - reverse the changes due to th1fmorph thanks to the following command (and be sure to not add those new files in your git add):
+```bash 
+#TO DO before a PR
+cd $CMSSW_BASE/src
+find UserCode/llvv_fwk/ -type f -name '*.cc' -exec sed -i -e 's/UserCode\/llvv_fwk\/interface\/th1fmorph.h/HiggsAnalysis\/CombinedLimit\/interface\/th1fmorph.h/g' {} \;
+```
+ - then you can make your PR
+ - if you want to continue developing, don't forget to reverse this once again:
+```bash 
+#TO DO after a PR to be able to continue to work
+cd $CMSSW_BASE/src
+find UserCode/llvv_fwk/ -type f -name '*.cc' -exec sed -i -e 's/HiggsAnalysis\/CombinedLimit\/interface\/th1fmorph.h/UserCode\/llvv_fwk\/interface\/th1fmorph.h/g' {} \;
+```
+
+
 # For developers
 
 We have decided to use pull-request mode for the master development.
@@ -14,7 +63,7 @@ We have decided to use pull-request mode for the master development.
 - Fork the code with your personal github ID. See [details](https://help.github.com/articles/fork-a-repo/)
 - Make a clean git clone in the UserCode directory
 ```
-cd path/to/CMSSW_7_6_3_patch2/src/UserCode 
+cd $CMSSW_BASE/src/UserCode 
 git clone git@github.com:yourgithubid/2l2v_fwk.git llvv_fwk
 cd llvv_fwk
 git remote add upstream git@github.com:cms2l2v/2l2v_fwk.git
