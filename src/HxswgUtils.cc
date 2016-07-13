@@ -28,16 +28,16 @@ namespace Hxswg{
     TGraph* getXSec(std::string Name){
        if(Name.find("SM")!=std::string::npos){
           if(Name.find("VBF")!=std::string::npos){
-             if(Name.find("13TeV")!=std::string::npos){return getVBFXSec13TeV();}
-             if(Name.find("8TeV" )!=std::string::npos){return getVBFXSec8TeV();}
-             if(Name.find("7TeV" )!=std::string::npos){return getVBFXSec7TeV();}
-             return NULL; 
-          }else{ //GGF
-             if(Name.find("13TeV")!=std::string::npos){return getGGFXSec13TeV();}
-             if(Name.find("8TeV" )!=std::string::npos){return getGGFXSec8TeV();}
-             if(Name.find("7TeV" )!=std::string::npos){return getGGFXSec7TeV();}
+             if(Name.find("13TeV")!=std::string::npos){return multiplyGraph( getVBFXSec13TeV(), getBRHtoZZ());}
+             if(Name.find("8TeV" )!=std::string::npos){return multiplyGraph(  getVBFXSec8TeV(), getBRHtoZZ());}
+             if(Name.find("7TeV" )!=std::string::npos){return multiplyGraph(  getVBFXSec7TeV(), getBRHtoZZ());}
              return NULL;
-          }      
+          }else{ //GGF
+             if(Name.find("13TeV")!=std::string::npos){return multiplyGraph( getGGFXSec13TeV(), getBRHtoZZ());}
+             if(Name.find("8TeV" )!=std::string::npos){return multiplyGraph(  getGGFXSec8TeV(), getBRHtoZZ());}
+             if(Name.find("7TeV" )!=std::string::npos){return multiplyGraph(  getGGFXSec7TeV(), getBRHtoZZ());}
+             return NULL;
+          }
        }else if(Name.find("RsGrav")!=std::string::npos){
           if(Name.find("13TeV" )!=std::string::npos){return multiplyGraph(   getRsGravXSec13TeV(),  getBRRsGravtoZZ());}
           return NULL;
@@ -45,7 +45,7 @@ namespace Hxswg{
           if(Name.find("13TeV" )!=std::string::npos){return multiplyGraph( getBulkGravXSec13TeV(), getBRBulkGravtoZZ());}
           return NULL;
        }else if(Name.find("Rad")!=std::string::npos){
-          if(Name.find("13TeV" )!=std::string::npos){return getRadXSec13TeV();}//multiplyGraph( getRadXSec13TeV(), getBRRadtoZZ());}
+          if(Name.find("13TeV" )!=std::string::npos){return multiplyGraph( getRadXSec13TeV(), getBRRadtoZZ());}
           return NULL;
        }
      
