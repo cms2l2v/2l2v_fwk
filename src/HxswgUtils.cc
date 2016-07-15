@@ -28,6 +28,7 @@ namespace Hxswg{
     TGraph* getXSec(std::string Name){
        if(Name.find("SM")!=std::string::npos){
           if(Name.find("VBF")!=std::string::npos){
+	     //getHWidthExtended gives the BR values for all the mass points above 1000 GeV
              if(Name.find("13TeV")!=std::string::npos){return multiplyGraph( getVBFXSec13TeV(), getHWidthExtended());}
              if(Name.find("8TeV" )!=std::string::npos){return multiplyGraph(  getVBFXSec8TeV(), getHWidthExtended());}
              if(Name.find("7TeV" )!=std::string::npos){return multiplyGraph(  getVBFXSec7TeV(), getHWidthExtended());}
