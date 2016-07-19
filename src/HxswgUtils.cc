@@ -8,7 +8,6 @@ namespace Hxswg{
      TGraph* makeGraphFromColXandY(std::string dataFile, int colX, int colY){
         FILE* pFile = fopen(dataFile.c_str(), "r");
         if(!pFile){  printf("Couldn't open file %s to read Higgs width values\n", dataFile.c_str()); return NULL; }
-       
         TGraph* toReturn = new TGraph(9999);  int N=0;
         char line [4096];
         while(fgets(line, 4096, pFile)){
@@ -27,17 +26,30 @@ namespace Hxswg{
    }
 
     TGraph* getXSec(std::string Name){
-       if(Name.find("VBF")!=std::string::npos){
-          if(Name.find("13TeV")!=std::string::npos){return getVBFXSec13TeV();}
-          if(Name.find("8TeV" )!=std::string::npos){return getVBFXSec8TeV();}
-          if(Name.find("7TeV" )!=std::string::npos){return getVBFXSec7TeV();}
-          return NULL;       
-       }else{ //GGF
-          if(Name.find("13TeV")!=std::string::npos){return getGGFXSec13TeV();}
-          if(Name.find("8TeV" )!=std::string::npos){return getGGFXSec8TeV();}
-          if(Name.find("7TeV" )!=std::string::npos){return getGGFXSec7TeV();}
-          return NULL;               
+       if(Name.find("SM")!=std::string::npos){
+          if(Name.find("VBF")!=std::string::npos){
+	     //getHWidthExtended gives the BR values for all the mass points above 1000 GeV
+             if(Name.find("13TeV")!=std::string::npos){return multiplyGraph( getVBFXSec13TeV(), getHWidthExtended());}
+             if(Name.find("8TeV" )!=std::string::npos){return multiplyGraph(  getVBFXSec8TeV(), getHWidthExtended());}
+             if(Name.find("7TeV" )!=std::string::npos){return multiplyGraph(  getVBFXSec7TeV(), getHWidthExtended());}
+             return NULL;
+          }else{ //GGF
+             if(Name.find("13TeV")!=std::string::npos){return multiplyGraph( getGGFXSec13TeV(), getHWidthExtended());}
+             if(Name.find("8TeV" )!=std::string::npos){return multiplyGraph(  getGGFXSec8TeV(), getHWidthExtended());}
+             if(Name.find("7TeV" )!=std::string::npos){return multiplyGraph(  getGGFXSec7TeV(), getHWidthExtended());}
+             return NULL;
+          }
+       }else if(Name.find("RsGrav")!=std::string::npos){
+          if(Name.find("13TeV" )!=std::string::npos){return multiplyGraph(   getRsGravXSec13TeV(),  getBRRsGravtoZZ());}
+          return NULL;
+       }else if(Name.find("BulkGrav")!=std::string::npos){
+          if(Name.find("13TeV" )!=std::string::npos){return multiplyGraph( getBulkGravXSec13TeV(), getBRBulkGravtoZZ());}
+          return NULL;
+       }else if(Name.find("Rad")!=std::string::npos){
+          if(Name.find("13TeV" )!=std::string::npos){return multiplyGraph( getRadXSec13TeV(), getBRRadtoZZ());}
+          return NULL;
        }
+     
        return NULL;
     }
 

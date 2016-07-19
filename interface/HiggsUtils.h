@@ -44,8 +44,16 @@ namespace higgs{
       int mode_;
     };
 
+    //get tgraph to reweight
+    TGraph* getWeightGraphFromShapes(TH1D* newLineShape, TH1D* originalLineShape,  double mH);       
+
+    //automatically take cares of morphing and finding the right file
+    TH1D* getHistoFromNRfile(std::string histoName, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile);       
+
     //reweight the resonance
-    TGraph* weightNarrowResonnance(std::string SampleName, double m_gen, double mass, double Cprime, double BRnew, TGraph* hLineShapeNominal, TF1 *decayProbPdf, TFile *nrLineShapesFile=0,TString pf="");
+    TGraph* weightNarrowResonnance(bool isVBF, double mass, double Cprime, double BRnew, TFile *nrLineShapesFile, double& Norm, TString pf);
+    TGraph* weightGGZZContinuum(TFile *nrLineShapesFile, double& Norm, TString pf);
+  
 
     //reweight to H125 interference
     double weightToH125Interference(double mass,double width,TFile *intFile,TString var); 

@@ -38,21 +38,24 @@ if [ "${1}" = "submit" ]; then
     
 elif [ "${1}" = "lumi" ]; then 
     rm myjson.json
+    # Normtag from: /afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json
+    NORMTAG="/afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json"
     #cat ${OUTDIR}/*SingleMuon*.json > myjson.json
     cat ${OUTDIR}/Data13TeV_SingleMuon2015D_*.json > myjson.json
     STARTINGJSON="data/chhiggs/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
-    STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    #STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt"
+    STARTINGJSON="data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt"
     sed -i -e "s#}{#, #g" myjson.json; 
     sed -i -e "s#, ,#, #g" myjson.json;
     echo "myjson.json has been recreated and the additional \"}{\" have been fixed."
     echo "Now running brilcalc according to the luminosity group recommendation:"
     echo "brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json"
     export PATH=$HOME/.local/bin:/opt/brilconda/bin:$PATH    
-    brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i myjson.json
+    brilcalc lumi --normtag ${NORMTAG} -i myjson.json
     echo "To be compared with the output of the full json:"
     echo "brilcalc lumi --normtag ${STARTINGJSON}"
     #brilcalc lumi -i /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt -n 0.962
-    brilcalc lumi --normtag /afs/cern.ch/user/c/cmsbril/public/normtag_json/OfflineNormtagV1.json -i ${STARTINGJSON}
+    brilcalc lumi --normtag ${NORMTAG} -i ${STARTINGJSON}
 elif [ "${1}" = "pileup" ]; then
     echo "Computing pileup:"
     echo "pileupCalc.py -i data/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt --inputLumiJSON /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/PileUp/pileup_latest.txt --calcMode true --minBiasXsec 69000 --maxPileupBin 50 --numPileupBins 50 MyDataPileupHistogram.root"

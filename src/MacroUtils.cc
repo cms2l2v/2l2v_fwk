@@ -27,89 +27,95 @@ namespace utils
       //return the corrector
       return new FactorizedJetCorrector(corSteps);
     }
+    
+     std::vector<double> smearJER(double pt, double eta, double genPt){
+         std::vector<double> toReturn(3,pt);
+         if(genPt<=0) return toReturn;
+         
+         // FIXME: These are the 8 TeV values.
+         //
+         eta=fabs(eta);
+         double ptSF(1.0), ptSF_err(0.06);
+         if(eta<0.8)                  { ptSF=1.061; ptSF_err=sqrt(pow(0.012,2)+pow(0.023,2)); }
+         else if(eta>=0.8 && eta<1.3) { ptSF=1.088; ptSF_err=sqrt(pow(0.012,2)+pow(0.029,2)); }
+         else if(eta>=1.3 && eta<1.9) { ptSF=1.106; ptSF_err=sqrt(pow(0.017,2)+pow(0.030,2)); }
+         else if(eta>=1.9 && eta<2.5) { ptSF=1.126; ptSF_err=sqrt(pow(0.035,2)+pow(0.094,2)); }
+         else if(eta>=2.5 && eta<3.0) { ptSF=1.343; ptSF_err=sqrt(pow(0.127,2)+pow(0.123,2)); }
+         else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
+         else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
+         
+         toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
+         toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
+         toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
+         return toReturn;
+     }
+     
+     //
+     std::vector<float> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc){
+         jecUnc->setJetEta(eta);
+         jecUnc->setJetPt(pt);
+         double relShift=fabs(jecUnc->getUncertainty(true));
+         std::vector<float> toRet;
+         toRet.push_back((1.0+relShift));
+         toRet.push_back((1.0-relShift));
+         return toRet;
+     }
+     
+     void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC){
+         for(size_t ijet=0; ijet<jets.size(); ijet++){
+             pat::Jet& jet = jets[ijet];
+             
+             //correct JES
+             LorentzVector rawJet = jet.correctedP4("Uncorrected");
 
-//
-//    std::vector<double> smearJER(double pt, double eta, double genPt)
-//    {
-//      std::vector<double> toReturn(3,pt);
-//      if(genPt<=0) return toReturn;
-//      
-//      // FIXME: These are the 8 TeV values.
-//      //
-//      eta=fabs(eta);
-//      double ptSF(1.0), ptSF_err(0.06);
-//      if(eta<0.5)                  { ptSF=1.052; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.062+0.061),2)); }
-//      else if(eta>=0.5 && eta<1.1) { ptSF=1.057; ptSF_err=sqrt(pow(0.012,2)+pow(0.5*(0.056+0.055),2)); }
-//      else if(eta>=1.1 && eta<1.7) { ptSF=1.096; ptSF_err=sqrt(pow(0.017,2)+pow(0.5*(0.063+0.062),2)); }
-//      else if(eta>=1.7 && eta<2.3) { ptSF=1.134; ptSF_err=sqrt(pow(0.035,2)+pow(0.5*(0.087+0.085),2)); }
-//      else if(eta>=2.3 && eta<5.0) { ptSF=1.288; ptSF_err=sqrt(pow(0.127,2)+pow(0.5*(0.155+0.153),2)); }
-//      
-//      toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
-//      toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
-//      toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
-//      return toReturn;
-//    }
-//
-//    //
-//    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc)
-//    {
-//      jecUnc->setJetEta(eta);
-//      jecUnc->setJetPt(pt);
-//      double relShift=fabs(jecUnc->getUncertainty(true));
-//      std::vector<double> toRet;
-//      toRet.push_back((1.0+relShift)*pt);
-//      toRet.push_back((1.0-relShift)*pt);
-//      return toRet;
-//    }
-//    
-//    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC)
-//    {
-//      for(size_t ijet=0; ijet<jets.size(); ijet++)
-//        {
-//          pat::Jet jet = jets[ijet];
-//          
-//          //correct JES
-//          LorentzVector rawJet = jet.correctedP4("Uncorrected");
-//          //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
-//          //LorentzVector rawJet(jet*toRawSF);
-//          jesCor->setJetEta(rawJet.eta());
-//          jesCor->setJetPt(rawJet.pt());
-//          jesCor->setJetA(jet.jetAre());
-//          jesCor->setRho(rho);
-//          jesCor->setNPV(nvtx);
-//          double newJECSF=jesCor->getCorrection();
-//          rawJet *= newJECSF;
-//          jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
-//
-//          //smear JER
-//          double newJERSF(1.0);
-//          if(isMC)
-//            {
-//              const reco::GenJet &genJet=jet.genJet();
-//              std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genJet.pt());
-//              newJERSF=smearJER[0]/jet.pt();
-//              rawJet *= newJERSF;
-//              jet.SetPxPyPzE(rawJet.px(),rawJet.py(),rawJet.pz(),rawJet.energy());
-//          
-//              // FIXME: change the way this is stored (to not storing it)
-//              // //set the JER up/down alternatives 
-//              // jets[ijet].setVal("jerup",   smearJER[1] );
-//              // jets[ijet].setVal("jerdown", smearJER[2] );
-//            }
-//      
-//          // FIXME: change the way this is stored (to not storing it)
-//          ////set the JES up/down pT alternatives
-//          //std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-//          //jets[ijet].setVal("jesup",    ptUnc[0] );
-//          //jets[ijet].setVal("jesdown",  ptUnc[1] );
-//      
-//          // FIXME: this is not to be re-set. Check that this is a desired non-feature.
-//          // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine. 
-//          //to get the raw jet again
-//          //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));  
-//        }
-//    }
-//    
+             //double toRawSF=jet.correctedJet("Uncorrected").pt()/jet.pt();
+             //LorentzVector rawJet(jet*toRawSF);
+             jesCor->setJetEta(rawJet.eta());
+             jesCor->setJetPt(rawJet.pt());
+             jesCor->setJetA(jet.jetArea());
+             jesCor->setRho(rho);
+             jesCor->setNPV(nvtx);
+             jet.setP4(rawJet*jesCor->getCorrection());
+
+             //smear JER
+             //double newJERSF(1.0);
+             if(isMC){
+                 const reco::GenJet* genJet=jet.genJet();
+                 if(genJet){
+                   double genjetpt( genJet ? genJet->pt(): 0.);                    
+                    std::vector<double> smearJER=utils::cmssw::smearJER(jet.pt(),jet.eta(),genjetpt);
+                    jet.setP4(jet.p4()*smearJER[0]);
+                
+                    //printf("jet pt=%f gen pt = %f smearing %f %f %f\n", jet.pt(), genjetpt, smearJER[0], smearJER[1], smearJER[2]);
+                    // //set the JER up/down alternatives
+                    jet.addUserFloat("jerup", smearJER[1]);  //kept for backward compatibility
+                    jet.addUserFloat("jerdown", smearJER[2] ); //kept for backward compatibility
+                    jet.addUserFloat("_res_jup", smearJER[1]);
+                    jet.addUserFloat("_res_jdown", smearJER[2] );
+                 }else{
+                    jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
+                    jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
+                    jet.addUserFloat("_res_jup", 1.0);
+                    jet.addUserFloat("_res_jdown", 1.0 );
+                 }
+             }
+
+             if(isMC){
+                ////set the JES up/down pT alternatives
+                std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+                jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
+                jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
+                jet.addUserFloat("_scale_jup",    ptUnc[0] );
+                jet.addUserFloat("_scale_jdown",  ptUnc[1] );
+             }
+             
+             // FIXME: this is not to be re-set. Check that this is a desired non-feature.
+             // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
+             //to get the raw jet again
+             //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
+         }
+     }
+     
 //    //
 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
 //    {
@@ -392,6 +398,8 @@ namespace utils
     }
   
   }
+
+
   //
   std::string toLatexRounded(double value, double error, double systError,bool doPowers)
   {
@@ -431,19 +439,27 @@ namespace utils
     if(ValueWasNull){value=0.0;}
 
     char tmpchar[255];
-    if(power!=0){
-      if(systError<0){
-        sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
-      }else{
-        sprintf(tmpchar,"$(%.*f\\pm%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,power);
-      }
-      
+    if(value<=1E-4){
+        //sum in quadrature errors
+        double erroSum = 0;
+        if(error>0){erroSum+=error*error;}
+        if(systError>0){erroSum+=systError*systError;}
+        sprintf(tmpchar,"$<%.*f$",ErrorFloating,sqrt(erroSum));
     }else{
-      if(systError<0){
-        sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
-      }else{
-        sprintf(tmpchar,"$%.*f\\pm%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError);
-      }
+       if(power!=0){
+         if(systError<0){
+           sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
+         }else{
+           sprintf(tmpchar,"$(%.*f\\pm%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,power);
+         }
+         
+       }else{
+         if(systError<0){
+           sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
+         }else{
+           sprintf(tmpchar,"$%.*f\\pm%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError);
+         }
+       }
     }
     return string(tmpchar);
   }
@@ -531,7 +547,39 @@ namespace utils
        delete file;
      }
   }
- 
+
+
+  double getMCPileupDistributionAndTotalEventFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup)
+  {
+    double toReturn=0;
+    mcpileup.clear();
+    mcpileup.resize(Npu);
+    for(unsigned int f=0;f<urls.size();f++){
+       TFile* file = TFile::Open(urls[f].c_str() );
+       fwlite::Event ev(file);
+       for(ev.toBegin(); !ev.atEnd(); ++ev){
+          fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
+          genEventInfoHandle.getByLabel(ev, "generator");
+          if(!genEventInfoHandle.isValid()){printf("collection generator is not found\n");} //if this object is missing, it's likely missing for the entire sample, move to the fast method
+          toReturn+=genEventInfoHandle->weight();
+
+
+          fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
+          puInfoH.getByLabel(ev, "slimmedAddPileupInfo");
+          if(!puInfoH.isValid()){printf("collection PileupSummaryInfos with name addPileupInfo does not exist\n"); exit(0);}
+          unsigned int ngenITpu = 0;
+          for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
+             if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); }
+          }
+          if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+          mcpileup[ngenITpu]++;
+       }
+       delete file;
+     }
+    return toReturn;
+  }
+
+
   bool isGoodVertex(reco::Vertex& vtx)
   {
 
@@ -546,30 +594,6 @@ namespace utils
   
 
 
-  void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup)
-  {
-    mcpileup.clear();
-    mcpileup.resize(Npu);
-    for(unsigned int f=0;f<urls.size();f++){
-       TFile* file = TFile::Open(urls[f].c_str() );
-       fwlite::Event ev(file);
-       for(ev.toBegin(); !ev.atEnd(); ++ev){
-         reco::VertexCollection vtx;
-         fwlite::Handle < reco::VertexCollection > vtxHandle;
-         vtxHandle.getByLabel (ev, "offlineSlimmedPrimaryVertices");
-         if (vtxHandle.isValid() ) vtx = *vtxHandle;
-
-         unsigned int ngenITpu = vtx.size();
-          //for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
-          //   if(it->getBunchCrossing()==0)      { ngenITpu += it->getPU_NumInteractions(); }
-          //}
-          if(ngenITpu>=Npu){printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
-          mcpileup[ngenITpu]++;
-       }
-       delete file;
-     }
-  }
-  
   void getPileupNormalization(std::vector<float>& mcpileup, double* PUNorm, edm::LumiReWeighting* LumiWeights, utils::cmssw::PuShifter_t PuShifters){
     PUNorm[0]=0; PUNorm[1]=0; PUNorm[2]=0;
     double NEvents=0;

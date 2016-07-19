@@ -140,18 +140,17 @@ def CreateTheShellFile(argv):
 	shell_file.write('cd ' + os.getcwd() + '\n')
 	shell_file.write('eval `scramv1 runtime -sh`\n')
 
+	if Jobs_RunHere==0:
+               	shell_file.write('cd -\n')
+
         for i in range(len(Jobs_InitCmds)):
                 #shell_file.write('echo ' + Jobs_InitCmds[i]+'\n')
 		shell_file.write(Jobs_InitCmds[i]+'\n')
 
 	if   argv[0]=='BASH':                 
-		if Jobs_RunHere==0:
-                	shell_file.write('cd -\n')
                 shell_file.write(argv[1] + " %s\n" % function_argument)
         elif argv[0]=='ROOT':
      	        function_argument='('+function_argument+')'
-		if Jobs_RunHere==0:
-                	shell_file.write('cd -\n')
 	        shell_file.write('root -l -b << EOF\n')
 	        shell_file.write('   TString makeshared(gSystem->GetMakeSharedLib());\n')
 	        shell_file.write('   TString dummy = makeshared.ReplaceAll("-W ", "-Wno-deprecated-declarations -Wno-deprecated ");\n')
@@ -164,8 +163,6 @@ def CreateTheShellFile(argv):
 	        shell_file.write('EOF\n\n')
         elif argv[0]=='FWLITE':                 
                 function_argument='('+function_argument+')'
-		if Jobs_RunHere==0:
-                	shell_file.write('cd -\n')
 	        shell_file.write('root -l -b << EOF\n')
                 shell_file.write('   TString makeshared(gSystem->GetMakeSharedLib());\n')
                 shell_file.write('   TString dummy = makeshared.ReplaceAll("-W ", "-Wno-deprecated-declarations -Wno-deprecated ");\n')
@@ -186,8 +183,6 @@ def CreateTheShellFile(argv):
 	        shell_file.write('EOF\n\n')
         elif argv[0]=='CMSSW' or argv[0]=='LIP':
 		CreateTheConfigFile(argv);
-		if Jobs_RunHere==0:
-			shell_file.write('cd -\n')
 		shell_file.write('cmsRun ' + os.getcwd() + '/'+Path_Cfg + '\n')
 	else:
 		print #Program to use is not specified... Guess it is bash command		
@@ -199,8 +194,8 @@ def CreateTheShellFile(argv):
 		shell_file.write(Jobs_FinalCmds[i]+'\n')
         if Jobs_RunHere==0:
            outDir = Farm_Directories[3]
-           if(not os.path.isabs(Path_Shell)): outDir = os.getcwd()+'/'+outDir;
- 	   shell_file.write('mv '+ Jobs_Name+'* '+outDir+'\n')
+#           if(not os.path.isabs(Path_Shell)): outDir = os.getcwd()+'/'+outDir;
+# 	   shell_file.write('mv '+ Jobs_Name+'* '+outDir+'\n')
 	shell_file.close()
 	os.system("chmod 777 "+Path_Shell)
 
@@ -283,6 +278,7 @@ def CreateTheCmdFile():
            cmd_file.write('Universe                = vanilla\n')
 	   cmd_file.write('Environment             = CONDORJOBID=$(Process)\n')
 	   cmd_file.write('notification            = Error\n')
+           cmd_file.write('on_exit_remove          = ((ExitBySignal == False) && (ExitCode == 0)) || (JobRunCount > 3)\n')
 	   #site specific code
   	   if  (commands.getstatusoutput("hostname -f")[1].find("ucl.ac.be" )!=-1): cmd_file.write('requirements            = (CMSFARM=?=True)&&(Memory > 200)\n')
            elif(commands.getstatusoutput("uname -n"   )[1].find("purdue.edu")!=-1): cmd_file.write('requirements            = (request_memory > 200)\n')
@@ -337,10 +333,11 @@ def AddJobToCmdFile():
                 if(not os.path.isabs(absoluteShellPath)): absoluteShellPath= os.getcwd() + "/"+absoluteShellPath
                 Jobs_List.extend([absoluteShellPath])
         else:
+                os.system('rm -f ' +os.path.relpath(Path_Log) + '.log') #delete log file to be sure there is no overlap
         	cmd_file.write('\n')
 	        cmd_file.write('Executable              = %s\n'     % os.path.relpath(Path_Shell) )
         	cmd_file.write('output                  = %s.out\n' % os.path.relpath(Path_Log) )
-	        cmd_file.write('error                   = %s.err\n' % os.path.relpath(Path_Log) )
+	        cmd_file.write('error                   = %s.out\n' % os.path.relpath(Path_Log) )
                 cmd_file.write('log                     = %s.log\n' % os.path.relpath(Path_Log) ) 
 	        cmd_file.write('Queue 1\n')
         cmd_file.close()

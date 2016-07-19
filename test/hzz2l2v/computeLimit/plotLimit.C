@@ -41,6 +41,8 @@ TGraph* getLimitGraph(TTree* tree, float Quantil){
      tree->GetEntry(ientry);
      if(TquantExp==Quantil){
         //printf("Quantil = %f - mH=%f --> %f\n",TquantExp,Tmh,Tlimit);
+        //
+  //      if(Tmh>1000)continue;
         toReturn->SetPoint(i, Tmh, Tlimit);
         i++;
      }
@@ -148,8 +150,17 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
 
   strengthLimit = false;
   if(prod=="pp")strengthLimit=true;
-  
-  //scale TH cross-section and limits according to scale factor 
+ 
+
+  scaleGraph(ObsLimit  , 1000); //pb to fb
+  scaleGraph(ExpLimitm2, 1000); //pb to fb
+  scaleGraph(ExpLimitm1, 1000); //pb to fb
+  scaleGraph(ExpLimit  , 1000); //pb to fb
+  scaleGraph(ExpLimitp1, 1000); //pb to fb
+  scaleGraph(ExpLimitp2, 1000); //pb to fb
+
+
+  //scal eTH cross-section and limits according to scale factor 
   //this only apply to NarrowResonnance case
   if(strengthLimit){
      Hxswg::utils::divideGraph(ObsLimit   , THXSec);
@@ -164,14 +175,14 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
 
   //limits in terms of signal strength
   TCanvas* c = new TCanvas("c", "c",800,800);
-  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?390:390,1010);
+  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?190:190,1510);
   framework->SetStats(false);
   framework->SetTitle("");
-  framework->GetXaxis()->SetTitle("Higgs boson mass (GeV)");
+  framework->GetXaxis()->SetTitle("M_{H} [GeV]");
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-  framework->GetYaxis()->SetRangeUser(1E-1,1E4);
+  framework->GetYaxis()->SetRangeUser(1E-2,1E3);
   c->SetLogy(true);
   }else{
   framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
@@ -234,17 +245,17 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   //save a summary of the limits
   FILE* pFileSum = fopen((outputDir+"LimitSummary").c_str(),"w");
   for(int i=0;i<TGExpLimit->GetN();i++){
-     if(ExpLimit->GetN()!=ObsLimit->GetN() || ExpLimit->GetN()!=pValue->GetN() || ExpLimit->GetN()!=ExpLimitp2->GetN())continue;
-     fprintf(pFileSum, "$%8.6E$ & $%8.6E$ & $[%8.6E,%8.6E]$ & $[%8.6E,%8.6E]$ & $%8.6E$ & Th=$%8.6E$ & pValue=$%8.6E$\\\\\\hline\n",ExpLimit->GetX()[i], ExpLimit->GetY()[i], ExpLimitm1->GetY()[i], ExpLimitp1->GetY()[i], ExpLimitm2->GetY()[i],  ExpLimitp2->GetY()[i], ObsLimit->GetY()[i], (THXSec!=NULL)?THXSec->GetY()[i]:-1, pValue->GetY()[i]);
-    if(int(ExpLimit->GetX()[i])%50!=0)continue; printf("%f ",ObsLimit->GetY()[i]);
+     double M = ExpLimit->GetX()[i];
+     fprintf(pFileSum, "$%8.6E$ & $%8.6E$ & $[%8.6E,%8.6E]$ & $[%8.6E,%8.6E]$ & $%8.6E$ & Th=$%8.6E$ & pValue=$%8.6E$\\\\\\hline\n",M, ExpLimit->Eval(M), ExpLimitm1->Eval(M), ExpLimitp1->Eval(M), ExpLimitm2->Eval(M),  ExpLimitp2->Eval(M), ObsLimit->Eval(M), (THXSec!=NULL)?THXSec->Eval(M):-1, pValue->Eval(M));
+    if(int(ExpLimit->GetX()[i])%50!=0)continue; printf("%f ",ObsLimit->Eval(M));
   }printf("\n");
   fclose(pFileSum);
 
   pFileSum = fopen((outputDir+"LimitRange").c_str(),"w");
   fprintf(pFileSum, "EXPECTED LIMIT --> ");                   printLimits(pFileSum,TGExpLimit, TGExpLimit->GetX()[0], TGExpLimit->GetX()[TGExpLimit->GetN()-1]);
   if(!blind) fprintf(pFileSum, "OBSERVED LIMIT --> ");        printLimits(pFileSum,TGObsLimit, TGObsLimit->GetX()[0], TGObsLimit->GetX()[TGObsLimit->GetN()-1]);
-  fprintf(pFileSum, "Exp Limits for Model are: ");              for(int i=0;i<TGExpLimit->GetN();i++){if(int(TGExpLimit->GetX()[i])%50==0) fprintf(pFileSum, "%f+-%f ",TGExpLimit->GetX()[i], (ExpLimitp1->GetY()[i]-ExpLimitm1->GetY()[i])/2.0);}fprintf(pFileSum,"\n");
-  if(!blind) { fprintf(pFileSum, "Obs Limits for Model are: "); for(int i=0;i<TGObsLimit->GetN();i++){if(int(TGObsLimit->GetX()[i])%50==0) fprintf(pFileSum, "%f ",TGObsLimit->GetX()[i]);}fprintf(pFileSum,"\n"); }
+  fprintf(pFileSum, "Exp Limits for Model are: ");              for(int i=0;i<TGExpLimit->GetN();i++){if(int(TGExpLimit->GetX()[i])%50==0) fprintf(pFileSum, "%f+-%f ",TGExpLimit->GetY()[i], (ExpLimitp1->GetY()[i]-ExpLimitm1->GetY()[i])/2.0);}fprintf(pFileSum,"\n");
+  if(!blind) { fprintf(pFileSum, "Obs Limits for Model are: "); for(int i=0;i<TGObsLimit->GetN();i++){if(int(TGObsLimit->GetX()[i])%50==0) fprintf(pFileSum, "%f ",TGObsLimit->GetY()[i]);}fprintf(pFileSum,"\n"); }
   fclose(pFileSum);
 }
 

@@ -143,12 +143,13 @@ namespace utils
 
 
     // JES/JER Smearing
-//    std::vector<double> smearJER(double pt, double eta, double genPt);
-//    std::vector<double> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc);
+      std::vector<double> smearJER(double pt, double eta, double genPt);
+      std::vector<float> smearJES(double pt, double eta, JetCorrectionUncertainty *jecUnc);
+   
 //    
 //    //set new jet energy corrections
-//    void updateJEC(pat::JetCollection &jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, double rho, int nvtx,bool isMC);
-//    
+     void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC);
+    
 //    //apply MET variations
 //    enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };
 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons, bool isMC);
@@ -176,6 +177,7 @@ namespace utils
   double getTotalNumberOfEvents(std::vector<std::string>& urls, bool fast=false, bool weightSum=false);
 
   unsigned long getMergeableCounterValue(const std::vector<std::string>& urls, std::string counter);
+  double getMCPileupDistributionAndTotalEventFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
   void getMCPileupDistributionFromMiniAOD(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);
   bool isGoodVertex(reco::Vertex& vtx);
   void getMCPileupDistributionFromMiniAODtemp(std::vector<std::string>& urls, unsigned int Npu, std::vector<float>& mcpileup);

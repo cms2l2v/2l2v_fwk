@@ -5,13 +5,24 @@ import optparse
 import commands
 import LaunchOnCondor
 import UserCode.llvv_fwk.storeTools_cff as storeTools
+import sqlite3
 
 PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
+cachedQueryDB = sqlite3.connect(os.path.expandvars('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/das_query_cache.db') )
+cachedQueryDBcursor = cachedQueryDB.cursor()
+cachedQueryDBcursor.execute("""CREATE TABLE IF NOT EXISTS queries(id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, date TEXT, query TEXT, result TEXT)""")
+cachedQueryDB.commit()
+#cachedQueryDBcursor.close()
+#cachedQueryDB.close()
+
+
 isLocalSample = False
 nonLocalSamples = []
+
+
 
 """
 Gets the value of a given item
@@ -23,7 +34,6 @@ def getByLabel(proc,key,defaultVal=None) :
     except KeyError:
         return defaultVal
 
-
 def getByLabelFromKeyword(proc,keyword,key,defaultVal=None) :
     try:
        print "found keyword option %s" % str(proc[keyword][key])
@@ -34,6 +44,25 @@ def getByLabelFromKeyword(proc,keyword,key,defaultVal=None) :
        except KeyError:
            return defaultVal
 
+def DASQuery(query):
+   cachedQueryDB = sqlite3.connect(os.path.expandvars('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/das_query_cache.db') )
+   cachedQueryDBcursor = cachedQueryDB.cursor()
+
+   cachedQueryDBcursor.execute("""SELECT result FROM queries WHERE query=?""", (query,) )
+   fetched = cachedQueryDBcursor.fetchall()
+   if(len(fetched)>1):print("WARNING:  More than one query result found in cached DAS query DB, return first one")
+   if(len(fetched)>=1):
+      cachedQueryDB.commit()
+      cachedQueryDB.close()
+      return fetched[0][0]
+
+   #get the result from DAS and cache it for future usage (only if there was no error with DAS)
+   outputs = commands.getstatusoutput('/cvmfs/cms.cern.ch/common/das_client --query="' + query + '" --limit=0')
+   result = outputs[1]
+   if(outputs[0]==0):cachedQueryDBcursor.execute("""INSERT INTO queries(date, query, result) VALUES(?, ?, ?)""", (time.strftime('%Y-%m-%d %H:%M:%S'), query, result))
+   cachedQueryDB.commit()  #commit changes to the DB
+
+   return result 
 
 initialCommand = '';
 def initProxy():
@@ -47,11 +76,9 @@ def initProxy():
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       if(not os.path.isfile(os.path.expanduser('~/.globus/mysecret.txt'))):
-         if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
-         else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+         os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
       else:
-         if(hostname.find("iihe.ac.be")!=-1): os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms:/cms/becms  -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt')
-         else:                                os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
+         os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
    initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
 def getFileList(procData,DefaultNFilesPerJob):
@@ -60,12 +87,18 @@ def getFileList(procData,DefaultNFilesPerJob):
    isLocalSample = False
 
    FileList = [];
-   miniAODSamples = getByLabel(procData,'miniAOD','')
-   isMINIAODDataset = ("/MINIAOD" in getByLabel(procData,'dset','')) or  ("amagitte" in getByLabel(procData,'dset',''))
-   if(isMINIAODDataset or len(getByLabel(procData,'miniAOD',''))>0):
+   nonMiniAODSamples = []
+   miniAODSamples = getByLabel(procData,'miniAOD',[])
+   dsetSamples = getByLabel(procData,'dset',[])
+   for s in dsetSamples: 
+      if("/MINIAOD" in s): miniAODSamples+=[s]
+      else: nonMiniAODSamples+=[s]
+
+   for sample in miniAODSamples:
+      
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
-      listSites = commands.getstatusoutput('das_client.py --query="site dataset='+getByLabel(procData,'dset','') + ' ' + instance + ' | grep site.name,site.dataset_fraction " --limit=0')[1]
+      listSites = DASQuery('site dataset='+sample + ' ' + instance + ' | grep site.name,site.replica_fraction')
       IsOnLocalTier=False
       MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
@@ -79,28 +112,28 @@ def getFileList(procData,DefaultNFilesPerJob):
 
       if(FractionOnLocal == MaxFraction):
             IsOnLocalTier=True            
-            print ("Sample is found to be on the local grid tier %s (%f%%) for %s") %(localTier, FractionOnLocal, getByLabel(procData,'dset',''))
+            print ("Sample is found to be on the local grid tier %s (%f%%) for %s") %(localTier, FractionOnLocal, sample)
 
       isLocalSample = IsOnLocalTier
 
       if(localTier != "" and not IsOnLocalTier):
-         nonLocalSamples += [getByLabel(procData,'dset','')]
+         nonLocalSamples += [sample]
 
-      list = []
-      if(IsOnLocalTier or isMINIAODDataset):
+      list = [] 
+      if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
-            list = commands.getstatusoutput('das_client.py --query="file dataset='+getByLabel(procData,'dset','') + ' ' + instance + '" --limit=0')[1].split()
+            list = DASQuery('file dataset='+sample + ' ' + instance).split()
          elif(DatasetFileDB=="DBS"):
             curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
             dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
             sedTheList=' | sed \"s#logical_file_name#\\nlogical_file_name#g\" | sed \"s#logical_file_name\': \'##g\" | sed \"s#\'}, {u\'##g\" | sed \"s#\'}]##g\" | grep store '
-            list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+getByLabel(procData,'dset','')+'"'+sedTheList)[1].split()
+            list = commands.getstatusoutput(initialCommand + curlCommand+'"'+dbsPath+'/files?dataset='+sample+'"'+sedTheList)[1].split()
 
          list = [x for x in list if ".root" in x] #make sure that we only consider root files
          for i in range(0,len(list)):              
             if IsOnLocalTier:
-               if  (hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be:/pnfs/iihe/cms/ph/sc4"+list[i]
+               if  (hostname.find("iihe.ac.be")!=-1): list[i] = "dcap://maite.iihe.ac.be/pnfs/iihe/cms/ph/sc4"+list[i]
                elif(hostname.find("ucl.ac.be" )!=-1): list[i] = "/storage/data/cms"+list[i]
                else:                                  list[i] = "root://eoscms//eos/cms"+list[i]            
             else:
@@ -108,12 +141,9 @@ def getFileList(procData,DefaultNFilesPerJob):
               #list[i] = "root://xrootd-cms.infn.it/"+list[i]    #optimal for EU side
               #list[i] = "root://cmsxrootd.fnal.gov/"+list[i]    #optimal for US side
 
-      elif(len(getByLabel(procData,'miniAOD',''))>0):
-         print "Processing private local sample: " + getByLabel(procData,'miniAOD','')
-         list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);                  
       else:
-         print "Processing an unknown type of sample (assuming it's a private local sample): " + getByLabel(procData,'miniAOD','')
-         list = storeTools.fillFromStore(getByLabel(procData,'miniAOD',''),0,-1,True);
+         print "Processing private local sample: " + sample 
+         list = storeTools.fillFromStore(sample,0,-1,True);                  
 
       list = storeTools.keepOnlyFilesFromGoodRun(list, os.path.expandvars(getByLabel(procData,'lumiMask','')))       
       split=getByLabel(procData,'split',-1)
@@ -121,6 +151,7 @@ def getFileList(procData,DefaultNFilesPerJob):
          NFilesPerJob = max(1,len(list)/split)
       else:
          NFilesPerJob = DefaultNFilesPerJob
+         if((len(list)/NFilesPerJob)>100):NFilesPerJob=len(list)/100;  #make sure the number of jobs isn't too big
 
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
@@ -128,13 +159,30 @@ def getFileList(procData,DefaultNFilesPerJob):
             groupList += '"'+f+'",\\n';
          FileList.append(groupList)
 
-   else:
+   for sample in nonMiniAODSamples:
       print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
       for segment in range(0,split) :
          eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
          FileList.append('"'+eventsFile+'"')
    return FileList
+
+
+def CacheInputs(FileList):
+   NewList = ""
+   CopyCommand = ""
+   DeleteCommand = ""
+   List = FileList.replace('"','').replace(',','').split('\\n')
+   for l in List:
+      if(len(l)<2):continue
+      if("IIHE" in localTier): CopyCommand += "dccp " + l + " " + l[l.rfind('/')+1:] + ";\n"
+      else: CopyCommand += "cp " + l + " " + l[l.rfind('/')+1:] + ";\n"
+      DeleteCommand += "rm -f " + l[l.rfind('/')+1:] + ";\n"
+      NewList += '"' +  l[l.rfind('/')+1:] + '",\\n'
+   return (NewList, CopyCommand, DeleteCommand)
+
+   
+
 
 #configure
 usage = 'usage: %prog [options]'
@@ -153,7 +201,7 @@ parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='ba
 parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email'    , default=False, action="store_true")
 parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'      , default=DatasetFileDB)
 parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'                 , default=False, action="store_true")
-parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)'    , default=6)
+parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)'    , default=8)
 parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally'    , default=8)
 parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'      , default='')
 
@@ -171,6 +219,9 @@ if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 FarmDirectory                      = opt.outdir+"/FARM"
 PROXYDIR                           = FarmDirectory+"/inputs/"
 initProxy()
+doCacheInputs                      = False
+if("IIHE" in localTier): doCacheInputs = True
+
 
 JobName                            = opt.theExecutable
 LaunchOnCondor.Jobs_RunHere        = 0
@@ -189,6 +240,7 @@ for procBlock in procList :
     #run over processes
     for proc in procBlock[1] :
         #run over items in process
+        if(getByLabel(proc,'nosample'      , '')!=''):continue #skip processes which do not have a real sample
         if(getByLabel(proc,'interpollation', '')!=''):continue #skip interpollated processes
         if(getByLabel(proc,'mixing'        , '')!=''):continue #skip mixed processes
         keywords = getByLabel(proc,'keys',[])
@@ -205,9 +257,7 @@ for procBlock in procList :
         procSuffix=getByLabelFromKeyword(proc,opt.onlykeyword,'suffix' ,"")
         data = proc['data']
 
-        for procData in data :
-            LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
- 
+        for procData in data : 
             origdtag = getByLabel(procData,'dtag','')
             if(origdtag=='') : continue
             dtag = origdtag         
@@ -224,15 +274,25 @@ for procBlock in procList :
 
 
             if(opt.resubmit==False):
-               FileList = ['"'+getByLabel(procData,'dset','UnknownDataset')+'"']
-               LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag)
+               FileList = getByLabel(procData,'dset',['"UnknownDataset"'])
+               LaunchOnCondor.SendCluster_Create(FarmDirectory, JobName + '_' + dtag+filt)
                if(LaunchOnCondor.subTool!='crab'):FileList = getFileList(procData, int(opt.NFile) )
-               if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
 
                for s in range(0,len(FileList)):
+                   LaunchOnCondor.Jobs_FinalCmds= []
+                   LaunchOnCondor.Jobs_InitCmds = ['ulimit -c 0;'] 
+                   if(not isLocalSample):LaunchOnCondor.Jobs_InitCmds      += [initialCommand]
+
                    #create the cfg file
                    eventsFile = FileList[s]
                    eventsFile = eventsFile.replace('?svcClass=default', '')
+                   if(doCacheInputs and isLocalSample):
+                      result = CacheInputs(eventsFile)
+                      eventsFile = result[0]
+                      if("IIHE" in localTier): LaunchOnCondor.Jobs_InitCmds.append('if [ -d $TMPDIR ] ; then cd $TMPDIR ; fi;\n')
+                      LaunchOnCondor.Jobs_InitCmds.append(result[1])
+                      LaunchOnCondor.Jobs_FinalCmds.append(result[2])
+
                    prodfilepath=opt.outdir +'/'+ dtag + suffix + '_' + str(s) + filt
                	   sedcmd = 'sed \''
                    sedcmd += 's%"@dtag"%"' + dtag +'"%;'
@@ -276,7 +336,7 @@ for procBlock in procList :
                               LaunchOnCondor.Jobs_CRABStorageSite = 'T2_PT_NCG_Lisbon'
                           else:
                               LaunchOnCondor.Jobs_CRABStorageSite = 'T2_BE_UCL'
-                          LaunchOnCondor.Jobs_CRABname     = dtag
+                          LaunchOnCondor.Jobs_CRABname     = dtag + '_' + str(s)
                           LaunchOnCondor.Jobs_CRABInDBS    = getByLabel(procData,'dbsURL','global')
                           if(split>0):
                               LaunchOnCondor.Jobs_CRABUnitPerJob = 100 / split 

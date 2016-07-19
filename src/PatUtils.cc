@@ -193,13 +193,8 @@ namespace patUtils
     
     bool elevto = photon.hasPixelSeed();  //LQ  REACTIVATED FOR TIGHT ID, OTHERWISE MANY ELECtRONS pass the photon Id
     
-    // sigma ieta ieta
-    // full5x5 is not ready in 720 yet 
-    // float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
-    // taken from https://github.com/cms-sw/cmssw/blob/CMSSW_7_2_X/PhysicsTools/PatAlgos/plugins/PATPhotonSlimmer.cc#L119-L130
-    
-    // float sigmaIetaIeta = photon.sigmaIetaIeta(); 
-    float sigmaIetaIeta = photon.userFloat("sigmaIetaIeta_NoZS"); 
+    // sigma ieta ieta in 5x5 shower block
+     float sigmaIetaIeta = photon.full5x5_sigmaIetaIeta();
 
     // H/E 
     float hoe = photon.hadTowOverEm();
@@ -413,8 +408,7 @@ namespace patUtils
     return false;          
   }
 
-  bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold,
-			 float &triggerPrescale ){
+  bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh ){
     edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
     if( !tr.isValid() ) return false;
 
@@ -422,48 +416,59 @@ namespace patUtils
 
     triggerPrescale = 1.0; 
     triggerThreshold = 0.0;
+    triggerThresholdHigh = 999999;
     
 
     std::string successfulPath="";
     if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon300_*")){
       hasPhotonTrigger=true;
       triggerThreshold=300;
+      triggerThresholdHigh=999999;
     }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon250_*")){
       hasPhotonTrigger=true;
       triggerThreshold=250;
+      triggerThresholdHigh=300;
     }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon165_R9Id90_HE10_IsoM_*")){
       hasPhotonTrigger=true;
      triggerThreshold=165;
+     triggerThresholdHigh=250;
     }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_IsoM_*")){ //HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=120;
+      triggerThresholdHigh=165;
     }
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon90_R9Id90_HE10_IsoM_*")){ // HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=90;
+      triggerThresholdHigh=120;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon75_R9Id90_HE10_IsoM_*")){ //HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=75;
+      triggerThresholdHigh=90;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon50_R9Id90_HE10_IsoM_*")){ //HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=50;
+      triggerThresholdHigh=75;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon36_R9Id90_HE10_IsoM_*")){ //HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=36;
+      triggerThresholdHigh=50;
     }
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon30_R9Id90_HE10_IsoM_*")){ //HE10_Iso40_EBOnly_*")){                       
       hasPhotonTrigger=true;                                                                                                                     
-      triggerThreshold=30;                                                                                                                       
+      triggerThreshold=30;    
+      triggerThresholdHigh=36;
     } 
     else if(utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon22_R9Id90_HE10_IsoM_*")){ //HE10_Iso40_EBOnly_*")){
       hasPhotonTrigger=true;
       triggerThreshold=22;
+      triggerThresholdHigh=30;
     }
       
     if(successfulPath!=""){ //get the prescale associated to it
@@ -646,7 +651,6 @@ void MetFilter::FillBadEvents(std::string path){
 }
 
 
-
 int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
      if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;
 
@@ -662,19 +666,20 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     // Documentation:    
     // -------- Full MET filters list (see bin/chhiggs/runAnalysis.cc for details on how to print it out ------------------
     // Flag_trackingFailureFilter
-    // Flag_goodVertices        -------> Recommended by PAG
-    // Flag_CSCTightHaloFilter  -------> Recommended by PAG
+    // Flag_goodVertices                        -------> Recommended by PAG
+    // Flag_CSCTightHaloFilter                  -------> Recommended by PAG
     // Flag_trkPOGFilters
     // Flag_trkPOG_logErrorTooManyClusters
-    // Flag_EcalDeadCellTriggerPrimitiveFilter
+    // Flag_EcalDeadCellTriggerPrimitiveFilter  -------> Recommended by PAG
     // Flag_ecalLaserCorrFilter
     // Flag_trkPOG_manystripclus53X
-    // Flag_eeBadScFilter       -------> Recommended by PAG
+    // Flag_eeBadScFilter                       -------> Recommended by PAG
     // Flag_METFilters
-    // Flag_HBHENoiseFilter     -------> Recommended by PAG
+    // Flag_HBHENoiseFilter                     -------> Recommended by PAG
     // Flag_trkPOG_toomanystripclus53X
     // Flag_hcalLaserEventFilter
-    //
+ 
+
     // Notes (from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#ETmiss_filters ):
     // - For the RunIISpring15DR74 MC campaing, the process name in PAT.
     // - For Run2015B PromptReco Data, the process name is RECO.
@@ -683,10 +688,13 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     // - Recommendations on how to use MET filers are given in https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2 . Note in particular that the HBHO noise filter must be re-run from MiniAOD instead of using the flag stored in the TriggerResults; this applies to all datasets (MC, PromptReco, 17Jul2015 re-MiniAOD)
     // -------------------------------------------------
 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter")) return 2; 
-    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"      )) return 3;
-    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"     )) return 4;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_CSCTightHaloFilter"                     )) return 2; 
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"                           )) return 3;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"                          )) return 4;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_EcalDeadCellTriggerPrimitiveFilter"     )) return 5;
+    if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"                        )) return 6;
 
+/*    
     // HBHE filter needs to be complemented with , because it is messed up in data (see documentation below)
     //if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"   )) return false; // Needs to be rerun for both data (prompt+reReco) and MC, for now.
     // C++ conversion of the python FWLITE example: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
@@ -697,22 +705,21 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     if(summaryHandle.isValid()) summary=*summaryHandle;
 
     //HBHE NOISE
-    if(summary.maxHPDHits() >= 17)return 5;
-    if(summary.maxHPDNoOtherHits() >= 10)return 6;
-    if( summary.maxZeros() >= 9e9) return 7;
-    if(summary.HasBadRBXRechitR45Loose())return 8;  //for 25ns only!  CHeck the recipe for 50ns.
+    if(summary.maxHPDHits() >= 17)return 6;
+    if(summary.maxHPDNoOtherHits() >= 10)return 7;
+    if( summary.maxZeros() >= 9e9) return 8;
+    if(summary.HasBadRBXRechitR45Loose())return 9;  //for 25ns only!  CHeck the recipe for 50ns.
 //    bool failCommon(summary.maxHPDHits() >= 17  || summary.maxHPDNoOtherHits() >= 10 || summary.maxZeros() >= 9e9 );
     // IgnoreTS4TS5ifJetInLowBVRegion is always false, skipping.
 //    if((failCommon || summary.HasBadRBXRechitR45Loose() )) return 5;  //for 25ns only
    
      //HBHE ISO NOISE
-     if(summary.numIsolatedNoiseChannels() >=10)return 9;
-     if(summary.isolatedNoiseSumE() >=50) return 10;
-     if(summary.isolatedNoiseSumEt() >=25) return 11;
-
+     if(summary.numIsolatedNoiseChannels() >=10)return 10;
+     if(summary.isolatedNoiseSumE() >=50) return 11;
+     if(summary.isolatedNoiseSumEt() >=25) return 12;
+*/
      return 0;
-   }
-
+}
 
 bool MetFilter::passMetFilter(const fwlite::Event& ev){
    return passMetFilterInt(ev)==0;
