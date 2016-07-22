@@ -274,7 +274,7 @@ void finalLimitPlot(){
    std::vector<double> BRs = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
-   string Directories2[]={"cards_SB13TeV", "cards_SB13TeV_GGF", "cards_SB13TeV_VBF"};  //DEBUG
+   string Directories2[]={"cards_SB13TeV_SM", "cards_SB13TeV_SM_GGF", "cards_SB13TeV_SM_VBF"};  //DEBUG
    for(unsigned int D=0;D<sizeof(Directories2)/sizeof(string);D++){
       string Dir     = Directories2[D];
       char tmp[1024];sprintf(tmp, "%s_cp%4.2f_brn%4.2f/", Dir.c_str(), 1.0, 0.0);
@@ -353,7 +353,7 @@ void finalLimitPlot(){
 
          c1 = new TCanvas("c", "c",600,600);
          c1->SetLogy(true);
-         framework = new TH1F("Graph","Graph",1,190,1510);
+         framework = new TH1F("Graph","Graph",1,190,3010);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV]");

@@ -9,11 +9,11 @@
       "marker":20,
       "msize":0.7,
       "data":[ 
-        { "dtag":"Data13TeV_MuEG2016B"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016B-PromptReco-v2/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt"   },
-        { "dtag":"Data13TeV_SingleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016B-PromptReco-v2/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt"   },
-        { "dtag":"Data13TeV_SingleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016B-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016B-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt"   },
-        { "dtag":"Data13TeV_DoubleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016B-PromptReco-v2/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt"   }
+        { "dtag":"Data13TeV_MuEG2016B"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016B-PromptReco-v2/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016B-PromptReco-v2/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt"   },
+        { "dtag":"Data13TeV_SingleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016B-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016B-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt"   },
+        { "dtag":"Data13TeV_DoubleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016B-PromptReco-v2/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt"   }
       ]
     },
     {
@@ -217,7 +217,7 @@
       "msize":0.7,
       "suffix":"reweighted",
       "data":[
-        { "dtag":"Data13TeV_SinglePhoton2016B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016B-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt" }
+        { "dtag":"Data13TeV_SinglePhoton2016B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016B-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-275783_13TeV_PromptReco_Collisions16_JSON.txt" }
       ]
     }, 
     {
