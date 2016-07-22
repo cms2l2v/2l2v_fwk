@@ -91,6 +91,17 @@ struct NameAndType{
    bool operator< (const NameAndType& a){ return a.name < name;}
 };
 
+TH1* CheckPositiveBins( TH1* h, string histo_name){
+        TH1* h_new = (TH1*)h->Clone("h_local");
+        h_new->SetNameTitle( histo_name.c_str(), histo_name.c_str());
+        for( int bin=0; bin<h->GetNbinsX(); bin++){	
+                if( h->GetBinContent(bin)<0. ){ h_new->SetBinContent( bin, 0.); h_new->SetBinError( bin, h->GetBinError(bin)); }
+                else if( h->GetBinContent(bin)>=0. ){ h_new->SetBinContent( bin, h->GetBinContent(bin)); h_new->SetBinError( bin, h->GetBinError(bin)); }
+        }
+        return h_new;
+}
+
+
 string getDirName(JSONWrapper::Object& Process, string matchingKeyword=""){
    string dirName = Process.getStringFromKeyword(matchingKeyword, "tag", "");
    if(Process.isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process.getIntFromKeyword(matchingKeyword, "mctruthmode", 0)); dirName += buf; }
@@ -159,7 +170,7 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  }
 
                  if(fileProcessed%5!=0){File->Close();fileProcessed++;continue;} //only consider 1file every 5 of each sample to get the list of object 
-
+ 
                  //just to make it faster, only consider the first 3 sample of a same kind
                  if(fileProcessed==0 && isData){if(dataProcessed>=8 ){ File->Close(); continue;}else{dataProcessed++;}}
                  if(fileProcessed==0 && isSign){if(signProcessed>=4 ){ File->Close(); continue;}else{signProcessed++;}}
@@ -253,7 +264,8 @@ void MixProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& 
       for(std::list<NameAndType>::iterator it= histlist.begin(); it!= histlist.end(); it++,ictr++){
          if(ictr%TreeStep==0){printf(".");fflush(stdout);}
          NameAndType& HistoProperties = *it;        
-        
+	  
+         TH1* obj1_new = NULL;
          TH1* obj1 = (TH1*)utils::root::GetObjectFromPath(File,subProcList[0].first + "/" + HistoProperties.name);      
          if(!obj1)continue;
          obj1 = (TH1*)obj1->Clone(HistoProperties.name.c_str());
@@ -266,11 +278,12 @@ void MixProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& 
             obj1->Add(obj2, subProcList[sp].second);
          }
          utils::root::setStyleFromKeyword(matchingKeyword,Process[i], obj1);
-        
+      	
+         obj1_new = CheckPositiveBins( obj1, HistoProperties.name.c_str()); 
          subdir->cd();
-         obj1->Write(HistoProperties.name.c_str());
+         obj1_new->Write(HistoProperties.name.c_str());
          gROOT->cd();
-         delete obj1;
+         delete obj1_new;
       }printf("\n");
    }
 }
@@ -532,25 +545,26 @@ void SavingToFile(JSONWrapper::Object& Root, std::string RootDir, TFile* OutputF
    std::vector<JSONWrapper::Object> Process = Root["proc"].daughters();
 
    int IndexFiles = 0;
-   int NFilesStep = 0;   for(std::unordered_map<string, std::vector<string> >::iterator it = DSetFiles.begin(); it!=DSetFiles.end(); it++){NFilesStep+=it->second.size();} NFilesStep=std::max(1, NFilesStep/50);
-   printf("Processing input root files  :");
-
+   int NFilesStep = 0;  
+   for(std::unordered_map<string, std::vector<string> >::iterator it = DSetFiles.begin(); it!=DSetFiles.end(); it++){NFilesStep+=it->second.size();} 
+   NFilesStep=std::max(1, NFilesStep/50); 
+   printf("Processing input root files  :"); 
    for(unsigned int i=0;i<Process.size();i++){
+      
       if(Process[i].isTag("interpollation") || Process[i].isTag("mixing") || Process[i].isTag("nosample"))continue; //treated in a specific function after the loop on Process
       string matchingKeyword="";
       if(!utils::root::getMatchingKeyword(Process[i], keywords, matchingKeyword))continue; //only consider samples passing key filtering
-
 
        string filtExt("");
        if(Process[i].isTagFromKeyword(matchingKeyword, "mctruthmode") ) { char buf[255]; sprintf(buf,"_filt%d",(int)Process[i].getIntFromKeyword(matchingKeyword, "mctruthmode")); filtExt += buf; }
 
 
-//      time_t now = time(0);
-
+//      time_t now = time(0); 
       string dirName = getDirName(Process[i], matchingKeyword);
       OutputFile->cd();
       TDirectory* subdir = OutputFile->GetDirectory(dirName.c_str());
-      if(!subdir || subdir==OutputFile){ subdir = OutputFile->mkdir(dirName.c_str());
+      if(!subdir || subdir==OutputFile){ 
+	 subdir = OutputFile->mkdir(dirName.c_str());
       }else{ 
          printf("Skip process %s as it seems to be already processed\n", dirName.c_str());
          continue;  //skip this process as it already exist in the file

@@ -210,9 +210,11 @@ namespace higgs{
 //      TH1D* lineshape = getHistoFromNRfile(TString("mH_SI_NR_nnlo")+pf, mass, Csecond, BRnew2, nrLineShapesFile);  // (signal + interference) * NNLOKFactors   
       TH1D* lineshape = NULL;
       if(isVBF){
-         lineshape = getHistoFromNRfile((TString("mH_S_NR")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);  // (signal)  /               
-      }else{
-         lineshape = getHistoFromNRfile((TString("mH_S_NR_nnlo")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);  // (signal) * NNLOKFactors   /      
+         //Signal+Interference[h2-h1, h2-Bckg, h1-Bckg] (LO)
+         lineshape = getHistoFromNRfile((TString("mH_SI_NR")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);              
+      } else {
+	 //Signal+Interference[h2-h1, h2-Bckg, h1-Bckg] (LO*KFactor NNLO)
+         lineshape = getHistoFromNRfile((TString("mH_SI_NR_nnlo")+pf).Data(), mass, Csecond, BRnew2, nrLineShapesFile);     
       }
       if(!original || !lineshape)return NULL;
 
