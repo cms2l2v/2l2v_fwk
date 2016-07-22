@@ -35,7 +35,7 @@
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
-#include "UserCode/llvv_fwk/interface/th1fmorph.h"
+#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
 
 using namespace std;
 
