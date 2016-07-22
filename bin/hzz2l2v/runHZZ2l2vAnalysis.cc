@@ -120,8 +120,11 @@ int main(int argc, char* argv[])
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_ZZ2l2nu  = isMC && ( string(dtag.Data()).find("TeV_ZZ2l2nu")  != string::npos);
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_WZ3lnu  = isMC && ( string(dtag.Data()).find("TeV_WZ3lnu")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
+  bool is2015data = (!isMC && dtag.Contains("2015")); 
+  bool is2016data = (!isMC && dtag.Contains("2016")); 
 
   //tree info
   TString dirname = runProcess.getParameter<std::string>("dirName");
@@ -226,6 +229,9 @@ int main(int argc, char* argv[])
   	ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
 		ZZ_NNLOTable = ZZatNNLO::readFile_and_loadTable(dtag);
 	}
+  if(isMC_WZ3lnu){
+  	ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
+	}
 
   //#######################################
   //####      LINE SHAPE WEIGHTS       ####
@@ -242,12 +248,12 @@ int main(int argc, char* argv[])
 	TString nrLineShapesFileUrl(weightsDir+"/higgs_width_zz2l2nu.root");
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
-      }else if( isMC_GG ){
-	TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_GGH_21June2016_AllInterferences.root");
+      } else if( isMC_GG ){
+	TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_GGH_21June2016_AllInterferences.root"); 
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
-      }else if( isMC_VBF ){
-        TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_VBF_21June2016_AllInterferences.root");
+      } else if( isMC_VBF ){
+        TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_VBF_21June2016_AllInterferences.root"); 
         gSystem->ExpandPathName(nrLineShapesFileUrl);
         nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       }
@@ -340,10 +346,10 @@ int main(int argc, char* argv[])
   printf("Definition of plots");
 
   //generator level control : add an underflow entry to make sure the histo is kept
-  ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 1100,0,3300) ))->Fill(-1.0,0.0001);
+  ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_raw",     ";Higgs Mass [GeV];Events", 500,0,3300) ))->Fill(-1.0,0.0001);
   for(unsigned int nri=0;nri<NRparams.size();nri++){ 
-    ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_shape"+NRsuffix[nri] , ";Higgs Mass;Events [GeV]", 1100,0,3300) ))->Fill(-1.0,0.0001);
-    ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_shape&scale"+NRsuffix[nri] , ";Higgs Mass;Events [GeV]", 1100,0,3300) ))->Fill(-1.0,0.0001);
+    ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_shape"+NRsuffix[nri] , ";Higgs Mass;Events [GeV]", 500,0,3300) ))->Fill(-1.0,0.0001);
+    ((TH1F*)mon.addHistogram( new TH1F( "higgsMass_shape&scale"+NRsuffix[nri] , ";Higgs Mass;Events [GeV]", 500,0,3300) ))->Fill(-1.0,0.0001);
   }
 
   mon.addHistogram( new TH1F( "wdecays",     ";W decay channel",5,0,5) );
@@ -371,17 +377,6 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(4,"e");
   h->GetXaxis()->SetBinLabel(5,"e#mu");
   h->GetXaxis()->SetBinLabel(6,"#gamma"); 
-
-  //gen control
-  mon.addHistogram( new TH1F(        "Gen_Met",      ";MeT [GeV];Events",  1000,    0, 1000) );
-  mon.addHistogram( new TH1F(       "Gen_MetX",      ";MeT [GeV];Events",  1000,    0, 1000) );
-  mon.addHistogram( new TH1F(       "Gen_MetY",      ";MeT [GeV];Events",  1000,    0, 1000) );
-  mon.addHistogram( new TH1F(    "Gen_H2_Mass",     ";Mass [GeV];Events",  6000,    0, 6000) );
-  mon.addHistogram( new TH1F(     "Gen_Z_Mass",     ";Mass [GeV];Events",   150,    0,  150) );
-  mon.addHistogram( new TH1F(       "Gen_Z_Pt",       ";Pt [GeV];Events",  6000,    0, 6000) );
-  mon.addHistogram( new TH1F(     "DeltaR_Lep",  ";#DeltaR_{Lep};Events",  1000,    0,   10) );
-  mon.addHistogram( new TH1F(     "Gen_Lep_Pt",       ";Pt [GeV];Events",  1000,    0, 1000) );
-  mon.addHistogram( new TH1F(    "Gen_Let_Eta",           ";#eta;Events",  1360, -3.6,  3.6) );  
 
   //pu control
   mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
@@ -473,12 +468,12 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1D( "balanceNM1",   ";E_{T}^{miss}/q_{T};Events", 25,0,2.5) );
   mon.addHistogram( new TH1F( "axialmet",     ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
   mon.addHistogram( new TH1F( "axialmetNM1",   ";Axial missing transvere energy [GeV];Events", 50,-100,400) );
-  Double_t metaxis[]={0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,125,150,175,200,250,300,400,500,600,700,800,900,1000,1500};
+  Double_t metaxis[]={0,5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100,125,150,175,200,250,300,400,500,600,700,800,900,1000,1500}; 
   Int_t nmetAxis=sizeof(metaxis)/sizeof(Double_t);
   mon.addHistogram( new TH1F( "metpuppi",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "met",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
   mon.addHistogram( new TH1F( "metNM1",        ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
-  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,1500,2000,2500,3000};
+  Double_t mtaxis[]={100,120,140,160,180,200,220,240,260,280,300,325,350,375,400,450,500,600,700,800,900,1000,1500,2000,2500,3000}; 
   Int_t nmtAxis=sizeof(mtaxis)/sizeof(Double_t);
   mon.addHistogram( new TH1F( "mt"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mtNM1"  ,       ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
@@ -576,31 +571,33 @@ int main(int argc, char* argv[])
 
   //MET CORRection level
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
-
   //jet energy scale and uncertainties 
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
   gSystem->ExpandPathName(jecDir);
-  FactorizedJetCorrector *jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
+  FactorizedJetCorrector *jesCor = NULL;
+  if(isMC || is2015data) jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
   TString pf(isMC ? "MC" : "DATA");
-  JetCorrectionUncertainty *totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
-    
+  JetCorrectionUncertainty *totalJESUnc = NULL;
+  if(isMC || is2015data) totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
-  rochcor2015* muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
-
+  rochcor2015* muCor = NULL; //need to be updated for 2016
+  if(isMC || is2015data) muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
   //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework) 
 
-  string EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
-  PhotonEnergyCalibratorRun2 PhotonEnCorrector(isMC, false, EGammaEnergyCorrectionFile);
-  PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-
-  EpCombinationTool theEpCombinationTool;
-  theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
-  ElectronEnergyCalibratorRun2 ElectronEnCorrector(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
-  ElectronEnCorrector.initPrivateRng(new TRandom(1234));
-
-
+	ElectronEnergyCalibratorRun2 ElectronEnCorrector;
+	string EGammaEnergyCorrectionFile = "";
+	PhotonEnergyCalibratorRun2 PhotonEnCorrector;
+  	EpCombinationTool theEpCombinationTool;
+	if(isMC || is2015data){
+  	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
+  	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
+  	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
+  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
+  	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
+	}
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -611,7 +608,7 @@ int main(int argc, char* argv[])
   float beff(0.68), sfb(0.99), sfbunc(0.015);
   float leff(0.13), sfl(1.05), sflunc(0.12);
 
-  double btagLoose = 0.605; //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X
+  double btagLoose = 0.605; //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X FIXME, I sent an email to Petra to know more (Hugo)
   // setup calibration readers
   BTagCalibration btagCalib("CSVv2", string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/btagSF_CSVv2.csv");
   BTagCalibrationReader btagCal   (&btagCalib, BTagEntry::OP_LOOSE, "mujets", "central");  // calibration instance, operating point, measurement type, systematics type
@@ -652,19 +649,21 @@ int main(int argc, char* argv[])
 
 
   higgs::utils::EventCategory eventCategoryInst(higgs::utils::EventCategory::EXCLUSIVE2JETSVBF); //jet(0,>=1)+vbf binning
-
   patUtils::MetFilter metFiler;
   if(!isMC){ 
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
-	metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+		if(is2015data){
+			metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_csc2015.txt");
+			metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleEG_RunD/DoubleEG_ecalscn1043093.txt"); 
+			metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_csc2015.txt");
+			metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/DoubleMuon_RunD/DoubleMuon_ecalscn1043093.txt"); 
+			metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_csc2015.txt");
+			metFiler.FillBadEvents(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/MetFilter/MuonEG_RunD/MuonEG_ecalscn1043093.txt"); 
+		}
+		else if(is2016data){
 
+		}
         //FIXME, we need to add here the single mu, single el, and gamma path
   }
-
   string debugText = "";
 
   //##############################################
@@ -687,7 +686,6 @@ int main(int argc, char* argv[])
          double puWeightUp = 1.0;
          double puWeightDown = 1.0;
          float puWeight(1.0);
-	 //if(iev>500) continue; //usefull to do some quick checks
 
          //##############################################   EVENT LOOP STARTS   ##############################################
          //if(!isMC && duplicatesChecker.isDuplicate( ev.run, ev.lumi, ev.event) ) { nDuplicates++; continue; }
@@ -780,7 +778,7 @@ int main(int argc, char* argv[])
           bool mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");                  
           bool muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu20_v*", "HLT_IsoTkMu20_v*", "HLT_IsoMu27_v*");                                               
           bool eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");       
-          bool eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf_v*", "HLT_Ele22_eta2p1_WP75_Gsf_v*");                                          
+          bool eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf_v*", "HLT_Ele22_eta2p1_WP75_Gsf_v*", "HLT_Ele22_eta2p1_WPLoose_Gsf_v*"); 
           bool emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*", "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");  
           bool photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                                        
           bool passTrigger        = mumuTrigger||muTrigger||eeTrigger||eTrigger||emuTrigger||photonTrigger;
@@ -912,37 +910,6 @@ int main(int argc, char* argv[])
            }
          }
 
-	if( isMC_VBF || isMC_GG ){
-		std::vector<reco::GenParticle>  VisLep;
-		std::vector<reco::GenParticle>  InvLep;
-		std::vector<reco::GenParticle>  ZBoson;
-		std::vector<reco::GenParticle> H2Boson;
-		for( unsigned int k=0; k<gen.size(); ++k){	
-			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] );
-			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 12 || abs( gen[k].pdgId() ) == 14 || abs( gen[k].pdgId() ) == 16 ) ) InvLep.push_back( gen[k] );
-			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 23 ) ) ZBoson.push_back( gen[k] );
-			if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 35 ) ) H2Boson.push_back( gen[k] );
-		}
-
-		for( unsigned int  h2=0;  h2<H2Boson.size();  h2++){ mon.fillHisto( "Gen_H2_Mass", "", H2Boson[h2].mass(), 1); }
-		for( unsigned int   z=0;    z<ZBoson.size();   z++){ mon.fillHisto(  "Gen_Z_Mass", "",   ZBoson[z].mass(), 1); mon.fillHisto(  "Z_Pt", "", ZBoson[z].pt(), 1); }
-		for( unsigned int lep=0;  lep<VisLep.size(); lep++){ 
-			mon.fillHisto(   "Gen_Lep_Pt", "",   VisLep[lep].pt(), 1); 
-			mon.fillHisto(  "Gen_Lep_Eta", "",  VisLep[lep].eta(), 1); 
-		}
-                if( InvLep.size() == 2 ){
-                        TLorentzVector InvLep1( InvLep[0].px(), InvLep[0].py(), InvLep[0].pz(), InvLep[0].p() );
-                        TLorentzVector InvLep2( InvLep[1].px(), InvLep[1].py(), InvLep[1].pz(), InvLep[1].p() );
-                        double  Met = ( InvLep1 + InvLep2 ).Pt();
-			double MetX = ( InvLep1 + InvLep2 ).Px();
-			double MetY = ( InvLep1 + InvLep2 ).Py();
-			mon.fillHisto(  "Gen_Met", "",  Met, 1);
-			mon.fillHisto( "Gen_MetX", "", MetX, 1);
-			mon.fillHisto( "Gen_MetY", "", MetY, 1);
-
-		}
-        }
-
          //Resolve G+jet/QCD mixing (avoid double counting of photons)
          if (isMC_GJet || isMC_QCD ) {
            // iF GJet sample; accept only event with prompt photons                                                                 
@@ -955,10 +922,10 @@ int main(int argc, char* argv[])
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
          }
 
-     		 //Electroweak corrections to ZZ and WZ(soon) simulations
+     		 //Electroweak corrections to ZZ and WZ simulations
      		 double ewkCorrectionsWeight = 1.;
      		 double ewkCorrections_error = 0.;
-     		 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
+     		 if(isMC_ZZ2l2nu || isMC_WZ3lnu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
      		 double ewkCorrections_up = (ewkCorrectionsWeight + ewkCorrections_error)/ewkCorrectionsWeight;
      	         double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
      
@@ -1012,7 +979,6 @@ int main(int argc, char* argv[])
              passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
              passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
 
-
              //apply muon corrections
              if(abs(lid)==13 && passIso && passId){
                  passSoftMuon=false;
@@ -1020,7 +986,7 @@ int main(int argc, char* argv[])
                    float qter;
                    TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                    if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
-                   }else{   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
+                   }else if (is2015data){   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
                    }
 
 
@@ -1037,11 +1003,12 @@ int main(int argc, char* argv[])
              //apply electron corrections             
              if(abs(lid)==11  && passIso && passId){
                 elDiff -= leptons[ilep].p4();                   
-                ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
-                leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                if (isMC || is2015data){
+                	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
+                	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                }
                 elDiff += leptons[ilep].p4();                 
              }
-
 
               //kinematics
              float leta = fabs(lid==11 ?  leptons[ilep].el.superCluster()->eta() : leptons[ilep].eta());
@@ -1067,12 +1034,11 @@ int main(int argc, char* argv[])
              }
 
 
-          }
+         }
 
-	
-	 //
-	 // PHOTON ANALYSIS
-	 //
+         //
+         // PHOTON ANALYSIS
+         //
 
          pat::PhotonCollection selPhotons;
          int nPho55=0; int nPho100=0;
@@ -1081,19 +1047,16 @@ int main(int argc, char* argv[])
             mon.fillHisto("phopt", "trg", photon.pt(), weight);
             mon.fillHisto("phoeta", "trg", photon.eta(), weight);
 
-            //printf("photon pt=%6.2f eta=%+6.2f\n", photon.pt(), photon.eta());
-            
-            //if(photonTrigger && (photon.pt()<triggerThreshold || photon.pt()>triggerThresholdHigh))continue;
             if(photonTrigger && (photon.pt()<(triggerThreshold) || photon.pt()>(triggerThresholdHigh+10)))continue;
 
-            //calibrate photon energy
+            //Calibrate photon energy
             //PhotonEnCorrector.calibrate(photon, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
 
             if(photon.pt()<55)continue;
             if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
             if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
 
-	    // Veoted all the photon which are closer to an electron or muon
+	    //Removed all the phtons which are alsp reconstructed ad Electron and muons
             double minDRlg(9999.);
             for(size_t ilep=0; ilep<selLeptons.size(); ilep++){
               minDRlg=TMath::Min(minDRlg,deltaR( photon.p4(), selLeptons[ilep].p4()));
@@ -1115,12 +1078,11 @@ int main(int argc, char* argv[])
            met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
            met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
            met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
-
          //
          //JET/MET ANALYSIS
          //
          //add scale/resolution uncertainties and propagate to the MET      
-         utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC); 
+         if(isMC || is2015data) utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC); 
 
          //select the jets
          std::map<string, pat::JetCollection> selJetsVar;
@@ -1162,7 +1124,6 @@ int main(int argc, char* argv[])
               bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>btagLoose);
               bool hasCSVtagUp = hasCSVtag;  
               bool hasCSVtagDown = hasCSVtag;
-
               //update according to the SF measured by BTV
               if(isMC){
                   int flavId=jet.partonFlavour();  double eta=jet.eta();
@@ -1202,12 +1163,12 @@ int main(int argc, char* argv[])
             std::sort(jetCollIt->second.begin(), jetCollIt->second.end(), utils::sort_CandidatesByPt);
          }
 
+
          //save weight
          double initialWeight = weight;
 
          //compute scale uncertainty once and for all
          std::pair<double, double> scaleUncVar = patUtils::scaleVariation(ev);  //compute it only once          
-
 
          // LOOP ON SYSTEMATIC VARIATION FOR THE STATISTICAL ANALYSIS
          for(size_t ivar=0; ivar<nvarsToInclude; ivar++){
@@ -1255,7 +1216,6 @@ int main(int argc, char* argv[])
             for(unsigned int L=0;L<3;L++){  //Loop to assign a Z-->ll channel to photons
                if(L>0 && !(photonTrigger && gammaWgtHandler) )continue; //run it only for photon reweighting
                weight = weightBefLoop;
-             
                std::vector<TString> chTags;
                TString evCat;       
                int dilId(1);
@@ -1286,9 +1246,9 @@ int main(int argc, char* argv[])
                    if(L>0 && gammaWgtHandler)boson = gammaWgtHandler->getMassiveP4(boson, string(L==1?"ee":"mumu")+evCat);
                    std::vector<Float_t> photonVars;
                    photonVars.push_back(boson.pt());           
-                   float photonWeightMain=1.0; 
-                   if(L>0 && gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat); 
-                   //if(L>0 && gammaWgtHandler && boson.pt() > 40 )printf("Photon pT = %6.2f --> prescale=%6.2f weight=%6.2E forL=%i  cat=%s\n", boson.pt(), triggerPrescale, photonWeightMain, L, (string(L==1?"ee":"mumu")+evCat).Data());
+                   float photonWeightMain=1.0;
+                   if(L>0 && gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
+                   //if(L>0 && gammaWgtHandler)printf("Photon pT = %6.2f --> prescale=%6.2f weight=%6.2E forL=%i  cat=%s\n", boson.pt(), triggerPrescale, photonWeightMain, L, (string(L==1?"ee":"mumu")+evCat).Data());
                    weight *= triggerPrescale * photonWeightMain;
                }else{
                   continue;
@@ -1469,7 +1429,6 @@ int main(int argc, char* argv[])
                               mon.fillHisto( "mtfinal",tags,mt,weight,true);
                               mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
                               mon.fillHisto( "njetsfinal",tags,njets,weight);
-
                               if(!isMC){
                                  char buffer[1024];
                                  sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer; 
