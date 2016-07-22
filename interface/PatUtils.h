@@ -107,6 +107,7 @@ namespace patUtils
      void Clear(){map.clear();}
      void FillBadEvents(std::string path);
      int  passMetFilterInt(const fwlite::Event& ev);
+     int  passMetFilterInt(const fwlite::Event& ev, bool is2016); 
      bool passMetFilter(const fwlite::Event& ev);
    };
 

@@ -773,7 +773,6 @@ int main(int argc, char* argv[])
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
           char photonTriggerTreshName[255];
 	  bool mumuTrigger, muTrigger, eeTrigger, eTrigger, emuTrigger, photonTrigger;                                                                                         
-          mumuTrigger=muTrigger=eeTrigger=eTrigger=emuTrigger=photonTrigger;                                                                                                   
                                                                                                                                                                                
           int metFilterValue = 0;                                                                                                                                              
                                                                                                                                                                                
