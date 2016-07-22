@@ -115,7 +115,6 @@ int main(int argc, char* argv[])
   bool isZGmc(isMC && dtag.Contains("ZG"));
   bool isMC_GG  = isMC && ( string(dtag.Data()).find("GG" )  != string::npos);
   bool isMC_VBF = isMC && ( string(dtag.Data()).find("VBF")  != string::npos);
-  bool isMC_VBF1000(isMC && dtag.Contains("VBFtoH1000toZZto2L2Nu"));
   bool isMC_125OnShell = isMC && (mctruthmode==521);
   if(isMC_125OnShell) mctruthmode=125;
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
@@ -906,23 +905,6 @@ int main(int argc, char* argv[])
              mon.fillHisto("wdecays","",decBin,1);
            }
          }
-
-         //VBF Control plots to understand VBF Tail in Z mass shape
-         if(isMC_VBF1000){
-                double filterEff = 0.16275; //measured in previous iteration
-                std::vector<reco::GenParticle> VisLep;
-                for( unsigned int k=0; k<gen.size(); ++k){	
-                        if( gen[k].isHardProcess() && ( abs( gen[k].pdgId() ) == 11 || abs( gen[k].pdgId() ) == 13 ) ) VisLep.push_back( gen[k] ); 
-                  }
-                if( VisLep.size() == 2 ){
-                        TLorentzVector Lep1( VisLep[0].px(), VisLep[0].py(), VisLep[0].pz(), VisLep[0].p() );
-                        TLorentzVector Lep2( VisLep[1].px(), VisLep[1].py(), VisLep[1].pz(), VisLep[1].p() );	
-                        double MassVisZ = ( Lep1 + Lep2 ).M();
-                        if( MassVisZ > 150 ) continue; //skip this event 
-                }
-                weight /= filterEff;
-         }
-        
 
          //Resolve G+jet/QCD mixing (avoid double counting of photons)
          if (isMC_GJet || isMC_QCD ) {
