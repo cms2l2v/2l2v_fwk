@@ -650,8 +650,27 @@ void MetFilter::FillBadEvents(std::string path){
     File.close();
 }
 
+  int MetFilter::passMetFilterInt(const fwlite::Event& ev, bool is2016){
+  
+    if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;                   
 
-int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
+    edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO       
+    if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO                                         
+    if(!metFilters.isValid()){                                                                                                                                
+      printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");               
+    }
+
+    if(!utils::passTriggerPatterns(metFilters, "Flag_globalTightHalo2016Filter")) return 2;                                                                   
+    if(!utils::passTriggerPatterns(metFilters, "Flag_goodVertices"              )) return 3;                                                                  
+    if(!utils::passTriggerPatterns(metFilters, "Flag_eeBadScFilter"         )) return 4;                                                                      
+    if(!utils::passTriggerPatterns(metFilters, "Flag_EcalDeadCellTriggerPrimitiveFilter")) return 5;                                                          
+    if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseFilter"  )) return 6;                                                                           
+    if(!utils::passTriggerPatterns(metFilters, "Flag_HBHENoiseIsoFilter"  )) return 7;          
+
+    return 0;
+  }    
+
+  int MetFilter::passMetFilterInt(const fwlite::Event& ev){  
      if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;
 
     // Legacy: the different collection name was necessary with the early 2015B prompt reco        
@@ -659,7 +678,7 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
     edm::TriggerResultsByName metFilters = ev.triggerResultsByName("PAT");   //is present only if PAT (and miniAOD) is not run simultaniously with RECO
     if(!metFilters.isValid()){metFilters = ev.triggerResultsByName("RECO");} //if not present, then it's part of RECO
     if(!metFilters.isValid()){       
-       printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
+      printf("TriggerResultsByName for MET filters is not found in the process, as a consequence the MET filter is disabled for this event\n");    
     }
 
 
@@ -721,8 +740,8 @@ int MetFilter::passMetFilterInt(const fwlite::Event& ev){
      return 0;
 }
 
-bool MetFilter::passMetFilter(const fwlite::Event& ev){
-   return passMetFilterInt(ev)==0;
+  bool MetFilter::passMetFilter(const fwlite::Event& ev){
+    return passMetFilterInt(ev)==0;
 }
 
 std::pair<double, double> scaleVariation(const fwlite::Event& ev){
