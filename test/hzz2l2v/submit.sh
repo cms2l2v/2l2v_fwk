@@ -68,17 +68,17 @@ fi #end of step0
 if [[ $step > 0.999 &&  $step < 2 ]]; then
    if [[ $step == 1 || $step == 1.0 ]]; then        #submit jobs for 2l2v analysis
 	echo "JOB SUBMISSION"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p $datapileup+" @useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report False --key 2l2v_mcbased $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p $datapileup" @useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report False --key 2l2v_mcbased $arguments
    fi
 
    if [[ $step == 1 || $step == 1.1 ]]; then        #submit jobs for 2l2v photon jet analysis
 	echo "JOB SUBMISSION for Photon + Jet analysis"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p $datapileup+"@useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p $datapileup" @useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
    fi
 
    if [[ $step == 1 || $step == 1.2 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                                   
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p $datapileup+"@useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p $datapileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi                              
 fi
 
@@ -119,11 +119,15 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [ -f $RESULTSDIR/LUMI.txt ]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
-      INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON
-      echo "WARNING: $RESULTSDIR/LUMI.txt file is missing so use fixed integrated luminosity value, this might be different than the dataset you ran on"
+	if [[ $JSON =~ "2016" ]]; then                                                                                               
+            echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
+        else
+            INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON 
+        fi                                                                                                                   
+	echo "WARNING: $RESULTSDIR/LUMI.txt file is missing so use fixed integrated luminosity value, this might be different than the dataset you ran on"
     fi
-
-     if [[ $step == 3 || $step == 3.0 ]]; then  # make plots and combined root files
+    
+    if [[ $step == 3 || $step == 3.0 ]]; then  # make plots and combined root files
 	echo "MAKE SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI"
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption RECREATE --key 2l2v_mcbased $arguments        
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_mcbased --doInterpollation  $arguments       
