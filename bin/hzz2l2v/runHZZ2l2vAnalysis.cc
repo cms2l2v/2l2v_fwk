@@ -121,6 +121,7 @@ int main(int argc, char* argv[])
   bool isMC_ZZ  = isMC && ( string(dtag.Data()).find("TeV_ZZ")  != string::npos);
   bool isMC_ZZ2l2nu  = isMC && ( string(dtag.Data()).find("TeV_ZZ2l2nu")  != string::npos);
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
+  bool isMC_WZ3lnu  = isMC && ( string(dtag.Data()).find("TeV_WZ3lnu")  != string::npos);
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
   bool is2015data = (!isMC && dtag.Contains("2015")); 
@@ -228,6 +229,9 @@ int main(int argc, char* argv[])
   if(isMC_ZZ2l2nu){
   	ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
 		ZZ_NNLOTable = ZZatNNLO::readFile_and_loadTable(dtag);
+	}
+  if(isMC_WZ3lnu){
+  	ewkTable = EwkCorrections::readFile_and_loadEwkTable(dtag);
 	}
 
   //#######################################
@@ -932,10 +936,10 @@ int main(int argc, char* argv[])
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
          }
 
-     		 //Electroweak corrections to ZZ and WZ(soon) simulations
+     		 //Electroweak corrections to ZZ and WZ simulations
      		 double ewkCorrectionsWeight = 1.;
      		 double ewkCorrections_error = 0.;
-     		 if(isMC_ZZ2l2nu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
+     		 if(isMC_ZZ2l2nu || isMC_WZ3lnu) ewkCorrectionsWeight = EwkCorrections::getEwkCorrections(dtag, gen, ewkTable, eventInfo, ewkCorrections_error);
      		 double ewkCorrections_up = (ewkCorrectionsWeight + ewkCorrections_error)/ewkCorrectionsWeight;
      	         double ewkCorrections_down = (ewkCorrectionsWeight - ewkCorrections_error)/ewkCorrectionsWeight;
      

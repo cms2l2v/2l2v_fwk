@@ -13,6 +13,7 @@ namespace EwkCorrections
 		TString path = cmssw_path+"/src/UserCode/llvv_fwk/src/";
 		
 		if(dtag.Contains("ZZ")) name = path+"Corrections/ZZ_EwkCorrections.dat";
+		if(dtag.Contains("WZ")) name = path+"Corrections/WZ_EwkCorrections.dat";
 		myReadFile.open(name);
 		if(!myReadFile.is_open()) cout<<"WARNING: "+name+" NOT FOUND"<<endl;
 		int Start=0;
@@ -71,61 +72,99 @@ namespace EwkCorrections
 	double getEwkCorrections(TString dtag, const reco::GenParticleCollection & genParticles, const std::vector<std::vector<float>> & Table, const GenEventInfoProduct & eventInfo, double & ewkCorrections_error){
 		double kFactor = 1.;
 
+		bool isWZ(dtag.Contains("WZ"));
+		bool isZZ(dtag.Contains("ZZ"));
+
 		reco::GenParticleCollection genIncomingQuarks;
 		reco::GenParticleCollection genIncomingGluons;
-		reco::GenParticleCollection genLeptons;
-		reco::GenParticleCollection genNeutrinos;
+		reco::GenParticleCollection genWBosons;
+		reco::GenParticleCollection genZBosons;
+		reco::GenParticleCollection genLeptonsFromZ;
+		reco::GenParticleCollection genLeptonsFromW;
+		reco::GenParticleCollection genNeutrinosFromZ;
+		reco::GenParticleCollection genNeutrinosFromW;
 
 		for (unsigned int i =0; i < genParticles.size(); i++){
 			reco::GenParticle genParticle = genParticles[i];
 
 			if(fabs(genParticle.pdgId()) >= 1 && fabs(genParticle.pdgId()) <= 5 && genParticle.status() == 21) genIncomingQuarks.push_back(genParticle); //status 21 : incoming particles of hardest subprocess
 			if(fabs(genParticle.pdgId()) == 21 && genParticle.status() == 21) genIncomingGluons.push_back(genParticle);
-			if(genParticle.status()==1 && (fabs(genParticle.pdgId())==11 || fabs(genParticle.pdgId())==13 || fabs(genParticle.pdgId())==15)) genLeptons.push_back(genParticle); //status 1 : final state
-			if(genParticle.status()==1 && (fabs(genParticle.pdgId())==12 || fabs(genParticle.pdgId())==14 || fabs(genParticle.pdgId())==16)) genNeutrinos.push_back(genParticle);
+			if(fabs(genParticle.pdgId()) == 24 && genParticle.status() == 22) genWBosons.push_back(genParticle);
+			if(fabs(genParticle.pdgId()) == 23 && genParticle.status() == 22) genZBosons.push_back(genParticle);
+			if(fabs(genParticle.pdgId())==11 || fabs(genParticle.pdgId())==13 || fabs(genParticle.pdgId())==15){
+				if(fabs(genParticle.mother()->pdgId())==23 && genParticle.mother()->status()==62) genLeptonsFromZ.push_back(genParticle); //lepton originating directly from Z boson. Status 62 seems to correspond to status just before the decay of the boson.
+				if(fabs(genParticle.mother()->pdgId())==24 && genParticle.mother()->status()==62) genLeptonsFromW.push_back(genParticle); //lepton originating directly from W boson
+				}
+			if(fabs(genParticle.pdgId())==12 || fabs(genParticle.pdgId())==14 || fabs(genParticle.pdgId())==16){
+				if(fabs(genParticle.mother()->pdgId())==23 && genParticle.mother()->status()==62) genNeutrinosFromZ.push_back(genParticle); //neutrino originating directly from Z boson
+				if(fabs(genParticle.mother()->pdgId())==24 && genParticle.mother()->status()==62) genNeutrinosFromW.push_back(genParticle); //neutrino originating directly from W boson
+				}
 		}
 
 		std::sort(genIncomingQuarks.begin(), genIncomingQuarks.end(), utils::sort_CandidatesByPt);
 		std::sort(genIncomingGluons.begin(), genIncomingGluons.end(), utils::sort_CandidatesByPt);
-		std::sort(genLeptons.begin(), genLeptons.end(), utils::sort_CandidatesByPt);
-		std::sort(genNeutrinos.begin(), genNeutrinos.end(), utils::sort_CandidatesByPt);
+		std::sort(genWBosons.begin(), genWBosons.end(), utils::sort_CandidatesByPt);
+		std::sort(genZBosons.begin(), genZBosons.end(), utils::sort_CandidatesByPt);
+		std::sort(genLeptonsFromW.begin(), genLeptonsFromW.end(), utils::sort_CandidatesByPt);
+		std::sort(genNeutrinosFromW.begin(), genNeutrinosFromW.end(), utils::sort_CandidatesByPt);
+		std::sort(genLeptonsFromZ.begin(), genLeptonsFromZ.end(), utils::sort_CandidatesByPt);
+		std::sort(genNeutrinosFromZ.begin(), genNeutrinosFromZ.end(), utils::sort_CandidatesByPt);
 
 		if(!eventInfo.pdf()) return 1; //no corrections can be applied because we need x1 and x2 
-		if( genLeptons.size() < 2 || genNeutrinos.size() < 2) return 1; //no corrections can be applied if we don't find our two Z's
+		if( genZBosons.size() < 2 && isZZ) return 1; //no corrections can be applied if we don't find our two Z's
+		if( (genZBosons.size() < 1 || genWBosons.size() < 1) && isWZ) return 1; //no corrections can be applied if we don't find at least one W and one Z
 		double x1 = eventInfo.pdf()->x.first; 
 		double x2 = eventInfo.pdf()->x.second; 
 
-		LorentzVector Z1 = genLeptons[0].p4() + genLeptons[1].p4(); //First Z : charged leptons
-		LorentzVector Z2 = genNeutrinos[0].p4() + genNeutrinos[1].p4(); //Second Z : neutrinos
-		LorentzVector ZZ = Z1+Z2;
-		TLorentzVector ZZ_t(ZZ.X(),ZZ.Y(),ZZ.Z(),ZZ.T()); //Need TLorentzVectors for several methods (boosts)
-		TLorentzVector Z1_t(Z1.X(),Z1.Y(),Z1.Z(),Z1.T());
-		TLorentzVector Z2_t(Z2.X(),Z2.Y(),Z2.Z(),Z2.T());
+		LorentzVector V1;
+		LorentzVector V2;
 
-		double s_hat = pow(ZZ.M(),2); // s_hat = center-of-mass energy of 2 Z system
+		if (isZZ){
+			V1 = genLeptonsFromZ[0].p4() + genLeptonsFromZ[1].p4(); //First Z : charged leptons
+			V2 = genNeutrinosFromZ[0].p4() + genNeutrinosFromZ[1].p4(); //Second Z : neutrinos
+		}
+		if (isWZ){
+			V1 = genLeptonsFromZ[0].p4() + genLeptonsFromZ[1].p4(); //Z decaying in 2 leptons
+			V2 = genLeptonsFromW[0].p4() + genNeutrinosFromW[0].p4(); //W decaying in 1 lepton and 1 neutrino
+		}
 
-		//Boost quarks and Z1
-		TLorentzVector Z1_b = Z1_t;
+		LorentzVector VV = V1+V2;
+		TLorentzVector VV_t(VV.X(),VV.Y(),VV.Z(),VV.T()); //Need TLorentzVectors for several methods (boosts)
+		TLorentzVector V1_t(V1.X(),V1.Y(),V1.Z(),V1.T());
+		TLorentzVector V2_t(V2.X(),V2.Y(),V2.Z(),V2.T());
+
+		double s_hat = pow(VV.M(),2); // s_hat = center-of-mass energy of 2 vector boson system
+
+		//Boost quarks and V1
+		TLorentzVector V1_b = V1_t;
 		TLorentzVector p1_b, p2_b;
 		double energy = 6500. ; //13 TeV in total
 		p1_b.SetXYZT(0.,0.,x1*energy,x1*energy); //x1 = fraction of momentum taken by the particle initiating the hard process
 		p2_b.SetXYZT(0.,0.,-x2*energy,x2*energy);
-		Z1_b.Boost( -ZZ_t.BoostVector()); //Inverse Lorentz transformation, to get to the center-of-mass frame
-		p1_b.Boost( -ZZ_t.BoostVector());
-		p2_b.Boost( -ZZ_t.BoostVector());
+		V1_b.Boost( -VV_t.BoostVector()); //Inverse Lorentz transformation, to get to the center-of-mass frame
+		p1_b.Boost( -VV_t.BoostVector());
+		p2_b.Boost( -VV_t.BoostVector());
 
 		//Unitary vectors
-		TLorentzVector Z1_b_u = Z1_b*(1/Z1_b.P()); //Normalized to 1
+		TLorentzVector V1_b_u = V1_b*(1/V1_b.P()); //Normalized to 1
 		TLorentzVector p1_b_u = p1_b*(1/p1_b.P());
 		TLorentzVector p2_b_u = p2_b*(1/p2_b.P());
 
 		//Effective beam axis
 		TLorentzVector diff_p = p1_b_u - p2_b_u;
 		TLorentzVector eff_beam_axis = diff_p*(1./diff_p.P());
-		double cos_theta = eff_beam_axis.X()*Z1_b_u.X() + eff_beam_axis.Y()*Z1_b_u.Y() + eff_beam_axis.Z()*Z1_b_u.Z();
+		double cos_theta = eff_beam_axis.X()*V1_b_u.X() + eff_beam_axis.Y()*V1_b_u.Y() + eff_beam_axis.Z()*V1_b_u.Z();
 
 		double m_z = 91.1876; //Z bosons assumed to be on-shell
-		double t_hat = m_z*m_z - 0.5*s_hat + cos_theta * sqrt( 0.25*s_hat*s_hat - m_z*m_z*s_hat );
+		double m_w = 80.385;
+		double t_hat = 0.;
+
+		if(isZZ) t_hat = m_z*m_z - 0.5*s_hat + cos_theta * sqrt( 0.25*s_hat*s_hat - m_z*m_z*s_hat );
+		if(isWZ){
+			double b = 1./2./sqrt(s_hat) * sqrt(pow(s_hat-m_z*m_z-m_w*m_w,2) - 4*m_w*m_w*m_z*m_z);
+			double a = sqrt(b*b + m_z*m_z);
+			t_hat = m_z*m_z - sqrt(s_hat) * (a - b * cos_theta); //awful calculation, needed to put ourselves to the center-of-mass frame with the 2 particles having a different mass !
+			}
 
 		int quark_type = 0; //Flavour of incident quark
 		if(genIncomingQuarks.size() > 0) quark_type = fabs(genIncomingQuarks[0].pdgId()); //Works unless if gg->ZZ process : it shouldn't be the case as we're using POWHEG
@@ -136,9 +175,10 @@ namespace EwkCorrections
 		if(quark_type==2) kFactor = 1. + Correction_vec[0]; //u
 		if(quark_type==3) kFactor = 1. + Correction_vec[1]; //s as d
 		if(quark_type==4) kFactor = 1. + Correction_vec[0]; //c as u
-		if(quark_type==5) kFactor = 1. + Correction_vec[2]; //b
+		if(quark_type==5) kFactor = 1. + Correction_vec[2]; //b  //Notice that the quark types are irrelevant for the case of WZ (same numbers in the last 3 columns).
 
-		if(sqrt(s_hat)< 2*m_z) kFactor = 1.; //Off-shell cases, not corrected to avoid non-defined values for t.
+		if(sqrt(s_hat)< 2*m_z && isZZ) kFactor = 1.; //Off-shell cases, not corrected to avoid non-defined values for t.
+		if(sqrt(s_hat)< m_z + m_w && isWZ) kFactor = 1.;
 
 		//Computing the associated error:
 		//Warning, several methods could be used.
@@ -146,11 +186,22 @@ namespace EwkCorrections
 		//And ATLAS used : 0 for rho < 0.3 and 1 for rho >0.3
 		//
 		//Here is an implementation that is using a mix of the two. It may change in the future (but the change won't be critical)
-		double kFactor_QCD = 15.99/9.89; //From arXiv1105.0020
+		double kFactor_QCD = 1.;
+		if(isZZ) kFactor_QCD = 15.99/9.89; //From arXiv1105.0020
+		if(isWZ && genWBosons[0].pdgId() > 0) kFactor_QCD = 28.55/15.51; //for W+Z
+		if(isWZ && genWBosons[0].pdgId() < 0) kFactor_QCD = 18.19/9.53; //for W-Z
+
 		
 		//Definition of rho
-		double rho = (genLeptons[0].p4() + genLeptons[1].p4() + genNeutrinos[0].p4() + genNeutrinos[1].p4()).pt();
-		rho = rho/(genLeptons[0].pt() + genLeptons[1].pt() + genNeutrinos[0].pt() + genNeutrinos[1].pt());
+		double rho = 0.;
+		if(isZZ){
+			double rho = (genLeptonsFromZ[0].p4() + genLeptonsFromZ[1].p4() + genNeutrinosFromZ[0].p4() + genNeutrinosFromZ[1].p4()).pt();
+			rho = rho/(genLeptonsFromZ[0].pt() + genLeptonsFromZ[1].pt() + genNeutrinosFromZ[0].pt() + genNeutrinosFromZ[1].pt());
+		}
+		if(isWZ){
+			double rho = (genLeptonsFromZ[0].p4() + genLeptonsFromZ[1].p4() + genLeptonsFromW[0].p4() + genNeutrinosFromW[0].p4()).pt();
+			rho = rho/(genLeptonsFromZ[0].pt() + genLeptonsFromZ[1].pt() + genLeptonsFromW[0].pt() + genNeutrinosFromW[0].pt());
+		}
 
 		if(rho<0.3) ewkCorrections_error = fabs((kFactor-1)*(kFactor_QCD -1));
 		else ewkCorrections_error = fabs(1-kFactor);
@@ -158,6 +209,16 @@ namespace EwkCorrections
 		//At this point, we have the relative error on the delta_ewk ( = k_ewk -1 )
 		//Let's - instead - return the absolute error on k: we do delta_ewk* the_relative_errir_on_it. This gives absolute error on delta, and so on k
 		ewkCorrections_error = fabs(ewkCorrections_error*kFactor);
+
+		//For WZ, we have to add the uncertainty due to gamma-induced processes. This uncertainty has been obtained separately by performing a polynomial fit based on m_WZ (separate study).
+		double gamma_induced_uncertainty = 0.;
+		if(isWZ){
+			if(genWBosons[0].pdgId() > 0) gamma_induced_uncertainty = 0.00286804 - 8.4624e-6 * sqrt(s_hat) + 3.90611e-8 * s_hat; //W+Z
+			if(genWBosons[0].pdgId() < 0) gamma_induced_uncertainty = 0.00417376 - 1.51319e-5 * sqrt(s_hat) + 5.68576e-8 * s_hat; //W-Z
+			ewkCorrections_error = sqrt(pow(ewkCorrections_error,2) + pow(gamma_induced_uncertainty,2));
+			
+			kFactor = 1. ;//For WZ, the decision taken is not to apply any correction as we assume that the gamma-induced and the virtual part cancel out.
+		}
 		
 		return kFactor;
 	}
