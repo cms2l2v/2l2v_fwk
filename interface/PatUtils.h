@@ -7,6 +7,25 @@
 #include "DataFormats/FWLite/interface/ChainEvent.h"
 #include "DataFormats/Common/interface/MergeableCounter.h"
 
+// georgia
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/global/EDFilter.h"
+
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+
+#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/MuonReco/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
+// end georgia
+
 //Load here all the dataformat that we will need
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
@@ -85,7 +104,6 @@ namespace patUtils
 
    double getHTScaleFactor(TString dtag, double lheHt);                                                                                               
 
-
    class MetFilter{
     private :
      struct RuLuEv {
@@ -106,6 +124,11 @@ namespace patUtils
      ~MetFilter(){}
      void Clear(){map.clear();}
      void FillBadEvents(std::string path);
+
+     //     New Met Filters for 2016 Run II:    
+     bool passBadPFMuonFilter(const fwlite::Event& ev);
+     bool passBadChargedCandidateFilter(const fwlite::Event& ev);   
+     
      int  passMetFilterInt(const fwlite::Event& ev);
      int  passMetFilterInt(const fwlite::Event& ev, bool is2016); 
      bool passMetFilter(const fwlite::Event& ev);
