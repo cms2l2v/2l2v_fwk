@@ -650,6 +650,162 @@ void MetFilter::FillBadEvents(std::string path){
     File.close();
 }
 
+  
+  bool MetFilter::passBadPFMuonFilter(const fwlite::Event& ev) {
+
+    const bool debug_ = false; 
+
+    const int algo_ = 14;
+    //    const double minDZ_ = 0.1; 
+    const double minTrkPtError_ = 0.5; 
+    const double minMuPt_ = 100.; 
+
+    pat::MuonCollection muons; 
+    fwlite::Handle<pat::MuonCollection> muonsHandle; 
+    muonsHandle.getByLabel(ev, "slimmedMuons"); 
+    if(muonsHandle.isValid()){ muons = *muonsHandle;}
+
+    pat::PackedCandidateCollection pfCandidates; 
+    fwlite::Handle<pat::PackedCandidateCollection> pfCandidatesHandle;
+    pfCandidatesHandle.getByLabel(ev,"packedPFCandidates"); 
+    if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
+
+    bool foundBadPFMuon = false;
+
+    for ( unsigned i=0; i < muons.size(); ++i ) { // loop over all muons
+    
+      const reco::Muon & muon = muons[i];
+
+      reco::TrackRef innerMuonTrack = muon.innerTrack();
+
+      if ( innerMuonTrack.isNull() ) { 
+	if (debug_) cout<<"Skipping this muon because it has no inner track"<<endl; 
+	continue; 
+      };
+
+      if ( innerMuonTrack->pt() < minMuPt_) {
+	if (debug_) cout<<"Skipping this muon because inner track pt."<<endl; 
+	continue;
+      }
+
+      if ( innerMuonTrack->quality(reco::TrackBase::highPurity) ) { 
+	if (debug_) cout<<"Skipping this muon because inner track is high purity."<<endl; 
+	continue;
+      }
+
+      // Consider only muons with large relative pt error
+      if (debug_) cout<<"Muon inner track pt rel err: "<<innerMuonTrack->ptError()/innerMuonTrack->pt()<<endl;
+      if (not ( innerMuonTrack->ptError()/innerMuonTrack->pt() > minTrkPtError_ ) ) {
+	if (debug_) cout<<"Skipping this muon because seems well measured."<<endl; 
+	continue;
+      }
+
+      // Consider only muons from muonSeededStepOutIn algo
+      if (debug_) cout<<"Muon inner track original algo: "<<innerMuonTrack->originalAlgo() << endl;
+      if (not ( innerMuonTrack->originalAlgo() == algo_  && innerMuonTrack->algo() == algo_ ) ) {
+	if (debug_) cout<<"Skipping this muon because is not coming from the muonSeededStepOutIn"<<endl; 
+	continue;
+      }
+    
+      for ( unsigned j=0; j < pfCandidates.size(); ++j ) {
+	const reco::Candidate & pfCandidate = pfCandidates[j];
+	// look for pf muon
+	if ( not ( ( abs(pfCandidate.pdgId()) == 13) and (pfCandidate.pt() > minMuPt_) ) ) continue;
+	// require small dR
+	float dr = deltaR( muon.eta(), muon.phi(), pfCandidate.eta(), pfCandidate.phi() );
+	if( dr < 0.001 ) {
+	  foundBadPFMuon=true;
+	  if (debug_) cout <<"found bad muon!"<<endl;
+	  break;
+	}
+      }
+
+      if (foundBadPFMuon) { break; };
+
+    }
+
+    bool pass = !foundBadPFMuon;
+    if (debug_) cout<<"pass: "<<pass<<endl;
+
+    return pass;
+
+  }
+
+  bool MetFilter::passBadChargedCandidateFilter(const fwlite::Event& ev) {
+
+    const bool debug_ = false;
+
+    const double maxDR_ = 0.001;
+    const double minPtDiffRel_ = -0.5;
+    const double minMuonTrackRelErr_ = 0.5;
+    const double minMuonPt_ = 100.;
+
+    //    reco::Muon MuonView;
+    //    typedef View<reco::Muon> MuonView;
+    pat::MuonCollection muons;
+    fwlite::Handle<pat::MuonCollection> muonsHandle;
+    muonsHandle.getByLabel(ev, "slimmedMuons");                                                                                          
+    if(muonsHandle.isValid()){ muons = *muonsHandle;}  
+
+    //reco::Candidate CandidateView;
+    //    typedef View<reco::Candidate> CandidateView;
+    pat::PackedCandidateCollection pfCandidates; 
+    fwlite::Handle<pat::PackedCandidateCollection> pfCandidatesHandle;
+    pfCandidatesHandle.getByLabel(ev,"packedPFCandidates");
+    if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
+
+    bool foundBadChargedCandidate = false;
+
+    for ( unsigned i=0; i < muons.size(); ++i ) { // loop over all muons
+
+      const reco::Muon & muon = muons[i];
+
+      if ( muon.pt() > minMuonPt_) {
+	reco::TrackRef innerMuonTrack = muon.innerTrack();
+        if (debug_) cout<<"muon "<<muon.pt()<<endl;
+
+        if ( innerMuonTrack.isNull() ) { 
+	  if (debug_) cout<<"Skipping this muon because it has no inner track"<<endl; 
+	  continue; 
+	};
+        if ( innerMuonTrack->quality(reco::TrackBase::highPurity) ) { 
+	  if (debug_) cout<<"Skipping this muon because inner track is high purity."<<endl; 
+	  continue;
+        }
+        // Consider only muons with large relative pt error
+        if (debug_) cout<<"Muon inner track pt rel err: "<<innerMuonTrack->ptError()/innerMuonTrack->pt()<<endl;
+        if (not ( innerMuonTrack->ptError()/innerMuonTrack->pt() > minMuonTrackRelErr_ ) ) {
+	  if (debug_) cout<<"Skipping this muon because seems well measured."<<endl; 
+	  continue;
+        }
+        for ( unsigned j=0; j < pfCandidates.size(); ++j ) {
+	  const reco::Candidate & pfCandidate = pfCandidates[j];
+	  // look for charged hadrons
+	  if (not ( abs(pfCandidate.pdgId()) == 211) ) continue;
+	  float dr = deltaR( innerMuonTrack->eta(), innerMuonTrack->phi(), pfCandidate.eta(), pfCandidate.phi() );
+	  float dpt = ( pfCandidate.pt() - innerMuonTrack->pt())/(0.5*(innerMuonTrack->pt() + pfCandidate.pt()));
+	  if ( (debug_)  and (dr<0.5) ) cout<<" pt(it) "<<innerMuonTrack->pt()<<" candidate "<<pfCandidate.pt()<<" dr "<< dr
+					    <<" dpt "<<dpt<<endl;
+	  // require similar pt ( one sided ) and small dR
+	  if ( ( deltaR( innerMuonTrack->eta(), innerMuonTrack->phi(), pfCandidate.eta(), pfCandidate.phi() ) < maxDR_ ) 
+	       and ( ( pfCandidate.pt() - innerMuonTrack->pt())/(0.5*(innerMuonTrack->pt() + pfCandidate.pt())) > minPtDiffRel_ ) ) {
+	    foundBadChargedCandidate = true;
+	    cout <<"found bad track!"<<endl; 
+	    break;
+	  }
+        }
+        if (foundBadChargedCandidate) { break; };
+      }
+    } // end loop over muonss
+
+    bool pass = !foundBadChargedCandidate;
+    if (debug_) cout<<"pass: "<<pass<<endl;
+
+    return pass;
+
+  }
+  
+
   int MetFilter::passMetFilterInt(const fwlite::Event& ev, bool is2016){
   
     if(map.find( RuLuEv(ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event()))!=map.end())return 1;                   

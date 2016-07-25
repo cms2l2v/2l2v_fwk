@@ -776,8 +776,11 @@ int main(int argc, char* argv[])
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
           char photonTriggerTreshName[255];
 	  bool mumuTrigger, muTrigger, eeTrigger, eTrigger, emuTrigger, photonTrigger;                                                                                         
-                                                                                                                                                                               
-          int metFilterValue = 0;                                                                                                                                              
+  
+          int metFilterValue = 0;                                                                   
+
+	  bool filterbadPFMuon = true; 
+	  bool filterbadChCandidate = true;
                                                                                                                                                                                
           if (is2016data || is2016MC) {
                                                                                                                                                                                
@@ -791,7 +794,10 @@ int main(int argc, char* argv[])
             photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                     
                                                                                                                                                                                
             metFilterValue = metFilter.passMetFilterInt( ev, is2016data );                                                                                                     
-                                                                                                                                                                               
+
+	    filterbadChCandidate = metFilter.passBadChargedCandidateFilter(ev);                                                                           
+	    filterbadPFMuon = metFilter.passBadPFMuonFilter(ev);
+                                                                                                                                                        
           } else {                                                                                                                                                             
                                                                                                                                                                                
             mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");                         
@@ -835,15 +841,17 @@ int main(int argc, char* argv[])
 
           if(photonTrigger){sprintf(photonTriggerTreshName, "PhoTrg%i", int(triggerThreshold));}
 
+
           //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
            if(!passTrigger && !photonTriggerStudy)continue;        
-
-
          //##############################################   EVENT PASSED THE TRIGGER   ######################################
+
           if( metFilterValue!=0 ) continue;	 //Note this must also be applied on MC
 
-
+	  // Apply Bad Charged Hadron and Bad Muon Filters from MiniAOD (for Run II 2016 only )
+	  if (!filterbadPFMuon || !filterbadChCandidate) continue;
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
+
 
           //load all the objects we will need to access
           reco::VertexCollection vtx;
