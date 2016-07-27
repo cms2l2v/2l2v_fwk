@@ -571,14 +571,20 @@ int main(int argc, char* argv[])
 
   //MET CORRection level
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
-  //jet energy scale and uncertainties 
+  //jet energy scale and uncertainties (2015 vs 2016 depends on the path "jecDir" )
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
+  if (is2016MC || is2016data) { jecDir+="80X/"; }
+
   gSystem->ExpandPathName(jecDir);
+  
   FactorizedJetCorrector *jesCor = NULL;
-  if(isMC || is2015data) jesCor        = utils::cmssw::getJetCorrector(jecDir,isMC);
+  jesCor = utils::cmssw::getJetCorrector(jecDir,isMC);
+
   TString pf(isMC ? "MC" : "DATA");
   JetCorrectionUncertainty *totalJESUnc = NULL;
-  if(isMC || is2015data) totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
+  //if(isMC || is2015data) 
+  totalJESUnc = new JetCorrectionUncertainty((jecDir+"/"+pf+"_Uncertainty_AK4PFchs.txt").Data());
+  
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
@@ -794,10 +800,11 @@ int main(int argc, char* argv[])
             photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                     
                                                                                                                                                                                
             metFilterValue = metFilter.passMetFilterInt( ev, is2016data );                                                                                                     
-
-	    filterbadChCandidate = metFilter.passBadChargedCandidateFilter(ev);                                                                           
-	    filterbadPFMuon = metFilter.passBadPFMuonFilter(ev);
-                                                                                                                                                        
+	    
+	    // Apply Bad Charged Hadron and Bad Muon Filters from MiniAOD (for Run II 2016 only ) 
+	    filterbadChCandidate = metFilter.passBadChargedCandidateFilter(ev); if (!filterbadChCandidate) {  metFilterValue=9; } 
+	    filterbadPFMuon = metFilter.passBadPFMuonFilter(ev); if (!filterbadPFMuon) { metFilterValue=8; }
+	                                                                                                                                              
           } else {                                                                                                                                                             
                                                                                                                                                                                
             mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");                         
@@ -806,6 +813,7 @@ int main(int argc, char* argv[])
             eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele23_WPLoose_Gsf_v*", "HLT_Ele22_eta2p1_WP75_Gsf_v*", "HLT_Ele22_eta2p1_WPLoose_Gsf_v*");                
             emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",                                                           
                                                             "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");                                                             
+
             photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                     
                                                                                                                                                                                
             metFilterValue = metFilter.passMetFilterInt( ev );                                                                                                                 
@@ -849,7 +857,7 @@ int main(int argc, char* argv[])
           if( metFilterValue!=0 ) continue;	 //Note this must also be applied on MC
 
 	  // Apply Bad Charged Hadron and Bad Muon Filters from MiniAOD (for Run II 2016 only )
-	  if (!filterbadPFMuon || !filterbadChCandidate) continue;
+	  //	  if (!filterbadPFMuon || !filterbadChCandidate) continue;
           //##############################################   EVENT PASSED MET FILTER   ####################################### 
 
 
