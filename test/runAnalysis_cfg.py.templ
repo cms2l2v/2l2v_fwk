@@ -77,7 +77,7 @@ runProcess = cms.PSet(
     tmvaInput = mySignalMVA,
     muscleDir =  cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/'),
     jecDir = cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/25ns/'),
-    datapileup = @datapileupvec, 
+    datapileup = @data_pileup, 
     datapileupSingleLep = datapileup_official,
     debug = cms.bool(False),
     lumisToProcess = LumiList.LumiList(filename = theLumiMask).getVLuminosityBlockRange(),
