@@ -1782,7 +1782,7 @@ int main(int argc, char* argv[])
                  //if(it->second.shortName.find("ww")==0){shapeInfo.uncScale["XSec_sys_WW"] = integral*(systpostfix.Contains('8')?0.097:0.097);}
                  //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["XSec_sys_WZ"] = integral*(systpostfix.Contains('8')?0.056:0.056);}
                  
-                 if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["_th_wzmissingewk"] = integral*0.03;}                 
+                 //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["_th_wzmissingewk"] = integral*0.03;} //now the uncertainty is correctly implemented and depends on m_wz.
               }
            }
          }
