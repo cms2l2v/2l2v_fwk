@@ -30,7 +30,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_07_27
+SUFFIX=_2016_08_01
 
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -48,7 +48,7 @@ if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi
 
 mytest='80X'
 
-if [[ $JSON =~ "2016" ]]; then
+if [[ $JSON =~ *"2016"* ]]; then
     params="@data_pileup=datapileup_2016 @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"
 else
     params="@data_pileup=datapileup_official @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"  
@@ -107,7 +107,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH
 	pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
 
-	if [[ $JSON =~ "2016" ]]; then
+	if [[ $JSON =~ *"2016"* ]]; then
 	    brilcalc lumi -b "STABLE BEAMS" --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/normtag_DATACERT.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	else
 	    brilcalc lumi --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
@@ -121,7 +121,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [ -f $RESULTSDIR/LUMI.txt ]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
-	if [[ $JSON =~ "2016" ]]; then                                                                                               
+	if [[ $JSON =~ *"2016"* ]]; then                                                                                               
             echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
         else
             INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON 
