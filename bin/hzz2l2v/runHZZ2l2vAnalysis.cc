@@ -781,7 +781,9 @@ int main(int argc, char* argv[])
 
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
           char photonTriggerTreshName[255];
-	  bool mumuTrigger, muTrigger, eeTrigger, eTrigger, emuTrigger, photonTrigger;                                                                                         
+
+	  bool mumuTrigger(true); bool muTrigger(true);	bool eeTrigger(true); bool eTrigger(true); bool emuTrigger(true); 
+	  bool photonTrigger(true);                                                                                         
   
           int metFilterValue = 0;                                                                   
 
@@ -789,16 +791,18 @@ int main(int argc, char* argv[])
 	  bool filterbadChCandidate = true;
                                                                                                                                                                                
           if (is2016data || is2016MC) {
+                                    
+	    if (!is2016MC) { // Trigger not applied in MC
+	      mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*");                         
+	      muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu22_v*","HLT_IsoTkMu22_v*");
+	      eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");                
+	      eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*");                                                                            
+	      emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",                                                           
+							      "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");                                                             
                                                                                                                                                                                
-            mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");                         
-            muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu27_v*");                                                                                             
-            eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");                
-            eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*");                                                                            
-            emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",                                                           
-                                                            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*");                                                             
-                                                                                                                                                                               
-            photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                     
-                                                                                                                                                                               
+	      photonTrigger      = patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh);                                                     
+	    }
+                                                                                                               
             metFilterValue = metFilter.passMetFilterInt( ev, is2016data );                                                                                                     
 	    
 	    // Apply Bad Charged Hadron and Bad Muon Filters from MiniAOD (for Run II 2016 only ) 
