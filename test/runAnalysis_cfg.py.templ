@@ -78,7 +78,7 @@ runProcess = cms.PSet(
     muscleDir =  cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/'),
     jecDir = cms.string('${CMSSW_BASE}/src/UserCode/llvv_fwk/data/jec/25ns/'),
     datapileup = @data_pileup, 
-    datapileupSingleLep = datapileup_official,
+    datapileupSingleLep = @data_pileup,
     debug = cms.bool(False),
     lumisToProcess = LumiList.LumiList(filename = theLumiMask).getVLuminosityBlockRange(),
     pujetidparas = cms.PSet(pu_jetid),
