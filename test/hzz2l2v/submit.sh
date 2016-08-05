@@ -34,7 +34,7 @@ SUFFIX=_2016_08_01
 
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples.json #samples.json  #samples_WJets_extOnly.json  #samples_photonDataOnly.json
+JSON=$MAINDIR/samples2016.json 
 GOLDENJSON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/
 RESULTSDIR=$MAINDIR/results$SUFFIX
 PLOTSDIR=$MAINDIR/plots${SUFFIX}
