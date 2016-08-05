@@ -34,7 +34,8 @@ SUFFIX=_2016_08_01
 
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples2016.json
+JSON=$MAINDIR/samples.json #samples.json  #samples_WJets_extOnly.json  #samples_photonDataOnly.json
+GOLDENJSON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/
 RESULTSDIR=$MAINDIR/results$SUFFIX
 PLOTSDIR=$MAINDIR/plots${SUFFIX}
 PLOTTER=$MAINDIR/plotter${SUFFIX}
@@ -49,9 +50,9 @@ if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi
 mytest='80X'
 
 if [[ $JSON =~ *"2016"* ]]; then
-    params="@data_pileup=datapileup_2016 @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"
+    pileup=datapileup_2016
 else
-    params="@data_pileup=datapileup_official @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"  
+    pileup=datapileup_official  
 fi
 
 ################################################# STEPS between 0 and 1
@@ -70,17 +71,17 @@ fi #end of step0
 if [[ $step > 0.999 &&  $step < 2 ]]; then
    if [[ $step == 1 || $step == 1.0 ]]; then        #submit jobs for 2l2v analysis
 	echo "JOB SUBMISSION"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p $params -s $queue --report True --key 2l2v_mcbased $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=$pileup @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0" -s $queue --report True --key 2l2v_mcbased $arguments
    fi
 
    if [[ $step == 1 || $step == 1.1 ]]; then        #submit jobs for 2l2v photon jet analysis
 	echo "JOB SUBMISSION for Photon + Jet analysis"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p $params -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=$pileup @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"  -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
    fi
 
    if [[ $step == 1 || $step == 1.2 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p $params -s $queue --report True --key 2l2v_photonsOnly $arguments 
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=$pileup @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi                              
 fi
 
@@ -93,7 +94,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	mergeJSON.py --output=$RESULTSDIR/json_doubleEl.json   $RESULTSDIR/Data*_DoubleElectron*.json
 	mergeJSON.py --output=$RESULTSDIR/json_muEG.json       $RESULTSDIR/Data*_MuEG*.json
         mergeJSON.py --output=$RESULTSDIR/json_gamma.json      $RESULTSDIR/Data13TeV_SinglePhoton*.json
-	mergeJSON.py --output=$RESULTSDIR/json_in.json  Cert_*.txt
+	mergeJSON.py --output=$RESULTSDIR/json_in.json  $GOLDENJSON/Cert_*.txt
 	echo "MISSING LUMI BLOCKS IN DOUBLE MU DATASET"
 	compareJSON.py --diff $RESULTSDIR/json_in.json $RESULTSDIR/json_doubleMu.json 
 	echo "MISSING LUMI BLOCKS IN DOUBLE ELECTRON DATASET"
