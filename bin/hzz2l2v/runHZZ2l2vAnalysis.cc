@@ -792,7 +792,7 @@ int main(int argc, char* argv[])
 	  bool filterbadPFMuon = true; 
 	  bool filterbadChCandidate = true;
                                                                                                                                                                                
-	if (!isMC_signal && is2016MC){
+	if (!isMC_signal){
           if (is2016data || is2016MC) {
                                     
 	    if (!is2016MC) { // Trigger not applied in MC
