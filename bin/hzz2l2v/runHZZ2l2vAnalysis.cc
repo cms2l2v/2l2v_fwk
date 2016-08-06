@@ -792,7 +792,6 @@ int main(int argc, char* argv[])
 	  bool filterbadPFMuon = true; 
 	  bool filterbadChCandidate = true;
                                                                                                                                                                                
-	if (!isMC_signal){
           if (is2016data || is2016MC) {
                                     
 	    if (!is2016MC) { // Trigger not applied in MC
@@ -825,7 +824,7 @@ int main(int argc, char* argv[])
                                                                                                                                                                                
             metFilterValue = metFilter.passMetFilterInt( ev );                                                                                                                 
           }                                                                                                                                                                    
-	 }
+	 
           mon.fillHisto("metFilter_eventflow", "", metFilterValue, weight);   
 
           bool passTrigger        = mumuTrigger||muTrigger||eeTrigger||eTrigger||emuTrigger||photonTrigger;
