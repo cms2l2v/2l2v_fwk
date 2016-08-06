@@ -779,7 +779,7 @@ int main(int argc, char* argv[])
           //apply trigger and require compatibilitiy of the event with the PD
           edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
           //if(!tr.isValid())return false;
-          if(!tr.isValid() && !isMC_signal )return false;
+          if(!tr.isValid() && (!isMC_signal && is2016MC)  )return false;
 
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
           char photonTriggerTreshName[255];
@@ -792,7 +792,7 @@ int main(int argc, char* argv[])
 	  bool filterbadPFMuon = true; 
 	  bool filterbadChCandidate = true;
                                                                                                                                                                                
-	if (!isMC_signal ){
+	if (!isMC_signal && is2016MC){
           if (is2016data || is2016MC) {
                                     
 	    if (!is2016MC) { // Trigger not applied in MC
