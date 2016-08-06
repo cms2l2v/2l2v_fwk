@@ -77,15 +77,16 @@ namespace patUtils
    namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
+   namespace CutVersion { enum CutSet {Spring15Cut25ns, ICHEP16Cut}; }
 
    bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
-   bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel); // Old PHYS14 ID
-   bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel);
+   bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion); // Old PHYS14 ID
+   bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel, int cutVersion);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
    float relIso(patUtils::GenericLepton& lep, double rho);
    bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
-   bool passIso(pat::Electron& el,  int IsoLevel, double rho=0.0); // Old PHYS15 Iso
-   bool passIso(pat::Muon&     mu,  int IsoLevel);
+   bool passIso(pat::Electron& el,  int IsoLevel, int cutVersion, double rho=0.0 ); // Old PHYS15 Iso
+   bool passIso(pat::Muon&     mu,  int IsoLevel, int cutVersion);
    bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
    bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
    bool passPFJetID(std::string label, pat::Jet jet);
