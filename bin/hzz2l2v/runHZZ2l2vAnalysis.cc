@@ -126,6 +126,7 @@ int main(int argc, char* argv[])
   bool is2015data = (!isMC && dtag.Contains("2015")); 
   bool is2016data = (!isMC && dtag.Contains("2016")); 
   bool is2016MC = (isMC && dtag.Contains("2016")); 
+  bool isMC_signal  = isMC && ( (string(dtag.Data()).find("GG" )  != string::npos) ||(string(dtag.Data()).find("VBF")  != string::npos )||dtag.Contains("RsGrav")||dtag.Contains("BulkGrav") || dtag.Contains("Radion") );
 
   //tree info
   TString dirname = runProcess.getParameter<std::string>("dirName");
@@ -777,7 +778,8 @@ int main(int argc, char* argv[])
 
           //apply trigger and require compatibilitiy of the event with the PD
           edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
-          if(!tr.isValid())return false;
+          //if(!tr.isValid())return false;
+          if(!tr.isValid() && (!isMC_signal && is2016MC)  )return false;
 
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
           char photonTriggerTreshName[255];
@@ -822,6 +824,7 @@ int main(int argc, char* argv[])
                                                                                                                                                                                
             metFilterValue = metFilter.passMetFilterInt( ev );                                                                                                                 
           }                                                                                                                                                                    
+	 
           mon.fillHisto("metFilter_eventflow", "", metFilterValue, weight);   
 
           bool passTrigger        = mumuTrigger||muTrigger||eeTrigger||eTrigger||emuTrigger||photonTrigger;
@@ -1016,13 +1019,25 @@ int main(int argc, char* argv[])
              TString lepStr( lid==13 ? "mu" : "e");
 
              //Cut based identification
-             passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight);
-             passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose);
-             passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft);
+             if(is2016MC || is2016data){
+                 passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::ICHEP16Cut) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight, patUtils::CutVersion::ICHEP16Cut);
+                 passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose, patUtils::CutVersion::ICHEP16Cut) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose, patUtils::CutVersion::ICHEP16Cut);
+                 passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft, patUtils::CutVersion::ICHEP16Cut);
 
-             //isolation
-             passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight);
-             passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose);
+                 //isolation
+                 passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight, patUtils::CutVersion::ICHEP16Cut, 0) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight, patUtils::CutVersion::ICHEP16Cut);
+                 passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose, patUtils::CutVersion::ICHEP16Cut, 0) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose, patUtils::CutVersion::ICHEP16Cut);
+	     } else {
+                 passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::Spring15Cut25ns) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight, patUtils::CutVersion::Spring15Cut25ns);
+                 passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose, patUtils::CutVersion::Spring15Cut25ns) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose, patUtils::CutVersion::Spring15Cut25ns);
+                 passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft, patUtils::CutVersion::Spring15Cut25ns);
+
+                 //isolation
+                 passIso = lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Tight, patUtils::CutVersion::Spring15Cut25ns, 0) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Tight, patUtils::CutVersion::Spring15Cut25ns);
+                 passLooseLepton &= lid==11?patUtils::passIso(leptons[ilep].el,  patUtils::llvvElecIso::Loose, patUtils::CutVersion::Spring15Cut25ns, 0) : patUtils::passIso(leptons[ilep].mu,  patUtils::llvvMuonIso::Loose, patUtils::CutVersion::Spring15Cut25ns);
+
+	     }
+
 
              //apply muon corrections
              if(abs(lid)==13 && passIso && passId){
@@ -1269,8 +1284,15 @@ int main(int argc, char* argv[])
                    for(size_t ilep=0; ilep<2; ilep++){
                        dilId *= selLeptons[ilep].pdgId();
                        int id(abs(selLeptons[ilep].pdgId()));
-                       weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"    ).first : 1.0; //ID 
-                       weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso" ).first : 1.0; //ISO w.r.t ID
+		       if(is2016MC) {
+                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"   ,patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ID 
+                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso",patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ISO w.r.t ID
+		       } else if(isMC && !is2016MC){
+                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"   ,patUtils::CutVersion::Spring15Cut25ns).first : 1.0; //ID 
+                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso",patUtils::CutVersion::Spring15Cut25ns).first : 1.0; //ISO w.r.t ID
+
+		       }
+
                        boson += selLeptons[ilep].p4();
                    }        
                    //check the channel

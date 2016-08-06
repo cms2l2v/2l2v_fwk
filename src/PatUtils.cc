@@ -11,7 +11,7 @@ namespace patUtils
     return id(el, event);
   }
   
-  bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel){
+  bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion){
     
     //for electron Id look here: //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns 
     //for the meaning of the different cuts here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaCutBasedIdentification
@@ -28,161 +28,335 @@ namespace patUtils
     bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
     
     // Spring15 selection 
-    switch(IdLevel){
-    case llvvElecId::Veto :
-         if(barrel                   &&
-         dEtaln        < 0.0152   &&
-         dPhiln        < 0.216    &&
-         sigmaletaleta < 0.0114   &&
-         hem           < 0.181    &&
-         dxy           < 0.0564   &&
-         dz            < 0.472    &&
-         resol         < 0.207    &&
-         mHits         <=2        &&
-         conversionVeto            )
-	return true;
-         if(endcap                   &&
-         dEtaln        < 0.0113   &&
-         dPhiln        < 0.237    &&
-         sigmaletaleta < 0.0352   &&
-         hem           < 0.116    &&
-         dxy           < 0.222    &&
-         dz            < 0.921    &&
-         resol         < 0.174    &&
-         mHits <= 3               &&
-         conversionVeto            )
-        return true;
+    switch(cutVersion){
+    case CutVersion::Spring15Cut25ns :
+
+            switch(IdLevel){
+            case llvvElecId::Veto :
+                 if(barrel                   &&
+                 dEtaln        < 0.0152   &&
+                 dPhiln        < 0.216    &&
+                 sigmaletaleta < 0.0114   &&
+                 hem           < 0.181    &&
+                 dxy           < 0.0564   &&
+                 dz            < 0.472    &&
+                 resol         < 0.207    &&
+                 mHits         <=2        &&
+                 conversionVeto            )
+        	return true;
+                 if(endcap                   &&
+                 dEtaln        < 0.0113   &&
+                 dPhiln        < 0.237    &&
+                 sigmaletaleta < 0.0352   &&
+                 hem           < 0.116    &&
+                 dxy           < 0.222    &&
+                 dz            < 0.921    &&
+                 resol         < 0.174    &&
+                 mHits <= 3               &&
+                 conversionVeto            )
+                return true;
+        	break;
+              
+              case llvvElecId::Loose :
+              if(barrel                   &&
+                 dEtaln        < 0.0105   &&
+                 dPhiln        < 0.115    &&
+                 sigmaletaleta < 0.0103   &&
+                 hem           < 0.104    &&
+                 dxy           < 0.0261   &&
+                 dz            < 0.41     &&
+                 resol         < 0.102    &&
+                 mHits         <= 2       &&
+                 conversionVeto            )
+                return true;
+              if(endcap                   &&
+                 dEtaln        < 0.00814  &&
+                 dPhiln        < 0.182    &&
+                 sigmaletaleta < 0.0301   &&
+                 hem           < 0.0897   &&
+                 dxy           < 0.118    &&
+                 dz            < 0.822    &&
+                 resol         < 0.126    &&
+                 mHits         <= 1       &&
+                 conversionVeto            )
+                return true;
+              break;
+        
+            case llvvElecId::Medium :
+              if(barrel                     &&
+                 dEtaln          < 0.0103   &&
+                 dPhiln          < 0.0336   &&
+                 sigmaletaleta   < 0.0101   &&
+                 hem             < 0.0876   &&
+                 dxy             < 0.0118   &&
+                 dz              < 0.373    &&
+                 resol           < 0.0174   &&
+                 mHits           <= 2       &&
+                 conversionVeto             )
+                return true;
+              if(endcap                     &&
+                 dEtaln          < 0.00733  &&
+                 dPhiln          < 0.114    &&
+                 sigmaletaleta   < 0.0283   &&
+                 hem             < 0.0678   &&
+                 dxy             < 0.0739   &&
+                 dz              < 0.602    &&
+                 resol           < 0.0898   &&
+                 mHits            <= 1      &&
+                 conversionVeto             )
+                return true;
+              break;
+        
+            case llvvElecId::Tight :
+              if(barrel                     &&
+                 dEtaln          < 0.00926  &&
+                 dPhiln          < 0.0336   &&
+                 sigmaletaleta   < 0.0101   &&
+                 hem             < 0.0597   &&
+                 dxy             < 0.0111   &&
+                 dz              < 0.0466   &&
+                 resol           < 0.012    &&
+                 mHits           <= 2       &&
+                 conversionVeto             )
+                return true;
+              if(endcap                     &&
+                 dEtaln          < 0.00724  &&
+                 dPhiln          < 0.0918   &&
+                 sigmaletaleta   < 0.0279   &&
+                 hem             < 0.0615   &&
+                 dxy             < 0.0351   &&
+                 dz              < 0.417    &&
+                 resol           < 0.00999  &&
+                 mHits           <= 1       &&
+                 conversionVeto             )
+                return true;
+              break;
+        
+            case llvvElecId::LooseMVA :
+            case llvvElecId::MediumMVA :
+            case llvvElecId::TightMVA :
+              printf("FIXME: MVA ID not yet implemented for the electron\n");
+              return false;
+                          break;
+                          
+            default:
+              printf("FIXME ElectronId llvvElecId::%i is unkown\n", IdLevel);
+              return false;
+              break;
+            }
 	break;
-      
-      case llvvElecId::Loose :
-      if(barrel                   &&
-         dEtaln        < 0.0105   &&
-         dPhiln        < 0.115    &&
-         sigmaletaleta < 0.0103   &&
-         hem           < 0.104    &&
-         dxy           < 0.0261   &&
-         dz            < 0.41     &&
-         resol         < 0.102    &&
-         mHits         <= 2       &&
-         conversionVeto            )
-        return true;
-      if(endcap                   &&
-         dEtaln        < 0.00814  &&
-         dPhiln        < 0.182    &&
-         sigmaletaleta < 0.0301   &&
-         hem           < 0.0897   &&
-         dxy           < 0.118    &&
-         dz            < 0.822    &&
-         resol         < 0.126    &&
-         mHits         <= 1       &&
-         conversionVeto            )
-        return true;
+
+    case CutVersion::ICHEP16Cut :
+
+            switch(IdLevel){
+            case llvvElecId::Veto :
+                 if(barrel                   &&
+                 dEtaln        < 0.00749  &&
+                 dPhiln        < 0.228    &&
+                 sigmaletaleta < 0.0115   &&
+                 hem           < 0.356    &&
+                 //dxy           < 0.050    &&
+                 //dz            < 0.10     &&
+                 resol         < 0.299    &&
+                 mHits         <=2        &&
+                 conversionVeto            )
+        	return true;
+                 if(endcap                   &&
+                 dEtaln        < 0.00895  &&
+                 dPhiln        < 0.213    &&
+                 sigmaletaleta < 0.037    &&
+                 hem           < 0.211    &&
+                 //dxy           < 0.10     &&
+                 //dz            < 0.20     &&
+                 resol         < 0.15     &&
+                 mHits <= 3               &&
+                 conversionVeto            )
+                return true;
+        	break;
+              
+              case llvvElecId::Loose :
+              if(barrel                   &&
+                 dEtaln        < 0.00477  &&
+                 dPhiln        < 0.222    &&
+                 sigmaletaleta < 0.011    &&
+                 hem           < 0.298    &&
+                 //dxy           < 0.05     &&
+                 //dz            < 0.10     &&
+                 resol         < 0.241    &&
+                 mHits         <= 1       &&
+                 conversionVeto            )
+                return true;
+              if(endcap                   &&
+                 dEtaln        < 0.00868  &&
+                 dPhiln        < 0.213    &&
+                 sigmaletaleta < 0.0314   &&
+                 hem           < 0.101    &&
+                 //dxy           < 0.10     &&
+                 //dz            < 0.20     &&
+                 resol         < 0.14     &&
+                 mHits         <= 1       &&
+                 conversionVeto            )
+                return true;
+              break;
+        
+            case llvvElecId::Medium :
+              if(barrel                     &&
+                 dEtaln          < 0.00311  &&
+                 dPhiln          < 0.103    &&
+                 sigmaletaleta   < 0.00998  &&
+                 hem             < 0.253    &&
+                 //dxy             < 0.05     &&
+                 //dz              < 0.10     &&
+                 resol           < 0.134    &&
+                 mHits           <= 1       &&
+                 conversionVeto             )
+                return true;
+              if(endcap                     &&
+                 dEtaln          < 0.00609  &&
+                 dPhiln          < 0.045    &&
+                 sigmaletaleta   < 0.0298   &&
+                 hem             < 0.0878   &&
+                 //dxy             < 0.10     &&
+                 //dz              < 0.20     &&
+                 resol           < 0.13     &&
+                 mHits            <= 1      &&
+                 conversionVeto             )
+                return true;
+              break;
+        
+            case llvvElecId::Tight :
+              if(barrel                     &&
+                 dEtaln          < 0.00308  &&
+                 dPhiln          < 0.0816   &&
+                 sigmaletaleta   < 0.00998  &&
+                 hem             < 0.0414   &&
+                 //dxy             < 0.05     &&
+                 //dz              < 0.10     &&
+                 resol           < 0.0129   &&
+                 mHits           <= 1       &&
+                 conversionVeto             )
+                return true;
+              if(endcap                     &&
+                 dEtaln          < 0.00605  &&
+                 dPhiln          < 0.0394   &&
+                 sigmaletaleta   < 0.0292   &&
+                 hem             < 0.0641   &&
+                 //dxy             < 0.10     &&
+                 //dz              < 0.20     &&
+                 resol           < 0.0129   &&
+                 mHits           <= 1       &&
+                 conversionVeto             )
+                return true;
+              break;
+        
+            case llvvElecId::LooseMVA :
+            case llvvElecId::MediumMVA :
+            case llvvElecId::TightMVA :
+              printf("FIXME: MVA ID not yet implemented for the electron\n");
+              return false;
+                          break;
+                          
+            default:
+              printf("FIXME ElectronId llvvElecId::%i is unkown\n", IdLevel);
+              return false;
+              break;
+            }
       break;
 
-    case llvvElecId::Medium :
-      if(barrel                     &&
-         dEtaln          < 0.0103   &&
-         dPhiln          < 0.0336   &&
-         sigmaletaleta   < 0.0101   &&
-         hem             < 0.0876   &&
-         dxy             < 0.0118   &&
-         dz              < 0.373    &&
-         resol           < 0.0174   &&
-         mHits           <= 2       &&
-         conversionVeto             )
-        return true;
-      if(endcap                     &&
-         dEtaln          < 0.00733  &&
-         dPhiln          < 0.114    &&
-         sigmaletaleta   < 0.0283   &&
-         hem             < 0.0678   &&
-         dxy             < 0.0739   &&
-         dz              < 0.602    &&
-         resol           < 0.0898   &&
-         mHits            <= 1      &&
-         conversionVeto             )
-        return true;
-      break;
-
-    case llvvElecId::Tight :
-      if(barrel                     &&
-         dEtaln          < 0.00926  &&
-         dPhiln          < 0.0336   &&
-         sigmaletaleta   < 0.0101   &&
-         hem             < 0.0597   &&
-         dxy             < 0.0111   &&
-         dz              < 0.0466   &&
-         resol           < 0.012    &&
-         mHits           <= 2       &&
-         conversionVeto             )
-        return true;
-      if(endcap                     &&
-         dEtaln          < 0.00724  &&
-         dPhiln          < 0.0918   &&
-         sigmaletaleta   < 0.0279   &&
-         hem             < 0.0615   &&
-         dxy             < 0.0351   &&
-         dz              < 0.417    &&
-         resol           < 0.00999  &&
-         mHits           <= 1       &&
-         conversionVeto             )
-        return true;
-      break;
-
-    case llvvElecId::LooseMVA :
-    case llvvElecId::MediumMVA :
-    case llvvElecId::TightMVA :
-      printf("FIXME: MVA ID not yet implemented for the electron\n");
-      return false;
-                  break;
-                  
     default:
-      printf("FIXME ElectronId llvvElecId::%i is unkown\n", IdLevel);
+      printf("FIXME CutVersion::%i is unkown\n", cutVersion);
       return false;
       break;
     }
     return false;
   }
   
-  bool passId(pat::Muon& mu,  reco::Vertex& vtx, int IdLevel){
+  bool passId(pat::Muon& mu,  reco::Vertex& vtx, int IdLevel, int cutVersion){
     //for muon Id look here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#LooseMuon
+   
+    // Spring15 selection 
+    switch(cutVersion){
+    case CutVersion::Spring15Cut25ns :
 
-    // Muon IDs for 74X are supposed to be already implemented in the standard pat::Muon methods (see https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015#Muons )
-    // They are added here as "StdLoose", "StdTight" etc
-    switch(IdLevel){
-      
-    case llvvMuonId::Loose :
-      if(mu.isPFMuon() && (mu.isGlobalMuon() || mu.isTrackerMuon()))return true;
-      break;
-      
-    case llvvMuonId::Soft :
-      if(mu.isPFMuon() && mu.isTrackerMuon() && mu.muonID("TMOneStationTight") && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
-         fabs(mu.innerTrack()->dxy(vtx.position())) < 0.3 && fabs(mu.innerTrack()->dz(vtx.position())) < 20. && mu.innerTrack()->normalizedChi2() < 1.8) return true;
-      break;
-      
-    case llvvMuonId::Tight :
-      if( mu.isPFMuon() && mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 10. && mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. && mu.numberOfMatchedStations() > 1 &&
-          fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
-          mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
-      break;
-      
-    case llvvMuonId::StdLoose :
-      if(mu.isLooseMuon()) return true;
-      break;
-      
-    case llvvMuonId::StdSoft :
-      if(mu.isSoftMuon(vtx)) return true;
-      break;
-      
-    case llvvMuonId::StdTight :
-      if(mu.isTightMuon(vtx)) return true;
-      break;
-      
+            switch(IdLevel){
+              
+            case llvvMuonId::Loose :
+              if(mu.isPFMuon() && (mu.isGlobalMuon() || mu.isTrackerMuon()))return true;
+              break;
+              
+            case llvvMuonId::Soft :
+              if(mu.isPFMuon() && mu.isTrackerMuon() && mu.muonID("TMOneStationTight") && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 1 &&
+                 fabs(mu.innerTrack()->dxy(vtx.position())) < 0.3 && fabs(mu.innerTrack()->dz(vtx.position())) < 20. && mu.innerTrack()->normalizedChi2() < 1.8) return true;
+              break;
+              
+            case llvvMuonId::Tight :
+              if( mu.isPFMuon() && mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 10. && mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. && mu.numberOfMatchedStations() > 1 &&
+                  fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
+                  mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
+              break;
+              
+            case llvvMuonId::StdLoose :
+              if(mu.isLooseMuon()) return true;
+              break;
+              
+            case llvvMuonId::StdSoft :
+              if(mu.isSoftMuon(vtx)) return true;
+              break;
+              
+            case llvvMuonId::StdTight :
+              if(mu.isTightMuon(vtx)) return true;
+              break;
+              
+            default:
+              printf("FIXME MuonId llvvMuonId::%i is unkown\n", IdLevel);
+              return false;
+              break;
+            }
+        break;
+	// ICHEP16 selection
+    case CutVersion::ICHEP16Cut :
+        
+            switch(IdLevel){
+              
+            case llvvMuonId::Loose :
+              if(mu.isPFMuon() && (mu.isGlobalMuon() || mu.isTrackerMuon()))return true;
+              break;
+              
+            case llvvMuonId::Soft :
+              if(muon::isGoodMuon(mu, muon::TMOneStationTight) && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 && mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0 &&
+                 fabs(mu.innerTrack()->dxy(vtx.position())) < 0.3 && fabs(mu.innerTrack()->dz(vtx.position())) < 20.) return true;
+              break;
+              
+            case llvvMuonId::Tight :
+              if( mu.isPFMuon() && mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 10. && mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. && mu.numberOfMatchedStations() > 1 &&
+                  fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
+                  mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
+              break;
+              
+            case llvvMuonId::StdLoose :
+              if(mu.isLooseMuon()) return true;
+              break;
+              
+            case llvvMuonId::StdSoft :
+              if(mu.isSoftMuon(vtx)) return true;
+              break;
+              
+            case llvvMuonId::StdTight :
+              if(mu.isTightMuon(vtx)) return true;
+              break;
+              
+            default:
+              printf("FIXME MuonId llvvMuonId::%i is unkown\n", IdLevel);
+              return false;
+              break;
+            }
+	break;
     default:
-      printf("FIXME MuonId llvvMuonId::%i is unkown\n", IdLevel);
-      return false;
-      break;
+        printf("FIXME MuonID CutVersion::%i is unkown\n", cutVersion);
+        return false;
+        break;
     }
+
     return false;
   }  
   
@@ -333,7 +507,7 @@ namespace patUtils
     return true; // Isolation is now embedded into the ID.
   }
   
-  bool passIso(pat::Electron& el, int IsoLevel, double rho){
+  bool passIso(pat::Electron& el, int IsoLevel, int cutVersion, double rho  ){
          //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
 	  float  chIso   = el.pfIsolationVariables().sumChargedHadronPt;
           float  nhIso   = el.pfIsolationVariables().sumNeutralHadronEt;
@@ -352,59 +526,126 @@ namespace patUtils
 	  
           bool barrel = (fabs(el.superCluster()->eta()) <= 1.479);
           bool endcap = (!barrel && fabs(el.superCluster()->eta()) < 2.5);
+          // Spring15 selection 
+          switch(cutVersion){
+          case CutVersion::Spring15Cut25ns :
+      	  // Spring15 selection, conditions: PU20 bx25
+                switch(IsoLevel){
+                     case llvvElecIso::Veto :
+                        if( barrel && relIso < 0.126    ) return true;
+                        if( endcap && relIso < 0.144    ) return true;
+                        break;
+      
+                     case llvvElecIso::Loose :
+                        if( barrel && relIso < 0.0893   ) return true;
+                        if( endcap && relIso < 0.121    ) return true;
+                        break;
+      
+                     case llvvElecIso::Medium :
+                        if( barrel && relIso < 0.0766   ) return true;
+                        if( endcap && relIso < 0.0678   ) return true;
+                        break;
+      
+                     case llvvElecIso::Tight :
+                        if( barrel && relIso < 0.0354   ) return true;
+                        if( endcap && relIso < 0.0646   ) return true;
+                        break;
+      
+                     default:
+                        printf("FIXME ElectronIso llvvElectronIso::%i is unkown\n", IsoLevel);
+                        return false;
+                        break;
+                }
+             break;
+      
+          case CutVersion::ICHEP16Cut :
+      	  // ICHEP16 selection, conditions: PU20 bx25
+               switch(IsoLevel){
+                     case llvvElecIso::Veto :
+                        if( barrel && relIso < 0.175    ) return true;
+                        if( endcap && relIso < 0.159    ) return true;
+                        break;
+      
+                     case llvvElecIso::Loose :
+                        if( barrel && relIso < 0.0994   ) return true;
+                        if( endcap && relIso < 0.107    ) return true;
+                        break;
+      
+                     case llvvElecIso::Medium :
+                        if( barrel && relIso < 0.0695   ) return true;
+                        if( endcap && relIso < 0.0821   ) return true;
+                        break;
+      
+                     case llvvElecIso::Tight :
+                        if( barrel && relIso < 0.0588   ) return true;
+                        if( endcap && relIso < 0.0571   ) return true;
+                        break;
+      
+                     default:
+                        printf("FIXME ElectronIso llvvElectronIso::%i is unkown\n", IsoLevel);
+                        return false;
+                        break;
+                }
+             break;
 
-	  // Spring15 selection, conditions: PU20 bx25
-          switch(IsoLevel){
-               case llvvElecIso::Veto :
-                  if( barrel && relIso < 0.126    ) return true;
-                  if( endcap && relIso < 0.144    ) return true;
-                  break;
+          default:
+             printf("FIXME ElectronIsolation  CutVersion::%i is unkown\n", cutVersion);
+             return false;
+             break;
 
-               case llvvElecIso::Loose :
-                  if( barrel && relIso < 0.0893   ) return true;
-                  if( endcap && relIso < 0.121    ) return true;
-                  break;
+	  }
 
-               case llvvElecIso::Medium :
-                  if( barrel && relIso < 0.0766   ) return true;
-                  if( endcap && relIso < 0.0678   ) return true;
-                  break;
-
-               case llvvElecIso::Tight :
-                  if( barrel && relIso < 0.0354   ) return true;
-                  if( endcap && relIso < 0.0646   ) return true;
-                  break;
-
-               default:
-                  printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
-                  return false;
-                  break;
-          }
           return false;  
    }
   
-  bool passIso(pat::Muon& mu, int IsoLevel){
+  bool passIso(pat::Muon& mu, int IsoLevel, int cutVersion){
     //https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
     float  chIso   = mu.pfIsolationR04().sumChargedHadronPt;
     float  nhIso   = mu.pfIsolationR04().sumNeutralHadronEt;
     float  gIso    = mu.pfIsolationR04().sumPhotonEt;
     float  puchIso = mu.pfIsolationR04().sumPUPt;
     float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
+    float  trkrelIso = mu.isolationR03().sumPt/mu.pt(); // no PU correction
     
-    switch(IsoLevel){
-       case llvvMuonIso::Loose : 
-          if( relIso < 0.20 ) return true;
-	  break;
-		 
-       case llvvMuonIso::Tight :
-         if( relIso < 0.15 ) return true;
-         break;
-      
+    switch(cutVersion){
+       case CutVersion::Spring15Cut25ns :
+           switch(IsoLevel){
+              case llvvMuonIso::Loose : 
+                 if( relIso < 0.20 ) return true;
+                 break;
+               	 
+              case llvvMuonIso::Tight :
+                if( relIso < 0.15 ) return true;
+                break;
+             
+              default:
+                printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
+                return false;
+                break;
+           }
+           break;
+       case CutVersion::ICHEP16Cut :
+           switch(IsoLevel){
+              case llvvMuonIso::Loose : 
+                 if( relIso < 0.20 && trkrelIso < 0.1) return true;
+                 break;
+               	 
+              case llvvMuonIso::Tight :
+                if( relIso < 0.15 && trkrelIso < 0.1) return true;
+                break;
+             
+              default:
+                printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
+                return false;
+                break;
+           }
+           break;
        default:
-         printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
-         return false;
-         break;
+           printf("FIXME MuonIsolation  CutVersion::%i is unkown\n", cutVersion);
+           return false;
+           break;
     }
+
     return false;          
   }
 

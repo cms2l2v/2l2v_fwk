@@ -501,8 +501,8 @@ int main(int argc, char* argv[])
  
 	//Select the Tag muon 
          passKinMu = (ptf > 20 && abs(etaf) < 2.1);
-         passIdMu  = patUtils::passId(selLeptons[first].mu, vtx[0], patUtils::llvvMuonId::StdTight);      
-         passIsoMu = patUtils::passIso(selLeptons[first].mu,  patUtils::llvvMuonIso::Tight); 
+         passIdMu  = patUtils::passId(selLeptons[first].mu, vtx[0], patUtils::llvvMuonId::StdTight, patUtils::CutVersion::ICHEP16Cut);      
+         passIsoMu = patUtils::passIso(selLeptons[first].mu,  patUtils::llvvMuonIso::Tight, patUtils::CutVersion::ICHEP16Cut); 
          if(passIdMu && passKinMu && passIsoMu && passTagdRMuonCut) Tag = true;
          if(!Tag) continue;
            mon.fillHisto("pT",  "Mu_Tag",  ptf, weight);
@@ -527,10 +527,10 @@ int main(int argc, char* argv[])
          
          //Select the PassProbe
         
-           passIdTh = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdTight);
-           passIdMd = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdMedium);
-           passIdLo = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdLoose);
-           passIsoProbeMu = patUtils::passIso(selLeptons[second].mu,  patUtils::llvvMuonIso::Tight);
+           passIdTh = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdTight, patUtils::CutVersion::ICHEP16Cut);
+           passIdMd = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdMedium, patUtils::CutVersion::ICHEP16Cut);
+           passIdLo = patUtils::passId(selLeptons[second].mu, vtx[0], patUtils::llvvMuonId::StdLoose, patUtils::CutVersion::ICHEP16Cut);
+           passIsoProbeMu = patUtils::passIso(selLeptons[second].mu,  patUtils::llvvMuonIso::Tight, patUtils::CutVersion::ICHEP16Cut);
            if(passIdTh && passIsoProbeMu) PassProbeTh = true;
            if(passIdLo && passIsoProbeMu) PassProbeLo = true;
            if(passIdMd && passIsoProbeMu) PassProbeMd = true;
@@ -657,8 +657,8 @@ int main(int argc, char* argv[])
          if (dRTag < 0.1) passTagdRCut = true;
 
          passKinEle = (((abs(etaf) >= 0 && abs(etaf) <= 1.4442) || (abs(etaf) >= 1.5660 && abs(etaf) < 2.1)) && ptf > 30);
-         passIdEle  = patUtils::passId(selLeptons[first].el, vtx[0], patUtils::llvvElecId::Tight);  
-         passIsoEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Tight);
+         passIdEle  = patUtils::passId(selLeptons[first].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::ICHEP16Cut);  
+         passIsoEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Tight, patUtils::CutVersion::ICHEP16Cut, 0.);
          if(passKinEle && passIdEle && passIsoEle && passTagdRCut) TagEle = true; 
          if(!TagEle)  continue;
            mon.fillHisto("passTag", "Ele",    1,     1.);
@@ -685,10 +685,10 @@ int main(int argc, char* argv[])
            mon.fillHisto("Probe_pT_Eta", "Ele_Probe",   pts, etas, weight);
 
 	   ++counter2;
-           passIdEleTh = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Tight);
-           passIdEleMd = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Medium);
-           passIdEleLo = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Loose);
-           passIsoProbeEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Loose);
+           passIdEleTh = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::ICHEP16Cut);
+           passIdEleMd = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Medium, patUtils::CutVersion::ICHEP16Cut);
+           passIdEleLo = patUtils::passId(selLeptons[second].el, vtx[0], patUtils::llvvElecId::Loose, patUtils::CutVersion::ICHEP16Cut);
+           passIsoProbeEle = patUtils::passIso(selLeptons[first].el,  patUtils::llvvElecIso::Loose, patUtils::CutVersion::ICHEP16Cut, 0.);
            if(passIdEleTh && passIsoProbeEle) PassProbeEleTh = true;
            if(passIdEleLo && passIsoProbeEle) PassProbeEleLo = true;
            if(passIdEleMd && passIsoProbeEle) PassProbeEleMd = true;
