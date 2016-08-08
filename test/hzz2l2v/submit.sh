@@ -108,7 +108,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	export PATH=$HOME/.local/bin:/afs/cern.ch/cms/lumi/brilconda-1.0.3/bin:$PATH
 	pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
 
-	if [[ $JSON =~ *"2016"* ]]; then
+	if [[ $JSON =~ "2016" ]]; then
 	    brilcalc lumi -b "STABLE BEAMS" --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/normtag_DATACERT.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	else
 	    brilcalc lumi --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
@@ -122,7 +122,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [ -f $RESULTSDIR/LUMI.txt ]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
-	if [[ $JSON =~ *"2016"* ]]; then                                                                                               
+	if [[ $JSON =~ "2016" ]]; then                                                                                               INTLUMI=12900.0
             echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
         else
             INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON 
