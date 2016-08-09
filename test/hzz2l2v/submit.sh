@@ -122,7 +122,8 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [ -f $RESULTSDIR/LUMI.txt ]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
-	if [[ $JSON =~ "2016" ]]; then                                                                                               INTLUMI=12900.0
+	if [[ $JSON =~ "2016" ]]; then  
+	    INTLUMI=12900.0
             echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
         else
             INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON 
