@@ -7,7 +7,7 @@ import LaunchOnCondor
 import UserCode.llvv_fwk.storeTools_cff as storeTools
 import sqlite3
 
-PROXYDIR = "~/x509_user_proxy"
+#PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
 #DatasetFileDB = "DBS" #OPTION:  will use curl to parse https GET request on DBSserver
 
@@ -68,18 +68,30 @@ initialCommand = '';
 def initProxy():
    global initialCommand
    validCertificate = True
-   if(validCertificate and (not os.path.isfile(os.path.expanduser(PROXYDIR+'/x509_proxy')))):validCertificate = False
-   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser(PROXYDIR+'/x509_proxy')))>600): validCertificate = False
+   #if(validCertificate and (not os.path.isfile(os.path.expanduser(PROXYDIR+'/x509_proxy')))):validCertificate = False
+   #if(validCertificate and (not os.path.isfile(os.path.expanduser(os.environ.get('X509_USER_PROXY'))))):validCertificate = False
+   #if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser(PROXYDIR+'/x509_proxy')))>600): validCertificate = False
+   #if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser(os.environ.get('X509_USER_PROXY'))))>600): validCertificate = False
    # --voms cms, otherwise it does not work normally
-   if(validCertificate and int(commands.getstatusoutput('(export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
+   if(validCertificate and (not os.environ.get('X509_USER_PROXY', ''))): validCertificate = False
+   if(validCertificate and (time.time() - os.path.getmtime(os.path.expanduser(os.environ.get('X509_USER_PROXY'))))>600): validCertificate = False
+   if(validCertificate and int(commands.getstatusoutput('(voms-proxy-init --voms cms --noregen;voms-proxy-info -all) | grep timeleft | tail -n 1')[1].split(':')[2])<8 ):validCertificate = False
 
    if(not validCertificate):
       print "You are going to run on a sample over grid using either CRAB or the AAA protocol, it is therefore needed to initialize your grid certificate"
       if(not os.path.isfile(os.path.expanduser('~/.globus/mysecret.txt'))):
-         os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+         #os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy')
+         os.system('voms-proxy-init --voms cms             -valid 192:00')
       else:
-         os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
-   initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
+         #os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
+         os.system('voms-proxy-init --voms cms             -valid 192:00 -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
+   
+   #exportProxy = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy'
+   #os.system(exportProxy) #needed for DAS queries
+   #print PROXYDIR
+   #print os.environ.get('X509_USER_PROXY')
+   #initialCommand = exportProxy+';voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
+   initialCommand = 'voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
 
 def getFileList(procData,DefaultNFilesPerJob):
    global nonLocalSamples
@@ -217,7 +229,7 @@ if(hostname.find("iihe.ac.be")!=-1):localTier = "T2_BE_IIHE"
 if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 
 FarmDirectory                      = opt.outdir+"/FARM"
-PROXYDIR                           = FarmDirectory+"/inputs/"
+#PROXYDIR                           = FarmDirectory+"/inputs/"
 initProxy()
 doCacheInputs                      = False
 if("IIHE" in localTier): doCacheInputs = True
