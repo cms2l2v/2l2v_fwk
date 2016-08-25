@@ -570,6 +570,8 @@ int main(int argc, char* argv[])
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
 
+
+
   //MET CORRection level
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
   //jet energy scale and uncertainties (2015 vs 2016 depends on the path "jecDir" )
@@ -1049,11 +1051,6 @@ int main(int argc, char* argv[])
                    }else if (is2015data){   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
                    }
 
-
-                   if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
-                      printf("\nevent = %lli %i lepton pt, eta, phi %f %f %f --> %f %f %f\n", ev.eventAuxiliary().event(), int(ilep), leptons[ilep].pt(),leptons[ilep].eta(),leptons[ilep].phi(), p4.Pt(),p4.Eta(),p4.Phi() );
-                   }
-
                    muDiff -= leptons[ilep].p4();
                    leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
                    muDiff += leptons[ilep].p4();
@@ -1084,15 +1081,8 @@ int main(int argc, char* argv[])
              }
              if(leptons[ilep].pt()<25) passKin=false;
             
-
-
              if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]); 
              else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
-
-             if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
-                if(lid==13)printf("muon%i Id=%i Iso=%i LooseId=%i kin=%i\n", int(ilep), passId?1:0, passIso?1:0, passLooseLepton?1:0, passKin?1:0);
-             }
-
 
          }
 
@@ -1119,13 +1109,13 @@ int main(int argc, char* argv[])
             }
 	    if(minDRlg<0.1) continue;
 
-            selPhotons.push_back(photon);
-            if(photon.pt()>55)nPho55++;
-            if(photon.pt()>100)nPho100++;
-
             if(photon.pt()<55)continue;
             if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
             if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
+
+            selPhotons.push_back(photon);
+            if(photon.pt()>55)nPho55++;
+            if(photon.pt()>100)nPho100++;
 
            }
 	  
@@ -1138,6 +1128,7 @@ int main(int argc, char* argv[])
            met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
            met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
            met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
+ 
          //
          //JET/MET ANALYSIS
          //
