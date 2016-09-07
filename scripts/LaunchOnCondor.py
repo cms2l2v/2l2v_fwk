@@ -53,7 +53,7 @@ def KillProcess(processName):
         process = fields[3]
 
     if process.find(processName) > 0:
-        os.kill(int(pid), signal.SIGKILL)
+        os.kill(int(pid), signal.SIGHUP)
 
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
