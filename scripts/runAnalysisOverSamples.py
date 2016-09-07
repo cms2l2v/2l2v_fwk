@@ -162,8 +162,9 @@ def getFileList(procData,DefaultNFilesPerJob):
          FileList.append(groupList)
 
    for sample in nonMiniAODSamples:
-      print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
+      split=getByLabel(procData,'split',-1)
       for segment in range(0,split) :
+         print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
          FileList.append('"'+eventsFile+'"')
@@ -222,7 +223,12 @@ FarmDirectory                      = opt.outdir+"/FARM"
 PROXYDIR                           = FarmDirectory+"/inputs"
 initProxy()
 doCacheInputs                      = False
-if("IIHE" in localTier): doCacheInputs = True
+
+if("IIHE" in localTier):
+    print "kill big-submission and sleep"
+    doCacheInputs = True
+    LaunchOnCondor.KillProcess("big-submission")
+    LaunchOnCondor.KillProcess("sleep")
 
 
 JobName                            = opt.theExecutable
@@ -372,3 +378,5 @@ if(len(nonLocalSamples)>0):
    for nonLocalSample in nonLocalSamples:
       print nonLocalSample
 
+#if("IIHE" in localTier):
+#    os.system("big-submission "+FarmDirectory+"/inputs/big.cmd") #now done in the submit.sh script

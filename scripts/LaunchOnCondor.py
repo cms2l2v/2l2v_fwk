@@ -46,6 +46,15 @@ Jobs_CRABLFN = ''
 Jobs_List = []
 Jobs_LocalNJobs = 8
 
+def KillProcess(processName):
+    for line in os.popen("ps"):
+        fields = line.split()
+        pid = fields[0]
+        process = fields[3]
+
+    if process.find(processName) > 0:
+        os.kill(int(pid), signal.SIGKILL)
+
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
@@ -433,8 +442,12 @@ def SendCluster_Submit():
     global Jobs_Count
     global Path_Cmd
     global Jobs_List
+    global Farm_Directories
 
-    if subTool=='bsub' or subTool=='qsub': os.system("sh " + Path_Cmd)
+    if subTool=='bsub' or subTool=='qsub':
+        print Path_Cmd
+        if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0): os.system("cat " + Path_Cmd + " >> " +Farm_Directories[1]+"/big.cmd")
+        else : os.system("sh " + Path_Cmd)
     elif subTool=='crab':                  os.system("sh " + Path_Cmd)
     elif subTool=='criminal':              print "Added jobs to global list"        
     else:                                        os.system("condor_submit " + Path_Cmd)  
