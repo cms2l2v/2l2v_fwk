@@ -773,49 +773,94 @@ class LeptonEfficiencySF
     }
 
 
-  std::pair<float,float> getTriggerEfficiencySF(float pt1, float eta1, float pt2, float eta2, int id){
+  std::pair<float,float> getTriggerEfficiencySF(float pt1, float eta1, float pt2, float eta2, int id, bool is2016=false){
      double etaCen = std::min(fabs(eta1), fabs(eta2));
      double etaFwd = std::max(fabs(eta1), fabs(eta2));
      id   = abs(id);
      std::pair<float,float> eff(1.0,0.00);
 
      if(id==121){
+	//2016 electron trigger efficincy prensted here https://indico.cern.ch/event/535808/contributions/2278379/attachments/1324645/1987966/HZZ2l2v_August_18_2016.pdf
+	if(is2016){
 	if(etaCen<0.8){
-                 if(etaFwd<0.8){ eff.first=0.998; eff.second=0.025;
-           }else if(etaFwd<1.444){ eff.first=1.004; eff.second=0.025;
-           }else if(etaFwd<1.566){ eff.first=0.996; eff.second=0.071;
-           }else if(etaFwd<2.0){ eff.first=1.006; eff.second=0.044;
-           }else if(etaFwd<2.5){ eff.first=1.004; eff.second=0.051;
+                 if(etaFwd<0.8)	{ eff.first=0.989; eff.second=0.004;
+           }else if(etaFwd<1.444)	{ eff.first=0.989; eff.second=0.005;
+           }else if(etaFwd<1.566)	{ eff.first=0.981; eff.second=0.021;
+           }else if(etaFwd<2.0)	{ eff.first=0.982; eff.second=0.010;
+           }else 			{ eff.first=0.959; eff.second=0.016;
            }
 	}else if(etaCen<1.444){
-                 if(etaFwd<0.8){ eff.first=0.994; eff.second=0.019;
-           }else if(etaFwd<1.444){ eff.first=1.000; eff.second=0.030;
-           }else if(etaFwd<1.566){ eff.first=0.987; eff.second=0.091;
-           }else if(etaFwd<2.0){ eff.first=1.006; eff.second=0.035;
-           }else if(etaFwd<2.5){ eff.first=1.004; eff.second=0.072;
+                 if(etaFwd<0.8)	{ eff.first=0.989; eff.second=0.005;
+           }else if(etaFwd<1.444)	{ eff.first=0.990; eff.second=0.007;
+           }else if(etaFwd<1.566)	{ eff.first=0.985; eff.second=0.022;
+           }else if(etaFwd<2.0)	{ eff.first=0.982; eff.second=0.009;
+           }else 			{ eff.first=0.964; eff.second=0.010;
            }
 	}else if(etaCen<1.566){	//This block belongs to transition region 
-                 if(etaFwd<0.8){ eff.first=1.003; eff.second=0.070;
-           }else if(etaFwd<1.444){ eff.first=1.000; eff.second=0.049;
-           }else if(etaFwd<1.566){ eff.first=0.973; eff.second=0.111;
-           }else if(etaFwd<2.0){ eff.first=1.012; eff.second=0.119;
-           }else if(etaFwd<2.5){ eff.first=1.000; eff.second=0.062;
+                 if(etaFwd<0.8)	{ eff.first=0.981; eff.second=0.021;
+           }else if(etaFwd<1.444)	{ eff.first=0.983; eff.second=0.023;
+           }else if(etaFwd<1.566)	{ eff.first=0.986; eff.second=0.077;
+           }else if(etaFwd<2.0)	{ eff.first=0.983; eff.second=0.028;
+           }else 			{ eff.first=0.959; eff.second=0.030;
            }
 	}else if(etaCen<2.0){
-                 if(etaFwd<0.8){ eff.first=1.000; eff.second=0.024;
-           }else if(etaFwd<1.444){ eff.first=1.026; eff.second=0.050;
-           }else if(etaFwd<1.566){ eff.first=0.995; eff.second=0.077;
-           }else if(etaFwd<2.0){ eff.first=1.018; eff.second=0.030;
-           }else if(etaFwd<2.5){ eff.first=0.998; eff.second=0.031;
+                 if(etaFwd<0.8)	{ eff.first=0.982; eff.second=0.010;
+           }else if(etaFwd<1.444)	{ eff.first=0.984; eff.second=0.009;
+           }else if(etaFwd<1.566)	{ eff.first=0.982; eff.second=0.029;
+           }else if(etaFwd<2.0)	{ eff.first=0.977; eff.second=0.011;
+           }else 			{ eff.first=0.965; eff.second=0.011;
            }
-	}else if(etaCen<2.5){
-                 if(etaFwd<0.8){ eff.first=0.991; eff.second=0.046;
-           }else if(etaFwd<1.444){ eff.first=1.009; eff.second=0.058;
-           }else if(etaFwd<1.566){ eff.first=0.994; eff.second=0.057;
-           }else if(etaFwd<2.0){ eff.first=1.000; eff.second=0.032;
-           }else if(etaFwd<2.5){ eff.first=1.000; eff.second=0.034;
+	}else{
+                 if(etaFwd<0.8)	{ eff.first=0.959; eff.second=0.016;
+           }else if(etaFwd<1.444)	{ eff.first=0.966; eff.second=0.010;
+           }else if(etaFwd<1.566)	{ eff.first=0.962; eff.second=0.030;
+           }else if(etaFwd<2.0)	{ eff.first=0.965; eff.second=0.011;
+           }else			{ eff.first=0.943; eff.second=0.011;
            }
- 	}        
+ 	} 
+	 
+        eff.second = sqrt(eff.second* eff.second + 0.02*0.02); //add 2% syst uncertainty        
+	}
+	
+	else{
+	if(etaCen<0.8){
+                 if(etaFwd<0.8)	{ eff.first=0.998; eff.second=0.025;
+           }else if(etaFwd<1.444)	{ eff.first=1.004; eff.second=0.025;
+           }else if(etaFwd<1.566)	{ eff.first=0.996; eff.second=0.071;
+           }else if(etaFwd<2.0)	{ eff.first=1.006; eff.second=0.044;
+           }else 			{ eff.first=1.004; eff.second=0.051;
+           }
+	}else if(etaCen<1.444){
+                 if(etaFwd<0.8)	{ eff.first=0.994; eff.second=0.019;
+           }else if(etaFwd<1.444)	{ eff.first=1.000; eff.second=0.030;
+           }else if(etaFwd<1.566)	{ eff.first=0.987; eff.second=0.091;
+           }else if(etaFwd<2.0)	{ eff.first=1.006; eff.second=0.035;
+           }else 			{ eff.first=1.004; eff.second=0.072;
+           }
+	}else if(etaCen<1.566){	//This block belongs to transition region 
+                 if(etaFwd<0.8)	{ eff.first=1.003; eff.second=0.070;
+           }else if(etaFwd<1.444)	{ eff.first=1.000; eff.second=0.049;
+           }else if(etaFwd<1.566)	{ eff.first=0.973; eff.second=0.111;
+           }else if(etaFwd<2.0)	{ eff.first=1.012; eff.second=0.119;
+           }else 			{ eff.first=1.000; eff.second=0.062;
+           }
+	}else if(etaCen<2.0){
+                 if(etaFwd<0.8)	{ eff.first=1.000; eff.second=0.024;
+           }else if(etaFwd<1.444)	{ eff.first=1.026; eff.second=0.050;
+           }else if(etaFwd<1.566)	{ eff.first=0.995; eff.second=0.077;
+           }else if(etaFwd<2.0)	{ eff.first=1.018; eff.second=0.030;
+           }else 			{ eff.first=0.998; eff.second=0.031;
+           }
+	}else {
+                 if(etaFwd<0.8)	{ eff.first=0.991; eff.second=0.046;
+           }else if(etaFwd<1.444)	{ eff.first=1.009; eff.second=0.058;
+           }else if(etaFwd<1.566)	{ eff.first=0.994; eff.second=0.057;
+           }else if(etaFwd<2.0)	{ eff.first=1.000; eff.second=0.032;
+           }else 			{ eff.first=1.000; eff.second=0.034;
+           }
+ 	}
+	 }
+        
      }else if(id==169){
         if(etaCen<0.9){
                  if(etaFwd<0.9){ eff.first=0.9490; eff.second=0.001;
