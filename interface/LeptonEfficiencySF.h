@@ -773,13 +773,56 @@ class LeptonEfficiencySF
     }
 
 
-  std::pair<float,float> getTriggerEfficiencySF(float pt1, float eta1, float pt2, float eta2, int id){
+  std::pair<float,float> getTriggerEfficiencySF(float pt1, float eta1, float pt2, float eta2, int id, bool is2016){
      double etaCen = std::min(fabs(eta1), fabs(eta2));
      double etaFwd = std::max(fabs(eta1), fabs(eta2));
      id   = abs(id);
      std::pair<float,float> eff(1.0,0.00);
 
      if(id==121){
+
+	if(is2016){
+	if(etaCen<0.8){
+                 if(etaFwd<0.8){ eff.first=0.989; eff.second=0.004;
+           }else if(etaFwd<1.444){ eff.first=0.989; eff.second=0.005;
+           }else if(etaFwd<1.566){ eff.first=0.981; eff.second=0.021;
+           }else if(etaFwd<2.0){ eff.first=0.982; eff.second=0.010;
+           }else if(etaFwd<2.5){ eff.first=0.959; eff.second=0.016;
+           }
+	}else if(etaCen<1.444){
+                 if(etaFwd<0.8){ eff.first=0.989; eff.second=0.005;
+           }else if(etaFwd<1.444){ eff.first=0.990; eff.second=0.007;
+           }else if(etaFwd<1.566){ eff.first=0.985; eff.second=0.022;
+           }else if(etaFwd<2.0){ eff.first=0.982; eff.second=0.009;
+           }else if(etaFwd<2.5){ eff.first=0.964; eff.second=0.010;
+           }
+	}else if(etaCen<1.566){	//This block belongs to transition region 
+                 if(etaFwd<0.8){ eff.first=0.981; eff.second=0.021;
+           }else if(etaFwd<1.444){ eff.first=0.983; eff.second=0.023;
+           }else if(etaFwd<1.566){ eff.first=0.986; eff.second=0.077;
+           }else if(etaFwd<2.0){ eff.first=0.983; eff.second=0.028;
+           }else if(etaFwd<2.5){ eff.first=0.959; eff.second=0.030;
+           }
+	}else if(etaCen<2.0){
+                 if(etaFwd<0.8){ eff.first=0.982; eff.second=0.010;
+           }else if(etaFwd<1.444){ eff.first=0.984; eff.second=0.009;
+           }else if(etaFwd<1.566){ eff.first=0.982; eff.second=0.029;
+           }else if(etaFwd<2.0){ eff.first=0.977; eff.second=0.011;
+           }else if(etaFwd<2.5){ eff.first=0.965; eff.second=0.011;
+           }
+	}else if(etaCen<2.5){
+                 if(etaFwd<0.8){ eff.first=0.959; eff.second=0.016;
+           }else if(etaFwd<1.444){ eff.first=0.966; eff.second=0.010;
+           }else if(etaFwd<1.566){ eff.first=0.962; eff.second=0.030;
+           }else if(etaFwd<2.0){ eff.first=0.965; eff.second=0.011;
+           }else if(etaFwd<2.5){ eff.first=0.943; eff.second=0.011;
+           }
+ 	} 
+
+        eff.second = sqrt(eff.second* eff.second + 0.02*0.02); //add 2% syst uncertainty        
+	}
+	
+	else{
 	if(etaCen<0.8){
                  if(etaFwd<0.8){ eff.first=0.998; eff.second=0.025;
            }else if(etaFwd<1.444){ eff.first=1.004; eff.second=0.025;
@@ -815,7 +858,9 @@ class LeptonEfficiencySF
            }else if(etaFwd<2.0){ eff.first=1.000; eff.second=0.032;
            }else if(etaFwd<2.5){ eff.first=1.000; eff.second=0.034;
            }
- 	}        
+ 	}
+	}
+        
      }else if(id==169){
         if(etaCen<0.9){
                  if(etaFwd<0.9){ eff.first=0.9490; eff.second=0.001;
