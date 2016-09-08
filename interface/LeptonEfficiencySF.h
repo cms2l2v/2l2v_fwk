@@ -773,7 +773,7 @@ class LeptonEfficiencySF
     }
 
 
-  std::pair<float,float> getTriggerEfficiencySF(float pt1, float eta1, float pt2, float eta2, int id, bool is2016){
+  std::pair<float,float> getTriggerEfficiencySF(float pt1, float eta1, float pt2, float eta2, int id, bool is2016=false){
      double etaCen = std::min(fabs(eta1), fabs(eta2));
      double etaFwd = std::max(fabs(eta1), fabs(eta2));
      id   = abs(id);
