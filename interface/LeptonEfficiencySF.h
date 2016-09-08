@@ -861,26 +861,50 @@ class LeptonEfficiencySF
             }
             
         }else if(id==169){
-            if(etaCen<0.9){
-                if(etaFwd<0.9){ eff.first=0.9490; eff.second=0.001;
-                }else if(etaFwd<1.2){ eff.first=0.9628; eff.second=0.005;
-                }else if(etaFwd<2.1){ eff.first=0.9477; eff.second=0.005;
-                }else if(etaFwd<2.4){ eff.first=0.9420; eff.second=0.010;
+            if (is2016){
+                if(etaCen<0.9){
+                    if(etaFwd<0.9){ eff.first=0.9490; eff.second=0.001;
+                    }else if(etaFwd<1.2){ eff.first=0.9628; eff.second=0.005;
+                    }else if(etaFwd<2.1){ eff.first=0.9477; eff.second=0.005;
+                    }else if(etaFwd<2.4){ eff.first=0.9420; eff.second=0.010;
+                    }
+                }else if(etaCen<1.2){
+                    if(etaFwd<1.2){ eff.first=0.9576; eff.second=0.005;
+                    }else if(etaFwd<2.1){ eff.first=0.9493; eff.second=0.010;
+                    }else if(etaFwd<2.4){ eff.first=0.9142; eff.second=0.015;          
+                    }
+                }else if(etaCen<2.1){
+                    if(etaFwd<2.1){ eff.first=0.9216; eff.second=0.010;
+                    }else if(etaFwd<2.4){ eff.first=0.9470; eff.second=0.015;
+                    }
+                }else if(etaCen<2.4){
+                    if(etaFwd<2.4){ eff.first=0.9252; eff.second=0.025;
+                    }
                 }
-            }else if(etaCen<1.2){
-                if(etaFwd<1.2){ eff.first=0.9576; eff.second=0.005;
-                }else if(etaFwd<2.1){ eff.first=0.9493; eff.second=0.010;
-                }else if(etaFwd<2.4){ eff.first=0.9142; eff.second=0.015;          
-                }
-            }else if(etaCen<2.1){
-                if(etaFwd<2.1){ eff.first=0.9216; eff.second=0.010;
-                }else if(etaFwd<2.4){ eff.first=0.9470; eff.second=0.015;
-                }
-            }else if(etaCen<2.4){
-                if(etaFwd<2.4){ eff.first=0.9252; eff.second=0.025;
-                }
+                eff.second = sqrt(eff.second* eff.second + 0.04*0.04); //add 4% syst uncertainty (conservative)
             }
-            eff.second = sqrt(eff.second* eff.second + 0.04*0.04); //add 4% syst uncertainty (conservative)
+            else {
+                if(etaCen<0.9){
+                    if(etaFwd<0.9){ eff.first=0.997; eff.second=0.001;
+                    }else if(etaFwd<1.2){ eff.first=0.994; eff.second=0.002;
+                    }else if(etaFwd<2.1){ eff.first=0.995; eff.second=0.001;
+                    }else if(etaFwd<2.4){ eff.first=0.989; eff.second=0.005;
+                    }
+                }else if(etaCen<1.2){
+                    if(etaFwd<1.2){ eff.first=0.993; eff.second=0.003;
+                    }else if(etaFwd<2.1){ eff.first=0.994; eff.second=0.002;
+                    }else if(etaFwd<2.4){ eff.first=0.987; eff.second=0.004;
+                    }
+                }else if(etaCen<2.1){
+                    if(etaFwd<2.1){ eff.first=0.994; eff.second=0.002;
+                    }else if(etaFwd<2.4){ eff.first=0.986; eff.second=0.004;
+                    }
+                }else if(etaCen<2.4){
+                    if(etaFwd<2.4){ eff.first=0.971; eff.second=0.006;
+                    }
+                }
+                eff.second = sqrt(eff.second* eff.second + 0.04*0.04); //add 4% syst uncertainty (conservative)
+            }
         }
         return eff;
     }
