@@ -1290,7 +1290,7 @@ int main(int argc, char* argv[])
                    if( abs(dilId)==121){  chTags.push_back("ee");   chTags.push_back("ll"); }
                    if( abs(dilId)==169){  chTags.push_back("mumu"); chTags.push_back("ll"); }
                    if( abs(dilId)==143){  chTags.push_back("emu");  }           
-                   //if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
+                   if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId,is2016MC).first;  
                    if(isMC && abs(dilId)==121)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].el.superCluster()->eta(), selLeptons[1].pt(), selLeptons[1].el.superCluster()->eta(), dilId,is2016MC).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
                    evCat=eventCategoryInst.GetCategory(selJets,boson);            
                }else if(selPhotons.size()==1 && photonTrigger){
