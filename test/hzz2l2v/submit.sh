@@ -44,6 +44,7 @@ echo "Input: " $JSON
 echo "Output: " $RESULTSDIR
 
 queue='8nh'
+
 #IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
 
@@ -61,13 +62,13 @@ if [[ $step == 0 ]]; then
 	if [[ $answer == "y" ]];
 	then
 	    echo "CLEANING UP..."
-	    rm -rdf $RESULTSDIR $PLOTSDIR LSFJOB_* core.* *.sh.e* *.sh.o* big-submission-*
+	    rm -rdf $RESULTSDIR $PLOTSDIR LSFJOB_* core.* *.sh.e* *.sh.o*
 	fi
 fi #end of step0
 
 ###  ############################################## STEPS between 1 and 2
 if [[ $step > 0.999 &&  $step < 2 ]]; then
-  if [[ $step == 1 || $step == 1.0 ]]; then        #submit jobs for 2l2v analysis
+   if [[ $step == 1 || $step == 1.0 ]]; then        #submit jobs for 2l2v analysis
 	echo "JOB SUBMISSION"
 	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0" -s $queue --report True --key 2l2v_mcbased $arguments
    fi
@@ -81,9 +82,6 @@ if [[ $step > 0.999 &&  $step < 2 ]]; then
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
         runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi                              
-
-	 if [[ $HOSTNAME =~ "iihe" ]]; then yes | big-submission $RESULTSDIR/FARM/inputs/big.cmd; fi
- 
 fi
 
 ###  ############################################## STEPS between 2 and 3
@@ -94,7 +92,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	mergeJSON.py --output=$RESULTSDIR/json_doubleMu.json   $RESULTSDIR/Data*_DoubleMu*.json
 	mergeJSON.py --output=$RESULTSDIR/json_doubleEl.json   $RESULTSDIR/Data*_DoubleElectron*.json
 	mergeJSON.py --output=$RESULTSDIR/json_muEG.json       $RESULTSDIR/Data*_MuEG*.json
-        mergeJSON.py --output=$RESULTSDIR/json_gamma.json      $RESULTSDIR/Data13TeV_SinglePhoton*.json
+        mergeJSON.py --output=$RESULTSDIR/json_gamma.json      $RESULTSDIR/Data*_SinglePhoton*.json
 	mergeJSON.py --output=$RESULTSDIR/json_in.json  $GOLDENJSON/Cert_*.txt
 	echo "MISSING LUMI BLOCKS IN DOUBLE MU DATASET"
 	compareJSON.py --diff $RESULTSDIR/json_in.json $RESULTSDIR/json_doubleMu.json 
@@ -110,7 +108,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	pip install --upgrade --install-option="--prefix=$HOME/.local" brilws &> /dev/null #will be installed only the first time
 
 	if [[ $JSON =~ "2016" ]]; then
-	  brilcalc lumi -b "STABLE BEAMS" --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/normtag_DATACERT.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
+	    brilcalc lumi -b "STABLE BEAMS" --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/normtag_DATACERT.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	else
 	    brilcalc lumi --normtag /afs/cern.ch/user/l/lumipro/public/normtag_file/moriond16_normtag.json -i $RESULTSDIR/json_all.json -u /pb -o $RESULTSDIR/LUMI.txt 
 	fi
@@ -124,7 +122,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
 	if [[ $JSON =~ "2016" ]]; then  
-	    INTLUMI=12900.0
+	    INTLUMI=12891.401
             echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
         else
             INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON 

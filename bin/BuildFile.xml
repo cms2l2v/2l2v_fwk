@@ -30,6 +30,7 @@
 <bin name="runHZZ2l2vAnalysis"          file="hzz2l2v/runHZZ2l2vAnalysis.cc"></bin>
 
   <bin name="extractPhotonWeights"        file="hzz2l2v/extractPhotonWeights.cc"></bin>
+ <bin name="extractPhotonWeights_UsingBins"        file="hzz2l2v/extractPhotonWeights_UsingBins.cc"></bin> 
 <!--  <bin name="runZHTauTauAnalysis"         file="zhtautau/runZHTauTauAnalysis.cc"></bin>-->
   <bin name="extractFRWeights"            file="zhtautau/extractFRWeights.cc"></bin>
 </environment>
