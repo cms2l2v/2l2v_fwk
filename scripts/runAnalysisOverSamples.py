@@ -6,6 +6,7 @@ import commands
 import LaunchOnCondor
 import UserCode.llvv_fwk.storeTools_cff as storeTools
 import sqlite3
+import pwd
 
 PROXYDIR = "~/x509_user_proxy"
 DatasetFileDB = "DAS"  #DEFAULT: will use das_client.py command line interface
@@ -80,6 +81,7 @@ def initProxy():
       else:
          os.system('mkdir -p '+PROXYDIR+'; voms-proxy-init --voms cms             -valid 192:00 --out '+PROXYDIR+'/x509_proxy -pwstdin < /home/fynu/quertenmont/.globus/mysecret.txt') 
    initialCommand = 'export X509_USER_PROXY='+PROXYDIR+'/x509_proxy;voms-proxy-init --voms cms --noregen; ' #no voms here, otherwise I (LQ) have issues
+   os.system('cp '+PROXYDIR+'/x509_proxy /tmp/x509up_u%s' % pwd.getpwuid( os.getuid() ).pw_uid)
 
 def getFileList(procData,DefaultNFilesPerJob):
    global nonLocalSamples
@@ -104,11 +106,11 @@ def getFileList(procData,DefaultNFilesPerJob):
       for site in listSites.split('\n'):
          if(localTier==""):continue;
          try:
-            MaxFraction = max(MaxFraction, float(site.split()[1].replace('%','')) )
+            MaxFraction = max(MaxFraction, float(site.split()[2].replace('%','').replace('"','')) )
          except:
             MaxFraction = max(MaxFraction, 0.0);
          if(localTier in site):
-            FractionOnLocal = float(site.split()[1].replace('%',''));
+            FractionOnLocal = float(site.split()[2].replace('%','').replace('"',''));
 
       if(FractionOnLocal == MaxFraction):
             IsOnLocalTier=True            
@@ -160,8 +162,9 @@ def getFileList(procData,DefaultNFilesPerJob):
          FileList.append(groupList)
 
    for sample in nonMiniAODSamples:
-      print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
+      split=getByLabel(procData,'split',-1)
       for segment in range(0,split) :
+         print "Processing a non EDM/miniAOD sample in : " + opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          eventsFile=opt.indir + '/' + origdtag + '_' + str(segment) + '.root'
          if(eventsFile.find('/store/')==0)  : eventsFile = commands.getstatusoutput('cmsPfn ' + eventsFile)[1]
          FileList.append('"'+eventsFile+'"')
@@ -217,10 +220,15 @@ if(hostname.find("iihe.ac.be")!=-1):localTier = "T2_BE_IIHE"
 if(hostname.find("cern.ch")!=-1)  :localTier = "T2_CH_CERN"
 
 FarmDirectory                      = opt.outdir+"/FARM"
-PROXYDIR                           = FarmDirectory+"/inputs/"
+PROXYDIR                           = FarmDirectory+"/inputs"
 initProxy()
 doCacheInputs                      = False
-if("IIHE" in localTier): doCacheInputs = True
+
+if("IIHE" in localTier):
+    print "kill big-submission and sleep"
+    doCacheInputs = True
+    LaunchOnCondor.KillProcess("big-submission")
+    LaunchOnCondor.KillProcess("sleep")
 
 
 JobName                            = opt.theExecutable
@@ -370,3 +378,5 @@ if(len(nonLocalSamples)>0):
    for nonLocalSample in nonLocalSamples:
       print nonLocalSample
 
+#if("IIHE" in localTier):
+#    os.system("big-submission "+FarmDirectory+"/inputs/big.cmd") #now done in the submit.sh script

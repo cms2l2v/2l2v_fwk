@@ -40,6 +40,7 @@
 #include "UserCode/llvv_fwk/interface/LeptonEfficiencySF.h"
 #include "UserCode/llvv_fwk/interface/PDFInfo.h"
 #include "UserCode/llvv_fwk/interface/rochcor2015.h"
+#include "UserCode/llvv_fwk/interface/rochcor2016.h"
 #include "UserCode/llvv_fwk/interface/muresolution_run2.h"
 #include "UserCode/llvv_fwk/interface/BTagCalibrationStandalone.h"
 #include "UserCode/llvv_fwk/interface/BtagUncertaintyComputer.h"
@@ -124,6 +125,7 @@ int main(int argc, char* argv[])
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
   bool is2015data = (!isMC && dtag.Contains("2015")); 
+  bool is2015MC = (isMC && dtag.Contains("2015")); 
   bool is2016data = (!isMC && dtag.Contains("2016")); 
   bool is2016MC = (isMC && dtag.Contains("2016")); 
   bool isMC_signal  = isMC && ( (string(dtag.Data()).find("GG" )  != string::npos) ||(string(dtag.Data()).find("VBF")  != string::npos )||dtag.Contains("RsGrav")||dtag.Contains("BulkGrav") || dtag.Contains("Radion") );
@@ -570,6 +572,8 @@ int main(int argc, char* argv[])
   //######## GET READY FOR THE EVENT LOOP ########
   //##############################################
 
+
+
   //MET CORRection level
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
   //jet energy scale and uncertainties (2015 vs 2016 depends on the path "jecDir" )
@@ -589,22 +593,35 @@ int main(int argc, char* argv[])
   //muon energy scale and uncertainties
   TString muscleDir = runProcess.getParameter<std::string>("muscleDir");
   gSystem->ExpandPathName(muscleDir);
-  rochcor2015* muCor = NULL; //need to be updated for 2016
-  if(isMC || is2015data) muCor = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
+  rochcor2015* muCor2015 = NULL; //need to be updated for 2016
+  if(is2015MC || is2015data) muCor2015 = new rochcor2015();  //replace the MuScleFitCorrector we used at run1
+  rochcor2016* muCor2016 = NULL; //need to be updated for 2016
+  if(is2016MC || is2016data) muCor2016 = new rochcor2016();  //replace the MuScleFitCorrector we used at run1
+
   //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework) 
 
-	ElectronEnergyCalibratorRun2 ElectronEnCorrector;
-	string EGammaEnergyCorrectionFile = "";
-	PhotonEnergyCalibratorRun2 PhotonEnCorrector;
-  	EpCombinationTool theEpCombinationTool;
-	if(isMC || is2015data){
+  ElectronEnergyCalibratorRun2 ElectronEnCorrector;
+  string EGammaEnergyCorrectionFile = "";
+  PhotonEnergyCalibratorRun2 PhotonEnCorrector;
+  EpCombinationTool theEpCombinationTool;
+  if(is2015MC || is2015data){
   	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015"; 
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
   	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
   	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
   	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
-	}
+  }
+  if(is2016MC || is2016data){
+  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele"; 
+  	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_pho"; 
+  	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, PhoEnergyCorrectionFile);
+  	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
+  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EleEnergyCorrectionFile);
+  	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
+  }
+
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
 
@@ -1042,28 +1059,45 @@ int main(int argc, char* argv[])
              //apply muon corrections
              if(abs(lid)==13 && passIso && passId){
                  passSoftMuon=false;
-                 if(muCor){
-                   float qter;
-                   TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-                   if(isMC){muCor->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
-                   }else if (is2015data){   muCor->momcor_data(p4, lid<0 ? -1 :1, 0, qter); 
+                 if(is2015MC || is2015data){
+                   if(muCor2015){
+                     float qter;
+                     TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                     if(is2015MC){muCor2015->momcor_mc  (p4, lid<0 ? -1 :1, 0, qter);
+                     }else if (is2015data){   muCor2015->momcor_data(p4, lid<0 ? -1 :1, 0, qter);
+                     }
+
+
+                     if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
+                        printf("\nevent = %lli %i lepton pt, eta, phi %f %f %f --> %f %f %f\n", ev.eventAuxiliary().event(), int(ilep), leptons[ilep].pt(),leptons[ilep].eta(),leptons[ilep].phi(), p4.Pt(),p4.Eta(),p4.Phi() );
+                     }
+
+                     muDiff -= leptons[ilep].p4();
+                     leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
+                     muDiff += leptons[ilep].p4();
                    }
+                 }
+                 if(is2016MC || is2016data){
+                   if(muCor2016){
+                     float qter =1.0;
+                     TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                     int ntrk = leptons[ilep].mu.innerTrack()->hitPattern().trackerLayersWithMeasurement();
+                     if(is2016MC){muCor2016->momcor_mc  (p4, lid<0 ? -1 :1, ntrk, qter);
+                     }else if (is2016data){   muCor2016->momcor_data(p4, lid<0 ? -1 :1, 0, qter);
+                     }
 
 
-                   if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
-                      printf("\nevent = %lli %i lepton pt, eta, phi %f %f %f --> %f %f %f\n", ev.eventAuxiliary().event(), int(ilep), leptons[ilep].pt(),leptons[ilep].eta(),leptons[ilep].phi(), p4.Pt(),p4.Eta(),p4.Phi() );
+                     muDiff -= leptons[ilep].p4();
+                     leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
+                     muDiff += leptons[ilep].p4();
                    }
-
-                   muDiff -= leptons[ilep].p4();
-                   leptons[ilep].setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E() ) );
-                   muDiff += leptons[ilep].p4();
                  }
                }
 
              //apply electron corrections             
              if(abs(lid)==11  && passIso && passId){
                 elDiff -= leptons[ilep].p4();                   
-                if (isMC || is2015data){
+                if (isMC || is2015data || is2016data){
                 	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
                 	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
                 }
@@ -1084,15 +1118,8 @@ int main(int argc, char* argv[])
              }
              if(leptons[ilep].pt()<25) passKin=false;
             
-
-
              if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]); 
              else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
-
-             if(ev.eventAuxiliary().event()==869607902 || ev.eventAuxiliary().event()==471854508){
-                if(lid==13)printf("muon%i Id=%i Iso=%i LooseId=%i kin=%i\n", int(ilep), passId?1:0, passIso?1:0, passLooseLepton?1:0, passKin?1:0);
-             }
-
 
          }
 
@@ -1119,13 +1146,13 @@ int main(int argc, char* argv[])
             }
 	    if(minDRlg<0.1) continue;
 
-            selPhotons.push_back(photon);
-            if(photon.pt()>55)nPho55++;
-            if(photon.pt()>100)nPho100++;
-
             if(photon.pt()<55)continue;
             if(fabs(photon.superCluster()->eta())>1.4442 ) continue;
             if(!patUtils::passId(photon, rho, patUtils::llvvPhotonId::Tight)) continue;
+
+            selPhotons.push_back(photon);
+            if(photon.pt()>55)nPho55++;
+            if(photon.pt()>100)nPho100++;
 
            }
 	  
@@ -1138,6 +1165,7 @@ int main(int argc, char* argv[])
            met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
            met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
            met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
+ 
          //
          //JET/MET ANALYSIS
          //
@@ -1299,7 +1327,8 @@ int main(int argc, char* argv[])
                    if( abs(dilId)==121){  chTags.push_back("ee");   chTags.push_back("ll"); }
                    if( abs(dilId)==169){  chTags.push_back("mumu"); chTags.push_back("ll"); }
                    if( abs(dilId)==143){  chTags.push_back("emu");  }           
-                   //if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
+                   if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId,is2016MC).first;  
+                   if(isMC && abs(dilId)==121)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].el.superCluster()->eta(), selLeptons[1].pt(), selLeptons[1].el.superCluster()->eta(), dilId,is2016MC).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
                    evCat=eventCategoryInst.GetCategory(selJets,boson);            
                }else if(selPhotons.size()==1 && photonTrigger){
                    dilId=22;
@@ -1632,6 +1661,37 @@ int main(int argc, char* argv[])
 
                           mon.fillHisto(TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],tags,index, mt,shapeWeight);
                           mon.fillHisto(TString("met_shapes")+NRsuffix[nri]+varNames[ivar],tags,index, imet.pt(),shapeWeight);                    
+                       }
+                    }
+                 }
+              }
+
+               if(passQt && passThirdLeptonVeto && passMinDphijmet && (boson.mass()>40 && boson.mass()<200)){
+                  bool isZ_SB ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );              
+                  bool isZ_upSB ( (boson.mass()>110 && boson.mass()<200) );              
+                  //scan the MET cut and fill the shapes
+                  for(unsigned int index=0;index<optim_Cuts1_met.size();index++){             
+                     if(imet.pt()>optim_Cuts1_met[index]){
+                       for(unsigned int nri=0;nri<NRparams.size();nri++){
+                          //Higgs line shape
+                          float shapeWeight = weight;   //used for shape dependent weights (avoid overwritting chWeights)
+                          double weightToOtherNRI = ( (lShapeWeights[nri][0] * lShapeWeights[nri][1]) / (lShapeWeights[0][0] * lShapeWeights[0][1]) );  //remove weights form nri=0 as those are already in the nominal weight and apply the one for NRI!=0;
+                          if(!std::isnan((double)weightToOtherNRI))shapeWeight *= weightToOtherNRI; 
+
+                          if(varNames[ivar]=="_signal_normdown") shapeWeight*=lShapeWeights[nri][2];
+                          if(varNames[ivar]=="_signal_lshapedown") shapeWeight*=lShapeWeights[nri][3];
+                          if(varNames[ivar]=="_signal_normup"  ) shapeWeight*=lShapeWeights[nri][4];
+                          if(varNames[ivar]=="_signal_lshapeup"  ) shapeWeight*=lShapeWeights[nri][5];
+
+                          //if(nri==0 && index==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), varNames[ivar].Data(), imet.pt(), mt, weight ); 
+
+                          if(passBtags && !isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 0.5,shapeWeight);
+                          if(passBtags && isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 1.5,shapeWeight);
+                          if(passBtags && isZ_upSB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 2.5,shapeWeight);
+                          if(!passBtags && !isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 3.5,shapeWeight);
+                          if(!passBtags && isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 4.5,shapeWeight);
+                          if(!passBtags && isZ_upSB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 5.5,shapeWeight);
+
                        }
                     }
                  }
