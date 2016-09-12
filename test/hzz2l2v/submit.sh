@@ -44,10 +44,9 @@ echo "Input: " $JSON
 echo "Output: " $RESULTSDIR
 
 queue='8nh'
+
 #IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
-
-mytest='80X'
 
 if [[ $JSON =~ "2016" ]]; then
     pileup=datapileup_2016
@@ -93,7 +92,7 @@ if [[ $step > 1.999 && $step < 3 ]]; then
 	mergeJSON.py --output=$RESULTSDIR/json_doubleMu.json   $RESULTSDIR/Data*_DoubleMu*.json
 	mergeJSON.py --output=$RESULTSDIR/json_doubleEl.json   $RESULTSDIR/Data*_DoubleElectron*.json
 	mergeJSON.py --output=$RESULTSDIR/json_muEG.json       $RESULTSDIR/Data*_MuEG*.json
-        mergeJSON.py --output=$RESULTSDIR/json_gamma.json      $RESULTSDIR/Data13TeV_SinglePhoton*.json
+        mergeJSON.py --output=$RESULTSDIR/json_gamma.json      $RESULTSDIR/Data*_SinglePhoton*.json
 	mergeJSON.py --output=$RESULTSDIR/json_in.json  $GOLDENJSON/Cert_*.txt
 	echo "MISSING LUMI BLOCKS IN DOUBLE MU DATASET"
 	compareJSON.py --diff $RESULTSDIR/json_in.json $RESULTSDIR/json_doubleMu.json 
@@ -123,7 +122,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
 	if [[ $JSON =~ "2016" ]]; then  
-	    INTLUMI=12900.0
+	    INTLUMI=12891.401
             echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
         else
             INTLUMI=2268.759 #correspond to the value from DoubleMu OR DoubleEl OR MuEG without jobs failling and golden JSON 
