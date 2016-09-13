@@ -174,13 +174,14 @@ int main(int argc, char* argv[]){
      }
 
      for(unsigned int d=0;d<DataDir.size();d++){
-        TH1D* hist = NULL;
+       TH1D* hist = NULL;
 //        if(cat[c]=="photon"){ //read photon info form ee channel
 //           hist = (TH1D*) File->Get((DataDir[d]+"/"+"ee"+bin[b]+var[v]).c_str());        
 //        }else{
 	hist = (TH1D*) File->Get((DataDir[d]+"/"+cat[c]+bin[b]+var[v]).c_str());        
+	//	std::cout << "Hist name = " << hist->GetName() << std::endl;
 //        }
-        if(!hist)continue;
+        if(!hist) continue;
 
         hist->GetSumw2();
         if(rbin>1){ hist->Rebin(rbin);  hist->Scale(1.0, "width"); }
@@ -195,7 +196,7 @@ int main(int argc, char* argv[]){
 
         if(DataHistos.find(cat[c]+bin[b]+var[v])==DataHistos.end()){
            gROOT->cd(); //make sure that the file is saved in memory and not in file
-           DataHistos[cat[c]+bin[b]+var[v]] = (TH1D*)hist->Clone();; //create a new histo, since it's not found
+           DataHistos[cat[c]+bin[b]+var[v]] = (TH1D*)hist->Clone(); //create a new histo, since it's not found
         }else{
            DataHistos[cat[c]+bin[b]+var[v]]->Add(hist); //add to existing histogram
         }
@@ -237,6 +238,7 @@ int main(int argc, char* argv[]){
            hist = (TH1D*)hist->Clone((cat[c]+bin[b]+var[v]+"weight").c_str());
            hist->Divide(histgamma);
            DataHistos[cat[c]+bin[b]+var[v]+"weight"] = hist;
+	   //std::cout << "Created weights histo for: " << hist->GetName() << std::endl;
         }
      }
      printf("add variable %s\n", (var[v]+"weight").c_str());
@@ -287,12 +289,14 @@ int main(int argc, char* argv[]){
              fitFunc->Draw("same");
            }
            leg->AddEntry(hist, catL[c].c_str(), "LP"); 
+
+	   c1->SaveAs((outDir + "/PhotonWeight"+cat[c]+bin[b]+var[v]+".png").c_str());   
         }
         leg->Draw("SAME");
      }
-     c1->SaveAs((outDir + "/PhotonWeight"+var[v]+".png").c_str());
+     //     c1->SaveAs((outDir + "/PhotonWeight"+cat[c]+bin[b]+var[v]+".png").c_str());
   }
-
+  
   //SAVE THE material to the weight file
   TFile* OutputFile = new TFile(outFile.c_str(),"RECREATE");
   OutputFile->cd();
