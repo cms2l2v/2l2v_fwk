@@ -29,7 +29,7 @@ phase=-1
 ###################################################
 
 MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
-based_key="2l2v_datadriven_" #we can run also on data driven obj using this tag: 2l2v_datadriven_
+based_key="2l2v_datadriven_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
 jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples2016.json'
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
@@ -163,8 +163,7 @@ def findSideMassPoint(mass):
 
 #Loop over all configurations
 iConf = -1
-for signalSuffix in signalSuffixVec :
-   print signalSuffix
+for signalSuffix in signalSuffixVec : 
    iConf+=1;
    if(phase<=3 and ',' in BIN[iConf]):continue #only need individual bin for these phases
 
