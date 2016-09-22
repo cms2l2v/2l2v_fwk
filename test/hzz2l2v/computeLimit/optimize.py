@@ -28,17 +28,20 @@ phase=-1
 ##   VALUES TO BE EDITED BY THE USE ARE BELLOW   ##
 ###################################################
 
-MODELS=["SM","RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
-based_key="2l2v_mcbased_"
-jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples.json'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2016_05_08.root'
+MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
+based_key="2l2v_datadriven_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
+jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples2016.json'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-MASS = [600, 800, 1000, 1200, 1400, 1600, 1800, 2500, 3000, 3500, 4000, 4500]
+#MASS = [600]
+#SUBMASS = MASS
+#SUBMASS = [600]
+MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500]
 SUBMASS = MASS
-SUBMASS = [600, 650, 700, 750, 800, 850, 900, 950, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2500, 3000, 3500, 4000, 4500]
+SUBMASS = [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2250, 2500]
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
 LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB " #--blind "
@@ -52,7 +55,7 @@ for model in MODELS:
                if(CP!=1.0 and not ',' in bin):continue  #only do subchannel for SM
                for BRN in [0.0]:
                    CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
-                   suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN)
+                   #suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN) 
                    suffix = "_cp%4.2f_brn%4.2f" % (CP, BRN)
                    if(CPSQ<=0): suffix="" #SM case
 
@@ -60,19 +63,19 @@ for model in MODELS:
                    if ( (CPSQ / (1-BRN))>1.0 ):continue
 
                    #Run limit for ShapeBased GG+VBF
-                   signalSuffixVec += [ "" ]
+                   signalSuffixVec += [ suffix ]
                    OUTName         += ["SB13TeV_SM"]
                    LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
                    BIN             += [bin]
                    MODEL           += [model]
 
-                   signalSuffixVec += [ "" ]
+                   signalSuffixVec += [ suffix ]
                    OUTName         += ["SB13TeV_SM_GGF"]
                    LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
                    BIN             += [bin]
                    MODEL          += [model]
 
-                   signalSuffixVec += [ "" ]
+                   signalSuffixVec += [ suffix ]
                    OUTName         += ["SB13TeV_SM_VBF"]
                    LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
                    BIN             += [bin]
@@ -160,7 +163,7 @@ def findSideMassPoint(mass):
 
 #Loop over all configurations
 iConf = -1
-for signalSuffix in signalSuffixVec :
+for signalSuffix in signalSuffixVec : 
    iConf+=1;
    if(phase<=3 and ',' in BIN[iConf]):continue #only need individual bin for these phases
 
