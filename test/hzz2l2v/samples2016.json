@@ -115,7 +115,7 @@
       "color":833,
       "data":[
         { "dtag":"MC13TeV_DYJetsToLL_10to50_2016"               ,  "xsec":18610     , "br":[ 1.0 ]    , "dset":["/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
-        { "dtag":"MC13TeV_DYJetsToLL_50toInf_2016"              ,  "xsec":6025.3    , "br":[ 1.0 ]        , "dset":["/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
+        { "dtag":"MC13TeV_DYJetsToLL_50toInf_2016"              ,  "xsec":5765.4    , "br":[ 1.0 ]        , "dset":["/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
       ]
     },   
     {
@@ -126,7 +126,7 @@
       "color":831,
       "data":[
         { "dtag":"MC13TeV_DYJetsToLL_10to50_2016"               ,  "xsec":18610     , "br":[ 1.0 ]   , "dset":["/DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
-        { "dtag":"MC13TeV_DYJetsToLL_50toInf_2016"              ,  "xsec":6025.3    , "br":[ 1.0 ]   , "dset":["/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM"]}
+        { "dtag":"MC13TeV_DYJetsToLL_50toInf_2016"              ,  "xsec":5765.4    , "br":[ 1.0 ]        , "dset":["/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
       ]
     },
     {
@@ -134,7 +134,7 @@
       "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly"],      
       "isdata":false,                                                                         
       "color":7,
-      "suffix":"reweighted",
+      "2l2v_photonsOnly":{"suffix":"reweighted"},	
       "data":[                                                                                             
         { "dtag":"MC13TeV_ZJetsToNuNu_HT-100To200_2016", "xsec":280.35, "br":[ 1.0 ], "dset":["/ZJetsToNuNu_HT-100To200_13TeV-madgraph/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]},
         { "dtag":"MC13TeV_ZJetsToNuNu_HT-200To400", "xsec":78.36 , "br":[ 1.0 ], "dset":["/ZJetsToNuNu_HT-200To400_13TeV-madgraph/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]},
@@ -150,8 +150,8 @@
       "tag":"Z#gamma #rightarrow ll#gamma",                                                                                   
       "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly"],      
       "isdata":false,                                                                                                           
-      "color":635,                                                                                                              
-      "suffix":"reweighted",
+      "color":635,                            
+      "2l2v_photonsOnly":{"suffix":"reweighted"},                                                                                  
       "data":[  
         { "dtag":"MC13TeV_ZGToLNuGi_2016", "xsec":117.864, "br":[ 1.0 ], "dset":["/ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
       ]
@@ -161,7 +161,7 @@
       "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly"],      
       "isdata":false,
       "color":52,
-      "suffix":"reweighted",
+      "2l2v_photonsOnly":{"suffix":"reweighted"},	
       "data":[
         { "dtag":"MC13TeV_WGToLNuG_2016" , "xsec":405.271, "br":[ 1.0 ] , "dset":["/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
       ]
@@ -192,7 +192,6 @@
       "isdata":false,
       "color":24,
       "data":[
-        { "dtag":"MC13TeV_QCD_Pt15To20_EMEnr_2016"     ,  "xsec":1279000000    , "br":[ 0.0018 ]        ,    "dset":[""]},
         { "dtag":"MC13TeV_QCD_Pt20To30_EMEnr_2016"     ,  "xsec":557600000     , "br":[ 0.0096 ]        ,	"dset":["/QCD_Pt-20to30_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
         { "dtag":"MC13TeV_QCD_Pt30To50_EMEnr_2016"     ,  "xsec":136000000     , "br":[ 0.0365 ]         , 	"dset":["/QCD_Pt-30to50_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
         { "dtag":"MC13TeV_QCD_Pt30To50_EMEnr_ext1_2016"     ,  "xsec":136000000     , "br":[ 0.0365 ]         , 	"dset":["/QCD_Pt-30to50_EMEnriched_TuneCUETP8M1_13TeV_pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]},
@@ -206,9 +205,10 @@
     },	   
      {
       "tag":"#gamma+jets",
-      "keys":["2l2v_2016", "2l2v_photoncontrol"],           
+      "keys":["2l2v_2016", "2l2v_photoncontrol","2l2v_photonsOnly"],           
       "isdata":false,
       "color":390,
+      "2l2v_photonsOnly":{"suffix":"reweighted"},
       "data":[                                                                     
         { "dtag":"MC13TeV_GJet_HT-40to100_2016"                  ,  "xsec":20730.0, "br":[ 1.0 ],      "dset":["/GJets_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
         { "dtag":"MC13TeV_GJet_HT-100to200_2016"                 ,  "xsec":9226.0 , "br":[ 1.0 ],      "dset":["/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/MINIAODSIM"]},
@@ -225,7 +225,7 @@
       "fill":0,
       "marker":20,
       "msize":0.7,
-      "suffix":"reweighted",
+      "2l2v_photonsOnly":{"suffix":"reweighted"},
       "data":[
           { "dtag":"Data13TeV_SinglePhoton2016B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016B-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt" },
 	  { "dtag":"Data13TeV_SinglePhoton2016C",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016C-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt" },
@@ -264,7 +264,7 @@
       "isdatadriven":true,
       "color":831,
       "syst":[0.25],
-      "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"Genuine (ewk) MET inv", "scale":-1.0}]
+      "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"Genuine (ewk) MET inv", "scale":-1.0} ]
     },
     {
       "tag":"ggH(200)",
