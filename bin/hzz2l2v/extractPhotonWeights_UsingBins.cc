@@ -146,7 +146,7 @@ int main(int argc, char* argv[]){
   std::vector<string> gDataDir;
   std::vector<string> zDataDir;
   if(isData){
-     gDataDir.push_back("#gamma data_reweighted");
+     gDataDir.push_back("#gamma data");
      zDataDir.push_back("data");
   }else{
      gDataDir.push_back("#gamma+jets");
