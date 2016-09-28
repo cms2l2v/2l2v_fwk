@@ -1,6 +1,6 @@
 #include "UserCode/llvv_fwk/interface/HiggsUtils.h"
 #include "TGraphErrors.h"
-#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+#include "UserCode/llvv_fwk/interface/th1fmorph.h"
 
 namespace higgs{
 
