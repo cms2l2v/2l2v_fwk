@@ -82,6 +82,10 @@ if [[ $step > 0.999 &&  $step < 2 ]]; then
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
         runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi                              
+
+	 if [[ $HOSTNAME =~ "iihe" ]]; then yes | big-submission $RESULTSDIR/FARM/inputs/big.cmd; fi
+
+ 
 fi
 
 ###  ############################################## STEPS between 2 and 3
