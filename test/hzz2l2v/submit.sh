@@ -172,7 +172,13 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photons/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_photoncontrol --fileOption READ --only "trg.*"  $arguments 
     fi
 
-    if [[ $step == 3 || $step == 3.16 ]]; then  # make plots and combine root files for photon + jet study    
+    if [[ $step == 3 || $step == 3.16 ]]; then # make photonZ MC closure tests 
+	# make sure you have at least DY MC and gamma+jets_reweighted in plotter.root
+	echo "MAKE PLOTS for photonZ analysis closure test"
+	runPhotonZclosure --inFile ${PLOTTER}.root --outDir $PLOTSDIR/photonZclosure --mode MC
+    fi
+
+    if [[ $step == 3 || $step == 3.17 ]]; then  # make plots and combine root files for photon + jet study    
 	echo "MAKE PLOTS AND SUMMARY ROOT FILE for GenuineMet in photon sample"
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/photonsGM/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key genuineMet --fileOption READ --only "(ll|gamma)(|eq0jets|geq1jets|vbf)(_.*)" $arguments 
     fi
