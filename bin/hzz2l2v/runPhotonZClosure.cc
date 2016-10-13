@@ -186,7 +186,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   //GET HISTOS FROM FILES
   //
   string mcdy;
-  if (mode=="MC") { mcdy="Z#rightarrow ee-#mu#mu, HT>100_filt1113"; }
+  if (mode=="MC") { mcdy="Z#rightarrow ee-#mu#mu_filt1113"; }
   else if (mode=="DATA") { mcdy = "data"; }
   
   TH1D *hdy = NULL;
