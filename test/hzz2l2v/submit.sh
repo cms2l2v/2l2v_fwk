@@ -30,7 +30,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_08_05
+SUFFIX=_2016_10_17
 
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -53,7 +53,7 @@ if [[ $JSON =~ "2016" ]]; then
 else
     pileup=datapileup_official  
 fi
-
+ 
 ################################################# STEPS between 0 and 1
 if [[ $step == 0 ]]; then   
         #analysis cleanup
@@ -81,9 +81,14 @@ if [[ $step > 0.999 &&  $step < 2 ]]; then
    if [[ $step == 1 || $step == 1.2 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
         runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_RunD.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
-   fi                              
+   fi    
+                          
+   if [[ $step == 1 || $step == 1.3 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC                                              
+        echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC"                                                                          
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True  @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016MC.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_mcphotonsOnly $arguments                                                                                                             
+   fi    
 
-	 if [[ $HOSTNAME =~ "iihe" ]]; then yes | big-submission $RESULTSDIR/FARM/inputs/big.cmd; fi
+   if [[ $HOSTNAME =~ "iihe" ]]; then yes | big-submission $RESULTSDIR/FARM/inputs/big.cmd; fi
 
  
 fi
@@ -149,7 +154,9 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     fi        
    
     if [[ $step == 3 || $step == 3.01 ]]; then  # make plots and combine root files for photon + jet study    
-        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
+#        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
+#	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016MC.root --outDir $PLOTSDIR/photonMCWeights --mode MC 
+	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016.root --outDir $PLOTSDIR/photonWeights --mode DATA
     fi
 
 

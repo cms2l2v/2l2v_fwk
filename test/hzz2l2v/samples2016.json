@@ -2,7 +2,7 @@
   "proc":[
     {
       "tag":"data",
-      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_datadriven", "2l2v_datadrivenplot", "2l2v_datadriven_SM", "2l2v_datadriven_RsGrav", "2l2v_datadriven_BulkGrav", "2l2v_datadriven_Rad", "2l2v_mcbased_SM", "2l2v_mcbased_RsGrav", "2l2v_mcbased_BulkGrav", "2l2v_mcbased_Rad"],
+      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_datadriven", "2l2v_datadrivenplot", "2l2v_datadriven_SM", "2l2v_datadriven_RsGrav", "2l2v_datadriven_BulkGrav", "2l2v_datadriven_Rad", "2l2v_mcbased_SM", "2l2v_mcbased_RsGrav", "2l2v_mcbased_BulkGrav", "2l2v_mcbased_Rad","genuineMet"],
       "isdata":true,
       "color":1,
       "fill":0,
@@ -131,16 +131,6 @@
       { "dtag":"MC13TeV_WJets_HT-2500ToInf_2016"                            ,  "xsec":0.03216       , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_HT-2500ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
       ]
      },
-      {
-     "tag":"W#rightarrow qq, HT>600",
-      "keys":["2l2v_2016", "2l2v_photoncontrol","2l2v_photonsOnly"],           
-      "isdata":false,
-      "color":810,
-      "2l2v_photonsOnly":{"suffix":"reweighted"},
-      "data":[
-	  { "dtag":"MC13TeV_WJetsToQQ_HT-600ToInf_2016",  "xsec":95.14        , "br":[ 1.0 ]   , "dset":["/WJetsToQQ_HT-600ToInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
-      ]
-      },
      {
       "tag":"Z#rightarrow #tau#tau",
       "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_photoncontrol","2l2v_photonsOnly", "2l2v_mcbased_SM", "2l2v_mcbased_RsGrav", "2l2v_mcbased_BulkGrav", "2l2v_mcbased_Rad","2l2v_datadriven", "2l2v_datadriven_SM", "2l2v_datadriven_RsGrav", "2l2v_datadriven_BulkGrav", "2l2v_datadriven_Rad"],      
@@ -316,10 +306,10 @@
     },	   
      {
       "tag":"#gamma+jets",
-      "keys":["2l2v_2016", "2l2v_photoncontrol","2l2v_photonsOnly"],           
+      "keys":["2l2v_2016", "2l2v_photoncontrol","2l2v_mcphotonsOnly"],           
       "isdata":false,
       "color":390,
-      "2l2v_photonsOnly":{"suffix":"reweighted"},
+      "2l2v_mcphotonsOnly":{"suffix":"reweighted"},
       "data":[                                                                     
         { "dtag":"MC13TeV_GJet_HT-40to100_2016"                  ,  "xsec":20730.0, "br":[ 1.0 ],      "dset":["/GJets_HT-40To100_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
         { "dtag":"MC13TeV_GJet_HT-100to200_2016"                 ,  "xsec":9226.0 , "br":[ 1.0 ],      "dset":["/GJets_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/MINIAODSIM"]},
@@ -330,7 +320,7 @@
     }, 
     {
       "tag":"#gamma data",
-      "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly", "genuineMet"],
+      "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly"],
       "isdata":true,
       "color":1,
       "fill":0,

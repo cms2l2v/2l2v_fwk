@@ -13,7 +13,7 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
   std::vector<TString> wgtNames; 
   wgtNames.push_back("qt");
   if(ewkSupWgt!="") wgtNames.push_back(ewkSupWgt);
-  TString wgtType( isMC ? "mcfitwgts" : "datafitfunctionwgts_norm"); //datafitwgtsrebin if ypu use bins, datafitfunctionwgts_norm if you use fitting functions
+  TString wgtType( isMC ? "mcfitwgts" : "datafitwgtsrebin"); //datafitwgtsrebin if ypu use bins, datafitfunctionwgts_norm if you use fitting functions
   TString massType( isMC ? "mczmass" : "zmass");
     
   //categories to consider, add more if needed but keep these ones 
