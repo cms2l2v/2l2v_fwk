@@ -127,6 +127,8 @@ int main(int argc, char* argv[]){
    string outDir    = "photonWeights/";
    string outFile   = outDir + "photonWeights.root";
 
+   string mode = "DATA";
+
    for(int i=1;i<argc;i++){
      string arg(argv[i]);
      if(arg.find("--help")!=string::npos){
@@ -139,18 +141,21 @@ int main(int argc, char* argv[]){
      if(arg.find("--inFile" )!=string::npos && i+1<argc){ zDataFile= argv[i+1];  gDataFile= argv[i+1]; i++; printf("input file = %s\n", zDataFile.c_str()); }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++; printf("outDir = %s\n", outDir.c_str());  }
+     if(arg.find("--mode" )!=string::npos && i+1<argc){ mode = argv[i+1];  i++; printf("outDir = %s\n", mode.c_str());  }   
    }
    system( (string("mkdir -p ") + outDir).c_str());
 
+   if (mode=="MC") { isData=false; }
 
   std::vector<string> gDataDir;
   std::vector<string> zDataDir;
   if(isData){
-     gDataDir.push_back("#gamma data");
+    //    gDataDir.push_back("Instr. MET");
+    gDataDir.push_back("#gamma data");
      zDataDir.push_back("data");
   }else{
      gDataDir.push_back("#gamma+jets");
-     zDataDir.push_back("Z#rightarrow ll");
+     zDataDir.push_back("Z#rightarrow ee-#mu#mu_filt1113");
   }
 
   std::vector<int> catColor = {4     , 2   , 8   , 1    };
