@@ -908,6 +908,100 @@ class LeptonEfficiencySF
         }
         return eff;
     }
+
+
+    std::pair<float,float> getTrackingEfficiency(float eta, int id){
+
+        id   = abs(id);
+        std::pair<float,float> eff(1.0,0.00);
+
+	if(id==11){
+
+        	if(eta >= -2.5 && eta < -2.4){
+                	eff.first = 1.17034; eff.second = 0.00966552;
+                }else if(eta >= -2.4 && eta < -2.3){
+                	eff.first = 1.00852; eff.second = 0.0120181;
+                }else if(eta >= -2.3 && eta < -2.2){
+                	eff.first = 1.01047; eff.second = 0.0085874;
+                }else if(eta >= -2.2 && eta < -2){
+                	eff.first = 1.00519; eff.second = 0.00814729;
+                }else if(eta >= -2 && eta < -1.8){
+                	eff.first = 0.997932; eff.second = 0.00754439;
+                }else if(eta >= -1.8 && eta < -1.63){
+                	eff.first = 0.991701; eff.second = 0.00761482;
+                }else if(eta >= -1.63 && eta < -1.566){
+                	eff.first = 0.986486; eff.second = 0.00699237;
+                }else if(eta >= -1.566 && eta < -1.444){
+                	eff.first = 0.961582; eff.second = 0.0185147;
+                }else if(eta >= -1.444 && eta < -1.2){
+                	eff.first = 0.986667; eff.second = 0.00602468;
+                }else if(eta >= -1.2 && eta < -1){
+                	eff.first = 0.977505; eff.second = 0.00696244;
+                }else if(eta >= -1 && eta < -0.6){
+                	eff.first = 0.969388; eff.second = 0.00597084;
+                }else if(eta >= -0.6 && eta < -0.4){
+                	eff.first = 0.966361; eff.second = 0.00662906;
+                }else if(eta >= -0.4 && eta < -0.2){
+                	eff.first = 0.963303; eff.second = 0.00634912;
+                }else if(eta >= -0.2 && eta < 0){
+                	eff.first = 0.96; eff.second = 0.00656714;
+                }else if(eta >= 0 && eta < 0.2){
+                	eff.first = 0.966189; eff.second = 0.00656714;
+                }else if(eta >= 0.2 && eta < 0.4){
+                	eff.first = 0.979633; eff.second = 0.00634912;
+                }else if(eta >= 0.4 && eta < 0.6){
+                	eff.first = 0.976578; eff.second = 0.00662906;
+                }else if(eta >= 0.6 && eta < 1){
+                	eff.first = 0.980652; eff.second = 0.00597084;
+                }else if(eta >= 1 && eta < 1.2){
+                	eff.first = 0.986735; eff.second = 0.00696244;
+                }else if(eta >= 1.2 && eta < 1.444){
+                	eff.first = 0.98668; eff.second = 0.00602468;
+                }else if(eta >= 1.444 && eta < 1.566){
+                	eff.first = 0.970721; eff.second = 0.0185147;
+                }else if(eta >= 1.566 && eta < 1.63){
+                	eff.first = 0.989669; eff.second = 0.00699237;
+                }else if(eta >= 1.63 && eta < 1.8){
+                	eff.first = 0.995872; eff.second = 0.00783568;
+                }else if(eta >= 1.8 && eta < 2){
+                	eff.first = 0.989733; eff.second = 0.007487;
+                }else if(eta >= 2 && eta < 2.2){
+                	eff.first = 0.994861; eff.second = 0.00819214;
+                }else if(eta >= 2.2 && eta < 2.3){
+                	eff.first = 0.992769; eff.second = 0.00850434;
+                }else if(eta >= 2.3 && eta < 2.4){
+                	eff.first = 0.966632; eff.second = 0.0119341;
+                }else if(eta < 2.5){
+                	eff.first = 0.884021; eff.second = 0.00953672;
+                }
+
+
+	  } else if(id==13){
+
+                if(eta >= -2.4 && eta < -2.1){
+                	eff.first = 0.982399; eff.second = 0.00149494;
+                }else if(eta >= -2.1 && eta < -1.6){
+                	eff.first = 0.991747; eff.second = 0.000336123;
+                }else if(eta >= -1.6 && eta < -1.1){
+                	eff.first = 0.995945; eff.second = 0.000226523;
+                }else if(eta >= -1.1 && eta < -0.6){
+                	eff.first = 0.993413; eff.second = 0.000145006;
+                }else if(eta >= -0.6 && eta < 0){
+                	eff.first = 0.991461; eff.second = 0.000116159;
+                }else if(eta >= 0 && eta < 0.6){
+                	eff.first = 0.99468; eff.second = 0.00010193;
+                }else if(eta >= 0.6 && eta < 1.1){
+                	eff.first = 0.996666; eff.second = 0.000123553;
+                }else if(eta >= 1.1 && eta < 1.6){
+                	eff.first = 0.994934; eff.second = 0.000248735;
+                }else if(eta >= 1.6 && eta < 2.1){
+                	eff.first = 0.991187; eff.second = 0.000303066;
+                }else if(eta < 2.4){
+                	eff.first = 0.976812; eff.second = 0.00159681;
+                }
+          }                
+	  return eff;
+    }
     
 private:
     
