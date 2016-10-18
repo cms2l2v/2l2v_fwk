@@ -513,9 +513,6 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "mt_Outbveto80"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mt_Outbtag125"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "mt_Outbveto125"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
-//  mon.addHistogram( new TH1F( "leppt_Inbveto125"  ,         ";both lepton pt [GeV];Events / GeV",50,0,400) ); //attention
-//  mon.addHistogram( new TH1F( "leppt_Outbtag80"  ,         ";both lepton pt [GeV];Events / GeV",50,0,400) );
-
 
   mon.addHistogram( new TH1F( "mtfinal"  ,         ";Transverse mass [GeV];Events / GeV",nmtAxis-1,mtaxis) );
   mon.addHistogram( new TH1F( "metfinal",          ";Missing transverse energy [GeV];Events / GeV",nmetAxis-1,metaxis) ); //50,0,1000) );
@@ -707,8 +704,6 @@ int main(int argc, char* argv[])
   //loop on all the events
   //DuplicatesChecker duplicatesChecker;
   //int nDuplicates(0)
-	int Nbveto80 = 0; //attention
-	int Nbtag80 = 0; //attention
   
   printf("Progressing Bar           :0%%       20%%       40%%       60%%       80%%       100%%\n");
   for(unsigned int f=0;f<urls.size();f++){
@@ -1642,8 +1637,6 @@ int main(int argc, char* argv[])
                            if(imet.pt()>50 )mon.fillHisto("mt_Inbveto50" , tags,mt,weight); 
                            if(imet.pt()>80 )mon.fillHisto("mt_Inbveto80" , tags,mt,weight); 
                            if(imet.pt()>125)mon.fillHisto("mt_Inbveto125", tags,mt,weight); 
-			   //if(imet.pt()>125)mon.fillHisto("leppt_Inbveto125", tags, selLeptons[0].p4().pt(), weight); //attention
-			   //if(imet.pt()>125)mon.fillHisto("leppt_Inbveto125", tags, selLeptons[1].p4().pt(), weight); //attention
                         }else if(isZsideBand){
                             mon.fillHisto( "met_Outbveto",tags,imet.pt(),weight);
                            if(imet.pt()>50 )mon.fillHisto("mt_Outbveto50" , tags,mt,weight); 
@@ -1755,10 +1748,7 @@ int main(int argc, char* argv[])
   //scale all events by 1/N to avoid the initial loop to stupidly count the events
   //mon.Scale(1.0/totalNumEvent);
 
-  
-	cout<<" total number passing bveto80 out region: "<<Nbveto80<<endl; //attention
-	cout<<" total number passing btag80 out region: "<<Nbtag80<<endl;
-  TString terminationCmd = "";
+    TString terminationCmd = "";
   //save control plots to file
   printf("Results save in local directory and moved to %s\n", outUrl.Data());
   
