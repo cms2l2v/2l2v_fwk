@@ -182,7 +182,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
     if [[ $step == 3 || $step == 3.16 ]]; then # make photonZ MC closure tests 
 	# make sure you have at least DY MC and gamma+jets_reweighted in plotter.root
 	echo "MAKE PLOTS for photonZ analysis closure test"
-	runPhotonZclosure --inFile ${PLOTTER}.root --outDir $PLOTSDIR/photonZclosure --mode MC
+	runPhotonZClosure --inFile ${PLOTTER}.root --outDir $PLOTSDIR/photonZclosure --mode MC
     fi
 
     if [[ $step == 3 || $step == 3.17 ]]; then  # make plots and combine root files for photon + jet study    
