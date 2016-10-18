@@ -1656,11 +1656,6 @@ int main(int argc, char* argv[])
                             mon.fillHisto( "met_Outbtag",tags,imet.pt(),weight);
                            if(imet.pt()>50 )mon.fillHisto("mt_Outbtag50" , tags,mt,weight); 
                            if(imet.pt()>80 )mon.fillHisto("mt_Outbtag80" , tags,mt,weight); 
-				if(imet.pt()>80 && abs(dilId)==121){ //attention
-					Nbtag80++;
-				}
-			   //if(imet.pt()>80)mon.fillHisto("leppt_Outbtag80", tags, selLeptons[0].p4().pt(), weight); //attention
-			   //if(imet.pt()>80)mon.fillHisto("leppt_Outbtag80", tags, selLeptons[1].p4().pt(), weight); //attention
                            if(imet.pt()>125)mon.fillHisto("mt_Outbtag125", tags,mt,weight); 
                         }
                      }
