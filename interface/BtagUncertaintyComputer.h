@@ -36,6 +36,7 @@ class BTagSFUtil{
   BTagSFUtil( int seed=0 );
   ~BTagSFUtil();
     
+  void SetSeed(int seed=0);
   void modifyBTagsWithSF( bool& isBTagged, float Btag_SF = 0.98, float Btag_eff = 1.0);
 
 
@@ -60,6 +61,11 @@ BTagSFUtil::~BTagSFUtil() {
 
 }
 
+void BTagSFUtil::SetSeed( int seed ) {
+
+  rand_ = new TRandom3(seed);
+
+}
 
 void BTagSFUtil::modifyBTagsWithSF(bool& isBTagged, float tag_SF, float tag_Eff){
   bool newBTag = isBTagged;
