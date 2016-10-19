@@ -1131,10 +1131,6 @@ int main(int argc, char* argv[])
 
          }
 
-	int mdilId = 0;
-	 if(selLeptons.size()==2){
-		mdilId = selLeptons[0].pdgId()*selLeptons[1].pdgId();
-	}
 	 //
 	 // PHOTON ANALYSIS
 	 //
@@ -1189,7 +1185,6 @@ int main(int argc, char* argv[])
          std::map<string, int   > njetsVar;
          std::map<string, int   > nbtagsVar;
          std::map<string, double> mindphijmetVar;
-	 int mnbtags=0; //attention
          for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){njetsVar[jetVarNames[ivar]] = 0;}  //initialize
          for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){mindphijmetVar[jetVarNames[ivar]] = 9999.0;}  //initialize
          nbtagsVar[""] = 0; nbtagsVar["_eff_bup"] = 0; nbtagsVar["_eff_bdown"] = 0;  //initialize
@@ -1222,15 +1217,13 @@ int main(int argc, char* argv[])
 
             //check for btagging
             if(jet.pt()>30 && fabs(jet.eta())<2.5){
-		bool jetbtagged = false;
-		double btagweight = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-	  	if(btagweight > 0.605) jetbtagged = true;
               bool hasCSVtag = (jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")>btagLoose);
               bool hasCSVtagUp = hasCSVtag;  
               bool hasCSVtagDown = hasCSVtag;
               //update according to the SF measured by BTV
               if(isMC){
                   int flavId=jet.partonFlavour();  double eta=jet.eta();
+		  btsfutil.SetSeed(ev.eventAuxiliary().event()*10 + ijet*10000);
                   if      (abs(flavId)==5){  btsfutil.modifyBTagsWithSF(hasCSVtag    , btagCal   .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
                                              btsfutil.modifyBTagsWithSF(hasCSVtagUp  , btagCalUp .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
                                              btsfutil.modifyBTagsWithSF(hasCSVtagDown, btagCalDn .eval(BTagEntry::FLAV_B   , eta, jet.pt()), beff);
@@ -1246,7 +1239,6 @@ int main(int argc, char* argv[])
               if(hasCSVtag    )nbtagsVar[""          ]++;
               if(hasCSVtagUp  )nbtagsVar["_eff_bup"  ]++;
               if(hasCSVtagDown)nbtagsVar["_eff_bdown"]++;
-              if(jetbtagged)mnbtags++;
             }
 
 
@@ -1331,8 +1323,8 @@ int main(int argc, char* argv[])
                        int id(abs(selLeptons[ilep].pdgId()));
 		       if(is2016MC) {
 			   
-                           if(id==11)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].el.superCluster()->eta(), id).first; //Tracking eff  attention
-                           else if(id==13)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].eta(), id).first; //Tracking eff  attention
+                           if(id==11)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].el.superCluster()->eta(), id).first; //Tracking eff 
+                           else if(id==13)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].eta(), id).first; //Tracking eff
                            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"   ,patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ID 
                            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso",patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ISO w.r.t ID
 		       } else if(isMC && !is2016MC){
@@ -1386,9 +1378,7 @@ int main(int argc, char* argv[])
                bool passMass(fabs(boson.mass()-91)<15);
                bool passQt(boson.pt()>55);
                bool passThirdLeptonVeto( selLeptons.size()==2 && extraLeptons.size()==0 );
-               //bool passBtags(nbtags==0); 
-               bool passBtags = false;
-	       if(mnbtags==0) passBtags=true;  //attention
+               bool passBtags(nbtags==0); 
                bool passMinDphijmet( njets==0 || mindphijmet>0.5);
 
 
@@ -1716,10 +1706,10 @@ int main(int argc, char* argv[])
 
                           //if(nri==0 && index==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), varNames[ivar].Data(), imet.pt(), mt, weight ); 
 
-                          if(passBtags && !isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 0.5,shapeWeight);
+                          if(passBtags && passMass)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 0.5,shapeWeight);
                           if(passBtags && isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 1.5,shapeWeight);
                           if(passBtags && isZ_upSB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 2.5,shapeWeight);
-                          if(!passBtags && !isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 3.5,shapeWeight);
+                          if(!passBtags && passMass)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 3.5,shapeWeight);
                           if(!passBtags && isZ_SB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 4.5,shapeWeight);
                           if(!passBtags && isZ_upSB)mon.fillHisto(TString("mt_shapes_NRBctrl")+NRsuffix[nri]+varNames[ivar],tags,index, 5.5,shapeWeight);
 
@@ -1742,7 +1732,7 @@ int main(int argc, char* argv[])
   //scale all events by 1/N to avoid the initial loop to stupidly count the events
   //mon.Scale(1.0/totalNumEvent);
 
-    TString terminationCmd = "";
+  TString terminationCmd = "";
   //save control plots to file
   printf("Results save in local directory and moved to %s\n", outUrl.Data());
   
