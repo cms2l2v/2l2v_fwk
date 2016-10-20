@@ -172,9 +172,9 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  if(fileProcessed%5!=0){File->Close();fileProcessed++;continue;} //only consider 1file every 5 of each sample to get the list of object 
  
                  //just to make it faster, only consider the first 3 sample of a same kind
-                 if(fileProcessed==0 && isData){if(dataProcessed>=8 ){ File->Close(); continue;}else{dataProcessed++;}}
-                 if(fileProcessed==0 && isSign){if(signProcessed>=4 ){ File->Close(); continue;}else{signProcessed++;}}
-                 if(fileProcessed==0 && isMC  ){if(bckgProcessed>=6 ){ File->Close(); continue;}else{bckgProcessed++;}}
+                 if(fileProcessed==0 && isData){if(dataProcessed>=11 ){ File->Close(); continue;}else{dataProcessed++;}}
+                 if(fileProcessed==0 && isSign){if(signProcessed>=11 ){ File->Close(); continue;}else{signProcessed++;}}
+                 if(fileProcessed==0 && isMC  ){if(bckgProcessed>=11 ){ File->Close(); continue;}else{bckgProcessed++;}}
                  fileProcessed++;
 
                  printf("Adding all objects from %25s to the list of considered objects:\n",  FileName.c_str());
