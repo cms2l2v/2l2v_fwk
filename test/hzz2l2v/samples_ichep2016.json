@@ -2,7 +2,7 @@
   "proc":[
     {
       "tag":"data",
-      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_datadriven", "2l2v_datadrivenplot", "2l2v_datadriven_SM",   "2l2v_mcbased_SM",  "genuineMet"],
+      "keys":["2l2v_2016","2l2v_mcbased", "2l2v_datadriven", "2l2v_datadrivenplot", "2l2v_datadriven_SM",   "2l2v_mcbased_SM"],
       "isdata":true,
       "color":1,
       "fill":0,
@@ -320,7 +320,7 @@
     }, 
     {
       "tag":"#gamma data",
-      "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly"],
+      "keys":["2l2v_2016", "2l2v_photoncontrol", "2l2v_photonsOnly","genuineMet"],
       "isdata":true,
       "color":1,
       "fill":0,
@@ -349,7 +349,7 @@
       "isinvisible":true,      
       "isdata":false,
       "color":41,
-	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu, HT>100_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0} ]
+	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu, HT>100_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
     },
     {
       "tag":"Genuine (ewk) MET",
