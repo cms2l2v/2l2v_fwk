@@ -23,9 +23,9 @@ cmsenv
 #git checkout remotes/origin/74x-root6 
 #cd ../..
 
-git clone -b svFit_2015Apr03 git@github.com:veelken/SVfit_standalone TauAnalysis/SVfitStandalone
+git clone -b svFit_2015Apr03 https://github.com/veelken/SVfit_standalone.git TauAnalysis/SVfitStandalone
 
-git clone git@github.com:cms2l2v/2l2v_fwk.git UserCode/llvv_fwk
+git clone https://github.com/cms2l2v/2l2v_fwk.git UserCode/llvv_fwk
 cd UserCode/llvv_fwk
 git checkout -b modified #copy the branch to a new one to host future modifications (ease pull request and code merging)
 cd ../..
