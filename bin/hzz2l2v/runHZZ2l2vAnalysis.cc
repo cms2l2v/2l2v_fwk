@@ -170,6 +170,16 @@ int main(int argc, char* argv[])
 
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");      
   GammaWeightsHandler* gammaWgtHandler = (gammaPtWeightsFiles.size()>0 && gammaPtWeightsFiles[0]!="") ? new GammaWeightsHandler(runProcess,"",true) : NULL;
+
+  // Apply rho corrections to photon sample, to match the rho distribution in the dilepton one
+  std::vector<std::string> rhoWeightsFilePath = runProcess.getParameter<std::vector<std::string> >("rhoWeightsFile"); 
+
+  bool doRhoCorrections=true;    
+  if ( rhoWeightsFilePath.size()==0) {doRhoCorrections=false; }     
+  else if ( rhoWeightsFilePath[0]=="") {doRhoCorrections=false; }
+
+  TFile* rhoWeightsFile=NULL;  
+
   if(gammaWgtHandler)printf("gammaWgtHandler is activated\n");
 
   //HIGGS weights and uncertainties
@@ -254,11 +264,13 @@ int main(int argc, char* argv[])
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       } else if( isMC_GG ){
-	TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_GGH_21June2016_AllInterferences.root"); 
+	TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/NR_weightsRun2.root");
+	//Weights_EWS_GGH_21June2016_AllInterferences.root"); 
 	gSystem->ExpandPathName(nrLineShapesFileUrl);
 	nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       } else if( isMC_VBF ){
-        TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_VBF_21June2016_AllInterferences.root"); 
+        TString nrLineShapesFileUrl(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/Weights_EWS_VBF_21June2016_AllInterferences.root");
+	//Weights_EWS_VBF_21June2016_AllInterferences.root"); 
         gSystem->ExpandPathName(nrLineShapesFileUrl);
         nrLineShapesFile=TFile::Open(nrLineShapesFileUrl);
       }
@@ -1355,9 +1367,23 @@ int main(int argc, char* argv[])
                    std::vector<Float_t> photonVars;
                    photonVars.push_back(boson.pt());           
                    float photonWeightMain=1.0;
-                   if(L>0 && gammaWgtHandler)photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
-                   //if(L>0 && gammaWgtHandler)printf("Photon pT = %6.2f --> prescale=%6.2f weight=%6.2E forL=%i  cat=%s\n", boson.pt(), triggerPrescale, photonWeightMain, L, (string(L==1?"ee":"mumu")+evCat).Data());
-                   weight *= triggerPrescale * photonWeightMain;
+		   float photonRhoWeight=1.0;  
+                   if(L>0 && gammaWgtHandler) {
+		     photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
+		     
+		     if (doRhoCorrections) { 
+		       TString rhoWeightsFileUrl(rhoWeightsFilePath[0].c_str());
+		       gSystem->ExpandPathName(rhoWeightsFileUrl); 
+		       rhoWeightsFile=TFile::Open(rhoWeightsFileUrl); 
+ 
+		       if (rhoWeightsFile) {
+			 TH2D* h_rho_zpt_weight = (TH2D*)rhoWeightsFile->Get("h_rho_zpt_weight");
+			 photonRhoWeight=h_rho_zpt_weight->GetBinContent(h_rho_zpt_weight->FindBin(boson.pt(), rho)); 
+			 rhoWeightsFile->Close(); 
+		       }
+		     }
+		   }
+                   weight *= triggerPrescale * photonWeightMain * photonRhoWeight;
 		   if(is2016MC) weight *= phoEff.getPhotonEfficiency(selPhotons[0].pt(), selPhotons[0].superCluster()->eta(), "tight",patUtils::CutVersion::ICHEP16Cut ).first;
                }else{
                   continue;

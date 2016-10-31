@@ -71,6 +71,7 @@ runProcess = cms.PSet(
     saveSummaryTree = cms.bool(@saveSummaryTree),
     runSystematics = cms.bool(@runSystematics),
     weightsFile = cms.vstring("@weightsFile"),
+    rhoWeightsFile = cms.vstring("@rhoWeightsFile"),
     dirName = cms.string("dataAnalyzer"),
     useMVA = cms.bool(@useMVA),
     tmvaInput = mySignalMVA,
