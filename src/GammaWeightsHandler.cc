@@ -10,8 +10,8 @@ GammaWeightsHandler::GammaWeightsHandler(const edm::ParameterSet &runProcess,TSt
   if(forceAllToData) isMC=false;
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");  
   if(gammaPtWeightsFiles.size()==0) {
-    return;
     std::cout << "Photon weights file not found! Pls check filename spelling or file path" << std::endl;
+    return;
   }
   std::vector<TString> wgtNames; 
   wgtNames.push_back("qt");
