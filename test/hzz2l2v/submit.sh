@@ -23,12 +23,13 @@ if [[ $# -eq 0 ]]; then
 ## Merge Results
     printf "\n\t%-5s  %-40s\n"  "2"  "compute integrated luminosity from processed samples" 
     printf "\n\t%-5s  %-40s\n"  "2.1"  "compute integrated luminosity from processed photon samples" 
-    printf "\n\t%-5s  %-40s\n"  "3"  "make plots and combine root files" 
+    printf "\n\t%-5s  %-40s\n"  "3.0"  "make plots and combine root files" 
 
 ## Extract photon weights
     printf "\n\t%-5s  %-40s\n"  "3.01" "extract photon weights using bins in data or MC" 
 
 ## Make plots in mcbased(_blind), photons, datadriven(_blind) cases
+    printf "\n\t%-5s  %-40s\n"  "3.1"  "make plots for mcbased analysis"  
     printf "\n\t%-5s  %-40s\n"  "3.15"  "make plots for photon_samples" 
     printf "\n\t%-5s  %-40s\n"  "3.16"  "make plots for photonZ analysis MC closure tests"
     printf "\n\t%-5s  %-40s\n"  "3.17"  "make plots for instr. MET and genuine Met"
