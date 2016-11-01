@@ -170,7 +170,7 @@
      },
     {
       "tag":"Z#rightarrow ee/#mu#mu",
-      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_photoncontrol","2l2v_photonsOnly","2l2v_mcbased_SM"],
+      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_photoncontrol","2l2v_photonsOnly","2l2v_mcbased_SM","2l2v_photonZ"],
       "isdata":false,
       "mctruthmode":1113,    
       "color":831,
