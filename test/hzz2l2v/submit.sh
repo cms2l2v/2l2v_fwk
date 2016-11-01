@@ -9,15 +9,30 @@ if [[ $# -eq 0 ]]; then
     printf "\nSYNOPSIS\n"
     printf "\n\t%-5s\n" "./submit.sh [OPTION]" 
     printf "\nOPTIONS\n" 
+## Run 2l2vAnalysis over samples
     printf "\n\t%-5s  %-40s\n"  "0"  "completely clean up the directory" 
-    printf "\n\t%-5s  %-40s\n"  "1"  "run 'runHZZ2l2vAnalysis' on samples.json" 
-    printf "\n\t%-5s  %-40s\n"  "1.1"  "run 'runHZZ2l2vAnalysis' on photon_samples.json" 
-    printf "\n\t%-5s  %-40s\n"  "1.2"  "run 'runHZZ2l2vAnalysis' on photon_samples.json with photon re-weighting"
+    printf "\n\t%-5s  %-40s\n"  "1"  "run 'runHZZ2l2vAnalysis' on all samples" 
+    printf "\n\t%-5s  %-40s\n"  "1.0"  "make plots for mcbased analysis"
+    printf "\n\t%-5s  %-40s\n"  "1.1"  "run 'runHZZ2l2vAnalysis' on photon samples" 
+    printf "\n\t%-5s  %-40s\n"  "1.2"  "run 'runHZZ2l2vAnalysis' on photon samples with photon re-weighting"
+
+## Run photonZ closure tests:
+    printf "\n\t%-5s  %-40s\n"  "1.3"  "run 'runHZZ2l2vAnalysis' on photon and DY samples in MC only"
+    printf "\n\t%-5s  %-40s\n"  "1.4"  "run 'runHZZ2l2vAnalysis' on photon samples with photon re-weighting with MC weights"  
+
+## Merge Results
     printf "\n\t%-5s  %-40s\n"  "2"  "compute integrated luminosity from processed samples" 
     printf "\n\t%-5s  %-40s\n"  "2.1"  "compute integrated luminosity from processed photon samples" 
     printf "\n\t%-5s  %-40s\n"  "3"  "make plots and combine root files" 
-    printf "\n\t%-5s  %-40s\n"  "3.1"  "make plots for photon_samples" 
-    printf "\n\t%-5s  %-40s\n"  "3.2"  "make plots for photon_samples with photon re-weighting" 
+
+## Extract photon weights
+    printf "\n\t%-5s  %-40s\n"  "3.01" "extract photon weights using bins in data or MC" 
+
+## Make plots in mcbased(_blind), photons, datadriven(_blind) cases
+    printf "\n\t%-5s  %-40s\n"  "3.15"  "make plots for photon_samples" 
+    printf "\n\t%-5s  %-40s\n"  "3.16"  "make plots for photonZ analysis MC closure tests"
+    printf "\n\t%-5s  %-40s\n"  "3.17"  "make plots for instr. MET and genuine Met"
+    printf "\n\t%-5s  %-40s\n"  "3.2"  "make plots with data-driven MET"
 fi
 
 step=$1   #variable that store the analysis step to run
@@ -82,9 +97,14 @@ if [[ $step > 0.999 &&  $step < 2 ]]; then
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
         runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016.root @rhoWeightsFile=   @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi    
-                          
-   if [[ $step == 1 || $step == 1.3 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC                                              
-        echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC"                                                                          
+                     
+   if [[ $step == 1.3 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC 
+       echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC : step1"  
+       runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonZ $arguments
+   fi
+
+   if [[ $step == 1.4 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC                                              
+        echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC : step2"                                                                          
         runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True  @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016MC.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_mcphotonsOnly $arguments                                                                                                             
    fi    
 
