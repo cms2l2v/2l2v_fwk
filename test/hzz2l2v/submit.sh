@@ -96,7 +96,7 @@ if [[ $step > 0.999 &&  $step < 2 ]]; then
 
    if [[ $step == 1 || $step == 1.2 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016.root @rhoWeightsFile=   @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016.root @rhoWeightsFile=get_rho_weight.root  @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi    
                      
    if [[ $step == 1.3 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC 
