@@ -395,9 +395,12 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(6,"#gamma"); 
 
   //pu control
-  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",50,0,50) ); 
-  mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",50,0,50) ); 
-  mon.addHistogram( new TH1F( "rho",";#rho;Events",50,0,25) ); 
+  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",81, -0.5, 80.5)); //50,0,50) ); 
+  mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",81, -0.5, 80.5 )); //50,0,50) ); 
+  mon.addHistogram( new TH1F( "rho",";#rho;Events",100,0,50) ); 
+
+  TH2F *hnvtx=(TH2F *) mon.addHistogram( new TH2F ("zpt_vs_nvtx",";zpt;#vertices", 100,0,1500,81, -0.5, 80.5) );                                                    
+  TH2F *hrho=(TH2F *) mon.addHistogram( new TH2F ("zpt_vs_rho",";zpt;rho", 100,0,1500,100, 0, 50) );    
 
   // photon control
   mon.addHistogram(new TH1F("npho",   ";Number of Photons;Events", 20, 0, 20) ); 
@@ -406,7 +409,9 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("photonpt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) ); 
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
-  mon.addHistogram(new TH1F("bosonnvtx", ";Photon #eta;Events", 50, 0, 50) );
+  mon.addHistogram(new TH1F("bosonnvtx", ";Photon #vertices;Events", 81, -0.5, 80.5) );
+  mon.addHistogram(new TH1F("bosonrho", ";Photon rho;Events",100,0,50) ); 
+
   mon.addHistogram(new TH1F("bosoneta", ";Photon #eta;Events", 100, -5, 5) );
   mon.addHistogram(new TH1F("bosonphi", ";Photon #phi;Events", 80, -4, 4) );
   mon.addHistogram(new TH1F("bosonphiHG", ";Photon #phi;Events", 800, -4, 4) );
@@ -556,6 +561,7 @@ int main(int argc, char* argv[])
 	mon.addHistogram( new TH2F (TString("mt_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Transverse mass [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 160,150,1750) );     
 	mon.addHistogram( new TH2F (TString("met_shapes")+NRsuffix[nri]+varNames[ivar],";cut index;Missing transverse energy [GeV];Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),100 ,0,500) );     
 	TH2F *h=(TH2F *) mon.addHistogram( new TH2F ("mt_shapes_NRBctrl"+NRsuffix[nri]+varNames[ivar],";cut index;Selection region;Events",optim_Cuts1_met.size(),0,optim_Cuts1_met.size(),6,0,6) );
+
 	h->GetYaxis()->SetBinLabel(1,"M_{in}^{ll}/=0 b-tags");
 	h->GetYaxis()->SetBinLabel(2,"M_{out}^{ll}/=0 b-tags");
 	h->GetYaxis()->SetBinLabel(3,"M_{out+}^{ll}/=0 b-tags");
@@ -1453,12 +1459,14 @@ int main(int argc, char* argv[])
                   } // end Trigger efficiencies
 
 
-    
+		  mon.fillHisto("eventflow",  tags,0,weight);
 
-                  mon.fillHisto("eventflow",  tags,0,weight);
                   mon.fillHisto("nvtxraw",  tags,vtx.size(),weight/puWeight);
                   mon.fillHisto("nvtx",  tags,vtx.size(),weight);
                   mon.fillHisto("rho",  tags,rho,weight);
+
+		  mon.fillHisto("zpt_vs_nvtx",tags,boson.pt(),vtx.size(),1.0);
+		  mon.fillHisto("zpt_vs_rho",tags,boson.pt(),rho,1.0);
 
                   if(chTags.size()==0) continue;
                   mon.fillHisto("eventflow",  tags,1,weight);
@@ -1537,6 +1545,8 @@ int main(int argc, char* argv[])
                             mon.fillHisto( "metphi",tags,imet.phi(),weight);
                             mon.fillHisto( "metphiUnCor",tags,met.corP4(pat::MET::METCorrectionLevel::Type1).phi(),weight);
                             mon.fillHisto( "bosonnvtx",tags,vtx.size(),weight);                                                               
+			    mon.fillHisto( "bosonrho",tags,rho,weight); 
+
                             mon.fillHisto( "bosoneta",tags,boson.eta(),weight);                                                                                
                             mon.fillHisto( "bosonphi",tags,boson.phi(),weight);                                                               
                             mon.fillHisto( "bosonphiHG",tags,boson.phi(),weight);
