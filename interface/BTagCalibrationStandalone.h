@@ -186,3 +186,56 @@ protected:
 #endif  // BTagCalibrationReader_H
 
 
+#ifndef BTagCalibrationReader80X_H
+#define BTagCalibrationReader80X_H
+
+/**
+ * BTagCalibrationReader80X
+ *
+ * Helper class to pull out a specific set of BTagEntry's out of a
+ * BTagCalibration. TF1 functions are set up at initialization time.
+ *
+ ************************************************************/
+
+#include <map>
+#include <string>
+#include <vector>
+#include <TF1.h>
+
+
+class BTagCalibrationReader80X
+{
+public:
+  class BTagCalibrationReader80XImpl;
+
+  BTagCalibrationReader80X() {}
+  BTagCalibrationReader80X(BTagEntry::OperatingPoint op,
+                        const std::string & sysType="central",
+                        const std::vector<std::string> & otherSysTypes={});
+
+  void load(const BTagCalibration & c,
+            BTagEntry::JetFlavor jf,
+            const std::string & measurementType="comb");
+
+  double eval(BTagEntry::JetFlavor jf,
+              float eta,
+              float pt,
+              float discr=0.) const;
+
+  double eval_auto_bounds(const std::string & sys,
+                          BTagEntry::JetFlavor jf,
+                          float eta,
+                          float pt,
+                          float discr=0.) const;
+
+  std::pair<float, float> min_max_pt(BTagEntry::JetFlavor jf,
+                                     float eta,
+                                     float discr=0.) const;
+
+protected:
+  std::shared_ptr<BTagCalibrationReader80XImpl> pimpl;
+
+};
+
+#endif  // BTagCalibrationReader80X_H
+
