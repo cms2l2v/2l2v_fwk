@@ -71,7 +71,7 @@ void RocRes::dumpParams(){
 	
 void RocRes::init(string filename){
   std::ifstream in(filename);
-  char buffer[256];
+  // char buffer[256];
   char tag[4];
   int type, sys, mem, isdt, var, bin;	
   std::string s;
@@ -380,7 +380,7 @@ std::vector<std::vector<double> > RoccoR::kkScaleAndSmearMCDet(int Q, double pt,
 }
 
 std::vector<std::vector<double> > RoccoR::kkScaleFromGenMCDet(int Q, double pt, double eta, double phi, double gpt, int nlayers){
-    double u=random.Rndm();
+    // double u=random.Rndm();
     double w=random.Rndm();
 
     std::vector<std::vector<double> > result;
