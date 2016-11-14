@@ -200,6 +200,7 @@ protected:
 #include <map>
 #include <string>
 #include <vector>
+#include <memory>
 #include <TF1.h>
 
 
