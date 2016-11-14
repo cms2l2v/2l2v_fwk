@@ -210,14 +210,17 @@ namespace EwkCorrections
 		//Let's - instead - return the absolute error on k: we do delta_ewk* the_relative_errir_on_it. This gives absolute error on delta, and so on k
 		ewkCorrections_error = fabs(ewkCorrections_error*kFactor);
 
-		//For WZ, we have to add the uncertainty due to gamma-induced processes. This uncertainty has been obtained separately by performing a polynomial fit based on m_WZ (separate study).
+		//For WZ, contribution from gamma-induced processes
 		double gamma_induced_uncertainty = 0.;
 		if(isWZ){
-			if(genWBosons[0].pdgId() > 0) gamma_induced_uncertainty = 0.00286804 - 8.4624e-6 * sqrt(s_hat) + 3.90611e-8 * s_hat; //W+Z
-			if(genWBosons[0].pdgId() < 0) gamma_induced_uncertainty = 0.00417376 - 1.51319e-5 * sqrt(s_hat) + 5.68576e-8 * s_hat; //W-Z
+			//We multiply the kFactor from virtual processes (computed above) with the one from gamma-induced processes (based on a fit form a separate study)
+			if(genWBosons[0].pdgId() > 0) kFactor = kFactor*(1 + 0.00559445 - 5.17082e-6 * sqrt(s_hat) + 3.63331e-8 * s_hat); //W+Z
+			if(genWBosons[0].pdgId() < 0) kFactor = kFactor*(1 + 0.00174737 + 1.70668e-5 * sqrt(s_hat) + 2.26398e-8 * s_hat); //W-Z
+
+			//Uncertainty due to WZ gamma-induced contribution is set to 0 with a very good approximation (less than 0.1%) when using the LUXqed photon PDF (instead of NNPDF23)
+			if(genWBosons[0].pdgId() > 0) gamma_induced_uncertainty = 0.; //0.00286804 - 8.4624e-6 * sqrt(s_hat) + 3.90611e-8 * s_hat; //W+Z
+			if(genWBosons[0].pdgId() < 0) gamma_induced_uncertainty = 0.; //0.00417376 - 1.51319e-5 * sqrt(s_hat) + 5.68576e-8 * s_hat; //W-Z
 			ewkCorrections_error = sqrt(pow(ewkCorrections_error,2) + pow(gamma_induced_uncertainty,2));
-			
-			kFactor = 1. ;//For WZ, the decision taken is not to apply any correction as we assume that the gamma-induced and the virtual part cancel out.
 		}
 		
 		return kFactor;
