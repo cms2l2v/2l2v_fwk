@@ -174,7 +174,11 @@ int main(int argc, char* argv[])
   // Apply rho corrections to photon sample, to match the rho distribution in the dilepton one
   std::vector<std::string> rhoWeightsFilePath = runProcess.getParameter<std::vector<std::string> >("rhoWeightsFile"); 
 
-  TFile* rhoWeightsFile = (rhoWeightsFilePath.size()>0 && rhoWeightsFilePath[0]!="") ? TFile::Open(gSystem->ExpandPathName(rhoWeightsFilePath[0].c_str())) : NULL ;
+	bool doRhoCorrections=true;    
+  if ( rhoWeightsFilePath.size()==0) {doRhoCorrections=false; }     
+  else if ( rhoWeightsFilePath[0]=="") {doRhoCorrections=false; }
+
+  TFile* rhoWeightsFile=NULL; 
 
   if(gammaWgtHandler)printf("gammaWgtHandler is activated\n");
 
@@ -1404,14 +1408,21 @@ int main(int argc, char* argv[])
 		   float photonRhoWeight=1.0;  
                    if(L>0 && gammaWgtHandler) {
 		     photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
-		     
-		       if (rhoWeightsFile) {
-			 			TH2D* h_rho_zpt_weight = (TH2D*)rhoWeightsFile->Get("h_rho_zpt_weight");
-			 			photonRhoWeight=h_rho_zpt_weight->GetBinContent(h_rho_zpt_weight->FindBin(boson.pt(), rho)); 
-			 			rhoWeightsFile->Close(); 
-		       }
-		   }
-                   weight *= triggerPrescale * photonWeightMain * photonRhoWeight;
+		  
+		     if (doRhoCorrections) { 
+		       TString rhoWeightsFileUrl(rhoWeightsFilePath[0].c_str());
+		       gSystem->ExpandPathName(rhoWeightsFileUrl); 
+		       rhoWeightsFile=TFile::Open(rhoWeightsFileUrl); 
+ 
+ 		       if (rhoWeightsFile) {
+			 TH2D* h_rho_zpt_weight = (TH2D*)rhoWeightsFile->Get("h_rho_zpt_weight");
+			 photonRhoWeight=h_rho_zpt_weight->GetBinContent(h_rho_zpt_weight->FindBin(boson.pt(), rho)); 
+			 rhoWeightsFile->Close(); 
+				}
+			}
+
+   
+			                   weight *= triggerPrescale * photonWeightMain * photonRhoWeight;
 		   if(is2016MC) weight *= phoEff.getPhotonEfficiency(selPhotons[0].pt(), selPhotons[0].superCluster()->eta(), "tight",patUtils::CutVersion::ICHEP16Cut ).first;
                }else{
                   continue;
