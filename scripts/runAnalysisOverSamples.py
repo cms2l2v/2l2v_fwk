@@ -315,7 +315,7 @@ for procBlock in procList :
                    sedcmd += 's%@lumiMask%"' + os.path.expandvars(getByLabel(procData,'lumiMask',''))+'"%;'
               	   if(opt.params.find('@useMVA')<0) :          opt.params = '@useMVA=False ' + opt.params
                    if(opt.params.find('@weightsFile')<0) :     opt.params = '@weightsFile= ' + opt.params
-                   if(opt.params.find('@rhoWeightsFile')<0) :     opt.params = '@rhoWeightsFile= ' + opt.params
+                   if(opt.params.find('@puWeightsFile')<0) :     opt.params = '@puWeightsFile= ' + opt.params
                    if(opt.params.find('@evStart')<0) :         opt.params = '@evStart=0 '    + opt.params
                    if(opt.params.find('@evEnd')<0) :           opt.params = '@evEnd=-1 '     + opt.params
             	   if(opt.params.find('@saveSummaryTree')<0) : opt.params = '@saveSummaryTree=False ' + opt.params
