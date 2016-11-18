@@ -171,14 +171,14 @@ int main(int argc, char* argv[])
   std::vector<std::string> gammaPtWeightsFiles =  runProcess.getParameter<std::vector<std::string> >("weightsFile");      
   GammaWeightsHandler* gammaWgtHandler = (gammaPtWeightsFiles.size()>0 && gammaPtWeightsFiles[0]!="") ? new GammaWeightsHandler(runProcess,"",true) : NULL;
 
-  // Apply rho corrections to photon sample, to match the rho distribution in the dilepton one
-  std::vector<std::string> rhoWeightsFilePath = runProcess.getParameter<std::vector<std::string> >("rhoWeightsFile"); 
+  // Apply pu corrections to photon sample, to match the pu distribution in the dilepton one
+  std::vector<std::string> puWeightsFilePath = runProcess.getParameter<std::vector<std::string> >("puWeightsFile"); 
 
-  bool doRhoCorrections=true;    
-  if ( rhoWeightsFilePath.size()==0) {doRhoCorrections=false; }     
-  else if ( rhoWeightsFilePath[0]=="") {doRhoCorrections=false; }
+  bool doPUCorrections=true;    
+  if ( puWeightsFilePath.size()==0) {doPUCorrections=false; }     
+  else if ( puWeightsFilePath[0]=="") {doPUCorrections=false; }
 
-  TFile* rhoWeightsFile=NULL;  
+  TFile* puWeightsFile=NULL;  
 
   if(gammaWgtHandler)printf("gammaWgtHandler is activated\n");
 
@@ -399,8 +399,14 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",81, -0.5, 80.5 )); //50,0,50) ); 
   mon.addHistogram( new TH1F( "rho",";#rho;Events",100,0,50) ); 
 
-  TH2F *hnvtx=(TH2F *) mon.addHistogram( new TH2F ("zpt_vs_nvtx",";zpt;#vertices", 100,0,1500,81, -0.5, 80.5) );                                                    
-  TH2F *hrho=(TH2F *) mon.addHistogram( new TH2F ("zpt_vs_rho",";zpt;rho", 100,0,1500,100, 0, 50) );    
+  Double_t ZPtBins[] = {0,30,36,50,75,90,120,165,3000}; 
+  Int_t NZPtBins = sizeof(ZPtBins)/sizeof(ZPtBins[0]) - 1; 
+  Double_t RhoBins[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100};
+
+  Int_t NRhoBins = sizeof(RhoBins)/sizeof(RhoBins[0]) - 1; 
+
+  TH2F *hnvtx=(TH2F *) mon.addHistogram( new TH2F ("zpt_vs_nvtx",";zpt;#vertices",NZPtBins, ZPtBins, NRhoBins, RhoBins) ); 
+  TH2F *hrho=(TH2F *) mon.addHistogram( new TH2F ("zpt_vs_rho",";zpt;rho", NZPtBins, ZPtBins, NRhoBins, RhoBins) ); 
 
   // photon control
   mon.addHistogram(new TH1F("npho",   ";Number of Photons;Events", 20, 0, 20) ); 
@@ -1405,23 +1411,23 @@ int main(int argc, char* argv[])
                    std::vector<Float_t> photonVars;
                    photonVars.push_back(boson.pt());           
                    float photonWeightMain=1.0;
-		   float photonRhoWeight=1.0;  
+		   float photonPuWeight=1.0;  
                    if(L>0 && gammaWgtHandler) {
 		     photonWeightMain=gammaWgtHandler->getWeightFor(photonVars,string(L==1?"ee":"mumu")+evCat);
 		     
-		     if (doRhoCorrections) { 
-		       TString rhoWeightsFileUrl(rhoWeightsFilePath[0].c_str());
-		       gSystem->ExpandPathName(rhoWeightsFileUrl); 
-		       rhoWeightsFile=TFile::Open(rhoWeightsFileUrl); 
+		     if (doPUCorrections) { 
+		       TString puWeightsFileUrl(puWeightsFilePath[0].c_str());
+		       gSystem->ExpandPathName(puWeightsFileUrl); 
+		       puWeightsFile=TFile::Open(puWeightsFileUrl); 
  
-		       if (rhoWeightsFile) {
-			 TH2D* h_rho_zpt_weight = (TH2D*)rhoWeightsFile->Get("h_rho_zpt_weight");
-			 photonRhoWeight=h_rho_zpt_weight->GetBinContent(h_rho_zpt_weight->FindBin(boson.pt(), rho)); 
-			 rhoWeightsFile->Close(); 
+		       if (puWeightsFile) {
+			 TH2D* h_pu_zpt_weight = (TH2D*)puWeightsFile->Get(L==1?"h_rho_zpt_weight_e":"h_rho_zpt_weight_m");  
+			 photonPuWeight=h_pu_zpt_weight->GetBinContent(h_pu_zpt_weight->FindBin(boson.pt(), vtx.size())); 
+			 puWeightsFile->Close(); 
 		       }
 		     }
 		   }
-                   weight *= triggerPrescale * photonWeightMain * photonRhoWeight;
+                   weight *= triggerPrescale * photonWeightMain * photonPuWeight;
 		   if(is2016MC) weight *= phoEff.getPhotonEfficiency(selPhotons[0].pt(), selPhotons[0].superCluster()->eta(), "tight",patUtils::CutVersion::ICHEP16Cut ).first;
                }else{
                   continue;
@@ -1497,8 +1503,8 @@ int main(int argc, char* argv[])
                   mon.fillHisto("nvtx",  tags,vtx.size(),weight);
                   mon.fillHisto("rho",  tags,rho,weight);
 
-		  mon.fillHisto("zpt_vs_nvtx",tags,boson.pt(),vtx.size(),1.0);
-		  mon.fillHisto("zpt_vs_rho",tags,boson.pt(),rho,1.0);
+		  mon.fillHisto("zpt_vs_nvtx",tags,boson.pt(),vtx.size(),weight);
+		  mon.fillHisto("zpt_vs_rho",tags,boson.pt(),rho,weight);
 
                   if(chTags.size()==0) continue;
                   mon.fillHisto("eventflow",  tags,1,weight);
