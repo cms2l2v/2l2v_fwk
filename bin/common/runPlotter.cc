@@ -36,6 +36,7 @@
 #include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/JSONWrapper.h"
 #include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+//#include "UserCode/llvv_fwk/interface/th1fmorph.h"
 
 using namespace std;
 
@@ -63,6 +64,8 @@ bool fixUnderflow=true;
 bool fixOverflow=true;
 int rebin=0;
 double blind=-1E99;
+double metxmax=600.;
+double  mtxmax=900.;
 double signalScale=1.0;
 string inDir   = "OUTNew/";
 string jsonFile = "../../data/beauty-samples.json";
@@ -172,9 +175,9 @@ void GetListOfObject(JSONWrapper::Object& Root, std::string RootDir, std::list<N
                  if(fileProcessed%5!=0){File->Close();fileProcessed++;continue;} //only consider 1file every 5 of each sample to get the list of object 
  
                  //just to make it faster, only consider the first 3 sample of a same kind
-                 if(fileProcessed==0 && isData){if(dataProcessed>=11 ){ File->Close(); continue;}else{dataProcessed++;}}
-                 if(fileProcessed==0 && isSign){if(signProcessed>=11 ){ File->Close(); continue;}else{signProcessed++;}}
-                 if(fileProcessed==0 && isMC  ){if(bckgProcessed>=11 ){ File->Close(); continue;}else{bckgProcessed++;}}
+                 if(fileProcessed==0 && isData){if(dataProcessed>=20 ){ File->Close(); continue;}else{dataProcessed++;}}
+                 if(fileProcessed==0 && isSign){if(signProcessed>=20 ){ File->Close(); continue;}else{signProcessed++;}}
+                 if(fileProcessed==0 && isMC  ){if(bckgProcessed>=20 ){ File->Close(); continue;}else{bckgProcessed++;}}
                  fileProcessed++;
 
                  printf("Adding all objects from %25s to the list of considered objects:\n",  FileName.c_str());
@@ -837,7 +840,12 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       }
       if(abs(rebin)>0){hist = hist->Rebin(abs(rebin)); hist->Scale(1.0/abs(rebin), rebin<0?"width":""); }
 
-
+      if (HistoProperties.name.find("_met")!=std::string::npos) {
+	hist->GetXaxis()->SetRangeUser(0.,metxmax); 
+      }
+      if (HistoProperties.name.find("_mt")!=std::string::npos) {
+	hist->GetXaxis()->SetRangeUser(100.,mtxmax); 
+      }
 
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
      
@@ -940,6 +948,15 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    stack->GetYaxis()->SetRangeUser(Minimum, Maximum);
    stack->SetMinimum(Minimum);
    stack->SetMaximum(Maximum);
+   
+   
+   if (HistoProperties.name.find("_met")!=std::string::npos) { //|| (HistoProperties.name.find("_mt")!=std::string::npos)) {
+     stack->GetXaxis()->SetRangeUser(0.,metxmax);
+   }
+   if (HistoProperties.name.find("_mt")!=std::string::npos) { 
+     stack->GetXaxis()->SetRangeUser(100.,mtxmax);
+   }
+
    t1->Update();
 
    if(showUnc && mc){
@@ -984,6 +1001,10 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
             data->SetBinContent(i, 0); data->SetBinError(i, 0);
          }
          TH1 *hist=(TH1*)stack->GetHistogram();
+
+	 if (HistoProperties.name.find("_met")!=std::string::npos) { data->GetXaxis()->SetLimits(data->GetXaxis()->GetXmin(), metxmax); }
+	 if (HistoProperties.name.find("_mt")!=std::string::npos) { data->GetXaxis()->SetLimits(data->GetXaxis()->GetXmin(), mtxmax); }    
+
          TPave* blinding_box = new TPave(data->GetBinLowEdge(data->FindBin(blind)),  hist->GetMinimum(), data->GetXaxis()->GetXmax(), hist->GetMaximum(), 0, "NB" );  
          blinding_box->SetFillColor(15);         blinding_box->SetFillStyle(3013);         blinding_box->Draw("same F");
          legA->AddEntry(blinding_box, "blinded area" , "F");
@@ -1175,9 +1196,9 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        }
 
       if(data && blind>-1E99){
-         TPave* blinding_box = new TPave(data->GetBinLowEdge(data->FindBin(blind)), 0.4, data->GetXaxis()->GetXmax(), 1.6, 0, "NB" );
-         blinding_box->SetFillColor(15);         blinding_box->SetFillStyle(3013);         blinding_box->Draw("same F");
-         ObjectToDelete.push_back(blinding_box);
+	TPave* blinding_box = new TPave(data->GetBinLowEdge(data->FindBin(blind)), 0.4, data->GetXaxis()->GetXmax(), 1.6, 0, "NB" );
+	blinding_box->SetFillColor(15);         blinding_box->SetFillStyle(3013);         blinding_box->Draw("same F");
+	ObjectToDelete.push_back(blinding_box);
       }
 
        TLegend *legR = new TLegend(0.56,0.78,0.93,0.96, "NDC");
@@ -1363,6 +1384,9 @@ int main(int argc, char* argv[]){
      if(arg.find("--iEcm"   )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&iEcm); i++; printf("Ecm = %f TeV\n", iEcm); }
      if(arg.find("--signalScale")!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&signalScale); i++; printf("scale signal by %f\n", signalScale); }
      if(arg.find("--blind"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&blind); i++; printf("Blind above = %f\n", blind); }
+     if(arg.find("--metxmax"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&metxmax); i++; printf("xMax for MET = %f\n", metxmax); } 
+     if(arg.find("--mtxmax"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%lf",&mtxmax); i++; printf("xMax for MT = %f\n", mtxmax); }   
+
      if(arg.find("--rebin"  )!=string::npos && i+1<argc){ sscanf(argv[i+1],"%i",&rebin); i++; printf("Rebin by %i\n",rebin); }
      if(arg.find("--inDir"  )!=string::npos && i+1<argc){ inDir    = argv[i+1];  i++;  printf("inDir = %s\n", inDir.c_str());  }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++;  printf("outDir = %s\n", outDir.c_str());  }
