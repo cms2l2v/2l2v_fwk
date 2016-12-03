@@ -109,8 +109,8 @@ int main(int argc, char* argv[])
       if(dtag.Contains("DoubleMu"))    filterOnlyMUMU=true;
       if(dtag.Contains("MuEG"))        filterOnlyEMU=true;
       if(dtag.Contains("SinglePhoton"))filterOnlyPhoton=true;     
-      if(dtag.Contains("SingleMu"))    filterOnlyE=true;      
-      if(dtag.Contains("SingleElectron"))filterOnlyMU=true;      
+      if(dtag.Contains("SingleMu"))    filterOnlyMU=true;      
+      if(dtag.Contains("SingleElectron"))filterOnlyE=true;      
   }
   bool isV0JetsMC(false);//isMC && (dtag.Contains("DYJetsToLL_50toInf") || dtag.Contains("_WJets")));  #FIXME should be reactivated as soon as we have exclusive jet samples
   bool isWGmc(isMC && dtag.Contains("WG"));
