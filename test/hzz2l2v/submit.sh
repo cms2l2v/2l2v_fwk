@@ -46,7 +46,7 @@ if [[ $# -ge 4 ]]; then echo "Additional arguments will be considered: "$argumen
 # Global Variables
 #--------------------------------------------------
 
-SUFFIX=_2016_10_17
+SUFFIX=_2016_12_14
 
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
@@ -64,7 +64,9 @@ queue='8nh'
 #IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
 
-if [[ $JSON =~ "2016" ]]; then
+if [[ $JSON =~ "full2016" ]]; then 
+    pileup=datapileup_full2016 
+else if [[ $JSON =~ "ichep2016" ]]; then
     pileup=datapileup_2016
 else
     pileup=datapileup_official  
