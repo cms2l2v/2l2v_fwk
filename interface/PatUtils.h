@@ -87,8 +87,8 @@ namespace patUtils
    bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
    bool passIso(pat::Electron& el,  int IsoLevel, int cutVersion, double rho=0.0 ); // Old PHYS15 Iso
    bool passIso(pat::Muon&     mu,  int IsoLevel, int cutVersion);
-   bool passPhotonTrigger(fwlite::ChainEvent ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
    bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
+   bool passVBFPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
