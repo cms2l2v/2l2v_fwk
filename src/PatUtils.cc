@@ -748,11 +748,6 @@ namespace patUtils
       triggerThreshold=250;
       triggerThresholdHigh=300; 
     }
-    else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon165_R9Id90_HE10_Iso40_EBOnly_VBF_*")){ 
-      hasPhotonTrigger=true; 
-      triggerThreshold=165; 
-      triggerThresholdHigh=250; 
-    } 
     else if( utils::passTriggerPatternsAndGetName(tr, successfulPath, "HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_VBF_*")){
       hasPhotonTrigger=true;
       triggerThreshold=120;
