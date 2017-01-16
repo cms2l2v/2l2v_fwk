@@ -146,6 +146,7 @@ namespace patUtils
             }
 	break;
 
+    case CutVersion::Moriond17Cut :
     case CutVersion::ICHEP16Cut :
 
             switch(IdLevel){
@@ -313,7 +314,8 @@ namespace patUtils
               break;
             }
         break;
-	// ICHEP16 selection
+	// ICHEP16 or Moriond17 selection
+    case CutVersion::Moriond17Cut :
     case CutVersion::ICHEP16Cut :
         
             switch(IdLevel){
@@ -378,7 +380,7 @@ namespace patUtils
     double eta=photon.superCluster()->eta();
 
     float chIso = photon.chargedHadronIso(); 
-    //    float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
+    float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
 
     float nhIso = photon.neutralHadronIso();
     float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
@@ -389,69 +391,68 @@ namespace patUtils
     bool barrel = (fabs(eta) <= 1.479);
     bool endcap = (!barrel && fabs(eta) < 2.5);
 
-    // PHYS14 selections PU20 bunch crossing 25 ns
-    switch(IdLevel){
-    case llvvPhotonId::Loose :
-        
-      if ( barrel
-	   //	   && !elevto
-	   && hoe < 0.05
-	   && sigmaIetaIeta < 0.0102
-	   && chIso < 3.32 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 1.92 + 0.014*pt + 0.000019*pt*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.81 + 0.0053*pt  )
-	return true; 
-      if ( endcap
-	   //	   && !elevto
-	   && hoe < 0.05
-	   && sigmaIetaIeta < 0.0274
-	   && chIso < 1.97
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 11.86 + 0.0139*pt+0.000025*pt*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.83 + 0.0034*pt  )
-	return true; 
+    //SPRING16 selection :  https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2#Recommended_Working_points_for_2
+          switch(IdLevel){
+          case llvvPhotonId::Loose :
+              
+            if ( barrel
+      	   //&& !elevto
+      	   && hoe < 0.0597
+      	   && sigmaIetaIeta < 0.01031
+      	   && TMath::Max(chIso-chArea*rho,0.0) < 1.295
+      	   && TMath::Max(nhIso-nhArea*rho,0.0) < 10.910 + 0.0148*pt + 0.000017*pt*pt
+      	   && TMath::Max(gIso-gArea*rho,  0.0) < 3.630 + 0.0047*pt  )
+      	return true; 
+            if ( endcap
+      	   //&& !elevto
+      	   && hoe < 0.0481
+      	   && sigmaIetaIeta < 0.03013
+      	   && TMath::Max(chIso-chArea*rho,0.0) < 1.011
+      	   && TMath::Max(nhIso-nhArea*rho,0.0) < 5.931 + 0.0163*pt+0.000014*pt*pt
+      	   && TMath::Max(gIso-gArea*rho,  0.0) < 6.641 + 0.0034*pt  )
+      	return true; 
+                  
+            break;
             
-      break;
+          case llvvPhotonId::Medium :
       
-    case llvvPhotonId::Medium :
-
-      if ( barrel
-	   //	   && !elevto
-	   && hoe < 0.05
-	   && sigmaIetaIeta < 0.0102
-	   && chIso < 1.37 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 1.06 + 0.014*pt + 0.000019*pt*pt 
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.28 + 0.0053*pt  )
-	return true; 
-      if ( endcap
-	   //	   && !elevto
-	   && hoe < 0.05
-	   && sigmaIetaIeta < 0.0268
-	   && chIso < 1.10 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.69 + 0.0139*pt+0.000025*pt*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.39 + 0.0034*pt  )
-	return true; 
+            if ( barrel
+      	   //&& !elevto
+      	   && hoe < 0.0396
+      	   && sigmaIetaIeta < 0.01022
+      	   && TMath::Max(chIso-chArea*rho,0.0) < 0.441 
+      	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.725 + 0.0148*pt + 0.000017*pt*pt 
+      	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.571 + 0.0047*pt  )
+      	return true; 
+            if ( endcap
+      	   //&& !elevto
+      	   && hoe < 0.0219
+      	   && sigmaIetaIeta < 0.03001
+      	   && TMath::Max(chIso-chArea*rho,0.0) < 0.442
+      	   && TMath::Max(nhIso-nhArea*rho,0.0) < 1.715 + 0.0163*pt+0.000014*pt*pt
+      	   && TMath::Max(gIso-gArea*rho,  0.0) < 3.863 + 0.0034*pt  )
+      	return true; 
+                  
+            break;
+          case llvvPhotonId::Tight :
             
-      break;
-    case llvvPhotonId::Tight :
+            if ( barrel   
+           && !elevto 
+      	   && hoe < 0.0269      
+           && sigmaIetaIeta < 0.00994
+      	   && TMath::Max(chIso-chArea*rho,0.0) < 0.202
+      	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.264 + 0.0148*pt+0.000017*pt*pt
+      	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.362 + 0.0047*pt )
+      	return true;
       
-      if ( barrel   
+            if ( endcap
            && !elevto 
-	   && hoe < 0.05      
-           && sigmaIetaIeta < 0.0100
-	   && chIso < 0.76
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.97 + 0.014*pt+0.000019*pt*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.08 + 0.0053*pt )
-	return true;
-
-      if ( endcap
-           && !elevto 
-	   && hoe < 0.05 
-	   && sigmaIetaIeta < 0.0268
-	   && chIso < 0.56 
-	   && TMath::Max(nhIso-nhArea*rho,0.0) < 2.09 + 0.0139*pt + 0.000025*pt*pt
-	   && TMath::Max(gIso-gArea*rho,  0.0) < 0.16 + 0.0034*pt ) 
-	return true; 
-
+      	   && hoe < 0.0213 
+      	   && sigmaIetaIeta < 0.03000
+      	   && TMath::Max(chIso-chArea*rho,0.0) < 0.034 
+      	   && TMath::Max(nhIso-nhArea*rho,0.0) < 0.586 + 0.0163*pt + 0.000014*pt*pt
+      	   && TMath::Max(gIso-gArea*rho,  0.0) < 2.617 + 0.0034*pt ) 
+      	return true; 
       break;          
 
     default:
@@ -558,8 +559,9 @@ namespace patUtils
                 }
              break;
       
+          case CutVersion::Moriond17Cut :
           case CutVersion::ICHEP16Cut :
-      	  // ICHEP16 selection, conditions: PU20 bx25
+      	  // ICHEP16 or Moriond17 selection, conditions: PU20 bx25
                switch(IsoLevel){
                      case llvvElecIso::Veto :
                         if( barrel && relIso < 0.175    ) return true;
@@ -640,6 +642,24 @@ namespace patUtils
                 break;
            }
            break;
+
+       case CutVersion::Moriond17Cut :
+           switch(IsoLevel){
+              case llvvMuonIso::Loose : 
+                 if( relIso < 0.25 && trkrelIso < 0.1) return true;
+                 break;
+               	 
+              case llvvMuonIso::Tight :
+                if( relIso < 0.15 && trkrelIso < 0.05) return true;
+                break;
+             
+              default:
+                printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
+                return false;
+                break;
+           }
+           break;
+
        default:
            printf("FIXME MuonIsolation  CutVersion::%i is unkown\n", cutVersion);
            return false;
