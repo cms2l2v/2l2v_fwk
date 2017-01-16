@@ -77,7 +77,7 @@ namespace patUtils
    namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight}; }
-   namespace CutVersion { enum CutSet {Spring15Cut25ns, ICHEP16Cut}; }
+   namespace CutVersion { enum CutSet {Spring15Cut25ns, ICHEP16Cut, Moriond17Cut}; }
 
    bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion); // Old PHYS14 ID

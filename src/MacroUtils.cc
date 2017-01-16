@@ -299,58 +299,52 @@ namespace utils
     Float_t getEffectiveArea(int id,float eta,int cone,TString isoSum)
     {
       Float_t Aeff(1.0);
-      if(abs(id)==11){ // electron 
-	// PHYS14  https://indico.cern.ch/event/367861/contribution/2/material/slides/0.pdf 
-	if(fabs(eta)<0.8)                         Aeff=(cone==3? 0.1013 : 0.180);
-	else if(fabs(eta)>0.8 && fabs(eta)<1.3)   Aeff=(cone==3? 0.0988 : 0.200);
-	else if(fabs(eta)>1.3 && fabs(eta)<2.0)   Aeff=(cone==3? 0.0572 : 0.150);
-	else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=(cone==3? 0.0842 : 0.190);
-	else if(fabs(eta)>2.2 && fabs(eta)<2.5)   Aeff=(cone==3? 0.1530 : 0.210);
-      }
 
-      else if(abs(id)==13){ // muon 
-	// PHYS14  https://indico.cern.ch/event/367861/contribution/2/material/slides/0.pdf 
-	if(fabs(eta)<0.8)                         Aeff=(cone==3? 0.0913 : 0.180);
-	else if(fabs(eta)>0.8 && fabs(eta)<1.3)   Aeff=(cone==3? 0.0765 : 0.200);
-	else if(fabs(eta)>1.3 && fabs(eta)<2.0)   Aeff=(cone==3? 0.0546 : 0.150);
-	else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=(cone==3? 0.0728 : 0.190);
-	else if(fabs(eta)>2.2 && fabs(eta)<2.5)   Aeff=(cone==3? 0.1177 : 0.210);
-      }
-      
-      else if(abs(id)==22){ // photon 
-	//https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2#Recipe_for_regular_users_for_74X
-	// Effective areas for the PHYS14, conditions: PU20 bx25 
+      if(abs(id)==11){ // electron
+	//Summer16 EA (Recommended for Moriond) : https://indico.cern.ch/event/482673/contributions/2187022/attachments/1282446/1905912/talk_electron_ID_spring16.pdf
+	
+        if(fabs(eta)<1.0)				Aeff=0.1703;
+        else if(fabs(eta)>1.0 && fabs(eta)<1.479)	Aeff=0.1715;
+        else if(fabs(eta)>1.479 && fabs(eta)<2.0)	Aeff=0.1213;
+        else if(fabs(eta)>2.0 && fabs(eta)<2.2)		Aeff=0.1230;
+        else if(fabs(eta)>2.2 && fabs(eta)<2.3)		Aeff=0.1635;
+        else if(fabs(eta)>2.3 && fabs(eta)<2.4)		Aeff=0.1937;
+        else						Aeff=0.2393;
+       }
+
+      else if(abs(id)==22){ // photon
+        // Spring16 EA (Recommended for Moriond) : https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2#Selection_implementation_details
+
 	if(isoSum=="chIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.0234;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0189;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0171;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0129;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0110;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0074;
-          else                                      Aeff=0.0035;
+	  if(fabs(eta)<1.0)                         Aeff=0.0360;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0377;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0306;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0283;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0254;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0217;
+          else                                      Aeff=0.0167;
 	}
 	if(isoSum=="nhIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.0053;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0103;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0057;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0070;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0152;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0232;
-          else                                      Aeff=0.1709;
+	  if(fabs(eta)<1.0)                         Aeff=0.0597;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0807;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0629;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0197;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0184;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0284;
+          else                                      Aeff=0.0591;
 	}
 	if(isoSum=="gIso"){
-	  if(fabs(eta)<1.0)                         Aeff=0.0780;
-          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.0629;
-          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0264;
-          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.0462;
-          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.0740;
-          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.0924;
-          else                                      Aeff=0.1484;
+	  if(fabs(eta)<1.0)                         Aeff=0.1210;
+          else if(fabs(eta)>1.0 && fabs(eta)<1.479) Aeff=0.1107;
+          else if(fabs(eta)>1.479 && fabs(eta)<2.0) Aeff=0.0699;
+          else if(fabs(eta)>2.0 && fabs(eta)<2.2)   Aeff=0.1056;
+          else if(fabs(eta)>2.2 && fabs(eta)<2.3)   Aeff=0.1457;
+          else if(fabs(eta)>2.3 && fabs(eta)<2.4)   Aeff=0.1719;
+          else                                      Aeff=0.1998;
 	}
       }
       return Aeff;
-    }
-
+  }
 
 //   double relIso(llvvLepton lep, double rho){
 //      if(abs(lep.id)==11){
