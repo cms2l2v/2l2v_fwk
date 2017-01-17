@@ -380,13 +380,13 @@ namespace patUtils
     double eta=photon.superCluster()->eta();
 
     float chIso = photon.chargedHadronIso(); 
-    float chArea = utils::cmssw::getEffectiveArea(22,eta,3,"chIso"); 
+    float chArea = utils::cmssw::getEffectiveArea(22,eta,"chIso"); 
 
     float nhIso = photon.neutralHadronIso();
-    float nhArea = utils::cmssw::getEffectiveArea(22,eta,3,"nhIso");
+    float nhArea = utils::cmssw::getEffectiveArea(22,eta,"nhIso");
 
     float gIso = photon.photonIso();
-    float gArea = utils::cmssw::getEffectiveArea(22,eta,3,"gIso");
+    float gArea = utils::cmssw::getEffectiveArea(22,eta,"gIso");
 
     bool barrel = (fabs(eta) <= 1.479);
     bool endcap = (!barrel && fabs(eta) < 2.5);
@@ -491,7 +491,7 @@ namespace patUtils
 	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / lep.el.pt();
       }
       else {
-	float effArea = utils::cmssw::getEffectiveArea(11,lep.el.superCluster()->eta(),3);
+	float effArea = utils::cmssw::getEffectiveArea(11,lep.el.superCluster()->eta());
 	relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / lep.el.pt();
       }
       
@@ -521,7 +521,7 @@ namespace patUtils
 	    relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / el.pt();
 	  }
 	  else {
-	    float effArea = utils::cmssw::getEffectiveArea(11,el.superCluster()->eta(),3);
+	    float effArea = utils::cmssw::getEffectiveArea(11,el.superCluster()->eta());
 	    relIso  = (chIso + TMath::Max(0.,nhIso+gIso-rho*effArea)) / el.pt();
 	  }
 	  
@@ -646,11 +646,11 @@ namespace patUtils
        case CutVersion::Moriond17Cut :
            switch(IsoLevel){
               case llvvMuonIso::Loose : 
-                 if( relIso < 0.25 && trkrelIso < 0.1) return true;
+                 if( relIso < 0.25 ) return true;
                  break;
                	 
               case llvvMuonIso::Tight :
-                if( relIso < 0.15 && trkrelIso < 0.05) return true;
+                if( relIso < 0.15 ) return true;
                 break;
              
               default:

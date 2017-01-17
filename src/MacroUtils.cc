@@ -296,7 +296,7 @@ namespace utils
     
 
     //
-    Float_t getEffectiveArea(int id,float eta,int cone,TString isoSum)
+    Float_t getEffectiveArea(int id,float eta,TString isoSum)
     {
       Float_t Aeff(1.0);
 
