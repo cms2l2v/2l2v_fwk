@@ -7,11 +7,11 @@ cmsenv
 wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_fwk/master/TAGS.txt | sh
 ```
 
-# Installation for 80X (2016)
+# Installation for 80X (2017) => was 8_0_14 (2016)
 ```bash 
 export SCRAM_ARCH=slc6_amd64_gcc530
-cmsrel CMSSW_8_0_14
-cd CMSSW_8_0_14/src/
+cmsrel CMSSW_8_0_20
+cd CMSSW_8_0_20/src/
 cmsenv
 
 # The following fail for the moment:
