@@ -334,6 +334,13 @@ namespace patUtils
                   fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 &&
                   mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
               break;
+
+// reference for tkHighPT Id for Muon
+//https://indico.cern.ch/event/601852/contributions/2438577/attachments/1398101/2132341/Yanchu_20170118.pdf
+//https://github.com/cms-analysis/MuonAnalysis-TagAndProbe/blob/80X/python/common_variables_cff.py#L157
+            case llvvMuonId::tkHighPT :
+              if(mu.isTrackerMuon() && mu.track().isNonnull() && mu.numberOfMatchedStations() > 1 && (mu.muonBestTrack()->ptError()/mu.muonBestTrack()->pt()) < 0.3 && fabs(mu.muonBestTrack()->dxy(vtx.position()))<0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement()>5) return true;
+              break;
               
             case llvvMuonId::StdLoose :
               if(mu.isLooseMuon()) return true;

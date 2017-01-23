@@ -1076,7 +1076,7 @@ int main(int argc, char* argv[])
          LorentzVector muDiff(0,0,0,0);
          LorentzVector elDiff(0,0,0,0);
          for(size_t ilep=0; ilep<leptons.size(); ilep++){
-             bool passKin(true),passId(true),passIso(true);
+             bool passKin(true),passId(true),passIso(true),passIdTight(true);
              bool passLooseLepton(true), passSoftMuon(true), passSoftElectron(true), passVetoElectron(true);
              int lid=leptons[ilep].pdgId();
 
@@ -1086,7 +1086,8 @@ int main(int argc, char* argv[])
 
              //Cut based identification
              if(is2016MC || is2016data){
-                 passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::ICHEP16Cut) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight, patUtils::CutVersion::ICHEP16Cut);
+                 passIdTight = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::ICHEP16Cut) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Tight, patUtils::CutVersion::ICHEP16Cut);
+                 passId = lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Tight, patUtils::CutVersion::ICHEP16Cut) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::tkHighPT, patUtils::CutVersion::ICHEP16Cut);
                  passLooseLepton &= lid==11?patUtils::passId(leptons[ilep].el, vtx[0], patUtils::llvvElecId::Loose, patUtils::CutVersion::ICHEP16Cut) : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Loose, patUtils::CutVersion::ICHEP16Cut);
                  passSoftMuon &= lid==11? false : patUtils::passId(leptons[ilep].mu, vtx[0], patUtils::llvvMuonId::Soft, patUtils::CutVersion::ICHEP16Cut);
 
