@@ -372,7 +372,19 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "wdecays",     ";W decay channel",5,0,5) );
   mon.addHistogram( new TH1F( "zdecays",     ";Z decay channel",6,0,6) );
 
-  mon.addHistogram( new TH1F( "metFilter_eventflow",     ";metEventflow",20,0,20) );
+  //  mon.addHistogram( new TH1F( "metFilter_eventflow",     ";metEventflow",20,0,20) );
+  TH1F *hm=(TH1F*) mon.addHistogram( new TH1F( "metFilter_eventflow",     ";metEventflow",20,0,20) ); 
+  hm->GetXaxis()->SetBinLabel(1,"raw"); 
+  hm->GetXaxis()->SetBinLabel(2,"globalTightHalo2016Filter"); 
+  hm->GetXaxis()->SetBinLabel(3,"goodVertices"); 
+  hm->GetXaxis()->SetBinLabel(4,"eeBadScFilter"); 
+  hm->GetXaxis()->SetBinLabel(5,"EcalDeadCellTriggerPrimitiveFilter"); 
+  hm->GetXaxis()->SetBinLabel(6,"HBHENoiseFilter"); 
+  hm->GetXaxis()->SetBinLabel(7,"HBHENoiseIsoFilter"); 
+  hm->GetXaxis()->SetBinLabel(8,"BadPFMuonFilter"); 
+  hm->GetXaxis()->SetBinLabel(9,"BadChargedCandidateFilte"); 
+  hm->GetXaxis()->SetBinLabel(10,"badMuonHIPFilter"); 
+  hm->GetXaxis()->SetBinLabel(11,"duplicateMuonHIPFilter"); 
 
   //event selection
   TH1F *h=(TH1F*) mon.addHistogram( new TH1F ("eventflow", ";;Events", 10,0,10) );
@@ -926,9 +938,9 @@ int main(int argc, char* argv[])
 
 
           //ONLY RUN ON THE EVENTS THAT PASS OUR TRIGGERS
-           if(!passTrigger && !photonTriggerStudy)continue;        
+	  if(!passTrigger && !photonTriggerStudy)continue;        
          //##############################################   EVENT PASSED THE TRIGGER   ######################################
-
+	  if (metFilterValue==10 || metFilterValue==11) { metFilterValue=0; }
           if( metFilterValue!=0 ) continue;	 //Note this must also be applied on MC
 
 	  // Apply Bad Charged Hadron and Bad Muon Filters from MiniAOD (for Run II 2016 only )
