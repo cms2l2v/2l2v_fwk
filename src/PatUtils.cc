@@ -335,9 +335,6 @@ namespace patUtils
                   mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)return true;
               break;
 
-// reference for tkHighPT Id for Muon
-//https://indico.cern.ch/event/601852/contributions/2438577/attachments/1398101/2132341/Yanchu_20170118.pdf
-//https://github.com/cms-analysis/MuonAnalysis-TagAndProbe/blob/80X/python/common_variables_cff.py#L157
             case llvvMuonId::tkHighPT :
               if(mu.isTrackerMuon() && mu.track().isNonnull() && mu.numberOfMatchedStations() > 1 && (mu.muonBestTrack()->ptError()/mu.muonBestTrack()->pt()) < 0.3 && fabs(mu.muonBestTrack()->dxy(vtx.position()))<0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement()>5) return true;
               break;
@@ -1176,7 +1173,100 @@ void MetFilter::FillBadEvents(std::string path){
 
   bool MetFilter::passMetFilter(const fwlite::Event& ev){
     return passMetFilterInt(ev)==0;
+  }
+
+
+  bool outInOnly(const reco::Muon &mu)  {
+      const reco::Track &tk = *mu.innerTrack();
+      return tk.algoMask().count() == 1 && tk.isAlgoInMask(reco::Track::muonSeededStepOutIn);
+  }
+  bool preselection(const reco::Muon &mu, bool selectClones_)  { 
+      return mu.isGlobalMuon() && (!selectClones_ || outInOnly(mu));
+  }
+  bool tighterId(const reco::Muon &mu)  { 
+      return muon::isMediumMuon(mu) && mu.numberOfMatchedStations() >= 2; 
+  }
+  bool tightGlobal(const reco::Muon &mu)  {
+      return (mu.globalTrack()->hitPattern().muonStationsWithValidHits() >= 3 && mu.globalTrack()->normalizedChi2() <= 20);
+  }
+  bool safeId(const reco::Muon &mu)  { 
+      if (mu.muonBestTrack()->ptError() > 0.2 * mu.muonBestTrack()->pt()) { return false; }
+      return mu.numberOfMatchedStations() >= 1 || tightGlobal(mu);
+  }
+  bool partnerId(const reco::Muon &mu)  {
+            return mu.pt() >= 10 && mu.numberOfMatchedStations() >= 1;
+  }
+
+
+bool MetFilter::BadGlobalMuonTaggerFilter(const fwlite::Event& ev,std::unique_ptr<std::vector<reco::Muon*>> &out1, bool selectClones_){
+
+        reco::VertexCollection vtx;
+        fwlite::Handle< reco::VertexCollection > vtxHandle; 
+        vtxHandle.getByLabel(ev, "offlineSlimmedPrimaryVertices");
+        if(vtxHandle.isValid()){ vtx = *vtxHandle;}	
+
+	pat::MuonCollection muons; 
+	fwlite::Handle< pat::MuonCollection > muonsHandle;
+        muonsHandle.getByLabel(ev, "slimmedMuons");
+	if(muonsHandle.isValid()){ muons = *muonsHandle;}
+
+	std::vector<int> goodMuon;
+ 	const auto &PV = vtx.front().position();
+	std::unique_ptr<std::vector<reco::Muon*>> out(new std::vector<reco::Muon*>());
+        out = (std::move(out1));
+
+       double ptCut_=20;
+       for ( unsigned i=0; i < muons.size(); ++i ) { // loop over all muons
+       const reco::Muon &mu = muons[i];
+
+        if (!mu.isPFMuon() || mu.innerTrack().isNull()) {
+            goodMuon.push_back(-1); // bad but we don't care
+            continue;
+        } 
+        if (preselection(mu,selectClones_)) {
+            float dxypv = std::abs(mu.innerTrack()->dxy(PV));
+            float dzpv  = std::abs(mu.innerTrack()->dz(PV));
+            if (tighterId(mu)) {
+                bool ipLoose = ((dxypv < 0.5 && dzpv < 2.0) || mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() >= 2);
+                goodMuon.push_back(ipLoose || (!selectClones_ && tightGlobal(mu)));
+            } else if (safeId(mu)) {
+                bool ipTight = (dxypv < 0.2 && dzpv < 0.5);
+                goodMuon.push_back(ipTight);
+           } else {
+                goodMuon.push_back(0);
+            }
+        } else {
+            goodMuon.push_back(3); // maybe good, maybe bad, but we don't care
+        }
+    }
+
+    bool found = false;
+    bool verbose_ = false;
+    for (unsigned int i = 0, n = muons.size(); i < n; ++i) {
+        if (muons[i].pt() < ptCut_ || goodMuon[i] != 0) continue;
+        if (verbose_) printf("potentially bad muon %d of pt %.1f eta %+.3f phi %+.3f\n", int(i+1), muons[i].pt(), muons[i].eta(), muons[i].phi());
+        bool bad = true;
+        if (selectClones_) {
+            bad = false; // unless proven otherwise
+            unsigned int n1 = muons[i].numberOfMatches(reco::Muon::SegmentArbitration);
+            for (unsigned int j = 0; j < n; ++j) {
+                if (j == i || goodMuon[j] <= 0 || !partnerId(muons[j])) continue;
+                unsigned int n2 = muons[j].numberOfMatches(reco::Muon::SegmentArbitration);
+                if (deltaR2(muons[i],muons[j]) < 0.16 || (n1 > 0 && n2 > 0 && muon::sharedSegments(muons[i],muons[j]) >= 0.5*std::min(n1,n2))) {
+                    if (verbose_) printf("     tagged as clone of muon %d of pt %.1f eta %+.3f phi %+.3f\n", int(j+1), muons[j].pt(), muons[j].eta(), muons[j].phi());
+                    bad = true;
+                    break;
+                } 
+            }
+        }
+        if (bad) {
+            found = true;
+            out->push_back(std::addressof(muons[i]));
+        }
 }
+	return found;
+}
+
 
 std::pair<double, double> scaleVariation(const fwlite::Event& ev){
 	//std::cout << " " << std::endl;
