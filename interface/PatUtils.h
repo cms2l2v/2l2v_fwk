@@ -32,6 +32,8 @@
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
+#include "DataFormats/Common/interface/View.h"
+#include "DataFormats/Common/interface/PtrVector.h"
 
 //need for the good lumi filter
 #include "DataFormats/Provenance/interface/LuminosityBlockID.h"
@@ -99,6 +101,15 @@ namespace patUtils
    double pdfVariation(const fwlite::Event& ev);
 
    double getHTScaleFactor(TString dtag, double lheHt);                                                                                               
+  bool outInOnly(const reco::Muon &mu)  ;
+  bool preselection(const reco::Muon &mu,bool selectClones_)  ; 
+  bool tighterId(const reco::Muon &mu)  ; 
+  bool tightGlobal(const reco::Muon &mu)  ;
+  bool safeId(const reco::Muon &mu)  ;
+  bool partnerId(const reco::Muon &mu)  ;
+
+
+
 
    class MetFilter{
     private :
@@ -128,9 +139,9 @@ namespace patUtils
      int  passMetFilterInt(const fwlite::Event& ev);
      int  passMetFilterInt(const fwlite::Event& ev, bool is2016); 
      bool passMetFilter(const fwlite::Event& ev);
+     bool BadGlobalMuonTaggerFilter(const fwlite::Event& ev,std::unique_ptr<edm::PtrVector<reco::Muon>> &out, bool selectClones=false);
+     bool BadGlobalMuonTaggerFilter(const fwlite::Event& ev,std::unique_ptr<std::vector<reco::Muon*>> &out, bool selectClones=false);
    };
-
-
 
 }
 
