@@ -116,6 +116,44 @@ namespace utils
          }
      }
      
+//___________________________________Slew Rate Effect in Electron _________________________________
+
+// This effect in energy of electron should considered on the top of scale and smearing in 2016 dataset.
+// It is applied in Barrel Only.
+// https://twiki.cern.ch/twiki/bin/view/CMS/EGMSmearer#ECAL_scale_and_resolution_correc
+
+  void SlewRateCorrection(const fwlite::Event& ev, pat::Electron& ele){
+
+       fwlite::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > _ebrechits; 
+       _ebrechits.getByLabel(ev,"reducedEgamma","reducedEBRecHits");
+
+        if(fabs(ele.superCluster()->eta())<1.479){
+        DetId detid = ele.superCluster()->seed()->seed();
+        const EcalRecHit * rh = NULL;
+        double Ecorr=1;
+        if (detid.subdetId() == EcalBarrel) {
+           auto rh_i =  _ebrechits->find(detid);
+                      if( rh_i != _ebrechits->end()) rh =  &(*rh_i);
+                      else rh = NULL;
+              }
+      if(rh==NULL) Ecorr=1;
+      else{
+        if(rh->energy() > 200 && rh->energy()<300)  Ecorr=1.0199;
+        else if(rh->energy()>300 && rh->energy()<400) Ecorr=  1.052;
+        else if(rh->energy()>400 && rh->energy()<500) Ecorr = 1.015;
+      } 
+       TLorentzVector p4(ele.px(),ele.py(),ele.pz(),ele.energy());
+       ele.setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E()*Ecorr ) );
+        }
+
+  }
+//______________________________________________________________________________________________________
+
+
+
+
+
+
 //    //
 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
 //    {

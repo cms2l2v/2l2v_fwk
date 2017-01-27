@@ -643,11 +643,11 @@ int main(int argc, char* argv[])
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
   }
   if(is2016MC || is2016data){
-  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele"; 
+  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele"; 
   	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_pho"; 
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, PhoEnergyCorrectionFile);
   	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns_Moriond2017.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
   	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EleEnergyCorrectionFile);
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
   }
@@ -1147,7 +1147,8 @@ int main(int argc, char* argv[])
 
              //apply electron corrections             
              if(abs(lid)==11  && passIso && passId){
-                elDiff -= leptons[ilep].p4();                   
+                elDiff -= leptons[ilep].p4();
+               	if(!isMC){ utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el); }
                 if (isMC || is2015data || is2016data){
                 	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
                 	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
