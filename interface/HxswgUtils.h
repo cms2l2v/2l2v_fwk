@@ -15,6 +15,8 @@ namespace Hxswg{
 
   namespace utils{
 
+    bool Equal(double x, double y, double epsilon){ double diff = std::abs(x-y); if(diff < epsilon){ return true;} else { return false; }}
+
     TGraph* multiplyGraph(TGraph* A, TGraph* B){   double x, y;   for(int i=0;i<A->GetN();i++){A->GetPoint(i, x, y); A->SetPoint(i, x, y*B->Eval(x));}    return A;   }
     TGraph* divideGraph  (TGraph* A, TGraph* B){   double x, y;   for(int i=0;i<A->GetN();i++){A->GetPoint(i, x, y); A->SetPoint(i, x, y/B->Eval(x));}    return A;   }    
     TGraph* makeGraphFromColXandY(std::string dataFile, int colX, int colY);
@@ -44,6 +46,8 @@ namespace Hxswg{
     TGraph* getXSec(std::string Name );
 
     TGraph* getVBFoverGGF(std::string Name);
+
+    TGraph *getXSecMELA( float cprime);
      
   }  
 }
