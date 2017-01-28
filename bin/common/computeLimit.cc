@@ -9,7 +9,7 @@
 #include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/HxswgUtils.h"
-#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+#include "UserCode/llvv_fwk/interface/th1fmorph.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -2594,7 +2594,7 @@ int main(int argc, char* argv[])
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                   TH1* histo = unc->second;
                   if(!histo)continue;
-                  double xbins[] = {150, 300, 450, 600, 1250};  int nbins=sizeof(xbins)/sizeof(double);
+                  double xbins[] = {150, 300, 450, 600, 850, 1100, 1600, 2100, 3000};  int nbins=sizeof(xbins)/sizeof(double);
                   unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
                   utils::root::fixExtremities(unc->second, true, true);
                  }
