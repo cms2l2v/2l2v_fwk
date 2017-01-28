@@ -38,6 +38,17 @@ find UserCode/llvv_fwk/ -type f -name '*.cc' -exec sed -i -e 's/HiggsAnalysis\/C
 scramv1 b -j 16
 ```
 
+#Step to use MELA
+cd CMSS_X_Y_Z/src
+git clone https://github.com/cms-analysis/HiggsAnalysis-ZZMatrixElement.git ZZMatrixElement
+cd ZZMatrixElement
+. setup.sh -j 12
+
+Now, ONLY after the code has finished to compile insert inside UserCode/llvv_fwk/BuildFile.xml
+<use name="ZZMatrixElement/MELA"/>
+
+scram b -j 12
+
 # An important note about PR in 80X (2016)
 Please before doing your PR, be sure to:
  - test your changes

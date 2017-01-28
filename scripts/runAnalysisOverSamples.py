@@ -228,7 +228,7 @@ doCacheInputs                      = False
 
 if("IIHE" in localTier):
     print "kill big-submission and sleep"
-    doCacheInputs = True
+    doCacheInputs =True  #False
     LaunchOnCondor.KillProcess("big-submission")
     LaunchOnCondor.KillProcess("sleep")
 
@@ -265,6 +265,7 @@ for procBlock in procList :
         isdatadriven=getByLabelFromKeyword(proc,opt.onlykeyword,'isdatadriven',False)       
         mctruthmode=getByLabelFromKeyword(proc,opt.onlykeyword,'mctruthmode',0)
         procSuffix=getByLabelFromKeyword(proc,opt.onlykeyword,'suffix' ,"")
+        resonance=getByLabelFromKeyword(proc,opt.onlykeyword,'resonance',1);
         data = proc['data']
 
         for procData in data : 
@@ -310,6 +311,7 @@ for procBlock in procList :
             	   sedcmd += 's%@outfile%' + prodfilepath+'.root%;'
             	   sedcmd += 's%@isMC%' + str(not (isdata or isdatadriven) )+'%;'
             	   sedcmd += 's%@mctruthmode%'+str(mctruthmode)+'%;'
+                   sedcmd += 's%@resonance%'+str(resonance)+'%;'
             	   sedcmd += 's%@xsec%'+str(xsec)+'%;'
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                    sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
