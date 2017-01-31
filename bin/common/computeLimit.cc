@@ -630,6 +630,8 @@ int main(int argc, char* argv[])
 
   allInfo.HandleEmptyBins(histo.Data()); //needed for negative bin content --> May happens due to NLO interference for instance
 
+  if(blindData)allInfo.blind();
+	
   //print event yields from the mt shapes
   pFile = fopen("Yields.tex","w");  FILE* pFileInc = fopen("YieldsInc.tex","w");
   allInfo.getYieldsFromShape(pFile, selCh, histo.Data(), pFileInc);
