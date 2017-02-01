@@ -413,6 +413,7 @@
       "data":[
         { "dtag":"MC13TeV_VBFtoH3000toZZto2L2Nu_ContinuumOnly_MELA_powheg_2016"     ,  "xsec":1.0, "split":20, "br":[1.0]    , "dset":["/VBF_HToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"]}
       ]
+    }
   ]
 }
 
