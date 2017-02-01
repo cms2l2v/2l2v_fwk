@@ -630,6 +630,8 @@ int main(int argc, char* argv[])
 
   allInfo.HandleEmptyBins(histo.Data()); //needed for negative bin content --> May happens due to NLO interference for instance
 
+  if(blindData)allInfo.blind();
+	
   //print event yields from the mt shapes
   pFile = fopen("Yields.tex","w");  FILE* pFileInc = fopen("YieldsInc.tex","w");
   allInfo.getYieldsFromShape(pFile, selCh, histo.Data(), pFileInc);
@@ -1781,6 +1783,13 @@ int main(int argc, char* argv[])
 
                  //if(it->second.shortName.find("ww")==0){shapeInfo.uncScale["XSec_sys_WW"] = integral*(systpostfix.Contains('8')?0.097:0.097);}
                  //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["XSec_sys_WZ"] = integral*(systpostfix.Contains('8')?0.056:0.056);}
+		 
+                    if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.063;}
+                    if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.054;}
+                    if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("vbf" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.40;}
+                    if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.095;}
+                    if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.051;}
+                    if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("vbf" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.40;}
                  
                  //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["_th_wzmissingewk"] = integral*0.03;} //now the uncertainty is correctly implemented and depends on m_wz.
               }
@@ -2594,7 +2603,7 @@ int main(int argc, char* argv[])
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                   TH1* histo = unc->second;
                   if(!histo)continue;
-                  double xbins[] = {150, 300, 450, 600, 1250};  int nbins=sizeof(xbins)/sizeof(double);
+                  double xbins[] = {150, 300, 450, 600, 850, 1100, 1600, 2100, 3000};  int nbins=sizeof(xbins)/sizeof(double);
                   unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
                   utils::root::fixExtremities(unc->second, true, true);
                  }

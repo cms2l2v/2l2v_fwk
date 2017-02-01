@@ -153,7 +153,8 @@ def getFileList(procData,DefaultNFilesPerJob):
          NFilesPerJob = max(1,len(list)/split)
       else:
          NFilesPerJob = DefaultNFilesPerJob
-         if((len(list)/NFilesPerJob)>100):NFilesPerJob=len(list)/100;  #make sure the number of jobs isn't too big
+         if(hostname.find("iihe.ac.be")!=-1): NFilesPerJob = DefaultNFilesPerJob #at iihe we don't want to have more than the defaultNFilesPerJob
+         elif((len(list)/NFilesPerJob)>100):NFilesPerJob=len(list)/100  #make sure the number of jobs isn't too big
 
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
@@ -204,7 +205,8 @@ parser.add_option('-c', '--cfg'        ,    dest='cfg_file'           , help='ba
 parser.add_option('-r', "--report"     ,    dest='report'             , help='If the report should be sent via email'    , default=False, action="store_true")
 parser.add_option('-D', "--db"         ,    dest='db'                 , help='DB to get file list for a given dset'      , default=DatasetFileDB)
 parser.add_option('-F', "--resubmit"   ,    dest='resubmit'           , help='resubmit jobs that failed'                 , default=False, action="store_true")
-parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)'    , default=8)
+if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be")!=-1): parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)'    , default=6)
+else: parser.add_option('-S', "--NFile"      ,    dest='NFile'              , help='default #Files per job (for autosplit)'    , default=8)
 parser.add_option('-f', "--localnfiles",    dest='localnfiles'        , help='number of parallel jobs to run locally'    , default=8)
 parser.add_option('-l', "--lfn"        ,    dest='crablfn'            , help='user defined directory for CRAB runs'      , default='')
 
@@ -226,7 +228,7 @@ doCacheInputs                      = False
 
 if("IIHE" in localTier):
     print "kill big-submission and sleep"
-    doCacheInputs = True
+    doCacheInputs =True  #False
     LaunchOnCondor.KillProcess("big-submission")
     LaunchOnCondor.KillProcess("sleep")
 
@@ -263,6 +265,7 @@ for procBlock in procList :
         isdatadriven=getByLabelFromKeyword(proc,opt.onlykeyword,'isdatadriven',False)       
         mctruthmode=getByLabelFromKeyword(proc,opt.onlykeyword,'mctruthmode',0)
         procSuffix=getByLabelFromKeyword(proc,opt.onlykeyword,'suffix' ,"")
+        resonance=getByLabelFromKeyword(proc,opt.onlykeyword,'resonance',1);
         data = proc['data']
 
         for procData in data : 
@@ -308,6 +311,7 @@ for procBlock in procList :
             	   sedcmd += 's%@outfile%' + prodfilepath+'.root%;'
             	   sedcmd += 's%@isMC%' + str(not (isdata or isdatadriven) )+'%;'
             	   sedcmd += 's%@mctruthmode%'+str(mctruthmode)+'%;'
+                   sedcmd += 's%@resonance%'+str(resonance)+'%;'
             	   sedcmd += 's%@xsec%'+str(xsec)+'%;'
                    sedcmd += 's%@cprime%'+str(getByLabel(procData,'cprime',-1))+'%;'
                    sedcmd += 's%@brnew%' +str(getByLabel(procData,'brnew' ,-1))+'%;'
