@@ -102,6 +102,7 @@ int main(int argc, char* argv[])
   TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
   TString outUrl = runProcess.getParameter<std::string>("outfile");
+  TString ReHLT_inMC= urls.at(0);
 
   //good lumi MASK
   lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
@@ -136,6 +137,7 @@ int main(int argc, char* argv[])
   bool is2016MC = (isMC && dtag.Contains("2016")); 
   bool isMC_signal  = isMC && ( (string(dtag.Data()).find("GG" )  != string::npos) ||(string(dtag.Data()).find("VBF")  != string::npos )||dtag.Contains("RsGrav")||dtag.Contains("BulkGrav") || dtag.Contains("Radion") );
   bool isMELA = isMC_signal && ( dtag.Contains("MELA") );
+  bool isReHLT = isMC && ( ReHLT_inMC.Contains("reHLT") );
 
   //MELA reweighting procedure
   if(isMELA) printf("MELA reweighting activated \n");
@@ -687,11 +689,11 @@ int main(int argc, char* argv[])
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
   }
   if(is2016MC || is2016data){
-  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele"; 
+  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele"; 
   	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_pho"; 
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, PhoEnergyCorrectionFile);
   	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
+  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns_Moriond2017.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC 
   	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EleEnergyCorrectionFile);
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
   }
@@ -911,8 +913,11 @@ int main(int argc, char* argv[])
 
 
           //apply trigger and require compatibilitiy of the event with the PD
-          edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+          edm::TriggerResultsByName tr(nullptr,nullptr);
+          if(isReHLT) { tr = ev.triggerResultsByName("HLT2");}
+          else { tr = ev.triggerResultsByName("HLT");}
           //if(!tr.isValid())return false;
+
           if(!tr.isValid() && (!isMC_signal && is2016MC)  )return false;
 
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
@@ -1217,7 +1222,8 @@ int main(int argc, char* argv[])
 
              //apply electron corrections             
              if(abs(lid)==11  && passIso && passId){
-                elDiff -= leptons[ilep].p4();                   
+                elDiff -= leptons[ilep].p4();
+               	if(!isMC){ utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el); }
                 if (isMC || is2015data || is2016data){
                 	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID()); 
                 	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok

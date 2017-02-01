@@ -637,7 +637,7 @@ namespace patUtils
                  break;
                	 
               case llvvMuonIso::Tight :
-                if( relIso < 0.15 && trkrelIso < 0.1) return true;
+                if( /*relIso < 0.15 &&*/ trkrelIso < 0.05) return true;
                 break;
              
               default:
