@@ -917,8 +917,8 @@ int main(int argc, char* argv[])
           if(isReHLT) { tr = ev.triggerResultsByName("HLT2");}
           else { tr = ev.triggerResultsByName("HLT");}
 
-          //if(!tr.isValid())return false;
-          if(!tr.isValid() && (!isMC_signal && is2016MC)  )return false;
+          if(!tr.isValid())return false;
+	  //          if(!tr.isValid() && (!isMC_signal && is2016MC)  )return false;
 
           float triggerPrescale(1.0),triggerThreshold(0), triggerThresholdHigh(99999);
           char photonTriggerTreshName[255];
