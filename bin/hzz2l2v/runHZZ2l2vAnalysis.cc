@@ -102,6 +102,7 @@ int main(int argc, char* argv[])
   TString suffix=runProcess.getParameter<std::string>("suffix");
   std::vector<std::string> urls=runProcess.getUntrackedParameter<std::vector<std::string> >("input");
   TString outUrl = runProcess.getParameter<std::string>("outfile");
+  TString ReHLT_inMC= urls.at(0);
 
   //good lumi MASK
   lumiUtils::GoodLumiFilter goodLumiFilter(runProcess.getUntrackedParameter<std::vector<edm::LuminosityBlockRange> >("lumisToProcess", std::vector<edm::LuminosityBlockRange>()));
@@ -136,6 +137,7 @@ int main(int argc, char* argv[])
   bool is2016MC = (isMC && dtag.Contains("2016")); 
   bool isMC_signal  = isMC && ( (string(dtag.Data()).find("GG" )  != string::npos) ||(string(dtag.Data()).find("VBF")  != string::npos )||dtag.Contains("RsGrav")||dtag.Contains("BulkGrav") || dtag.Contains("Radion") );
   bool isMELA = isMC_signal && ( dtag.Contains("MELA") );
+  bool isReHLT = isMC && ( ReHLT_inMC.Contains("reHLT") );
 
   //MELA reweighting procedure
   if(isMELA) printf("MELA reweighting activated \n");
@@ -911,7 +913,10 @@ int main(int argc, char* argv[])
 
 
           //apply trigger and require compatibilitiy of the event with the PD
-          edm::TriggerResultsByName tr = ev.triggerResultsByName("HLT");
+          edm::TriggerResultsByName tr(nullptr,nullptr);
+          if(isReHLT) { tr = ev.triggerResultsByName("HLT2");}
+          else { tr = ev.triggerResultsByName("HLT");}
+
           //if(!tr.isValid())return false;
           if(!tr.isValid() && (!isMC_signal && is2016MC)  )return false;
 
