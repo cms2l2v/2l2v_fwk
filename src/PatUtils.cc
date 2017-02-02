@@ -616,10 +616,10 @@ namespace patUtils
     float  gIso    = mu.pfIsolationR04().sumPhotonEt;
     float  puchIso = mu.pfIsolationR04().sumPUPt;
     float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
-    float  chIso03   = mu.pfIsolationR04().sumChargedHadronPt;
-    float  nhIso03   = mu.pfIsolationR04().sumNeutralHadronEt;
-    float  gIso03    = mu.pfIsolationR04().sumPhotonEt;
-    float  puchIso03 = mu.pfIsolationR04().sumPUPt;
+    float  chIso03   = mu.pfIsolationR03().sumChargedHadronPt;
+    float  nhIso03   = mu.pfIsolationR03().sumNeutralHadronEt;
+    float  gIso03    = mu.pfIsolationR03().sumPhotonEt;
+    float  puchIso03 = mu.pfIsolationR03().sumPUPt;
     float  relIso03  = (chIso03 + TMath::Max(0.,nhIso03+gIso03-0.5*puchIso03)) / mu.pt();
     float  trkrelIso = mu.isolationR03().sumPt/mu.pt(); // no PU correction
     
