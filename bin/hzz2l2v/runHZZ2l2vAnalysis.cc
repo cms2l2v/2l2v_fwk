@@ -117,6 +117,7 @@ int main(int argc, char* argv[])
       if(dtag.Contains("SingleElectron"))filterOnlyE=true;      
   }
   bool isV0JetsMC(false);//isMC && (dtag.Contains("DYJetsToLL_50toInf") || dtag.Contains("_WJets")));  #FIXME should be reactivated as soon as we have exclusive jet samples
+  bool isOldMC(isMC && dtag.Contains("old"));
   bool isWGmc(isMC && dtag.Contains("WG"));
   bool isZGmc(isMC && dtag.Contains("ZG"));
   bool isMC_GG  = isMC && ( string(dtag.Data()).find("GG" )  != string::npos);
@@ -937,15 +938,16 @@ int main(int argc, char* argv[])
           if (is2016data || is2016MC) {
                                     
 	    //	    if (!is2016MC) { // Trigger not applied in MC
+	    if (!isOldMC) {
 
-	    mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*" , "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");        
-	    muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu22_v*","HLT_IsoTkMu22_v*", "HLT_IsoMu24_v*", "HLT_IsoTkMu24_v*");
-	    eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");        
-	    eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*","HLT_Ele27_WPTight_Gsf_v*") ;
-	    emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*","HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*" , "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*") || utils::passTriggerPatterns(tr,"HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*","HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*");
-	    photonTrigger      = ( patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh) ||
+	      mumuTrigger        = utils::passTriggerPatterns(tr, "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v*", "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*" , "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*");        
+	      muTrigger          = utils::passTriggerPatterns(tr, "HLT_IsoMu22_v*","HLT_IsoTkMu22_v*", "HLT_IsoMu24_v*", "HLT_IsoTkMu24_v*");
+	      eeTrigger          = utils::passTriggerPatterns(tr, "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*");        
+	      eTrigger           = utils::passTriggerPatterns(tr, "HLT_Ele27_eta2p1_WPLoose_Gsf_v*","HLT_Ele27_WPTight_Gsf_v*") ;
+	      emuTrigger         = utils::passTriggerPatterns(tr, "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*","HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*","HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*" , "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*") || utils::passTriggerPatterns(tr,"HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*","HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*");
+	      photonTrigger      = ( patUtils::passPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh) ||
 				     patUtils::passVBFPhotonTrigger(ev, triggerThreshold, triggerPrescale, triggerThresholdHigh) );                                                     
-	    //}
+	    }
                                                                                                                
 	    metFilterValue = metFilter.passMetFilterInt( ev, is2016data );                                                                                                     
 	    
@@ -1476,9 +1478,11 @@ int main(int argc, char* argv[])
                    if( abs(dilId)==121){  chTags.push_back("ee");   chTags.push_back("ll"); }
                    if( abs(dilId)==169){  chTags.push_back("mumu"); chTags.push_back("ll"); }
                    if( abs(dilId)==143){  chTags.push_back("emu");  }           
-		   //                   if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId,is2016MC).first;  
-		   //                   if(isMC && abs(dilId)==121)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].el.superCluster()->eta(), selLeptons[1].pt(), selLeptons[1].el.superCluster()->eta(), dilId,is2016MC).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
-                   evCat=eventCategoryInst.GetCategory(selJets,boson);            
+		   if (isOldMC) {
+		     if(isMC && abs(dilId)==169)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[1].pt(), selLeptons[1].eta(), dilId,is2016MC).first;  
+		     if(isMC && abs(dilId)==121)weight *= lepEff.getTriggerEfficiencySF(selLeptons[0].pt(), selLeptons[0].el.superCluster()->eta(), selLeptons[1].pt(), selLeptons[1].el.superCluster()->eta(), dilId,is2016MC).first;  //commented for ee as inefficiencies should be covered by the singleMu/El triggers
+                   }
+		   evCat=eventCategoryInst.GetCategory(selJets,boson);            
                }else if(selPhotons.size()==1 && photonTrigger){
                    dilId=22;
                    if(L==0)                         {chTags.push_back("gamma");
