@@ -338,7 +338,12 @@ namespace patUtils
             case llvvMuonId::tkHighPT :
               if(mu.isTrackerMuon() && mu.track().isNonnull() && mu.numberOfMatchedStations() > 1 && (mu.muonBestTrack()->ptError()/mu.muonBestTrack()->pt()) < 0.3 && fabs(mu.muonBestTrack()->dxy(vtx.position()))<0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement()>5) return true;
               break;
-              
+            case llvvMuonId::TightAndTlkHighPt :
+	      {
+	      bool tightID =  mu.isPFMuon() && mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 10. && mu.globalTrack()->hitPattern().numberOfValidMuonHits() > 0. && mu.numberOfMatchedStations() > 1 && fabs(mu.muonBestTrack()->dxy(vtx.position())) < 0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5; 
+              bool tkHighPt = mu.isTrackerMuon() && mu.track().isNonnull() && mu.numberOfMatchedStations() > 1 && (mu.muonBestTrack()->ptError()/mu.muonBestTrack()->pt()) < 0.3 && fabs(mu.muonBestTrack()->dxy(vtx.position()))<0.2 && fabs(mu.muonBestTrack()->dz(vtx.position())) < 0.5 && mu.innerTrack()->hitPattern().numberOfValidPixelHits() > 0 && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement()>5;
+              if (tightID||(mu.pt()>200&&tkHighPt)) return true;
+              }
             case llvvMuonId::StdLoose :
               if(mu.isLooseMuon()) return true;
               break;
@@ -611,6 +616,11 @@ namespace patUtils
     float  gIso    = mu.pfIsolationR04().sumPhotonEt;
     float  puchIso = mu.pfIsolationR04().sumPUPt;
     float  relIso  = (chIso + TMath::Max(0.,nhIso+gIso-0.5*puchIso)) / mu.pt();
+    float  chIso03   = mu.pfIsolationR03().sumChargedHadronPt;
+    float  nhIso03   = mu.pfIsolationR03().sumNeutralHadronEt;
+    float  gIso03    = mu.pfIsolationR03().sumPhotonEt;
+    float  puchIso03 = mu.pfIsolationR03().sumPUPt;
+    float  relIso03  = (chIso03 + TMath::Max(0.,nhIso03+gIso03-0.5*puchIso03)) / mu.pt();
     float  trkrelIso = mu.isolationR03().sumPt/mu.pt(); // no PU correction
     
     switch(cutVersion){
@@ -656,7 +666,9 @@ namespace patUtils
               case llvvMuonIso::Tight :
                 if( relIso < 0.15 ) return true;
                 break;
-             
+              case llvvMuonIso::H4lWP :
+                if( relIso03 < 0.35 ) return true;
+                break;
               default:
                 printf("FIXME MuonIso llvvMuonIso::%i is unkown\n", IsoLevel);
                 return false;
