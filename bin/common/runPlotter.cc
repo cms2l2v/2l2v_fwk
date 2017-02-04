@@ -1108,8 +1108,8 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        denSystUncH->GetYaxis()->SetTitle("Data/#Sigma Bkg.");
        denSystUncH->GetXaxis()->SetTitle(""); //drop the tile to gain space
        //denSystUncH->GetYaxis()->CenterTitle(true);
-       denSystUncH->SetMinimum(0.4);
-       denSystUncH->SetMaximum(1.6);
+       denSystUncH->SetMinimum(0.0);
+       denSystUncH->SetMaximum(2.0);
        //denSystUncH->SetMinimum(0);
        //denSystUncH->SetMaximum(data->GetBinContent(data->GetMaximumBin())*1.10);
 
@@ -1196,7 +1196,7 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        }
 
       if(data && blind>-1E99){
-	TPave* blinding_box = new TPave(data->GetBinLowEdge(data->FindBin(blind)), 0.4, data->GetXaxis()->GetXmax(), 1.6, 0, "NB" );
+	TPave* blinding_box = new TPave(data->GetBinLowEdge(data->FindBin(blind)), 0.0, data->GetXaxis()->GetXmax(), 2.0, 0, "NB" );
 	blinding_box->SetFillColor(15);         blinding_box->SetFillStyle(3013);         blinding_box->Draw("same F");
 	ObjectToDelete.push_back(blinding_box);
       }
