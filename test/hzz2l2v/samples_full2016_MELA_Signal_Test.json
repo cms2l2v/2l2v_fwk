@@ -1,0 +1,196 @@
+{
+    "proc": [
+        {
+            "data": [
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_SOnly_MELA_powheg_2016",
+                    "split": 20,
+                    "xsec": 1.0
+                }
+            ],
+            "fill": 0,
+            "isdata": false,
+            "isinvisible": false,
+            "issignal": true,
+            "keys": [
+                "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+                "2l2v_datadrivenplot",
+                "2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+            ],
+            "lcolor": 907,
+            "lwidth": 2,
+            "resonance": 600,
+            "spimpose": true,
+            "tag": "ggH(600)_SOnly"
+        },
+        {
+            "data": [
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_BOnly_MELA_powheg_2016",
+                    "split": 20,
+                    "xsec": 1.0
+                }
+            ],
+            "fill": 0,
+            "isdata": false,
+            "isinvisible": false,
+            "issignal": true,
+            "keys": [
+                "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+                "2l2v_datadrivenplot",
+                "2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+            ],
+            "lcolor": 907,
+            "lwidth": 2,
+            "resonance": 600,
+            "spimpose": true,
+            "tag": "ggH(600)_BOnly"
+        },
+        {
+            "data": [
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
+                    "split": 20,
+                    "xsec": 1.0
+                }
+            ],
+            "fill": 0,
+            "isdata": false,
+            "isinvisible": false,
+            "issignal": true,
+            "keys": [
+                "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+                "2l2v_datadrivenplot",
+                "2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+            ],
+            "lcolor": 907,
+            "lwidth": 2,
+            "resonance": 600,
+            "spimpose": true,
+            "tag": "ggH(600)_SandBandInterf"
+        },
+        {
+            "data": [
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_SOnly_MELA_powheg_2016",
+                    "split": 20,
+                    "xsec": 1.0
+                }
+            ],
+            "fill": 0,
+            "isdata": false,
+            "isinvisible": true,
+            "issignal": true,
+            "keys": [
+                "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+                "2l2v_datadrivenplot",
+                "2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+            ],
+            "lcolor": 619,
+            "lwidth": 2,
+            "resonance": 800,
+            "spimpose": true,
+            "tag": "ggH(800)_SOnly"
+        },
+        {
+            "data": [
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_BOnly_MELA_powheg_2016",
+                    "split": 20,
+                    "xsec": 1.0
+                }
+            ],
+            "fill": 0,
+            "isdata": false,
+            "isinvisible": true,
+            "issignal": true,
+            "keys": [
+                "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+                "2l2v_datadrivenplot",
+                "2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+            ],
+            "lcolor": 619,
+            "lwidth": 2,
+            "resonance": 800,
+            "spimpose": true,
+            "tag": "ggH(800)_BOnly"
+        },
+        {
+            "data": [
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
+                    "split": 20,
+                    "xsec": 1.0
+                }
+            ],
+            "fill": 0,
+            "isdata": false,
+            "isinvisible": true,
+            "issignal": true,
+            "keys": [
+                "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+                "2l2v_datadrivenplot",
+                "2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+            ],
+            "lcolor": 619,
+            "lwidth": 2,
+            "resonance": 800,
+            "spimpose": true,
+            "tag": "ggH(800)_SandBandInterf"
+        }
+    ]
+}
