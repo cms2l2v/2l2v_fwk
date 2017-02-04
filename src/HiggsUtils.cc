@@ -738,19 +738,19 @@ namespace higgs{
         std::map< double, std::map<double,double> > cpWeight_MapggH;
 
 	//Filling ContinuumWeights GGH
-        cpWeight_MapggH[100.0][200] = 1;
-        cpWeight_MapggH[100.0][300] = 1;
-        cpWeight_MapggH[100.0][400] = 1;
-        cpWeight_MapggH[100.0][500] = 1;
-        cpWeight_MapggH[100.0][600] = 1;
-        cpWeight_MapggH[100.0][700] = 1;
-        cpWeight_MapggH[100.0][800] = 1;
-        cpWeight_MapggH[100.0][900] = 1;
-        cpWeight_MapggH[100.0][1000] = 1;
-        cpWeight_MapggH[100.0][1500] = 1;
-        cpWeight_MapggH[100.0][2000] = 1;
-        cpWeight_MapggH[100.0][2500] = 1;
-        cpWeight_MapggH[100.0][3000] = 1;
+        cpWeight_MapggH[100.0][200] = 0.0043970548015714950; 
+        cpWeight_MapggH[100.0][300] = 0.0190070702753495704;
+        cpWeight_MapggH[100.0][400] = 0.0189154825594544836;
+        cpWeight_MapggH[100.0][500] = 0.0076950417363239008;
+        cpWeight_MapggH[100.0][600] = 0.0030023580304569973;
+        cpWeight_MapggH[100.0][700] = 0.0017504916392497615;
+        cpWeight_MapggH[100.0][800] = 0.0007583397713808117;
+        cpWeight_MapggH[100.0][900] = 0.0004669218776642047;
+        cpWeight_MapggH[100.0][1000] = 0.0002477738225437889;
+        cpWeight_MapggH[100.0][1500] = 0.0000365696366519575;
+        cpWeight_MapggH[100.0][2000] = 0.0000126447104103995;
+        cpWeight_MapggH[100.0][2500] = 0.0000056086741484635;
+        cpWeight_MapggH[100.0][3000] = 0.0000020532073104632;
 
         cpWeight_MapggH[10.0][200] = 1;
         cpWeight_MapggH[10.0][300] = 1;
@@ -766,19 +766,19 @@ namespace higgs{
         cpWeight_MapggH[10.0][2500] = 1;
         cpWeight_MapggH[10.0][3000] = 1;
 
-	cpWeight_MapggH[1.0][200] = 0.0088631449709901215; 
-	cpWeight_MapggH[1.0][300] = 0.0375754902441248345;
-	cpWeight_MapggH[1.0][400] = 0.0300510038836448133;
-	cpWeight_MapggH[1.0][500] = 0.0188212616916591559;
-	cpWeight_MapggH[1.0][600] = 0.0075463814556865532;
-	cpWeight_MapggH[1.0][700] = 0.0034726930214681166;
-	cpWeight_MapggH[1.0][800] = 0.0015296131018597658;
-	cpWeight_MapggH[1.0][900] = 0.0009586237609489657;
-	cpWeight_MapggH[1.0][1000] = 0.0004717342511291907;
-	cpWeight_MapggH[1.0][1500] = 0.0000767471089528979;
-	cpWeight_MapggH[1.0][2000] = 0.0000318174354225592;
-	cpWeight_MapggH[1.0][2500] = 0.0000117055382663981;
-	cpWeight_MapggH[1.0][3000] = 0.0000046726785840541;
+	cpWeight_MapggH[1.0][200] = 1; 
+	cpWeight_MapggH[1.0][300] = 1;
+	cpWeight_MapggH[1.0][400] = 1;
+	cpWeight_MapggH[1.0][500] = 1;
+	cpWeight_MapggH[1.0][600] = 1;
+	cpWeight_MapggH[1.0][700] = 1;
+	cpWeight_MapggH[1.0][800] = 1;
+	cpWeight_MapggH[1.0][900] = 1;
+	cpWeight_MapggH[1.0][1000] = 1;
+	cpWeight_MapggH[1.0][1500] = 1;
+	cpWeight_MapggH[1.0][2000] = 1;
+	cpWeight_MapggH[1.0][2500] = 1;
+	cpWeight_MapggH[1.0][3000] = 1;
 
 	//Filling ContinuumWeights VBF
         cpWeight_MapVBF[100.0][200] = 1;
@@ -809,21 +809,21 @@ namespace higgs{
         cpWeight_MapVBF[10.0][2500] = 1;
         cpWeight_MapVBF[10.0][3000] = 1;
 
-        cpWeight_MapVBF[1.0][200] = 0.0000006779147836430; 
-        cpWeight_MapVBF[1.0][300] = 0.0000268068717276136;
-        cpWeight_MapVBF[1.0][400] = 0.0000114577991160670;
-        cpWeight_MapVBF[1.0][500] = 0.0000004438488725625;
-        cpWeight_MapVBF[1.0][600] = 0.0000020123291157531;
-        cpWeight_MapVBF[1.0][700] = 0.0000019470636045336;
-        cpWeight_MapVBF[1.0][800] = 1.0000000000000000000;
-        cpWeight_MapVBF[1.0][900] = 0.0000014221331868048;
-        cpWeight_MapVBF[1.0][1000] = 0.0000014945729819242;
-        cpWeight_MapVBF[1.0][1500] = 0.0000006594046489062;
-        cpWeight_MapVBF[1.0][2000] = 0.0000010387773225025;
-        cpWeight_MapVBF[1.0][2500] = 0.0000000488303051598;
-        cpWeight_MapVBF[1.0][3000] = 1.0000000000000000000;
+        cpWeight_MapVBF[1.0][200] = 1;
+        cpWeight_MapVBF[1.0][300] = 1;
+        cpWeight_MapVBF[1.0][400] = 1;
+        cpWeight_MapVBF[1.0][500] = 1;
+        cpWeight_MapVBF[1.0][600] = 1;
+        cpWeight_MapVBF[1.0][700] = 1;
+        cpWeight_MapVBF[1.0][800] = 1;
+        cpWeight_MapVBF[1.0][900] = 1;
+        cpWeight_MapVBF[1.0][1000] = 1;
+        cpWeight_MapVBF[1.0][1500] = 1;
+        cpWeight_MapVBF[1.0][2000] = 1;
+        cpWeight_MapVBF[1.0][2500] = 1;
+        cpWeight_MapVBF[1.0][3000] = 1;
 
-	if(isVBF){ continuumWeight = cpWeight_MapVBF[1.0][heavyMass]; } else { continuumWeight = cpWeight_MapggH[1.0][heavyMass]; }
+	if(isVBF){ continuumWeight = cpWeight_MapVBF[100.0][heavyMass]; } else { continuumWeight = cpWeight_MapggH[100.0][heavyMass]; }
 	return continuumWeight;
 
  }
