@@ -230,9 +230,9 @@ int main(int argc, char* argv[])
 //    NRparams.push_back(std::make_pair<double,double>(30,-1));
   }else if( (suffix=="" || isMELA)  && (isMC_GG || isMC_VBF)){ //consider the other points only when no suffix is being used    
   
-      NRparams.push_back(std::make_pair<double,double>( 100.0, 0.0) );
-      NRparams.push_back(std::make_pair<double,double>(  10.0, 0.0) );
-      NRparams.push_back(std::make_pair<double,double>(   0.0, 0.0) );
+      //NRparams.push_back(std::make_pair<double,double>( 100.0, 0.0) );
+      //NRparams.push_back(std::make_pair<double,double>(  10.0, 0.0) );
+      //NRparams.push_back(std::make_pair<double,double>(   0.0, 0.0) );
       //Narrow Resonance
       NRparams.push_back(std::make_pair<double,double>(1.0, 0.0) ); //cp, brnew
       NRparams.push_back(std::make_pair<double,double>(0.6, 0.0) ); //cp, brnew
