@@ -36,15 +36,11 @@ BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to Fal
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets", "geq1jets", "vbf", "eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-#MASS = [600]
-#SUBMASS = MASS
-#SUBMASS = [600]
-MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500]
-SUBMASS = MASS
-SUBMASS = [200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2250, 2500]
+MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
+SUBMASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
-LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB " #--blind "
+LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB --blind "
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
 for model in MODELS:
@@ -411,19 +407,20 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines('mkdir -p out;\ncd out;\n')
            SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("sh combineCards.sh;\n")
+           SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HiggsWidth:higgswidth --PO verbose --PO \'is2l2nu\' \n") 
 
            #compute pvalue
-           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  card_combined.dat > COMB.log;\n")
+           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root > COMB.log;\n")
 
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + "  card_combined.dat > COMB.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + "  workspace.root > COMB.log;\n") 
               #SCRIPT.writelines("combine -M MaxLikelihoodFit -m " +  str(m) + " --saveNormalizations card_combined.dat;\n")
               #SCRIPT.writelines("extractFitNormalization.py mlfit.root hzz2l2v_"+str(m)+"_?TeV.root > fit.txt;\n")
 
            ### THIS is for toy (hybridNew) fit
            else:
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + "  card_combined.dat > COMB.log;\n") #first run assymptotic limit to get quickly the range of interest
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + "  workspace.root  > COMB.log;\n") #first run assymptotic limit to get quickly the range of interest
               SCRIPT.writelines("rm higgsCombineTest.Asymptotic*.root;\n")
               SCRIPT.writelines("RMIN=`cat COMB.log | grep 'Expected  2.5%' | awk '{print $5;}'`;\n") #get the low edge 2sigma band from the assymptotic --> will be used to know where to put points
               SCRIPT.writelines("RMAX=`cat COMB.log | grep 'Expected 97.5%' | awk '{print $5;}'`;\n") #get the high edge 2sigma band from the assymptotic --> will be used to know where to put points
@@ -435,12 +432,12 @@ for signalSuffix in signalSuffixVec :
               SCRIPT.writelines("rm grid.root;\n")
               SCRIPT.writelines("sh grid.sh 1 16 &> /dev/null;\n")
               SCRIPT.writelines("rm higgsCombinegrid.HybridNew.*;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+";\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.025;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.160;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.500;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.840;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.975;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+";\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.025;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.160;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.500;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.840;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.975;\n")
               SCRIPT.writelines("hadd -f higgsCombineTest.HybridNewMerged.mH"+str(m)+".root  higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
               SCRIPT.writelines("rm higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
 
