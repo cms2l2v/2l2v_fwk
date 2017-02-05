@@ -130,6 +130,8 @@ int main(int argc, char* argv[])
   bool isMC_ggZZ2e2nu = isMC && (string(dtag.Data()).find("TeV_ggZZ2e2nu") != string::npos); 
   bool isMC_WZ  = isMC && ( string(dtag.Data()).find("TeV_WZ")  != string::npos);
   bool isMC_WZ3lnu  = isMC && ( string(dtag.Data()).find("TeV_WZ3lnu")  != string::npos);
+  bool isMC_Wlnu_inclusive = (isMC && dtag.Contains("_WJets_") && !dtag.Contains("HT"));
+  bool isMC_Wlnu_HT100 = (isMC && dtag.Contains("_WJets_HT-") );
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
   bool is2015data = (!isMC && dtag.Contains("2015")); 
@@ -1061,6 +1063,12 @@ int main(int argc, char* argv[])
           if(puppimetsHandle.isValid()){ puppimets = *puppimetsHandle;}
           LorentzVector puppimet = puppimets[0].p4(); 
 
+    			//GenJets
+			    reco::GenJetCollection genJets;
+    			fwlite::Handle< reco::GenJetCollection > genJetsHandle;
+    			genJetsHandle.getByLabel(ev, "slimmedGenJets");
+    			if(genJetsHandle.isValid()){ genJets = *genJetsHandle;}
+
          if(isV0JetsMC){
             fwlite::Handle< LHEEventProduct > lheEPHandle;
             lheEPHandle.getByLabel(ev, "externalLHEProducer");
@@ -1292,6 +1300,30 @@ int main(int argc, char* argv[])
 	  
            std::sort(selLeptons.begin(),   selLeptons.end(), utils::sort_CandidatesByPt);
            std::sort(extraLeptons.begin(), extraLeptons.end(), utils::sort_CandidatesByPt);
+
+
+	    if (isMC_Wlnu_inclusive || isMC_Wlnu_HT100){ //Avoid double counting and make our W#rightarrow l#nu exclusif of the dataset with a cut on HT...
+  	    bool isHT100 = false;
+
+    	  //Let's create our own HT variable
+      	double vHT =0;
+      	for(size_t ig=0; ig<genJets.size(); ig++){
+      	  //cross-clean with selected leptons and photons
+      	  double minDRlj(9999.); for(size_t ilep=0; ilep<selLeptons.size(); ilep++)  minDRlj = TMath::Min( minDRlj, deltaR(genJets[ig],selLeptons[ilep]) );
+      	  double minDRlg(9999.); for(size_t ipho=0; ipho<selPhotons.size(); ipho++)  minDRlg = TMath::Min( minDRlg, deltaR(genJets[ig],selPhotons[ipho]) );
+      	  if(minDRlj<0.4 || minDRlg<0.4) continue;
+	
+	        vHT += genJets[ig].pt();
+	      }
+	      if(vHT >100) isHT100 = true;
+	
+	      if(isMC_Wlnu_inclusive && isHT100) continue; //reject event
+	      if(isMC_Wlnu_HT100 && !isHT100) continue; //reject event
+	
+	    }
+
+
+
 
            //update the met for lepton energy scales
            met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
