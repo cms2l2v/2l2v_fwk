@@ -659,7 +659,7 @@ namespace higgs{
         //BSM reweighiting
         mela.resetInputEvent();
 
-	heavyWidth=CP ; //heavyWidth*CP*CP;
+	heavyWidth=heavyWidth*CP*CP;
 
 	if( !MelaMode.Contains("Interf") ){
         	if(isVBF){
