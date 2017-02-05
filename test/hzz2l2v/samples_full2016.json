@@ -2224,10 +2224,7 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_SM_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_SM_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -2259,10 +2256,7 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_SM_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_SM_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -2294,10 +2288,7 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_SM_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_SM_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -3403,10 +3394,7 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_SM_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_SM_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM"
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -3438,10 +3426,7 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_SM_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_SM_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM", 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -3473,10 +3458,7 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_SM_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_SM_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM", 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -3995,12 +3977,9 @@
                 "2l2v_2016",
                 "2l2v_mcbased",
                 "2l2v_datadriven",
-                "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
+                "2l2v_datadrivenplot_SM", 
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM"
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4031,11 +4010,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4066,11 +4042,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4101,14 +4074,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4140,14 +4107,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA",
-                "2l2v_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4179,14 +4140,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
-                "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA",
-                "2l2v_MELA"
+                "2l2v_datadriven_SM", 
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4218,11 +4173,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4253,11 +4205,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4288,11 +4237,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4323,11 +4269,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4359,11 +4302,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4395,11 +4335,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4431,11 +4368,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4466,11 +4400,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4501,11 +4432,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lwidth": 2,
@@ -4536,11 +4464,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4572,11 +4497,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
@@ -4608,11 +4530,8 @@
                 "2l2v_mcbased",
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot_SM",
-                "2l2v_datadrivenplot_MELA",
                 "2l2v_datadriven_SM",
-                "2l2v_datadriven_MELA",
-                "2l2v_mcbased_SM",
-                "2l2v_mcbased_MELA"
+                "2l2v_mcbased_SM" 
             ],
             "lcolor": 619,
             "lstyle": 2,
