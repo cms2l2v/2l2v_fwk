@@ -371,7 +371,7 @@
       "isinvisible":true,      
       "isdata":false,
       "color":41,
-	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu, HT>100_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
+	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
     },
     {
       "tag":"Genuine (ewk) MET",
