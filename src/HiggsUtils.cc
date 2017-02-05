@@ -659,7 +659,7 @@ namespace higgs{
         //BSM reweighiting
         mela.resetInputEvent();
 
-	heavyWidth=heavyWidth*CP*CP;
+	heavyWidth=CP ; //heavyWidth*CP*CP;
 
 	if( !MelaMode.Contains("Interf") ){
         	if(isVBF){
@@ -737,48 +737,105 @@ namespace higgs{
 	std::map< double, std::map<double,double> > cpWeight_MapVBF;
         std::map< double, std::map<double,double> > cpWeight_MapggH;
 
-	//Filling ContinuumWeights GGH
-        cpWeight_MapggH[100.0][200] = 0.0043970548015714950; 
-        cpWeight_MapggH[100.0][300] = 0.0190070702753495704;
-        cpWeight_MapggH[100.0][400] = 0.0189154825594544836;
-        cpWeight_MapggH[100.0][500] = 0.0076950417363239008;
-        cpWeight_MapggH[100.0][600] = 0.0030023580304569973;
-        cpWeight_MapggH[100.0][700] = 0.0017504916392497615;
-        cpWeight_MapggH[100.0][800] = 0.0007583397713808117;
-        cpWeight_MapggH[100.0][900] = 0.0004669218776642047;
-        cpWeight_MapggH[100.0][1000] = 0.0002477738225437889;
-        cpWeight_MapggH[100.0][1500] = 0.0000365696366519575;
-        cpWeight_MapggH[100.0][2000] = 0.0000126447104103995;
-        cpWeight_MapggH[100.0][2500] = 0.0000056086741484635;
-        cpWeight_MapggH[100.0][3000] = 0.0000020532073104632;
+	//GGH Continuum weights, Wider Resonance
+        cpWeight_MapggH[100.0][200] = 0.0087960014952967059; 
+        cpWeight_MapggH[100.0][300] = 0.0380223185991297036;
+        cpWeight_MapggH[100.0][400] = 0.0378391037604890526;
+        cpWeight_MapggH[100.0][500] = 0.0153933943681768444;
+        cpWeight_MapggH[100.0][600] = 0.0060060078793470950;
+        cpWeight_MapggH[100.0][700] = 0.0035017364511450541;
+        cpWeight_MapggH[100.0][800] = 0.0015170058286798280;
+        cpWeight_MapggH[100.0][900] = 0.0009340446547660140;
+        cpWeight_MapggH[100.0][1000] = 0.0004956542531177073;
+        cpWeight_MapggH[100.0][1500] = 0.0000726729453484678;
+        cpWeight_MapggH[100.0][2000] = 0.0000280877081111885;
+        cpWeight_MapggH[100.0][2500] = 0.0000114681702010937;
+        cpWeight_MapggH[100.0][3000] = 0.0000044689168165523;
 
-        cpWeight_MapggH[10.0][200] = 1;
-        cpWeight_MapggH[10.0][300] = 1;
-        cpWeight_MapggH[10.0][400] = 1;
-        cpWeight_MapggH[10.0][500] = 1;
-        cpWeight_MapggH[10.0][600] = 1;
-        cpWeight_MapggH[10.0][700] = 1;
-        cpWeight_MapggH[10.0][800] = 1;
-        cpWeight_MapggH[10.0][900] = 1;
-        cpWeight_MapggH[10.0][1000] = 1;
-        cpWeight_MapggH[10.0][1500] = 1;
-        cpWeight_MapggH[10.0][2000] = 1;
-        cpWeight_MapggH[10.0][2500] = 1;
-        cpWeight_MapggH[10.0][3000] = 1;
+        cpWeight_MapggH[10.0][200] = 0.0087960014952967059;
+        cpWeight_MapggH[10.0][300] = 0.0380223185991297036;
+        cpWeight_MapggH[10.0][400] = 0.0378391037604890526;
+        cpWeight_MapggH[10.0][500] = 0.0153933943681768444;
+        cpWeight_MapggH[10.0][600] = 0.0060060078793470950;
+        cpWeight_MapggH[10.0][700] = 0.0035017364511450541;
+        cpWeight_MapggH[10.0][800] = 0.0015170058286798280;
+        cpWeight_MapggH[10.0][900] = 0.0009340446547660140;
+        cpWeight_MapggH[10.0][1000] = 0.0004956542531177073;
+        cpWeight_MapggH[10.0][1500] = 0.0000726729453484678;
+        cpWeight_MapggH[10.0][2000] = 0.0000280877081111885;
+        cpWeight_MapggH[10.0][2500] = 0.0000114681702010937;
+        cpWeight_MapggH[10.0][3000] = 0.0000044689168165523;
 
-	cpWeight_MapggH[1.0][200] = 1; 
-	cpWeight_MapggH[1.0][300] = 1;
-	cpWeight_MapggH[1.0][400] = 1;
-	cpWeight_MapggH[1.0][500] = 1;
-	cpWeight_MapggH[1.0][600] = 1;
-	cpWeight_MapggH[1.0][700] = 1;
-	cpWeight_MapggH[1.0][800] = 1;
-	cpWeight_MapggH[1.0][900] = 1;
-	cpWeight_MapggH[1.0][1000] = 1;
-	cpWeight_MapggH[1.0][1500] = 1;
-	cpWeight_MapggH[1.0][2000] = 1;
-	cpWeight_MapggH[1.0][2500] = 1;
-	cpWeight_MapggH[1.0][3000] = 1;
+        cpWeight_MapggH[0.0][200] = 0.0087960014952967059;
+        cpWeight_MapggH[0.0][300] = 0.0380223185991297036;
+        cpWeight_MapggH[0.0][400] = 0.0378391037604890526;
+        cpWeight_MapggH[0.0][500] = 0.0153933943681768444;
+        cpWeight_MapggH[0.0][600] = 0.0060060078793470950;
+        cpWeight_MapggH[0.0][700] = 0.0035017364511450541;
+        cpWeight_MapggH[0.0][800] = 0.0015170058286798280;
+        cpWeight_MapggH[0.0][900] = 0.0009340446547660140;
+        cpWeight_MapggH[0.0][1000] = 0.0004956542531177073;
+        cpWeight_MapggH[0.0][1500] = 0.0000726729453484678;
+        cpWeight_MapggH[0.0][2000] = 0.0000280877081111885;
+        cpWeight_MapggH[0.0][2500] = 0.0000114681702010937;
+        cpWeight_MapggH[0.0][3000] = 0.0000044689168165523;
+
+        //GGH Continuum weights, Narrow Resonance
+        cpWeight_MapggH[1.0][200] = 0.0043970548015714950;
+        cpWeight_MapggH[1.0][300] = 0.0190070702753495704;
+        cpWeight_MapggH[1.0][400] = 0.0189154825594544836;
+        cpWeight_MapggH[1.0][500] = 0.0076950417363239008;
+        cpWeight_MapggH[1.0][600] = 0.0030023580304569973;
+        cpWeight_MapggH[1.0][700] = 0.0017504916392497615;
+        cpWeight_MapggH[1.0][800] = 0.0007583397713808117;
+        cpWeight_MapggH[1.0][900] = 0.0004669218776642047;
+        cpWeight_MapggH[1.0][1000] = 0.0002477738225437889;
+        cpWeight_MapggH[1.0][1500] = 0.0000365696366519575;
+        cpWeight_MapggH[1.0][2000] = 0.0000126447104103995;
+        cpWeight_MapggH[1.0][2500] = 0.0000056086741484635;
+        cpWeight_MapggH[1.0][3000] = 0.0000020532073104632;
+
+        cpWeight_MapggH[0.6][200] = 0.0043970548015714950;
+        cpWeight_MapggH[0.6][300] = 0.0190070702753495704;
+        cpWeight_MapggH[0.6][400] = 0.0189154825594544836;
+        cpWeight_MapggH[0.6][500] = 0.0076950417363239008;
+        cpWeight_MapggH[0.6][600] = 0.0030023580304569973;
+        cpWeight_MapggH[0.6][700] = 0.0017504916392497615;
+        cpWeight_MapggH[0.6][800] = 0.0007583397713808117;
+        cpWeight_MapggH[0.6][900] = 0.0004669218776642047;
+        cpWeight_MapggH[0.6][1000] = 0.0002477738225437889;
+        cpWeight_MapggH[0.6][1500] = 0.0000365696366519575;
+        cpWeight_MapggH[0.6][2000] = 0.0000126447104103995;
+        cpWeight_MapggH[0.6][2500] = 0.0000056086741484635;
+        cpWeight_MapggH[0.6][3000] = 0.0000020532073104632;
+
+        cpWeight_MapggH[0.3][200] = 0.0043970548015714950;
+        cpWeight_MapggH[0.3][300] = 0.0190070702753495704;
+        cpWeight_MapggH[0.3][400] = 0.0189154825594544836;
+        cpWeight_MapggH[0.3][500] = 0.0076950417363239008;
+        cpWeight_MapggH[0.3][600] = 0.0030023580304569973;
+        cpWeight_MapggH[0.3][700] = 0.0017504916392497615;
+        cpWeight_MapggH[0.3][800] = 0.0007583397713808117;
+        cpWeight_MapggH[0.3][900] = 0.0004669218776642047;
+        cpWeight_MapggH[0.3][1000] = 0.0002477738225437889;
+        cpWeight_MapggH[0.3][1500] = 0.0000365696366519575;
+        cpWeight_MapggH[0.3][2000] = 0.0000126447104103995;
+        cpWeight_MapggH[0.3][2500] = 0.0000056086741484635;
+        cpWeight_MapggH[0.3][3000] = 0.0000020532073104632;
+
+        cpWeight_MapggH[0.1][200] = 0.0043970548015714950;
+        cpWeight_MapggH[0.1][300] = 0.0190070702753495704;
+        cpWeight_MapggH[0.1][400] = 0.0189154825594544836;
+        cpWeight_MapggH[0.1][500] = 0.0076950417363239008;
+        cpWeight_MapggH[0.1][600] = 0.0030023580304569973;
+        cpWeight_MapggH[0.1][700] = 0.0017504916392497615;
+        cpWeight_MapggH[0.1][800] = 0.0007583397713808117;
+        cpWeight_MapggH[0.1][900] = 0.0004669218776642047;
+        cpWeight_MapggH[0.1][1000] = 0.0002477738225437889;
+        cpWeight_MapggH[0.1][1500] = 0.0000365696366519575;
+        cpWeight_MapggH[0.1][2000] = 0.0000126447104103995;
+        cpWeight_MapggH[0.1][2500] = 0.0000056086741484635;
+        cpWeight_MapggH[0.1][3000] = 0.0000020532073104632;
 
 	//Filling ContinuumWeights VBF
         cpWeight_MapVBF[100.0][200] = 1;
@@ -823,7 +880,7 @@ namespace higgs{
         cpWeight_MapVBF[1.0][2500] = 1;
         cpWeight_MapVBF[1.0][3000] = 1;
 
-	if(isVBF){ continuumWeight = cpWeight_MapVBF[100.0][heavyMass]; } else { continuumWeight = cpWeight_MapggH[100.0][heavyMass]; }
+	if(isVBF){ continuumWeight = cpWeight_MapVBF[100.0][heavyMass]; } else { continuumWeight = cpWeight_MapggH[CP][heavyMass]; }
 	return continuumWeight;
 
  }
