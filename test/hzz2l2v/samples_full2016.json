@@ -516,6 +516,26 @@
                     ],
                     "dtag": "MC13TeV_ZZ2l2nu_2016",
                     "xsec": 0.564
+                },
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluToContinToZZTo2mu2nu_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_ggZZ2mu2nu_2016",
+                    "xsec": 0.01898
+                },
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluToContinToZZTo2e2nu_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_ggZZ2e2nu_2016",
+                    "xsec": 0.01898
                 }
             ],
             "isdata": false,
