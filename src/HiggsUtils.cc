@@ -586,7 +586,7 @@ namespace higgs{
 
         //Weight to reweight the MELA shape to the real cross-section
         double continuum_weight=1.;
-        continuum_weight = weightContinuum_MELA(isVBF,CP,heavyMass);
+        //continuum_weight = weightContinuum_MELA(isVBF,CP,heavyMass);
 	
 	//Fill a Map with Mass and Width SM Like
 	double heavyWidth=0; float weightSM=1; float weightMELA=1; float finalweight=1; float cpsweight=1;
@@ -709,7 +709,7 @@ namespace higgs{
 	mela.resetInputEvent();
 
 	if(weightSM==0){ finalweight=0; }
-        else{ finalweight=(weightMELA/weightSM)*cpsweight*continuum_weight;}
+        else{ finalweight=cpsweight*continuum_weight;} //(weightMELA/weightSM)*cpsweight*continuum_weight;}
 
 	/*if(isnan(finalweight)){
 		printf(" \n");

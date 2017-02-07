@@ -31,7 +31,7 @@ phase=-1
 MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
 based_key="2l2v_mcbased_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
 jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH.json' 
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_02_05_MCOnly_GGH_full2016_NarrowWidth.root'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets","geq1jets","vbf","eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
@@ -59,11 +59,11 @@ for model in MODELS:
                    if ( (CPSQ / (1-BRN))>1.0 ):continue
 
                    #Run limit for ShapeBased GG+VBF
-                   #signalSuffixVec += [ suffix ]
-                   #OUTName         += ["SB13TeV_SM"]
-                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
-                   #BIN             += [bin]
-                   #MODEL           += [model]
+                   signalSuffixVec += [ suffix ]
+                   OUTName         += ["SB13TeV_SM"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
+                   BIN             += [bin]
+                   MODEL           += [model]
 
                    signalSuffixVec += [ suffix ]
                    OUTName         += ["SB13TeV_SM_GGF"]
@@ -71,11 +71,11 @@ for model in MODELS:
                    BIN             += [bin]
                    MODEL          += [model]
 
-                   #signalSuffixVec += [ suffix ]
-                   #OUTName         += ["SB13TeV_SM_VBF"]
-                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
-                   #BIN             += [bin]
-                   #MODEL           += [model]
+                   signalSuffixVec += [ suffix ]
+                   OUTName         += ["SB13TeV_SM_VBF"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   BIN             += [bin]
+                   MODEL           += [model]
 
          elif(model=="RsGrav"):
                    signalSuffixVec += [ "" ]
