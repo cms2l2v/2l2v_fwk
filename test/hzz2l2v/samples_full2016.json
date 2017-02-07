@@ -516,6 +516,26 @@
                     ],
                     "dtag": "MC13TeV_ZZ2l2nu_2016",
                     "xsec": 0.564
+                },
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluToContinToZZTo2mu2nu_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_ggZZ2mu2nu_2016",
+                    "xsec": 0.01898
+                },
+                {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/GluGluToContinToZZTo2e2nu_13TeV_MCFM701_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_ggZZ2e2nu_2016",
+                    "xsec": 0.01898
                 }
             ],
             "isdata": false,
@@ -1454,7 +1474,7 @@
             "2l2v_photonsOnly": {
                 "suffix": "reweighted"
             },
-            "color": 623,
+            "color": 693,
             "data": [
                 {
                     "br": [
@@ -2004,6 +2024,40 @@
             "marker": 20,
             "msize": 0.7,
             "tag": "#gamma data"
+        },
+        {
+          "tag":"Top/W/WW",
+          "keys":["2l2v_2016", "2l2v_datadrivenplot"],
+          "isdata":false,
+          "isdatadriven":true,
+          "color":8,
+          "syst":[0.21],
+          "nosample":true,
+          "NRB":[{"tag":"data", "scale":1.0}]
+        }, 
+        {
+          "tag":"Genuine (ewk) MET inv",
+          "keys":["2l2v_2016", "genuineMet"],
+          "isinvisible":true,      
+          "isdata":false,
+          "color":41,
+    	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu, HT>100_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
+        },
+        {
+          "tag":"Genuine (ewk) MET",
+          "keys":["2l2v_2016", "genuineMet"],
+          "isdata":false,
+          "color":41,
+          "mixing":[{"tag":"Genuine (ewk) MET inv", "scale":1.0}]
+        },
+        {
+          "tag":"Instr. MET",
+          "keys":["2l2v_2016", "genuineMet", "2l2v_datadriven", "2l2v_datadrivenplot", "2l2v_datadriven_SM"],
+          "isdata":false,
+          "isdatadriven":true,
+          "color":831,
+          "syst":[0.25],
+          "mixing":[{"tag":"#gamma data_reweighted", "scale":1.0}, {"tag":"Genuine (ewk) MET inv", "scale":-1.0} ]
         },
         {
             "data": [

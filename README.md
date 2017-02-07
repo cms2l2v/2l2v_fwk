@@ -10,8 +10,8 @@ wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_
 # Installation for 80X (2017) => was 8_0_14 (2016)
 ```bash 
 export SCRAM_ARCH=slc6_amd64_gcc530
-cmsrel CMSSW_8_0_20
-cd CMSSW_8_0_20/src/
+cmsrel CMSSW_8_0_25
+cd CMSSW_8_0_25/src/
 cmsenv
 
 # The following fail for the moment:
@@ -44,11 +44,11 @@ cd CMSS_X_Y_Z/src
 git clone https://github.com/cms-analysis/HiggsAnalysis-ZZMatrixElement.git ZZMatrixElement
 cd ZZMatrixElement
 sh setup.sh -j 12
-scram b -j 12
 ```
 Now, ONLY after the code has finished to compile insert inside UserCode/llvv_fwk/BuildFile.xml
 ``` c++
 <use name="ZZMatrixElement/MELA"/>
+scram b -j 12  
 ```
 
 # An important note about PR in 80X (2016)
