@@ -920,14 +920,22 @@
                     "dtag": "MC13TeV_DYJetsToLL_10to50_2016",
                     "xsec": 18610
                 },
+     		{
+		"br": [ 0.35 ],
+		"dset": [
+		" /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM"
+		],
+		"dtag":  "MC13TeV_DYJetsToLL_50toInf_ext1_2016",
+		"xsec": 5765.4 
+		},
                 {
                     "br": [
-                        1.0
+                        0.65
                     ],
                     "dset": [
-                        "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_HCALDebug_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+		    "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM"
                     ],
-                    "dtag": "MC13TeV_DYJetsToLL_50toInf_2016",
+                    "dtag": "MC13TeV_DYJetsToLL_50toInf_ext2_2016",
                     "xsec": 5765.4
                 }
             ],
@@ -1141,14 +1149,22 @@
                     "dtag": "MC13TeV_DYJetsToLL_10to50_2016",
                     "xsec": 18610
                 },
+             	{
+		"br": [ 0.35 ],
+		"dset": [
+		" /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM"
+		],
+		"dtag":  "MC13TeV_DYJetsToLL_50toInf_ext1_2016",
+		"xsec": 5765.4 
+		},
                 {
                     "br": [
-                        1.0
+                        0.65
                     ],
                     "dset": [
-                        "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_HCALDebug_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+		    "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM"
                     ],
-                    "dtag": "MC13TeV_DYJetsToLL_50toInf_2016",
+                    "dtag": "MC13TeV_DYJetsToLL_50toInf_ext2_2016",
                     "xsec": 5765.4
                 }
             ],
