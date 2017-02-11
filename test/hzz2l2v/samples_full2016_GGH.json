@@ -756,6 +756,9 @@
             "tag": "Top"
         },
         {
+            "2l2v_photonsOnly": {
+                "suffix": "reweighted"
+            },
             "color": 623,
             "data": [
                 {
@@ -767,24 +770,7 @@
                     ],
                     "dtag": "MC13TeV_WJets_2016",
                     "xsec": 61526.7
-                }
-            ],
-            "isdata": false,
-            "keys": [
-                "2l2v_2016",
-                "2l2v_mcbased",
-                "2l2v_mcbased_SM",
-                "2l2v_datadriven",
-                "2l2v_datadriven_SM"
-            ],
-            "tag": "W#rightarrow l#nu"
-        },
-        {
-            "2l2v_photonsOnly": {
-                "suffix": "reweighted"
-            },
-            "color": 623,
-            "data": [
+                },
                 {
                     "br": [
                         1.0
@@ -905,14 +891,18 @@
                     "dtag": "MC13TeV_WJets_HT-2500ToInf_2016",
                     "xsec": 0.03216
                 }
-            ],
+						],
             "isdata": false,
             "keys": [
                 "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_mcbased_SM",
+                "2l2v_datadriven",
+                "2l2v_datadriven_SM",
                 "2l2v_photoncontrol",
                 "2l2v_photonsOnly"
             ],
-            "tag": "W#rightarrow l#nu, HT>100"
+            "tag": "W#rightarrow l#nu"
         },
         {
             "2l2v_photonsOnly": {
@@ -930,7 +920,7 @@
                     "dtag": "MC13TeV_DYJetsToLL_10to50_2016",
                     "xsec": 18610
                 },
-		{
+     		{
 		"br": [ 0.35 ],
 		"dset": [
 		" /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM"
@@ -1159,24 +1149,24 @@
                     "dtag": "MC13TeV_DYJetsToLL_10to50_2016",
                     "xsec": 18610
                 },
-		{
-                "br": [ 0.35 ], 
-                "dset": [
-                  "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM"
-                ], 
-                "dtag":  "MC13TeV_DYJetsToLL_50toInf_ext1_2016", 
-                "xsec": 5765.4
-                },     
-                { 
-                "br": [
-		 0.65
-                ],
-                "dset": [
-                  "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM"        
-                ],
-                "dtag": "MC13TeV_DYJetsToLL_50toInf_ext2_2016", 
-                 "xsec": 5765.4
-                } 
+             	{
+		"br": [ 0.35 ],
+		"dset": [
+		" /DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/MINIAODSIM"
+		],
+		"dtag":  "MC13TeV_DYJetsToLL_50toInf_ext1_2016",
+		"xsec": 5765.4 
+		},
+                {
+                    "br": [
+                        0.65
+                    ],
+                    "dset": [
+		    "/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/MINIAODSIM"
+                    ],
+                    "dtag": "MC13TeV_DYJetsToLL_50toInf_ext2_2016",
+                    "xsec": 5765.4
+                }
             ],
             "isdata": false,
             "keys": [
@@ -2037,7 +2027,7 @@
            "isinvisible":true,      
            "isdata":false,
            "color":41,
-     	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu, HT>100_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
+     	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
          },
          {
            "tag":"Genuine (ewk) MET",
