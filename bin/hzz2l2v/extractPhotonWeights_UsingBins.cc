@@ -164,7 +164,7 @@ int main(int argc, char* argv[]){
 
   std::vector<string> cat   = {"mumu", "ee", "ll", "gamma"};
   std::vector<string> bin   = {"eq0jets","geq1jets","vbf"};
-  std::vector<string> var   = {"_qt", "_qmass", "_met", "_mt"};
+  std::vector<string> var   = {"_qt", "_qmass", "_met", "_mt","_njets"};
 
   std::map<string, TH1D*> DataHistos;
   for(unsigned int c=0;c<cat.size();c++){
@@ -211,7 +211,8 @@ int main(int argc, char* argv[]){
 
    //non fixed-width rebins
   if(asym){
-     double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
+    double xbins[] = {55,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975,1500};
+    //     double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
      for(unsigned int v=0;v<var.size();v++){
         if(var[v]!="_qt")continue;
         for(unsigned int b=0;b<bin.size();b++){
@@ -254,9 +255,10 @@ int main(int argc, char* argv[]){
   //make the plots
   for(unsigned int v=0;v<var.size();v++){
      double xmin,xmax;
-     double ymin=0.5, ymax=1E6;
-     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=55.00; xmax=1000.00;
-     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=55.00; xmax=1000.00; ymin=0.0001;  ymax=0.5;
+     double ymin=0.5, ymax=1E8;
+     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=55.00; xmax=1500.00;
+     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=55.00; xmax=1500.00; ymin=0.0001;  ymax=0.5;
+     } else if (var[v]=="_njets")  {                               xmin=0.; xmax=5.;
      } else if( (var[v]=="_met") || var[v]=="_mt") {               xmin=1.; xmax=1000.0;
      } else{                                                       xmin=1.; xmax=1000.0;    
      }
