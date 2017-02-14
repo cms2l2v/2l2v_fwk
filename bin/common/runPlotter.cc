@@ -1074,7 +1074,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
        t2->SetGridy(true);
        t2->SetPad(0,0.0,1.0,0.2);
 
-
        //mc stats+syst
        TH1D *denSystUncH=0;
        if(mcPlusSyst)        denSystUncH=(TH1D *) mcPlusSyst  ->Clone("mcrelunc");

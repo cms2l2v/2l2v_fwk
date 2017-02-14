@@ -9,21 +9,46 @@
       "marker":20,
       "msize":0.7,
       "data":[ 
-          { "dtag":"Data13TeV_MuEG2016B"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016B-PromptReco-v2/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_MuEG2016C"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016C-PromptReco-v2/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_MuEG2016D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016D-PromptReco-v2/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-          { "dtag":"Data13TeV_SingleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016B-PromptReco-v2/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_SingleElectron2016C"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016C-PromptReco-v2/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	   { "dtag":"Data13TeV_SingleElectron2016D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016D-PromptReco-v2/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-          { "dtag":"Data13TeV_SingleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016B-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_SingleMu2016C"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016C-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_SingleMu2016D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016D-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-          { "dtag":"Data13TeV_DoubleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016B-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_DoubleMu2016C"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016C-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_DoubleMu2016D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016D-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-          { "dtag":"Data13TeV_DoubleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016B-PromptReco-v2/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_DoubleElectron2016C"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016C-PromptReco-v2/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   },
-	  { "dtag":"Data13TeV_DoubleElectron2016D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016D-PromptReco-v2/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt"   }
+          { "dtag":"Data13TeV_MuEG2016B"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016B-23Sep2016-v3/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016C"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016C-23Sep2016-v1/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016D"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016D-23Sep2016-v1/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016E"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016E-23Sep2016-v1/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016F"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016F-23Sep2016-v1/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016G"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016G-23Sep2016-v1/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016H_v2"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016H-PromptReco-v2/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_MuEG2016H_v3"                 ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/MuonEG/Run2016H-PromptReco-v3/MINIAOD"]           ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+          { "dtag":"Data13TeV_SingleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016B-23Sep2016-v3/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016C"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016C-23Sep2016-v1/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016D-23Sep2016-v1/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016E"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016E-23Sep2016-v1/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016F"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016F-23Sep2016-v1/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016G"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016G-23Sep2016-v1/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016H_v2"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016H-PromptReco-v2/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleElectron2016H_v3"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleElectron/Run2016H-PromptReco-v3/MINIAOD"]   ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+          { "dtag":"Data13TeV_SingleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016B-23Sep2016-v3/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016C"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016C-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016D-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016E"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016E-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016F"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016F-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016G"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016G-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016H_v2"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016H-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_SingleMu2016H_v3"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/SingleMuon/Run2016H-PromptReco-v3/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+          { "dtag":"Data13TeV_DoubleMu2016B"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016B-23Sep2016-v3/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016C"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016C-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016D"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016D-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016E"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016E-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016F"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016F-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016G"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016G-23Sep2016-v1/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016H_v2"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016H-PromptReco-v2/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleMu2016H_v3"             ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleMuon/Run2016H-PromptReco-v3/MINIAOD"]       ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+          { "dtag":"Data13TeV_DoubleElectron2016B"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016B-23Sep2016-v3/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016C"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016C-23Sep2016-v1/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016D"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016D-23Sep2016-v1/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016E"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016E-23Sep2016-v1/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016F"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016F-23Sep2016-v1/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016G"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016G-23Sep2016-v1/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016H_v2"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016H-PromptReco-v2/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   },
+	  { "dtag":"Data13TeV_DoubleElectron2016H_v3"       ,  "xsec":1.0         , "br":[ 1.0 ]      , "dset":["/DoubleEG/Run2016H-PromptReco-v3/MINIAOD"]         ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt"   }
       ]
     },
     {
@@ -102,21 +127,13 @@
     },
     {
        "tag":"W#rightarrow l#nu",
-      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_mcbased_SM",   "2l2v_datadriven", "2l2v_datadriven_SM"],
+      "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_mcbased_SM",   "2l2v_datadriven", "2l2v_datadriven_SM", "2l2v_photoncontrol","2l2v_photonsOnly"],
      "isdata":false,
       "color":623, 
+      "2l2v_photonsOnly":{"suffix":"reweighted"},
       "data":[ 
         { "dtag":"MC13TeV_WJets_2016"                            ,  "xsec":61526.7       , "br":[ 0.15 ]  , "dset":["/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
-	{ "dtag":"MC13TeV_WJets_ext1_2016"                            ,  "xsec":61526.7       , "br":[ 0.85 ]  , "dset":["/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]}
-      ]
-    },
-     {
-     "tag":"W#rightarrow l#nu, HT>100",
-      "keys":["2l2v_2016", "2l2v_photoncontrol","2l2v_photonsOnly"],
-      "isdata":false,
-      "color":623,
-      "2l2v_photonsOnly":{"suffix":"reweighted"},
-      "data":[
+	{ "dtag":"MC13TeV_WJets_ext1_2016"                            ,  "xsec":61526.7       , "br":[ 0.85 ]  , "dset":["/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]},
       { "dtag":"MC13TeV_WJets_HT-100To200_ext1_2016"                            ,  "xsec":1345        , "br":[ 1.0 ]                 , "dset":["/WJetsToLNu_HT-100To200_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]},
       { "dtag":"MC13TeV_WJets_HT-200To400_2016"                            ,  "xsec":359.7       , "br":[ 0.5 ]                 , "dset":["/WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]},
       { "dtag":"MC13TeV_WJets_HT-200To400_ext1_2016"                            ,  "xsec":359.7       , "br":[ 0.5 ]                 , "dset":["/WJetsToLNu_HT-200To400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/MINIAODSIM"]},
@@ -263,7 +280,7 @@
       "color":52,
       "2l2v_photonsOnly":{"suffix":"reweighted"},	
       "data":[
-        { "dtag":"MC13TeV_WGToLNuG_2016" , "xsec":405.271, "br":[ 1.0 ] , "dset":["/WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"]}
+        { "dtag":"MC13TeV_WGToLNuG_2016" , "xsec":489, "br":[ 1.0 ] , "dset":["/WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM"]}
       ]
     },
     {
@@ -328,9 +345,14 @@
       "msize":0.7,
       "2l2v_photonsOnly":{"suffix":"reweighted"},
       "data":[
-          { "dtag":"Data13TeV_SinglePhoton2016B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016B-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt" },
-	  { "dtag":"Data13TeV_SinglePhoton2016C",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016C-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt" },
-	   { "dtag":"Data13TeV_SinglePhoton2016D",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016D-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt" }
+          { "dtag":"Data13TeV_SinglePhoton2016B",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016B-23Sep2016-v3/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016C",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016C-23Sep2016-v1/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016D",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016D-23Sep2016-v1/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016E",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016E-23Sep2016-v1/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016F",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016F-23Sep2016-v1/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016G",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016G-23Sep2016-v1/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016H_v2",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016H-PromptReco-v2/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" },
+	  { "dtag":"Data13TeV_SinglePhoton2016H_v3",  "xsec":1.0     , "br":[ 1.0 ]    ,   "dset":["/SinglePhoton/Run2016H-PromptReco-v3/MINIAOD"]      ,  "lumiMask":"$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt" }
       ]
     }, 
     {
@@ -349,7 +371,7 @@
       "isinvisible":true,      
       "isdata":false,
       "color":41,
-	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu, HT>100_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
+	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
     },
     {
       "tag":"Genuine (ewk) MET",
@@ -681,12 +703,6 @@
       "lwidth":2,
       "lstyle":2,
       "fill":0,
-      "data":[
-        { "dtag":"MC13TeV_VBFtoH2000toZZto2L2Nu_powheg_2016"     ,  "xsec":1.0      , "br":[0.029264]    , "dset":["/VBF_HToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/MINIAODSIM"] }
-      ]
-    },
-    {
-      "tag":"ggH(2500)",
       "keys":["2l2v_2016", "2l2v_mcbased", "2l2v_datadriven", "2l2v_datadrivenplot", "2l2v_datadriven_SM", "2l2v_mcbased_SM"],
       "isinvisible":true,
       "isdata":false,

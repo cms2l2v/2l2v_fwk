@@ -29,41 +29,43 @@ phase=-1
 ###################################################
 
 MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
-based_key="2l2v_mcbased_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
-jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH.json' 
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter.root'
+based_key="2l2v_datadriven_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
+jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH.json'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_02_06_DATA_DRIVEN_GGH_full2016_NewWidth_V2.root' #plotter_2017_02_06_Signal_NewWidth_GGH.root' #plotter_2017_01_30_Signal_NewWidth.root'  #plotter_2017_01_29.root #plotter_2017_01_04_full2016.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets","geq1jets","vbf","eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-MASS = [ 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
-SUBMASS = [ 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
+#MASS = [400,600,800]
+#SUBMASS = [400,600,800]
+MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
+SUBMASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
-LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB " #--blind "
+LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB --blind"
 #LandSArgCommonOptions=" --indexvbf 9 --subNRB --subDY $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2nu/computeLimits_14_04_20/dy_from_gamma_fixed.root --interf --BackExtrapol "
 
 for model in MODELS:
    for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
       for bin in BINS:
          if(model=="SM" or model=="MELA"):
-            for CP in [1.0, 0.6, 0.3]:
-               if(CP!=1.0 and not ',' in bin):continue  #only do subchannel for SM
+            for CP in [10.0]:
+               #if(CP!=100.0 and not ',' in bin):continue  #only do subchannel for SM
                for BRN in [0.0]:
-                   CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
+                   #CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
                    #suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN) 
                    suffix = "_cp%4.2f_brn%4.2f" % (CP, BRN)
-                   if(CPSQ<=0): suffix="" #SM case
+                   #if(CPSQ<=0): suffix="" #SM case
 
-                   if ( CPSQ<=0 and not BRN==0.0):continue #SM case
-                   if ( (CPSQ / (1-BRN))>1.0 ):continue
+                   #if ( CPSQ<=0 and not BRN==0.0):continue #SM case
+                   #if ( (CPSQ / (1-BRN))>1.0 ):continue
 
                    #Run limit for ShapeBased GG+VBF
-                   signalSuffixVec += [ suffix ]
-                   OUTName         += ["SB13TeV_SM"]
-                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
-                   BIN             += [bin]
-                   MODEL           += [model]
+                   #signalSuffixVec += [ suffix ]
+                   #OUTName         += ["SB13TeV_SM"]
+                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape --scaleVBF "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
+                   #BIN             += [bin]
+                   #MODEL           += [model]
 
                    signalSuffixVec += [ suffix ]
                    OUTName         += ["SB13TeV_SM_GGF"]
@@ -71,11 +73,11 @@ for model in MODELS:
                    BIN             += [bin]
                    MODEL          += [model]
 
-                   signalSuffixVec += [ suffix ]
-                   OUTName         += ["SB13TeV_SM_VBF"]
-                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
-                   BIN             += [bin]
-                   MODEL           += [model]
+                   #signalSuffixVec += [ suffix ]
+                   #OUTName         += ["SB13TeV_SM_VBF"]
+                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   #BIN             += [bin]
+                   #MODEL           += [model]
 
          elif(model=="RsGrav"):
                    signalSuffixVec += [ "" ]
@@ -407,28 +409,19 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines('mkdir -p out;\ncd out;\n')
            SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("sh combineCards.sh;\n")
-
-           SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HiggsWidth:higgswidth --PO verbose --PO \'is2l2nu\' \n")
+	   SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HiggsWidth:higgswidth --PO verbose --PO \'is2l2nu\' \n")
            #compute pvalue
-           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  card_combined.dat > COMB.log;\n")
+           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root > COMB.log;\n")
 
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
-
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root > COMB.log;\n") 
-
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + "  card_combined.dat > COMB.log;\n") 
-  
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters CMS_zz4l_mu=0.0 -t -1 --setPhysicsModelParameterRanges CMS_zz4l_mu=0.0,100 > COMB.log;\n") 
               #SCRIPT.writelines("combine -M MaxLikelihoodFit -m " +  str(m) + " --saveNormalizations card_combined.dat;\n")
               #SCRIPT.writelines("extractFitNormalization.py mlfit.root hzz2l2v_"+str(m)+"_?TeV.root > fit.txt;\n")
 
            ### THIS is for toy (hybridNew) fit
            else:
-
               SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root > COMB.log;\n") #first run assymptotic limit to get quickly the range of interest
-
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + "  card_combined.dat > COMB.log;\n") #first run assymptotic limit to get quickly the range of interest
-
               SCRIPT.writelines("rm higgsCombineTest.Asymptotic*.root;\n")
               SCRIPT.writelines("RMIN=`cat COMB.log | grep 'Expected  2.5%' | awk '{print $5;}'`;\n") #get the low edge 2sigma band from the assymptotic --> will be used to know where to put points
               SCRIPT.writelines("RMAX=`cat COMB.log | grep 'Expected 97.5%' | awk '{print $5;}'`;\n") #get the high edge 2sigma band from the assymptotic --> will be used to know where to put points
@@ -440,12 +433,12 @@ for signalSuffix in signalSuffixVec :
               SCRIPT.writelines("rm grid.root;\n")
               SCRIPT.writelines("sh grid.sh 1 16 &> /dev/null;\n")
               SCRIPT.writelines("rm higgsCombinegrid.HybridNew.*;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+";\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.025;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.160;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.500;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.840;\n")
-              SCRIPT.writelines("combine card_combined.dat -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.975;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+";\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.025;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.160;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.500;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.840;\n")
+              SCRIPT.writelines("combine workspace.root -M HybridNew --grid=grid.root -m "+str(m)+" --expectedFromGrid 0.975;\n")
               SCRIPT.writelines("hadd -f higgsCombineTest.HybridNewMerged.mH"+str(m)+".root  higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
               SCRIPT.writelines("rm higgsCombineTest.HybridNew.mH"+str(m)+"*.root;\n")
 
@@ -471,7 +464,7 @@ for signalSuffix in signalSuffixVec :
       else:
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
 
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\",  false, true, 13 , 36814.143 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\", false, true, 13 , 36814.143 )'")
       #os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
       #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 13 , 19.8 )'")
       #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/XSec_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  false, false, 13 , 19.8 )'")

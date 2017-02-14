@@ -10,8 +10,8 @@ wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_
 # Installation for 80X (2017) => was 8_0_14 (2016)
 ```bash 
 export SCRAM_ARCH=slc6_amd64_gcc530
-cmsrel CMSSW_8_0_20
-cd CMSSW_8_0_20/src/
+cmsrel CMSSW_8_0_25
+cd CMSSW_8_0_25/src/
 cmsenv
 
 # The following fail for the moment:
@@ -35,19 +35,21 @@ wget https://raw.githubusercontent.com/cms-analysis/HiggsAnalysis-CombinedLimit/
 wget https://raw.githubusercontent.com/cms-analysis/HiggsAnalysis-CombinedLimit/74x-root6/interface/th1fmorph.h -P UserCode/llvv_fwk/interface/
 find UserCode/llvv_fwk/ -type f -name '*.cc' -exec sed -i -e 's/HiggsAnalysis\/CombinedLimit\/interface\/th1fmorph.h/UserCode\/llvv_fwk\/interface\/th1fmorph.h/g' {} \;
 
-scramv1 b -j 16
+scramv1 b -j 16 #WARNING: this won't work! You first need to do "Step to use MELA" below and then compile
 ```
 
 #Step to use MELA
+```bash 
 cd CMSS_X_Y_Z/src
 git clone https://github.com/cms-analysis/HiggsAnalysis-ZZMatrixElement.git ZZMatrixElement
 cd ZZMatrixElement
-. setup.sh -j 12
-
+sh setup.sh -j 12
+```
 Now, ONLY after the code has finished to compile insert inside UserCode/llvv_fwk/BuildFile.xml
+``` c++
 <use name="ZZMatrixElement/MELA"/>
-
-scram b -j 12
+scram b -j 12  
+```
 
 # An important note about PR in 80X (2016)
 Please before doing your PR, be sure to:
