@@ -53,7 +53,7 @@ int main(int argc,const char* argv[])
 
   TFile *gInF;
 
-  dilCh="ll";
+  dilCh="ee";
 
   //open the files with the input plots
   string gDataFile="plotter.root";
@@ -78,7 +78,7 @@ int main(int argc,const char* argv[])
   //  TFile *llInF=TFile::Open(gDataFile.c_str());
   gInF=TFile::Open(gDataFile.c_str());
 
-  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance"};
+  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance","zpt_rebin","qt"};
   std::vector<string> cat = {"eq0jets","geq1jets","vbf"};
 
   for(unsigned int icat=0; icat<cat.size(); icat++)
@@ -228,47 +228,27 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   TH1D *hg=NULL, *hpureg=NULL;
   TH1D *hn=NULL;
 
-  for(size_t ig=0; ig<mcg.size(); ig++)
-    {
-      if(ch=="ll")
-	{// gamma selection
-	  if(hg) { // include impurity of photon events
-	    hg->Add( (TH1D *)gF->Get( (mcg[ig]+"/gamma"+cat+"_"+distr).c_str()) );
-	    hn->Add( (TH1D *)gF->Get( (mcg[ig]+"/gamma"+cat+"_"+distr).c_str()) );
-	  }
-	  else{ // 1st gamma plot
-	    hg=(TH1D *)gF->Get( (mcg[ig]+"/gamma"+cat+"_"+distr).c_str() );
-	    std::cout << "test2 " << ("mcg_"+cat+"_"+distr).c_str()  << std::endl;
-
-	    hg=(TH1D *)hg->Clone( (cat+"mcg_"+cat+"_"+distr).c_str() );
-	    hn=(TH1D *)hg->Clone( (cat+"mcg_"+cat+"_"+distr).c_str() ); hn->Reset();
-	  }
-	  // hg->Add( (TH1D *)gF->Get(mcg[ig]+"/ee"+cat+"_"+distr) );
-	
-	}
-      else
-	{
-	  if(hg){
-	    hg->Add( (TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str()) );
-	    //	    hn->Add( (TH1D *)gF->Get( (mcg[ig]+"/gamma"+ch+cat+"_"+distr).c_str()) ); 
-	  }
-	  else{
-	    std::cout << "test3: " << ("mcg_"+ch+cat+"_"+distr).c_str()  << std::endl; 
-	    hg=(TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() );
-	    hg=(TH1D *) hg->Clone(("mcg_"+ch+cat+"_"+distr).c_str());
-	  }
-	}
-      
-      if(ig==0){
-	TString pureName(hg->GetName());
-	pureName.ReplaceAll("mcg","mcpureg");
-	hpureg=(TH1D *)hg->Clone(pureName);
-      }
+  if(ch=="ll")
+    { 
+      hg=(TH1D *) gF->Get( (mcg[0]+"/ee"+cat+"_"+distr).c_str() ); 
+      hg=(TH1D *) hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); 
+      hg->Add((TH1D *) gF->Get( (mcg[0]+"/mumu"+cat+"_"+distr).c_str()) ); 
     }
+  else
+    {
+      hg=(TH1D *) gF->Get( (mcg[0]+"/"+ch+cat+"_"+distr).c_str() ); 
+      hg=(TH1D *) hg->Clone( ("mcg_"+ch+cat+"_"+distr).c_str() ); 
+    }    
+
+
+  TString pureName(hg->GetName());                                                                                                                                 
+  pureName.ReplaceAll("mcg","mcpureg");                                                                                                                            
+  hpureg=(TH1D *)hg->Clone(pureName);   
+
   if(hg==0 || hpureg==0) return;
   hg->SetDirectory(0);
   hpureg->SetDirectory(0);
-  hn->SetDirectory(0);
+  //  hn->SetDirectory(0);
   if(rebin) {
     hg->Rebin();
     hpureg->Rebin();
@@ -289,11 +269,11 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   float gscale(hg->Integral());
   hg->Scale(dyscale/gscale);
   
-  hpureg->Scale(dyscale/gscale);
+  //hpureg->Scale(dyscale/gscale);
   // hg->Scale(1./gscale);
   // hpureg->Scale(1./gscale);
-  float nscale(hn->Integral());
-  hn->Scale(dyscale/(gscale-nscale));
+  //  float nscale(hn->Integral());
+  //hn->Scale(dyscale/(gscale-nscale));
 
 
   // Estimate systematic
@@ -378,8 +358,8 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   hsyst->GetYaxis()->SetRangeUser(-1.,1.5);
 
   hsyst->GetXaxis()->SetTitle("MET threshold [GeV]");//hdy->GetXaxis()->GetTitle());
-  hsyst->GetXaxis()->SetLabelSize(0.12);
-  hsyst->GetXaxis()->SetTitleSize(0.14);
+  hsyst->GetXaxis()->SetLabelSize(0.06);
+  hsyst->GetXaxis()->SetTitleSize(0.05);
   hsyst->GetXaxis()->SetTitleOffset(0.8);
   
   cs->Modified();
@@ -409,11 +389,11 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   t1->SetRightMargin(0.05);
 
   
-  
+  /*
   TH1D *hfakes=(TH1D *)hn->Clone("fakes");
   hfakes->SetDirectory(0);
   if(smoothFakesHisto) hfakes->Smooth();
-
+  */
 
   
   hg->SetTitle("#gamma + jets");
@@ -438,7 +418,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   hg->SetFillColor(kGreen-10);
   hg->Draw("ehist");
 
-
+  /*
   if(!purePhoton){
     //    hfakes->Add(hpureg,-1);
     hfakes->SetTitle("Fakes");
@@ -449,7 +429,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
     hfakes->SetFillColor(kGray);
     hfakes->Draw("histsame");   
   }
-
+  */
 
   hdy->SetTitle("DY #rightarrow ll");
   hdy->Draw("esame");
@@ -497,10 +477,12 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
     {
       leg->AddEntry(hdy,hdy->GetTitle(),"P");
       leg->AddEntry(hg,hg->GetTitle(),"F");
+      /*
       if(!purePhoton) {
 	leg->AddEntry(hfakes,hfakes->GetTitle(),"F");
 	leg->SetNColumns(3);
       }
+      */
     }
   else
     {
