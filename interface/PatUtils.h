@@ -78,7 +78,7 @@ namespace patUtils
    namespace llvvMuonId { enum MuonId  {Loose, Soft, Tight, tkHighPT, TightAndTlkHighPt, StdLoose, StdSoft, StdMedium, StdTight}; }
    namespace llvvPhotonId { enum PhotonId  {Loose, Medium, Tight}; }
    namespace llvvElecIso{ enum ElecIso {Veto, Loose, Medium, Tight}; }
-   namespace llvvMuonIso{ enum MuonIso {Loose,Tight, H4lWP}; }
+   namespace llvvMuonIso{ enum MuonIso {Loose,Tight, H4lWP, TightBoosted, TightAndTkRelatBoosted}; }
    namespace CutVersion { enum CutSet {Spring15Cut25ns, ICHEP16Cut, Moriond17Cut}; }
 
    bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
@@ -89,8 +89,9 @@ namespace patUtils
    bool passIso (VersionedPatElectronSelector id, pat::Electron& el);
    bool passIso(pat::Electron& el,  int IsoLevel, int cutVersion, double rho=0.0 ); // Old PHYS15 Iso
    bool passIso(pat::Muon&     mu,  int IsoLevel, int cutVersion);
-   bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
-   bool passVBFPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh); 
+   bool passIso(pat::Muon& mu, int IsoLevel, int cutVersion, std::vector<pat::PackedCandidate> thePats, pat::MuonCollection muons, reco::Vertex& vertex );
+   bool passPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh);
+   bool passVBFPhotonTrigger(fwlite::Event &ev, float &triggerThreshold, float &triggerPrescale, float& triggerThresholdHigh);
    bool passPFJetID(std::string label, pat::Jet jet);
    bool passPUJetID(pat::Jet j);
 
@@ -100,13 +101,15 @@ namespace patUtils
    double alphaVariation(const fwlite::Event& ev);
    double pdfVariation(const fwlite::Event& ev);
 
-   double getHTScaleFactor(TString dtag, double lheHt);                                                                                               
+   double getHTScaleFactor(TString dtag, double lheHt);
   bool outInOnly(const reco::Muon &mu)  ;
-  bool preselection(const reco::Muon &mu,bool selectClones_)  ; 
-  bool tighterId(const reco::Muon &mu)  ; 
+  bool preselection(const reco::Muon &mu,bool selectClones_)  ;
+  bool tighterId(const reco::Muon &mu)  ;
   bool tightGlobal(const reco::Muon &mu)  ;
   bool safeId(const reco::Muon &mu)  ;
   bool partnerId(const reco::Muon &mu)  ;
+  float computePFphotonIsolation(std::vector<pat::PackedCandidate>, float , float , const pat::Muon &, pat::MuonCollection , reco::Vertex& vertex);
+  float makeTkIsoCloseBySafe( float coneSize, float initialValue, const pat::Muon &theMuon, pat::MuonCollection muons);
 
 
 
@@ -132,12 +135,12 @@ namespace patUtils
      void Clear(){map.clear();}
      void FillBadEvents(std::string path);
 
-     //     New Met Filters for 2016 Run II:    
+     //     New Met Filters for 2016 Run II:
      bool passBadPFMuonFilter(const fwlite::Event& ev);
-     bool passBadChargedCandidateFilter(const fwlite::Event& ev);   
-     
+     bool passBadChargedCandidateFilter(const fwlite::Event& ev);
+
      int  passMetFilterInt(const fwlite::Event& ev);
-     int  passMetFilterInt(const fwlite::Event& ev, bool is2016); 
+     int  passMetFilterInt(const fwlite::Event& ev, bool is2016);
      bool passMetFilter(const fwlite::Event& ev);
      bool BadGlobalMuonTaggerFilter(const fwlite::Event& ev,std::unique_ptr<edm::PtrVector<reco::Muon>> &out, bool selectClones=false);
      bool BadGlobalMuonTaggerFilter(const fwlite::Event& ev,std::unique_ptr<std::vector<reco::Muon*>> &out, bool selectClones=false);
