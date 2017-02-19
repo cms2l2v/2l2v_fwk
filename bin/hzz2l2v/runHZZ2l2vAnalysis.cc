@@ -662,7 +662,15 @@ int main(int argc, char* argv[])
   pat::MET::METCorrectionLevel metcor = pat::MET::METCorrectionLevel::Type1XY;
   //jet energy scale and uncertainties (2015 vs 2016 depends on the path "jecDir" )
   TString jecDir = runProcess.getParameter<std::string>("jecDir");
-  if (is2016MC || is2016data) { jecDir+="80X/"; }
+  //if (is2016MC || is2016data) { jecDir+="80X/"; }
+  if (is2016data) {
+      if(dtag.Contains("2016B") || dtag.Contains("2016C") ||dtag.Contains("2016D")) jecDir+="Summer16_80X/Summer16_23Sep2016BCDV4_DATA/";
+      else if(dtag.Contains("2016E") || dtag.Contains("2016F")) jecDir+="Summer16_80X/Summer16_23Sep2016EFV4_DATA/";
+      else if(dtag.Contains("2016G")) jecDir+="Summer16_80X/Summer16_23Sep2016GV4_DATA/";
+      else if(dtag.Contains("2016H")) jecDir+="Summer16_80X/Summer16_23Sep2016HV4_DATA/";
+  }
+  if(is2016MC) {jecDir+="Summer16_80X/Summer16_23Sep2016V4_MC/";}
+
 
   gSystem->ExpandPathName(jecDir);
 
