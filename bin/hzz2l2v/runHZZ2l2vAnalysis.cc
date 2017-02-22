@@ -1183,6 +1183,7 @@ int main(int argc, char* argv[])
          std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
          LorentzVector muDiff(0,0,0,0);
          LorentzVector elDiff(0,0,0,0);
+	 LorentzVector elDiff_forMET(0,0,0,0);
          for(size_t ilep=0; ilep<leptons.size(); ilep++){
              bool passKin(true),passId(true),passIso(true);
              bool passLooseLepton(true), passSoftMuon(true), passSoftElectron(true), passVetoElectron(true);
@@ -1258,11 +1259,16 @@ int main(int argc, char* argv[])
              //apply electron corrections
              if(abs(lid)==11  && passIso && passId){
                 elDiff -= leptons[ilep].p4();
+                if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479)elDiff_forMET -= leptons[ilep].p4()*0.006;
+                else elDiff_forMET -= leptons[ilep].p4()*0.015;
+
                 if (isMC || is2015data || is2016data){
                 	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
                 	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
                 }
                 elDiff += leptons[ilep].p4();
+                if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479)elDiff_forMET += leptons[ilep].p4()*0.006;
+                else elDiff_forMET += leptons[ilep].p4()*0.015;
              }
 
               //kinematics
@@ -1346,16 +1352,16 @@ int main(int argc, char* argv[])
 
            //update the met for lepton energy scales
            met.setP4(met.p4() - muDiff - elDiff); //note this also propagates to all MET uncertainties
-           met.setUncShift(met.px() - muDiff.px()*0.01, met.py() - muDiff.py()*0.01, met.sumEt() - muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
-           met.setUncShift(met.px() + muDiff.px()*0.01, met.py() + muDiff.py()*0.01, met.sumEt() + muDiff.pt()*0.01, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
-           met.setUncShift(met.px() - elDiff.px()*0.01, met.py() - elDiff.py()*0.01, met.sumEt() - elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
-           met.setUncShift(met.px() + elDiff.px()*0.01, met.py() + elDiff.py()*0.01, met.sumEt() + elDiff.pt()*0.01, pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
+           met.setUncShift(met.px() - muDiff.px()*0.002, met.py() - muDiff.py()*0.002, met.sumEt() - muDiff.pt()*0.002, pat::MET::METUncertainty::MuonEnUp);   //assume 1% uncertainty on muon rochester
+           met.setUncShift(met.px() + muDiff.px()*0.002, met.py() + muDiff.py()*0.002, met.sumEt() + muDiff.pt()*0.002, pat::MET::METUncertainty::MuonEnDown); //assume 1% uncertainty on muon rochester
+           met.setUncShift(met.px() - elDiff_forMET.px(), met.py() - elDiff_forMET.py(), met.sumEt() - elDiff_forMET.pt(), pat::MET::METUncertainty::ElectronEnUp);   //assume 1% uncertainty on electron scale correction
+           met.setUncShift(met.px() + elDiff_forMET.px(), met.py() + elDiff_forMET.py(), met.sumEt() + elDiff_forMET.pt(), pat::MET::METUncertainty::ElectronEnDown); //assume 1% uncertainty on electron scale correction
 
          //
          //JET/MET ANALYSIS
          //
          //add scale/resolution uncertainties and propagate to the MET
-         if(isMC || is2015data) utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);
+         if(isMC || is2016data) utils::cmssw::updateJEC(jets,jesCor,totalJESUnc,rho,vtx.size(),isMC);
 
          //select the jets
          std::map<string, pat::JetCollection> selJetsVar;
