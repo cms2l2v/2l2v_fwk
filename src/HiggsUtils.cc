@@ -659,7 +659,8 @@ namespace higgs{
         //BSM reweighiting
         mela.resetInputEvent();
 
-	heavyWidth=heavyWidth*CP*CP;
+	heavyWidth=CP;
+	//heavyWidth=heavyWidth*CP*CP;
 
 	if( !MelaMode.Contains("Interf") ){
         	if(isVBF){
@@ -766,19 +767,19 @@ namespace higgs{
         cpWeight_MapggH[10.0][2500] = 0.0000114681702010937;
         cpWeight_MapggH[10.0][3000] = 0.0000044689168165523;
 
-        cpWeight_MapggH[0.0][200] = 0.0087960014952967059;
-        cpWeight_MapggH[0.0][300] = 0.0380223185991297036;
-        cpWeight_MapggH[0.0][400] = 0.0378391037604890526;
-        cpWeight_MapggH[0.0][500] = 0.0153933943681768444;
-        cpWeight_MapggH[0.0][600] = 0.0060060078793470950;
-        cpWeight_MapggH[0.0][700] = 0.0035017364511450541;
-        cpWeight_MapggH[0.0][800] = 0.0015170058286798280;
-        cpWeight_MapggH[0.0][900] = 0.0009340446547660140;
-        cpWeight_MapggH[0.0][1000] = 0.0004956542531177073;
-        cpWeight_MapggH[0.0][1500] = 0.0000726729453484678;
-        cpWeight_MapggH[0.0][2000] = 0.0000280877081111885;
-        cpWeight_MapggH[0.0][2500] = 0.0000114681702010937;
-        cpWeight_MapggH[0.0][3000] = 0.0000044689168165523;
+        cpWeight_MapggH[5.0][200] = 0.0087960014952967059;
+        cpWeight_MapggH[5.0][300] = 0.0380223185991297036;
+        cpWeight_MapggH[5.0][400] = 0.0378391037604890526;
+        cpWeight_MapggH[5.0][500] = 0.0153933943681768444;
+        cpWeight_MapggH[5.0][600] = 0.0060060078793470950;
+        cpWeight_MapggH[5.0][700] = 0.0035017364511450541;
+        cpWeight_MapggH[5.0][800] = 0.0015170058286798280;
+        cpWeight_MapggH[5.0][900] = 0.0009340446547660140;
+        cpWeight_MapggH[5.0][1000] = 0.0004956542531177073;
+        cpWeight_MapggH[5.0][1500] = 0.0000726729453484678;
+        cpWeight_MapggH[5.0][2000] = 0.0000280877081111885;
+        cpWeight_MapggH[5.0][2500] = 0.0000114681702010937;
+        cpWeight_MapggH[5.0][3000] = 0.0000044689168165523;
 
         //GGH Continuum weights, Narrow Resonance
         cpWeight_MapggH[1.0][200] = 0.0043970548015714950;
