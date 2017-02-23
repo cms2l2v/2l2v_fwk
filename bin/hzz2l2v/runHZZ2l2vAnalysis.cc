@@ -178,7 +178,6 @@ int main(int argc, char* argv[])
         varNames.push_back("_puup");         varNames.push_back("_pudown");      //pileup uncertainty
         varNames.push_back("_eff_bup");      varNames.push_back("_eff_bdown");    //btag veto
         varNames.push_back("_lepveto");                                           //3rd lepton veto
-        varNames.push_back("_th_factup");    varNames.push_back("_th_factdown"); //factorization and renormalization scales
         varNames.push_back("_th_pdf");                                           //pdf
         varNames.push_back("_th_alphas");                                         //alpha_s (QCD)
      }
@@ -1476,8 +1475,6 @@ int main(int argc, char* argv[])
           float weight = initialWeight;
 
            //Theoretical Uncertanties: PDF, Alpha and Scale
-           if(varNames[ivar]=="_th_factup")     weight *= std::max(0.9, std::min(scaleUncVar.first , 1.1));
-           if(varNames[ivar]=="_th_factdown")   weight *= std::max(0.9, std::min(scaleUncVar.second, 1.1));
            if(varNames[ivar]=="_th_alphas")     weight *= patUtils::alphaVariation(ev);
            if(varNames[ivar]=="_th_pdf")        weight *= patUtils::pdfVariation(ev);
 

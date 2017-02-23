@@ -9,7 +9,7 @@
 #include "UserCode/llvv_fwk/interface/RootUtils.h"
 #include "UserCode/llvv_fwk/interface/MacroUtils.h"
 #include "UserCode/llvv_fwk/interface/HxswgUtils.h"
-#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+#include "UserCode/llvv_fwk/interface/th1fmorph.h"
 
 #include "TSystem.h"
 #include "TFile.h"
@@ -1711,22 +1711,18 @@ int main(int argc, char* argv[])
 //            double QCDScaleK2ggH2 [] = { 1.20, 1.17, 1.20, 1.21, 1.20, 1.20, 1.17, 1.19, 1.19, 1.19, 1.19, 1.19, 1.19};
 
             //13TeV values  
-            double QCDScaleMass   [] = {200, 400, 600, 800, 1000, 1050, 1100, 9999};
-            double QCDScaleK0ggH0 [] = {1.189, 1.341, 1.453, 1.680, 1.641, 1.641, 1.641, 1.641};
-            double QCDScaleK0ggH1 [] = {0.928, 0.913, 0.905, 0.902, 0.905, 0.905, 0.905, 0.905};
-            double QCDScaleK1ggH1 [] = {1.078, 1.096, 1.105, 1.108, 1.104, 1.104, 1.104, 1.104};
-            double QCDScaleK1ggH2 [] = {1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000};
-            double QCDScaleK2ggH2 [] = {0.982, 0.983, 0.994, 0.979, 1.000, 1.000, 1.000, 1.000};
+            double QCDScaleMass        [] = {  200,   300,   400,   600,   800,  1000,  1500,  2000,  2500,  3000,  9999};
+            double QCDScaleggHeq0jets  [] = {2.042, 1.416, 1.283, 1.335, 1.352, 1.425, 1.542, 1.627, 1.659, 1.638, 1.638};
+            double QCDScaleggHgeq1jets [] = {1.305, 1.219, 1.181, 1.168, 1.172, 1.183, 1.201, 1.219, 1.220, 1.219, 1.219};
+            double QCDScaleggHvbf      [] = {1.217, 1.282, 1.060, 1.215, 1.178, 1.195, 1.201, 1.226, 1.232, 1.199, 1.199};
 
             double UEPSf0 []         = {0.952, 0.955, 0.958, 0.964, 0.966, 0.954, 0.946, 0.931, 0.920, 0.920, 0.920, 0.920, 0.920};
             double UEPSf1 []         = {1.055, 1.058, 1.061, 1.068, 1.078, 1.092, 1.102, 1.117, 1.121, 1.121, 1.121, 1.121, 1.121};
             double UEPSf2 []         = {1.059, 0.990, 0.942, 0.889, 0.856, 0.864, 0.868, 0.861, 0.872, 0.872, 0.872, 0.872, 0.872}; 
 
-           TGraph* TG_QCDScaleK0ggH0 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK0ggH0);
-           TGraph* TG_QCDScaleK0ggH1 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK0ggH1);
-           TGraph* TG_QCDScaleK1ggH1 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK1ggH1);
-           TGraph* TG_QCDScaleK1ggH2 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK1ggH2);
-           TGraph* TG_QCDScaleK2ggH2 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK2ggH2);
+           TGraph* TG_QCDScaleggHeq0jets  = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,  QCDScaleggHeq0jets);
+           TGraph* TG_QCDScaleggHgeq1jets = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleggHgeq1jets);
+           TGraph* TG_QCDScaleggHvbf      = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,      QCDScaleggHvbf);
 
            TGraph* TG_UEPSf0         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf0);
            TGraph* TG_UEPSf1         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf1);
@@ -1755,34 +1751,16 @@ int main(int argc, char* argv[])
    
                  //uncertainties to be applied only in higgs analyses
                  if(mass>0){
-                    //uncertainty on Th XSec
-                    //if(it->second.isSignal)shapeInfo.uncScale["theoryUncXS_HighMH"] = std::min(1.0+1.5*pow((mass/1000.0),3),2.0);
-
-                    //if(mass==125){
-                    //if(it->second.shortName.find("ggH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_gg"]    = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
-                    //if(it->second.shortName.find("qqH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_qqbar"] = integral*0.04;}
-                    //}else{
-                    //if(it->second.shortName.find("ggH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_gg"]    = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
-                    //if(it->second.shortName.find("qqH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_qqbar"] = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
-                    //}
-
-                    //underlying events
-                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf0->Eval(mass,NULL,"S"));}
-                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf1->Eval(mass,NULL,"S"));}
-                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
-                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
-
+            
                     //bin migration at th level
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(TG_QCDScaleK0ggH0->Eval(mass,NULL,"S")-1);}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK0ggH1->Eval(mass,NULL,"S")-1);}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK1ggH1->Eval(mass,NULL,"S")-1);}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK1ggH2->Eval(mass,NULL,"S")-1);}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S")-1);}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(TG_QCDScaleggHeq0jets->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH"] = integral*(TG_QCDScaleggHgeq1jets->Eval(mass,NULL,"S")-1);} 
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggH"] = integral*(TG_QCDScaleggHvbf->Eval(mass,NULL,"S")-1);}
+		  
                  }//end of uncertainties to be applied only in higgs analyses
 
-                 //if(it->second.shortName.find("ww")==0){shapeInfo.uncScale["XSec_sys_WW"] = integral*(systpostfix.Contains('8')?0.097:0.097);}
-                 //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["XSec_sys_WZ"] = integral*(systpostfix.Contains('8')?0.056:0.056);}
+           
+          
 		 
                     if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.063;}
                     if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.054;}
@@ -1791,7 +1769,7 @@ int main(int argc, char* argv[])
                     if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.051;}
                     if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("vbf" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.40;}
                  
-                 //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["_th_wzmissingewk"] = integral*0.03;} //now the uncertainty is correctly implemented and depends on m_wz.
+         
               }
            }
          }
