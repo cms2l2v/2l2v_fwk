@@ -43,6 +43,12 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
+//------------------ needed headers for slew rate corrections -------------------//
+#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "DataFormats/EcalDetId/interface/EEDetId.h"
+
 #include <istream>
 #include <fstream>
 #include <iostream>
