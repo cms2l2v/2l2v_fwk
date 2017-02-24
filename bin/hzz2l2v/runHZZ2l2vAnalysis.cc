@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
         varNames.push_back("_signal_lshapeup"); varNames.push_back("_signal_lshapedown"); //signal line shape (NNLO + interf)
         varNames.push_back("_signal_normup"); varNames.push_back("_signal_normdown"); //signal scale      (NNLO + interf)
      }*/
-     if(isMC_ZZ){
+     if(isMC_ZZ || isMC_WZ){
         varNames.push_back("_th_ewkup"); varNames.push_back("_th_ewkdown"); //EWK+QCD corrections
      }
   }
