@@ -45,7 +45,7 @@
 
 
 using namespace std;
-double NonResonnantSyst = 0.2;
+double NonResonnantSyst = 0.15;
 double GammaJetSyst = 0.25;
 double FakeLeptonDDSyst = 0.40;
 
@@ -570,11 +570,11 @@ int main(int argc, char* argv[])
   allInfo.computeTotalBackground();
   if(MCclosureTest)allInfo.blind();
 
-  FILE* pFile;
+  FILE* pFile; FILE* pFileInc;
 
   //define vector for search
   std::vector<TString>& selCh = Channels;
-
+  
   //remove the non-resonant background from data
   if(subNRB){
   pFile = fopen("NonResonnant.tex","w");
@@ -599,7 +599,7 @@ int main(int argc, char* argv[])
   }
 
   //replace data by total MC background
-  if(blindData)allInfo.blind();
+  if(blindData) allInfo.blind();
 
   //interpollate signal sample if desired mass point is not available
   allInfo.SignalInterpolation(histo.Data());
@@ -624,16 +624,15 @@ int main(int argc, char* argv[])
      allInfo.mergeBins(binsToMerge[B],NewBinName);
   }
 
-
   //turn to CC analysis eventually
   if(!shape)allInfo.turnToCC(histo.Data());
 
   allInfo.HandleEmptyBins(histo.Data()); //needed for negative bin content --> May happens due to NLO interference for instance
 
-  if(blindData)allInfo.blind();
-	
+  if(blindData)  allInfo.blind(); 
+
   //print event yields from the mt shapes
-  pFile = fopen("Yields.tex","w");  FILE* pFileInc = fopen("YieldsInc.tex","w");
+  pFile = fopen("Yields.tex","w");  pFileInc = fopen("YieldsInc.tex","w");
   allInfo.getYieldsFromShape(pFile, selCh, histo.Data(), pFileInc);
   fclose(pFile); fclose(pFileInc);
 
@@ -643,7 +642,7 @@ int main(int argc, char* argv[])
   fclose(pFile);
 
   //add by hand the hard coded uncertainties
-  allInfo.addHardCodedUncertainties(histo.Data());
+  //allInfo.addHardCodedUncertainties(histo.Data());
 
   //produce a plot
   allInfo.showShape(selCh,histo,"plot");
@@ -724,9 +723,9 @@ int main(int argc, char* argv[])
         //
         // Sum up all background processes and add this as a total process
         //
-        void AllInfo_t::addProc(ProcessInfo_t& dest, ProcessInfo_t& src){
+        void AllInfo_t::addProc(ProcessInfo_t& dest, ProcessInfo_t& src){ 
            dest.xsec = src.xsec*src.br;
-           for(std::map<string, ChannelInfo_t>::iterator ch = src.channels.begin(); ch!=src.channels.end(); ch++){
+           for(std::map<string, ChannelInfo_t>::iterator ch = src.channels.begin(); ch!=src.channels.end(); ch++){ 
               if(dest.channels.find(ch->first)==dest.channels.end()){   //this channel does not exist, create it
                  dest.channels[ch->first]         = ChannelInfo_t();
                  dest.channels[ch->first].bin     = ch->second.bin;
@@ -741,6 +740,7 @@ int main(int argc, char* argv[])
         // Sum up all background processes and add this as a total process
         //
         void AllInfo_t::computeTotalBackground(){
+	   
            for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)=="total"){sorted_procs.erase(p);break;}}           
            sorted_procs.push_back("total");
            procs["total"] = ProcessInfo_t(); //reset
@@ -764,8 +764,9 @@ int main(int argc, char* argv[])
         // Replace the Data process by TotalBackground
         //
         void AllInfo_t::blind(){
-           if(procs.find("total")==procs.end())computeTotalBackground();
 
+	   
+           if(procs.find("total")==procs.end())computeTotalBackground();
 
            if(true){ //always replace data
            //if(procs.find("data")==procs.end()){ //true only if there is no "data" samples in the json file
@@ -778,7 +779,7 @@ int main(int argc, char* argv[])
               procInfo_Data.isBckg = false;
               procInfo_Data.xsec   = 0.0;
               procInfo_Data.br     = 1.0;
-              for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){
+              for(std::map<string, ProcessInfo_t>::iterator it=procs.begin(); it!=procs.end();it++){	
                  if(it->first!="total")continue;
                  addProc(procInfo_Data, it->second);
               }
@@ -907,8 +908,7 @@ int main(int argc, char* argv[])
                  if(it->first=="data"){char tmp[256];sprintf(tmp, "$%.0f$", val); YieldText += tmp;
                  }else{                YieldText += utils::toLatexRounded(val,valerr, syst);     }
 
-
-                 printf("%f %f %f --> %s\n", val, valerr, syst, utils::toLatexRounded(val,valerr, syst).c_str());
+                 //printf("%f %f %f --> %s\n", val, valerr, syst, utils::toLatexRounded(val,valerr, syst).c_str());
  
                  if(rows.find(ch->first)==rows.end())rows[ch->first] = string("$ ")+ch->first+" $";
                  rows[ch->first] += string("&") + YieldText;
@@ -1039,7 +1039,7 @@ int main(int argc, char* argv[])
                  if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
                  TH1* h = ch->second.shapes[histoName].histo();
-                 double valerr;
+                 double valerr;	
                  double val  = h->IntegralAndError(1,h->GetXaxis()->GetNbins(),valerr);
                  fprintf(pFile,"%30s %30s %4.0f %6.2E %6.2E %6.2E %6.2E\n",ch->first.c_str(), it->first.c_str(), it->second.mass, it->second.xsec, it->second.br, val/(it->second.xsec*it->second.br), valerr/(it->second.xsec*it->second.br));
               }
@@ -1090,7 +1090,7 @@ int main(int argc, char* argv[])
               if(Y->first.find("FakeLep")<std::string::npos)continue;//never drop this background
               if(Y->first.find("XH")<std::string::npos)continue;//never drop this background
               if(Y->second/total<threshold){
-                 printf("Drop %s from the list of backgrounds because of negligible rate (%f%% of total bckq)\n", Y->first.c_str(), Y->second/total);
+                 //printf("Drop %s from the list of backgrounds because of negligible rate (%f%% of total bckq)\n", Y->first.c_str(), Y->second/total);
                  for(std::vector<string>::iterator p=sorted_procs.begin(); p!=sorted_procs.end();p++){if((*p)==Y->first ){sorted_procs.erase(p);break;}}
                  procs.erase(procs.find(Y->first ));
               }
@@ -1120,8 +1120,10 @@ int main(int argc, char* argv[])
 
            //loop on sorted proc
            for(unsigned int p=0;p<sorted_procs.size();p++){
-              string procName = sorted_procs[p];
+              string procName = sorted_procs[p]; 
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+	      TString process(procName.c_str());
+	      if( process.Contains("BOnly_B") || process.Contains("SandBandInterf_SBI") ) continue;
               if(it==procs.end())continue;
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
                  if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
@@ -1176,7 +1178,7 @@ int main(int argc, char* argv[])
                     g->SetMarkerStyle (20);
 
                     for (int i = 0; i < g->GetN(); ++i) {
-                       int N = g->GetY()[i];
+                       int N = g->GetY()[i];	
                        double L =  (N==0) ? 0  : (ROOT::Math::gamma_quantile(alpha/2,N,1.));
                        double U =  ROOT::Math::gamma_quantile_c(alpha/2,N+1,1) ;
                        g->SetPointEYlow(i, N-L);
@@ -1189,8 +1191,10 @@ int main(int argc, char* argv[])
                     map_legend[it->first]=1;
                     if(it->first=="data"){
                        legA->AddEntry(h,it->first.c_str(),"PE0");
-                    }else if(it->second.isSign){
-                       legEntries.insert(legEntries.begin(), new TLegendEntry(h, it->first.c_str(), "L") );
+                    }else if(it->second.isSign){ 
+		       TString sigName(it->first.c_str());
+		       sigName.Remove(sigName.Length()-8);
+                       legEntries.insert(legEntries.begin(), new TLegendEntry(h, sigName.Data(), "L") );
                     }else{
                        legEntries.push_back(new TLegendEntry(h, it->first.c_str(), "F") );
                     }
@@ -1224,7 +1228,7 @@ int main(int argc, char* argv[])
 
               //print histograms
               TH1* axis = (TH1*)map_data[p->first]->Clone("axis");
-              axis->Reset();      
+              axis->Reset();       
               axis->GetXaxis()->SetRangeUser(axis->GetXaxis()->GetXmin(), axis->GetXaxis()->GetXmax());
               axis->SetMinimum(1E-2);
               double signalHeight=0; for(unsigned int s=0;s<map_signals[p->first].size();s++){signalHeight = std::max(signalHeight, map_signals[p->first][s]->GetMaximum());}
@@ -1232,11 +1236,11 @@ int main(int argc, char* argv[])
 
               //hard code the range for HZZ2l2nu
               if(procs["data"].channels[p->first].bin.find("vbf")!=string::npos){
-                 axis->SetMinimum(1E-2);              
-                 axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
+                 axis->SetMinimum(1E-6);              
+                 axis->SetMaximum(std::max(1.25*axis->GetMaximum(), 5E1));
               }else{
-                 axis->SetMinimum(1E-1);              
-                 axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
+                 axis->SetMinimum(1E-6);              
+                 axis->SetMaximum(std::max(1.25*axis->GetMaximum(), 5E1));
               }
               if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
               if(I<=NBins)axis->GetXaxis()->SetTitle("");
@@ -1310,7 +1314,7 @@ int main(int argc, char* argv[])
            c1->cd(0);
            double L=0.03, R=0.03, T=0.02, B=0.0;
            char LumiText[1024];
-           if(systpostfix.Contains('3'))      { double iLumi= 2269;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 13.0);
+           if(systpostfix.Contains('3'))      { double iLumi=36814.143;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 13.0);
            }else if(systpostfix.Contains('8')){ double iLumi=20000;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 8.0);
            }else{                               double iLumi= 5000;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 7.0); 
            }
@@ -1711,18 +1715,22 @@ int main(int argc, char* argv[])
 //            double QCDScaleK2ggH2 [] = { 1.20, 1.17, 1.20, 1.21, 1.20, 1.20, 1.17, 1.19, 1.19, 1.19, 1.19, 1.19, 1.19};
 
             //13TeV values  
-            double QCDScaleMass        [] = {  200,   300,   400,   600,   800,  1000,  1500,  2000,  2500,  3000,  9999};
-            double QCDScaleggHeq0jets  [] = {2.042, 1.416, 1.283, 1.335, 1.352, 1.425, 1.542, 1.627, 1.659, 1.638, 1.638};
-            double QCDScaleggHgeq1jets [] = {1.305, 1.219, 1.181, 1.168, 1.172, 1.183, 1.201, 1.219, 1.220, 1.219, 1.219};
-            double QCDScaleggHvbf      [] = {1.217, 1.282, 1.200, 1.215, 1.178, 1.195, 1.201, 1.226, 1.232, 1.199, 1.199};
+            double QCDScaleMass   [] = {200, 400, 600, 800, 1000, 1050, 1100, 9999};
+            double QCDScaleK0ggH0 [] = {1.189, 1.341, 1.453, 1.680, 1.641, 1.641, 1.641, 1.641};
+            double QCDScaleK0ggH1 [] = {0.928, 0.913, 0.905, 0.902, 0.905, 0.905, 0.905, 0.905};
+            double QCDScaleK1ggH1 [] = {1.078, 1.096, 1.105, 1.108, 1.104, 1.104, 1.104, 1.104};
+            double QCDScaleK1ggH2 [] = {1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000, 1.000};
+            double QCDScaleK2ggH2 [] = {0.982, 0.983, 0.994, 0.979, 1.000, 1.000, 1.000, 1.000};
 
             double UEPSf0 []         = {0.952, 0.955, 0.958, 0.964, 0.966, 0.954, 0.946, 0.931, 0.920, 0.920, 0.920, 0.920, 0.920};
             double UEPSf1 []         = {1.055, 1.058, 1.061, 1.068, 1.078, 1.092, 1.102, 1.117, 1.121, 1.121, 1.121, 1.121, 1.121};
             double UEPSf2 []         = {1.059, 0.990, 0.942, 0.889, 0.856, 0.864, 0.868, 0.861, 0.872, 0.872, 0.872, 0.872, 0.872}; 
 
-           TGraph* TG_QCDScaleggHeq0jets  = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,  QCDScaleggHeq0jets);
-           TGraph* TG_QCDScaleggHgeq1jets = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleggHgeq1jets);
-           TGraph* TG_QCDScaleggHvbf      = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,      QCDScaleggHvbf);
+           TGraph* TG_QCDScaleK0ggH0 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK0ggH0);
+           TGraph* TG_QCDScaleK0ggH1 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK0ggH1);
+           TGraph* TG_QCDScaleK1ggH1 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK1ggH1);
+           TGraph* TG_QCDScaleK1ggH2 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK1ggH2);
+           TGraph* TG_QCDScaleK2ggH2 = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleK2ggH2);
 
            TGraph* TG_UEPSf0         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf0);
            TGraph* TG_UEPSf1         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf1);
@@ -1751,25 +1759,36 @@ int main(int argc, char* argv[])
    
                  //uncertainties to be applied only in higgs analyses
                  if(mass>0){
-            
+                    //uncertainty on Th XSec
+                    //if(it->second.isSignal)shapeInfo.uncScale["theoryUncXS_HighMH"] = std::min(1.0+1.5*pow((mass/1000.0),3),2.0);
+
+                    //if(mass==125){
+                    //if(it->second.shortName.find("ggH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_gg"]    = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("qqH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_qqbar"] = integral*0.04;}
+                    //}else{
+                    //if(it->second.shortName.find("ggH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_gg"]    = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("qqH")!=string::npos){setTGraph(it->second.shortName, systpostfix); shapeInfo.uncScale["pdf_qqbar"] = integral*0.01*max(TG_pdfp->Eval(mass,NULL,"S"), TG_pdfm->Eval(mass,NULL,"S"));}
+                    //}
+
+                    //underlying events
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf0->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf1->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
+                    //if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["UEPS"] = integral*(1.0-TG_UEPSf2->Eval(mass,NULL,"S"));}
+
                     //bin migration at th level
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(TG_QCDScaleggHeq0jets->Eval(mass,NULL,"S")-1);}
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH"] = integral*(TG_QCDScaleggHgeq1jets->Eval(mass,NULL,"S")-1);} 
-                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggH"] = integral*(TG_QCDScaleggHvbf->Eval(mass,NULL,"S")-1);}
-		  
+                    /*if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH"]    = integral*(TG_QCDScaleK0ggH0->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK0ggH1->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH1in"] = integral*(TG_QCDScaleK1ggH1->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK1ggH2->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("eq2jet" )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S")-1);}
+                    if(it->second.shortName.find("ggH")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggH2in"] = integral*(TG_QCDScaleK2ggH2->Eval(mass,NULL,"S")-1);}*/
                  }//end of uncertainties to be applied only in higgs analyses
 
-           
-          
-		 
-                    if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.063;}
-                    if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.054;}
-                    if(it->second.shortName.find("zz")!=string::npos && chbin.Contains("vbf" )){shapeInfo.uncScale["QCDscale_ZZ"]    = integral*0.40;}
-                    if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.095;}
-                    if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.051;}
-                    if(it->second.shortName.find("wz")!=string::npos && chbin.Contains("vbf" )){shapeInfo.uncScale["QCDscale_WZ"]    = integral*0.40;}
+                 //if(it->second.shortName.find("ww")==0){shapeInfo.uncScale["XSec_sys_WW"] = integral*(systpostfix.Contains('8')?0.097:0.097);}
+                 //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["XSec_sys_WZ"] = integral*(systpostfix.Contains('8')?0.056:0.056);}
                  
-         
+                 //if(it->second.shortName.find("wz")==0){shapeInfo.uncScale["_th_wzmissingewk"] = integral*0.03;} //now the uncertainty is correctly implemented and depends on m_wz.
               }
            }
          }
@@ -1786,8 +1805,10 @@ int main(int argc, char* argv[])
            //make a map of all systematics considered and say if it's shape-based or not.
            std::map<string, bool> allChannels;
            std::map<string, bool> allSysts;
+	   
            for(unsigned int p=0;p<sorted_procs.size();p++){
               string procName = sorted_procs[p];
+	      
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end() || it->first=="total")continue;
               if(it->second.isSign)sign_procs.push_back(procName);
@@ -1795,7 +1816,9 @@ int main(int argc, char* argv[])
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
                  TString chbin = ch->first;
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
+		 if(chbin.Contains("emu")) continue;
                  allChannels[ch->first] = true;
+		 
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];      
                  for(std::map<string, double>::iterator unc=shapeInfo.uncScale.begin();unc!=shapeInfo.uncScale.end();unc++){
                    if(unc->first=="")continue;
@@ -1810,10 +1833,12 @@ int main(int argc, char* argv[])
            TString mumucard = "";
            TString combinedcard = "";
 
+           
            for(std::map<string, bool>::iterator C=allChannels.begin(); C!=allChannels.end();C++){
               TString dcName=url;              
               dcName.ReplaceAll(".root","_"+TString(C->first.c_str())+".dat");
 
+	      
               combinedcard += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("ee"  )!=string::npos)eecard   += (C->first+"=").c_str()+dcName+" ";
               if(C->first.find("mumu")!=string::npos)mumucard += (C->first+"=").c_str()+dcName+" ";
@@ -1822,6 +1847,7 @@ int main(int argc, char* argv[])
               dcName.ReplaceAll("]", "");
               dcName.ReplaceAll("+", "");
 
+	      
               FILE* pFile = fopen(dcName.Data(),"w");
               //header
               fprintf(pFile, "imax 1\n");
@@ -1837,13 +1863,18 @@ int main(int argc, char* argv[])
               fprintf(pFile, "Observation %f\n", procs["data"].channels[C->first].shapes[histoName].histo()->Integral());
               fprintf(pFile, "-------------------------------\n");
 
+	      
               //yields
               fprintf(pFile,"%55s  ", "bin");     for(unsigned int j=0; j<clean_procs.size(); j++){ fprintf(pFile,"%8i ", 1)                     ;}  fprintf(pFile,"\n");
+		
               fprintf(pFile,"%55s  ", "process"); for(unsigned int j=0; j<clean_procs.size(); j++){ fprintf(pFile,"%8s ", procs[clean_procs[j]].shortName.c_str());}  fprintf(pFile,"\n");
+		
               fprintf(pFile,"%55s  ", "process"); for(unsigned int j=0; j<clean_procs.size(); j++){ fprintf(pFile,"%8i ", ((int)j)-(nsign-1)    );}  fprintf(pFile,"\n");
-              fprintf(pFile,"%55s  ", "rate");    for(unsigned int j=0; j<clean_procs.size(); j++){ fprintf(pFile,"%8f ", procs[clean_procs[j]].channels[C->first].shapes[histoName].histo()->Integral() );}  fprintf(pFile,"\n");
+		
+              fprintf(pFile,"%55s  ", "rate");    for(unsigned int j=0; j<clean_procs.size(); j++){ fprintf(pFile,"%8f ", procs[clean_procs[j]].channels[C->first].shapes[histoName].histo()->Integral() ); }  fprintf(pFile,"\n");
               fprintf(pFile, "-------------------------------\n");
 
+	      
               for(std::map<string, bool>::iterator U=allSysts.begin(); U!=allSysts.end();U++){
                  if(mass==125 && U->first=="CMS_hzz2l2v_lshape")continue;//skip lineshape uncertainty for 125GeV Higgs
 
@@ -1865,7 +1896,7 @@ int main(int argc, char* argv[])
            }
 
 
-
+	   
            FILE* pFile = fopen("combineCards.sh","w");
            fprintf(pFile,"%s;\n",(TString("combineCards.py ") + combinedcard + " > " + "card_combined.dat").Data());
            fprintf(pFile,"%s;\n",(TString("combineCards.py ") + eecard       + " > " + "card_ee.dat").Data());
@@ -2163,8 +2194,11 @@ int main(int argc, char* argv[])
 //                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.71; alphaUsed_err=0.04;}
 //                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.47; alphaUsed_err=0.03;} //25/01/2014
 //                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.61; alphaUsed_err=0.04;}
-                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.36; alphaUsed_err=0.02;} //26/01/2016
-                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.77; alphaUsed_err=0.04;}
+//                 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.36; alphaUsed_err=0.02;} //26/01/2016
+//                 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.77; alphaUsed_err=0.04;}
+
+		 if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.352387; alphaUsed_err=0.0056845;} // 7/02/2017
+		 if(chData->second.channel.find("mumu")==0){alphaUsed = 0.743423; alphaUsed_err=0.0093746;}
 
                  double valDD, valDD_err;
                  double valMC, valMC_err;
@@ -2581,7 +2615,10 @@ int main(int argc, char* argv[])
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                   TH1* histo = unc->second;
                   if(!histo)continue;
-                  double xbins[] = {150, 300, 450, 600, 850, 1100, 1600, 2100, 3000};  int nbins=sizeof(xbins)/sizeof(double);
+		  //std::cout << "procName: " << procName << std::endl;
+		  double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 1850, 2100, 2600, 3000};
+                  //double xbins[] = {150, 300, 450, 600, 850, 1100, 1600, 2100, 3000};  
+		  int nbins=sizeof(xbins)/sizeof(double);
                   unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
                   utils::root::fixExtremities(unc->second, true, true);
                  }
@@ -2825,7 +2862,8 @@ int main(int argc, char* argv[])
               //if(procName!="FakeLep")continue; //only do this for the FakeLepbackground right now
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
               if(it==procs.end())continue;
-              if(it->second.isData)continue; //only do this for MC
+              if(it==procs.end())continue;
+              if(it->second.isData)continue;
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
 
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];
