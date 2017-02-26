@@ -29,17 +29,17 @@ phase=-1
 ###################################################
 
 MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
-based_key="2l2v_datadriven_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
+based_key="2l2v_mcbased_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
 jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH.json'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_02_06_DATA_DRIVEN_GGH_full2016_NewWidth_V2.root' #plotter_2017_02_06_Signal_NewWidth_GGH.root' #plotter_2017_01_30_Signal_NewWidth.root'  #plotter_2017_01_29.root #plotter_2017_01_04_full2016.root'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_02_17_DATA_DRIVEN_GGH_full2016_NewWidth_V5.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets","geq1jets","vbf","eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
-#MASS = [400,600,800]
-#SUBMASS = [400,600,800]
+#MASS = [400,600,800,1000,2000,3000]
+#SUBMASS = [400,600,800,1000,2000,3000]
 MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
-SUBMASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
+SUBMASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000] 
 
 #LandSArgCommonOptions=" --blind  --rebin 8 --dropBckgBelow 0.00001 "
 LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB --blind"
@@ -49,8 +49,8 @@ for model in MODELS:
    for shape in ["mt_shapes "]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
       for bin in BINS:
          if(model=="SM" or model=="MELA"):
-            for CP in [10.0]:
-               #if(CP!=100.0 and not ',' in bin):continue  #only do subchannel for SM
+            for CP in [100.0,10.0,5.0]:
+               if(CP!=100.0 and not ',' in bin):continue  #only do subchannel for SM
                for BRN in [0.0]:
                    #CPSQ = CP*CP   * (math.fabs(CP) / CP)   #conserve sign of CP
                    #suffix = "_cpsq%4.2f_brn%4.2f" % (CPSQ, BRN) 
@@ -161,6 +161,7 @@ def findSideMassPoint(mass):
 
 #Loop over all configurations
 iConf = -1
+cp = 0
 for signalSuffix in signalSuffixVec : 
    iConf+=1;
    if(phase<=3 and ',' in BIN[iConf]):continue #only need individual bin for these phases
@@ -180,7 +181,15 @@ for signalSuffix in signalSuffixVec :
    #get the cuts
    file = ROOT.TFile(inUrl)
    cutsH = file.Get('WZ/all_optim_cut') 
-      
+
+   #Cp
+   if "100.0" in signalSuffix:
+   	cp = 100.0
+   elif "10.0" in signalSuffix:
+	cp = 10.0
+   elif "5.0" in signalSuffix:
+        cp = 5.0     
+ 
    ###################################################
    ##   OPTIMIZATION LOOP                           ##
    ###################################################
@@ -354,7 +363,7 @@ for signalSuffix in signalSuffixVec :
                Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMin
                Gcut.extend([ROOT.TGraph(len(SUBMASS))]) #also add a graph for shapeMax
 
-               INbinSuffix = "_" + bin
+               INbinSuffix = "_" + bin 
                IN = CWD+'/JOBS/'+OUTName[iConf]+signalSuffix+INbinSuffix+'/'
                try:
                   listcuts = open(IN+'cuts.txt',"r")
@@ -390,10 +399,8 @@ for signalSuffix in signalSuffixVec :
                   indexLString = str(findCutIndex(cutsH, Gcut, SideMasses[0]));
                   indexRString = str(findCutIndex(cutsH, Gcut, SideMasses[1]));
 
-           print indexString
+           #print indexString
 
-           #all done with the bin treatment
-           #cutStr = " --shapeMin " + str(Gcut[cutsH.GetYaxis().GetNbins()].Eval(m,0,"")) +" --shapeMax " + str(Gcut[cutsH.GetYaxis().GetNbins()+1].Eval(m,0,""));
            cutStr = " "
            SideMassesArgs = ""
            if(not (SideMasses[0]==SideMasses[1])):
@@ -407,17 +414,15 @@ for signalSuffix in signalSuffixVec :
 
            cardsdir=DataCardsDir+"/"+('%04.0f' % float(m));
            SCRIPT.writelines('mkdir -p out;\ncd out;\n')
-           SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
-           SCRIPT.writelines("sh combineCards.sh;\n")
-	   SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HiggsWidth:higgswidth --PO verbose --PO \'is2l2nu\' \n")
+           SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
+           SCRIPT.writelines("sh combineCards.sh;\n"); 
+	   SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HiggsWidth:higgswidth --PO verbose --PO \'is2l2nu\' --PO m=\'" + str(m) + "\' --PO w=\'" + str(cp) + "\' \n")
            #compute pvalue
            SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root > COMB.log;\n")
 
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters CMS_zz4l_mu=0.0 -t -1 --setPhysicsModelParameterRanges CMS_zz4l_mu=0.0,100 > COMB.log;\n") 
-              #SCRIPT.writelines("combine -M MaxLikelihoodFit -m " +  str(m) + " --saveNormalizations card_combined.dat;\n")
-              #SCRIPT.writelines("extractFitNormalization.py mlfit.root hzz2l2v_"+str(m)+"_?TeV.root > fit.txt;\n")
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root  -v 3 >  COMB.log;\n") 
 
            ### THIS is for toy (hybridNew) fit
            else:
@@ -465,9 +470,7 @@ for signalSuffix in signalSuffixVec :
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
 
       os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\", false, true, 13 , 36814.143 )'")
-      #os.system("getXSec "+DataCardsDir+"/XSecs.txt "+DataCardsDir+"/*/Efficiency.tex")
-      #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  true, false, 13 , 19.8 )'")
-      #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/XSec_\",\""+DataCardsDir+"/LimitTree.root\",\""+DataCardsDir+"/XSecs.txt\",  false, false, 13 , 19.8 )'")
+
    ######################################################################
 
 
