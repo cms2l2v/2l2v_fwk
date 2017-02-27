@@ -1122,6 +1122,8 @@ int main(int argc, char* argv[])
            for(unsigned int p=0;p<sorted_procs.size();p++){
               string procName = sorted_procs[p];
               std::map<string, ProcessInfo_t>::iterator it=procs.find(procName);
+              TString process(procName.c_str());
+              if( process.Contains("BOnly_B") || process.Contains("SandBandInterf_SBI") ) continue;
               if(it==procs.end())continue;
               for(std::map<string, ChannelInfo_t>::iterator ch = it->second.channels.begin(); ch!=it->second.channels.end(); ch++){
                  if(std::find(selCh.begin(), selCh.end(), ch->second.channel)==selCh.end())continue;
