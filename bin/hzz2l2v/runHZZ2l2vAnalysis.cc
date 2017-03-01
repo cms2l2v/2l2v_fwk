@@ -168,7 +168,11 @@ int main(int argc, char* argv[])
 
   std::vector<string> jetVarNames = {"", "_scale_jup","_scale_jdown", "_res_jup", "_res_jdown"};
 
+  std::vector<string> eleVarNames = {""};
+
   if(runSystematics){
+	eleVarNames.push_back("_scale_eup");
+	eleVarNames.push_back("_scale_edown");
      if(true){
         varNames.push_back("_scale_umetup"); varNames.push_back("_scale_umetdown");    //unclustered met
         varNames.push_back("_res_jup");      varNames.push_back("_res_jdown");    //jet energy resolution
@@ -698,6 +702,7 @@ int main(int argc, char* argv[])
   string EGammaEnergyCorrectionFile = "";
   PhotonEnergyCalibratorRun2 PhotonEnCorrector;
   EpCombinationTool theEpCombinationTool;
+  EnergyScaleCorrection_class eScaler("UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele");
   if(is2015MC || is2015data){
   	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
@@ -1180,7 +1185,9 @@ int main(int argc, char* argv[])
          for(size_t l=0;l<muons    .size();l++){leptons.push_back(patUtils::GenericLepton(muons    [l]));}
          std::sort(leptons.begin(),   leptons.end(), utils::sort_CandidatesByPt);
 
-         std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
+//         std::vector<patUtils::GenericLepton> selLeptons, extraLeptons;
+         std::map<string, std::vector<patUtils::GenericLepton> > selLeptonsVar;
+         std::map<string, std::vector<patUtils::GenericLepton> > extraLeptonsVar;
          LorentzVector muDiff(0,0,0,0);
          LorentzVector elDiff(0,0,0,0);
 	 LorentzVector elDiff_forMET(0,0,0,0);
@@ -1285,10 +1292,45 @@ int main(int argc, char* argv[])
              }
              if(leptons[ilep].pt()<25) passKin=false;
 
-             if(passId && passIso && passKin)          selLeptons.push_back(leptons[ilep]);
-             else if(passLooseLepton || passSoftMuon)  extraLeptons.push_back(leptons[ilep]);
+             for(unsigned int ivar=0;ivar<eleVarNames.size();ivar++){
+	     if (abs(lid)==11) { //if electron
+             patUtils::GenericLepton varLep = leptons[ilep];
+             if(ivar==1) { //scale up
+	         if (passId && passIso){
+             double error_scale=eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
+             TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                       varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
+                      if(varLep.pt()<25) passKin = false;
+                      if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                 } else {
+                          if(varLep.pt()<10) passLooseLepton = false;
+                          if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); }
+            }if(ivar==2) { //scale down
+	         if (passId && passIso){
+             double error_scale=eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
+             TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                       varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
+                      if(varLep.pt()<25) passKin = false;
+                      if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                  }else { // nominal
+                          if(varLep.pt()<10) passLooseLepton = false;
+                          if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                  }if(ivar==0){
+		      if(passKin && passId && passIso){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+		      else {
+			  if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);
+		      }
+	      	   }
+           }if(abs(lid)==13){ //if muon
 
-         }
+		      if(passKin && passId && passIso)selLeptonsVar[eleVarNames[ivar]].push_back(leptons[ilep]);
+		      else if (passLooseLepton || passSoftMuon) extraLeptonsVar[eleVarNames[ivar]].push_back(leptons[ilep]);
+      	        }     
+            }
+	}
+
+           auto& selLeptons      = selLeptonsVar[""]; 
+           auto& extraLeptons      = extraLeptonsVar[""];
 
 	 //
 	 // PHOTON ANALYSIS
@@ -1501,6 +1543,8 @@ int main(int argc, char* argv[])
            if(varNames[ivar]=="_scale_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp      , metcor);
            if(varNames[ivar]=="_scale_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
 
+           if(selLeptonsVar    .find(varNames[ivar].Data())!=selLeptonsVar    .end())selLeptons     = selLeptonsVar    [varNames[ivar].Data()];
+           if(extraLeptonsVar    .find(varNames[ivar].Data())!=extraLeptonsVar    .end())extraLeptons     = extraLeptonsVar    [varNames[ivar].Data()];
            auto& selJets      = selJetsVar[""];        if(selJetsVar    .find(varNames[ivar].Data())!=selJetsVar    .end())selJets     = selJetsVar    [varNames[ivar].Data()];
            auto& njets        = njetsVar [""];         if(njetsVar      .find(varNames[ivar].Data())!=njetsVar      .end())njets       = njetsVar      [varNames[ivar].Data()];
            auto& nbtags       = nbtagsVar[""];         if(nbtagsVar     .find(varNames[ivar].Data())!=nbtagsVar     .end())nbtags      = nbtagsVar     [varNames[ivar].Data()];
@@ -1522,7 +1566,6 @@ int main(int argc, char* argv[])
                        dilId *= selLeptons[ilep].pdgId();
                        int id(abs(selLeptons[ilep].pdgId()));
 		       if(is2016MC) {
-
                            if(id==11)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].el.superCluster()->eta(), id).first; //Tracking eff
                            else if(id==13)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].eta(), id).first; //Tracking eff
                            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"   ,patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ID
