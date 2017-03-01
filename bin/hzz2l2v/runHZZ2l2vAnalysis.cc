@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
   bool runSystematics                        = runProcess.getParameter<bool>("runSystematics");
   std::vector<TString> varNames(1,"");
 
-  std::vector<string> jetVarNames = {""};//, "_scale_jup","_scale_jdown", "_res_jup", "_res_jdown"};
+  std::vector<string> jetVarNames = {"", "_scale_jup","_scale_jdown", "_res_jup", "_res_jdown"};
 
   if(runSystematics){
      if(true){
@@ -1444,6 +1444,7 @@ int main(int argc, char* argv[])
 
 
             for(unsigned int ivar=0;ivar<jetVarNames.size();ivar++){
+	       if(!isMC && ivar>0) continue;
                pat::Jet varJet = jet;
                if(ivar!=0) varJet.setP4(jet.p4() * jet.userFloat(jetVarNames[ivar]));
                selJetsVar[jetVarNames[ivar]].push_back(varJet);
