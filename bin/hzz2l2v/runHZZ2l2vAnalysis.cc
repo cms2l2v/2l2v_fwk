@@ -614,6 +614,7 @@ int main(int argc, char* argv[])
   }
 
   std::vector<double> optim_Cuts1_met;
+  optim_Cuts1_met.push_back(0); //add a bin in the shapes with a MET cut of 0
   for(double met=50;met<140;met+=5) {  optim_Cuts1_met    .push_back(met);  }
   TH2F* Hoptim_cuts  =(TH2F*)mon.addHistogram(new TProfile2D("optim_cut",      ";cut index;variable",       optim_Cuts1_met.size(),0,optim_Cuts1_met.size(), 1, 0, 1)) ;
   Hoptim_cuts->GetYaxis()->SetBinLabel(1, "met>");
