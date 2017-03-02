@@ -53,7 +53,7 @@ int main(int argc,const char* argv[])
 
   TFile *gInF;
 
-  dilCh="ee";
+  dilCh="ll";
 
   //open the files with the input plots
   string gDataFile="plotter.root";
@@ -262,19 +262,12 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   Double_t xmin(hdy->GetXaxis()->GetXmin());
   Double_t xmax(hdy->GetXaxis()->GetXmax());
   if( (distr=="met") && (distr!="axial")) {xmin=0;   xmax=600;}
-  if( (distr=="mt") )  {xmin=120; xmax=1500;}
+  if( (distr=="mt") )  {xmin=120; xmax=900;}
   float ymin(3e-5),ymax(hdy->GetMaximum()*4.0);
 
   //draw
   float gscale(hg->Integral());
   hg->Scale(dyscale/gscale);
-  
-  //hpureg->Scale(dyscale/gscale);
-  // hg->Scale(1./gscale);
-  // hpureg->Scale(1./gscale);
-  //  float nscale(hn->Integral());
-  //hn->Scale(dyscale/(gscale-nscale));
-
 
   // Estimate systematic
   // Print number of events for DY sample in MET>125:
@@ -300,8 +293,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
 
     hevt1->SetBinContent(i,ndy); hevt1->SetBinError(i,errdy);
     hevt2->SetBinContent(i,ng); hevt2->SetBinError(i,errg);
-    //std::cout << "Nevents DY for MET>125 (bin = "<< mbin << ") = " << ndy << " +/-" << errdy << std::endl;
-    //std::cout << "Nevents gamma for MET>125 (bin = "<< mbin << ") = " << ng << " +/-" << errg << std::endl;
+
     diff=(ndy-ng);
     nmax=max(ndy,ng); enmax=max(errdy,errg);
     
@@ -550,7 +542,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   denRelUncH->Draw();
   denRelUnc->Draw("3");
   leg->AddEntry(denRelUnc,"stat unc.","f");
-  denRelUncH->GetYaxis()->SetRangeUser(-0.5,3.);
+  denRelUncH->GetYaxis()->SetRangeUser(0.4,1.6);
    //  denRelUncH->GetYaxis()->SetRangeUser(-0.2,1.74);
   denRelUncH->GetXaxis()->SetTitle(hdy->GetXaxis()->GetTitle());
   denRelUncH->GetXaxis()->SetLabelSize(0.12);
