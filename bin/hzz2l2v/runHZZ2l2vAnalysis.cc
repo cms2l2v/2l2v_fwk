@@ -702,7 +702,7 @@ int main(int argc, char* argv[])
   string EGammaEnergyCorrectionFile = "";
   PhotonEnergyCalibratorRun2 PhotonEnCorrector;
   EpCombinationTool theEpCombinationTool;
-  EnergyScaleCorrection_class eScaler("UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele");
+  EnergyScaleCorrection_class eScaler("UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele");
   if(is2015MC || is2015data){
   	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
@@ -712,7 +712,7 @@ int main(int argc, char* argv[])
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
   }
   if(is2016MC || is2016data){
-  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele";
+  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele";
   	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_pho";
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, PhoEnergyCorrectionFile);
   	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
@@ -1268,7 +1268,7 @@ int main(int argc, char* argv[])
                 elDiff -= leptons[ilep].p4();
                 if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479)elDiff_forMET -= leptons[ilep].p4()*0.006;
                 else elDiff_forMET -= leptons[ilep].p4()*0.015;
-                if(!isMC){ utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el); }
+               // if(!isMC){ utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el); }
                 if (isMC || is2015data || is2016data){
                 	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
                 	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
