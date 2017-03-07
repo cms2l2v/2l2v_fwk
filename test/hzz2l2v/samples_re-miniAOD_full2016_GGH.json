@@ -187,7 +187,7 @@
                         "/SingleElectron/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleElectron2016H_ver2",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_03Feb2017ReReco_Collisions16_JSON.txt",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
                 {
@@ -286,7 +286,7 @@
                         "/SingleMuon/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleMuon2016H_ver2",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_03Feb2017ReReco_Collisions16_JSON.txt",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
                 {
@@ -385,7 +385,7 @@
                         "/DoubleMuon/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_DoubleMuon2016H_ver2",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_03Feb2017ReReco_Collisions16_JSON.txt",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
                 {
@@ -484,7 +484,7 @@
                         "/DoubleEG/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_DoubleEG2016H_ver2",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_03Feb2017ReReco_Collisions16_JSON.txt",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
                 {
@@ -2030,7 +2030,7 @@
                         "/SinglePhoton/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SinglePhoton2016H_ver2",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_03Feb2017ReReco_Collisions16_JSON.txt",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
                 {
