@@ -45,7 +45,7 @@
 
 
 using namespace std;
-double NonResonnantSyst = 0.2;
+double NonResonnantSyst = 0.15;
 double GammaJetSyst = 0.25;
 double FakeLeptonDDSyst = 0.40;
 
@@ -1741,7 +1741,7 @@ int main(int argc, char* argv[])
                  double integral = shapeInfo.histo()->Integral();
 
                  //lumi
-                 if(!it->second.isData && systpostfix.Contains('3'))shapeInfo.uncScale["lumi_13TeV"] = integral*0.027;
+                 if(!it->second.isData && systpostfix.Contains('3'))shapeInfo.uncScale["lumi_13TeV"] = integral*0.026;
                  if(!it->second.isData && systpostfix.Contains('8'))shapeInfo.uncScale["lumi_8TeV" ] = integral*0.026;
                  if(!it->second.isData && systpostfix.Contains('7'))shapeInfo.uncScale["lumi_7TeV" ] = integral*0.022;
 
