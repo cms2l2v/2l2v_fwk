@@ -438,262 +438,8 @@ class LeptonEfficiencySF
               }
 
 	  }
-	  break;
-
-        case patUtils::CutVersion::Moriond17Cut :
-          if(wp=="loose"){
-              if( eta >= -2.5 && eta < -2.0){
-              		if( pt < 20.0){ eff.first=0.863; eff.second=0.014;
-              	} else if( pt < 35.0){ eff.first=0.952; eff.second=0.007;
-              	} else if( pt < 50.0){ eff.first=0.986; eff.second=0.006;
-              	} else if( pt < 90.0){ eff.first=0.999; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=1.037; eff.second=0.028;
-              	} else { eff.first=1.065; eff.second=0.069;
-              	}
-              }else if( eta >= -2.0 && eta < -1.57){
-              		if( pt < 20.0){ eff.first=0.875; eff.second=0.017;
-              	} else if( pt < 35.0){ eff.first=0.972; eff.second=0.011;
-              	} else if( pt < 50.0){ eff.first=0.996; eff.second=0.005;
-              	} else if( pt < 90.0){ eff.first=1.000; eff.second=0.003;
-              	} else if( pt < 150.0){ eff.first=1.015; eff.second=0.009;
-              	} else { eff.first=1.003; eff.second=0.018;
-              	}
-              }else if( eta >= -1.57 && eta < -1.444){
-              		if( pt < 20.0){ eff.first=1.043; eff.second=0.129;
-              	} else if( pt < 35.0){ eff.first=0.998; eff.second=0.196;
-              	} else if( pt < 50.0){ eff.first=0.997; eff.second=0.005;
-              	} else if( pt < 90.0){ eff.first=0.995; eff.second=0.009;
-              	} else if( pt < 150.0){ eff.first=1.060; eff.second=0.027;
-              	} else { eff.first=1.059; eff.second=0.099;
-              	}
-              }else if( eta >= -1.444 && eta < -0.8){
-              		if( pt < 20.0){ eff.first=0.979; eff.second=0.010;
-              	} else if( pt < 35.0){ eff.first=0.975; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.983; eff.second=0.002;
-              	} else if( pt < 90.0){ eff.first=0.986; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=1.003; eff.second=0.010;
-              	} else { eff.first=0.983; eff.second=0.024;
-              	}
-              }else if( eta >= -0.8 && eta < 0.0){
-              		if( pt < 20.0){ eff.first=0.967; eff.second=0.020;
-              	} else if( pt < 35.0){ eff.first=0.971; eff.second=0.015;
-              	} else if( pt < 50.0){ eff.first=0.976; eff.second=0.002;
-              	} else if( pt < 90.0){ eff.first=0.977; eff.second=0.005;
-              	} else if( pt < 150.0){ eff.first=0.997; eff.second=0.013;
-              	} else { eff.first=1.005; eff.second=0.011;
-              	}
-              }else if( eta >= 0.0 && eta < 0.8){
-              		if( pt < 20.0){ eff.first=0.948; eff.second=0.020;
-              	} else if( pt < 35.0){ eff.first=0.973; eff.second=0.015;
-              	} else if( pt < 50.0){ eff.first=0.981; eff.second=0.002;
-              	} else if( pt < 90.0){ eff.first=0.980; eff.second=0.005;
-              	} else if( pt < 150.0){ eff.first=1.001; eff.second=0.013;
-              	} else { eff.first=0.999; eff.second=0.011;
-              	}
-              }else if( eta >= 0.8 && eta < 1.444){
-              		if( pt < 20.0){ eff.first=0.993; eff.second=0.010;
-              	} else if( pt < 35.0){ eff.first=0.980; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.983; eff.second=0.002;
-              	} else if( pt < 90.0){ eff.first=0.986; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=1.010; eff.second=0.010;
-              	} else { eff.first=1.003; eff.second=0.024;
-              	}
-              }else if( eta >= 1.444 && eta < 1.57){
-              		if( pt < 20.0){ eff.first=1.050; eff.second=0.129;
-              	} else if( pt < 35.0){ eff.first=0.990; eff.second=0.196;
-              	} else if( pt < 50.0){ eff.first=0.985; eff.second=0.005;
-              	} else if( pt < 90.0){ eff.first=0.989; eff.second=0.009;
-              	} else if( pt < 150.0){ eff.first=1.032; eff.second=0.027;
-              	} else { eff.first=1.005; eff.second=0.099;
-              	}
-              }else if( eta >= 1.57 && eta < 2.0){
-              		if( pt < 20.0){ eff.first=0.883; eff.second=0.017;
-              	} else if( pt < 35.0){ eff.first=0.958; eff.second=0.011;
-              	} else if( pt < 50.0){ eff.first=0.988; eff.second=0.005;
-              	} else if( pt < 90.0){ eff.first=0.997; eff.second=0.003;
-              	} else if( pt < 150.0){ eff.first=1.005; eff.second=0.009;
-              	} else { eff.first=1.009; eff.second=0.019;
-              	}
-              }else {
-              		if( pt < 20.0){ eff.first=0.874; eff.second=0.014;
-              	} else if( pt < 35.0){ eff.first=0.932; eff.second=0.007;
-              	} else if( pt < 50.0){ eff.first=0.972; eff.second=0.006;
-              	} else if( pt < 90.0){ eff.first=0.989; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=1.020; eff.second=0.028;
-              	} else { eff.first=1.059; eff.second=0.068;
-              	}
-              }
-
-          } else if(wp=="medium"){
-              if( eta >= -2.5 && eta < -2.0){
-              		if( pt < 20.0){ eff.first=0.821; eff.second=0.023;
-              	} else if( pt < 35.0){ eff.first=0.914; eff.second=0.008;
-              	} else if( pt < 50.0){ eff.first=0.956; eff.second=0.008;
-              	} else if( pt < 90.0){ eff.first=0.975; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=1.041; eff.second=0.030;
-              	} else { eff.first=1.065; eff.second=0.086;
-              	}
-              }else if( eta >= -2.0 && eta < -1.57){
-              		if( pt < 20.0){ eff.first=0.823; eff.second=0.018;
-              	} else if( pt < 35.0){ eff.first=0.944; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.979; eff.second=0.006;
-              	} else if( pt < 90.0){ eff.first=0.992; eff.second=0.005;
-              	} else if( pt < 150.0){ eff.first=1.018; eff.second=0.011;
-              	} else { eff.first=0.982; eff.second=0.025;
-              	}
-              }else if( eta >= -1.57 && eta < -1.444){
-              		if( pt < 20.0){ eff.first=1.027; eff.second=0.068;
-              	} else if( pt < 35.0){ eff.first=1.000; eff.second=0.180;
-              	} else if( pt < 50.0){ eff.first=0.986; eff.second=0.013;
-              	} else if( pt < 90.0){ eff.first=0.988; eff.second=0.014;
-              	} else if( pt < 150.0){ eff.first=1.087; eff.second=0.035;
-              	} else { eff.first=1.048; eff.second=0.078;
-              	}
-              }else if( eta >= -1.444 && eta < -0.8){
-              		if( pt < 20.0){ eff.first=0.959; eff.second=0.051;
-              	} else if( pt < 35.0){ eff.first=0.959; eff.second=0.012;
-              	} else if( pt < 50.0){ eff.first=0.970; eff.second=0.004;
-              	} else if( pt < 90.0){ eff.first=0.972; eff.second=0.012;
-              	} else if( pt < 150.0){ eff.first=0.993; eff.second=0.008;
-              	} else { eff.first=0.981; eff.second=0.021;
-              	}
-              }else if( eta >= -0.8 && eta < 0.0){
-              		if( pt < 20.0){ eff.first=0.922; eff.second=0.027;
-              	} else if( pt < 35.0){ eff.first=0.946; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.957; eff.second=0.004;
-              	} else if( pt < 90.0){ eff.first=0.958; eff.second=0.011;
-              	} else if( pt < 150.0){ eff.first=0.986; eff.second=0.010;
-              	} else { eff.first=1.000; eff.second=0.013;
-              	}
-              }else if( eta >= 0.0 && eta < 0.8){
-              		if( pt < 20.0){ eff.first=0.940; eff.second=0.027;
-              	} else if( pt < 35.0){ eff.first=0.971; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.980; eff.second=0.004;
-              	} else if( pt < 90.0){ eff.first=0.980; eff.second=0.011;
-              	} else if( pt < 150.0){ eff.first=1.018; eff.second=0.010;
-              	} else { eff.first=1.023; eff.second=0.013;
-              	}
-              }else if( eta >= 0.8 && eta < 1.444){
-              		if( pt < 20.0){ eff.first=0.966; eff.second=0.051;
-              	} else if( pt < 35.0){ eff.first=0.973; eff.second=0.012;
-              	} else if( pt < 50.0){ eff.first=0.977; eff.second=0.004;
-              	} else if( pt < 90.0){ eff.first=0.982; eff.second=0.012;
-              	} else if( pt < 150.0){ eff.first=1.018; eff.second=0.008;
-              	} else { eff.first=1.012; eff.second=0.021;
-              	}
-              }else if( eta >= 1.444 && eta < 1.57){
-              		if( pt < 20.0){ eff.first=0.993; eff.second=0.068;
-              	} else if( pt < 35.0){ eff.first=0.966; eff.second=0.180;
-              	} else if( pt < 50.0){ eff.first=0.970; eff.second=0.013;
-              	} else if( pt < 90.0){ eff.first=0.986; eff.second=0.014;
-              	} else if( pt < 150.0){ eff.first=1.016; eff.second=0.035;
-              	} else { eff.first=0.949; eff.second=0.078;
-              	}
-              }else if( eta >= 1.57 && eta < 2.0){
-              		if( pt < 20.0){ eff.first=0.854; eff.second=0.018;
-              	} else if( pt < 35.0){ eff.first=0.930; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.973; eff.second=0.006;
-              	} else if( pt < 90.0){ eff.first=0.985; eff.second=0.005;
-              	} else if( pt < 150.0){ eff.first=0.998; eff.second=0.011;
-              	} else { eff.first=0.990; eff.second=0.026;
-              	}
-              }else {
-              		if( pt < 20.0){ eff.first=0.815; eff.second=0.023;
-              	} else if( pt < 35.0){ eff.first=0.891; eff.second=0.008;
-              	} else if( pt < 50.0){ eff.first=0.943; eff.second=0.008;
-              	} else if( pt < 90.0){ eff.first=0.967; eff.second=0.005;
-              	} else if( pt < 150.0){ eff.first=1.015; eff.second=0.030;
-              	} else { eff.first=1.049; eff.second=0.085;
-              	}
-              }
-
-          } else if(wp=="tight"){
-              if( eta >= -2.5 && eta < -2.0){
-              		if( pt < 20.0){ eff.first=0.807; eff.second=0.018;
-              	} else if( pt < 35.0){ eff.first=0.882; eff.second=0.010;
-              	} else if( pt < 50.0){ eff.first=0.919; eff.second=0.009;
-              	} else if( pt < 90.0){ eff.first=0.940; eff.second=0.007;
-              	} else if( pt < 150.0){ eff.first=1.051; eff.second=0.022;
-              	} else { eff.first=1.051; eff.second=0.106;
-              	}
-              }else if( eta >= -2.0 && eta < -1.57){
-              		if( pt < 20.0){ eff.first=0.829; eff.second=0.018;
-              	} else if( pt < 35.0){ eff.first=0.927; eff.second=0.018;
-              	} else if( pt < 50.0){ eff.first=0.967; eff.second=0.007;
-              	} else if( pt < 90.0){ eff.first=0.981; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=1.006; eff.second=0.022;
-              	} else { eff.first=0.973; eff.second=0.030;
-              	}
-              }else if( eta >= -1.57 && eta < -1.444){
-              		if( pt < 20.0){ eff.first=1.033; eff.second=0.106;
-              	} else if( pt < 35.0){ eff.first=1.008; eff.second=0.110;
-              	} else if( pt < 50.0){ eff.first=0.988; eff.second=0.017;
-              	} else if( pt < 90.0){ eff.first=0.995; eff.second=0.024;
-              	} else if( pt < 150.0){ eff.first=1.104; eff.second=0.050;
-              	} else { eff.first=1.038; eff.second=0.075;
-              	}
-              }else if( eta >= -1.444 && eta < -0.8){
-              		if( pt < 20.0){ eff.first=1.008; eff.second=0.027;
-              	} else if( pt < 35.0){ eff.first=0.972; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.975; eff.second=0.007;
-              	} else if( pt < 90.0){ eff.first=0.972; eff.second=0.019;
-              	} else if( pt < 150.0){ eff.first=0.989; eff.second=0.009;
-              	} else { eff.first=0.982; eff.second=0.019;
-              	}
-              }else if( eta >= -0.8 && eta < 0.0){
-              		if( pt < 20.0){ eff.first=0.941; eff.second=0.026;
-              	} else if( pt < 35.0){ eff.first=0.953; eff.second=0.015;
-              	} else if( pt < 50.0){ eff.first=0.953; eff.second=0.005;
-              	} else if( pt < 90.0){ eff.first=0.953; eff.second=0.017;
-              	} else if( pt < 150.0){ eff.first=0.975; eff.second=0.013;
-              	} else { eff.first=0.982; eff.second=0.013;
-              	}
-              }else if( eta >= 0.0 && eta < 0.8){
-              		if( pt < 20.0){ eff.first=0.946; eff.second=0.026;
-              	} else if( pt < 35.0){ eff.first=0.982; eff.second=0.015;
-              	} else if( pt < 50.0){ eff.first=0.980; eff.second=0.005;
-              	} else if( pt < 90.0){ eff.first=0.978; eff.second=0.017;
-              	} else if( pt < 150.0){ eff.first=1.012; eff.second=0.013;
-              	} else { eff.first=1.021; eff.second=0.013;
-              	}
-              }else if( eta >= 0.8 && eta < 1.444){
-              		if( pt < 20.0){ eff.first=0.990; eff.second=0.027;
-              	} else if( pt < 35.0){ eff.first=0.975; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=0.975; eff.second=0.007;
-              	} else if( pt < 90.0){ eff.first=0.979; eff.second=0.019;
-              	} else if( pt < 150.0){ eff.first=1.011; eff.second=0.009;
-              	} else { eff.first=1.000; eff.second=0.019;
-              	}
-              }else if( eta >= 1.444 && eta < 1.57){
-              		if( pt < 20.0){ eff.first=1.034; eff.second=0.106;
-              	} else if( pt < 35.0){ eff.first=0.975; eff.second=0.110;
-              	} else if( pt < 50.0){ eff.first=0.966; eff.second=0.017;
-              	} else if( pt < 90.0){ eff.first=0.980; eff.second=0.024;
-              	} else if( pt < 150.0){ eff.first=1.007; eff.second=0.049;
-              	} else { eff.first=0.884; eff.second=0.076;
-              	}
-              }else if( eta >= 1.57 && eta < 2.0){
-              		if( pt < 20.0){ eff.first=0.827; eff.second=0.018;
-              	} else if( pt < 35.0){ eff.first=0.909; eff.second=0.018;
-              	} else if( pt < 50.0){ eff.first=0.958; eff.second=0.007;
-              	} else if( pt < 90.0){ eff.first=0.969; eff.second=0.006;
-              	} else if( pt < 150.0){ eff.first=0.988; eff.second=0.022;
-              	} else { eff.first=0.979; eff.second=0.030;
-              	}
-              }else {
-              		if( pt < 20.0){ eff.first=0.797; eff.second=0.018;
-              	} else if( pt < 35.0){ eff.first=0.863; eff.second=0.010;
-              	} else if( pt < 50.0){ eff.first=0.908; eff.second=0.009;
-              	} else if( pt < 90.0){ eff.first=0.938; eff.second=0.007;
-              	} else if( pt < 150.0){ eff.first=1.021; eff.second=0.022;
-              	} else { eff.first=1.048; eff.second=0.106;
-              	}
-              }
-	  }
-	    break;
         }
         break;
-
       case 13:
         // taken from https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2#Results_for_2015_data
         switch(cutVersion){
@@ -1020,212 +766,6 @@ class LeptonEfficiencySF
 
 	  }
 	  break;
-
-         case patUtils::CutVersion::Moriond17Cut :
-
-	  if(wp=="loose"){
-              if( Abseta < 0.9){
-              		if( pt < 25.0){ eff.first=0.99991; eff.second=0.00212;
-              	} else if( pt < 30.0){ eff.first=0.99857; eff.second=0.00092;
-              	} else if( pt < 40.0){ eff.first=0.99962; eff.second=0.00023;
-              	} else if( pt < 50.0){ eff.first=1.00075; eff.second=0.00013;
-              	} else if( pt < 60.0){ eff.first=0.99646; eff.second=0.00064;
-              	} else               { eff.first=1.00102; eff.second=0.00083;
-              	}
-              }else if( Abseta < 1.2){
-              		if( pt < 25.0){ eff.first=1.00096; eff.second=0.00255;
-              	} else if( pt < 30.0){ eff.first=0.99798; eff.second=0.00138;
-              	} else if( pt < 40.0){ eff.first=0.99828; eff.second=0.00081;
-              	} else if( pt < 50.0){ eff.first=0.99861; eff.second=0.00026;
-              	} else if( pt < 60.0){ eff.first=0.99550; eff.second=0.00101;
-              	} else 		     { eff.first=0.99713; eff.second=0.00217;
-              	}
-              }else if( Abseta < 2.1){
-              		if( pt < 25.0){ eff.first=1.00060; eff.second=0.00162;
-              	} else if( pt < 30.0){ eff.first=0.99968; eff.second=0.00075;
-              	} else if( pt < 40.0){ eff.first=1.00029; eff.second=0.00018;
-              	} else if( pt < 50.0){ eff.first=1.00066; eff.second=0.00021;
-              	} else if( pt < 60.0){ eff.first=0.99612; eff.second=0.00081;
-              	} else               { eff.first=0.99986; eff.second=0.00202;
-              	}
-              }else {
-              		if( pt < 25.0){ eff.first=1.00103; eff.second=0.00227;
-              	} else if( pt < 30.0){ eff.first=0.99662; eff.second=0.00126;
-              	} else if( pt < 40.0){ eff.first=0.99427; eff.second=0.00579;
-              	} else if( pt < 50.0){ eff.first=0.99596; eff.second=0.00152;
-              	} else if( pt < 60.0){ eff.first=0.99384; eff.second=0.00200;
-              	} else               { eff.first=0.99428; eff.second=0.00498;
-              	}
-              }
-          }else if(wp=="medium"){
-
-              if( Abseta < 0.9){
-              		if( pt < 25.0){ eff.first=0.971891; eff.second=0.002295;
-              	} else if( pt < 30.0){ eff.first=0.985390; eff.second=0.001010;
-              	} else if( pt < 40.0){ eff.first=0.990564; eff.second=0.000320;
-              	} else if( pt < 50.0){ eff.first=0.990956; eff.second=0.000139;
-              	} else if( pt < 60.0){ eff.first=0.987879; eff.second=0.000662;
-              	} else if( pt < 100.0){ eff.first=0.986944; eff.second=0.001750;
-              	} else { eff.first=0.996012; eff.second=0.015247;
-              	}
-              }else if( Abseta < 1.2){
-              		if( pt < 25.0){ eff.first=0.988667; eff.second=0.003403;
-              	} else if( pt < 30.0){ eff.first=0.986373; eff.second=0.001691;
-              	} else if( pt < 40.0){ eff.first=0.991130; eff.second=0.000577;
-              	} else if( pt < 50.0){ eff.first=0.990543; eff.second=0.000395;
-              	} else if( pt < 60.0){ eff.first=0.990838; eff.second=0.001251;
-              	} else if( pt < 100.0){ eff.first=0.987564; eff.second=0.003048;
-              	} else { eff.first=1.000000; eff.second=0.009091;
-              	}
-              }else if( Abseta < 2.1){
-              		if( pt < 25.0){ eff.first=0.995891; eff.second=0.001844;
-              	} else if( pt < 30.0){ eff.first=0.994749; eff.second=0.000973;
-              	} else if( pt < 40.0){ eff.first=0.994626; eff.second=0.000366;
-              	} else if( pt < 50.0){ eff.first=0.994182; eff.second=0.000256;
-              	} else if( pt < 60.0){ eff.first=0.994234; eff.second=0.001026;
-              	} else if( pt < 100.0){ eff.first=0.990053; eff.second=0.002490;
-              	} else { eff.first=1.004801; eff.second=0.007700;
-              	}
-              }else {
-              		if( pt < 25.0){ eff.first=0.980939; eff.second=0.003398;
-              	} else if( pt < 30.0){ eff.first=0.972391; eff.second=0.002003;
-              	} else if( pt < 40.0){ eff.first=0.971297; eff.second=0.000949;
-              	} else if( pt < 50.0){ eff.first=0.968591; eff.second=0.000430;
-              	} else if( pt < 60.0){ eff.first=0.975689; eff.second=0.004733;
-              	} else if( pt < 100.0){ eff.first=0.960116; eff.second=0.007030;
-              	} else { eff.first=0.921766; eff.second=0.078150;
-              	}
-              }
-
-          }else if(wp=="tight"){
-              if( Abseta < 0.9){
-              		if( pt < 25.0){ eff.first=0.98633; eff.second=0.00272;
-              	} else if( pt < 30.0){ eff.first=0.98299; eff.second=0.03100;
-              	} else if( pt < 40.0){ eff.first=0.98437; eff.second=0.00037;
-              	} else if( pt < 50.0){ eff.first=0.98588; eff.second=0.00029;
-              	} else if( pt < 60.0){ eff.first=0.98190; eff.second=0.00085;
-              	} else if( pt < 100.0){ eff.first=0.99216; eff.second=0.00186;
-              	}
-              }else if( Abseta < 1.2){
-              		if( pt < 25.0){ eff.first=0.97238; eff.second=0.01070;
-              	} else if( pt < 30.0){ eff.first=0.97068; eff.second=0.00191;
-              	} else if( pt < 40.0){ eff.first=0.97356; eff.second=0.00162;
-              	} else if( pt < 50.0){ eff.first=0.97483; eff.second=0.00048;
-              	} else if( pt < 60.0){ eff.first=0.97454; eff.second=0.00140;
-              	} else if( pt < 100.0){ eff.first=0.97488; eff.second=0.00288;
-              	}
-              }else if( Abseta < 2.1){
-              		if( pt < 25.0){ eff.first=0.98629; eff.second=0.00176;
-              	} else if( pt < 30.0){ eff.first=0.98614; eff.second=0.00089;
-              	} else if( pt < 40.0){ eff.first=0.98786; eff.second=0.01378;
-              	} else if( pt < 50.0){ eff.first=0.99052; eff.second=0.00027;
-              	} else if( pt < 60.0){ eff.first=0.98544; eff.second=0.00096;
-              	} else               { eff.first=0.98878; eff.second=0.00219;
-              	}
-              }else {
-              		if( pt < 25.0){ eff.first=0.97528; eff.second=0.00307;
-              	} else if( pt < 30.0){ eff.first=0.97329; eff.second=0.03568;
-              	} else if( pt < 40.0){ eff.first=0.96946; eff.second=0.00154;
-              	} else if( pt < 50.0){ eff.first=0.97256; eff.second=0.00492;
-              	} else if( pt < 60.0){ eff.first=0.96771; eff.second=0.00280;
-              	} else               { eff.first=0.96325; eff.second=0.00575;
-              	}
-              }
-          }else if(wp=="tkHighPt"){
-              if( Abseta < 0.2){
-              		if( pt < 25.0){ eff.first=0.990; eff.second=0.019;
-              	} else if( pt < 30.0){ eff.first=0.995; eff.second=0.014;
-              	} else if( pt < 40.0){ eff.first=0.996; eff.second=0.013;
-              	} else if( pt < 50.0){ eff.first=1.009; eff.second=0.000;
-              	} else if( pt < 60.0){ eff.first=0.996; eff.second=0.001;
-              	} else if( pt < 120.0){ eff.first=0.996; eff.second=0.002;
-              	} else { eff.first=1.010; eff.second=0.004;
-              	}
-              }else if( Abseta < 0.3){
-              		if( pt < 25.0){ eff.first=0.976; eff.second=0.001;
-              	} else if( pt < 30.0){ eff.first=0.983; eff.second=0.002;
-              	} else if( pt < 40.0){ eff.first=0.980; eff.second=0.001;
-              	} else if( pt < 50.0){ eff.first=0.981; eff.second=0.001;
-              	} else if( pt < 60.0){ eff.first=0.982; eff.second=0.002;
-              	} else if( pt < 120.0){ eff.first=0.986; eff.second=0.003;
-              	} else { eff.first=0.957; eff.second=0.015;
-              	}
-              }else if( Abseta < 0.9){
-              		if( pt < 25.0){ eff.first=0.993; eff.second=0.001;
-              	} else if( pt < 30.0){ eff.first=0.991; eff.second=0.001;
-              	} else if( pt < 40.0){ eff.first=0.992; eff.second=0.000;
-              	} else if( pt < 50.0){ eff.first=0.993; eff.second=0.013;
-              	} else if( pt < 60.0){ eff.first=0.993; eff.second=0.000;
-              	} else if( pt < 120.0){ eff.first=0.996; eff.second=0.007;
-              	} else { eff.first=1.017; eff.second=0.003;
-              	}
-              }else if( Abseta < 1.2){
-              		if( pt < 25.0){ eff.first=0.980; eff.second=0.002;
-              	} else if( pt < 30.0){ eff.first=0.981; eff.second=0.001;
-              	} else if( pt < 40.0){ eff.first=0.985; eff.second=0.000;
-              	} else if( pt < 50.0){ eff.first=0.986; eff.second=0.000;
-              	} else if( pt < 60.0){ eff.first=0.988; eff.second=0.001;
-              	} else if( pt < 120.0){ eff.first=0.992; eff.second=0.001;
-              	} else { eff.first=0.990; eff.second=0.014;
-              	}
-              }else if( Abseta < 2.1){
-              		if( pt < 25.0){ eff.first=0.994; eff.second=0.001;
-              	} else if( pt < 30.0){ eff.first=0.993; eff.second=0.001;
-              	} else if( pt < 40.0){ eff.first=0.994; eff.second=0.000;
-              	} else if( pt < 50.0){ eff.first=0.994; eff.second=0.000;
-              	} else if( pt < 60.0){ eff.first=0.995; eff.second=0.000;
-              	} else if( pt < 120.0){ eff.first=0.996; eff.second=0.004;
-              	} else { eff.first=1.000; eff.second=0.001;
-              	}
-              }else {
-              		if( pt < 25.0){ eff.first=0.990; eff.second=0.001;
-              	} else if( pt < 30.0){ eff.first=0.990; eff.second=0.001;
-              	} else if( pt < 40.0){ eff.first=0.990; eff.second=0.000;
-              	} else if( pt < 50.0){ eff.first=0.990; eff.second=0.000;
-              	} else if( pt < 60.0){ eff.first=0.991; eff.second=0.001;
-              	} else if( pt < 120.0){ eff.first=0.991; eff.second=0.006;
-              	} else { eff.first=1.002; eff.second=0.007;
-              	}
-              }
-
-          }else if(wp=="tightiso"){ //with respect to tight Id
-              if( Abseta < 0.9){
-              		if( pt < 25.0){ eff.first=0.98478; eff.second=0.00226;
-              	} else if( pt < 30.0){ eff.first=0.99331; eff.second=0.00120;
-              	} else if( pt < 40.0){ eff.first=0.99378; eff.second=0.00039;
-              	} else if( pt < 50.0){ eff.first=0.99530; eff.second=0.00018;
-              	} else if( pt < 60.0){ eff.first=0.99681; eff.second=0.00037;
-              	} else               { eff.first=0.99878; eff.second=0.00047;
-              	}
-              }else if( Abseta < 1.2){
-              		if( pt < 25.0){ eff.first=0.99518; eff.second=0.00357;
-              	} else if( pt < 30.0){ eff.first=1.00043; eff.second=0.00207;
-              	} else if( pt < 40.0){ eff.first=0.99943; eff.second=0.00070;
-              	} else if( pt < 50.0){ eff.first=0.99769; eff.second=0.00020;
-              	} else if( pt < 60.0){ eff.first=0.99915; eff.second=0.00060;
-              	} else               { eff.first=0.99912; eff.second=0.00078;
-              	}
-              }else if( Abseta < 2.1){
-              		if( pt < 25.0){ eff.first=0.99149; eff.second=0.00168;
-              	} else if( pt < 30.0){ eff.first=0.99590; eff.second=0.00100;
-              	} else if( pt < 40.0){ eff.first=0.99796; eff.second=0.00038;
-              	} else if( pt < 50.0){ eff.first=0.99801; eff.second=0.00012;
-              	} else if( pt < 60.0){ eff.first=0.99834; eff.second=0.00034;
-              	} else               { eff.first=0.99921; eff.second=0.00046;
-              	}
-              }else {
-              		if( pt < 25.0){ eff.first=0.98380; eff.second=0.00291;
-              	} else if( pt < 30.0){ eff.first=0.99184; eff.second=0.00175;
-              	} else if( pt < 40.0){ eff.first=0.99621; eff.second=0.00069;
-              	} else if( pt < 50.0){ eff.first=0.99832; eff.second=0.00037;
-              	} else if( pt < 60.0){ eff.first=0.99860; eff.second=0.00078;
-              	} else               { eff.first=1.00152; eff.second=0.00112;
-              	}
-              }
-
-	  }
-	  break;
-
 	}
 	break;
       }
@@ -1239,43 +779,41 @@ class LeptonEfficiencySF
         std::pair<float,float> eff(1.0,0.00);
         
         if(id==121){
-            //2016 electron trigger efficincy prensted here https://indico.cern.ch/event/535808/contributions/2278379/attachments/1324645/1987966/HZZ2l2v_August_18_2016.pdf
             if(is2016){
                 if(etaCen<0.8){
-                    if(etaFwd<0.8)	{ eff.first=1.0012; eff.second=0.0031;
-                    }else if(etaFwd<1.444)	{ eff.first=0.9984; eff.second=0.0041;
-                    }else if(etaFwd<1.566)	{ eff.first=0; eff.second=0;
-                    }else if(etaFwd<2.0)	{ eff.first=0.9930; eff.second=0.0066;
-                    }else 			{ eff.first=0.9805; eff.second=0.0093;
+                    if(etaFwd<0.8)	{ eff.first=0.989; eff.second=0.004;
+                    }else if(etaFwd<1.444)	{ eff.first=0.989; eff.second=0.005;
+                    }else if(etaFwd<1.566)	{ eff.first=0.981; eff.second=0.021;
+                    }else if(etaFwd<2.0)	{ eff.first=0.982; eff.second=0.010;
+                    }else 			{ eff.first=0.959; eff.second=0.016;
                     }
                 }else if(etaCen<1.444){
-                    if(etaFwd<0.8)	{ eff.first=0.9980; eff.second=0.0041;
-                    }else if(etaFwd<1.444)	{ eff.first=0.9960; eff.second=0.0055;
-                    }else if(etaFwd<1.566)	{ eff.first=0; eff.second=0;
-                    }else if(etaFwd<2.0)	{ eff.first=0.9940; eff.second=0.0075;
-                    }else 			{ eff.first=0.9871; eff.second=0.0082;
+                    if(etaFwd<0.8)	{ eff.first=0.989; eff.second=0.005;
+                    }else if(etaFwd<1.444)	{ eff.first=0.990; eff.second=0.007;
+                    }else if(etaFwd<1.566)	{ eff.first=0.985; eff.second=0.022;
+                    }else if(etaFwd<2.0)	{ eff.first=0.982; eff.second=0.009;
+                    }else 			{ eff.first=0.964; eff.second=0.010;
                     }
-/*                }else if(etaCen<1.566){	//This block belongs to transition region
+                }else if(etaCen<1.566){	//This block belongs to transition region
                     if(etaFwd<0.8)	{ eff.first=0.981; eff.second=0.021;
                     }else if(etaFwd<1.444)	{ eff.first=0.983; eff.second=0.023;
                     }else if(etaFwd<1.566)	{ eff.first=0.986; eff.second=0.077;
                     }else if(etaFwd<2.0)	{ eff.first=0.983; eff.second=0.028;
                     }else 			{ eff.first=0.959; eff.second=0.030;
                     }
-		    */
                 }else if(etaCen<2.0){
-                    if(etaFwd<0.8)	{ eff.first=0.9922; eff.second=0.0070;
-                    }else if(etaFwd<1.444)	{ eff.first=0.9935; eff.second=0.0074;
-                    }else if(etaFwd<1.566)	{ eff.first=0; eff.second=0;
-                    }else if(etaFwd<2.0)	{ eff.first=0.9946; eff.second=0.0087;
-                    }else 			{ eff.first=0.9907; eff.second=0.0089;
+                    if(etaFwd<0.8)	{ eff.first=0.982; eff.second=0.010;
+                    }else if(etaFwd<1.444)	{ eff.first=0.984; eff.second=0.009;
+                    }else if(etaFwd<1.566)	{ eff.first=0.982; eff.second=0.029;
+                    }else if(etaFwd<2.0)	{ eff.first=0.977; eff.second=0.011;
+                    }else 			{ eff.first=0.965; eff.second=0.011;
                     }
                 }else{
-                    if(etaFwd<0.8)	{ eff.first=0.9843; eff.second=0.0093;
-                    }else if(etaFwd<1.444)	{ eff.first=0.9896; eff.second=0.0082;
-                    }else if(etaFwd<1.566)	{ eff.first=0; eff.second=0;
-                    }else if(etaFwd<2.0)	{ eff.first=0.9872; eff.second=0.0088;
-                    }else			{ eff.first=0.9826; eff.second=0.0088;
+                    if(etaFwd<0.8)	{ eff.first=0.959; eff.second=0.016;
+                    }else if(etaFwd<1.444)	{ eff.first=0.966; eff.second=0.010;
+                    }else if(etaFwd<1.566)	{ eff.first=0.962; eff.second=0.030;
+                    }else if(etaFwd<2.0)	{ eff.first=0.965; eff.second=0.011;
+                    }else			{ eff.first=0.943; eff.second=0.011;
                     }
                 }
                 
@@ -1324,22 +862,28 @@ class LeptonEfficiencySF
         }else if(id==169){
             if (is2016){
                 if(etaCen<0.9){
-                    if(etaFwd<0.9){ eff.first=0.9490; eff.second=0.001;
-                    }else if(etaFwd<1.2){ eff.first=0.9628; eff.second=0.005;
-                    }else if(etaFwd<2.1){ eff.first=0.9477; eff.second=0.005;
-                    }else if(etaFwd<2.4){ eff.first=0.9420; eff.second=0.010;
+                    if(etaFwd<0.9){ eff.first=0.9956; eff.second=0.0865;
+                    }else if(etaFwd<1.2){ eff.first=0.9930; eff.second=0.0612;
+                    }else if(etaFwd<2.1){ eff.first=0.9964; eff.second=0.0612;
+                    }else if(etaFwd<2.4){ eff.first=0.9920; eff.second=0.0616;
                     }
                 }else if(etaCen<1.2){
-                    if(etaFwd<1.2){ eff.first=0.9576; eff.second=0.005;
-                    }else if(etaFwd<2.1){ eff.first=0.9493; eff.second=0.010;
-                    }else if(etaFwd<2.4){ eff.first=0.9142; eff.second=0.015;          
+                    if(etaFwd<0.9){ eff.first=0.9930; eff.second=0.0612;
+                    }else if(etaFwd<1.2){ eff.first=0.9902; eff.second=0.0057;
+                    }else if(etaFwd<2.1){ eff.first=0.9940; eff.second=0.0046;          
+                    }else if(etaFwd<2.4){ eff.first=0.9875; eff.second=0.0075;          
                     }
                 }else if(etaCen<2.1){
-                    if(etaFwd<2.1){ eff.first=0.9216; eff.second=0.010;
-                    }else if(etaFwd<2.4){ eff.first=0.9470; eff.second=0.015;
+                    if(etaFwd<0.9){ eff.first=0.9964; eff.second=0.0612;
+                    }else if(etaFwd<1.2){ eff.first=0.9940; eff.second=0.0046;
+                    }else if(etaFwd<2.1){ eff.first=0.9972; eff.second=0.0030;          
+                    }else if(etaFwd<2.4){ eff.first=0.9935; eff.second=0.0065;          
                     }
                 }else if(etaCen<2.4){
-                    if(etaFwd<2.4){ eff.first=0.9252; eff.second=0.025;
+                    if(etaFwd<0.9){ eff.first=0.9920; eff.second=0.0615;
+                    }else if(etaFwd<1.2){ eff.first=0.9875; eff.second=0.0074;
+                    }else if(etaFwd<2.1){ eff.first=0.9935; eff.second=0.0065;          
+                    }else if(etaFwd<2.4){ eff.first=0.9855; eff.second=0.0088;          
                     }
                 }
                 eff.second = sqrt(eff.second* eff.second + 0.04*0.04); //add 4% syst uncertainty (conservative)
