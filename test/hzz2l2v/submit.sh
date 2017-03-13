@@ -186,7 +186,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
    
     if [[ $step == 3 || $step == 3.01 ]]; then  # make plots and combine root files for photon + jet study    
 #        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
-#	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016MC.root --outDir $PLOTSDIR/photonMCWeights --mode MC 
+#	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016MC.root --outDir $PLOTSDIR/photonMCWeights --mode MC --mode noQCD
 	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016.root --outDir $PLOTSDIR/photonWeights --mode DATA
     fi
 
