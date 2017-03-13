@@ -1008,26 +1008,36 @@ class LeptonEfficiencySF
 
 	  } else if(id==13){
 
-                if(eta >= -2.4 && eta < -2.1){
-                	eff.first = 0.982399; eff.second = 0.00149494;
-                }else if(eta >= -2.1 && eta < -1.6){
-                	eff.first = 0.991747; eff.second = 0.000336123;
-                }else if(eta >= -1.6 && eta < -1.1){
-                	eff.first = 0.995945; eff.second = 0.000226523;
-                }else if(eta >= -1.1 && eta < -0.6){
-                	eff.first = 0.993413; eff.second = 0.000145006;
-                }else if(eta >= -0.6 && eta < 0){
-                	eff.first = 0.991461; eff.second = 0.000116159;
-                }else if(eta >= 0 && eta < 0.6){
-                	eff.first = 0.99468; eff.second = 0.00010193;
-                }else if(eta >= 0.6 && eta < 1.1){
-                	eff.first = 0.996666; eff.second = 0.000123553;
-                }else if(eta >= 1.1 && eta < 1.6){
-                	eff.first = 0.994934; eff.second = 0.000248735;
-                }else if(eta >= 1.6 && eta < 2.1){
-                	eff.first = 0.991187; eff.second = 0.000303066;
-                }else if(eta < 2.4){
-                	eff.first = 0.976812; eff.second = 0.00159681;
+                if(eta >= -2.2){
+                        eff.first = 0.991237; eff.second = 0.000751;
+                }else if(eta >= -2.2 && eta < -1.8){
+                        eff.first = 0.994853; eff.second = 0.000200;
+                }else if(eta >= -1.8 && eta < -1.4){
+                        eff.first = 0.996413; eff.second = 0.000174;
+                }else if(eta >= -1.4 && eta < -1.0){
+                        eff.first = 0.997157; eff.second = 0.000186;
+                }else if(eta >= -1.0 && eta < -0.8){
+                        eff.first = 0.997512; eff.second = 0.000090;
+                }else if(eta >= -0.8 && eta < -0.4){
+                        eff.first = 0.997560; eff.second = 0.000087;
+                }else if(eta >= -0.4 && eta < -0.2){
+                        eff.first = 0.996745; eff.second = 0.000164;
+                }else if(eta >= -0.2 && eta < 0){
+                        eff.first = 0.996996; eff.second = 0.000073;
+                }else if(eta >= 0 && eta < 0.2){
+                        eff.first = 0.997720; eff.second = 0.000166;
+                }else if(eta >= 0.2 && eta < 0.4){
+                        eff.first = 0.998604; eff.second = 0.000084;
+                }else if(eta >= 0.4 && eta < 0.8){
+                        eff.first = 0.998321; eff.second = 0.000092;
+                }else if(eta >= 0.8 && eta < 1.0){
+                        eff.first = 0.997682; eff.second = 0.000181;
+                }else if(eta >= 1.0 && eta < 1.4){
+                        eff.first = 0.995252; eff.second = 0.000180;
+                }else if(eta >= 1.4 && eta < 1.8){
+                        eff.first = 0.994919; eff.second = 0.000185;
+                }else if(eta < 2.2){
+                        eff.first = 0.987334; eff.second = 0.000733;
                 }
           }                
 	  return eff;
