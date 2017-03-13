@@ -753,14 +753,39 @@ class LeptonEfficiencySF
               	} else if( pt < 100.0){ eff.first=0.998433; eff.second=0.000670;
               	} else { eff.first=1.005706; eff.second=0.002814;
               	}
+            }
+          }else if(wp=="HZZ2l2nuiso"){ //with respect to tkHighPT Id
+              if( Abseta < 0.9){
+              		if( pt < 25.0){ eff.first=0.9801; eff.second=0.0019;
+              	} else if( pt < 30.0){ eff.first=0.9876; eff.second=0.0010;
+              	} else if( pt < 40.0){ eff.first=0.9902; eff.second=0.0004;
+              	} else if( pt < 50.0){ eff.first=0.9926; eff.second=0.0003;
+              	} else if( pt < 60.0){ eff.first=0.9947; eff.second=0.0004;
+              	} else { eff.first=0.9972; eff.second=0.0005;
+              	}
+              }else if( Abseta < 1.2){
+              		if( pt < 25.0){ eff.first=0.9864; eff.second=0.0030;
+              	} else if( pt < 30.0){ eff.first=0.9959; eff.second=0.0018;
+              	} else if( pt < 40.0){ eff.first=0.9977; eff.second=0.0007;
+              	} else if( pt < 50.0){ eff.first=0.9961; eff.second=0.0004;
+              	} else if( pt < 60.0){ eff.first=0.9984; eff.second=0.0006;
+              	} else { eff.first=0.9987; eff.second=0.0008;
+              	}
+              }else if( Abseta < 2.1){
+              		if( pt < 25.0){ eff.first=0.9862; eff.second=0.0014;
+              	} else if( pt < 30.0){ eff.first=0.9946; eff.second=0.0009;
+              	} else if( pt < 40.0){ eff.first=0.9970; eff.second=0.0004;
+              	} else if( pt < 50.0){ eff.first=0.9973; eff.second=0.0002;
+              	} else if( pt < 60.0){ eff.first=0.9976; eff.second=0.0004;
+              	} else { eff.first=0.9986; eff.second=0.0005;
+              	}
               }else {
-              		if( pt < 25.0){ eff.first=0.983397; eff.second=0.003817;
-              	} else if( pt < 30.0){ eff.first=0.987529; eff.second=0.002376;
-              	} else if( pt < 40.0){ eff.first=0.993539; eff.second=0.001018;
-              	} else if( pt < 50.0){ eff.first=0.996392; eff.second=0.000394;
-              	} else if( pt < 60.0){ eff.first=0.997946; eff.second=0.001083;
-              	} else if( pt < 100.0){ eff.first=1.000734; eff.second=0.001536;
-              	} else { eff.first=0.998580; eff.second=0.005873;
+              		if( pt < 25.0){ eff.first=0.9839; eff.second=0.0133;
+              	} else if( pt < 30.0){ eff.first=0.9923; eff.second=0.0106;
+              	} else if( pt < 40.0){ eff.first=0.9953; eff.second=0.0342;
+              	} else if( pt < 50.0){ eff.first=1.0001; eff.second=0.0007;
+              	} else if( pt < 60.0){ eff.first=0.9983; eff.second=0.0010;
+              	} else { eff.first=1.0010; eff.second=0.0012;
               	}
               }
 
