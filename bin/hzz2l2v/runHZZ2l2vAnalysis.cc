@@ -1568,8 +1568,9 @@ int main(int argc, char* argv[])
 		       if(is2016MC) {
                            if(id==11)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].el.superCluster()->eta(), id).first; //Tracking eff
                            else if(id==13)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].eta(), id).first; //Tracking eff
-                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"   ,patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ID
-                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso",patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ISO w.r.t ID
+                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tkHighPT"   ,patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ID
+			   if(id==13){
+                           weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id, "HZZ2l2nuiso",patUtils::CutVersion::ICHEP16Cut ).first : 1.0;} //ISO w.r.t ID
 		       } else if(isMC && !is2016MC){
                            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tight"   ,patUtils::CutVersion::Spring15Cut25ns).first : 1.0; //ID
                            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tightiso" : "tightiso",patUtils::CutVersion::Spring15Cut25ns).first : 1.0; //ISO w.r.t ID
