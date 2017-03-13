@@ -78,7 +78,7 @@ int main(int argc,const char* argv[])
   //  TFile *llInF=TFile::Open(gDataFile.c_str());
   gInF=TFile::Open(gDataFile.c_str());
 
-  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance","leadjet_eta","leadjet_pt","mt_sel","met_sel"};
+  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance","leadjet_eta","leadjet_pt"};
   std::vector<string> cat = {"eq0jets","geq1jets","vbf"};
 
   for(unsigned int icat=0; icat<cat.size(); icat++)
@@ -269,13 +269,6 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   //draw
   float gscale(hg->Integral());
   hg->Scale(dyscale/gscale);
-  
-  //hpureg->Scale(dyscale/gscale);
-  // hg->Scale(1./gscale);
-  // hpureg->Scale(1./gscale);
-  //  float nscale(hn->Integral());
-  //hn->Scale(dyscale/(gscale-nscale));
-
 
   // Estimate systematic
   // Print number of events for DY sample in MET>125:
