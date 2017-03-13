@@ -753,14 +753,39 @@ class LeptonEfficiencySF
               	} else if( pt < 100.0){ eff.first=0.998433; eff.second=0.000670;
               	} else { eff.first=1.005706; eff.second=0.002814;
               	}
+            }
+          }else if(wp=="HZZ2l2nuiso"){ //with respect to tkHighPT Id
+              if( Abseta < 0.9){
+              		if( pt < 25.0){ eff.first=0.9801; eff.second=0.0019;
+              	} else if( pt < 30.0){ eff.first=0.9876; eff.second=0.0010;
+              	} else if( pt < 40.0){ eff.first=0.9902; eff.second=0.0004;
+              	} else if( pt < 50.0){ eff.first=0.9926; eff.second=0.0003;
+              	} else if( pt < 60.0){ eff.first=0.9947; eff.second=0.0004;
+              	} else { eff.first=0.9972; eff.second=0.0005;
+              	}
+              }else if( Abseta < 1.2){
+              		if( pt < 25.0){ eff.first=0.9864; eff.second=0.0030;
+              	} else if( pt < 30.0){ eff.first=0.9959; eff.second=0.0018;
+              	} else if( pt < 40.0){ eff.first=0.9977; eff.second=0.0007;
+              	} else if( pt < 50.0){ eff.first=0.9961; eff.second=0.0004;
+              	} else if( pt < 60.0){ eff.first=0.9984; eff.second=0.0006;
+              	} else { eff.first=0.9987; eff.second=0.0008;
+              	}
+              }else if( Abseta < 2.1){
+              		if( pt < 25.0){ eff.first=0.9862; eff.second=0.0014;
+              	} else if( pt < 30.0){ eff.first=0.9946; eff.second=0.0009;
+              	} else if( pt < 40.0){ eff.first=0.9970; eff.second=0.0004;
+              	} else if( pt < 50.0){ eff.first=0.9973; eff.second=0.0002;
+              	} else if( pt < 60.0){ eff.first=0.9976; eff.second=0.0004;
+              	} else { eff.first=0.9986; eff.second=0.0005;
+              	}
               }else {
-              		if( pt < 25.0){ eff.first=0.983397; eff.second=0.003817;
-              	} else if( pt < 30.0){ eff.first=0.987529; eff.second=0.002376;
-              	} else if( pt < 40.0){ eff.first=0.993539; eff.second=0.001018;
-              	} else if( pt < 50.0){ eff.first=0.996392; eff.second=0.000394;
-              	} else if( pt < 60.0){ eff.first=0.997946; eff.second=0.001083;
-              	} else if( pt < 100.0){ eff.first=1.000734; eff.second=0.001536;
-              	} else { eff.first=0.998580; eff.second=0.005873;
+              		if( pt < 25.0){ eff.first=0.9839; eff.second=0.0133;
+              	} else if( pt < 30.0){ eff.first=0.9923; eff.second=0.0106;
+              	} else if( pt < 40.0){ eff.first=0.9953; eff.second=0.0342;
+              	} else if( pt < 50.0){ eff.first=1.0001; eff.second=0.0007;
+              	} else if( pt < 60.0){ eff.first=0.9983; eff.second=0.0010;
+              	} else { eff.first=1.0010; eff.second=0.0012;
               	}
               }
 
@@ -779,7 +804,6 @@ class LeptonEfficiencySF
         std::pair<float,float> eff(1.0,0.00);
         
         if(id==121){
-            //2016 electron trigger efficincy prensted here https://indico.cern.ch/event/535808/contributions/2278379/attachments/1324645/1987966/HZZ2l2v_August_18_2016.pdf
             if(is2016){
                 if(etaCen<0.8){
                     if(etaFwd<0.8)	{ eff.first=0.989; eff.second=0.004;
@@ -863,22 +887,28 @@ class LeptonEfficiencySF
         }else if(id==169){
             if (is2016){
                 if(etaCen<0.9){
-                    if(etaFwd<0.9){ eff.first=0.9490; eff.second=0.001;
-                    }else if(etaFwd<1.2){ eff.first=0.9628; eff.second=0.005;
-                    }else if(etaFwd<2.1){ eff.first=0.9477; eff.second=0.005;
-                    }else if(etaFwd<2.4){ eff.first=0.9420; eff.second=0.010;
+                    if(etaFwd<0.9){ eff.first=0.9956; eff.second=0.0865;
+                    }else if(etaFwd<1.2){ eff.first=0.9930; eff.second=0.0612;
+                    }else if(etaFwd<2.1){ eff.first=0.9964; eff.second=0.0612;
+                    }else if(etaFwd<2.4){ eff.first=0.9920; eff.second=0.0616;
                     }
                 }else if(etaCen<1.2){
-                    if(etaFwd<1.2){ eff.first=0.9576; eff.second=0.005;
-                    }else if(etaFwd<2.1){ eff.first=0.9493; eff.second=0.010;
-                    }else if(etaFwd<2.4){ eff.first=0.9142; eff.second=0.015;          
+                    if(etaFwd<0.9){ eff.first=0.9930; eff.second=0.0612;
+                    }else if(etaFwd<1.2){ eff.first=0.9902; eff.second=0.0057;
+                    }else if(etaFwd<2.1){ eff.first=0.9940; eff.second=0.0046;          
+                    }else if(etaFwd<2.4){ eff.first=0.9875; eff.second=0.0075;          
                     }
                 }else if(etaCen<2.1){
-                    if(etaFwd<2.1){ eff.first=0.9216; eff.second=0.010;
-                    }else if(etaFwd<2.4){ eff.first=0.9470; eff.second=0.015;
+                    if(etaFwd<0.9){ eff.first=0.9964; eff.second=0.0612;
+                    }else if(etaFwd<1.2){ eff.first=0.9940; eff.second=0.0046;
+                    }else if(etaFwd<2.1){ eff.first=0.9972; eff.second=0.0030;          
+                    }else if(etaFwd<2.4){ eff.first=0.9935; eff.second=0.0065;          
                     }
                 }else if(etaCen<2.4){
-                    if(etaFwd<2.4){ eff.first=0.9252; eff.second=0.025;
+                    if(etaFwd<0.9){ eff.first=0.9920; eff.second=0.0615;
+                    }else if(etaFwd<1.2){ eff.first=0.9875; eff.second=0.0074;
+                    }else if(etaFwd<2.1){ eff.first=0.9935; eff.second=0.0065;          
+                    }else if(etaFwd<2.4){ eff.first=0.9855; eff.second=0.0088;          
                     }
                 }
                 eff.second = sqrt(eff.second* eff.second + 0.04*0.04); //add 4% syst uncertainty (conservative)
@@ -978,30 +1008,117 @@ class LeptonEfficiencySF
 
 	  } else if(id==13){
 
-                if(eta >= -2.4 && eta < -2.1){
-                	eff.first = 0.982399; eff.second = 0.00149494;
-                }else if(eta >= -2.1 && eta < -1.6){
-                	eff.first = 0.991747; eff.second = 0.000336123;
-                }else if(eta >= -1.6 && eta < -1.1){
-                	eff.first = 0.995945; eff.second = 0.000226523;
-                }else if(eta >= -1.1 && eta < -0.6){
-                	eff.first = 0.993413; eff.second = 0.000145006;
-                }else if(eta >= -0.6 && eta < 0){
-                	eff.first = 0.991461; eff.second = 0.000116159;
-                }else if(eta >= 0 && eta < 0.6){
-                	eff.first = 0.99468; eff.second = 0.00010193;
-                }else if(eta >= 0.6 && eta < 1.1){
-                	eff.first = 0.996666; eff.second = 0.000123553;
-                }else if(eta >= 1.1 && eta < 1.6){
-                	eff.first = 0.994934; eff.second = 0.000248735;
-                }else if(eta >= 1.6 && eta < 2.1){
-                	eff.first = 0.991187; eff.second = 0.000303066;
-                }else if(eta < 2.4){
-                	eff.first = 0.976812; eff.second = 0.00159681;
+                if(eta >= -2.2){
+                        eff.first = 0.991237; eff.second = 0.000751;
+                }else if(eta >= -2.2 && eta < -1.8){
+                        eff.first = 0.994853; eff.second = 0.000200;
+                }else if(eta >= -1.8 && eta < -1.4){
+                        eff.first = 0.996413; eff.second = 0.000174;
+                }else if(eta >= -1.4 && eta < -1.0){
+                        eff.first = 0.997157; eff.second = 0.000186;
+                }else if(eta >= -1.0 && eta < -0.8){
+                        eff.first = 0.997512; eff.second = 0.000090;
+                }else if(eta >= -0.8 && eta < -0.4){
+                        eff.first = 0.997560; eff.second = 0.000087;
+                }else if(eta >= -0.4 && eta < -0.2){
+                        eff.first = 0.996745; eff.second = 0.000164;
+                }else if(eta >= -0.2 && eta < 0){
+                        eff.first = 0.996996; eff.second = 0.000073;
+                }else if(eta >= 0 && eta < 0.2){
+                        eff.first = 0.997720; eff.second = 0.000166;
+                }else if(eta >= 0.2 && eta < 0.4){
+                        eff.first = 0.998604; eff.second = 0.000084;
+                }else if(eta >= 0.4 && eta < 0.8){
+                        eff.first = 0.998321; eff.second = 0.000092;
+                }else if(eta >= 0.8 && eta < 1.0){
+                        eff.first = 0.997682; eff.second = 0.000181;
+                }else if(eta >= 1.0 && eta < 1.4){
+                        eff.first = 0.995252; eff.second = 0.000180;
+                }else if(eta >= 1.4 && eta < 1.8){
+                        eff.first = 0.994919; eff.second = 0.000185;
+                }else if(eta < 2.2){
+                        eff.first = 0.987334; eff.second = 0.000733;
                 }
           }                
 	  return eff;
     }
+
+
+    std::pair<float,float> getRecoEfficiency(float eta, int id){ 
+
+       // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2#Efficiencies_and_scale_factors
+       // https://indico.cern.ch/event/604907/contributions/2452907/attachments/1401460/2139067/RecoSF_ApprovalMoriond17_25Jan2017.pdf
+
+        id   = abs(id);
+        std::pair<float,float> eff(1.0,0.00);
+
+        if(id==11){
+	        if (eta >= -2.5 && eta < -2.45){
+			eff.first = 1.318 ; eff.second = 0.018;
+		}else if (eta >= -2.450 && eta < -2.400){
+			eff.first = 1.114 ; eff.second = 0.011;
+		}else if (eta >= -2.400 && eta < -2.300){
+			eff.first = 1.025 ; eff.second = 0.008;
+		}else if (eta >= -2.300 && eta < -2.200){
+			eff.first = 1.014 ; eff.second = 0.007;
+		}else if (eta >= -2.200 && eta < -2.000){
+			eff.first = 1.007 ; eff.second = 0.004;
+		}else if (eta >= -2.000 && eta < -1.800){
+			eff.first = 0.995 ; eff.second = 0.006;
+		}else if (eta >= -1.800 && eta < -1.630){
+			eff.first = 0.995 ; eff.second = 0.005;
+		}else if (eta >= -1.630 && eta < -1.566){
+			eff.first = 0.992 ; eff.second = 0.006;
+		}else if (eta >= -1.566 && eta < -1.444){
+			eff.first = 0.963 ; eff.second = 0.026;
+		}else if (eta >= -1.444 && eta < -1.200){
+			eff.first = 0.990 ; eff.second = 0.004;
+		}else if (eta >= -1.200 && eta < -1.000){
+			eff.first = 0.986 ; eff.second = 0.005;
+		}else if (eta >= -1.000 && eta < -0.600){
+			eff.first = 0.982 ; eff.second = 0.003;
+		}else if (eta >= -0.600 && eta < -0.400){
+			eff.first = 0.985 ; eff.second = 0.006;
+		}else if (eta >= -0.400 && eta < -0.200){
+			eff.first = 0.982 ; eff.second = 0.006;
+		}else if (eta >= -0.200 && eta < 0.000){
+			eff.first = 0.980 ; eff.second = 0.005;
+		}else if (eta >= 0.000 && eta < 0.200){
+			eff.first = 0.985 ; eff.second = 0.005;
+		}else if (eta >= 0.200 && eta < 0.400){
+			eff.first = 0.989 ; eff.second = 0.006;
+		}else if (eta >= 0.400 && eta < 0.600){
+			eff.first = 0.988 ; eff.second = 0.006;
+		}else if (eta >= 0.600 && eta < 1.000){
+			eff.first = 0.988 ; eff.second = 0.003;
+		}else if (eta >= 1.000 && eta < 1.200){
+			eff.first = 0.988 ; eff.second = 0.005;
+		}else if (eta >= 1.200 && eta < 1.444){
+			eff.first = 0.988 ; eff.second = 0.004;
+		}else if (eta >= 1.444 && eta < 1.566){
+			eff.first = 0.968 ; eff.second = 0.026;
+		}else if (eta >= 1.566 && eta < 1.630){
+			eff.first = 0.990 ; eff.second = 0.006;
+		}else if (eta >= 1.630 && eta < 1.800){
+			eff.first = 0.993 ; eff.second = 0.005;
+		}else if (eta >= 1.800 && eta < 2.000){
+			eff.first = 0.992 ; eff.second = 0.006;
+		}else if (eta >= 2.000 && eta < 2.200){
+			eff.first = 0.998 ; eff.second = 0.004;
+		}else if (eta >= 2.200 && eta < 2.300){
+			eff.first = 1.001 ; eff.second = 0.007;
+		}else if (eta >= 2.300 && eta < 2.400){
+			eff.first = 0.990 ; eff.second = 0.008;
+		}else if (eta >= 2.400 && eta < 2.450){
+			eff.first = 0.971 ; eff.second = 0.011;
+		}else if (eta >= 2.450 && eta < 2.500){
+			eff.first = 0.907 ; eff.second = 0.018;
+		}
+	   }
+	return eff;
+	}	
+
+
     
 private:
     
