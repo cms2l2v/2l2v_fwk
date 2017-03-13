@@ -1566,7 +1566,7 @@ int main(int argc, char* argv[])
                        dilId *= selLeptons[ilep].pdgId();
                        int id(abs(selLeptons[ilep].pdgId()));
 		       if(is2016MC) {
-                           if(id==11)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].el.superCluster()->eta(), id).first; //Tracking eff
+                           if(id==11)weight *= lepEff.getRecoEfficiency( selLeptons[ilep].el.superCluster()->eta(), id).first; //Reconstruction eff
                            else if(id==13)weight *= lepEff.getTrackingEfficiency( selLeptons[ilep].eta(), id).first; //Tracking eff
                            weight *= isMC ? lepEff.getLeptonEfficiency( selLeptons[ilep].pt(), selLeptons[ilep].eta(), id,  id ==11 ? "tight"    : "tkHighPT"   ,patUtils::CutVersion::ICHEP16Cut ).first : 1.0; //ID
 			   if(id==13){
