@@ -887,28 +887,22 @@ class LeptonEfficiencySF
         }else if(id==169){
             if (is2016){
                 if(etaCen<0.9){
-                    if(etaFwd<0.9){ eff.first=0.9956; eff.second=0.0865;
-                    }else if(etaFwd<1.2){ eff.first=0.9930; eff.second=0.0612;
-                    }else if(etaFwd<2.1){ eff.first=0.9964; eff.second=0.0612;
-                    }else if(etaFwd<2.4){ eff.first=0.9920; eff.second=0.0616;
+                    if(etaFwd<0.9){ eff.first=0.9956; eff.second=0.005;
+                    }else if(etaFwd<1.2){ eff.first=0.9930; eff.second=0.005;
+                    }else if(etaFwd<2.1){ eff.first=0.9964; eff.second=0.005;
+                    }else if(etaFwd<2.4){ eff.first=0.9920; eff.second=0.005;
                     }
                 }else if(etaCen<1.2){
-                    if(etaFwd<0.9){ eff.first=0.9930; eff.second=0.0612;
-                    }else if(etaFwd<1.2){ eff.first=0.9902; eff.second=0.0057;
+                    if(etaFwd<1.2){ eff.first=0.9902; eff.second=0.0057;
                     }else if(etaFwd<2.1){ eff.first=0.9940; eff.second=0.0046;          
                     }else if(etaFwd<2.4){ eff.first=0.9875; eff.second=0.0075;          
                     }
                 }else if(etaCen<2.1){
-                    if(etaFwd<0.9){ eff.first=0.9964; eff.second=0.0612;
-                    }else if(etaFwd<1.2){ eff.first=0.9940; eff.second=0.0046;
-                    }else if(etaFwd<2.1){ eff.first=0.9972; eff.second=0.0030;          
+                    if(etaFwd<2.1){ eff.first=0.9972; eff.second=0.0030;          
                     }else if(etaFwd<2.4){ eff.first=0.9935; eff.second=0.0065;          
                     }
                 }else if(etaCen<2.4){
-                    if(etaFwd<0.9){ eff.first=0.9920; eff.second=0.0615;
-                    }else if(etaFwd<1.2){ eff.first=0.9875; eff.second=0.0074;
-                    }else if(etaFwd<2.1){ eff.first=0.9935; eff.second=0.0065;          
-                    }else if(etaFwd<2.4){ eff.first=0.9855; eff.second=0.0088;          
+                    if(etaFwd<2.4){ eff.first=0.9855; eff.second=0.0088;          
                     }
                 }
                 eff.second = sqrt(eff.second* eff.second + 0.04*0.04); //add 4% syst uncertainty (conservative)
