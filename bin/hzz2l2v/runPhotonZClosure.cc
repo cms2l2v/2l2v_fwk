@@ -53,7 +53,7 @@ int main(int argc,const char* argv[])
 
   TFile *gInF;
 
-  dilCh="ll";
+  dilCh="mumu";
 
   //open the files with the input plots
   string gDataFile="plotter.root";
@@ -78,7 +78,7 @@ int main(int argc,const char* argv[])
   //  TFile *llInF=TFile::Open(gDataFile.c_str());
   gInF=TFile::Open(gDataFile.c_str());
 
-  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance","zpt_rebin","qt"};
+  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance","leadjet_eta","leadjet_pt"};
   std::vector<string> cat = {"eq0jets","geq1jets","vbf"};
 
   for(unsigned int icat=0; icat<cat.size(); icat++)
@@ -193,6 +193,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   if(ch=="ll")
     {
       hdy=(TH1D *) gF->Get( (mcdy+"/ee"+cat+"_"+distr).c_str() );
+      if (hdy==0) std::cout << "Histogram " << (mcdy+"/ee"+cat+"_"+distr).c_str() << " does not exist " << std::endl;
       hdy=(TH1D *) hdy->Clone( ("mcdy_"+cat+"_"+distr).c_str() );
       hdy->Add((TH1D *) gF->Get( (mcdy+"/mumu"+cat+"_"+distr).c_str()) );
     }
@@ -215,35 +216,35 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   
   purePhoton=true;
  
-  if(!purePhoton) { // Add EWK
-    // mcg.push_back("W#rightarrow l#nu");
-    // mcg.push_back("Top");
-    // mcg.push_back("Z#gamma #rightarrow ll#gamma");
-    // mcg.push_back("W#gamma #rightarrow l#nu#gamma");
-    // mcg.push_back("Z#rightarrow #nu#nu");
-    mcg.push_back("QCD, HT>100");
+  if(!purePhoton) { // Add QCD
+    //    mcg.push_back("QCD, HT>100");
     mcg.push_back("QCD_EMEnr");
   }
  
   TH1D *hg=NULL, *hpureg=NULL;
   TH1D *hn=NULL;
 
-  if(ch=="ll")
-    { 
-      hg=(TH1D *) gF->Get( (mcg[0]+"/ee"+cat+"_"+distr).c_str() ); 
-      hg=(TH1D *) hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); 
-      hg->Add((TH1D *) gF->Get( (mcg[0]+"/mumu"+cat+"_"+distr).c_str()) ); 
-    }
-  else
-    {
-      hg=(TH1D *) gF->Get( (mcg[0]+"/"+ch+cat+"_"+distr).c_str() ); 
-      hg=(TH1D *) hg->Clone( ("mcg_"+ch+cat+"_"+distr).c_str() ); 
-    }    
+
+  for(size_t ig=0; ig<mcg.size(); ig++) {
+    if(ch=="ll")
+      { 
+	hg=(TH1D *) gF->Get( (mcg[ig]+"/ee"+cat+"_"+distr).c_str() ); 
+	hg=(TH1D *) hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); 
+	hg->Add((TH1D *) gF->Get( (mcg[ig]+"/mumu"+cat+"_"+distr).c_str()) ); 
+      }
+    else
+      {
+	hg=(TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ); 
+	hg=(TH1D *) hg->Clone( ("mcg_"+ch+cat+"_"+distr).c_str() ); 
+      }    
+  }
 
 
-  TString pureName(hg->GetName());                                                                                                                                 
-  pureName.ReplaceAll("mcg","mcpureg");                                                                                                                            
-  hpureg=(TH1D *)hg->Clone(pureName);   
+  if (ig==0) {
+    TString pureName(hg->GetName());                                                                                                                                 
+    pureName.ReplaceAll("mcg","mcpureg");                                                                                                                            
+    hpureg=(TH1D *)hg->Clone(pureName);   
+  }
 
   if(hg==0 || hpureg==0) return;
   hg->SetDirectory(0);
@@ -262,7 +263,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   Double_t xmin(hdy->GetXaxis()->GetXmin());
   Double_t xmax(hdy->GetXaxis()->GetXmax());
   if( (distr=="met") && (distr!="axial")) {xmin=0;   xmax=600;}
-  if( (distr=="mt") )  {xmin=120; xmax=900;}
+  if( (distr=="mt") )  {xmin=120; xmax=1000;}
   float ymin(3e-5),ymax(hdy->GetMaximum()*4.0);
 
   //draw
@@ -293,7 +294,8 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
 
     hevt1->SetBinContent(i,ndy); hevt1->SetBinError(i,errdy);
     hevt2->SetBinContent(i,ng); hevt2->SetBinError(i,errg);
-
+    //std::cout << "Nevents DY for MET>125 (bin = "<< mbin << ") = " << ndy << " +/-" << errdy << std::endl;
+    //std::cout << "Nevents gamma for MET>125 (bin = "<< mbin << ") = " << ng << " +/-" << errg << std::endl;
     diff=(ndy-ng);
     nmax=max(ndy,ng); enmax=max(errdy,errg);
     
@@ -542,7 +544,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   denRelUncH->Draw();
   denRelUnc->Draw("3");
   leg->AddEntry(denRelUnc,"stat unc.","f");
-  denRelUncH->GetYaxis()->SetRangeUser(0.4,1.6);
+  denRelUncH->GetYaxis()->SetRangeUser(0.2,1.5);
    //  denRelUncH->GetYaxis()->SetRangeUser(-0.2,1.74);
   denRelUncH->GetXaxis()->SetTitle(hdy->GetXaxis()->GetTitle());
   denRelUncH->GetXaxis()->SetLabelSize(0.12);

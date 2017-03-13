@@ -122,6 +122,10 @@ int main(int argc, char* argv[]){
    bool bfit=false;
    int  rbin=1;
    bool asym=true;
+
+   bool fakes=false;
+   string purity="noQCD";
+
    string gDataFile = "plotter_2016_01_18_forPhotonWeights.root";
    string zDataFile = "plotter_2016_01_18_forPhotonWeights.root";
    string outDir    = "photonWeights/";
@@ -141,11 +145,13 @@ int main(int argc, char* argv[]){
      if(arg.find("--inFile" )!=string::npos && i+1<argc){ zDataFile= argv[i+1];  gDataFile= argv[i+1]; i++; printf("input file = %s\n", zDataFile.c_str()); }
      if(arg.find("--outFile")!=string::npos && i+1<argc){ outFile  = argv[i+1];  i++; printf("output file = %s\n", outFile.c_str()); }
      if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir   = argv[i+1];  i++; printf("outDir = %s\n", outDir.c_str());  }
-     if(arg.find("--mode" )!=string::npos && i+1<argc){ mode = argv[i+1];  i++; printf("outDir = %s\n", mode.c_str());  }   
+     if(arg.find("--mode" )!=string::npos && i+1<argc){ mode = argv[i+1];  i++; printf("mode = %s\n", mode.c_str());  }   
+     if(arg.find("--purity" )!=string::npos && i+1<argc){ purity = argv[i+1];  i++; printf("purity = %s\n", purity.c_str());  }  
    }
    system( (string("mkdir -p ") + outDir).c_str());
 
    if (mode=="MC") { isData=false; }
+   if (purity=="QCD") { fakes=true; }
 
   std::vector<string> gDataDir;
   std::vector<string> zDataDir;
@@ -155,6 +161,7 @@ int main(int argc, char* argv[]){
      zDataDir.push_back("data");
   }else{
      gDataDir.push_back("#gamma+jets");
+     if (fakes) gDataDir.push_back("QCD_EMEnr");
      zDataDir.push_back("Z#rightarrow ee-#mu#mu_filt1113");
   }
 
@@ -212,7 +219,7 @@ int main(int argc, char* argv[]){
    //non fixed-width rebins
   if(asym){
     double xbins[] = {55,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975,1500};
-    //     double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
+    //double xbins[] = {55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 130, 140, 150, 165, 250, 300, 400, 500, 700, 1000, 1500};    
      for(unsigned int v=0;v<var.size();v++){
         if(var[v]!="_qt")continue;
         for(unsigned int b=0;b<bin.size();b++){

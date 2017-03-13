@@ -50,7 +50,7 @@ SUFFIX=_2017_01_25
 
 #SUFFIX=$(date +"_%Y_%m_%d") 
 MAINDIR=$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v
-JSON=$MAINDIR/samples_full2016.json 
+JSON=$MAINDIR/samples_full2016_GGH.json 
 GOLDENJSON=$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/
 RESULTSDIR=$MAINDIR/results$SUFFIX
 PLOTSDIR=$MAINDIR/plots${SUFFIX}
@@ -161,7 +161,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
       INTLUMI=`tail -n 3 $RESULTSDIR/LUMI.txt | cut -d ',' -f 6`
     else
 	if [[ $JSON =~ "full2016" ]]; then  
-	    INTLUMI=36814.453
+	    INTLUMI=35866.932
             echo "Please run step==2 above to calculate int. luminosity for 2016 data!" 
         else
 	    echo "Please run step==2 above to calculate int. luminosity!"
@@ -186,7 +186,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
    
     if [[ $step == 3 || $step == 3.01 ]]; then  # make plots and combine root files for photon + jet study    
 #        extractPhotonWeights --inFile plotter.root --outFile photonWeights_RunDNew.root --outDir $PLOTSDIR/photonWeights --fitf true
-#	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016MC.root --outDir $PLOTSDIR/photonMCWeights --mode MC 
+#	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016MC.root --outDir $PLOTSDIR/photonMCWeights --mode MC --mode noQCD
 	extractPhotonWeights_UsingBins --inFile ${PLOTTER}.root --outFile photonWeights_run2016.root --outDir $PLOTSDIR/photonWeights --mode DATA
     fi
 
@@ -229,7 +229,7 @@ if [[ $step > 2.999 && $step < 4 ]]; then
 	runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadriven $arguments
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ $arguments
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ --blind 125 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(met|metpuppi)" $arguments
-        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ --blind 325 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven_blind/ --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadriven --fileOption READ --blind 400 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_mt" $arguments
     fi
 
     if [[ $step == 3 || $step == 3.21 ]]; then  # make plots and combine root files for photon + jet study    
