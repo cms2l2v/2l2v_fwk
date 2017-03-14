@@ -237,13 +237,12 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
 	hg=(TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ); 
 	hg=(TH1D *) hg->Clone( ("mcg_"+ch+cat+"_"+distr).c_str() ); 
       }    
-  }
-
-
-  if (ig==0) {
-    TString pureName(hg->GetName());                                                                                                                                 
-    pureName.ReplaceAll("mcg","mcpureg");                                                                                                                            
-    hpureg=(TH1D *)hg->Clone(pureName);   
+  
+    if (ig==0) {
+      TString pureName(hg->GetName());                                                                                                                                 
+      pureName.ReplaceAll("mcg","mcpureg");                                                                                                                            
+      hpureg=(TH1D *)hg->Clone(pureName);   
+    }
   }
 
   if(hg==0 || hpureg==0) return;
