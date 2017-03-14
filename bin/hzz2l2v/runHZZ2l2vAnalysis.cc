@@ -1293,44 +1293,50 @@ int main(int argc, char* argv[])
              if(leptons[ilep].pt()<25) passKin=false;
 
              for(unsigned int ivar=0;ivar<eleVarNames.size();ivar++){
-	     if (abs(lid)==11) { //if electron
-             patUtils::GenericLepton varLep = leptons[ilep];
-             if(ivar==1) { //scale up
-	         if (passId && passIso){
-             double error_scale=eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
-             TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-                       varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
-                      if(varLep.pt()<25) passKin = false;
-                      if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
-                 } else {
-                          if(varLep.pt()<10) passLooseLepton = false;
-                          if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); }
-            }if(ivar==2) { //scale down
-	         if (passId && passIso){
-             double error_scale=eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
-             TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-                       varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
-                      if(varLep.pt()<25) passKin = false;
-                      if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
-                  }else { // nominal
-                          if(varLep.pt()<10) passLooseLepton = false;
-                          if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
-                  }if(ivar==0){
-		      if(passKin && passId && passIso){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
-		      else {
-			  if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);
-		      }
-	      	   }
-           }if(abs(lid)==13){ //if muon
+	        if (abs(lid)==11) { //if electron
+                  patUtils::GenericLepton varLep = leptons[ilep];
+                  if(ivar==1) { //scale up
+                      double error_scale=0.0;
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
 
-		      if(passKin && passId && passIso)selLeptonsVar[eleVarNames[ivar]].push_back(leptons[ilep]);
-		      else if (passLooseLepton || passSoftMuon) extraLeptonsVar[eleVarNames[ivar]].push_back(leptons[ilep]);
-      	        }     
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==2) { //scale down
+                      double error_scale=0.0;
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+	              varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
+
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      }else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);
+	              }
+                  }if(ivar==0){ // nominal
+	              if(passKin && passId && passIso){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+	              else {
+	                 if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);
+	              }
+	         }
+
+              }if(abs(lid)==13){ //if muon
+		   if(passKin && passId && passIso)selLeptonsVar[eleVarNames[ivar]].push_back(leptons[ilep]);
+		   else if (passLooseLepton || passSoftMuon) extraLeptonsVar[eleVarNames[ivar]].push_back(leptons[ilep]);
+      	      }     
             }
 	}
 
-           auto& selLeptons      = selLeptonsVar[""]; 
-           auto& extraLeptons      = extraLeptonsVar[""];
+         std::vector<patUtils::GenericLepton>  selLeptons      = selLeptonsVar[""]; 
+         std::vector<patUtils::GenericLepton>  extraLeptons      = extraLeptonsVar[""];
 
 	 //
 	 // PHOTON ANALYSIS
@@ -1545,10 +1551,10 @@ int main(int argc, char* argv[])
 
            if(selLeptonsVar    .find(varNames[ivar].Data())!=selLeptonsVar    .end())selLeptons     = selLeptonsVar    [varNames[ivar].Data()];
            if(extraLeptonsVar    .find(varNames[ivar].Data())!=extraLeptonsVar    .end())extraLeptons     = extraLeptonsVar    [varNames[ivar].Data()];
-           auto& selJets      = selJetsVar[""];        if(selJetsVar    .find(varNames[ivar].Data())!=selJetsVar    .end())selJets     = selJetsVar    [varNames[ivar].Data()];
-           auto& njets        = njetsVar [""];         if(njetsVar      .find(varNames[ivar].Data())!=njetsVar      .end())njets       = njetsVar      [varNames[ivar].Data()];
-           auto& nbtags       = nbtagsVar[""];         if(nbtagsVar     .find(varNames[ivar].Data())!=nbtagsVar     .end())nbtags      = nbtagsVar     [varNames[ivar].Data()];
-           auto& mindphijmet  = mindphijmetVar[""];    if(mindphijmetVar.find(varNames[ivar].Data())!=mindphijmetVar.end())mindphijmet = mindphijmetVar[varNames[ivar].Data()];
+           auto selJets      = selJetsVar[""];        if(selJetsVar    .find(varNames[ivar].Data())!=selJetsVar    .end())selJets     = selJetsVar    [varNames[ivar].Data()];
+           auto njets        = njetsVar [""];         if(njetsVar      .find(varNames[ivar].Data())!=njetsVar      .end())njets       = njetsVar      [varNames[ivar].Data()];
+           auto nbtags       = nbtagsVar[""];         if(nbtagsVar     .find(varNames[ivar].Data())!=nbtagsVar     .end())nbtags      = nbtagsVar     [varNames[ivar].Data()];
+           auto mindphijmet  = mindphijmetVar[""];    if(mindphijmetVar.find(varNames[ivar].Data())!=mindphijmetVar.end())mindphijmet = mindphijmetVar[varNames[ivar].Data()];
 
             //
             // ASSIGN CHANNEL
