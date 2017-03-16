@@ -38,13 +38,13 @@ std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, 
 //void runFinalClosure();
 //void runFinalHZZClosure();
 
-bool purePhoton=false;
+bool purePhoton=true;
 bool smoothFakesHisto=false;
 
 string dilCh="ll";                                                                                                                           
 
 string mode="MC";     
-
+string purity="noQCD";
 //
 //int main()
 int main(int argc,const char* argv[])
@@ -53,7 +53,7 @@ int main(int argc,const char* argv[])
 
   TFile *gInF;
 
-  dilCh="mumu";
+  dilCh="ll";
 
   //open the files with the input plots
   string gDataFile="plotter.root";
@@ -73,12 +73,14 @@ int main(int argc,const char* argv[])
     if(arg.find("--inFile" )!=string::npos && i+1<argc){ gDataFile= argv[i+1];  gDataFile= argv[i+1]; i++; printf("input file = %s\n", gDataFile.c_str()); }
     if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir = argv[i+1];  i++; printf("outDir = %s\n", outDir.c_str());  }
     if(arg.find("--mode" )!=string::npos && i+1<argc) { mode = argv[i+1];  i++; printf("mode = %s\n", mode.c_str());  }  
+    if(arg.find("--purity" )!=string::npos && i+1<argc) { purity = argv[i+1];  i++; printf("purity = %s\n", purity.c_str());  }
   }
+  if (purity=="QCD") { purePhoton=false; }
   
   //  TFile *llInF=TFile::Open(gDataFile.c_str());
   gInF=TFile::Open(gDataFile.c_str());
 
-  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance","leadjet_eta","leadjet_pt"};
+  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance"};//,"leadjet_eta","leadjet_pt","mt_sel","met_sel"};
   std::vector<string> cat = {"eq0jets","geq1jets","vbf"};
 
   for(unsigned int icat=0; icat<cat.size(); icat++)
@@ -137,7 +139,7 @@ std::vector<TH1F *> getRatioOnly(TFile *llF,TFile *gF,TString distr,TString ch, 
 
   std::vector<TString> mcg;
   mcg.push_back("#gamma+jets");
-  if(!purePhoton) mcg.push_back("Multijets");
+  if(!purePhoton) mcg.push_back("QCD_EMEnr");
   TH1 *hg=0;
   for(size_t ig=0; ig<mcg.size(); ig++)
     {
@@ -213,12 +215,10 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   //  if (mode=="MC") { mcg.push_back("#gamma+jets_mc_reweighted"); } // incl. DY
   if (mode=="MC") { mcg.push_back("#gamma+jets_reweighted"); }  // DY in HTbins
   else if (mode=="DATA") { mcg.push_back("Instr. MET"); }
-  
-  purePhoton=true;
  
   if(!purePhoton) { // Add QCD
     //    mcg.push_back("QCD, HT>100");
-    mcg.push_back("QCD_EMEnr");
+    mcg.push_back("QCD_EMEnr_reweighted");
   }
  
   TH1D *hg=NULL, *hpureg=NULL;
@@ -228,19 +228,31 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   for(size_t ig=0; ig<mcg.size(); ig++) {
     if(ch=="ll")
       { 
-	hg=(TH1D *) gF->Get( (mcg[ig]+"/ee"+cat+"_"+distr).c_str() ); 
-	hg=(TH1D *) hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); 
-	hg->Add((TH1D *) gF->Get( (mcg[ig]+"/mumu"+cat+"_"+distr).c_str()) ); 
+	if (hg) {
+	  hg->Add( (TH1D *) gF->Get( (mcg[ig]+"/ee"+cat+"_"+distr).c_str() ) );
+	  hg->Add( (TH1D *) gF->Get( (mcg[ig]+"/mumu"+cat+"_"+distr).c_str() ) );
+
+	  hn->Add( (TH1D *) gF->Get( (mcg[ig]+"/ee"+cat+"_"+distr).c_str() ) );  
+          hn->Add( (TH1D *) gF->Get( (mcg[ig]+"/mumu"+cat+"_"+distr).c_str() ) );
+	} else { //1st gamma plot
+	  hg=(TH1D *) gF->Get( (mcg[ig]+"/ee"+cat+"_"+distr).c_str() ); 
+	  hg=(TH1D *) hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); 
+	  hg->Add((TH1D *) gF->Get( (mcg[ig]+"/mumu"+cat+"_"+distr).c_str()) );
+	  
+	  hn=(TH1D *)hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); hn->Reset();
+	}
       }
     else
-      {
+      if (hg) {
+	hg->Add( (TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ) );  
+      } else {
 	hg=(TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ); 
 	hg=(TH1D *) hg->Clone( ("mcg_"+ch+cat+"_"+distr).c_str() ); 
       }    
-  
+
     if (ig==0) {
-      TString pureName(hg->GetName());                                                                                                                                 
-      pureName.ReplaceAll("mcg","mcpureg");                                                                                                                            
+      TString pureName(hg->GetName()); 
+      pureName.ReplaceAll("mcg","mcpureg"); 
       hpureg=(TH1D *)hg->Clone(pureName);   
     }
   }
@@ -248,10 +260,11 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   if(hg==0 || hpureg==0) return;
   hg->SetDirectory(0);
   hpureg->SetDirectory(0);
-  //  hn->SetDirectory(0);
+  hn->SetDirectory(0);
   if(rebin) {
     hg->Rebin();
     hpureg->Rebin();
+    hn->Rebin();
   }
   //if(distr=="qt") { hg->Rebin(4); hdy->Rebin(4); hpureg->Rebin(4); }
   //  else if(!distr.Contains("cjv")) { hg->Rebin(2); hdy->Rebin(2); hpureg->Rebin(2); }
@@ -262,12 +275,19 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   Double_t xmin(hdy->GetXaxis()->GetXmin());
   Double_t xmax(hdy->GetXaxis()->GetXmax());
   if( (distr=="met") && (distr!="axial")) {xmin=0;   xmax=600;}
-  if( (distr=="mt") )  {xmin=120; xmax=1000;}
+  if( (distr=="mt") )  {xmin=120; xmax=900;}
   float ymin(3e-5),ymax(hdy->GetMaximum()*4.0);
 
   //draw
   float gscale(hg->Integral());
   hg->Scale(dyscale/gscale);
+  
+  hpureg->Scale(dyscale/gscale);
+  // hg->Scale(1./gscale);
+  // hpureg->Scale(1./gscale);
+  float nscale(hn->Integral());
+  hn->Scale(dyscale/(gscale-nscale));
+
 
   // Estimate systematic
   // Print number of events for DY sample in MET>125:
@@ -382,11 +402,11 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   t1->SetRightMargin(0.05);
 
   
-  /*
+  
   TH1D *hfakes=(TH1D *)hn->Clone("fakes");
   hfakes->SetDirectory(0);
   if(smoothFakesHisto) hfakes->Smooth();
-  */
+  
 
   
   hg->SetTitle("#gamma + jets");
@@ -411,9 +431,8 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
   hg->SetFillColor(kGreen-10);
   hg->Draw("ehist");
 
-  /*
   if(!purePhoton){
-    //    hfakes->Add(hpureg,-1);
+    // hfakes->Add(hpureg,-1);
     hfakes->SetTitle("Fakes");
     hfakes->SetLineColor(1);
     hfakes->SetMarkerColor(1);
@@ -422,8 +441,7 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
     hfakes->SetFillColor(kGray);
     hfakes->Draw("histsame");   
   }
-  */
-
+  
   hdy->SetTitle("DY #rightarrow ll");
   hdy->Draw("esame");
   hdy->SetMarkerColor(9);
