@@ -1718,6 +1718,9 @@
             "tag": "QCD, HT>100"
         },
         {
+	    "2l2v_mcphotonsOnly": {
+                "suffix": "reweighted"
+            },
             "color": 24,
             "data": [
                 {
@@ -1814,7 +1817,9 @@
             "isdata": false,
             "keys": [
                 "2l2v_2016",
-                "2l2v_photoncontrol"
+                "2l2v_photoncontrol",
+		"2l2v_photonZ",
+		"2l2v_mcphotonsOnly"
             ],
             "tag": "QCD_EMEnr"
         },
@@ -1879,8 +1884,8 @@
             "keys": [
                 "2l2v_2016",
                 "2l2v_photoncontrol",
-                "2l2v_mcphotonsOnly",
-                "2l2v_photonZ"
+              	"2l2v_mcphotonsOnly",
+		"2l2v_photonZ"
             ],
             "tag": "#gamma+jets"
         },
