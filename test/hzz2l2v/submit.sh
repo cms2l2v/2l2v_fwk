@@ -63,14 +63,6 @@ queue='8nh'
 
 #IF CRAB3 is provided in argument, use crab submissiong instead of condor/lsf
 if [[ $arguments == *"crab3"* ]]; then queue='crab3' ;fi 
-
-if [[ $JSON =~ "full2016" ]]; then 
-    pileup=datapileup_full2016 
-elif [[ $JSON =~ "ichep2016" ]]; then
-    pileup=datapileup_2016
-else
-    pileup=datapileup_official  
-fi
  
 ################################################# STEPS between 0 and 1
 if [[ $step == 0 ]]; then   
@@ -88,27 +80,27 @@ fi #end of step0
 if [[ $step > 0.999 &&  $step < 2 ]]; then
    if [[ $step == 1 || $step == 1.0 ]]; then        #submit jobs for 2l2v analysis
 	echo "JOB SUBMISSION"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0" -s $queue --report True --key 2l2v_mcbased $arguments
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR  -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=datapileup_latest @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0" -s $queue --report True --key 2l2v_mcbased $arguments
    fi
 
    if [[ $step == 1 || $step == 1.1 ]]; then        #submit jobs for 2l2v photon jet analysis
 	echo "JOB SUBMISSION for Photon + Jet analysis"
-	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"  -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
+	runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=datapileup_latest @jacknife=0 @saveSummaryTree=True @runSystematics=False @useMVA=True @jacks=0"  -s $queue --report True --key 2l2v_photoncontrol --skipkey 2l2v_mcbased $arguments 
    fi
 
    if [[ $step == 1 || $step == 1.2 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting
 	echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting"                                                                        
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016.root @puWeightsFile=$PWD/get_photon_pileupwgt.root  @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=datapileup_latest @useMVA=True @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016.root @puWeightsFile=$PWD/get_photon_pileupwgt.root  @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonsOnly $arguments 
    fi    
                      
    if [[ $step == 1.3 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC 
        echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC : step1"  
-       runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonZ $arguments
+       runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=datapileup_latest @useMVA=True @saveSummaryTree=True @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_photonZ $arguments
    fi
 
    if [[ $step == 1.4 ]]; then        #submit jobs for 2l2v analysis with photon re-weighting in MC                                              
-        echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC : step2"                                                                          
-        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup="$pileup" @useMVA=True  @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016MC.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_mcphotonsOnly $arguments                                                                                                             
+        echo "JOB SUBMISSION for Photon + Jet analysis with photon re-weighting in MC : step2"                                          
+        runAnalysisOverSamples.py -e runHZZ2l2vAnalysis -j $JSON -o $RESULTSDIR -c $MAINDIR/../runAnalysis_cfg.py.templ -p "@data_pileup=datapileup_latest @useMVA=True  @saveSummaryTree=True @weightsFile=$PWD/photonWeights_run2016MC.root @runSystematics=False @automaticSwitch=False @is2011=False @jacknife=0 @jacks=0" -s $queue --report True --key 2l2v_mcphotonsOnly $arguments                                                                                                             
    fi    
 
    if [[ $HOSTNAME =~ "iihe" ]]; then yes | big-submission $RESULTSDIR/FARM/inputs/big.cmd; fi
