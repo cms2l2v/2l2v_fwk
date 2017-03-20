@@ -80,13 +80,17 @@ namespace patUtils
     return id(el, event);
   }
 
-  bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion){
+  bool passId(pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion, bool is2016){
 
     //for electron Id look here: //https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2#Spring15_selection_25ns
     //for the meaning of the different cuts here: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaCutBasedIdentification
-    float dEtaln         = fabs(el.deltaEtaSuperClusterTrackAtVtx());
+
+    float dEtalnSeed = el.superCluster().isNonnull() && el.superCluster()->seed().isNonnull() ? el.deltaEtaSuperClusterTrackAtVtx() - el.superCluster()->eta() + el.superCluster()->seed()->eta() : std::numeric_limits<float>::max();
+
+    float dEtaln = is2016 ? dEtalnSeed : fabs(el.deltaEtaSuperClusterTrackAtVtx());
     float dPhiln         = fabs(el.deltaPhiSuperClusterTrackAtVtx());
-    float sigmaletaleta  = el.sigmaIetaIeta();
+//    float sigmaletaleta  = el.sigmaIetaIeta();
+    float sigmaletaleta  = el.full5x5_sigmaIetaIeta();
     float hem            = el.hadronicOverEm();
     double resol         = fabs((1/el.ecalEnergy())-(el.eSuperClusterOverP()/el.ecalEnergy()));
     double dxy           = fabs(el.gsfTrack()->dxy(vtx.position()));

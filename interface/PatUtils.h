@@ -82,7 +82,7 @@ namespace patUtils
    namespace CutVersion { enum CutSet {Spring15Cut25ns, ICHEP16Cut, Moriond17Cut}; }
 
    bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
-   bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion); // Old PHYS14 ID
+   bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion, bool is2016=true); // Old PHYS14 ID
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel, int cutVersion);
    bool passId (pat::Photon& photon,  double rho, int IdLevel);
    float relIso(patUtils::GenericLepton& lep, double rho);
