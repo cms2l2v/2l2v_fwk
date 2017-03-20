@@ -702,7 +702,7 @@ int main(int argc, char* argv[])
   string EGammaEnergyCorrectionFile = "";
   PhotonEnergyCalibratorRun2 PhotonEnCorrector;
   EpCombinationTool theEpCombinationTool;
-  EnergyScaleCorrection_class eScaler("UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele");
+  EnergyScaleCorrection_class eScaler("UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele");
   if(is2015MC || is2015data){
   	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
@@ -712,8 +712,8 @@ int main(int argc, char* argv[])
   	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
   }
   if(is2016MC || is2016data){
-  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_ele";
-  	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV1_2016_pho";
+  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele";
+  	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV2_2016_pho";
   	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, PhoEnergyCorrectionFile);
   	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
   	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC
