@@ -53,7 +53,7 @@ int main(int argc,const char* argv[])
 
   TFile *gInF;
 
-  dilCh="ll";
+  //  dilCh="ee";
 
   //open the files with the input plots
   string gDataFile="plotter.root";
@@ -73,14 +73,15 @@ int main(int argc,const char* argv[])
     if(arg.find("--inFile" )!=string::npos && i+1<argc){ gDataFile= argv[i+1];  gDataFile= argv[i+1]; i++; printf("input file = %s\n", gDataFile.c_str()); }
     if(arg.find("--outDir" )!=string::npos && i+1<argc){ outDir = argv[i+1];  i++; printf("outDir = %s\n", outDir.c_str());  }
     if(arg.find("--mode" )!=string::npos && i+1<argc) { mode = argv[i+1];  i++; printf("mode = %s\n", mode.c_str());  }  
-    if(arg.find("--purity" )!=string::npos && i+1<argc) { purity = argv[i+1];  i++; printf("purity = %s\n", purity.c_str());  }
+    if(arg.find("--channel" )!=string::npos && i+1<argc) { dilCh = argv[i+1];  i++; printf("dilCh = %s\n", dilCh.c_str());  }
+    if(arg.find("--purity" )!=string::npos && i+1<argc) { purity = argv[i+1];  i++; printf("purity = %s\n", purity.c_str());  }    
   }
   if (purity=="QCD") { purePhoton=false; }
   
   //  TFile *llInF=TFile::Open(gDataFile.c_str());
   gInF=TFile::Open(gDataFile.c_str());
 
-  std::vector<string> distr = {"met","mt","axialmet","mindphijmet","balance"};//,"leadjet_eta","leadjet_pt","mt_sel","met_sel"};
+  std::vector<string> distr = {"met","mt","mtNM1","axialmet","mindphijmet","balance"};//,"leadjet_eta","leadjet_pt","mt_sel","met_sel"};
   std::vector<string> cat = {"eq0jets","geq1jets","vbf"};
 
   for(unsigned int icat=0; icat<cat.size(); icat++)
@@ -242,12 +243,15 @@ void closureTest(TFile *gF,string &distr,string &ch,string &cat, bool purePhoton
 	  hn=(TH1D *)hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); hn->Reset();
 	}
       }
-    else
+    else // ee or mumu
       if (hg) {
 	hg->Add( (TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ) );  
+	hn->Add( (TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ) );
       } else {
 	hg=(TH1D *) gF->Get( (mcg[ig]+"/"+ch+cat+"_"+distr).c_str() ); 
 	hg=(TH1D *) hg->Clone( ("mcg_"+ch+cat+"_"+distr).c_str() ); 
+
+	hn=(TH1D *)hg->Clone( ("mcg_"+cat+"_"+distr).c_str() ); hn->Reset();
       }    
 
     if (ig==0) {
