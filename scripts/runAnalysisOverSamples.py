@@ -154,8 +154,9 @@ def getFileList(procData,DefaultNFilesPerJob):
       else:
          NFilesPerJob = DefaultNFilesPerJob
          if(hostname.find("iihe.ac.be")!=-1): NFilesPerJob = DefaultNFilesPerJob #at iihe we don't want to have more than the defaultNFilesPerJob
-         elif((len(list)/NFilesPerJob)>100):NFilesPerJob=len(list)/100  #make sure the number of jobs isn't too big
-
+         #elif((len(list)/NFilesPerJob)>100):NFilesPerJob=len(list)/100  #make sure the number of jobs isn't too big
+         else: NFilesPerJob = DefaultNFilesPerJob #Hot fix to test removing the limit on the NFilesPerJob
+            
       for g in range(0, len(list), NFilesPerJob):
          groupList = ''
          for f in list[g:g+NFilesPerJob]:
