@@ -823,9 +823,9 @@ int main(int argc, char* argv[])
      printf("Scanning the ntuple %2i/%2i :", (int)f+1, (int)urls.size());
      int iev=0;
      int treeStep(ev.size()/50);
+     if(treeStep==0){ treeStep = 1;}
      for(ev.toBegin(); !ev.atEnd(); ++ev){ iev++;
-         if(treeStep!=0){
-         if(iev%treeStep==0){printf(".");fflush(stdout);}}
+         if(iev%treeStep==0){printf(".");fflush(stdout);}
          float weight = xsecWeight;
          double puWeightUp = 1.0;
          double puWeightDown = 1.0;
