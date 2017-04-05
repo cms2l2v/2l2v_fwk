@@ -452,7 +452,8 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_mcbased_SM"
+                "2l2v_mcbased_SM",
+		"genuineMet"
             ],
             "marker": 20,
             "msize": 0.7,
@@ -1530,7 +1531,8 @@
                         "/ZNuNuGJets_MonoPhoton_PtG-40to130_TuneCUETP8M1_13TeV-madgraph/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_ZNuNuGJets_PtG-40to130_2016",
-                    "xsec": 2.816
+                    "xsec": 5.632 ,
+		    "split": 50
                 },
                 {
                     "br": [
@@ -1540,7 +1542,8 @@
                         "/ZNuNuGJets_MonoPhoton_PtG-130_TuneCUETP8M1_13TeV-madgraph/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_ZNuNuGJets_PtG-130_2016",
-                    "xsec": 0.223
+                    "xsec": 0.446 ,
+		    "split": 8
                 }
             ],
             "isdata": false,
@@ -1989,8 +1992,7 @@
             "keys": [
                 "2l2v_2016",
                 "2l2v_photoncontrol",
-                "2l2v_photonsOnly",
-                "genuineMet"
+                "2l2v_photonsOnly"
             ],
             "marker": 20,
             "msize": 0.7,
