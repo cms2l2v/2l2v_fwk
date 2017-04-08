@@ -1270,6 +1270,7 @@ int main(int argc, char* argv[])
                 if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479)elDiff_forMET -= leptons[ilep].p4()*0.006;
                 else elDiff_forMET -= leptons[ilep].p4()*0.015;
                 if(!isMC){ utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el); }
+               	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
                 if (isMC || is2015data || is2016data){
                 	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
                 	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
