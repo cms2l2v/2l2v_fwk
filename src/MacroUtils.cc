@@ -439,10 +439,10 @@ namespace utils
        fwlite::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > _ebrechits;
        _ebrechits.getByLabel(ev,"reducedEgamma","reducedEBRecHits");
 
+        double Ecorr=1;
         if(fabs(ele.superCluster()->eta())<1.479){
         DetId detid = ele.superCluster()->seed()->seed();
         const EcalRecHit * rh = NULL;
-        double Ecorr=1;
         if (detid.subdetId() == EcalBarrel) {
            auto rh_i =  _ebrechits->find(detid);
                       if( rh_i != _ebrechits->end()) rh =  &(*rh_i);
@@ -454,9 +454,9 @@ namespace utils
         else if(rh->energy()>300 && rh->energy()<400) Ecorr=  1.052;
         else if(rh->energy()>400 && rh->energy()<500) Ecorr = 1.015;
       }
-       TLorentzVector p4(ele.px(),ele.py(),ele.pz(),ele.energy());
-       ele.setP4(LorentzVector(p4.Px(),p4.Py(),p4.Pz(),p4.E()*Ecorr ) );
         }
+       TLorentzVector p4(ele.px(),ele.py(),ele.pz(),ele.energy());
+       ele.setP4(LorentzVector(p4.Px()*Ecorr,p4.Py()*Ecorr,p4.Pz()*Ecorr,p4.E()*Ecorr ) );
     }
 
   }
