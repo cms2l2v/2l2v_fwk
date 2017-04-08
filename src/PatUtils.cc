@@ -87,7 +87,7 @@ namespace patUtils
 
     float dEtalnSeed = el.superCluster().isNonnull() && el.superCluster()->seed().isNonnull() ? el.deltaEtaSuperClusterTrackAtVtx() - el.superCluster()->eta() + el.superCluster()->seed()->eta() : std::numeric_limits<float>::max();
 
-    float dEtaln = is2016 ? dEtalnSeed : fabs(el.deltaEtaSuperClusterTrackAtVtx());
+    float dEtaln = is2016 ? fabs(dEtalnSeed) : fabs(el.deltaEtaSuperClusterTrackAtVtx());
     float dPhiln         = fabs(el.deltaPhiSuperClusterTrackAtVtx());
 //    float sigmaletaleta  = el.sigmaIetaIeta();
     float sigmaletaleta  = el.full5x5_sigmaIetaIeta();
