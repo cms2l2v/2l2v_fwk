@@ -362,8 +362,8 @@ for signalSuffix in signalSuffixVec :
                   for line in listcuts :
                      vals=line.split(' ')
                      for c in range(1, cutsH.GetYaxis().GetNbins()+3):
-                        #FIXME FORCE INDEX TO BE 16 (Met>125GeV)
-                        Gcut[c-1].SetPoint(mi, 16, float(125));
+                        #FIXME FORCE INDEX TO BE 17 (Met>125GeV)
+                        Gcut[c-1].SetPoint(mi, 17, float(125));
    #                     Gcut[c-1].SetPoint(mi, float(vals[0]), float(vals[c+1]));
                      mi+=1
                   for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
