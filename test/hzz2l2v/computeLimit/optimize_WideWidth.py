@@ -373,7 +373,7 @@ for signalSuffix in signalSuffixVec :
                   for mtmp in SUBMASS:
                      for c in range(1, cutsH.GetYaxis().GetNbins()+3):
                         #FIXME FORCE INDEX TO BE 16 (Met>125GeV)
-                        Gcut[c-1].SetPoint(mi, 16, float(125));
+                        Gcut[c-1].SetPoint(mi, 17, float(125));
                      mi+=1
                   for c in range(1, cutsH.GetYaxis().GetNbins()+3): Gcut[c-1].Set(mi);
 
