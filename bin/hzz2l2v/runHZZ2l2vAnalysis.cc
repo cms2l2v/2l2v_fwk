@@ -132,6 +132,11 @@ int main(int argc, char* argv[])
   bool isMC_WZ3lnu  = isMC && ( string(dtag.Data()).find("TeV_WZ3lnu")  != string::npos);
   bool isMC_Wlnu_inclusive = (isMC && dtag.Contains("_WJets_") && !dtag.Contains("HT"));
   bool isMC_Wlnu_HT100 = (isMC && dtag.Contains("_WJets_HT-") );
+
+  bool isMC_WGToLNuG = (isMC && dtag.Contains("WGToLNuG") );      
+  bool isMC_ZNuNuGJets = (isMC && dtag.Contains("ZNuNuGJets")); 
+  bool isMC_ZJetsToNuNu = (isMC && dtag.Contains("ZJetsToNuNu")); 
+
   bool isMC_QCD = (isMC && dtag.Contains("QCD"));
   bool isMC_GJet = (isMC && dtag.Contains("GJet"));
   bool is2015data = (!isMC && dtag.Contains("2015"));
@@ -1139,7 +1144,9 @@ int main(int argc, char* argv[])
          }
 
          //Resolve G+jet/QCD mixing (avoid double counting of photons)
-         if (isMC_GJet || isMC_QCD ) {
+         if (isMC_GJet || isMC_QCD ||
+	     isMC_Wlnu_inclusive || isMC_Wlnu_HT100 || isMC_WGToLNuG || 
+             isMC_ZNuNuGJets || isMC_ZJetsToNuNu ) {
            // iF GJet sample; accept only event with prompt photons
            // if QCD sample; reject events with prompt photons in final state
              bool gPromptFound=false;
@@ -1148,6 +1155,10 @@ int main(int argc, char* argv[])
              }
              if ( (isMC_GJet) && (!gPromptFound) ) continue; //reject event
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
+	     if ( ( isMC_Wlnu_inclusive || isMC_Wlnu_HT100) && gPromptFound ) continue;
+             if ( (isMC_WGToLNuG) && (!gPromptFound) ) continue; 
+             if ( (isMC_ZNuNuGJets) && (!gPromptFound) ) continue; 
+             if ( (isMC_ZJetsToNuNu) && gPromptFound ) continue;
          }
 
   	 //Electroweak corrections to ZZ and WZ simulations
