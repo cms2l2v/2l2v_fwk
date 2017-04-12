@@ -747,15 +747,26 @@
                     "dtag": "MC13TeV_SingleT_s_2016",
                     "xsec": 3.362
                 },
+		{
+                   "br": [ 
+                        1.0 
+                    ], 
+                    "dset": [ 
+		      "/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_\
+2016_TrancheIV_v6-v1/MINIAODSIM"
+                    ], 
+                    "dtag": "MC13TeV_SingleT_at_2016", 
+                    "xsec": 136.02 
+                },   
                 {
                     "br": [
                         1.0
                     ],
                     "dset": [
-                        "/ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/MINIAODSIM"
+                        "/ST_t-channel_antitop_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
-                    "dtag": "MC13TeV_SingleT_t_2016_old",
-                    "xsec": 70.69
+                    "dtag": "MC13TeV_SingleT_t_2016",
+                    "xsec": 80.95
                 },
                 {
                     "br": [
