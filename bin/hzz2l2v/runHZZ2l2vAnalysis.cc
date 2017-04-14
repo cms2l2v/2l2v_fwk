@@ -460,8 +460,8 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(6,"#gamma");
 
   //pu control
-  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",81, -0.5, 80.5)); //50,0,50) );
-  mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",81, -0.5, 80.5 )); //50,0,50) );
+  mon.addHistogram( new TH1F( "nvtx",";Vertices;Events",101, -0.5, 100.5)); //50,0,50) );
+  mon.addHistogram( new TH1F( "nvtxraw",";Vertices;Events",101, -0.5, 100.5 )); //50,0,50) );
   mon.addHistogram( new TH1F( "rho",";#rho;Events",100,0,50) );
 
   Double_t ZPtBins[] = {0,30,36,50,75,90,120,165,3000};
@@ -480,7 +480,7 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("photonpt", ";Photon pT [GeV];Events", 500, 0, 1000) );
   mon.addHistogram(new TH1F("phopt", ";Photon pT [GeV];Events", 500, 0, 1000) );
   mon.addHistogram(new TH1F("phoeta", ";Photon pseudo-rapidity;Events", 50, 0, 5) );
-  mon.addHistogram(new TH1F("bosonnvtx", ";Photon #vertices;Events", 81, -0.5, 80.5) );
+  mon.addHistogram(new TH1F("bosonnvtx", ";Photon #vertices;Events", 101, -0.5, 100.5) );
   mon.addHistogram(new TH1F("bosonrho", ";Photon rho;Events",100,0,50) );
 
   mon.addHistogram(new TH1F("bosoneta", ";Photon #eta;Events", 100, -5, 5) );
@@ -488,7 +488,8 @@ int main(int argc, char* argv[])
   mon.addHistogram(new TH1F("bosonphiHG", ";Photon #phi;Events", 800, -4, 4) );
   mon.addHistogram(new TH1F("metphi", ";MET #phi;Events", 80, -4, 4) );
   mon.addHistogram(new TH1F("metphiUnCor", ";MET #phi;Events", 80, -4, 4) );
-  mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(#gamma,MET);Events", 40, 0, 4) );
+  mon.addHistogram(new TH1F("dphi_boson_met", ";#Delta #phi(Z/#gamma,MET);Events", 40, 0, 4) );
+  mon.addHistogram(new TH1F("dphi_boson_met125", ";#Delta #phi(Z/#gamma,MET);Events", 40, 0, 4) ); 
 
   //lepton control
   mon.addHistogram( new TH1F( "nleptons",   ";Nleptons;Events",10,0,10) );
@@ -505,13 +506,13 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F( "zmass_btag125", ";Mass [GeV];Events / 2 GeV", 100,40,200) );
   mon.addHistogram( new TH1F( "zmass_bveto125",";Mass [GeV];Events / 2 GeV", 100,40,200) );
   mon.addHistogram( new TH1F( "zpt",        ";Transverse momentum [GeV];Events",150,0,1500));
-  Double_t zptaxis[]= {0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975};
+  Double_t zptaxis[]= {0,15,30,45,60,75,90,105,120,135,150,165,180,195,210,225,240,255,270,285,300,315,330,345,360,375,390,405,435,465,495,525,555,585,615,675,735,795,855,975,1500};
   Int_t nzptAxis=sizeof(zptaxis)/sizeof(Double_t);
   mon.addHistogram( new TH1F( "zpt_rebin",  ";Transverse momentum [GeV];Events / GeV", nzptAxis-1,zptaxis));
   mon.addHistogram( new TH1F( "zptMet125",        ";Transverse momentum [GeV];Events",100,0,1500));
   mon.addHistogram( new TH1F( "qmass",      ";Mass [GeV];Events / (1 GeV)",100,76,106));
-  mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / GeV",1500,0,1500));
-  mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / GeV",1500,0,1500));
+  mon.addHistogram( new TH1F( "qt",         ";Transverse momentum [GeV];Events / GeV",3000,0,3000));
+  mon.addHistogram( new TH1F( "qtraw",      ";Transverse momentum [GeV];Events / GeV",3000,0,3000));
 
   //extra leptons in the event
   mon.addHistogram( new TH1F( "nextraleptons", ";Extra leptons;Events",4,0,4) );
@@ -1155,10 +1156,10 @@ int main(int argc, char* argv[])
              }
              if ( (isMC_GJet) && (!gPromptFound) ) continue; //reject event
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
-	     if ( ( isMC_Wlnu_inclusive || isMC_Wlnu_HT100) && gPromptFound ) continue;
+	     //	     if ( ( isMC_Wlnu_inclusive || isMC_Wlnu_HT100) && gPromptFound ) continue;
              if ( (isMC_WGToLNuG) && (!gPromptFound) ) continue; 
              if ( (isMC_ZNuNuGJets) && (!gPromptFound) ) continue; 
-             if ( (isMC_ZJetsToNuNu) && gPromptFound ) continue;
+             //if ( (isMC_ZJetsToNuNu) && gPromptFound ) continue;
          }
 
   	 //Electroweak corrections to ZZ and WZ simulations
@@ -1831,6 +1832,7 @@ int main(int argc, char* argv[])
                               mon.fillHisto( "mtfinal",tags,mt,weight,true);
                               mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
                               mon.fillHisto( "njetsfinal",tags,njets,weight);
+			      mon.fillHisto( "dphi_boson_met125",tags,b_dphi,weight);
                               if(!isMC){
                                  char buffer[1024];
                                  sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer;
