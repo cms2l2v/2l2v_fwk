@@ -263,8 +263,8 @@ int main(int argc, char* argv[]){
   for(unsigned int v=0;v<var.size();v++){
      double xmin,xmax;
      double ymin=0.5, ymax=1E8;
-     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=55.00; xmax=1500.00;
-     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=55.00; xmax=1500.00; ymin=0.0001;  ymax=0.5;
+     if (var[v]=="_qt" || var[v]=="_qtrebin") {                    xmin=55.00; xmax=3000.00;
+     } else if (var[v]=="_qtweight" || var[v]=="_qtrebinweight") { xmin=55.00; xmax=3000.00; ymin=0.0001;  ymax=0.5;
      } else if (var[v]=="_njets")  {                               xmin=0.; xmax=5.;
      } else if( (var[v]=="_met") || var[v]=="_mt") {               xmin=1.; xmax=1000.0;
      } else{                                                       xmin=1.; xmax=1000.0;    

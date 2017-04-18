@@ -453,6 +453,7 @@
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
                 "2l2v_mcbased_SM",
+		"2l2v_dataOnly",
 		"genuineMet"
             ],
             "marker": 20,
@@ -481,7 +482,16 @@
                     ],
                     "dtag": "MC13TeV_ZZ2l2nu_2016",
                     "xsec": 0.564
-                }
+                },
+		{
+                  "br": [ 
+                      1.0 
+                   ], 
+                   "dset": [ 
+                      "/ZZTo4L_13TeV_powheg_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"                                                                                                               ],
+                       "dtag": "MC13TeV_ZZTo4L_2016", 
+                       "xsec": 1.256 
+               }      
             ],
             "isdata": false,
             "keys": [
@@ -517,7 +527,17 @@
                     ],
                     "dtag": "MC13TeV_ZZ2l2nu_2016",
                     "xsec": 0.564
-                }
+                },
+		{
+		  "br": [
+		      1.0
+		   ],
+		   "dset": [
+		      "/ZZTo4L_13TeV_powheg_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+		      ],
+		       "dtag": "MC13TeV_ZZTo4L_2016",
+		       "xsec": 1.256
+	       }
             ],
             "isdata": false,
             "keys": [
@@ -653,7 +673,17 @@
                     ],
                     "dtag": "MC13TeV_WWZ_2016",
                     "xsec": 0.1651
-                }
+                },
+		{	
+		   "br": [
+		     1.0
+		   ],
+		   "dset": [
+		     "/WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"  
+		   ],
+		   "dtag": "MC13TeV_WWW_4F_2016",
+		   "xsec": 0.2086
+		}     
             ],
             "isdata": false,
             "keys": [
@@ -675,14 +705,42 @@
             "data": [
                 {
                     "br": [
-                        1.0
+                        0.2
                     ],
                     "dset": [
-       		        "/TTTo2L2Nu_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+         		"/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
-                    "dtag": "MC13TeV_TT2l2nu_ext1_2016",
+                    "dtag": "MC13TeV_TTJets_DiLept_2016",
                     "xsec": 87.31
                 },
+		{
+		    "br": [
+		        0.8
+		],
+		"dset": [
+		    "/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM"
+		   ],
+		   "dtag": "MC13TeV_TTJets_DiLept_ext1_2016",
+		   "xsec": 87.31   
+		},
+		{
+		   "br": [
+		      0.25
+		    ],
+		    "dset": [
+		      "/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM" ],
+		      "dtag": "MC13TeV_TTJets_SingleLeptFromTbar_2016",
+		      "xsec": 182.17 
+		},
+		{
+		  "br": [
+		    0.75
+		    ],
+		    "dset": [
+		     "/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM" ],
+		     "dtag": "MC13TeV_TTJets_SingleLeptFromTbar_ext1_2016",
+		     "xsec": 182.17
+		    },
                 {
                     "br": [
                         1.0
@@ -766,6 +824,41 @@
             ],
             "tag": "Top"
         },
+	{
+	 "color": 754,
+	 "data": [
+	   {
+		"br": [
+		    1.0
+		],
+		"dset": [
+		  "/VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+		],
+		"dtag": "MC13TeV_VHToNonbb_M125_2016",
+		"xsec": 0.952
+	   },
+	   {
+	       "br": [
+	           1.0
+	       ],
+	       "dset": [
+	       "/ttHToNonbb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
+	       ],
+	       "dtag": "MC13TeV_ttHToNonbb_M125_2016",
+	       "xsec": 0.215
+	   }
+	 ],
+	 "isdata": false,
+	 "keys": [
+	 	 "2l2v_2016",
+                "2l2v_mcbased",
+                "2l2v_datadriven",
+		"2l2v_datadrivenplot",
+		"2l2v_datadriven_SM",
+                "2l2v_mcbased_SM"
+		],
+	  "tag": "H125"
+	},	
         {
             "2l2v_photonsOnly": {
                 "suffix": "reweighted"
@@ -2002,7 +2095,8 @@
             "keys": [
                 "2l2v_2016",
                 "2l2v_photoncontrol",
-                "2l2v_photonsOnly"
+                "2l2v_photonsOnly",
+		"2l2v_dataOnly"
             ],
             "marker": 20,
             "msize": 0.7,
@@ -2024,7 +2118,7 @@
            "isinvisible":true,      
            "isdata":false,
            "color":41,
-     	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0},  {"tag":"WZ_reweighted", "scale":1.0},  {"tag":"WW_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #tau#tau_filt15_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow ee-#mu#mu_filt1113_reweighted", "scale":1.0} ]
+     	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0} ]
          },
          {
            "tag":"Genuine (ewk) MET",
