@@ -507,7 +507,8 @@
                 "2l2v_datadriven",
                 "2l2v_datadrivenplot",
                 "2l2v_datadriven_SM",
-                "2l2v_mcbased_SM"
+                "2l2v_mcbased_SM",
+		"2l2v_dataOnly"
             ],
             "marker": 20,
             "msize": 0.7,
@@ -752,8 +753,7 @@
                         1.0 
                     ], 
                     "dset": [ 
-		      "/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_\
-2016_TrancheIV_v6-v1/MINIAODSIM"
+		      "/ST_t-channel_top_4f_inclusiveDecays_13TeV-powhegV2-madspin-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ], 
                     "dtag": "MC13TeV_SingleT_at_2016", 
                     "xsec": 136.02 
@@ -2062,6 +2062,7 @@
                 "2l2v_2016",
                 "2l2v_photoncontrol",
                 "2l2v_photonsOnly",
+		"2l2v_dataOnly",
                 "genuineMet"
             ],
             "marker": 20,
