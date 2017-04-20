@@ -81,8 +81,6 @@ namespace patUtils
    namespace llvvMuonIso{ enum MuonIso {Loose,Tight, H4lWP, TightBoosted, TightAndTkRelatBoosted}; }
    namespace CutVersion { enum CutSet {Spring15Cut25ns, ICHEP16Cut, Moriond17Cut}; }
 
-   unsigned int GainSeed (pat::Electron &electron, const EcalRecHitCollection* recHits);
-   unsigned int GainSeed (pat::Photon &photon, const EcalRecHitCollection* recHits);
    bool passId (VersionedPatElectronSelector id, edm::EventBase const & event, pat::Electron el);
    bool passId (pat::Electron& el,  reco::Vertex& vtx, int IdLevel, int cutVersion, bool is2016=true); // Old PHYS14 ID
    bool passId (pat::Muon&     mu,  reco::Vertex& vtx, int IdLevel, int cutVersion);

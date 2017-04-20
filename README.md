@@ -23,22 +23,10 @@ cmsenv
 #git checkout remotes/origin/74x-root6 
 #cd ../..
 
-Checkout Some Packages from Egamma ( https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression#Consistent_EGMSmearer )
-
-cmsrel CMSSW_8_0_26_patch1
-cd CMSSW_8_0_26_patch1/src
-cmsenv
-git cms-init
-git cms-merge-topic cms-egamma:EGM_gain_v1
-cd EgammaAnalysis/ElectronTools/data
-git clone -b Moriond17_gainSwitch_unc https://github.com/ECALELFS/ScalesSmearings.git
-cd $CMSSW_BASE/src
-scram b -j 8
-
 
 git clone -b svFit_2015Apr03 https://github.com/veelken/SVfit_standalone.git TauAnalysis/SVfitStandalone
 
-git clone https://github.com/cms2l2v/2l2v_fwk.git UserCode/llvv_fwk
+git clone -b miniAOD-setup_Moriond17 https://github.com/cms2l2v/2l2v_fwk.git UserCode/llvv_fwk
 cd UserCode/llvv_fwk
 git checkout -b modified #copy the branch to a new one to host future modifications (ease pull request and code merging)
 cd ../..
