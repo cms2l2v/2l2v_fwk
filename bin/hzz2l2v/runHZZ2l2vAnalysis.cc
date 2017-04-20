@@ -1067,6 +1067,12 @@ int main(int argc, char* argv[])
           electronsHandle.getByLabel(ev, "slimmedElectrons");
           if(electronsHandle.isValid()){ electrons = *electronsHandle;}
 
+          // to find Gain Seed 
+          fwlite::Handle<EcalRecHitCollection> recHitCollectionEBHandle;
+          fwlite::Handle<EcalRecHitCollection> recHitCollectionEEHandle;
+          recHitCollectionEBHandle.getByLabel(ev, "reducedEgamma","reducedEBRecHits");
+          recHitCollectionEEHandle.getByLabel(ev, "reducedEgamma","reducedEBRecHits");
+
           pat::JetCollection jets;
           fwlite::Handle< pat::JetCollection > jetsHandle;
           jetsHandle.getByLabel(ev, "slimmedJets");
@@ -1288,10 +1294,12 @@ int main(int argc, char* argv[])
                	 // leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
                // }
                 if (isMC || is2015data || is2016data){
+                const EcalRecHitCollection* recHits = (leptons[ilep].el.isEB()) ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+                unsigned int gainSeed = patUtils::GainSeed(leptons[ilep].el,recHits);
 
                  if(!isMC){
 
-                 double scale_corr=eScaler.ScaleCorrection(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et());
+                 double scale_corr=eScaler.ScaleCorrection(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed);
                   //At this point, the new data energy will be:
                  // E_new=E_old*(scale_corr);
                   TLorentzVector p4(leptons[ilep].el.px(),leptons[ilep].el.py(),leptons[ilep].el.pz(),leptons[ilep].el.energy());
@@ -1299,7 +1307,7 @@ int main(int argc, char* argv[])
                   leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
                  }
              if(isMC){
-                 double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),12,0,0);
+                 double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,0,0);
                 //Put the last two inputs at 0,0 for the nominal value of sigma
                 //Now smear the MC energy
                   TRandom3 *rgen_ = new TRandom3(0);
@@ -1334,10 +1342,12 @@ int main(int argc, char* argv[])
 
              for(unsigned int ivar=0;ivar<eleVarNames.size();ivar++){
 	        if (abs(lid)==11) { //if electron
+                const EcalRecHitCollection* recHits = (leptons[ilep].el.isEB()) ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+                unsigned int gainSeed = patUtils::GainSeed(leptons[ilep].el,recHits);
                   patUtils::GenericLepton varLep = leptons[ilep];
                   if(ivar==1) { //stat electron up
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),12,bit_stat);
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_stat);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
 	              if (passId && passIso){
@@ -1349,7 +1359,7 @@ int main(int argc, char* argv[])
 	              }
                   }if(ivar==2) { //stat electron down
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),12,bit_stat);
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_stat);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
 	              if (passId && passIso){
@@ -1361,7 +1371,7 @@ int main(int argc, char* argv[])
 	              }
                   }if(ivar==3) { //systematic electron up
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),12,bit_syst);
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_syst);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
 	              if (passId && passIso){
@@ -1373,7 +1383,7 @@ int main(int argc, char* argv[])
 	              }
                   }if(ivar==4) { //systematic electron down
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),12,bit_syst);
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_syst);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
 	              if (passId && passIso){
@@ -1385,7 +1395,7 @@ int main(int argc, char* argv[])
 	              }
                   }if(ivar==5) { //gain switch electron up
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),12,bit_gain);
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_gain);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
 	              if (passId && passIso){
@@ -1397,7 +1407,7 @@ int main(int argc, char* argv[])
 	              }
                   }if(ivar==6) { //gain switch electron down
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),12,bit_gain);
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_gain);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
 	              if (passId && passIso){
@@ -1410,7 +1420,7 @@ int main(int argc, char* argv[])
                   }if(ivar==7) { //rho resolution Electron up
 		     double smearValue = 1.0;
                      if(leptons[ilep].pt()>5.0) {
-			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),12,1,0);
+			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,1,0);
                         TRandom3 *rgen_ = new TRandom3(0);
                         smearValue = rgen_->Gaus(1, sigma) ;
                        }
@@ -1426,7 +1436,7 @@ int main(int argc, char* argv[])
                   }if(ivar==8) { //rho resolution Electron down
 		     double smearValue = 1.0;
                      if(leptons[ilep].pt()>5.0) {
-			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),12,-1,0);
+			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,-1,0);
                         TRandom3 *rgen_ = new TRandom3(0);
                         smearValue = rgen_->Gaus(1, sigma) ;
                        }
@@ -1442,7 +1452,7 @@ int main(int argc, char* argv[])
                   }if(ivar==9) { //phi resolution Electron down
 		     double smearValue = 1.0;
                      if(leptons[ilep].pt()>5.0) {
-			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),12,0,-1);
+			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,0,-1);
                         TRandom3 *rgen_ = new TRandom3(0);
                         smearValue = rgen_->Gaus(1, sigma) ;
                        }
@@ -1486,9 +1496,11 @@ int main(int argc, char* argv[])
             if(photonTrigger && (photon.pt()<(triggerThreshold) || photon.pt()>(triggerThresholdHigh+10)))continue;
 
 	    //Calibrate photon energy
+                const EcalRecHitCollection* recHits = (photon.isEB()) ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+                unsigned int gainSeed = patUtils::GainSeed(photon,recHits);
                  if(!isMC){
 
-                 double scale_corr=phScaler.ScaleCorrection(ev.eventAuxiliary().run(),photon.isEB(),photon.r9(), photon.superCluster()->eta(), photon.et());
+                 double scale_corr=phScaler.ScaleCorrection(ev.eventAuxiliary().run(),photon.isEB(),photon.r9(), photon.superCluster()->eta(), photon.et(),gainSeed);
                   //At this point, the new data energy will be:
                  // E_new=E_old*(scale_corr);
                   TLorentzVector p4(photon.px(),photon.py(),photon.pz(),photon.energy());
@@ -1497,7 +1509,7 @@ int main(int argc, char* argv[])
 
                  if(isMC){
 
-                 double sigma=phScaler.getSmearingSigma(ev.eventAuxiliary().run(),photon.isEB(),photon.r9(), photon.superCluster()->eta(), photon.et(),12,0,0);
+                 double sigma=phScaler.getSmearingSigma(ev.eventAuxiliary().run(),photon.isEB(),photon.r9(), photon.superCluster()->eta(), photon.et(),gainSeed,0,0);
                 //Put the last two inputs at 0,0 for the nominal value of sigma
                 //Now smear the MC energy
                   TRandom3 *rgen_ = new TRandom3(0);

@@ -5,6 +5,32 @@
 namespace patUtils
 {
 
+  unsigned int GainSeed(pat::Electron &electron, const EcalRecHitCollection* recHits)
+  {
+
+  DetId seedDetId = electron.superCluster()->seed()->seed();
+  EcalRecHitCollection::const_iterator seedRecHit = recHits->find(seedDetId);
+  unsigned int gainSeedSC = 12;
+  if (seedRecHit != recHits->end()) { 
+    if(seedRecHit->checkFlag(EcalRecHit::kHasSwitchToGain6)) gainSeedSC = 6;
+    if(seedRecHit->checkFlag(EcalRecHit::kHasSwitchToGain1)) gainSeedSC = 1;
+    }
+     return gainSeedSC;
+  }
+
+  unsigned int GainSeed(pat::Photon &photon, const EcalRecHitCollection* recHits)
+  {
+
+  DetId seedDetId = photon.superCluster()->seed()->seed();
+  EcalRecHitCollection::const_iterator seedRecHit = recHits->find(seedDetId);
+  unsigned int gainSeedSC = 12;
+  if (seedRecHit != recHits->end()) { 
+    if(seedRecHit->checkFlag(EcalRecHit::kHasSwitchToGain6)) gainSeedSC = 6;
+    if(seedRecHit->checkFlag(EcalRecHit::kHasSwitchToGain1)) gainSeedSC = 1;
+    }
+     return gainSeedSC;
+  }
+
   float makeTkIsoCloseBySafe( float coneSize, float initialValue, const pat::Muon &theMuon, pat::MuonCollection muons){
     float returnValue = initialValue;
     for (unsigned int i=0 ; i<muons.size() ; i++){
