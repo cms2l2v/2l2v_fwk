@@ -1222,7 +1222,7 @@ int main(int argc, char* argv[])
               //init tab
               TVirtualPad* pad = t1->cd(I);
               pad->SetTopMargin(0.06); pad->SetRightMargin(0.03); pad->SetBottomMargin(I<=NBins?0.09:0.12);  pad->SetLeftMargin((I-1)%NBins!=0?0.09:0.12);
-              pad->SetLogy(true); 
+              //pad->SetLogy(true); 
 
               //print histograms
               TH1* axis = (TH1*)map_data[p->first]->Clone("axis");
@@ -1237,7 +1237,7 @@ int main(int argc, char* argv[])
                  axis->SetMinimum(1E-2);              
                  axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
               }else{
-                 axis->SetMinimum(1E-1);              
+                 axis->SetMinimum(1E-2);              
                  axis->SetMaximum(std::max(axis->GetMaximum(), 5E1));
               }
               if((I-1)%NBins!=0)axis->GetYaxis()->SetTitle("");
@@ -1248,7 +1248,7 @@ int main(int argc, char* argv[])
               for(unsigned int i=0;i<map_signals[p->first].size();i++){
               map_signals[p->first][i]->Draw("HIST same");
               }
-              map_dataE[p->first]->Draw("P0 same");
+              if(!blindData) map_dataE[p->first]->Draw("P0 same");
 
 
               bool printBinContent = false;
@@ -1312,7 +1312,7 @@ int main(int argc, char* argv[])
            c1->cd(0);
            double L=0.03, R=0.03, T=0.02, B=0.0;
            char LumiText[1024];
-           if(systpostfix.Contains('3'))      { double iLumi= 2269;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 13.0);
+           if(systpostfix.Contains('3'))      { double iLumi= 35866;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 13.0);
            }else if(systpostfix.Contains('8')){ double iLumi=20000;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 8.0);
            }else{                               double iLumi= 5000;sprintf(LumiText, "%.1f %s^{-1} (%.0f TeV)", iLumi>100?iLumi/1000:iLumi, iLumi>100?"fb":"pb", 7.0); 
            }
@@ -1385,8 +1385,8 @@ int main(int argc, char* argv[])
                  if(ch->second.shapes.find(histoName.Data())==(ch->second.shapes).end())continue;
 
                  //add the stat uncertainty is there;
-                 ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );//add stat uncertainty to the uncertainty map;
-
+                if((it->second.shortName).find("ggH")!=std::string::npos)ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+TString("_ggH")).Data(),systpostfix.Data(), false );// attention [used to correlate Signal Shape]
+                else ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );
 
 
                  TVirtualPad* pad = t1->cd(I); 
@@ -1631,8 +1631,9 @@ int main(int argc, char* argv[])
                  if(ch->second.shapes.find(histoName)==(ch->second.shapes).end())continue;
                  ShapeData_t& shapeInfo = ch->second.shapes[histoName];      
                  TH1* h = shapeInfo.histo();
-//                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), it->second.isSign );//add stat uncertainty to the uncertainty map;
-                 shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );//add stat uncertainty to the uncertainty map;
+
+                 if((it->second.shortName).find("ggH")!=std::string::npos)shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+TString("_ggH")).Data(),systpostfix.Data(), false );// attention [Used to correlate Signal Shapes]
+                 else shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );
 
                  TString proc = it->second.shortName.c_str();
                   for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){

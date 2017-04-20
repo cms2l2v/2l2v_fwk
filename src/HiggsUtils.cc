@@ -3,7 +3,8 @@
 #include "TGraph.h"
 #include "TSystem.h"
 #include "TLorentzVector.h"
-#include "UserCode/llvv_fwk/interface/th1fmorph.h"
+#include "HiggsAnalysis/CombinedLimit/interface/th1fmorph.h"
+//#include "UserCode/llvv_fwk/interface/th1fmorph.h"
 
 #include <sstream>
 
