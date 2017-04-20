@@ -32,6 +32,7 @@
 
 #include "EgammaAnalysis/ElectronTools/interface/ElectronEnergyCalibratorRun2.h"
 #include "EgammaAnalysis/ElectronTools/interface/PhotonEnergyCalibratorRun2.h"
+#include "EgammaAnalysis/ElectronTools/interface/EnergyScaleCorrection_class.h"
 
 #include "ZZMatrixElement/MELA/interface/Mela.h"
 
@@ -67,6 +68,7 @@
 #include "TNtuple.h"
 #include "TLorentzVector.h"
 #include <Math/VectorUtil.h>
+#include "TRandom3.h"
 
 #include <time.h>
 
@@ -176,8 +178,15 @@ int main(int argc, char* argv[])
   std::vector<string> eleVarNames = {""};
 
   if(runSystematics){
-	eleVarNames.push_back("_scale_eup");
-	eleVarNames.push_back("_scale_edown");
+	eleVarNames.push_back("_stat_eup");
+	eleVarNames.push_back("_stat_edown");
+	eleVarNames.push_back("_sys_eup");
+	eleVarNames.push_back("_sys_edown");
+	eleVarNames.push_back("_GS_eup");
+	eleVarNames.push_back("_GS_edown");
+	eleVarNames.push_back("_resRho_eup");
+	eleVarNames.push_back("_resRho_edown");
+	eleVarNames.push_back("_resPhi_edown");
      if(true){
         varNames.push_back("_scale_umetup"); varNames.push_back("_scale_umetdown");    //unclustered met
         varNames.push_back("_res_jup");      varNames.push_back("_res_jdown");    //jet energy resolution
@@ -704,28 +713,20 @@ int main(int argc, char* argv[])
 
   //photon and electron enerhy scale based on https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMSmearer    (adapted to the miniAOD/FWLite framework)
 
-  ElectronEnergyCalibratorRun2 ElectronEnCorrector;
-  string EGammaEnergyCorrectionFile = "";
-  PhotonEnergyCalibratorRun2 PhotonEnCorrector;
-  EpCombinationTool theEpCombinationTool;
-  EnergyScaleCorrection_class eScaler("UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele");
-  if(is2015MC || is2015data){
-  	EGammaEnergyCorrectionFile = "EgammaAnalysis/ElectronTools/data/76X_16DecRereco_2015";
-  	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, EGammaEnergyCorrectionFile);
-  	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC
-  	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EGammaEnergyCorrectionFile);
-  	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
-  }
-  if(is2016MC || is2016data){
-  	string EleEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/Winter_2016_reReco_v1_ele";
-  	string PhoEnergyCorrectionFile = "UserCode/llvv_fwk/data/jec/80X_ichepV2_2016_pho";
-  	PhotonEnCorrector = PhotonEnergyCalibratorRun2(isMC, false, PhoEnergyCorrectionFile);
-  	PhotonEnCorrector.initPrivateRng(new TRandom(1234));
-  	theEpCombinationTool.init((string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/weights/GBRForest_data_25ns.root").c_str(), "gedelectron_p4combination_25ns");  //got confirmation from Matteo Sani that this works for both data and MC
-  	ElectronEnCorrector = ElectronEnergyCalibratorRun2(theEpCombinationTool, isMC, false, EleEnergyCorrectionFile);
-  	ElectronEnCorrector.initPrivateRng(new TRandom(1234));
-  }
+  EnergyScaleCorrection_class eScaler("EgammaAnalysis/ElectronTools/data/ScalesSmearings/Moriond17_74x_pho");
+  eScaler.doScale=true;
+  eScaler.doSmearings=true;
+
+  std::string bit_string_stat = "001";
+  std::string bit_string_syst = "010";
+  std::string bit_string_gain = "100";
+  std::bitset<6> bit_stat(bit_string_stat);
+  std::bitset<6> bit_syst(bit_string_syst);
+  std::bitset<6> bit_gain(bit_string_gain);
+
+  EnergyScaleCorrection_class phScaler("EgammaAnalysis/ElectronTools/data/ScalesSmearings/Moriond17_74x_pho");
+  phScaler.doScale=true;
+  phScaler.doSmearings=true;
 
   //lepton efficiencies
   LeptonEfficiencySF lepEff;
@@ -1066,6 +1067,12 @@ int main(int argc, char* argv[])
           electronsHandle.getByLabel(ev, "slimmedElectrons");
           if(electronsHandle.isValid()){ electrons = *electronsHandle;}
 
+          // to find Gain Seed 
+          fwlite::Handle<EcalRecHitCollection> recHitCollectionEBHandle;
+          fwlite::Handle<EcalRecHitCollection> recHitCollectionEEHandle;
+          recHitCollectionEBHandle.getByLabel(ev, "reducedEgamma","reducedEBRecHits");
+          recHitCollectionEEHandle.getByLabel(ev, "reducedEgamma","reducedEBRecHits");
+
           pat::JetCollection jets;
           fwlite::Handle< pat::JetCollection > jetsHandle;
           jetsHandle.getByLabel(ev, "slimmedJets");
@@ -1078,7 +1085,8 @@ int main(int argc, char* argv[])
 
           pat::METCollection mets;
           fwlite::Handle< pat::METCollection > metsHandle;
-          metsHandle.getByLabel(ev, "slimmedMETs");
+          if(!isMC)metsHandle.getByLabel(ev, "slimmedMETsMuEGClean");
+          if(isMC)metsHandle.getByLabel(ev, "slimmedMETs");
           if(metsHandle.isValid()){ mets = *metsHandle;}
           pat::MET met = mets[0];
 
@@ -1281,13 +1289,37 @@ int main(int argc, char* argv[])
                 elDiff -= leptons[ilep].p4();
                 if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479)elDiff_forMET -= leptons[ilep].p4()*0.006;
                 else elDiff_forMET -= leptons[ilep].p4()*0.015;
-                if(!isMC){
-                	utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el);
-               	  leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
-                }
+                //if(!isMC){
+                //	utils::cmssw::SlewRateCorrection(ev,leptons[ilep].el);
+               	 // leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+               // }
                 if (isMC || is2015data || is2016data){
-                	ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
-                	leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                const EcalRecHitCollection* recHits = (leptons[ilep].el.isEB()) ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+                unsigned int gainSeed = patUtils::GainSeed(leptons[ilep].el,recHits);
+
+                 if(!isMC){
+
+                 double scale_corr=eScaler.ScaleCorrection(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed);
+                  //At this point, the new data energy will be:
+                 // E_new=E_old*(scale_corr);
+                  TLorentzVector p4(leptons[ilep].el.px(),leptons[ilep].el.py(),leptons[ilep].el.pz(),leptons[ilep].el.energy());
+                  leptons[ilep].el.setP4(LorentzVector(p4.Px()*scale_corr,p4.Py()*scale_corr,p4.Pz()*scale_corr,p4.E()*scale_corr ) ); 
+                  leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+                 }
+             if(isMC){
+                 double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,0,0);
+                //Put the last two inputs at 0,0 for the nominal value of sigma
+                //Now smear the MC energy
+                  TRandom3 *rgen_ = new TRandom3(0);
+                  double smearValue = rgen_->Gaus(1, sigma) ;
+                  TLorentzVector p4(leptons[ilep].el.px(),leptons[ilep].el.py(),leptons[ilep].el.pz(),leptons[ilep].el.energy());
+                  leptons[ilep].el.setP4(LorentzVector(p4.Px()*smearValue,p4.Py()*smearValue,p4.Pz()*smearValue,p4.E()*smearValue ) ); 
+                  leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
+             }
+
+
+                	//ElectronEnCorrector.calibrate(leptons[ilep].el, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
+                	//leptons[ilep] = patUtils::GenericLepton(leptons[ilep].el); //recreate the generic lepton to be sure that the p4 is ok
                 }
                 elDiff += leptons[ilep].p4();
                 if(fabs(leptons[ilep].el.superCluster()->eta()) < 1.479)elDiff_forMET += leptons[ilep].p4()*0.006;
@@ -1310,13 +1342,14 @@ int main(int argc, char* argv[])
 
              for(unsigned int ivar=0;ivar<eleVarNames.size();ivar++){
 	        if (abs(lid)==11) { //if electron
+                const EcalRecHitCollection* recHits = (leptons[ilep].el.isEB()) ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+                unsigned int gainSeed = patUtils::GainSeed(leptons[ilep].el,recHits);
                   patUtils::GenericLepton varLep = leptons[ilep];
-                  if(ivar==1) { //scale up
+                  if(ivar==1) { //stat electron up
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_stat);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
                       varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
-
 	              if (passId && passIso){
                            if(varLep.pt()<25) passKin = false;
                            if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
@@ -1324,18 +1357,113 @@ int main(int argc, char* argv[])
                                if(varLep.pt()<10) passLooseLepton = false;
                                if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
 	              }
-                  }if(ivar==2) { //scale down
+                  }if(ivar==2) { //stat electron down
                       double error_scale=0.0;
-	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et());
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_stat);
                       TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
-	              varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
-
+                      varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
 	              if (passId && passIso){
                            if(varLep.pt()<25) passKin = false;
                            if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
-                      }else {
+                      } else {
                                if(varLep.pt()<10) passLooseLepton = false;
-                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep);
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==3) { //systematic electron up
+                      double error_scale=0.0;
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_syst);
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==4) { //systematic electron down
+                      double error_scale=0.0;
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_syst);
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==5) { //gain switch electron up
+                      double error_scale=0.0;
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_gain);
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*(1+error_scale),p4.Py()*(1+error_scale),p4.Pz()*(1+error_scale),p4.E()*(1+error_scale) ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==6) { //gain switch electron down
+                      double error_scale=0.0;
+	              if(leptons[ilep].pt()>5.0)error_scale = eScaler.ScaleCorrectionUncertainty(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(),leptons[ilep].el.et(),gainSeed,bit_gain);
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*(1-error_scale),p4.Py()*(1-error_scale),p4.Pz()*(1-error_scale),p4.E()*(1-error_scale) ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==7) { //rho resolution Electron up
+		     double smearValue = 1.0;
+                     if(leptons[ilep].pt()>5.0) {
+			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,1,0);
+                        TRandom3 *rgen_ = new TRandom3(0);
+                        smearValue = rgen_->Gaus(1, sigma) ;
+                       }
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*smearValue,p4.Py()*smearValue,p4.Pz()*smearValue,p4.E()*smearValue ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==8) { //rho resolution Electron down
+		     double smearValue = 1.0;
+                     if(leptons[ilep].pt()>5.0) {
+			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,-1,0);
+                        TRandom3 *rgen_ = new TRandom3(0);
+                        smearValue = rgen_->Gaus(1, sigma) ;
+                       }
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*smearValue,p4.Py()*smearValue,p4.Pz()*smearValue,p4.E()*smearValue ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
+	              }
+                  }if(ivar==9) { //phi resolution Electron down
+		     double smearValue = 1.0;
+                     if(leptons[ilep].pt()>5.0) {
+			double sigma=eScaler.getSmearingSigma(ev.eventAuxiliary().run(),leptons[ilep].el.isEB(),leptons[ilep].el.r9(), leptons[ilep].el.superCluster()->eta(), leptons[ilep].el.et(),gainSeed,0,-1);
+                        TRandom3 *rgen_ = new TRandom3(0);
+                        smearValue = rgen_->Gaus(1, sigma) ;
+                       }
+                      TLorentzVector p4(leptons[ilep].px(),leptons[ilep].py(),leptons[ilep].pz(),leptons[ilep].energy());
+                      varLep.setP4(LorentzVector(p4.Px()*smearValue,p4.Py()*smearValue,p4.Pz()*smearValue,p4.E()*smearValue ));
+	              if (passId && passIso){
+                           if(varLep.pt()<25) passKin = false;
+                           if(passKin){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
+                      } else {
+                               if(varLep.pt()<10) passLooseLepton = false;
+                               if(passLooseLepton) extraLeptonsVar[eleVarNames[ivar]].push_back(varLep); 
 	              }
                   }if(ivar==0){ // nominal
 	              if(passKin && passId && passIso){selLeptonsVar[eleVarNames[ivar]].push_back(varLep);}
@@ -1368,7 +1496,28 @@ int main(int argc, char* argv[])
             if(photonTrigger && (photon.pt()<(triggerThreshold) || photon.pt()>(triggerThresholdHigh+10)))continue;
 
 	    //Calibrate photon energy
-	    PhotonEnCorrector.calibrate(photon, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
+                const EcalRecHitCollection* recHits = (photon.isEB()) ? recHitCollectionEBHandle.product() : recHitCollectionEEHandle.product();
+                unsigned int gainSeed = patUtils::GainSeed(photon,recHits);
+                 if(!isMC){
+
+                 double scale_corr=phScaler.ScaleCorrection(ev.eventAuxiliary().run(),photon.isEB(),photon.r9(), photon.superCluster()->eta(), photon.et(),gainSeed);
+                  //At this point, the new data energy will be:
+                 // E_new=E_old*(scale_corr);
+                  TLorentzVector p4(photon.px(),photon.py(),photon.pz(),photon.energy());
+                  photon.setP4(LorentzVector(p4.Px()*scale_corr,p4.Py()*scale_corr,p4.Pz()*scale_corr,p4.E()*scale_corr ) ); 
+                 }
+
+                 if(isMC){
+
+                 double sigma=phScaler.getSmearingSigma(ev.eventAuxiliary().run(),photon.isEB(),photon.r9(), photon.superCluster()->eta(), photon.et(),gainSeed,0,0);
+                //Put the last two inputs at 0,0 for the nominal value of sigma
+                //Now smear the MC energy
+                  TRandom3 *rgen_ = new TRandom3(0);
+                  double smearValue = rgen_->Gaus(1, sigma) ;
+                  TLorentzVector p4(photon.px(),photon.py(),photon.pz(),photon.energy());
+                  photon.setP4(LorentzVector(p4.Px()*smearValue,p4.Py()*smearValue,p4.Pz()*smearValue,p4.E()*smearValue ) ); 
+                 }
+//	    PhotonEnCorrector.calibrate(photon, ev.eventAuxiliary().run(), edm::StreamID::invalidStreamID());
 
 	    //Removed all the phtons which are alsp reconstructed ad Electron and muons
             double minDRlg(9999.);
@@ -1562,8 +1711,15 @@ int main(int argc, char* argv[])
            if(varNames[ivar]=="_scale_umetdown") imet = met.shiftedP4(pat::MET::METUncertainty::UnclusteredEnDown , metcor);
            if(varNames[ivar]=="_scale_mup")      imet = met.shiftedP4(pat::MET::METUncertainty::MuonEnUp          , metcor);
            if(varNames[ivar]=="_scale_mdown")    imet = met.shiftedP4(pat::MET::METUncertainty::MuonEnDown        , metcor);
-           if(varNames[ivar]=="_scale_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp      , metcor);
-           if(varNames[ivar]=="_scale_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
+           if(varNames[ivar]=="_stat_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp      , metcor);
+           if(varNames[ivar]=="_stat_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
+           if(varNames[ivar]=="_sys_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp      , metcor);
+           if(varNames[ivar]=="_sys_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
+           if(varNames[ivar]=="_GS_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp      , metcor);
+           if(varNames[ivar]=="_GS_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
+           if(varNames[ivar]=="_resRho_eup")      imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnUp      , metcor);
+           if(varNames[ivar]=="_resRho_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
+           if(varNames[ivar]=="_resPhi_edown")    imet = met.shiftedP4(pat::MET::METUncertainty::ElectronEnDown    , metcor);
 
            if(selLeptonsVar    .find(varNames[ivar].Data())!=selLeptonsVar    .end())selLeptons     = selLeptonsVar    [varNames[ivar].Data()];
            if(extraLeptonsVar    .find(varNames[ivar].Data())!=extraLeptonsVar    .end())extraLeptons     = extraLeptonsVar    [varNames[ivar].Data()];
