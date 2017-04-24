@@ -8,23 +8,10 @@ wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_
 ```
 
 # Installation for 80X (2017) => was 8_0_14 (2016)
-```bash 
-export SCRAM_ARCH=slc6_amd64_gcc530
-cmsrel CMSSW_8_0_25
-cd CMSSW_8_0_25/src/
-cmsenv
-
-# The following fail for the moment:
-#git cms-merge-topic -u matteosan1:smearer_76X
-
-# This fails also: (see https://hypernews.cern.ch/HyperNews/CMS/get/sw-develtools/2414.html )
-#git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
-#cd HiggsAnalysis/CombinedLimit
-#git checkout remotes/origin/74x-root6 
-#cd ../..
 
 Checkout Some Packages from Egamma ( https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression#Consistent_EGMSmearer )
-
+```bash
+export SCRAM_ARCH=slc6_amd64_gcc530
 cmsrel CMSSW_8_0_26_patch1
 cd CMSSW_8_0_26_patch1/src
 cmsenv
