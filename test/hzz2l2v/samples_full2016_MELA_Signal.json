@@ -10,7 +10,7 @@
                         "/GluGluHToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH200toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -42,7 +42,7 @@
                         "/GluGluHToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH200toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -74,7 +74,7 @@
                         "/GluGluHToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH200toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -106,7 +106,7 @@
                         "/VBF_HToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH200toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -139,7 +139,7 @@
                         "/VBF_HToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH200toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -172,7 +172,7 @@
                         "/VBF_HToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH200toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -205,7 +205,7 @@
                         "/GluGluHToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH300toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 14,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -240,7 +240,7 @@
                         "/GluGluHToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH300toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 14,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -275,7 +275,7 @@
                         "/GluGluHToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH300toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 14,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -310,7 +310,7 @@
                         "/VBF_HToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH300toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -343,7 +343,7 @@
                         "/VBF_HToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH300toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -376,7 +376,7 @@
                         "/VBF_HToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH300toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -409,7 +409,7 @@
                         "/GluGluHToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH400toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -441,7 +441,7 @@
                         "/GluGluHToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH400toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -473,7 +473,7 @@
                         "/GluGluHToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH400toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -505,7 +505,7 @@
                         "/VBF_HToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH400toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -538,7 +538,7 @@
                         "/VBF_HToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH400toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -571,7 +571,7 @@
                         "/VBF_HToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH400toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -604,7 +604,7 @@
                         "/GluGluHToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -636,7 +636,7 @@
                         "/GluGluHToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -668,7 +668,7 @@
                         "/GluGluHToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -700,7 +700,7 @@
                         "/VBF_HToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -733,7 +733,7 @@
                         "/VBF_HToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -766,7 +766,7 @@
                         "/VBF_HToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -799,7 +799,7 @@
                         "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -831,7 +831,7 @@
                         "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -863,7 +863,7 @@
                         "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -895,7 +895,7 @@
                         "/VBF_HToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH600toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -928,7 +928,7 @@
                         "/VBF_HToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH600toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -961,7 +961,7 @@
                         "/VBF_HToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH600toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -994,7 +994,7 @@
                         "/GluGluHToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH700toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1026,7 +1026,7 @@
                         "/GluGluHToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH700toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1058,7 +1058,7 @@
                         "/GluGluHToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH700toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1090,7 +1090,7 @@
                         "/VBF_HToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH700toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1123,7 +1123,7 @@
                         "/VBF_HToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH700toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1156,7 +1156,7 @@
                         "/VBF_HToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH700toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1189,7 +1189,7 @@
                         "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1221,7 +1221,7 @@
                         "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1253,7 +1253,7 @@
                         "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1285,7 +1285,7 @@
                         "/VBF_HToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH800toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -1318,7 +1318,7 @@
                         "/VBF_HToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH800toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1351,7 +1351,7 @@
                         "/VBF_HToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH800toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1384,7 +1384,7 @@
                         "/GluGluHToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH900toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 16,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1419,7 +1419,7 @@
                         "/GluGluHToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH900toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1454,7 +1454,7 @@
                         "/GluGluHToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH900toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 13,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1489,7 +1489,7 @@
                         "/VBF_HToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH900toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1522,7 +1522,7 @@
                         "/VBF_HToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH900toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1555,7 +1555,7 @@
                         "/VBF_HToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH900toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1588,7 +1588,7 @@
                         "/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -1620,7 +1620,7 @@
                         "/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1652,7 +1652,7 @@
                         "/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1684,7 +1684,7 @@
                         "/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH1000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1717,7 +1717,7 @@
                         "/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH1000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1750,7 +1750,7 @@
                         "/VBF_HToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH1000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1783,7 +1783,7 @@
                         "/GluGluHToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1815,7 +1815,7 @@
                         "/GluGluHToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1847,7 +1847,7 @@
                         "/GluGluHToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -1879,7 +1879,7 @@
                         "/VBF_HToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH1500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1912,7 +1912,7 @@
                         "/VBF_HToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH1500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1945,7 +1945,7 @@
                         "/VBF_HToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH1500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 20,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -1978,7 +1978,7 @@
                         "/GluGluHToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2013,7 +2013,7 @@
                         "/GluGluHToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2048,7 +2048,7 @@
                         "/GluGluHToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 16,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -2083,7 +2083,7 @@
                         "/VBF_HToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH2000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 13,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2122,7 +2122,7 @@
                         "/VBF_HToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH2000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 13,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2161,7 +2161,7 @@
                         "/VBF_HToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH2000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 13,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -2200,7 +2200,7 @@
                         "/GluGluHToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2235,7 +2235,7 @@
                         "/GluGluHToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2270,7 +2270,7 @@
                         "/GluGluHToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 16,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -2305,7 +2305,7 @@
                         "/VBF_HToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH2500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 16,
+                   
                     "xsec": 1.0
                 }
             ],
@@ -2341,7 +2341,7 @@
                         "/VBF_HToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH2500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 16,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -2377,7 +2377,7 @@
                         "/VBF_HToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH2500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2413,7 +2413,7 @@
                         "/GluGluHToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH3000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2448,7 +2448,7 @@
                         "/GluGluHToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH3000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2483,7 +2483,7 @@
                         "/GluGluHToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH3000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2518,7 +2518,7 @@
                         "/VBF_HToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH3000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
@@ -2554,7 +2554,7 @@
                         "/VBF_HToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH3000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                    "split": 16,
+                 
                     "xsec": 1.0
                 }
             ],
@@ -2590,7 +2590,7 @@
                         "/VBF_HToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_VBFtoH3000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                    "split": 16,
+                  
                     "xsec": 1.0
                 }
             ],
