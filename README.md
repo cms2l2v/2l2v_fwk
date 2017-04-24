@@ -10,7 +10,8 @@ wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_
 # Installation for 80X (2017) => was 8_0_14 (2016)
 
 Checkout Some Packages from Egamma ( https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression#Consistent_EGMSmearer )
-
+```bash
+export SCRAM_ARCH=slc6_amd64_gcc530
 cmsrel CMSSW_8_0_26_patch1
 cd CMSSW_8_0_26_patch1/src
 cmsenv
