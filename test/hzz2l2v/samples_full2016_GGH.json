@@ -1,16 +1,16 @@
 {
     "proc": [
-        {
+         {
             "color": 1,
             "data": [
-                {
+		 {
                     "br": [
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016B-23Sep2016-v3/MINIAOD"
+                        "/MuonEG/Run2016B-03Feb2017_ver2-v2/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_MuEG2016B",
+                    "dtag": "Data13TeV_MuEG2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -19,7 +19,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016C-23Sep2016-v1/MINIAOD"
+                        "/MuonEG/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_MuEG2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -30,7 +30,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016D-23Sep2016-v1/MINIAOD"
+                        "/MuonEG/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_MuEG2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -41,7 +41,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016E-23Sep2016-v1/MINIAOD"
+                        "/MuonEG/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_MuEG2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -52,7 +52,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016F-23Sep2016-v1/MINIAOD"
+                        "/MuonEG/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_MuEG2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -63,7 +63,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016G-23Sep2016-v1/MINIAOD"
+                        "/MuonEG/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_MuEG2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -74,9 +74,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016H-PromptReco-v2/MINIAOD"
+                        "/MuonEG/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_MuEG2016H_v2",
+                    "dtag": "Data13TeV_MuEG2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -85,9 +85,20 @@
                         1.0
                     ],
                     "dset": [
-                        "/MuonEG/Run2016H-PromptReco-v3/MINIAOD"
+                        "/MuonEG/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_MuEG2016H_v3",
+                    "dtag": "Data13TeV_MuEG2016H_ver3",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
+                    "xsec": 1.0
+                },
+		{
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/SingleElectron/Run2016B-03Feb2017_ver2-v2/MINIAOD"
+                    ],
+                    "dtag": "Data13TeV_SingleElectron2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -96,18 +107,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016B-23Sep2016-v3/MINIAOD"
-                    ],
-                    "dtag": "Data13TeV_SingleElectron2016B",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
-                    "xsec": 1.0
-                },
-                {
-                    "br": [
-                        1.0
-                    ],
-                    "dset": [
-                        "/SingleElectron/Run2016C-23Sep2016-v1/MINIAOD"
+                        "/SingleElectron/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleElectron2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -118,7 +118,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016D-23Sep2016-v1/MINIAOD"
+                        "/SingleElectron/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleElectron2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -129,7 +129,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016E-23Sep2016-v1/MINIAOD"
+                        "/SingleElectron/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleElectron2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -140,7 +140,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016F-23Sep2016-v1/MINIAOD"
+                        "/SingleElectron/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleElectron2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -151,7 +151,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016G-23Sep2016-v1/MINIAOD"
+                        "/SingleElectron/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SingleElectron2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -162,9 +162,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016H-PromptReco-v2/MINIAOD"
+                        "/SingleElectron/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleElectron2016H_v2",
+                    "dtag": "Data13TeV_SingleElectron2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -173,9 +173,20 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleElectron/Run2016H-PromptReco-v3/MINIAOD"
+                        "/SingleElectron/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleElectron2016H_v3",
+                    "dtag": "Data13TeV_SingleElectron2016H_ver3",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
+                    "xsec": 1.0
+                },
+	 	{
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/SingleMuon/Run2016B-03Feb2017_ver2-v2/MINIAOD"
+                    ],
+                    "dtag": "Data13TeV_SingleMuon2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -184,9 +195,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016B-23Sep2016-v3/MINIAOD"
+                        "/SingleMuon/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016B",
+                    "dtag": "Data13TeV_SingleMuon2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -195,9 +206,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016C-23Sep2016-v1/MINIAOD"
+                        "/SingleMuon/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016C",
+                    "dtag": "Data13TeV_SingleMuon2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -206,9 +217,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016D-23Sep2016-v1/MINIAOD"
+                        "/SingleMuon/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016D",
+                    "dtag": "Data13TeV_SingleMuon2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -217,9 +228,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016E-23Sep2016-v1/MINIAOD"
+                        "/SingleMuon/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016E",
+                    "dtag": "Data13TeV_SingleMuon2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -228,9 +239,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016F-23Sep2016-v1/MINIAOD"
+                        "/SingleMuon/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016F",
+                    "dtag": "Data13TeV_SingleMuon2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -239,9 +250,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016G-23Sep2016-v1/MINIAOD"
+                        "/SingleMuon/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016G",
+                    "dtag": "Data13TeV_SingleMuon2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -250,9 +261,20 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016H-PromptReco-v2/MINIAOD"
+                        "/SingleMuon/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016H_v2",
+                    "dtag": "Data13TeV_SingleMuon2016H_ver3",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
+                    "xsec": 1.0
+                },
+		 {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/DoubleMuon/Run2016B-03Feb2017_ver2-v2/MINIAOD"
+                    ],
+                    "dtag": "Data13TeV_DoubleMuon2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -261,9 +283,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SingleMuon/Run2016H-PromptReco-v3/MINIAOD"
+                        "/DoubleMuon/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SingleMu2016H_v3",
+                    "dtag": "Data13TeV_DoubleMuon2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -272,9 +294,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016B-23Sep2016-v3/MINIAOD"
+                        "/DoubleMuon/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016B",
+                    "dtag": "Data13TeV_DoubleMuon2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -283,9 +305,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016C-23Sep2016-v1/MINIAOD"
+                        "/DoubleMuon/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016C",
+                    "dtag": "Data13TeV_DoubleMuon2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -294,9 +316,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016D-23Sep2016-v1/MINIAOD"
+                        "/DoubleMuon/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016D",
+                    "dtag": "Data13TeV_DoubleMuon2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -305,9 +327,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016E-23Sep2016-v1/MINIAOD"
+                        "/DoubleMuon/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016E",
+                    "dtag": "Data13TeV_DoubleMuon2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -316,9 +338,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016F-23Sep2016-v1/MINIAOD"
+                        "/DoubleMuon/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016F",
+                    "dtag": "Data13TeV_DoubleMuon2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -327,9 +349,20 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016G-23Sep2016-v1/MINIAOD"
+                        "/DoubleMuon/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016G",
+                    "dtag": "Data13TeV_DoubleMuon2016H_ver3",
+                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
+                    "xsec": 1.0
+                },
+		 {
+                    "br": [
+                        1.0
+                    ],
+                    "dset": [
+                        "/DoubleEG/Run2016B-03Feb2017_ver2-v2/MINIAOD"
+                    ],
+                    "dtag": "Data13TeV_DoubleEG2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -338,9 +371,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016H-PromptReco-v2/MINIAOD"
+                        "/DoubleEG/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016H_v2",
+                    "dtag": "Data13TeV_DoubleEG2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -349,9 +382,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleMuon/Run2016H-PromptReco-v3/MINIAOD"
+                        "/DoubleEG/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleMu2016H_v3",
+                    "dtag": "Data13TeV_DoubleEG2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -360,9 +393,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleEG/Run2016B-23Sep2016-v3/MINIAOD"
+                        "/DoubleEG/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleElectron2016B",
+                    "dtag": "Data13TeV_DoubleEG2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -371,9 +404,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleEG/Run2016C-23Sep2016-v1/MINIAOD"
+                        "/DoubleEG/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleElectron2016C",
+                    "dtag": "Data13TeV_DoubleEG2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -382,9 +415,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleEG/Run2016D-23Sep2016-v1/MINIAOD"
+                        "/DoubleEG/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleElectron2016D",
+                    "dtag": "Data13TeV_DoubleEG2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -393,9 +426,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleEG/Run2016E-23Sep2016-v1/MINIAOD"
+                        "/DoubleEG/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleElectron2016E",
+                    "dtag": "Data13TeV_DoubleEG2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -404,45 +437,12 @@
                         1.0
                     ],
                     "dset": [
-                        "/DoubleEG/Run2016F-23Sep2016-v1/MINIAOD"
+                        "/DoubleEG/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleElectron2016F",
+                    "dtag": "Data13TeV_DoubleEG2016H_ver3",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
-                },
-                {
-                    "br": [
-                        1.0
-                    ],
-                    "dset": [
-                        "/DoubleEG/Run2016G-23Sep2016-v1/MINIAOD"
-                    ],
-                    "dtag": "Data13TeV_DoubleElectron2016G",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
-                    "xsec": 1.0
-                },
-                {
-                    "br": [
-                        1.0
-                    ],
-                    "dset": [
-                        "/DoubleEG/Run2016H-PromptReco-v2/MINIAOD"
-                    ],
-                    "dtag": "Data13TeV_DoubleElectron2016H_v2",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
-                    "xsec": 1.0
-                },
-                {
-                    "br": [
-                        1.0
-                    ],
-                    "dset": [
-                        "/DoubleEG/Run2016H-PromptReco-v3/MINIAOD"
-                    ],
-                    "dtag": "Data13TeV_DoubleElectron2016H_v3",
-                    "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
-                    "xsec": 1.0
-                }
+                }	
             ],
             "fill": 0,
             "isdata": true,
@@ -824,41 +824,6 @@
             ],
             "tag": "Top"
         },
-	{
-	 "color": 754,
-	 "data": [
-	   {
-		"br": [
-		    1.0
-		],
-		"dset": [
-		  "/VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
-		],
-		"dtag": "MC13TeV_VHToNonbb_M125_2016",
-		"xsec": 0.952
-	   },
-	   {
-	       "br": [
-	           1.0
-	       ],
-	       "dset": [
-	       "/ttHToNonbb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
-	       ],
-	       "dtag": "MC13TeV_ttHToNonbb_M125_2016",
-	       "xsec": 0.215
-	   }
-	 ],
-	 "isdata": false,
-	 "keys": [
-	 	 "2l2v_2016",
-                "2l2v_mcbased",
-                "2l2v_datadriven",
-		"2l2v_datadrivenplot",
-		"2l2v_datadriven_SM",
-                "2l2v_mcbased_SM"
-		],
-	  "tag": "H125"
-	},	
         {
             "2l2v_photonsOnly": {
                 "suffix": "reweighted"
@@ -1038,7 +1003,6 @@
                 "2l2v_2016",
                 "2l2v_mcbased",
                 "2l2v_photoncontrol",
-                "2l2v_photonsOnly",
                 "2l2v_mcbased_SM",
                 "2l2v_datadriven",
                 "2l2v_datadriven_SM"
@@ -1257,7 +1221,6 @@
                 "2l2v_2016",
                 "2l2v_mcbased",
                 "2l2v_photoncontrol",
-                "2l2v_photonsOnly",
                 "2l2v_mcbased_SM",
                 "2l2v_photonZ"
             ],
@@ -1995,20 +1958,20 @@
             ],
             "tag": "#gamma+jets"
         },
-        {
+         {
             "2l2v_photonsOnly": {
                 "suffix": "reweighted"
             },
             "color": 1,
             "data": [
-                {
+		{
                     "br": [
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016B-23Sep2016-v3/MINIAOD"
+                        "/SinglePhoton/Run2016B-03Feb2017_ver2-v2/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SinglePhoton2016B",
+                    "dtag": "Data13TeV_SinglePhoton2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -2017,7 +1980,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016C-23Sep2016-v1/MINIAOD"
+                        "/SinglePhoton/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SinglePhoton2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -2028,7 +1991,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016D-23Sep2016-v1/MINIAOD"
+                        "/SinglePhoton/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SinglePhoton2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -2039,7 +2002,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016E-23Sep2016-v1/MINIAOD"
+                        "/SinglePhoton/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SinglePhoton2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -2050,7 +2013,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016F-23Sep2016-v1/MINIAOD"
+                        "/SinglePhoton/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SinglePhoton2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -2061,7 +2024,7 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016G-23Sep2016-v1/MINIAOD"
+                        "/SinglePhoton/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
                     "dtag": "Data13TeV_SinglePhoton2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
@@ -2072,9 +2035,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016H-PromptReco-v2/MINIAOD"
+                        "/SinglePhoton/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SinglePhoton2016H_v2",
+                    "dtag": "Data13TeV_SinglePhoton2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -2083,9 +2046,9 @@
                         1.0
                     ],
                     "dset": [
-                        "/SinglePhoton/Run2016H-PromptReco-v3/MINIAOD"
+                        "/SinglePhoton/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_SinglePhoton2016H_v3",
+                    "dtag": "Data13TeV_SinglePhoton2016H_ver3",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 }
@@ -2146,7 +2109,6 @@
                         "/GluGluHToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH200toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2178,7 +2140,6 @@
                         "/GluGluHToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH200toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2210,7 +2171,6 @@
                         "/GluGluHToZZTo2L2Nu_M200_13TeV_powheg2_JHUgenV6_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH200toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2242,7 +2202,6 @@
                         "/GluGluHToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH300toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2277,7 +2236,6 @@
                         "/GluGluHToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH300toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2312,7 +2270,6 @@
                         "/GluGluHToZZTo2L2Nu_M300_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH300toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2347,7 +2304,6 @@
                         "/GluGluHToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH400toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2379,7 +2335,6 @@
                         "/GluGluHToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH400toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2411,7 +2366,6 @@
                         "/GluGluHToZZTo2L2Nu_M400_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH400toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2443,7 +2397,6 @@
                         "/GluGluHToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2475,7 +2428,6 @@
                         "/GluGluHToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2507,7 +2459,6 @@
                         "/GluGluHToZZTo2L2Nu_M500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2539,7 +2490,6 @@
                         "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                   
                     "xsec": 1.0
                 }
             ],
@@ -2571,7 +2521,6 @@
                         "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2603,7 +2552,6 @@
                         "/GluGluHToZZTo2L2Nu_M600_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH600toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2635,7 +2583,6 @@
                         "/GluGluHToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH700toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2667,7 +2614,6 @@
                         "/GluGluHToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH700toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2699,7 +2645,6 @@
                         "/GluGluHToZZTo2L2Nu_M700_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH700toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                   
                     "xsec": 1.0
                 }
             ],
@@ -2731,7 +2676,6 @@
                         "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2763,7 +2707,6 @@
                         "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2795,7 +2738,6 @@
                         "/GluGluHToZZTo2L2Nu_M800_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH800toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2827,7 +2769,6 @@
                         "/GluGluHToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH900toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2862,7 +2803,6 @@
                         "/GluGluHToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH900toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2897,7 +2837,6 @@
                         "/GluGluHToZZTo2L2Nu_M900_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH900toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                   
                     "xsec": 1.0
                 }
             ],
@@ -2932,7 +2871,6 @@
                         "/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2964,7 +2902,6 @@
                         "/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -2996,7 +2933,6 @@
                         "/GluGluHToZZTo2L2Nu_M1000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3028,7 +2964,6 @@
                         "/GluGluHToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3060,7 +2995,6 @@
                         "/GluGluHToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3092,7 +3026,6 @@
                         "/GluGluHToZZTo2L2Nu_M1500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH1500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3124,7 +3057,6 @@
                         "/GluGluHToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                   
                     "xsec": 1.0
                 }
             ],
@@ -3159,7 +3091,6 @@
                         "/GluGluHToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3194,7 +3125,6 @@
                         "/GluGluHToZZTo2L2Nu_M2000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3229,7 +3159,6 @@
                         "/GluGluHToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2500toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3264,7 +3193,6 @@
                         "/GluGluHToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2500toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                   
                     "xsec": 1.0
                 }
             ],
@@ -3299,7 +3227,6 @@
                         "/GluGluHToZZTo2L2Nu_M2500_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH2500toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                 
                     "xsec": 1.0
                 }
             ],
@@ -3334,7 +3261,6 @@
                         "/GluGluHToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH3000toZZto2L2Nu_SOnly_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
@@ -3369,7 +3295,6 @@
                         "/GluGluHToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH3000toZZto2L2Nu_BOnly_MELA_powheg_2016",
-                 
                     "xsec": 1.0
                 }
             ],
@@ -3404,7 +3329,6 @@
                         "/GluGluHToZZTo2L2Nu_M3000_13TeV_powheg2_JHUgenV698_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_GGtoH3000toZZto2L2Nu_SandBandInterf_MELA_powheg_2016",
-                  
                     "xsec": 1.0
                 }
             ],
