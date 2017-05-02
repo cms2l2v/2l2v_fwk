@@ -362,7 +362,7 @@
                     "dset": [
                         "/DoubleEG/Run2016B-03Feb2017_ver2-v2/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016B_ver2",
+                    "dtag": "Data13TeV_DoubleEle2016B_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -373,7 +373,7 @@
                     "dset": [
                         "/DoubleEG/Run2016C-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016C",
+                    "dtag": "Data13TeV_DoubleEle2016C",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -384,7 +384,7 @@
                     "dset": [
                         "/DoubleEG/Run2016D-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016D",
+                    "dtag": "Data13TeV_DoubleEle2016D",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -395,7 +395,7 @@
                     "dset": [
                         "/DoubleEG/Run2016E-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016E",
+                    "dtag": "Data13TeV_DoubleEle2016E",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -406,7 +406,7 @@
                     "dset": [
                         "/DoubleEG/Run2016F-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016F",
+                    "dtag": "Data13TeV_DoubleEle2016F",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -417,7 +417,7 @@
                     "dset": [
                         "/DoubleEG/Run2016G-03Feb2017-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016G",
+                    "dtag": "Data13TeV_DoubleEle2016G",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -428,7 +428,7 @@
                     "dset": [
                         "/DoubleEG/Run2016H-03Feb2017_ver2-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016H_ver2",
+                    "dtag": "Data13TeV_DoubleEle2016H_ver2",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 },
@@ -439,7 +439,7 @@
                     "dset": [
                         "/DoubleEG/Run2016H-03Feb2017_ver3-v1/MINIAOD"
                     ],
-                    "dtag": "Data13TeV_DoubleEG2016H_ver3",
+                    "dtag": "Data13TeV_DoubleEle2016H_ver3",
                     "lumiMask": "$CMSSW_BASE/src/UserCode/llvv_fwk/data/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt",
                     "xsec": 1.0
                 }	
