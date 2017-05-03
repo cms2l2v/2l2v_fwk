@@ -1002,7 +1002,7 @@ int main(int argc, char* argv[])
 
           mon.fillHisto("metFilter_eventflow", "", metFilterValue, weight);
 
-          bool passTrigger        = mumuTrigger||muTrigger||eeTrigger||eTrigger||emuTrigger||photonTrigger;
+          bool passTrigger        = mumuTrigger||muTrigger||eeTrigger||highPTeeTrigger||eTrigger||emuTrigger||photonTrigger;
 
           if(  mumuTrigger)mon.fillHisto("trigger", "raw", 0 , weight);
           if(    muTrigger)mon.fillHisto("trigger", "raw", 1 , weight);
