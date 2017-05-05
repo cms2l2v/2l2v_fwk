@@ -1161,10 +1161,10 @@ int main(int argc, char* argv[])
              }
              if ( (isMC_GJet) && (!gPromptFound) ) continue; //reject event
              if ( (isMC_QCD) && gPromptFound ) continue; //reject event
-	     //	     if ( ( isMC_Wlnu_inclusive || isMC_Wlnu_HT100) && gPromptFound ) continue;
-             if ( (isMC_WGToLNuG) && (!gPromptFound) ) continue; 
-             if ( (isMC_ZNuNuGJets) && (!gPromptFound) ) continue; 
-             //if ( (isMC_ZJetsToNuNu) && gPromptFound ) continue;
+	     if ( ( isMC_Wlnu_inclusive || isMC_Wlnu_HT100) && gPromptFound ) continue;
+	     //             if ( (isMC_WGToLNuG) && (!gPromptFound) ) continue; 
+	     // if ( (isMC_ZNuNuGJets) && (!gPromptFound) ) continue; 
+             if ( (isMC_ZJetsToNuNu) && gPromptFound ) continue;
          }
 
   	 //Electroweak corrections to ZZ and WZ simulations
