@@ -1597,7 +1597,7 @@
                         "/ZNuNuGJets_MonoPhoton_PtG-40to130_TuneCUETP8M1_13TeV-madgraph/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_ZNuNuGJets_PtG-40to130_2016",
-                    "xsec": 5.632 ,
+                    "xsec": 2.816 ,
 		    "split": 50
                 },
                 {
@@ -1608,7 +1608,7 @@
                         "/ZNuNuGJets_MonoPhoton_PtG-130_TuneCUETP8M1_13TeV-madgraph/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM"
                     ],
                     "dtag": "MC13TeV_ZNuNuGJets_PtG-130_2016",
-                    "xsec": 0.446 ,
+                    "xsec": 0.223 ,
 		    "split": 8
                 }
             ],

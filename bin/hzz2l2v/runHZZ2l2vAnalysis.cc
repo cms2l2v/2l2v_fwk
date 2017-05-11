@@ -1068,7 +1068,7 @@ int main(int argc, char* argv[])
           fwlite::Handle<EcalRecHitCollection> recHitCollectionEBHandle;
           fwlite::Handle<EcalRecHitCollection> recHitCollectionEEHandle;
           recHitCollectionEBHandle.getByLabel(ev, "reducedEgamma","reducedEBRecHits");
-          recHitCollectionEEHandle.getByLabel(ev, "reducedEgamma","reducedEBRecHits");
+          recHitCollectionEEHandle.getByLabel(ev, "reducedEgamma","reducedEERecHits");
 
           pat::JetCollection jets;
           fwlite::Handle< pat::JetCollection > jetsHandle;
@@ -1176,6 +1176,42 @@ int main(int argc, char* argv[])
 
        	 //final event weight
        	 weight *= ewkCorrectionsWeight;
+
+				 //LO to NLO k-factor for ZNuNuGamma (ref: fig 16 (bottom right) of http://link.springer.com/article/10.1007%2FJHEP02%282016%29057)
+				 //FIXME Careful, this has to be removed once me move to a NLO version of this sample
+				 double kFactor_ZNuNuGWeight = 1.;
+				 if(isMC_ZNuNuGJets){
+				 	 //reconstruct the gen transverse energy
+				 	 reco::GenParticleCollection genNeutrinosFromZ;
+					 for (unsigned int i =0; i < gen.size(); i++){
+      		   reco::GenParticle genParticle = gen[i];
+             if(fabs(genParticle.pdgId())==12 || fabs(genParticle.pdgId())==14 || fabs(genParticle.pdgId())==16){
+               if(fabs(genParticle.mother()->pdgId())==23 && genParticle.mother()->status()==62) genNeutrinosFromZ.push_back(genParticle); //neutrino originating directly from Z boson
+             }
+           }
+           std::sort(genNeutrinosFromZ.begin(), genNeutrinosFromZ.end(), utils::sort_CandidatesByPt);
+           if(genNeutrinosFromZ.size() < 2) continue;
+           LorentzVector genZnunuBoson;
+           genZnunuBoson = genNeutrinosFromZ[0].p4() + genNeutrinosFromZ[1].p4(); //Z from neutrinos at gen lvl
+				 	
+				 	 //Apply LO to NLO k-factor for ZNuNuGamma (ref: fig 16 (bottom right) of http://link.springer.com/article/10.1007%2FJHEP02%282016%29057)
+				 	 if(      genZnunuBoson.Pt() > 960 ) kFactor_ZNuNuGWeight = 2.05;
+				 	 else if( genZnunuBoson.Pt() > 920 ) kFactor_ZNuNuGWeight = 2.10;
+				 	 else if( genZnunuBoson.Pt() > 880 ) kFactor_ZNuNuGWeight = 2.13;
+				 	 else if( genZnunuBoson.Pt() > 800 ) kFactor_ZNuNuGWeight = 2.16;
+				 	 else if( genZnunuBoson.Pt() > 440 ) kFactor_ZNuNuGWeight = 2.20;
+				 	 else if( genZnunuBoson.Pt() > 400 ) kFactor_ZNuNuGWeight = 2.16;
+				 	 else if( genZnunuBoson.Pt() > 360 ) kFactor_ZNuNuGWeight = 2.13;
+				 	 else if( genZnunuBoson.Pt() > 320 ) kFactor_ZNuNuGWeight = 2.07;
+				 	 else if( genZnunuBoson.Pt() > 280 ) kFactor_ZNuNuGWeight = 2.03;
+				 	 else if( genZnunuBoson.Pt() > 240 ) kFactor_ZNuNuGWeight = 1.96;
+				 	 else if( genZnunuBoson.Pt() > 200 ) kFactor_ZNuNuGWeight = 1.90;
+				 	 else if( genZnunuBoson.Pt() > 160 ) kFactor_ZNuNuGWeight = 1.75;
+				 	 else if( genZnunuBoson.Pt() > 120 ) kFactor_ZNuNuGWeight = 1.50;
+				 	 else if( genZnunuBoson.Pt() > 100 ) kFactor_ZNuNuGWeight = 1.32;
+				   else kFactor_ZNuNuGWeight = 1.;
+				 }
+				 weight *= kFactor_ZNuNuGWeight;
 
     	 //NNLO corrections on ZZ2l2nu
     	 double ZZ_NNLOcorrectionsWeight =1.;
