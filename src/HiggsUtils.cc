@@ -758,6 +758,7 @@ namespace higgs{
 	  	}
 	}*/
 
+	
         return finalweight;
 
     }
@@ -812,47 +813,47 @@ namespace higgs{
         cpWeight_MapggH[5.0][3000] = 0.0000051082914848699;
 
 	//Filling ContinuumWeights VBF
-        cpWeight_MapVBF[100.0][200] = 0.0001902142475485906; 
-        cpWeight_MapVBF[100.0][300] = 0.0071119393431580153;
-        cpWeight_MapVBF[100.0][400] = 0.0037380406779454344;
-        cpWeight_MapVBF[100.0][500] = 0.0018033658197594347;
-        cpWeight_MapVBF[100.0][600] = 0.0012047405603543883;
-        cpWeight_MapVBF[100.0][700] = 0.0002288696480631355;
-        cpWeight_MapVBF[100.0][800] = 0.0006202547281332641;
-        cpWeight_MapVBF[100.0][900] = 0.0004036231039882196;
-        cpWeight_MapVBF[100.0][1000] = 0.0003802346348664610;
-        cpWeight_MapVBF[100.0][1500] = 0.0001252650065182828;
-        cpWeight_MapVBF[100.0][2000] = 0.0000866233482386871;
-        cpWeight_MapVBF[100.0][2500] = 0.0000754037741501189;
-        cpWeight_MapVBF[100.0][3000] = 0.0000322500796841172;
+        cpWeight_MapVBF[100.0][200] = 0.0000988541685841062; 
+        cpWeight_MapVBF[100.0][300] = 0.0156497585728107742;
+        cpWeight_MapVBF[100.0][400] = 0.0065885676955840574;
+        cpWeight_MapVBF[100.0][500] = 0.0029627096904723373;
+        cpWeight_MapVBF[100.0][600] = 0.0028489759402046014;
+        cpWeight_MapVBF[100.0][700] = 0.0017261912468847672;
+        cpWeight_MapVBF[100.0][800] = 0.0011086243396082442;
+        cpWeight_MapVBF[100.0][900] = 0.0007438900405574646;
+        cpWeight_MapVBF[100.0][1000] = 0.0007343592746045676;
+        cpWeight_MapVBF[100.0][1500] = 0.0002057277715874602;
+        cpWeight_MapVBF[100.0][2000] = 0.0001122712310492367;
+        cpWeight_MapVBF[100.0][2500] = 0.0000927441982705444;
+        cpWeight_MapVBF[100.0][3000] = 0.0000593464387931730;
 
-        cpWeight_MapVBF[10.0][200] = 0.0001902142475485906; 
-        cpWeight_MapVBF[10.0][300] = 0.0071119393431580153;
-        cpWeight_MapVBF[10.0][400] = 0.0037380406779454344;
-        cpWeight_MapVBF[10.0][500] = 0.0018033658197594347;
-        cpWeight_MapVBF[10.0][600] = 0.0012047405603543883;
-        cpWeight_MapVBF[10.0][700] = 0.0002288696480631355;
-        cpWeight_MapVBF[10.0][800] = 0.0006202547281332641;
-        cpWeight_MapVBF[10.0][900] = 0.0004036231039882196;
-        cpWeight_MapVBF[10.0][1000] = 0.0003802346348664610;
-        cpWeight_MapVBF[10.0][1500] = 0.0001252650065182828;
-        cpWeight_MapVBF[10.0][2000] = 0.0000866233482386871;
-        cpWeight_MapVBF[10.0][2500] = 0.0000754037741501189;
-        cpWeight_MapVBF[10.0][3000] = 0.0000322500796841172;
+        cpWeight_MapVBF[10.0][200] = 0.0000988541685841062;
+        cpWeight_MapVBF[10.0][300] = 0.0156497585728107742;
+        cpWeight_MapVBF[10.0][400] = 0.0065885676955840574;
+        cpWeight_MapVBF[10.0][500] = 0.0029627096904723373;
+        cpWeight_MapVBF[10.0][600] = 0.0028489759402046014;
+        cpWeight_MapVBF[10.0][700] = 0.0017261912468847672;
+        cpWeight_MapVBF[10.0][800] = 0.0011086243396082442;
+        cpWeight_MapVBF[10.0][900] = 0.0007438900405574646;
+        cpWeight_MapVBF[10.0][1000] = 0.0007343592746045676;
+        cpWeight_MapVBF[10.0][1500] = 0.0002057277715874602;
+        cpWeight_MapVBF[10.0][2000] = 0.0001122712310492367;
+        cpWeight_MapVBF[10.0][2500] = 0.0000927441982705444;
+        cpWeight_MapVBF[10.0][3000] = 0.0000593464387931730;
 
-        cpWeight_MapVBF[5.0][200] = 0.0001902142475485906;
-        cpWeight_MapVBF[5.0][300] = 0.0071119393431580153;
-        cpWeight_MapVBF[5.0][400] = 0.0037380406779454344;
-        cpWeight_MapVBF[5.0][500] = 0.0018033658197594347;
-        cpWeight_MapVBF[5.0][600] = 0.0012047405603543883;
-        cpWeight_MapVBF[5.0][700] = 0.0002288696480631355;
-        cpWeight_MapVBF[5.0][800] = 0.0006202547281332641;
-        cpWeight_MapVBF[5.0][900] = 0.0004036231039882196;
-        cpWeight_MapVBF[5.0][1000] = 0.0003802346348664610;
-        cpWeight_MapVBF[5.0][1500] = 0.0001252650065182828;
-        cpWeight_MapVBF[5.0][2000] = 0.0000866233482386871;
-        cpWeight_MapVBF[5.0][2500] = 0.0000754037741501189;
-        cpWeight_MapVBF[5.0][3000] = 0.0000322500796841172;
+        cpWeight_MapVBF[5.0][200] = 0.0000988541685841062;
+        cpWeight_MapVBF[5.0][300] = 0.0156497585728107742;
+        cpWeight_MapVBF[5.0][400] = 0.0065885676955840574;
+        cpWeight_MapVBF[5.0][500] = 0.0029627096904723373;
+        cpWeight_MapVBF[5.0][600] = 0.0028489759402046014;
+        cpWeight_MapVBF[5.0][700] = 0.0017261912468847672;
+        cpWeight_MapVBF[5.0][800] = 0.0011086243396082442;
+        cpWeight_MapVBF[5.0][900] = 0.0007438900405574646;
+        cpWeight_MapVBF[5.0][1000] = 0.0007343592746045676;
+        cpWeight_MapVBF[5.0][1500] = 0.0002057277715874602;
+        cpWeight_MapVBF[5.0][2000] = 0.0001122712310492367;
+        cpWeight_MapVBF[5.0][2500] = 0.0000927441982705444;
+        cpWeight_MapVBF[5.0][3000] = 0.0000593464387931730;
 
 	if(isVBF){ continuumWeight = cpWeight_MapVBF[CP][heavyMass]; } else { continuumWeight = cpWeight_MapggH[CP][heavyMass]; }
 	return continuumWeight;
