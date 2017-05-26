@@ -26,6 +26,7 @@
 #define WJETS_ONLY true
 #define METHOD_ONLY true
 #define GAMMASTATS_ONLY true
+//Set to false if InstrMET not in root file
 #define InstrMET_control_plots true
 
 void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int projectionBin_arg){
