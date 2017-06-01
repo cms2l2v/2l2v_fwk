@@ -218,7 +218,7 @@ TGraph* getContour(TH2D* inputHisto, TCanvas* goodCanvas, int Width, int Style, 
 
 int mapIndex(double CP, double BR){return CP<=0?-1:(int)(CP*100+BR*10);}
 
-void finalLimitPlot_NewWidth(){
+void finalLimitPlot_WideWidth(){
    setTDRStyle();  
    gStyle->SetPadTopMargin   (0.06);
    gStyle->SetPadBottomMargin(0.12);
@@ -259,9 +259,9 @@ void finalLimitPlot_NewWidth(){
    std::map<int, int> colorMap;
    colorMap[mapIndex(100.0, 0.0)] = 1;
    colorMap[mapIndex(10.0, 0.0)] = 2;
-   colorMap[mapIndex(0.0, 0.0)] = 4;
+   colorMap[mapIndex(5.0, 0.0)] = 4;
 
-   std::vector<double> CPs = {10.0,100.0}; //{0.0,10.0,100.0};
+   std::vector<double> CPs = {5.0,10.0,100.0}; 
    std::vector<double> BRs = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
@@ -346,7 +346,7 @@ void finalLimitPlot_NewWidth(){
          c1->SetLogy(true);
 	 c1->SetGridx();
 	 c1->SetGridy();
-         framework = new TH1F("Graph","Graph",1,190,3000);
+         framework = new TH1F("Graph","Graph",1,190, 3000);
          framework->SetStats(false);
          framework->SetTitle("");
          framework->GetXaxis()->SetTitle("M_{H} [GeV]");
@@ -354,8 +354,8 @@ void finalLimitPlot_NewWidth(){
             framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
             framework->GetYaxis()->SetRangeUser(1E1,1E7);
          }else{
-            framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ #rightarrow 2l2#nu) (fb)").c_str());
-            framework->GetYaxis()->SetRangeUser(1E-2,1E5);
+            framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ ) (pb)").c_str());
+            framework->GetYaxis()->SetRangeUser(1E-3,1E3);
          }
          framework->GetYaxis()->SetTitleOffset(1.40);
          framework->Draw();
@@ -443,7 +443,7 @@ void finalLimitPlot_NewWidth(){
          //if(LEGTh)LEGTh  ->Draw("same");
 
 
-         utils::root::DrawPreliminary( 36814.143, 13, gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin()+0.03);
+         utils::root::DrawPreliminary( 35921.143, 13, gPad->GetLeftMargin(),gPad->GetBottomMargin(),gPad->GetRightMargin(),gPad->GetTopMargin()+0.03);
 //         if(observed==0){
 
          gPad->RedrawAxis();
