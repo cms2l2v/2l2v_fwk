@@ -2583,11 +2583,25 @@ int main(int argc, char* argv[])
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                   TH1* histo = unc->second;
                   if(!histo)continue;
+
+          	  if(jetBin.Contains("vbf")){
+                	double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 3000};
+                	int nbins=sizeof(xbins)/sizeof(double);
+                	unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
+                	utils::root::fixExtremities(unc->second, false, true);
+          	  }else if( jetBin.Contains("eq0jets") || jetBin.Contains("geq1jets") ){
+                	double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
+                	int nbins=sizeof(xbins)/sizeof(double);
+                	unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
+                	utils::root::fixExtremities(unc->second, false, true);
+          	  }
+
+		  //Old Binning
                   //double xbins[] = {150, 300, 450, 600, 850, 1100, 1600, 2100, 3000}; 
-                  double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 1850, 2100, 2600, 3000}; 
-                  int nbins=sizeof(xbins)/sizeof(double);
-                  unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
-                  utils::root::fixExtremities(unc->second, true, true);
+                  //double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 1850, 2100, 2600, 3000}; 
+                  //int nbins=sizeof(xbins)/sizeof(double);
+                  //unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
+                  //utils::root::fixExtremities(unc->second, true, true);
                  }
               }
            }
