@@ -228,6 +228,29 @@ if [[ $step > 2.999 && $step < 4 ]]; then
         runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outDir $PLOTSDIR/datadriven/       --outFile ${PLOTTER}.root  --json $JSON --no2D --plotExt .png --plotExt .pdf  --key 2l2v_datadrivenplot --fileOption READ --showUnc 0.06 --rebin -1 --only "(all|ll|mumu|ee|emu)(|eq0jets|geq1jets|vbf)_(mtSyst|metSyst)" $arguments 
     fi
 
+    if [[ $step == 3.30 ]]; then  # make plots and combined root files
+        echo "MAKE SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI FOR LIMIT STUDIES"
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forLimits.root  --json $JSON --noPlot --fileOption UPDATE --key 2l2v_mcbased --only "(all_optim_systs|all_optim_cut|(mumu|ee|emu|gamma)(|eq0jets|geq1jets|vbf)_(mt)(_shapes|_shapes_NRBctrl)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)(|_scale_umetup|_scale_umetdown|_res_jup|_res_jdown|_scale_jup|_scale_jdown|_scale_mup|_scale_mdown|_scale_eup|_scale_edown|_puup|_pudown|_eff_bup|_eff_bdown|_lepveto|_th_pdf|_th_alphas|_th_ewkup|_th_ewkdown))" $arguments
+
+        cp  ${PLOTTER}_forLimits.root  ${PLOTTER}_forLimits_MCOnly.root
+
+    fi
+
+    if [[ $step == 3.31 ]]; then
+        echo ""
+
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forLimits.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_photoncontrol --only "(all_optim_systs|all_optim_cut|(mumu|ee|emu|gamma)(|eq0jets|geq1jets|vbf)_(mt)(_shapes|_shapes_NRBctrl)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)(|_scale_umetup|_scale_umetdown|_res_jup|_res_jdown|_scale_jup|_scale_jdown|_scale_mup|_scale_mdown|_scale_eup|_scale_edown|_puup|_pudown|_eff_bup|_eff_bdown|_lepveto|_th_pdf|_th_alphas|_th_ewkup|_th_ewkdown))"  $arguments        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forLimits.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_photonsOnly  --only "(all_optim_systs|all_optim_cut|(mumu|ee|emu|gamma)(|eq0jets|geq1jets|vbf)_(mt)(_shapes|_shapes_NRBctrl)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)(|_scale_umetup|_scale_umetdown|_res_jup|_res_jdown|_scale_jup|_scale_jdown|_scale_mup|_scale_mdown|_scale_eup|_scale_edown|_puup|_pudown|_eff_bup|_eff_bdown|_lepveto|_th_pdf|_th_alphas|_th_ewkup|_th_ewkdown))"   $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forLimits.root  --json $JSON --noPlot --fileOption UPDATE   --key genuineMet   --only "(all_optim_systs|all_optim_cut|(mumu|ee|emu|gamma)(|eq0jets|geq1jets|vbf)_(mt)(_shapes|_shapes_NRBctrl)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)(|_scale_umetup|_scale_umetdown|_res_jup|_res_jdown|_scale_jup|_scale_jdown|_scale_mup|_scale_mdown|_scale_eup|_scale_edown|_puup|_pudown|_eff_bup|_eff_bdown|_lepveto|_th_pdf|_th_alphas|_th_ewkup|_th_ewkdown))"   $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forLimits.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadriven  --only "(all_optim_systs|all_optim_cut|(mumu|ee|emu|gamma)(|eq0jets|geq1jets|vbf)_(mt)(_shapes|_shapes_NRBctrl)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)(|_scale_umetup|_scale_umetdown|_res_jup|_res_jdown|_scale_jup|_scale_jdown|_scale_mup|_scale_mdown|_scale_eup|_scale_edown|_puup|_pudown|_eff_bup|_eff_bdown|_lepveto|_th_pdf|_th_alphas|_th_ewkup|_th_ewkdown))"  $arguments
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forLimits.root  --json $JSON --noPlot --fileOption UPDATE   --key 2l2v_datadrivenplot  --only "(all_optim_systs|all_optim_cut|(mumu|ee|emu|gamma)(|eq0jets|geq1jets|vbf)_(mt)(_shapes|_shapes_NRBctrl)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)(|_scale_umetup|_scale_umetdown|_res_jup|_res_jdown|_scale_jup|_scale_jdown|_scale_mup|_scale_mdown|_scale_eup|_scale_edown|_puup|_pudown|_eff_bup|_eff_bdown|_lepveto|_th_pdf|_th_alphas|_th_ewkup|_th_ewkdown))"  $arguments
+    fi
+
+    if [[ $step == 3.32 ]]; then  # make plots and combined root files
+        echo "MAKE SUMMARY ROOT FILE, BASED ON AN INTEGRATED LUMINOSITY OF $INTLUMI TO COMPUTE MELA XSEC"
+        runPlotter --iEcm 13 --iLumi $INTLUMI --inDir $RESULTSDIR/ --outFile ${PLOTTER}_forMELAXSec.root  --json $JSON --noPlot --fileOption UPDATE --key 2l2v_mcbased --only "(all_higgsMass_shape)(|_cp100.00_brn0.00|_cp10.00_brn0.00|_cp5.00_brn0.00)" $arguments
+
+    fi
+
 
 fi
 
