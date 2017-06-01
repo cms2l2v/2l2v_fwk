@@ -974,9 +974,6 @@
             "tag": "W#rightarrow l#nu"
         },
         {
-            "2l2v_photonsOnly": {
-                "suffix": "reweighted"
-            },
             "color": 833,
             "data": [
                 {
@@ -1192,9 +1189,6 @@
             "tag": "Z#rightarrow #tau#tau, HT>100"
         },
         {
-            "2l2v_photonsOnly": {
-                "suffix": "reweighted"
-            },
             "color": 831,
             "data": [
                 {
@@ -2082,7 +2076,7 @@
            "isinvisible":true,      
            "isdata":false,
            "color":41,
-     	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Top_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0} ]
+     	"mixing":[{"tag":"W#gamma #rightarrow l#nu#gamma_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow ll#gamma_reweighted", "scale":1.0}, {"tag":"Z#rightarrow #nu#nu_reweighted", "scale":1.0}, {"tag":"W#rightarrow l#nu_reweighted", "scale":1.0}, {"tag":"Z#gamma #rightarrow #nu#nu#gamma_reweighted", "scale":1.0}, {"tag":"Top+#gamma_reweighted", "scale":1.0} ]
          },
          {
            "tag":"Genuine (ewk) MET",

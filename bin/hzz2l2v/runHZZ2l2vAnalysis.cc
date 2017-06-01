@@ -456,8 +456,9 @@ int main(int argc, char* argv[])
   h->GetXaxis()->SetBinLabel(5,"3^{rd}-lepton veto");
   h->GetXaxis()->SetBinLabel(6,"b-veto");
   h->GetXaxis()->SetBinLabel(7,"#Delta #phi(jet,E_{T}^{miss})>0.5");
-  h->GetXaxis()->SetBinLabel(8,"E_{T}^{miss}>80");
-  h->GetXaxis()->SetBinLabel(9,"E_{T}^{miss}>125");
+  h->GetXaxis()->SetBinLabel(8,"#Delta #phi(Z/#gamma,E_{T}^{miss})>0.5");
+  h->GetXaxis()->SetBinLabel(9,"E_{T}^{miss}>80");
+  h->GetXaxis()->SetBinLabel(10,"E_{T}^{miss}>125");
 
 
   h=(TH1F*) mon.addHistogram( new TH1F ("trigger", ";;Events", 10,0,10) );
@@ -1852,6 +1853,8 @@ int main(int argc, char* argv[])
                bool passBtags(nbtags==0);
                bool passMinDphijmet( njets==0 || mindphijmet>0.5);
 
+	       double b_dphi=fabs(deltaPhi(boson.phi(),imet.phi())); 
+	       bool passDphi(b_dphi>0.5);
 
                if(dilId==22){
                    passMass=photonTrigger;
@@ -1976,121 +1979,127 @@ int main(int argc, char* argv[])
                           if(passMinDphijmet){
                             mon.fillHisto("eventflow",tags,6,weight);
 
-                            //this one is used to sample the boson mass: cuts may shape Z lineshape
-                            mon.fillHisto("qmass",       tags, boson.mass(),weight);
-                            mon.fillHisto( "njets",tags,njets,weight);
+			    mon.fillHisto( "dphi_boson_met",tags,b_dphi,weight);          
+			    if (imet.pt()>125) mon.fillHisto( "dphi_boson_met125",tags,b_dphi,weight);   
 
-                            double b_dphi=fabs(deltaPhi(boson.phi(),imet.phi()));
-                            mon.fillHisto( "metphi",tags,imet.phi(),weight);
-                            mon.fillHisto( "metphiUnCor",tags,met.corP4(pat::MET::METCorrectionLevel::Type1).phi(),weight);
-                            mon.fillHisto( "bosonnvtx",tags,vtx.size(),weight);
-			    mon.fillHisto( "bosonrho",tags,rho,weight);
+			    if (passDphi) {
+			      mon.fillHisto("eventflow",tags,7,weight);
 
-                            mon.fillHisto( "bosoneta",tags,boson.eta(),weight);
-                            mon.fillHisto( "bosonphi",tags,boson.phi(),weight);
-                            mon.fillHisto( "bosonphiHG",tags,boson.phi(),weight);
-                            mon.fillHisto( "dphi_boson_met",tags,b_dphi,weight);
+			      //this one is used to sample the boson mass: cuts may shape Z lineshape
+			      mon.fillHisto("qmass",       tags, boson.mass(),weight);
+			      mon.fillHisto( "njets",tags,njets,weight);
 
-                            mon.fillHisto( "met",tags,imet.pt(),weight,true);
-                            mon.fillHisto( "metpuppi",tags,puppimet.pt(),weight,true);
-                            mon.fillHisto( "balance",tags,imet.pt()/boson.pt(),weight);
+			      //   double b_dphi=fabs(deltaPhi(boson.phi(),imet.phi()));
+			      mon.fillHisto( "metphi",tags,imet.phi(),weight);
+			      mon.fillHisto( "metphiUnCor",tags,met.corP4(pat::MET::METCorrectionLevel::Type1).phi(),weight);
+			      mon.fillHisto( "bosonnvtx",tags,vtx.size(),weight);
+			      mon.fillHisto( "bosonrho",tags,rho,weight);
+			      
+			      mon.fillHisto( "bosoneta",tags,boson.eta(),weight);
+			      mon.fillHisto( "bosonphi",tags,boson.phi(),weight);
+			      mon.fillHisto( "bosonphiHG",tags,boson.phi(),weight);
+			      
+			      mon.fillHisto( "met",tags,imet.pt(),weight,true);
+			      mon.fillHisto( "metpuppi",tags,puppimet.pt(),weight,true);
+			      mon.fillHisto( "balance",tags,imet.pt()/boson.pt(),weight);
+			      
+			      TVector2 met2(imet.px(),imet.py());
+			      TVector2 boson2(boson.px(), boson.py());
+			      double axialMet(boson2*met2); axialMet/=-boson.pt();
+			      mon.fillHisto( "axialmet",tags,axialMet,weight);
+			      
+			      mon.fillHisto( "mt",tags,mt,weight,true);
+			      
+			      if(imet.pt()>optim_Cuts1_met[0]) {
+				mon.fillHisto( "mtcheckpoint",  tags, mt,       weight, true);
+				mon.fillHisto( "metcheckpoint", tags, imet.pt(), weight, true);
+			      }
+			      
+			      if(imet.pt()>80){
+				mon.fillHisto("eventflow",tags,8,weight);
+				mon.fillHisto( "mtNM1",tags,mt,weight,true);
+				mon.fillHisto( "balanceNM1",tags,imet.pt()/boson.pt(),weight);
+				mon.fillHisto( "axialmetNM1",tags,axialMet,weight);
+			      }
+			      
+			      if(imet.pt()>125){
+				mon.fillHisto("eventflow",tags,9,weight);
+				
+				mon.fillHisto( "metfinal",tags,imet.pt(),weight,true);
+				mon.fillHisto( "mtfinal",tags,mt,weight,true);
+				mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
+				mon.fillHisto( "njetsfinal",tags,njets,weight);
 
-                            TVector2 met2(imet.px(),imet.py());
-                            TVector2 boson2(boson.px(), boson.py());
-                            double axialMet(boson2*met2); axialMet/=-boson.pt();
-                            mon.fillHisto( "axialmet",tags,axialMet,weight);
+				if(!isMC){
+				  char buffer[1024];
+				  sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer;
+				  sprintf(buffer, " - nLep=%2i nSoftLept=%2i nPhotons=%2i  nJets=%2i\n", int(selLeptons.size()), int(extraLeptons.size()), int(selPhotons.size()), int(selJets.size())  ); debugText+=buffer;
+				  sprintf(buffer, " - MET=%8.2f mT=%8.2f nvtx=%3i\n", imet.pt(), mt, int(vtx.size()) ); debugText+=buffer;
+				  sprintf(buffer, " - MET type1XY=%8.2f type1=%8.2f uncorrected=%8.2f\n", met.corP4(pat::MET::METCorrectionLevel::Type1XY).pt(), met.corP4(pat::MET::METCorrectionLevel::Type1).pt(), met.corP4(pat::MET::METCorrectionLevel::Raw).pt() ); debugText+=buffer;
+				  sprintf(buffer, " - LeptonScale changes on MET mu=%8.2f  el=%8.2f\n", muDiff.pt(), elDiff.pt() ); debugText+=buffer;
+				  sprintf(buffer, " - Z pT=%6.2f eta=%+6.2f phi=%+6.2f\n", boson.pt(), boson.eta(), boson.phi() ); debugText+=buffer;
+				  if(selLeptons.size()>0)sprintf(buffer, " - lep0 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[0].pdgId(), selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[0].phi()  ); debugText+=buffer;
+				  if(selLeptons.size()>1)sprintf(buffer, " - lep1 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[1].pdgId(), selLeptons[1].pt(), selLeptons[1].eta(), selLeptons[1].phi()  ); debugText+=buffer;
+				}
+			      }
 
-                            mon.fillHisto( "mt",tags,mt,weight,true);
-
-                            if(imet.pt()>optim_Cuts1_met[0]) {
-                               mon.fillHisto( "mtcheckpoint",  tags, mt,       weight, true);
-                               mon.fillHisto( "metcheckpoint", tags, imet.pt(), weight, true);
-                            }
-
-                            if(imet.pt()>80){
-                              mon.fillHisto("eventflow",tags,7,weight);
-                              mon.fillHisto( "mtNM1",tags,mt,weight,true);
-                              mon.fillHisto( "balanceNM1",tags,imet.pt()/boson.pt(),weight);
-                              mon.fillHisto( "axialmetNM1",tags,axialMet,weight);
-                            }
-
-                            if(imet.pt()>125){
-                              mon.fillHisto("eventflow",tags,8,weight);
-
-                              mon.fillHisto( "metfinal",tags,imet.pt(),weight,true);
-                              mon.fillHisto( "mtfinal",tags,mt,weight,true);
-                              mon.fillHisto( "mindphijmetfinal",tags,mindphijmet,weight);
-                              mon.fillHisto( "njetsfinal",tags,njets,weight);
-			      mon.fillHisto( "dphi_boson_met125",tags,b_dphi,weight);
-                              if(!isMC){
-                                 char buffer[1024];
-                                 sprintf(buffer, "\ncat=%s %9i:%6i:%9lli @ %50s\n",  tags[tags.size()-1].Data(), ev.eventAuxiliary().run(), ev.eventAuxiliary().luminosityBlock(), ev.eventAuxiliary().event(), urls[f].c_str() );  debugText+=buffer;
-                                 sprintf(buffer, " - nLep=%2i nSoftLept=%2i nPhotons=%2i  nJets=%2i\n", int(selLeptons.size()), int(extraLeptons.size()), int(selPhotons.size()), int(selJets.size())  ); debugText+=buffer;
-                                 sprintf(buffer, " - MET=%8.2f mT=%8.2f nvtx=%3i\n", imet.pt(), mt, int(vtx.size()) ); debugText+=buffer;
-                                 sprintf(buffer, " - MET type1XY=%8.2f type1=%8.2f uncorrected=%8.2f\n", met.corP4(pat::MET::METCorrectionLevel::Type1XY).pt(), met.corP4(pat::MET::METCorrectionLevel::Type1).pt(), met.corP4(pat::MET::METCorrectionLevel::Raw).pt() ); debugText+=buffer;
-                                 sprintf(buffer, " - LeptonScale changes on MET mu=%8.2f  el=%8.2f\n", muDiff.pt(), elDiff.pt() ); debugText+=buffer;
-                                 sprintf(buffer, " - Z pT=%6.2f eta=%+6.2f phi=%+6.2f\n", boson.pt(), boson.eta(), boson.phi() ); debugText+=buffer;
-                                 if(selLeptons.size()>0)sprintf(buffer, " - lep0 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[0].pdgId(), selLeptons[0].pt(), selLeptons[0].eta(), selLeptons[0].phi()  ); debugText+=buffer;
-                                 if(selLeptons.size()>1)sprintf(buffer, " - lep1 Id=%+3i pT=%6.2f, eta=%+6.2f phi=%+6.2f\n", selLeptons[1].pdgId(), selLeptons[1].pt(), selLeptons[1].eta(), selLeptons[1].phi()  ); debugText+=buffer;
-                               }
-                            }
-
-                            if(mt>500){
-                              mon.fillHisto( "metNM1",tags,imet.pt(),weight,true);
-                            }
-
-                            //pre-VBF control
-                            if(njets>=2){
-                              LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
-                              float deta=fabs(selJets[0].eta()-selJets[1].eta());
-                              float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
-                              float pt1(selJets[0].pt()),pt2(selJets[1].pt());
-                              mon.fillHisto( "leadjetpt",tags,pt1,weight);
-                              mon.fillHisto( "trailerjetpt",tags,pt2,weight);
-                              if(pt1>30 && pt2>30){
-                                float eta1(selJets[0].eta()),eta2(selJets[1].eta());
-                                float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
-                                float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
-                                mon.fillHisto("vbfjeteta", tags,fabs(fwdEta),  weight);
-                                mon.fillHisto("vbfjeteta", tags,fabs(cenEta),  weight);
-                                mon.fillHisto("fwdjeteta",tags,fabs(fwdEta),  weight);
-                                mon.fillHisto("cenjeteta",tags,fabs(cenEta),  weight);
-                                mon.fillHisto("vbfdetajj",tags,deta,        weight);
-                                if(deta>4.0){
-                                  mon.fillHisto("vbfmjj",   tags,dijet.mass(),weight,true);
-                                  if(dijet.mass()>500){
-                                    mon.fillHisto("vbfdphijj",tags,dphi,        weight);
-                                    int countJetVeto = 0;
-                                    for(size_t ijet=2; ijet<selJets.size(); ijet++){
-                                       if((selJets[ijet].eta()<selJets[0].eta() && selJets[ijet].eta()>selJets[1].eta()) ||
-                                          (selJets[ijet].eta()>selJets[0].eta() && selJets[ijet].eta()<selJets[1].eta())){
+			      if(mt>500){
+				mon.fillHisto( "metNM1",tags,imet.pt(),weight,true);
+			      }
+			      
+			      //pre-VBF control
+			      if(njets>=2){
+				LorentzVector dijet=selJets[0].p4()+selJets[1].p4();
+				float deta=fabs(selJets[0].eta()-selJets[1].eta());
+				float dphi=fabs(deltaPhi(selJets[0].phi(),selJets[1].phi()));
+				float pt1(selJets[0].pt()),pt2(selJets[1].pt());
+				mon.fillHisto( "leadjetpt",tags,pt1,weight);
+				mon.fillHisto( "trailerjetpt",tags,pt2,weight);
+				if(pt1>30 && pt2>30){
+				  float eta1(selJets[0].eta()),eta2(selJets[1].eta());
+				  float fwdEta( fabs(eta1)>fabs(eta2) ? eta1 : eta2);
+				  float cenEta( fabs(eta1)>fabs(eta2) ? eta2 : eta1);
+				  mon.fillHisto("vbfjeteta", tags,fabs(fwdEta),  weight);
+				  mon.fillHisto("vbfjeteta", tags,fabs(cenEta),  weight);
+				  mon.fillHisto("fwdjeteta",tags,fabs(fwdEta),  weight);
+				  mon.fillHisto("cenjeteta",tags,fabs(cenEta),  weight);
+				  mon.fillHisto("vbfdetajj",tags,deta,        weight);
+				  if(deta>4.0){
+				    mon.fillHisto("vbfmjj",   tags,dijet.mass(),weight,true);
+				    if(dijet.mass()>500){
+				      mon.fillHisto("vbfdphijj",tags,dphi,        weight);
+				      int countJetVeto = 0;
+				      for(size_t ijet=2; ijet<selJets.size(); ijet++){
+					if((selJets[ijet].eta()<selJets[0].eta() && selJets[ijet].eta()>selJets[1].eta()) ||
+					   (selJets[ijet].eta()>selJets[0].eta() && selJets[ijet].eta()<selJets[1].eta())){
                                           countJetVeto++;
-                                       }
-                                    }
-                                    mon.fillHisto("vbfcjv",tags,countJetVeto,        weight);
-                                  }
-                                }
-
-                                if(imet.pt()>125){
-
+					}
+				      }
+				      mon.fillHisto("vbfcjv",tags,countJetVeto,        weight);
+				    }
+				  }
+				  
+				  if(imet.pt()>125){
+				    
                                     mon.fillHisto("vbfdetajjfinal",tags,deta,        weight);
                                     if(deta>4.0){mon.fillHisto("vbfdphijjfinal",tags,dphi,        weight);}
-
+				    
                                     if(!isMC){
-                                       char buffer[1024];
-                                       sprintf(buffer, " - VBF mjj=%8.2f  dEta=%+6.2f dPhi=%+6.2f\n", dijet.mass(), deta, dphi   ); debugText+=buffer;
-                                       sprintf(buffer, " - VBF jet1 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[0].pt(), selJets[0].eta(), selJets[0].phi()   ); debugText+=buffer;
-                                       sprintf(buffer, " - VBF jet2 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[1].pt(), selJets[1].eta(), selJets[1].phi()   ); debugText+=buffer;
+				      char buffer[1024];
+				      sprintf(buffer, " - VBF mjj=%8.2f  dEta=%+6.2f dPhi=%+6.2f\n", dijet.mass(), deta, dphi   ); debugText+=buffer;
+				      sprintf(buffer, " - VBF jet1 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[0].pt(), selJets[0].eta(), selJets[0].phi()   ); debugText+=buffer;
+				      sprintf(buffer, " - VBF jet2 pT=%6.2f eta=%+6.2f phi=%+6.2f\n", selJets[1].pt(), selJets[1].eta(), selJets[1].phi()   ); debugText+=buffer;
                                     }
-                                }
-
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+				  }
+				  
+				}
+			      }
+			    }
+			  }
+			}
+		      }
+		    }
+		  }
 
                   bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
                   if(passQt && passThirdLeptonVeto && passMinDphijmet && (boson.mass()>40 && boson.mass()<200)){
