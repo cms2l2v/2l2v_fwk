@@ -78,7 +78,7 @@ class Higgswidth(PhysicsModel):
         if self.modelBuilder.out.var("r"):
             print "have r inside"
         else:
-            self.modelBuilder.doVar("r[1,0,100000]")
+            self.modelBuilder.doVar("r[1,0,1000]")
         if self.is2l2nu:
             #self.modelBuilder.doVar("CMS_zz4l_GGsm[1.,0.,50.]")
             #self.modelBuilder.doVar("CMS_zz4l_mu[1.,0.,1000.]")
