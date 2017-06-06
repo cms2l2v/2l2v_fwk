@@ -2583,6 +2583,7 @@ int main(int argc, char* argv[])
                  for(std::map<string, TH1*  >::iterator unc=shapeInfo.uncShape.begin();unc!=shapeInfo.uncShape.end();unc++){
                   TH1* histo = unc->second;
                   if(!histo)continue;
+		  TString jetBin = ch->second.bin.c_str();
 
           	  if(jetBin.Contains("vbf")){
                 	double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 3000};
