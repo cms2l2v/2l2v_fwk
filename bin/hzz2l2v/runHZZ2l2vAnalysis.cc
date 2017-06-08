@@ -192,7 +192,11 @@ int main(int argc, char* argv[])
         varNames.push_back("_res_jup");      varNames.push_back("_res_jdown");    //jet energy resolution
         varNames.push_back("_scale_jup");    varNames.push_back("_scale_jdown");  //jet energy scale
         varNames.push_back("_scale_mup");    varNames.push_back("_scale_mdown");  //muon energy scale
-        varNames.push_back("_scale_eup");    varNames.push_back("_scale_edown");  //electron energy scale
+        varNames.push_back("_stat_eup");    varNames.push_back("_stat_edown");  //electron energy scale
+        varNames.push_back("_sys_eup");    varNames.push_back("_sys_edown");  //electron energy scale
+        varNames.push_back("_GS_eup");    varNames.push_back("_GS_edown");  //electron energy scale
+        varNames.push_back("_resRho_eup");    varNames.push_back("_resRho_edown");  //electron energy resolution
+        varNames.push_back("_resPhi_edown");   					  //electron energy resolution
         varNames.push_back("_puup");         varNames.push_back("_pudown");      //pileup uncertainty
         varNames.push_back("_eff_bup");      varNames.push_back("_eff_bdown");    //btag veto
         varNames.push_back("_lepveto");                                           //3rd lepton veto
