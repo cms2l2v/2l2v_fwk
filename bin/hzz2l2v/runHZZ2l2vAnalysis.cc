@@ -623,6 +623,9 @@ int main(int argc, char* argv[])
   mon.addHistogram( new TH1F("vbfmjjfinal"       , ";Dijet invariant mass [GeV];Events / GeV",31,mjjaxis) );
   mon.addHistogram( new TH1F("vbfdetajjfinal"    , ";Pseudo-rapidity span;Events",20,0,10) );
 
+  TH2F *hmet2D=(TH2F *) mon.addHistogram( new TH2F ("met_vs_dphi",";Missing transverse energy [GeV];#Delta #phi(Z/#gamma,MET)",nmetAxis-1,metaxis,40, 0, 4) ); 
+  TH2F *hmt2D=(TH2F *) mon.addHistogram( new TH2F ("mt_vs_dphi",";Transverse mass [GeV];#Delta #phi(Z/#gamma,MET)",nmtAxis-1,mtaxis,40, 0, 4) ); 
+
   mon.addHistogram( new TH1F( "mzz",   ";M_{ZZ} [GeV];Events / GeV", 150, 0, 1500) ); //The binning is the same than the one for the corrections.
 
 
@@ -1983,6 +1986,9 @@ int main(int argc, char* argv[])
                           if(passMinDphijmet){
                             mon.fillHisto("eventflow",tags,6,weight);
 
+			    mon.fillHisto("met_vs_dphi",tags,imet.pt(),b_dphi,weight);
+			    mon.fillHisto("mt_vs_dphi",tags,mt,b_dphi,weight);    
+
 			    mon.fillHisto( "dphi_boson_met",tags,b_dphi,weight);          
 			    if (imet.pt()>125) mon.fillHisto( "dphi_boson_met125",tags,b_dphi,weight);   
 
@@ -2106,7 +2112,7 @@ int main(int argc, char* argv[])
 		  }
 
                   bool isZsideBand    ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
-                  if(passQt && passThirdLeptonVeto && passMinDphijmet && (boson.mass()>40 && boson.mass()<200)){
+                  if(passQt && passThirdLeptonVeto && passMinDphijmet && passDphi && (boson.mass()>40 && boson.mass()<200)){
                      if(passBtags){
                         if(imet.pt()>50 )mon.fillHisto("zmass_bveto50" , tags,boson.mass(),weight);
                         if(imet.pt()>80 )mon.fillHisto("zmass_bveto80" , tags,boson.mass(),weight);
@@ -2145,13 +2151,10 @@ int main(int argc, char* argv[])
 
                //if(ivar==0)printf("%9i:%9lli SYST:%30s  Met=%8.3f mT=%8.3f  Weight=%6.2E %i %i %i %i %i\n",  ev.eventAuxiliary().run(), ev.eventAuxiliary().event(), "NOSYST", imet.pt(), higgs::utils::transverseMass(boson,imet,true), weight, passBtags?1:0, passMass?1:0, passQt?1:0, passThirdLeptonVeto?1:0, passMinDphijmet?1:0 );
 
-               if(passBtags && passMass && passQt && passThirdLeptonVeto && passMinDphijmet){
+               if(passBtags && passMass && passQt && passThirdLeptonVeto && passMinDphijmet && passDphi){
 
                   mon.fillHisto(TString("mtSyst")+varNames[ivar],tags, mt,weight);
                   mon.fillHisto(TString("metSyst")+varNames[ivar],tags, imet.pt(),weight);
-
-
-
 
                   //scan the MET cut and fill the shapes
                   for(unsigned int index=0;index<optim_Cuts1_met.size();index++){
@@ -2192,7 +2195,7 @@ int main(int argc, char* argv[])
                  }
               }
 
-               if(passQt && passThirdLeptonVeto && passMinDphijmet && (boson.mass()>40 && boson.mass()<200)){
+               if(passQt && passThirdLeptonVeto && passMinDphijmet && passDphi && (boson.mass()>40 && boson.mass()<200)){
                   bool isZ_SB ( (boson.mass()>40  && boson.mass()<70) || (boson.mass()>110 && boson.mass()<200) );
                   bool isZ_upSB ( (boson.mass()>110 && boson.mass()<200) );
                   //scan the MET cut and fill the shapes
