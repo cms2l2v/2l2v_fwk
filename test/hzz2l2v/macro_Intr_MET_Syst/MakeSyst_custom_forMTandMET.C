@@ -15,6 +15,7 @@
 #include <TGaxis.h>
 #include <TLine.h>
 #include <algorithm> 
+#include <map>
 
 //You can tune easily the options here
 #define VERBOSE false
@@ -133,9 +134,21 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	std::copy(v_custom_axis.begin(), v_custom_axis.end(), metaxis);
 	Int_t nmetAxis=v_custom_axis.size();
 
-	//The same axis than for limits:
-	Double_t metaxis_limits[]= {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 1850, 2100, 2600, 3000}; //from limits: https://github.com/cms2l2v/2l2v_fwk/blob/master/bin/common/computeLimit.cc#L2587
-	Int_t nmetAxis_limits=sizeof(metaxis_limits)/sizeof(Double_t);
+	//The same axis than the one from limits: https://github.com/cms2l2v/2l2v_fwk/blob/master/bin/common/computeLimit.cc#L2587
+	Double_t eq0jets_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
+	Double_t geq1jets_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
+	Double_t vbf_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725,  1100, 1350, 3000};
+	Double_t all_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
+	std::map<TString, Double_t* > metaxis_limits;
+	metaxis_limits["eq0jets"] = eq0jets_axis_limits;
+	metaxis_limits["geq1jets"] = geq1jets_axis_limits;
+	metaxis_limits["vbf"] = vbf_axis_limits;
+	metaxis_limits[""] = all_axis_limits;
+	std::map<TString, Int_t> nmetAxis_limits = {
+		        { "eq0jets", sizeof(eq0jets_axis_limits)/sizeof(Double_t) },
+		        { "geq1jets", sizeof(geq1jets_axis_limits)/sizeof(Double_t) },
+		        { "vbf", sizeof(vbf_axis_limits)/sizeof(Double_t) },
+		        { "", sizeof(all_axis_limits)/sizeof(Double_t) } };
 
 	//Initialize a place to save histo:
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
@@ -1717,8 +1730,8 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				TH1D* h_temp_up_absolute = (TH1D*) h_nominal_finalSum_up->Clone(tags_full+"_"+SystType+"_InstrMET_absolute_shape_up");
 				TH1D* h_temp_down_absolute = (TH1D*) h_nominal_finalSum_down->Clone(tags_full+"_"+SystType+"_InstrMET_absolute_shape_down");
 				//Rebin like computeLimits expect (be careful, here we want a total number of events and not just a #events/GeV)
-				h_temp_up_absolute = (TH1D*) h_temp_up_absolute->Rebin(nmetAxis_limits-1, "", metaxis_limits);
-				h_temp_down_absolute = (TH1D*) h_temp_down_absolute->Rebin(nmetAxis_limits-1, "", metaxis_limits);
+				h_temp_up_absolute = (TH1D*) h_temp_up_absolute->Rebin(nmetAxis_limits.at(evCat[ev])-1, "", metaxis_limits.at(evCat[ev]));
+				h_temp_down_absolute = (TH1D*) h_temp_down_absolute->Rebin(nmetAxis_limits.at(evCat[ev])-1, "", metaxis_limits.at(evCat[ev]));
 				h_temp_up_absolute->Write();
     		h_temp_down_absolute->Write();
 			}
@@ -1747,7 +1760,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 void MakeSyst_custom_forMTandMET(){
 	TString path = std::string(getenv("CMSSW_BASE")) + "/src/UserCode/llvv_fwk/test/hzz2l2v/";
   TFile *f_input = TFile::Open(path+"plotter.root");
-	TFile *f_output = new TFile(path+"InstrMET_systematics.root","RECREATE");
+	TFile *f_output = new TFile(path+"/macro_Intr_MET_Syst/InstrMET_systematics.root","RECREATE");
 	MakeSyst_custom(f_input, f_output, "mt", 17); //produce up and down variations for the mt_shapes (for limits and plotter) -- this is for the final version, with a MET cut of 125GeV
 	//MakeSyst_custom(f_input, f_output, "met", 17);//produce up and down variations for the met_shapes (for the plotter) -- this is for the final version, with a MET cut of 125GeV
 	//MakeSyst_custom(f_input, f_output, "mt", 1); //produce up and down variations for the mt_shapes (for the plotter) -- this is for the final version, with no MET cut

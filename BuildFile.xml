@@ -24,6 +24,7 @@
 <use name="fastjet"/>
 <use name="roostats"/>
 <use name="HiggsAnalysis/CombinedLimit"/>
+<use name="ZZMatrixElement/MELA"/>
 <export>
   <lib name="1"/>
 </export>
