@@ -36,13 +36,6 @@ namespace utils
          //
          eta=fabs(eta);
          double ptSF(1.0), ptSF_err(0.06);
-        // if(eta<0.8)                  { ptSF=1.061; ptSF_err=sqrt(pow(0.012,2)+pow(0.023,2)); }
-        // else if(eta>=0.8 && eta<1.3) { ptSF=1.088; ptSF_err=sqrt(pow(0.012,2)+pow(0.029,2)); }
-        // else if(eta>=1.3 && eta<1.9) { ptSF=1.106; ptSF_err=sqrt(pow(0.017,2)+pow(0.030,2)); }
-        // else if(eta>=1.9 && eta<2.5) { ptSF=1.126; ptSF_err=sqrt(pow(0.035,2)+pow(0.094,2)); }
-        // else if(eta>=2.5 && eta<3.0) { ptSF=1.343; ptSF_err=sqrt(pow(0.127,2)+pow(0.123,2)); }
-        // else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
-        // else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
          if(eta<0.5)                  { ptSF=1.109; ptSF_err=0.008; }
          else if(eta>=0.5 && eta<0.8) { ptSF=1.138; ptSF_err=0.013; }
          else if(eta>=0.8 && eta<1.1) { ptSF=1.114; ptSF_err=0.013; }
@@ -100,57 +93,57 @@ namespace utils
                 
                     //printf("jet pt=%f gen pt = %f smearing %f %f %f\n", jet.pt(), genjetpt, smearJER[0], smearJER[1], smearJER[2]);
                     // //set the JER up/down alternatives
-                    if(smearJER[0]==0) {
-		         jet.addUserFloat("jerup", smearJER[1]);  //kept for backward compatibility
-                        jet.addUserFloat("jerdown", smearJER[2] ); //kept for backward compatibility
-                        jet.addUserFloat("_res_jup", smearJER[1]);
-                        jet.addUserFloat("_res_jdown", smearJER[2] );
-                     }
-		    else{
-		        jet.addUserFloat("jerup", smearJER[1]/smearJER[0]);  //kept for backward compatibility
-                        jet.addUserFloat("jerdown", smearJER[2]/smearJER[0] ); //kept for backward compatibility
-                        jet.addUserFloat("_res_jup", smearJER[1]/smearJER[0]);
-                        jet.addUserFloat("_res_jdown", smearJER[2]/smearJER[0] );
-		    }
-		}else{
-                    jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
-                    jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
-                    jet.addUserFloat("_res_jup", 1.0);
-                    jet.addUserFloat("_res_jdown", 1.0 );
+										if(smearJER[0]==0) {
+        							jet.addUserFloat("jerup", smearJER[1]);  //kept for backward compatibility
+                    	jet.addUserFloat("jerdown", smearJER[2] ); //kept for backward compatibility
+                    	jet.addUserFloat("_res_jup", smearJER[1]);
+                    	jet.addUserFloat("_res_jdown", smearJER[2] );
+                 		}
+                 		else{
+										  jet.addUserFloat("jerup", smearJER[1]/smearJER[0]);  //kept for backward compatibility 
+										  jet.addUserFloat("jerdown", smearJER[2]/smearJER[0] ); //kept for backward compatibility 
+										  jet.addUserFloat("_res_jup", smearJER[1]/smearJER[0]); 
+										  jet.addUserFloat("_res_jdown", smearJER[2]/smearJER[0] ); 
+                 		}
+                 }else{
+                   jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
+                   jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
+                   jet.addUserFloat("_res_jup", 1.0);
+                   jet.addUserFloat("_res_jdown", 1.0 );
                  }
              }
 
              if(isMC){
-                ////set the JES up/down pT alternatives
-                std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-                jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
-                jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
-                jet.addUserFloat("_scale_jup",    ptUnc[0] );
-                jet.addUserFloat("_scale_jdown",  ptUnc[1] );
+               ////set the JES up/down pT alternatives
+               std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+               jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
+               jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
+               jet.addUserFloat("_scale_jup",    ptUnc[0] );
+               jet.addUserFloat("_scale_jdown",  ptUnc[1] );
              }
-             
+
              // FIXME: this is not to be re-set. Check that this is a desired non-feature.
              // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
              //to get the raw jet again
              //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
          }
      }
-     
-//    //
-//    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
-//    {
-//      std::vector<LorentzVector> newMetsP4(9,rawMETP4);
-//      if(!isMC) return newMetsP4;
-//      
-//      LorentzVector nullP4(0,0,0,0);
-//      
-//      //recompute the clustered and unclustered fluxes with energy variations
-//      for(size_t ivar=1; ivar<=8; ivar++)
-//        {
-//          
-//          //leptonic flux
-//          LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
-//          for(size_t ilep=0; ilep<leptons.size(); ilep++) {
+
+		 //    //
+		 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
+		 //    {
+		 //      std::vector<LorentzVector> newMetsP4(9,rawMETP4);
+		 //      if(!isMC) return newMetsP4;
+		 //      
+		 //      LorentzVector nullP4(0,0,0,0);
+		 //      
+		 //      //recompute the clustered and unclustered fluxes with energy variations
+		 //      for(size_t ivar=1; ivar<=8; ivar++)
+		 //        {
+		 //          
+		 //          //leptonic flux
+		 //          LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
+		 //          for(size_t ilep=0; ilep<leptons.size(); ilep++) {
 //            double varSign( (ivar==LESUP ? 1.0 : (ivar==LESDOWN ? -1.0 : 0.0) ) );
 //            int id( abs(leptons[ilep].get("id")) );
 //            double sf(1.0);
@@ -244,32 +237,24 @@ namespace utils
       //
       eta=fabs(eta);
       double ptSF(1.0), ptSF_err(0.06);
-      // if(eta<0.8)                  { ptSF=1.061; ptSF_err=sqrt(pow(0.012,2)+pow(0.023,2)); }
-        // else if(eta>=0.8 && eta<1.3) { ptSF=1.088; ptSF_err=sqrt(pow(0.012,2)+pow(0.029,2)); }
-        // else if(eta>=1.3 && eta<1.9) { ptSF=1.106; ptSF_err=sqrt(pow(0.017,2)+pow(0.030,2)); }
-        // else if(eta>=1.9 && eta<2.5) { ptSF=1.126; ptSF_err=sqrt(pow(0.035,2)+pow(0.094,2)); }
-        // else if(eta>=2.5 && eta<3.0) { ptSF=1.343; ptSF_err=sqrt(pow(0.127,2)+pow(0.123,2)); }
-        // else if(eta>=3.0 && eta<3.2) { ptSF=1.303; ptSF_err=sqrt(pow(0.127,2)+pow(1.303,2)); }
-        // else if(eta>=3.2 && eta<5.0) { ptSF=1.320; ptSF_err=sqrt(pow(0.127,2)+pow(1.320,2)); }
-         if(eta<0.5)                  { ptSF=1.109; ptSF_err=0.008; }
-         else if(eta>=0.5 && eta<0.8) { ptSF=1.138; ptSF_err=0.013; }
-         else if(eta>=0.8 && eta<1.1) { ptSF=1.114; ptSF_err=0.013; }
-         else if(eta>=1.1 && eta<1.3) { ptSF=1.123; ptSF_err=0.024; }
-         else if(eta>=1.3 && eta<1.7) { ptSF=1.084; ptSF_err=0.011; }
-         else if(eta>=1.7 && eta<1.9) { ptSF=1.082; ptSF_err=0.035; }
-         else if(eta>=1.9 && eta<2.1) { ptSF=1.140; ptSF_err=0.047; }
-         else if(eta>=2.1 && eta<2.3) { ptSF=1.067; ptSF_err=0.053; }
-         else if(eta>=2.3 && eta<2.5) { ptSF=1.177; ptSF_err=0.041; }
-         else if(eta>=2.5 && eta<2.8) { ptSF=1.364; ptSF_err=0.039; }
-         else if(eta>=2.8 && eta<3.0) { ptSF=1.857; ptSF_err=0.071; }
-         else if(eta>=3.0 && eta<3.2) { ptSF=1.328; ptSF_err=0.022; }
-         else if(eta>=3.2 && eta<5.0) { ptSF=1.16 ; ptSF_err=0.029; }
-         toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
-         toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
-         toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
-         return toReturn;
-      
-      
+      if(eta<0.5)                  { ptSF=1.109; ptSF_err=0.008; }
+      else if(eta>=0.5 && eta<0.8) { ptSF=1.138; ptSF_err=0.013; }
+      else if(eta>=0.8 && eta<1.1) { ptSF=1.114; ptSF_err=0.013; }
+      else if(eta>=1.1 && eta<1.3) { ptSF=1.123; ptSF_err=0.024; }
+      else if(eta>=1.3 && eta<1.7) { ptSF=1.084; ptSF_err=0.011; }
+      else if(eta>=1.7 && eta<1.9) { ptSF=1.082; ptSF_err=0.035; }
+      else if(eta>=1.9 && eta<2.1) { ptSF=1.140; ptSF_err=0.047; }
+      else if(eta>=2.1 && eta<2.3) { ptSF=1.067; ptSF_err=0.053; }
+      else if(eta>=2.3 && eta<2.5) { ptSF=1.177; ptSF_err=0.041; }
+      else if(eta>=2.5 && eta<2.8) { ptSF=1.364; ptSF_err=0.039; }
+      else if(eta>=2.8 && eta<3.0) { ptSF=1.857; ptSF_err=0.071; }
+      else if(eta>=3.0 && eta<3.2) { ptSF=1.328; ptSF_err=0.022; }
+      else if(eta>=3.2 && eta<5.0) { ptSF=1.16 ; ptSF_err=0.029; } 
+
+      toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
+      toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
+      toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
+      return toReturn;
     }
 
     //
@@ -293,14 +278,14 @@ namespace utils
       TH1F *puup=(TH1F *)pu->Clone("puuptmp");
       TH1F *pudown=(TH1F *)pu->Clone("pudowntmp");
       for(size_t i=0; i<Lumi_distr.size(); i++)  pu->SetBinContent(i+1,Lumi_distr[i]);
-      
+
       for(int ibin=1; ibin<=pu->GetXaxis()->GetNbins(); ibin++)
-	{
-	  Double_t xval=pu->GetBinCenter(ibin);
-	  TGraph *gr = new TGraph;
-	  for(int ishift=-3; ishift<3; ishift++)
-	    {
-	      if(ibin+ishift<0) continue;
+			{
+	  		Double_t xval=pu->GetBinCenter(ibin);
+	  		TGraph *gr = new TGraph;
+	  		for(int ishift=-3; ishift<3; ishift++)
+	    	{
+	      	if(ibin+ishift<0) continue;
 	      if(ibin+ishift>pu->GetXaxis()->GetNbins()) continue;
 	      
 	      gr->SetPoint(gr->GetN(),xval+ishift,pu->GetBinContent(ibin+ishift));
@@ -427,7 +412,6 @@ namespace utils
       }
     }
  
-
 //___________________________________Slew Rate Effect in Electron _________________________________
 
 // This effect in energy of electron should considered on the top of scale and smearing in 2016 dataset.
@@ -458,15 +442,17 @@ namespace utils
        TLorentzVector p4(ele.px(),ele.py(),ele.pz(),ele.energy());
        ele.setP4(LorentzVector(p4.Px()*Ecorr,p4.Py()*Ecorr,p4.Pz()*Ecorr,p4.E()*Ecorr ) );
     }
-
   }
 
 
   //
-  std::string toLatexRounded(double value, double error, double systError,bool doPowers)
+  std::string toLatexRounded(double value, double error, double systError, bool doPowers, double systErrorDown)
   {
     using namespace std;
 
+    //if systErrorDown is not specified, take sym errors
+    //else do an asym one... except if they are in fact symm
+    if(systError == systErrorDown) systErrorDown = -1;
     bool ValueWasNull = false;
 
     if(value==0.0 && error==0.0)return string("");
@@ -474,11 +460,10 @@ namespace utils
     
     if(!doPowers){
       char tmpchar[255];
-      if(systError<0)
-	sprintf(tmpchar,"$%.0f\\pm%.0f$",value,error);
-      else
-	sprintf(tmpchar,"$%.0f\\pm%.0f\\pm%.0f$",value,error,systError);
-      return string(tmpchar);
+      if(systError<0)	sprintf(tmpchar,"$%.2f\\pm%.2f$",value,error);
+      else if(systErrorDown<0)	sprintf(tmpchar,"$%.2f\\pm%.2f\\pm%.2f$",value,error,systError);
+      else sprintf(tmpchar,"$%.2f\\pm%.2f ^{+%.2f}_{-%.2f}$",value,error,systError, systErrorDown);
+    	return string(tmpchar);
     }
     
     double power = floor(log10(value));
@@ -489,15 +474,25 @@ namespace utils
     value = value / pow(10,power);
     error = error / pow(10,power);
     if(systError>=0)systError = systError / pow(10,power);
+    if(systErrorDown>=0)systErrorDown = systErrorDown / pow(10,power);
     int ValueFloating;
-    if(systError<0){
-      ValueFloating = 1 + std::max(-1*log10(error),0.0);
+    if(error >0){
+      if(systError<0){
+        ValueFloating = 1 + std::max(-1*log10(error),0.0);
+      }else if(systErrorDown<0){
+        ValueFloating = 1 + std::max(-1*log10(systError), std::max(-1*log10(error),0.0));
+      }else{
+        ValueFloating = 1 + std::max(-1*log10(systErrorDown), std::max(-1*log10(systError), std::max(-1*log10(error),0.0)));
+      }
     }else{
-      ValueFloating = 1 + std::max(-1*log10(systError), std::max(-1*log10(error),0.0));
+      if(systErrorDown<0){
+        ValueFloating = 1 + std::max(-1*log10(systError),0.0);
+      }else{
+        ValueFloating = 1 + std::max(-1*log10(systErrorDown), std::max(-1*log10(systError),0.0));
+      }
     }
     int ErrorFloating = ValueFloating;
-    
- 
+
     if(ValueWasNull){value=0.0;}
 
     char tmpchar[255];
@@ -506,20 +501,25 @@ namespace utils
         double erroSum = 0;
         if(error>0){erroSum+=error*error;}
         if(systError>0){erroSum+=systError*systError;}
-        sprintf(tmpchar,"$<%.*f$",ErrorFloating,sqrt(erroSum));
+        if(systErrorDown>0){erroSum+=systErrorDown*systErrorDown;}
+        sprintf(tmpchar,"$<%.*f$",ErrorFloating,sqrt(erroSum)); //In printf, the *f allows you to pass as an argument the width of the float printed (http://www.cplusplus.com/reference/cstdio/printf/)
     }else{
        if(power!=0){
          if(systError<0){
            sprintf(tmpchar,"$(%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,power);
-         }else{
+         }else if(systErrorDown<0){
            sprintf(tmpchar,"$(%.*f\\pm%.*f\\pm%.*f)\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,power);
+         }else{
+           sprintf(tmpchar,"$(%.*f\\pm%.*f ^{+%.*f}_{-%.*f})\\times 10^{%g}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError, ErrorFloating,systErrorDown,power);
          }
          
        }else{
          if(systError<0){
            sprintf(tmpchar,"$%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error);
-         }else{
+         }else if(systErrorDown<0){
            sprintf(tmpchar,"$%.*f\\pm%.*f\\pm%.*f$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError);
+         }else{
+           sprintf(tmpchar,"$%.*f\\pm%.*f ^{+%.*f}_{-%.*f}$",ValueFloating,value,ErrorFloating,error,ErrorFloating,systError,ErrorFloating,systErrorDown);
          }
        }
     }
@@ -595,7 +595,7 @@ namespace utils
     for(unsigned int f=0;f<urls.size();f++){
        TFile* file = TFile::Open(urls[f].c_str() );
        fwlite::Event ev(file);
-	unsigned int printflag = 0;
+       unsigned int printflag = 0;
        for(ev.toBegin(); !ev.atEnd(); ++ev){
           fwlite::Handle< std::vector<PileupSummaryInfo> > puInfoH;
           puInfoH.getByLabel(ev, "slimmedAddPileupInfo");
@@ -604,7 +604,7 @@ namespace utils
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
              if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); }
           }
-          if(ngenITpu>=Npu){printflag++; if(printflag<=1)printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+          if(ngenITpu>=Npu){printflag++; if(printflag<=1)printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);} 
           mcpileup[ngenITpu]++;
        }
        delete file;
@@ -620,7 +620,7 @@ namespace utils
     for(unsigned int f=0;f<urls.size();f++){
        TFile* file = TFile::Open(urls[f].c_str() );
        fwlite::Event ev(file);
-	unsigned int printflag = 0;
+       unsigned int printflag = 0;
        for(ev.toBegin(); !ev.atEnd(); ++ev){
           fwlite::Handle< GenEventInfoProduct > genEventInfoHandle;
           genEventInfoHandle.getByLabel(ev, "generator");
@@ -635,7 +635,7 @@ namespace utils
           for(std::vector<PileupSummaryInfo>::const_iterator it = puInfoH->begin(); it != puInfoH->end(); it++){
              if(it->getBunchCrossing()==0)      { ngenITpu += it->getTrueNumInteractions(); }
           }
-          if(ngenITpu>=Npu){printflag++; if(printflag<=1)printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);}
+          if(ngenITpu>=Npu){printflag++; if(printflag<=1)printf("ngenITpu is larger than vector size... vector is being resized, but you should check that all is ok!"); mcpileup.resize(ngenITpu+1);} 
           mcpileup[ngenITpu]++;
        }
        delete file;

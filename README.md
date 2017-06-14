@@ -9,13 +9,13 @@ wget -O - --no-check-certificate https://raw.githubusercontent.com/cms2l2v/2l2v_
 
 # Installation for 80X (2017) => was 8_0_14 (2016)
 
-Checkout Some Packages from Egamma ( https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression#Consistent_EGMSmearer )
 ```bash
 export SCRAM_ARCH=slc6_amd64_gcc530
 cmsrel CMSSW_8_0_26_patch1
 cd CMSSW_8_0_26_patch1/src
 cmsenv
 git cms-init
+#Checkout Some Packages from Egamma ( https://twiki.cern.ch/twiki/bin/viewauth/CMS/EGMRegression#Consistent_EGMSmearer )
 git cms-merge-topic cms-egamma:EGM_gain_v1
 cd EgammaAnalysis/ElectronTools/data
 git clone -b Moriond17_gainSwitch_unc https://github.com/ECALELFS/ScalesSmearings.git
@@ -35,21 +35,16 @@ wget https://raw.githubusercontent.com/cms-analysis/HiggsAnalysis-CombinedLimit/
 wget https://raw.githubusercontent.com/cms-analysis/HiggsAnalysis-CombinedLimit/74x-root6/interface/th1fmorph.h -P UserCode/llvv_fwk/interface/
 find UserCode/llvv_fwk/ -type f -name '*.cc' -exec sed -i -e 's/HiggsAnalysis\/CombinedLimit\/interface\/th1fmorph.h/UserCode\/llvv_fwk\/interface\/th1fmorph.h/g' {} \;
 
-scramv1 b -j 16 #WARNING: this won't work! You first need to do "Step to use MELA" below and then compile
-```
-
 #Step to use MELA
-```bash 
-cd CMSS_X_Y_Z/src
 git clone https://github.com/cms-analysis/HiggsAnalysis-ZZMatrixElement.git ZZMatrixElement
 cd ZZMatrixElement
 sh setup.sh -j 12
+cd ..
+
+#And compile
+scramv1 b -j 16 
 ```
-Now, ONLY after the code has finished to compile insert inside UserCode/llvv_fwk/BuildFile.xml
-``` c++
-<use name="ZZMatrixElement/MELA"/>
-scram b -j 12  
-```
+
 
 # An important note about PR in 80X (2016)
 Please before doing your PR, be sure to:
