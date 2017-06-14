@@ -49,7 +49,6 @@ namespace utils
          else if(eta>=2.8 && eta<3.0) { ptSF=1.857; ptSF_err=0.071; }
          else if(eta>=3.0 && eta<3.2) { ptSF=1.328; ptSF_err=0.022; }
          else if(eta>=3.2 && eta<5.0) { ptSF=1.16 ; ptSF_err=0.029; }
- 
          toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
          toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
          toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
@@ -94,7 +93,7 @@ namespace utils
                 
                     //printf("jet pt=%f gen pt = %f smearing %f %f %f\n", jet.pt(), genjetpt, smearJER[0], smearJER[1], smearJER[2]);
                     // //set the JER up/down alternatives
-        						if(smearJER[0]==0) {
+										if(smearJER[0]==0) {
         							jet.addUserFloat("jerup", smearJER[1]);  //kept for backward compatibility
                     	jet.addUserFloat("jerdown", smearJER[2] ); //kept for backward compatibility
                     	jet.addUserFloat("_res_jup", smearJER[1]);
@@ -107,44 +106,44 @@ namespace utils
 										  jet.addUserFloat("_res_jdown", smearJER[2]/smearJER[0] ); 
                  		}
                  }else{
-                    jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
-                    jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
-                    jet.addUserFloat("_res_jup", 1.0);
-                    jet.addUserFloat("_res_jdown", 1.0 );
+                   jet.addUserFloat("jerup", 1.0); //kept for backward compatibility
+                   jet.addUserFloat("jerdown", 1.0);  //kept for backward compatibility
+                   jet.addUserFloat("_res_jup", 1.0);
+                   jet.addUserFloat("_res_jdown", 1.0 );
                  }
              }
 
              if(isMC){
-                ////set the JES up/down pT alternatives
-                std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
-                jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
-                jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
-                jet.addUserFloat("_scale_jup",    ptUnc[0] );
-                jet.addUserFloat("_scale_jdown",  ptUnc[1] );
+               ////set the JES up/down pT alternatives
+               std::vector<float> ptUnc=utils::cmssw::smearJES(jet.pt(),jet.eta(), totalJESUnc);
+               jet.addUserFloat("jesup",    ptUnc[0] );  //kept for backward compatibility
+               jet.addUserFloat("jesdown",  ptUnc[1] );  //kept for backward compatibility
+               jet.addUserFloat("_scale_jup",    ptUnc[0] );
+               jet.addUserFloat("_scale_jdown",  ptUnc[1] );
              }
-             
+
              // FIXME: this is not to be re-set. Check that this is a desired non-feature.
              // i.e. check that the uncorrectedJet remains the same even when the corrected momentum is changed by this routine.
              //to get the raw jet again
              //jets[ijet].setVal("torawsf",1./(newJECSF*newJERSF));
          }
      }
-     
-//    //
-//    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
-//    {
-//      std::vector<LorentzVector> newMetsP4(9,rawMETP4);
-//      if(!isMC) return newMetsP4;
-//      
-//      LorentzVector nullP4(0,0,0,0);
-//      
-//      //recompute the clustered and unclustered fluxes with energy variations
-//      for(size_t ivar=1; ivar<=8; ivar++)
-//        {
-//          
-//          //leptonic flux
-//          LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
-//          for(size_t ilep=0; ilep<leptons.size(); ilep++) {
+
+		 //    //
+		 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons,bool isMC)
+		 //    {
+		 //      std::vector<LorentzVector> newMetsP4(9,rawMETP4);
+		 //      if(!isMC) return newMetsP4;
+		 //      
+		 //      LorentzVector nullP4(0,0,0,0);
+		 //      
+		 //      //recompute the clustered and unclustered fluxes with energy variations
+		 //      for(size_t ivar=1; ivar<=8; ivar++)
+		 //        {
+		 //          
+		 //          //leptonic flux
+		 //          LorentzVector leptonFlux(nullP4), lepDiff(nullP4);
+		 //          for(size_t ilep=0; ilep<leptons.size(); ilep++) {
 //            double varSign( (ivar==LESUP ? 1.0 : (ivar==LESDOWN ? -1.0 : 0.0) ) );
 //            int id( abs(leptons[ilep].get("id")) );
 //            double sf(1.0);
@@ -252,9 +251,9 @@ namespace utils
       else if(eta>=3.0 && eta<3.2) { ptSF=1.328; ptSF_err=0.022; }
       else if(eta>=3.2 && eta<5.0) { ptSF=1.16 ; ptSF_err=0.029; } 
 
-      toReturn[0]=TMath::Max(0.,(genPt+ptSF*(pt-genPt)));
-      toReturn[1]=TMath::Max(0.,(genPt+(ptSF+ptSF_err)*(pt-genPt)));
-      toReturn[2]=TMath::Max(0.,(genPt+(ptSF-ptSF_err)*(pt-genPt)));
+      toReturn[0]=TMath::Max(0.,((genPt+ptSF*(pt-genPt)))/pt);
+      toReturn[1]=TMath::Max(0.,((genPt+(ptSF+ptSF_err)*(pt-genPt)))/pt);
+      toReturn[2]=TMath::Max(0.,((genPt+(ptSF-ptSF_err)*(pt-genPt)))/pt);
       return toReturn;
     }
 
@@ -279,14 +278,14 @@ namespace utils
       TH1F *puup=(TH1F *)pu->Clone("puuptmp");
       TH1F *pudown=(TH1F *)pu->Clone("pudowntmp");
       for(size_t i=0; i<Lumi_distr.size(); i++)  pu->SetBinContent(i+1,Lumi_distr[i]);
-      
+
       for(int ibin=1; ibin<=pu->GetXaxis()->GetNbins(); ibin++)
-	{
-	  Double_t xval=pu->GetBinCenter(ibin);
-	  TGraph *gr = new TGraph;
-	  for(int ishift=-3; ishift<3; ishift++)
-	    {
-	      if(ibin+ishift<0) continue;
+			{
+	  		Double_t xval=pu->GetBinCenter(ibin);
+	  		TGraph *gr = new TGraph;
+	  		for(int ishift=-3; ishift<3; ishift++)
+	    	{
+	      	if(ibin+ishift<0) continue;
 	      if(ibin+ishift>pu->GetXaxis()->GetNbins()) continue;
 	      
 	      gr->SetPoint(gr->GetN(),xval+ishift,pu->GetBinContent(ibin+ishift));
