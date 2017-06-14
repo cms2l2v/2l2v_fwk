@@ -40,7 +40,9 @@ git clone https://github.com/cms-analysis/HiggsAnalysis-ZZMatrixElement.git ZZMa
 cd ZZMatrixElement
 sh setup.sh -j 12
 cd ..
-scramv1 b -j 16 #WARNING: this won't work! You first need to do "Step to use MELA" below and then compile
+
+#And compile
+scramv1 b -j 16 
 ```
 
 
