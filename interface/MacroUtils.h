@@ -43,6 +43,12 @@
 
 #include "UserCode/llvv_fwk/interface/PatUtils.h"
 
+//------------------ needed headers for slew rate corrections -------------------//
+#include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
+#include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "DataFormats/EcalDetId/interface/EEDetId.h"
+
 #include <istream>
 #include <fstream>
 #include <iostream>
@@ -148,7 +154,9 @@ namespace utils
 //    
 //    //set new jet energy corrections
      void updateJEC(pat::JetCollection& jets, FactorizedJetCorrector *jesCor, JetCorrectionUncertainty *totalJESUnc, float rho, int nvtx,bool isMC);
-    
+   
+		 void SlewRateCorrection(const fwlite::Event& ev, pat::Electron& ele);  
+ 
 //    //apply MET variations
 //    enum METvariations { NOMINAL, JERUP, JERDOWN, JESUP, JESDOWN, UMETUP, UMETDOWN, LESUP, LESDOWN };
 //    std::vector<LorentzVector> getMETvariations(LorentzVector &rawMETP4, pat::JetCollection &jets, std::vector<patUtils::GenericLepton> &leptons, bool isMC);
