@@ -181,23 +181,23 @@ class ShapeData_t
      	if(suffix.find("instrmet") != std::string::npos){
         TH1* h = (TH1*) histo()->Clone("TMPFORSTAT");
         int BIN=0;
-				std::vector<unsigned int > v_lowStatBin;
-			  v_lowStatBin.clear();
-				TString InstrMET_gammaStats_Url(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/InstrMET_systematics/InstrMET_systematics_GAMMASTATS.root");
-	      TFile* f_InstrMET_gammaStats = TFile::Open(InstrMET_gammaStats_Url);
-				TH1* h_InstrMET_Up_gammaStats = (TH1*)utils::root::GetObjectFromPath(f_InstrMET_gammaStats, (channel_and_bin+"_mt_InstrMET_absolute_shape_up").c_str() );
-        TH1* h_InstrMET_Down_gammaStats = (TH1*)utils::root::GetObjectFromPath(f_InstrMET_gammaStats, (channel_and_bin+"_mt_InstrMET_absolute_shape_down").c_str() );   			
-				for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
+	std::vector<unsigned int > v_lowStatBin;
+	v_lowStatBin.clear();
+	TString InstrMET_gammaStats_Url(string(std::getenv("CMSSW_BASE"))+"/src/UserCode/llvv_fwk/data/InstrMET_systematics/InstrMET_systematics_GAMMASTATS.root");
+	TFile* f_InstrMET_gammaStats = TFile::Open(InstrMET_gammaStats_Url);
+	TH1* h_InstrMET_Up_gammaStats = (TH1*)utils::root::GetObjectFromPath(f_InstrMET_gammaStats, (channel_and_bin+"_mt_InstrMET_absolute_shape_up").c_str() );
+	TH1* h_InstrMET_Down_gammaStats = (TH1*)utils::root::GetObjectFromPath(f_InstrMET_gammaStats, (channel_and_bin+"_mt_InstrMET_absolute_shape_down").c_str() );   			
+	for(int ibin=1; ibin<=h->GetXaxis()->GetNbins(); ibin++){           
           if( true /*h->GetBinContent(ibin)/h->Integral()>0.01*/){ //This condition is removed for the moment, we may put it back in the future. 
 
-      			char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
-          	TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
-          	TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
+	    char ibintxt[255]; sprintf(ibintxt, "_b%i", BIN);BIN++;
+	    TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
+	    TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
 
-            statU->SetBinContent(ibin, std::max(0.0, h_InstrMET_Up_gammaStats->GetBinContent(ibin)));   
-            statD->SetBinContent(ibin, std::max(0.0, h_InstrMET_Down_gammaStats->GetBinContent(ibin))); 
-          	uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
-          	uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
+	    statU->SetBinContent(ibin, std::max(0.0, h_InstrMET_Up_gammaStats->GetBinContent(ibin)));   
+	    statD->SetBinContent(ibin, std::max(0.0, h_InstrMET_Down_gammaStats->GetBinContent(ibin))); 
+	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
+	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
 
 					}
           else{
@@ -1542,6 +1542,7 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
 
         //Li Fix
         if((it->second.shortName).find("ggH")!=std::string::npos)ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+TString("_ggH")).Data(),systpostfix.Data(), false );// attention
+	else if((it->second.shortName).find("qqH")!=std::string::npos)ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+TString("_qqH")).Data(),systpostfix.Data(), false );
         else ch->second.shapes[histoName.Data()].makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );
         TVirtualPad* pad = t1->cd(I); 
         pad->SetTopMargin(0.06); pad->SetRightMargin(0.03); pad->SetBottomMargin(0.07);  pad->SetLeftMargin(0.06);
@@ -1792,6 +1793,7 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
 
         //Li Fix
         if((it->second.shortName).find("ggH")!=std::string::npos)shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+TString("_ggH")).Data(),systpostfix.Data(), false );// attention
+	else if((it->second.shortName).find("qqH")!=std::string::npos)shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+TString("_qqH")).Data(),systpostfix.Data(), false );
         else shapeInfo.makeStatUnc("_CMS_hzz2l2v_", (TString("_")+ch->first+"_"+it->second.shortName).Data(),systpostfix.Data(), false );
 				fout->cd(chbin);
 
@@ -2329,9 +2331,11 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
       //if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.384583; alphaUsed_err = 0.00600805;} //06/04/2017
       //if(chData->second.channel.find("mumu")==0){alphaUsed = 0.674941; alphaUsed_err = 0.00874789;}
 
-      if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.375; alphaUsed_err = 0.006;} //09/05/2017
-      if(chData->second.channel.find("mumu")==0){alphaUsed = 0.684; alphaUsed_err = 0.005;}
+      //if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.375; alphaUsed_err = 0.006;} //09/05/2017
+      //if(chData->second.channel.find("mumu")==0){alphaUsed = 0.684; alphaUsed_err = 0.005;}
 
+      if(chData->second.channel.find("ee"  )==0){alphaUsed = 0.369; alphaUsed_err = 0.006;} //09/05/2017
+      if(chData->second.channel.find("mumu")==0){alphaUsed = 0.683; alphaUsed_err = 0.0095;}
       double valDD, valDD_err;
       double valMC, valMC_err;
       valMC = hNRB->IntegralAndError(1,hNRB->GetXaxis()->GetNbins(),valMC_err);  if(valMC<1E-6){valMC=0.0; valMC_err=0.0;}
