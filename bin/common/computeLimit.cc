@@ -2801,7 +2801,7 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
 	    TString jetBin = ch->second.bin.c_str();
 
           if(jetBin.Contains("vbf")){
-            double xbins[] = {150, 225, 300, 375, 450, 525, 600, 725,  1100, 3000};
+            double xbins[] = {150, 225, 300, 375, 450, 600, 750, 1100, 3000};
             int nbins=sizeof(xbins)/sizeof(double);
             unc->second = histo->Rebin(nbins-1, histo->GetName(), (double*)xbins);
             utils::root::fixExtremities(unc->second, false, true);
