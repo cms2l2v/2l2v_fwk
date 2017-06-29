@@ -137,7 +137,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	//The same axis than the one from limits: https://github.com/cms2l2v/2l2v_fwk/blob/master/bin/common/computeLimit.cc#L2587
 	Double_t eq0jets_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
 	Double_t geq1jets_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
-	Double_t vbf_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725,  1100, 1350, 3000};
+	Double_t vbf_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725,  1100, 3000};
 	Double_t all_axis_limits[] = {150, 225, 300, 375, 450, 525, 600, 725, 850, 975, 1100, 1350, 1600, 2100, 3000};
 	std::map<TString, Double_t* > metaxis_limits;
 	metaxis_limits["eq0jets"] = eq0jets_axis_limits;
