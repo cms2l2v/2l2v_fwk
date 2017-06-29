@@ -36,9 +36,10 @@ double Tmh, Tlimit, TlimitErr; float TquantExp;
 
 TGraph* getLimitGraph(TTree* tree, float Quantil){
   TGraph* toReturn = new TGraph(999);
-  int i=0;
+  int i=0; 
   for(int ientry=0;ientry<tree->GetEntriesFast();ientry++){
      tree->GetEntry(ientry);
+     
      if(TquantExp==Quantil){
         //printf("Quantil = %f - mH=%f --> %f\n",TquantExp,Tmh,Tlimit);
         //
@@ -48,6 +49,7 @@ TGraph* getLimitGraph(TTree* tree, float Quantil){
      }
   }toReturn->Set(i);
   return toReturn;
+
 }
 
 
@@ -65,8 +67,8 @@ TCutG* GetErrorBand(string name, TGraph* Low, TGraph* High)
    return cutg;
 }
 
-void scaleGraph(TGraph* Limit, double scale){
-   for(int i=0;i<Limit->GetN();i++){
+void scaleGraph(TGraph* Limit, double scale){ 
+   for(int i=0;i<Limit->GetN();i++){ 
       Limit->SetPoint(i, Limit->GetX()[i], Limit->GetY()[i]*scale);
    }   
 }
@@ -99,7 +101,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
    gStyle->SetTitleYOffset(1.45);
    gStyle->SetPalette(1);
    gStyle->SetNdivisions(505);
- 
+  
   //get the limits from the tree
   TFile* file = TFile::Open(inputs);
   printf("Looping on %s\n",inputs.Data());
@@ -116,20 +118,37 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   TGraph* ExpLimit   = getLimitGraph(tree,0.500);
   TGraph* ExpLimitp1 = getLimitGraph(tree,0.840);
   TGraph* ExpLimitp2 = getLimitGraph(tree,0.975);
-  file->Close();
+  file->Close(); 
+
+  FILE* pFileSStrenght = fopen((outputDir+"SignalStrenght").c_str(),"w");
+  std::cout << "Printing Signal Strenght" << std::endl;
+  for(int i=0;i<ExpLimit->GetN();i++){
+     double M = ExpLimit->GetX()[i];
+     std::cout << "Mass: " << M << "; ExpLimit: " << ExpLimit->Eval(M) << std::endl; 
+     printf("$%8.6E$ & $%8.6E$ & $[%8.6E,%8.6E]$ & $[%8.6E,%8.6E]$ \\\\\\hline\n",M, ExpLimit->Eval(M), ExpLimitm1->Eval(M), ExpLimitp1->Eval(M), ExpLimitm2->Eval(M),  ExpLimitp2->Eval(M));
+     fprintf(pFileSStrenght, "$%8.6E$ & $%8.6E$ & $[%8.6E,%8.6E]$ & $[%8.6E,%8.6E]$ & $%8.6E$ \\\\\\hline\n",M, ExpLimit->Eval(M), ExpLimitm1->Eval(M), ExpLimitp1->Eval(M), ExpLimitm2->Eval(M),  ExpLimitp2->Eval(M), ObsLimit->Eval(M));
+    if(int(ExpLimit->GetX()[i])%50!=0)continue; //printf("%f ",ObsLimit->Eval(M));
+  }printf("\n");
+  fclose(pFileSStrenght); 
+ 
 
   //get the pValue
   inputs = inputs.ReplaceAll("/LimitTree.root", "/PValueTree.root");
   file = TFile::Open(inputs);
+  
   printf("Looping on %s\n",inputs.Data());
   if(!file) return;
   if(file->IsZombie()) return;
+  
   tree = (TTree*)file->Get("limit");
+  
   tree->GetBranch("limit"           )->SetAddress(&Tlimit   );
+  
   TGraph* pValue     = getLimitGraph(tree,-1);
+  
   file->Close();
 
-
+  
   //make TH Cross-sections
    string suffix = outputDir;
    TGraph* THXSec   = Hxswg::utils::getXSec(outputDir); 
@@ -148,17 +167,26 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   if(outputDir.find("GGF")!=std::string::npos)prod="gg";
   if(outputDir.find("VBF")!=std::string::npos)prod="qq";
 
+  
   strengthLimit = false;
   if(prod=="pp")strengthLimit=true;
  
+  //TGraph *XSecMELA = Hxswg::utils::getXSecMELA(cprime);
 
-  scaleGraph(ObsLimit  , 1000); //pb to fb
-  scaleGraph(ExpLimitm2, 1000); //pb to fb
-  scaleGraph(ExpLimitm1, 1000); //pb to fb
-  scaleGraph(ExpLimit  , 1000); //pb to fb
-  scaleGraph(ExpLimitp1, 1000); //pb to fb
-  scaleGraph(ExpLimitp2, 1000); //pb to fb
-
+  //Hxswg::utils::multiplyGraph(   ObsLimit, XSecMELA);
+  //Hxswg::utils::multiplyGraph( ExpLimitm2, XSecMELA);
+  //Hxswg::utils::multiplyGraph( ExpLimitm1, XSecMELA);
+  //Hxswg::utils::multiplyGraph(   ExpLimit, XSecMELA);
+  //Hxswg::utils::multiplyGraph( ExpLimitp1, XSecMELA);
+  //Hxswg::utils::multiplyGraph( ExpLimitp2, XSecMELA);
+ 
+  //Scale exclusion XSec in fb
+  scaleGraph(ObsLimit  , 0.001); //pb to fb
+  scaleGraph(ExpLimitm2, 0.001); //pb to fb
+  scaleGraph(ExpLimitm1, 0.001); //pb to fb
+  scaleGraph(ExpLimit  , 0.001); //pb to fb
+  scaleGraph(ExpLimitp1, 0.001); //pb to fb
+  scaleGraph(ExpLimitp2, 0.001); //pb to fb
 
   //scal eTH cross-section and limits according to scale factor 
   //this only apply to NarrowResonnance case
@@ -175,18 +203,20 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
 
   //limits in terms of signal strength
   TCanvas* c = new TCanvas("c", "c",800,800);
-  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?190:190,1510);
+  c->SetGridx();
+  c->SetGridy();
+  TH1F* framework = new TH1F("Graph","Graph",1,strengthLimit?199:199,2500); //3000);
   framework->SetStats(false);
   framework->SetTitle("");
   framework->GetXaxis()->SetTitle("M_{H} [GeV]");
   framework->GetYaxis()->SetTitleOffset(1.70);
   if(strengthLimit){
   framework->GetYaxis()->SetTitle("#mu = #sigma_{95%} / #sigma_{th}");
-  framework->GetYaxis()->SetRangeUser(1E-2,1E3);
+  framework->GetYaxis()->SetRangeUser(1E-4,1E3);
   c->SetLogy(true);
   }else{
-  framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (fb)").c_str());
-  framework->GetYaxis()->SetRangeUser(1E1,1E5);
+  framework->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (pb)").c_str());
+  framework->GetYaxis()->SetRangeUser(1E-3,1E3);
   c->SetLogy(true);
   }
   framework->GetXaxis()->SetLabelOffset(0.007);
@@ -202,6 +232,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   framework->GetYaxis()->SetTitleSize(0.035);
   framework->Draw();
 
+  
   TGraph* TGObsLimit   = ObsLimit;  TGObsLimit->SetLineWidth(2);
   TGraph* TGExpLimit   = ExpLimit;  TGExpLimit->SetLineWidth(2); TGExpLimit->SetLineStyle(2);
   TCutG* TGExpLimit1S  = GetErrorBand("1S", ExpLimitm1, ExpLimitp1);  
@@ -212,26 +243,28 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   TGObsLimit->SetLineWidth(2);  TGObsLimit->SetMarkerStyle(20);
   TGExpLimit2S->Draw("fc same");
   TGExpLimit1S->Draw("fc same");
-  if(!blind) TGObsLimit->Draw("same CP");
-  TGExpLimit->Draw("same C");
+  if(!blind) TGObsLimit->Draw("same P");
+  TGExpLimit->Draw("same c");
 
-  if(strengthLimit){
+  
+  /*if(strengthLimit){
      TLine* SMLine = new TLine(framework->GetXaxis()->GetXmin(),1.0,framework->GetXaxis()->GetXmax(),1.0);
      SMLine->SetLineWidth(2); SMLine->SetLineStyle(1); SMLine->SetLineColor(4);      
      SMLine->Draw("same C");
   }else{
      THXSec->Draw("same C");
-  }
+  }*/
 
   utils::root::DrawPreliminary(luminosity, energy, c);
 
+  
   TLegend* LEG = new TLegend(0.55,0.75,0.85,0.95);
   LEG->SetHeader("");
   LEG->SetFillColor(0);
   LEG->SetFillStyle(0);
   LEG->SetTextFont(42);
   LEG->SetBorderSize(0);
-  LEG->AddEntry(THXSec  , "Th prediction"  ,"L");
+  //LEG->AddEntry(THXSec  , "Th prediction"  ,"L");
   LEG->AddEntry(TGExpLimit  , "median expected"  ,"L");
   LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
   LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");
@@ -242,6 +275,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   c->SaveAs((outputDir+"Limit.C").c_str());
   c->SaveAs((outputDir+"Limit.pdf").c_str()); 
 
+  
   //save a summary of the limits
   FILE* pFileSum = fopen((outputDir+"LimitSummary").c_str(),"w");
   for(int i=0;i<TGExpLimit->GetN();i++){
@@ -256,7 +290,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   if(!blind) fprintf(pFileSum, "OBSERVED LIMIT --> ");        printLimits(pFileSum,TGObsLimit, TGObsLimit->GetX()[0], TGObsLimit->GetX()[TGObsLimit->GetN()-1]);
   fprintf(pFileSum, "Exp Limits for Model are: ");              for(int i=0;i<TGExpLimit->GetN();i++){if(int(TGExpLimit->GetX()[i])%50==0) fprintf(pFileSum, "%f+-%f ",TGExpLimit->GetY()[i], (ExpLimitp1->GetY()[i]-ExpLimitm1->GetY()[i])/2.0);}fprintf(pFileSum,"\n");
   if(!blind) { fprintf(pFileSum, "Obs Limits for Model are: "); for(int i=0;i<TGObsLimit->GetN();i++){if(int(TGObsLimit->GetX()[i])%50==0) fprintf(pFileSum, "%f ",TGObsLimit->GetY()[i]);}fprintf(pFileSum,"\n"); }
-  fclose(pFileSum);
+  fclose(pFileSum); 
 }
 
 
