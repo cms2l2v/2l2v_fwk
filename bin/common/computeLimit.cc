@@ -1910,8 +1910,8 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
 
         //Id+Trigger efficiencies combined
         if(!it->second.isData){
-          if(chbin.Contains("ee"  ))  shapeInfo.uncScale["CMS_eff_e"] = integral*0.035437;
-          if(chbin.Contains("mumu"))  shapeInfo.uncScale["CMS_eff_m"] = integral*0.030431;
+          if(chbin.Contains("ee"  ))  shapeInfo.uncScale["CMS_eff_e"] = integral*0.072124;
+          if(chbin.Contains("mumu"))  shapeInfo.uncScale["CMS_eff_m"] = integral*0.061788;
         }
 
         //uncertainties to be applied only in higgs analyses
