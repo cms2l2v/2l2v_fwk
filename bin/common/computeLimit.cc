@@ -2471,10 +2471,8 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
         //remove all syst uncertainty
         chMC->second.shapes[mainHisto.Data()].clearSyst();
         //add syst uncertainty                 
-				chMC->second.shapes[mainHisto.Data()].uncShape[string("_CMS_hzz2l2v_sys_zll") + it->second.shortName+systpostfix.Data()+"Up"] = h_InstrMET_Up_allExceptGammaStats;
-
-        chMC->second.shapes[mainHisto.Data()].uncShape[string("_CMS_hzz2l2v_sys_zll") + it->second.shortName+systpostfix.Data()+"Down"] = h_InstrMET_Down_allExceptGammaStats;
-     
+        chMC->second.shapes[mainHisto.Data()].uncShape[string("_CMS_hzz2l2v_sys_"+chMC->second.bin+"_zll") + it->second.shortName+systpostfix.Data()+"Up"] = h_InstrMET_Up_allExceptGammaStats;
+        chMC->second.shapes[mainHisto.Data()].uncShape[string("_CMS_hzz2l2v_sys_"+chMC->second.bin+"_zll") + it->second.shortName+systpostfix.Data()+"Down"] =h_InstrMET_Down_allExceptGammaStats; 
      }
     }
     //Recompute the total background with correct uncertainties
