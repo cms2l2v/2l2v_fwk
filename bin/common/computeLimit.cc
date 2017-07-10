@@ -674,8 +674,6 @@ int main(int argc, char* argv[])
   }
 
 
-  //allInfo.addInstrMetSyst(NULL, selCh,"gamma",histo);
-  allInfo.addInstrMetSyst_2017(selCh,histo);
 
 
 
@@ -707,6 +705,9 @@ int main(int argc, char* argv[])
 
   //extrapolate backgrounds toward higher mt/met region to make sure that there is no empty bins
   if(shape && BackExtrapol)allInfo.rebinMainHisto(histo.Data());
+
+  // add the syst. on the Instr MET 
+  allInfo.addInstrMetSyst_2017(selCh,histo);
 
   //drop backgrounds with rate<1%
   allInfo.dropSmallBckgProc(selCh, histo.Data(), dropBckgBelow);
