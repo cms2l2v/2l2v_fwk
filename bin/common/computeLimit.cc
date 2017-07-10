@@ -194,7 +194,7 @@ class ShapeData_t
 	    TH1* statU=(TH1 *)h->Clone(TString(h->GetName())+"StatU"+ibintxt);//  statU->Reset();
 	    TH1* statD=(TH1 *)h->Clone(TString(h->GetName())+"StatD"+ibintxt);//  statD->Reset();           
 
-	    statU->SetBinContent(ibin, std::max(0.0, h_InstrMET_Up_gammaStats->GetBinContent(ibin)));   
+	    statU->SetBinContent(ibin, std::max(0.0, h_InstrMET_Up_gammaStats->GetBinContent(ibin))>0 ? h_InstrMET_Up_gammaStats->GetBinContent(ibin) : 0.115);
 	    statD->SetBinContent(ibin, std::max(0.0, h_InstrMET_Down_gammaStats->GetBinContent(ibin))); 
 	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Up"  ] = statU;
 	    uncShape[prefix+"stat"+suffix+ibintxt+suffix2+"Down"] = statD;
