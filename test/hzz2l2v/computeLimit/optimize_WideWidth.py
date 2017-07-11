@@ -34,7 +34,7 @@ jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH_VB
 inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_06_08_forLimits_Alessio.root' #plotter_2017_05_05_forLimits.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
-BINS = ["eq0jets","geq1jets","vbf","eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
+BINS = ["eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
 MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
 SUBMASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000] 
