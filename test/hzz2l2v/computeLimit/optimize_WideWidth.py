@@ -58,17 +58,17 @@ for model in MODELS:
                    #BIN             += [bin]
                    #MODEL           += [model]
 
-                   #signalSuffixVec += [ suffix ]
-                   #OUTName         += ["SB13TeV_SM_GGF"]
-                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
-                   #BIN             += [bin]
-                   #MODEL          += [model]
-
                    signalSuffixVec += [ suffix ]
-                   OUTName         += ["SB13TeV_SM_VBF"]
-                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   OUTName         += ["SB13TeV_SM_GGF"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
                    BIN             += [bin]
-                   MODEL           += [model]
+                   MODEL          += [model]
+
+                   #signalSuffixVec += [ suffix ]
+                   #OUTName         += ["SB13TeV_SM_VBF"]
+                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   #BIN             += [bin]
+                   #MODEL           += [model]
 
          elif(model=="RsGrav"):
                    signalSuffixVec += [ "" ]
