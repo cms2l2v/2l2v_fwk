@@ -21,7 +21,7 @@ cd ../..
 scramv1 b -j 16 
 ```
 
-## Submit the limit jobs 
+## Submit the limit jobs on lxplus
 example for GGH only (for VBF few updates have still to be done by hand in the code)
 ```bash
 python optimize_WideWidth.py -p 4
