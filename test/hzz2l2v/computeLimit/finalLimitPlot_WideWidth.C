@@ -265,7 +265,7 @@ void finalLimitPlot_WideWidth(){
    std::vector<double> BRs = {0.0};
 
   //LIMIT ON SIGNAL STRENGTH
-   string Directories2[]={"cards_SB13TeV_SM_VBF"}; //"cards_SB13TeV_SM", "cards_SB13TeV_SM_GGF", "cards_SB13TeV_SM_VBF"};  //DEBUG
+   string Directories2[]={"cards_SB13TeV_SM_GGF"}; //"cards_SB13TeV_SM", "cards_SB13TeV_SM_GGF", "cards_SB13TeV_SM_VBF"};  //DEBUG
    for(unsigned int D=0;D<sizeof(Directories2)/sizeof(string);D++){
       string Dir     = Directories2[D];
       char tmp[1024];sprintf(tmp, "%s_cp%4.2f_brn%4.2f/", Dir.c_str(), 100.0, 0.0);

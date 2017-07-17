@@ -1,3 +1,40 @@
+# Installation for limit setting (747)
+## Install CMSSW and Higgs combine 
+```bash
+export SCRAM_ARCH=slc6_amd64_gcc491
+cmsrel CMSSW_7_4_7
+cd CMSSW_7_4_7/src 
+cmsenv
+git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+cd HiggsAnalysis/CombinedLimit
+git fetch origin
+git checkout v6.3.1
+scramv1 b clean; scramv1 b # always make a clean build, as scram doesn't always see updates to src/LinkDef.h
+```
+## Now install the Hzz2l2nu code
+```bash
+git clone https://github.com/cms2l2v/2l2v_fwk.git UserCode/llvv_fwk
+cd UserCode/llvv_fwk
+chmod a+x removeUselessFilesForLimit.csh
+./removeUselessFilesForLimit.csh
+cd ../..
+scramv1 b -j 16 
+```
+
+## Submit the limit jobs on lxplus
+example for GGH only (for VBF few updates have still to be done by hand in the code)
+```bash
+python optimize_WideWidth.py -p 4
+```
+## Get the limit plots
+(when the jobs are terminated)
+```bash
+python optimize_WideWidth.py -p 5 
+root -l -b -q finalLimitPlot_WideWidth.C
+```
+
+
+
 # Installation for 76X (2015)
 ```bash 
 export SCRAM_ARCH=slc6_amd64_gcc493
