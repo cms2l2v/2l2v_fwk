@@ -27,6 +27,8 @@
 #define WJETS_ONLY true
 #define METHOD_ONLY true
 #define GAMMASTATS_ONLY true
+#define GENUINESTATS_ONLY true
+#define DO_CORRECTIONS true
 //Set to false if InstrMET not in root file
 #define InstrMET_control_plots true
 
@@ -39,7 +41,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	int projectionBin;
 	//bool doProjection=false; //tell if the histo you are looking at needs a projection or not
 	//if(SystType == "met" || SystType == "mt") doProjection=true;
-	
+
 	//Don't touch this, because the name of the final plot produced is metfinal or mtfinal... and those are with 125GeV MET cut!
 	if(SystType == "met") projectionBin = projectionBin_arg; //set a cut at 1 for a 50GeV MET cut
 	if(SystType == "mt") projectionBin = projectionBin_arg; //set a cut at 17 for 125GeV MET cut
@@ -77,27 +79,40 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
   std::vector<TCanvas*> c_wrapUp;
   std::vector<TCanvas*> c_final_wrapUp;
   std::vector<TCanvas*> c_InstrMET_genuineMET;
+  std::vector<TCanvas*> c_InstrMET_genuineMET_stat;
 
 	//My different types of correction
 	std::vector< TString> correctionsUp;
-	correctionsUp.push_back("_th_factup");
-	correctionsUp.push_back("_res_jup"); 
-	correctionsUp.push_back("_scale_jup"); 
-	correctionsUp.push_back("_scale_mup"); 
-	correctionsUp.push_back("_scale_eup"); 
-	correctionsUp.push_back("_puup"); 
-	correctionsUp.push_back("_scale_umetup"); 
-	correctionsUp.push_back("_eff_bup"); 
-
 	std::vector< TString> correctionsDown;
-	correctionsDown.push_back("_th_factdown");
-	correctionsDown.push_back("_res_jdown"); 
-	correctionsDown.push_back("_scale_jdown"); 
-	correctionsDown.push_back("_scale_mdown"); 
-	correctionsDown.push_back("_scale_edown"); 
-	correctionsDown.push_back("_pudown"); 
-	correctionsDown.push_back("_scale_umetdown"); 
-	correctionsDown.push_back("_eff_bdown"); 
+
+	if(DO_CORRECTIONS){
+	  correctionsUp.push_back("_th_factup");
+	  correctionsUp.push_back("_res_jup"); 
+	  correctionsUp.push_back("_scale_jup"); 
+	  correctionsUp.push_back("_scale_mup"); 
+	  correctionsUp.push_back("_scale_eup"); 
+	  correctionsUp.push_back("_puup"); 
+	  correctionsUp.push_back("_scale_umetup"); 
+	  correctionsUp.push_back("_eff_bup"); 
+	  correctionsUp.push_back("_stat_eup"); 
+	  correctionsUp.push_back("_sys_eup"); 
+	  correctionsUp.push_back("_GS_eup"); 
+	  correctionsUp.push_back("_resRho_eup");
+
+	  correctionsDown.push_back("_th_factdown");
+	  correctionsDown.push_back("_res_jdown"); 
+	  correctionsDown.push_back("_scale_jdown"); 
+	  correctionsDown.push_back("_scale_mdown"); 
+	  correctionsDown.push_back("_scale_edown"); 
+	  correctionsDown.push_back("_pudown"); 
+	  correctionsDown.push_back("_scale_umetdown"); 
+	  correctionsDown.push_back("_eff_bdown"); 
+	  correctionsDown.push_back("_stat_edown"); 
+	  correctionsDown.push_back("_sys_edown"); 
+	  correctionsDown.push_back("_GS_edown"); 
+	  correctionsDown.push_back("_resRho_edown");
+  }
+
 
 	std::vector< TString> samples;
 	samples.push_back("W#gamma #rightarrow l#nu#gamma_reweighted");
@@ -145,15 +160,17 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	metaxis_limits["vbf"] = vbf_axis_limits;
 	metaxis_limits[""] = all_axis_limits;
 	std::map<TString, Int_t> nmetAxis_limits = {
-		        { "eq0jets", sizeof(eq0jets_axis_limits)/sizeof(Double_t) },
-		        { "geq1jets", sizeof(geq1jets_axis_limits)/sizeof(Double_t) },
-		        { "vbf", sizeof(vbf_axis_limits)/sizeof(Double_t) },
-		        { "", sizeof(all_axis_limits)/sizeof(Double_t) } };
+		{ "eq0jets", sizeof(eq0jets_axis_limits)/sizeof(Double_t) },
+		{ "geq1jets", sizeof(geq1jets_axis_limits)/sizeof(Double_t) },
+		{ "vbf", sizeof(vbf_axis_limits)/sizeof(Double_t) },
+		{ "", sizeof(all_axis_limits)/sizeof(Double_t) } };
 
 	//Initialize a place to save histo:
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto_Up(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto_Down(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
+	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto_genuineStat_Up(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
+	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto_genuineStat_Down(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
 
 	//Here are the histo with the wrap up shapes (i.e. final shape up and down for all syst+stat on the three main genuineMET processes)
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> wrapUp_shape(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
@@ -164,6 +181,11 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedInstrMET_shape(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedInstrMET_shape_Up(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedInstrMET_shape_Down(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
+	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedInstrMET_shape_genuineStat(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
+	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedInstrMET_shape_genuineStat_Up(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
+	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedInstrMET_shape_genuineStat_Down(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
+
+
 
 	//List of histo saved for instr MET global unc
 	std::vector<std::vector<std::vector<TH1D*> > > saved_cst_method_InstrMET_shape_Up(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/)) ;
@@ -222,6 +244,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 					//Save the values in a vector so we can loop on it at the end:
 					if(VERBOSE)std::cout << "Number of events = " << Nominal_met->GetEntries() << std::endl;
+					if(VERBOSE)std::cout << __LINE__ << std::endl;
 					if(Nominal_met->GetEntries() ==0) continue;
 					savedHisto[s][ich][ev].push_back((TH1D*) Nominal_met->Clone());
 					savedHisto_Up[s][ich][ev].push_back((TH1D*) Up_met->Clone());
@@ -407,7 +430,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				double binContent =0;
 				double PDFandScale_unc =0;
 				if(samples[s].Contains("W#gamma")) PDFandScale_unc = 0.050; // W#gamma #rightarrow l#nu#gamma : from http://journals.aps.org/prd/pdf/10.1103/PhysRevD.89.092005
-				if(samples[s].Contains("Z#gamma")) PDFandScale_unc = 0.50;//0.057; //Due to QCD NLO corrections this is set to 50% (see: http://link.springer.com/article/10.1007%2FJHEP02%282016%29057) // Z#gamma #rightarrow #nu#nu#gamma : from http://journals.aps.org/prd/pdf/10.1103/PhysRevD.89.092005
+				if(samples[s].Contains("Z#gamma")) PDFandScale_unc = 0.25;//0.057; //Due to QCD NLO corrections this is set to 50% (50% on k, so 50% of 2 is 25% on average) (see: http://link.springer.com/article/10.1007%2FJHEP02%282016%29057) // Z#gamma #rightarrow #nu#nu#gamma : from http://journals.aps.org/prd/pdf/10.1103/PhysRevD.89.092005
 				if(samples[s].Contains("W#rightarrow")) PDFandScale_unc = 0.035; // W#rightarrow l#nu : from CMS-PAS-SMP-15-004 -- https://cds.cern.ch/record/2093537
 				for(unsigned int bin=1 ; bin < Nominal_met_fromTheory->GetNbinsX(); bin++){
 					binContent = Nominal_met_fromTheory->GetBinContent(bin);
@@ -453,6 +476,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				//Style part
 				std::vector< TH1D*> Nominal_met_new, Up_met_new, Down_met_new;
 				std::vector< TH1D*> Nominal_met_new2, Up_met_new2, Down_met_new2;
+        std::vector< TH1D*> Up_met_stat, Down_met_stat;
 
 				//non-rebinned plots that have to be passed
 				Nominal_met_new2.push_back((TH1D*) Nominal_met_fromTheory->Clone());
@@ -461,11 +485,13 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
         Up_met_new2.push_back((TH1D*) Nominal_met_PDFandScale_up->Clone());
         Up_met_new2.push_back((TH1D*) Nominal_met_EwkCorrections_up->Clone());
-        Up_met_new2.push_back((TH1D*) Nominal_met_stats_up->Clone());
+        //Up_met_new2.push_back((TH1D*) Nominal_met_stats_up->Clone()); //Let's treat stat a part
+        Up_met_stat.push_back((TH1D*) Nominal_met_stats_up->Clone());
 
         Down_met_new2.push_back((TH1D*) Nominal_met_PDFandScale_down->Clone());
         Down_met_new2.push_back((TH1D*) Nominal_met_EwkCorrections_down->Clone());
-        Down_met_new2.push_back((TH1D*) Nominal_met_stats_down->Clone());
+        //Down_met_new2.push_back((TH1D*) Nominal_met_stats_down->Clone()); //Let's treat stat a part
+        Down_met_stat.push_back((TH1D*) Nominal_met_stats_down->Clone());
 
 				//rebin just to plot things
 				TH1D *Nominal_met_fromTheory_rebin = (TH1D*) Nominal_met_fromTheory->Rebin(nmetAxis-1, "Nominal_met_fromTheory_rebin", metaxis);
@@ -519,14 +545,22 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				corrections.push_back("Electroweak corrections");
 				corrections.push_back("Statistical fluctuations");
 
+				if(VERBOSE)std::cout << "size of stat: " << Up_met_stat.size() << std::endl;
+				for(unsigned int index2=0; index2 < 2; index2++){ //the size of PDFandScale and EwkCorrections
+					savedHisto[s][ich][ev].push_back((TH1D*) Nominal_met_new2[index2]->Clone());
+					savedHisto_Up[s][ich][ev].push_back((TH1D*) Up_met_new2[index2]->Clone());
+					savedHisto_Down[s][ich][ev].push_back((TH1D*) Down_met_new2[index2]->Clone());
+			  }
+
+				savedHisto_genuineStat_Up[s][ich][ev].push_back((TH1D*) Up_met_stat[0]->Clone());
+				savedHisto_genuineStat_Down[s][ich][ev].push_back((TH1D*) Down_met_stat[0]->Clone());
+
 				for(unsigned int index=0; index < Nominal_met_new.size(); index++){
 					if(VERBOSE)std::cout << "In my custom loop" << std::endl;
 
 					if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new2[index]->GetEntries() << std::endl;
+				  if(VERBOSE)std::cout << __LINE__ << std::endl;
 					if(Nominal_met_new[index]->GetEntries() ==0) continue;
-					savedHisto[s][ich][ev].push_back((TH1D*) Nominal_met_new2[index]->Clone());
-					savedHisto_Up[s][ich][ev].push_back((TH1D*) Up_met_new2[index]->Clone());
-					savedHisto_Down[s][ich][ev].push_back((TH1D*) Down_met_new2[index]->Clone());
 
 
 
@@ -719,6 +753,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 				//Save the final wrap up shapes up and down for each category
 				if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new->GetEntries() << std::endl;
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
         if(Nominal_met_new->GetEntries() ==0) continue;
         wrapUp_shape[s][ich][ev].push_back((TH1D*) Nominal_met_new2->Clone());
         wrapUp_shape_Up[s][ich][ev].push_back((TH1D*) Up_met_new2->Clone());
@@ -972,7 +1007,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 			Instr_MET_nominal_rebin[ich][ev].push_back( (TH1D*) Instr_MET_nominal[ich][ev][0]->Rebin(nmetAxis-1, "Instr_MET_nominal_rebin_"+chTags[ich]+evCat[ev], metaxis));
 			Instr_MET_nominal_rebin[ich][ev][0]->Scale(1.0, "width");
-					if(VERBOSE)std::cout<< __LINE__ << std::endl;
+			if(VERBOSE)std::cout<< __LINE__ << std::endl;
 
 			for(unsigned int s =0; s < samples.size(); s++){
 				Instr_MET_up_rebin[s][ich][ev].push_back( (TH1D*) Instr_MET_up[s][ich][ev][0]->Rebin(nmetAxis-1, "Instr_MET_up_rebin", metaxis));
@@ -981,7 +1016,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				Instr_MET_down_rebin[s][ich][ev][0]->Scale(1.0, "width");
 			}
 			Instr_MET_nominal_rebin[ich][ev][0]->Write();
-					if(VERBOSE)std::cout<< __LINE__ << std::endl;
+			if(VERBOSE)std::cout<< __LINE__ << std::endl;
 
 			//Instr MET from the plooter
 			if(InstrMET_control_plots){
@@ -989,7 +1024,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 			  TH2F* met_shape_true_InstrMET = (TH2F*) gDirectory->Get(tags_full+"_"+SystType+"_shapes");
 			  if(VERBOSE)std::cout<< "Projecting " << tags_full <<"_"<<SystType<<"_shapes" << std::endl;
 			  TH1D* h_met_shape_true_InstrMET = (TH1D*) met_shape_true_InstrMET->ProjectionY(tags_full+"_InstrMET_true", projectionBin, projectionBin);
-			  		if(VERBOSE)std::cout<< __LINE__ << std::endl;
+			  if(VERBOSE)std::cout<< __LINE__ << std::endl;
 			  f_output->cd(globalDirectoryName+"/"+"Instr_MET_nominal");
 			  h_met_shape_true_InstrMET = (TH1D*) h_met_shape_true_InstrMET->Rebin(nmetAxis-1, "", metaxis);
 			  h_met_shape_true_InstrMET->Scale(1.0, "width");
@@ -1020,9 +1055,11 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 				if(VERBOSE)std::cout << __LINE__ << std::endl;
 
-				//This removes the samples s from the corresponding Instr.MET shape
-       	Instr_MET_up[s][ich][ev][0]->Add(h_sample_down,-1);
-       	Instr_MET_down[s][ich][ev][0]->Add(h_sample_up,-1);
+				//This removes the samples s from the corresponding Instr.MET shape (since we need to substract genuineMET and not add it)
+       	TH1D *Up_instrMET_tmp = (TH1D*) Instr_MET_up[s][ich][ev][0]->Clone();
+       	TH1D *Down_instrMET_tmp = (TH1D*) Instr_MET_down[s][ich][ev][0]->Clone();
+       	Up_instrMET_tmp->Add(h_sample_down,-1);
+       	Down_instrMET_tmp->Add(h_sample_up,-1);
 
 				if(VERBOSE)std::cout << __LINE__ << std::endl;
 
@@ -1030,17 +1067,17 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				//Style part
 
 				TH1D *Nominal_met_new2 = (TH1D*) Instr_MET_nominal[ich][ev][0]->Clone();
-        TH1D *Up_met_new2 = (TH1D*) Instr_MET_up[s][ich][ev][0]->Clone();
-        TH1D *Down_met_new2 = (TH1D*) Instr_MET_down[s][ich][ev][0]->Clone();
+        TH1D *Up_met_new2 = (TH1D*) Up_instrMET_tmp->Clone();
+        TH1D *Down_met_new2 = (TH1D*) Down_instrMET_tmp->Clone();
 
 				//Rebin to plot
 				TH1D *Nominal_met_new = (TH1D*) Instr_MET_nominal[ich][ev][0]->Rebin(nmetAxis-1, "Nominal_met_new", metaxis);
         Nominal_met_new->Scale(1.0, "width");
         Nominal_met_new->Sumw2();
-				TH1D *Up_met_new = (TH1D*) Instr_MET_up[s][ich][ev][0]->Rebin(nmetAxis-1, "Up_met_new", metaxis);
+				TH1D *Up_met_new = (TH1D*) Up_instrMET_tmp->Rebin(nmetAxis-1, "Up_met_new", metaxis);
         Up_met_new->Scale(1.0, "width");
         Up_met_new->Sumw2();
-				TH1D *Down_met_new = (TH1D*) Instr_MET_down[s][ich][ev][0]->Rebin(nmetAxis-1, "Down_met_new", metaxis);
+				TH1D *Down_met_new = (TH1D*) Down_instrMET_tmp->Rebin(nmetAxis-1, "Down_met_new", metaxis);
         Down_met_new->Scale(1.0, "width");
         Down_met_new->Sumw2();
 
@@ -1049,11 +1086,11 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 				//Save the final wrap up shapes up and down for each category
 				if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new->GetEntries() << std::endl;
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
         if(Nominal_met_new->GetEntries() ==0) continue;
         savedInstrMET_shape[s][ich][ev].push_back((TH1D*) Nominal_met_new2->Clone());
         savedInstrMET_shape_Up[s][ich][ev].push_back((TH1D*) Up_met_new2->Clone());
         savedInstrMET_shape_Down[s][ich][ev].push_back((TH1D*) Down_met_new2->Clone());
-
 
 
 				//Nominal in black
@@ -1195,6 +1232,202 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 	}
 
+	//Add the stat InstrMET for each genuinMET sample
+	num_canvas=0;
+	for(unsigned int s =0; s < samples.size(); s++){
+
+
+ 		for ( unsigned int ich = 0; ich < chTags.size() ; ich++){
+ 			directory_pos = s*chTags.size() + ich;
+
+ 			for ( unsigned ev = 0; ev < evCat.size() ; ev++){
+      	TString tags_full=chTags[ich]+evCat[ev];
+				if(VERBOSE)std::cout<< "Tag: " << tags_full << std::endl;
+
+				if(savedHisto_genuineStat_Up[s][ich][ev].size() ==0 && savedHisto_genuineStat_Down[s][ich][ev].size()== 0 ) continue;
+				TH1D* h_sample_up = (TH1D*) savedHisto_genuineStat_Up[s][ich][ev][0]->Clone();
+				TH1D* h_sample_down = (TH1D*) savedHisto_genuineStat_Down[s][ich][ev][0]->Clone();
+
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
+
+				//This removes the samples s from the corresponding Instr.MET shape (since we need to substract genuineMET and not add it)
+        TH1D *Up_instrMET_tmp2 = (TH1D*) Instr_MET_up[s][ich][ev][0]->Clone();
+        TH1D *Down_instrMET_tmp2 = (TH1D*) Instr_MET_down[s][ich][ev][0]->Clone();
+     		Up_instrMET_tmp2->Add(h_sample_down,-1);
+       	Down_instrMET_tmp2->Add(h_sample_up,-1);
+
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
+
+
+				//Style part
+
+				TH1D *Nominal_met_new2 = (TH1D*) Instr_MET_nominal[ich][ev][0]->Clone();
+        TH1D *Up_met_new2 = (TH1D*) Up_instrMET_tmp2->Clone();
+        TH1D *Down_met_new2 = (TH1D*) Down_instrMET_tmp2->Clone();
+
+				//Rebin to plot
+				TH1D *Nominal_met_new = (TH1D*) Instr_MET_nominal[ich][ev][0]->Rebin(nmetAxis-1, "Nominal_met_new", metaxis);
+        Nominal_met_new->Scale(1.0, "width");
+        Nominal_met_new->Sumw2();
+				TH1D *Up_met_new = (TH1D*) Up_instrMET_tmp2->Rebin(nmetAxis-1, "Up_met_new", metaxis);
+        Up_met_new->Scale(1.0, "width");
+        Up_met_new->Sumw2();
+				TH1D *Down_met_new = (TH1D*) Down_instrMET_tmp2->Rebin(nmetAxis-1, "Down_met_new", metaxis);
+        Down_met_new->Scale(1.0, "width");
+        Down_met_new->Sumw2();
+
+
+
+
+				//Save the final wrap up shapes up and down for each category
+				if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new->GetEntries() << std::endl;
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
+        if(Nominal_met_new->GetEntries() ==0) continue;
+        savedInstrMET_shape_genuineStat[s][ich][ev].push_back((TH1D*) Nominal_met_new2->Clone());
+        savedInstrMET_shape_genuineStat_Up[s][ich][ev].push_back((TH1D*) Up_met_new2->Clone());
+        savedInstrMET_shape_genuineStat_Down[s][ich][ev].push_back((TH1D*) Down_met_new2->Clone());
+
+
+
+				//Nominal in black
+				Nominal_met_new->SetLineColor(kBlack);
+
+				//Up in red
+        Up_met_new->SetLineColor(kRed);
+
+				//Down in green
+        Down_met_new->SetLineColor(kGreen);
+
+				//No stats
+ 				Nominal_met_new->SetStats(kFALSE);
+
+
+				//Make the legends
+
+        TLegend *leg_met = new TLegend(0.6,0.7,0.89,0.89);
+        leg_met->AddEntry(Nominal_met_new, "Nominal", "l");
+        leg_met->AddEntry(Up_met_new, "full corrections up", "l");
+        leg_met->AddEntry(Down_met_new, "full corrections down", "l");
+
+
+
+
+
+
+				if(VERBOSE)std::cout<< "ready to fill" << std::endl;
+
+				c_InstrMET_genuineMET_stat.push_back( new TCanvas(tags_full+"_met_shapes_FINAL_genuineMET_stat_contribution", tags_full+"_met_shapes_corrections_FINAL_genuineMET_stat_contribution", 800, 800));
+        c_InstrMET_genuineMET_stat[num_canvas]->cd();
+				//c[cpos]->SetBottomMargin(6);
+        TPad *pad_met1 = new TPad("pad_met1","pad_met1",0,0.3,1,1);
+        TPad *pad_met2 = new TPad("pad_met2","pad_met2",0,0,1,0.3);
+        pad_met1->SetTopMargin(0.05);
+        pad_met1->SetBottomMargin(0);
+        pad_met1->Draw();
+        pad_met2->SetTopMargin(0);
+        pad_met2->SetBottomMargin(0.25);
+        pad_met2->Draw();
+        pad_met1->cd();
+        TH1 *h_nominal_met = Nominal_met_new->DrawCopy(); 
+        h_nominal_met->SetTitle("");
+        TH1 *h_up_met = Up_met_new->DrawCopy("same"); 
+        TH1 *h_down_met = Down_met_new->DrawCopy("same"); 
+
+        leg_met->Draw(); //same not needed?
+
+        // Do not draw the Y axis label on the upper plot and redraw a small
+		    // axis instead, in order to avoid the first label (0) to be clipped.
+   			//h_nominal_met->GetYaxis()->SetLabelSize(0.);
+   			//TGaxis *axis = new TGaxis( -5, -5, 5, -5, 0.01,200,510,"");
+   			//axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   			//axis->SetLabelSize(15);
+   			//axis->Draw();
+
+        // Y axis ratio plot settings
+        h_nominal_met->GetYaxis()->SetTitle("Events (a.u.)");
+        h_nominal_met->GetYaxis()->SetNdivisions(505);
+        h_nominal_met->GetYaxis()->SetTitleSize(20);
+        h_nominal_met->GetYaxis()->SetTitleFont(43);
+        h_nominal_met->GetYaxis()->SetTitleOffset(1.55);
+        h_nominal_met->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+        h_nominal_met->GetYaxis()->SetLabelSize(15); 
+
+        pad_met2->cd();
+        TH1D *h_nominal_met2 = (TH1D*)Up_met_new->Clone("h_nominal_met2"); //Be careful: non intuitive naming conventions to earn time.  
+        TH1D *h_nominal_met3 = (TH1D*)Down_met_new->Clone("h_nominal_met3");
+        TH1D *h_up_met2 = (TH1D*)Nominal_met_new->Clone("h_up_met2");
+        TH1D *h_down_met2 = (TH1D*)Nominal_met_new->Clone("h_down_met2");
+        h_nominal_met2->Sumw2();
+        h_nominal_met2->SetStats(0);
+        h_nominal_met2->Divide(h_up_met2);
+        h_nominal_met2->SetMarkerStyle(6);
+        //h_nominal_met2->SetMarkerSize(20);
+        h_nominal_met2->SetMarkerColor(kRed);
+        h_nominal_met2->Draw("hist p e1");
+        h_nominal_met3->Sumw2();
+        h_nominal_met3->SetStats(0);
+        h_nominal_met3->Divide(h_down_met2);
+        h_nominal_met3->SetMarkerStyle(6);
+        h_nominal_met3->SetMarkerColor(kGreen);
+        h_nominal_met3->Draw("hist p e1 same");
+        //Nominal_met->Draw("ep same");
+
+  			// Ratio plot (h3) settings
+   			h_nominal_met2->SetTitle(""); // Remove the ratio title
+
+   			// Y axis ratio plot settings
+   			h_nominal_met2->GetYaxis()->SetTitle("Up(Down)/Nominal ");
+   			h_nominal_met2->GetYaxis()->SetNdivisions(505);
+   			h_nominal_met2->GetYaxis()->SetTitleSize(20);
+   			h_nominal_met2->GetYaxis()->SetTitleFont(43);
+   			h_nominal_met2->GetYaxis()->SetTitleOffset(1.55);
+   			h_nominal_met2->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   			h_nominal_met2->GetYaxis()->SetLabelSize(15);
+
+   			//X axis ratio plot settings
+   			h_nominal_met2->GetXaxis()->SetTitle(XaxisName);
+   			h_nominal_met2->GetXaxis()->SetTitleSize(20);
+   			h_nominal_met2->GetXaxis()->SetTitleFont(43);
+   			h_nominal_met2->GetXaxis()->SetTitleOffset(4.);
+   			h_nominal_met2->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+   			h_nominal_met2->GetXaxis()->SetLabelSize(15);
+
+				//Draw a line at 1
+				//c1.Range( 0., -10., 1., 10. );
+				TLine *line = new TLine(h_nominal_met2->GetXaxis()->GetXmin(),1.,h_nominal_met2->GetXaxis()->GetXmax() ,1.);
+				line->SetLineColor(kBlack);
+				line->SetLineWidth(1);
+				line->SetLineStyle(3);
+				line->Draw();
+
+
+
+
+				//Now make ratio:
+   			//h1->GetXaxis()->SetLabelFont(63); //font in pixels
+   			//h1->GetXaxis()->SetLabelSize(16); //in pixels
+   			//h1->GetYaxis()->SetLabelFont(63); //font in pixels
+   			//h1->GetYaxis()->SetLabelSize(16); //in pixels
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
+
+
+
+
+				f_output->cd(globalDirectoryName+"/"+"Instr_MET_"+samples[s]+"_"+chTags[ich]);
+				c_InstrMET_genuineMET_stat[num_canvas]->Write();
+				num_canvas++;
+
+
+
+
+
+
+			}
+		}
+
+
+	}
+
 
 
 
@@ -1236,15 +1469,15 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
           else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 55) method_unc = 0.15 ;
           else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 40) method_unc = 0.10 ;
           else method_unc = 0.05 ;
-        }
-        else if(SystType == "mt"){
+        	}
+        	else if(SystType == "mt"){
           *//*if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 350) method_unc = 0.20 ;
-          else*//* if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 300) method_unc = 0.05 ;
-          else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 275) method_unc = 0.15 ;
-          else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 250) method_unc = 0.10 ;
-          else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 175) method_unc = 0.05 ;
-          else method_unc = 0.10 ;
-        }*/
+          		else*//* if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 300) method_unc = 0.05 ;
+          						 else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 275) method_unc = 0.15 ;
+          						 else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 250) method_unc = 0.10 ;
+          						 else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 175) method_unc = 0.05 ;
+          						 else method_unc = 0.10 ;
+        							 }*/
         method_unc = 0.10;
         if(binContent){
           if(SystType == "met"){
@@ -1256,7 +1489,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
             Nominal_met_method_down->SetBinContent(bin, binContent);
           }
 
-        
+
         }
       }
 
@@ -1311,7 +1544,6 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 					if(VERBOSE)std::cout<< __LINE__ << std::endl;
 				}
 			}
-
 
 			TH1D *Nominal_met_method_up2 = (TH1D*) Nominal_met_method_up->Clone();
 			TH1D *Nominal_met_method_down2 = (TH1D*) Nominal_met_method_down->Clone();
@@ -1384,6 +1616,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				if(VERBOSE)std::cout << "In my custom loop" << std::endl;
 
 				if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new[index]->GetEntries() << std::endl;
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
 				if(Nominal_met_new[index]->GetEntries() ==0) continue;
 
 				//Nominal in black
@@ -1489,6 +1722,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 
 				if(VERBOSE)std::cout << "In my custom loop: end!" << std::endl;
+				if(VERBOSE)std::cout << __LINE__ << std::endl;
 
 
 
@@ -1509,9 +1743,11 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	square_sum_down=0;
 	syst_binContent_nominal = 0;
 	std::vector<double> syst_binContent_genuineMET_up(samples.size(), 0);
+	std::vector<double> syst_binContent_genuineMET_stat_up(samples.size(), 0);
 	double syst_binContent_method_up = 0;
 	double syst_binContent_stat_up = 0;
 	std::vector<double> syst_binContent_genuineMET_down(samples.size(), 0);
+	std::vector<double> syst_binContent_genuineMET_stat_down(samples.size(), 0);
 	double syst_binContent_method_down = 0;
 	double syst_binContent_stat_down = 0;
 	num_canvas =0;
@@ -1540,11 +1776,13 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 				//genuineMET
 				for(unsigned int s =0; s < samples.size(); s++){
-				if(VERBOSE)std::cout<< __LINE__ << std::endl;
-				if(VERBOSE)std::cout<< samples[s] << std::endl;
+					if(VERBOSE)std::cout<< __LINE__ << std::endl;
+					if(VERBOSE)std::cout<< samples[s] << std::endl;
 					syst_binContent_genuineMET_up[s] = savedInstrMET_shape_Up[s][ich][ev][0]->GetBinContent(bin); 
-				if(VERBOSE)std::cout<< __LINE__ << std::endl;
+					if(VERBOSE)std::cout<< __LINE__ << std::endl;
 					syst_binContent_genuineMET_down[s] = savedInstrMET_shape_Down[s][ich][ev][0]->GetBinContent(bin); 
+					syst_binContent_genuineMET_stat_up[s] = savedInstrMET_shape_genuineStat_Up[s][ich][ev][0]->GetBinContent(bin); 
+					syst_binContent_genuineMET_stat_down[s] = savedInstrMET_shape_genuineStat_Down[s][ich][ev][0]->GetBinContent(bin); 
 				}
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 				//method
@@ -1553,17 +1791,22 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				//gammaData stat
 				syst_binContent_stat_up = saved_cst_stat_InstrMET_shape_Up[ich][ev][0]->GetBinContent(bin); 
 				syst_binContent_stat_down = saved_cst_stat_InstrMET_shape_Down[ich][ev][0]->GetBinContent(bin); 
-			
+
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 
 				for(unsigned int s = 0; s < samples.size(); s++){
-					if(ALL || (samples[s].Contains("W#gamma") && WGAMMA_ONLY) || (samples[s].Contains("Z#gamma") && ZGAMMA_ONLY) || (samples[s].Contains("W#rightarrow") && WJETS_ONLY) )square_sum_up += 1.0*(syst_binContent_genuineMET_up[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_up[s] - syst_binContent_nominal);
+					if(ALL || (samples[s].Contains("W#gamma") && WGAMMA_ONLY) || (samples[s].Contains("Z#gamma") && ZGAMMA_ONLY) || (samples[s].Contains("W#rightarrow") && WJETS_ONLY) ){
+						square_sum_up += 1.0*(syst_binContent_genuineMET_up[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_up[s] - syst_binContent_nominal);
+				  }
+				  if(ALL || GENUINESTATS_ONLY) square_sum_up += 1.0*(syst_binContent_genuineMET_stat_up[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_stat_up[s] - syst_binContent_nominal);
 				}
 				if(ALL || METHOD_ONLY) square_sum_up += 1.0*(syst_binContent_method_up - syst_binContent_nominal)*(syst_binContent_method_up - syst_binContent_nominal);
 				if(ALL || GAMMASTATS_ONLY) square_sum_up += 1.0*(syst_binContent_stat_up - syst_binContent_nominal)*(syst_binContent_stat_up - syst_binContent_nominal);
+
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 				for(unsigned int s = 0; s < samples.size(); s++){
 				  if(ALL || (samples[s].Contains("W#gamma") && WGAMMA_ONLY) || (samples[s].Contains("Z#gamma") && ZGAMMA_ONLY) || (samples[s].Contains("W#rightarrow") && WJETS_ONLY) )	square_sum_down += 1.0*(syst_binContent_genuineMET_down[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_down[s] - syst_binContent_nominal);
+				  if(ALL || GENUINESTATS_ONLY) square_sum_down += 1.0*(syst_binContent_genuineMET_stat_down[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_stat_down[s] - syst_binContent_nominal);
         }
         if(ALL || METHOD_ONLY) square_sum_down += 1.0*(syst_binContent_method_down - syst_binContent_nominal)*(syst_binContent_method_down - syst_binContent_nominal);
         if(ALL || GAMMASTATS_ONLY) square_sum_down += 1.0*(syst_binContent_stat_down - syst_binContent_nominal)*(syst_binContent_stat_down - syst_binContent_nominal);
@@ -1595,6 +1838,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 
 			if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new->GetEntries() << std::endl;
+			if(VERBOSE)std::cout << __LINE__ << std::endl;
       if(Nominal_met_new->GetEntries() ==0) continue;
 
 
@@ -1766,8 +2010,8 @@ void MakeSyst_custom_forMTandMET(){
 	//MakeSyst_custom(f_input, f_output, "mt", 1); //produce up and down variations for the mt_shapes (for the plotter) -- this is for the final version, with no MET cut
 	//MakeSyst_custom(f_input, f_output, "met", 1);//produce up and down variations for the met_shapes (for the plotter) -- this is for the final version, with no MET cut
 
-	
-	
+
+
 	//MakeSyst_custom(f_input, f_output, "mt_Inbveto50"); //produce up and down variation for Inbveto50 control plots
 	//MakeSyst_custom(f_input, f_output, "mt_Inbveto80"); //produce up and down variation for Inbveto80 control plots
 	//MakeSyst_custom(f_input, f_output, "mt_Inbveto125");//produce up and down variation for Inbveto125 control plots
