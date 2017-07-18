@@ -41,7 +41,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	int projectionBin;
 	//bool doProjection=false; //tell if the histo you are looking at needs a projection or not
 	//if(SystType == "met" || SystType == "mt") doProjection=true;
-	
+
 	//Don't touch this, because the name of the final plot produced is metfinal or mtfinal... and those are with 125GeV MET cut!
 	if(SystType == "met") projectionBin = projectionBin_arg; //set a cut at 1 for a 50GeV MET cut
 	if(SystType == "mt") projectionBin = projectionBin_arg; //set a cut at 17 for 125GeV MET cut
@@ -83,7 +83,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 	//My different types of correction
 	std::vector< TString> correctionsUp;
-	  std::vector< TString> correctionsDown;
+	std::vector< TString> correctionsDown;
 
 	if(DO_CORRECTIONS){
 	  correctionsUp.push_back("_th_factup");
@@ -160,10 +160,10 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 	metaxis_limits["vbf"] = vbf_axis_limits;
 	metaxis_limits[""] = all_axis_limits;
 	std::map<TString, Int_t> nmetAxis_limits = {
-		        { "eq0jets", sizeof(eq0jets_axis_limits)/sizeof(Double_t) },
-		        { "geq1jets", sizeof(geq1jets_axis_limits)/sizeof(Double_t) },
-		        { "vbf", sizeof(vbf_axis_limits)/sizeof(Double_t) },
-		        { "", sizeof(all_axis_limits)/sizeof(Double_t) } };
+		{ "eq0jets", sizeof(eq0jets_axis_limits)/sizeof(Double_t) },
+		{ "geq1jets", sizeof(geq1jets_axis_limits)/sizeof(Double_t) },
+		{ "vbf", sizeof(vbf_axis_limits)/sizeof(Double_t) },
+		{ "", sizeof(all_axis_limits)/sizeof(Double_t) } };
 
 	//Initialize a place to save histo:
 	std::vector<std::vector<std::vector<std::vector<TH1D*> > >> savedHisto(samples.size(), std::vector<std::vector<std::vector<TH1D*> > >(chTags.size(), std::vector<std::vector<TH1D*> >(evCat.size()/*, std::vector<TH1D*>*/))) ;
@@ -244,7 +244,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 					//Save the values in a vector so we can loop on it at the end:
 					if(VERBOSE)std::cout << "Number of events = " << Nominal_met->GetEntries() << std::endl;
-				if(VERBOSE)std::cout << __LINE__ << std::endl;
+					if(VERBOSE)std::cout << __LINE__ << std::endl;
 					if(Nominal_met->GetEntries() ==0) continue;
 					savedHisto[s][ich][ev].push_back((TH1D*) Nominal_met->Clone());
 					savedHisto_Up[s][ich][ev].push_back((TH1D*) Up_met->Clone());
@@ -544,16 +544,16 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				corrections.push_back("PDF+Scale");
 				corrections.push_back("Electroweak corrections");
 				corrections.push_back("Statistical fluctuations");
-					
+
 				if(VERBOSE)std::cout << "size of stat: " << Up_met_stat.size() << std::endl;
 				for(unsigned int index2=0; index2 < 2; index2++){ //the size of PDFandScale and EwkCorrections
 					savedHisto[s][ich][ev].push_back((TH1D*) Nominal_met_new2[index2]->Clone());
 					savedHisto_Up[s][ich][ev].push_back((TH1D*) Up_met_new2[index2]->Clone());
 					savedHisto_Down[s][ich][ev].push_back((TH1D*) Down_met_new2[index2]->Clone());
 			  }
-				
-					savedHisto_genuineStat_Up[s][ich][ev].push_back((TH1D*) Up_met_stat[0]->Clone());
-				  savedHisto_genuineStat_Down[s][ich][ev].push_back((TH1D*) Down_met_stat[0]->Clone());
+
+				savedHisto_genuineStat_Up[s][ich][ev].push_back((TH1D*) Up_met_stat[0]->Clone());
+				savedHisto_genuineStat_Down[s][ich][ev].push_back((TH1D*) Down_met_stat[0]->Clone());
 
 				for(unsigned int index=0; index < Nominal_met_new.size(); index++){
 					if(VERBOSE)std::cout << "In my custom loop" << std::endl;
@@ -713,16 +713,16 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 						syst_binContent_up = savedHisto_Up[s][ich][ev][v]->GetBinContent(bin); 
 						syst_binContent_down = savedHisto_Down[s][ich][ev][v]->GetBinContent(bin); 
 
-						if(true)std::cout << "v = " << v << " et syst_binContent_nominal = " << syst_binContent_nominal << " et syst_binContent_up = " << syst_binContent_up << " et syst_binContent_down = " << syst_binContent_down << " et square_sum_up = " << square_sum_up << " et square_sum_down = " << square_sum_down << std::endl;
+						if(VERBOSE)std::cout << "v = " << v << " et syst_binContent_nominal = " << syst_binContent_nominal << " et syst_binContent_up = " << syst_binContent_up << " et syst_binContent_down = " << syst_binContent_down << " et square_sum_up = " << square_sum_up << " et square_sum_down = " << square_sum_down << std::endl;
 						square_sum_up += 1.0*(syst_binContent_up - syst_binContent_nominal)*(syst_binContent_up - syst_binContent_nominal);
 						square_sum_down += 1.0*(syst_binContent_down - syst_binContent_nominal)*(syst_binContent_down - syst_binContent_nominal);
 
 					}
-					if(true)std::cout<< "Bin = " << bin << " et sqrt(square_sum_up) = " << sqrt(square_sum_up) << std::endl;
+					if(VERBOSE)std::cout<< "Bin = " << bin << " et sqrt(square_sum_up) = " << sqrt(square_sum_up) << std::endl;
 					if(h_nominal_sum_up->GetBinContent(bin) !=0 && h_nominal_sum_down->GetBinContent(bin) !=0){
 						updatedBinContent_up = h_nominal_sum_up->GetBinContent(bin) + sqrt(square_sum_up);
 						updatedBinContent_down = h_nominal_sum_down->GetBinContent(bin) - sqrt(square_sum_down);
-						if(true)std::cout<< "UpdatedBinContent_up = " << updatedBinContent_up << " and updatedBinContent_down = " << updatedBinContent_down << std::endl;	
+						if(VERBOSE)std::cout<< "UpdatedBinContent_up = " << updatedBinContent_up << " and updatedBinContent_down = " << updatedBinContent_down << std::endl;	
 						h_nominal_sum_up->SetBinContent(bin, updatedBinContent_up);
 						h_nominal_sum_down->SetBinContent(bin, updatedBinContent_down);
 					}
@@ -1007,7 +1007,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 			Instr_MET_nominal_rebin[ich][ev].push_back( (TH1D*) Instr_MET_nominal[ich][ev][0]->Rebin(nmetAxis-1, "Instr_MET_nominal_rebin_"+chTags[ich]+evCat[ev], metaxis));
 			Instr_MET_nominal_rebin[ich][ev][0]->Scale(1.0, "width");
-					if(VERBOSE)std::cout<< __LINE__ << std::endl;
+			if(VERBOSE)std::cout<< __LINE__ << std::endl;
 
 			for(unsigned int s =0; s < samples.size(); s++){
 				Instr_MET_up_rebin[s][ich][ev].push_back( (TH1D*) Instr_MET_up[s][ich][ev][0]->Rebin(nmetAxis-1, "Instr_MET_up_rebin", metaxis));
@@ -1016,7 +1016,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				Instr_MET_down_rebin[s][ich][ev][0]->Scale(1.0, "width");
 			}
 			Instr_MET_nominal_rebin[ich][ev][0]->Write();
-					if(VERBOSE)std::cout<< __LINE__ << std::endl;
+			if(VERBOSE)std::cout<< __LINE__ << std::endl;
 
 			//Instr MET from the plooter
 			if(InstrMET_control_plots){
@@ -1024,7 +1024,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 			  TH2F* met_shape_true_InstrMET = (TH2F*) gDirectory->Get(tags_full+"_"+SystType+"_shapes");
 			  if(VERBOSE)std::cout<< "Projecting " << tags_full <<"_"<<SystType<<"_shapes" << std::endl;
 			  TH1D* h_met_shape_true_InstrMET = (TH1D*) met_shape_true_InstrMET->ProjectionY(tags_full+"_InstrMET_true", projectionBin, projectionBin);
-			  		if(VERBOSE)std::cout<< __LINE__ << std::endl;
+			  if(VERBOSE)std::cout<< __LINE__ << std::endl;
 			  f_output->cd(globalDirectoryName+"/"+"Instr_MET_nominal");
 			  h_met_shape_true_InstrMET = (TH1D*) h_met_shape_true_InstrMET->Rebin(nmetAxis-1, "", metaxis);
 			  h_met_shape_true_InstrMET->Scale(1.0, "width");
@@ -1469,15 +1469,15 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
           else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 55) method_unc = 0.15 ;
           else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 40) method_unc = 0.10 ;
           else method_unc = 0.05 ;
-        }
-        else if(SystType == "mt"){
+        	}
+        	else if(SystType == "mt"){
           *//*if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 350) method_unc = 0.20 ;
-          else*//* if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 300) method_unc = 0.05 ;
-          else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 275) method_unc = 0.15 ;
-          else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 250) method_unc = 0.10 ;
-          else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 175) method_unc = 0.05 ;
-          else method_unc = 0.10 ;
-        }*/
+          		else*//* if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 300) method_unc = 0.05 ;
+          						 else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 275) method_unc = 0.15 ;
+          						 else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 250) method_unc = 0.10 ;
+          						 else if( Instr_MET_nominal[ich][ev][0]->GetBinLowEdge(bin) > 175) method_unc = 0.05 ;
+          						 else method_unc = 0.10 ;
+        							 }*/
         method_unc = 0.10;
         if(binContent){
           if(SystType == "met"){
@@ -1489,7 +1489,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
             Nominal_met_method_down->SetBinContent(bin, binContent);
           }
 
-        
+
         }
       }
 
@@ -1776,10 +1776,10 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 				//genuineMET
 				for(unsigned int s =0; s < samples.size(); s++){
-				if(VERBOSE)std::cout<< __LINE__ << std::endl;
-				if(VERBOSE)std::cout<< samples[s] << std::endl;
+					if(VERBOSE)std::cout<< __LINE__ << std::endl;
+					if(VERBOSE)std::cout<< samples[s] << std::endl;
 					syst_binContent_genuineMET_up[s] = savedInstrMET_shape_Up[s][ich][ev][0]->GetBinContent(bin); 
-				if(VERBOSE)std::cout<< __LINE__ << std::endl;
+					if(VERBOSE)std::cout<< __LINE__ << std::endl;
 					syst_binContent_genuineMET_down[s] = savedInstrMET_shape_Down[s][ich][ev][0]->GetBinContent(bin); 
 					syst_binContent_genuineMET_stat_up[s] = savedInstrMET_shape_genuineStat_Up[s][ich][ev][0]->GetBinContent(bin); 
 					syst_binContent_genuineMET_stat_down[s] = savedInstrMET_shape_genuineStat_Down[s][ich][ev][0]->GetBinContent(bin); 
@@ -1791,18 +1791,18 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 				//gammaData stat
 				syst_binContent_stat_up = saved_cst_stat_InstrMET_shape_Up[ich][ev][0]->GetBinContent(bin); 
 				syst_binContent_stat_down = saved_cst_stat_InstrMET_shape_Down[ich][ev][0]->GetBinContent(bin); 
-			
+
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 
 				for(unsigned int s = 0; s < samples.size(); s++){
 					if(ALL || (samples[s].Contains("W#gamma") && WGAMMA_ONLY) || (samples[s].Contains("Z#gamma") && ZGAMMA_ONLY) || (samples[s].Contains("W#rightarrow") && WJETS_ONLY) ){
 						square_sum_up += 1.0*(syst_binContent_genuineMET_up[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_up[s] - syst_binContent_nominal);
 				  }
-				  	if(ALL || GENUINESTATS_ONLY) square_sum_up += 1.0*(syst_binContent_genuineMET_stat_up[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_stat_up[s] - syst_binContent_nominal);
+				  if(ALL || GENUINESTATS_ONLY) square_sum_up += 1.0*(syst_binContent_genuineMET_stat_up[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_stat_up[s] - syst_binContent_nominal);
 				}
 				if(ALL || METHOD_ONLY) square_sum_up += 1.0*(syst_binContent_method_up - syst_binContent_nominal)*(syst_binContent_method_up - syst_binContent_nominal);
 				if(ALL || GAMMASTATS_ONLY) square_sum_up += 1.0*(syst_binContent_stat_up - syst_binContent_nominal)*(syst_binContent_stat_up - syst_binContent_nominal);
-				
+
 				if(VERBOSE)std::cout<< __LINE__ << std::endl;
 				for(unsigned int s = 0; s < samples.size(); s++){
 				  if(ALL || (samples[s].Contains("W#gamma") && WGAMMA_ONLY) || (samples[s].Contains("Z#gamma") && ZGAMMA_ONLY) || (samples[s].Contains("W#rightarrow") && WJETS_ONLY) )	square_sum_down += 1.0*(syst_binContent_genuineMET_down[s] - syst_binContent_nominal)*(syst_binContent_genuineMET_down[s] - syst_binContent_nominal);
@@ -1838,7 +1838,7 @@ void MakeSyst_custom(TFile* f_input, TFile* f_output, TString SystType, int proj
 
 
 			if(VERBOSE)std::cout << "Number of events = " << Nominal_met_new->GetEntries() << std::endl;
-				if(VERBOSE)std::cout << __LINE__ << std::endl;
+			if(VERBOSE)std::cout << __LINE__ << std::endl;
       if(Nominal_met_new->GetEntries() ==0) continue;
 
 
@@ -2010,8 +2010,8 @@ void MakeSyst_custom_forMTandMET(){
 	//MakeSyst_custom(f_input, f_output, "mt", 1); //produce up and down variations for the mt_shapes (for the plotter) -- this is for the final version, with no MET cut
 	//MakeSyst_custom(f_input, f_output, "met", 1);//produce up and down variations for the met_shapes (for the plotter) -- this is for the final version, with no MET cut
 
-	
-	
+
+
 	//MakeSyst_custom(f_input, f_output, "mt_Inbveto50"); //produce up and down variation for Inbveto50 control plots
 	//MakeSyst_custom(f_input, f_output, "mt_Inbveto80"); //produce up and down variation for Inbveto80 control plots
 	//MakeSyst_custom(f_input, f_output, "mt_Inbveto125");//produce up and down variation for Inbveto125 control plots
