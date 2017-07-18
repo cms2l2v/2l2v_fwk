@@ -367,13 +367,13 @@ void finalLimitPlot_WideWidth(){
          }
 
 
-         LEG = new TLegend(0.40,0.69,0.57,0.94);
+         LEG = new TLegend(0.34,0.69,0.50,0.94); //(0.52,0.58,0.91,0.94);
          LEG->SetTextFont(43); LEG->SetTextSize(15);   LEG->SetTextAlign(12);
          LEG->SetHeader("Observed");
          LEG->SetFillStyle(0);
          LEG->SetBorderSize(0);
 
-         TLegend* LEGExp = new TLegend(0.49,0.60,0.64,0.95);
+         TLegend* LEGExp = new TLegend(0.53,0.57,0.91,0.945); //(0.34,0.69,0.50,0.94);
          LEGExp->SetTextFont(43); LEGExp->SetTextSize(15);   LEGExp->SetTextAlign(12);         
          LEGExp->SetHeader("Expected");
          LEGExp->SetFillStyle(0);
@@ -415,8 +415,9 @@ void finalLimitPlot_WideWidth(){
             if(!g) continue;
             g->SetLineStyle(1);
 	    g->SetLineWidth(3);
-            //g->Draw("C same");
-            //LEG->AddEntry(g, g->GetTitle(), "L");            
+	    //Observed Limits
+            g->Draw("C same");
+            LEG->AddEntry(g, g->GetTitle(), "L");            
 
 
             TGraph* gExp = (gCPBR[ mapIndex(CP, BR) ])[1];
@@ -435,10 +436,10 @@ void finalLimitPlot_WideWidth(){
            }*/
          }}
 
-	 LEGExp->AddEntry( TGExpLimit1S, "expected #pm 1#sigma #Gamma = 100 GeV", "F");
-	 LEGExp->AddEntry( TGExpLimit2S, "expected #pm 2#sigma #Gamma = 100 GeV", "F");
+	 LEGExp->AddEntry( TGExpLimit1S, "#pm 1#sigma #Gamma = 100 GeV", "F");
+	 LEGExp->AddEntry( TGExpLimit2S, "#pm 2#sigma #Gamma = 100 GeV", "F");
 
-         //LEG  ->Draw("same");
+         LEG  ->Draw("same");
          LEGExp  ->Draw("same");
          //if(LEGTh)LEGTh  ->Draw("same");
 

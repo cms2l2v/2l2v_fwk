@@ -31,15 +31,15 @@ phase=-1
 MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
 based_key="2l2v_datadriven_" #mcbased_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
 jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH_VBF.json' #samples_full2016_GGH_WithoutBckg.json' #samples_full2016_GGH_WithoutWZ.json' #samples_full2016_GGH_WithoutWZandZVV.json' #samples_full2016_GGH_WithoutIrriducible.json' #samples_full2016_GGH.json'
-inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_05_12_forLimits.root' #plotter_2017_05_05_forLimits.root'
+inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/plotter_2017_06_08_forLimits_Alessio.root' #plotter_2017_05_05_forLimits.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
-BINS = ["eq0jets","geq1jets","vbf","eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
+BINS = ["eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
 
 MASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000]
 SUBMASS = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000] 
 
-LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB --blind"
+LandSArgCommonOptions="  --BackExtrapol --statBinByBin 0.00001 --dropBckgBelow 0.00001  --subNRB"
 
 for model in MODELS:
    for shape in ["mt_shapes"]:# --histoVBF met_shapes"]:  #here run all the shapes you want to test.  '"mt_shapes --histoVBF met_shapes"' is a very particular case since we change the shape for VBF
@@ -58,17 +58,17 @@ for model in MODELS:
                    #BIN             += [bin]
                    #MODEL           += [model]
 
-                   #signalSuffixVec += [ suffix ]
-                   #OUTName         += ["SB13TeV_SM_GGF"]
-                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
-                   #BIN             += [bin]
-                   #MODEL          += [model]
-
                    signalSuffixVec += [ suffix ]
-                   OUTName         += ["SB13TeV_SM_VBF"]
-                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   OUTName         += ["SB13TeV_SM_GGF"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
                    BIN             += [bin]
-                   MODEL           += [model]
+                   MODEL          += [model]
+
+                   #signalSuffixVec += [ suffix ]
+                   #OUTName         += ["SB13TeV_SM_VBF"]
+                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipGGH "]
+                   #BIN             += [bin]
+                   #MODEL           += [model]
 
          elif(model=="RsGrav"):
                    signalSuffixVec += [ "" ]
@@ -404,6 +404,9 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines('cd -;\n')
 
            cardsdir=DataCardsDir+"/"+('%04.0f' % float(m));
+           SCRIPT.writelines('if [[ $HOSTNAME =~ "iihe" ]]; then cd $TMPDIR; fi\n')
+	   SCRIPT.writelines('mkdir '+DataCardsDir+'\n')
+	   SCRIPT.writelines('mkdir '+cardsdir+'; cd '+cardsdir+'\n')
            SCRIPT.writelines('mkdir -p out;\ncd out;\n')
 	   #SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + "--syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
@@ -417,7 +420,7 @@ for signalSuffix in signalSuffixVec :
 	   ##fvbf=0 for GGH and 1 for VBF
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --run blind -v 3 >  COMB.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root >>  COMB.log;\n") 
 
            ### THIS is for toy (hybridNew) fit
            else:

@@ -337,7 +337,8 @@ void NRBProcess(JSONWrapper::Object& Root, TFile* File, std::list<NameAndType>& 
          utils::root::checkSumw2(obj1);
          obj1->Reset();
 
-         std::vector<std::pair<string,double>> channels = {std::make_pair("ee",0.36), std::make_pair("mumu",0.77), std::make_pair("ll",0.36+0.77)};
+         //std::vector<std::pair<string,double>> channels = {std::make_pair("ee",0.36), std::make_pair("mumu",0.77), std::make_pair("ll",0.36+0.77)}; //2015 data
+         std::vector<std::pair<string,double>> channels = {std::make_pair("ee",0.369), std::make_pair("mumu",0.683), std::make_pair("ll",0.369+0.683)}; //2016 data
          for(auto ch=channels.begin();ch!=channels.end();ch++){
             if(HistoProperties.name.find(ch->first)==0){
                std::string emName = HistoProperties.name;  emName.replace(0,ch->first.size(),"emu");
@@ -840,13 +841,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
       }
       if(abs(rebin)>0){hist = hist->Rebin(abs(rebin)); hist->Scale(1.0/abs(rebin), rebin<0?"width":""); }
 
-      if (HistoProperties.name.find("_met")!=std::string::npos) {
-	hist->GetXaxis()->SetRangeUser(0.,metxmax); 
-      }
-      if (HistoProperties.name.find("_mt")!=std::string::npos) {
-	hist->GetXaxis()->SetRangeUser(100.,mtxmax); 
-      }
-
       utils::root::setStyleFromKeyword(matchingKeyword,Process[i], hist);
      
       utils::root::fixExtremities(hist,fixOverflow,fixUnderflow); 
@@ -949,14 +943,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
    stack->SetMinimum(Minimum);
    stack->SetMaximum(Maximum);
    
-   
-   if (HistoProperties.name.find("_met")!=std::string::npos) { //|| (HistoProperties.name.find("_mt")!=std::string::npos)) {
-     stack->GetXaxis()->SetRangeUser(0.,metxmax);
-   }
-   if (HistoProperties.name.find("_mt")!=std::string::npos) { 
-     stack->GetXaxis()->SetRangeUser(100.,mtxmax);
-   }
-
    t1->Update();
 
    if(showUnc && mc){
@@ -1001,9 +987,6 @@ void Draw1DHistogram(JSONWrapper::Object& Root, TFile* File, NameAndType& HistoP
             data->SetBinContent(i, 0); data->SetBinError(i, 0);
          }
          TH1 *hist=(TH1*)stack->GetHistogram();
-
-	 if (HistoProperties.name.find("_met")!=std::string::npos) { data->GetXaxis()->SetLimits(data->GetXaxis()->GetXmin(), metxmax); }
-	 if (HistoProperties.name.find("_mt")!=std::string::npos) { data->GetXaxis()->SetLimits(data->GetXaxis()->GetXmin(), mtxmax); }    
 
          TPave* blinding_box = new TPave(data->GetBinLowEdge(data->FindBin(blind)),  hist->GetMinimum(), data->GetXaxis()->GetXmax(), hist->GetMaximum(), 0, "NB" );  
          blinding_box->SetFillColor(15);         blinding_box->SetFillStyle(3013);         blinding_box->Draw("same F");
