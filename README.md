@@ -10,6 +10,7 @@ cd HiggsAnalysis/CombinedLimit
 git fetch origin
 git checkout v6.3.1
 scramv1 b clean; scramv1 b # always make a clean build, as scram doesn't always see updates to src/LinkDef.h
+cd ../..
 ```
 ## Now install the Hzz2l2nu code
 ```bash
@@ -24,6 +25,7 @@ scramv1 b -j 16
 ## Submit the limit jobs on lxplus
 example for GGH only (for VBF few updates have still to be done by hand in the code)
 ```bash
+UserCode/llvv_fwk/test/hzz2l2v/computeLimit
 python optimize_WideWidth.py -p 4
 ```
 ## Get the limit plots
