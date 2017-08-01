@@ -1939,15 +1939,15 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
         if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("eq0jet" )){integral_sand_ggH[0] = shapeInfo.histo()->Integral();}
         if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("eq1jet" )){integral_sand_ggH[1] = shapeInfo.histo()->Integral();}
         if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("vbf" )){integral_sand_ggH[2] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("eq0jet" )){integral_sonl_VBF[0] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("eq1jet" )){integral_sonl_VBF[1] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("vbf" )){integral_sonl_VBF[2] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_bonl")!=string::npos && chbin.Contains("eq0jet" )){integral_bonl_VBF[0] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_bonl")!=string::npos && chbin.Contains("eq1jet" )){integral_bonl_VBF[1] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_bonl")!=string::npos && chbin.Contains("vbf" )){integral_bonl_VBF[2] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_sand")!=string::npos && chbin.Contains("eq0jet" )){integral_sand_VBF[0] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_sand")!=string::npos && chbin.Contains("eq1jet" )){integral_sand_VBF[1] = shapeInfo.histo()->Integral();}
-        if(it->second.shortName.find("VBF_sand")!=string::npos && chbin.Contains("vbf" )){integral_sand_VBF[2] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("eq0jet" )){integral_sonl_VBF[0] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("eq1jet" )){integral_sonl_VBF[1] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("vbf" )){integral_sonl_VBF[2] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_bonl")!=string::npos && chbin.Contains("eq0jet" )){integral_bonl_VBF[0] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_bonl")!=string::npos && chbin.Contains("eq1jet" )){integral_bonl_VBF[1] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_bonl")!=string::npos && chbin.Contains("vbf" )){integral_bonl_VBF[2] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_sand")!=string::npos && chbin.Contains("eq0jet" )){integral_sand_VBF[0] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_sand")!=string::npos && chbin.Contains("eq1jet" )){integral_sand_VBF[1] = shapeInfo.histo()->Integral();}
+        if(it->second.shortName.find("qqH_sand")!=string::npos && chbin.Contains("vbf" )){integral_sand_VBF[2] = shapeInfo.histo()->Integral();}
       }
     }
     for(unsigned int p=0;p<sorted_procs.size();p++){
@@ -1991,12 +1991,12 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
           if(it->second.shortName.find("sand")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_signal"]    = integral*0.1;}//Just to put something
           if(it->second.shortName.find("sand")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_signal"]    = integral*0.1;}//Just to put something
           if(it->second.shortName.find("sand")!=string::npos && chbin.Contains("vbf" )){shapeInfo.uncScale["QCDscale_signal"]    = integral*0.1;}//Just to put something
-          if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale_down["QCDscale_signal"]    = integral*(TG_QCDScaleVBFeq0jets_down_signal->Eval(mass,NULL,"S")-1);}
-          if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale_down["QCDscale_signal"] = integral*(TG_QCDScaleVBFgeq1jets_down_signal->Eval(mass,NULL,"S")-1);} 
-          if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale_down["QCDscale_signal"] = integral*(TG_QCDScaleVBFvbf_down_signal->Eval(mass,NULL,"S")-1);}
-          if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale_up["QCDscale_signal"]    = integral*(TG_QCDScaleVBFeq0jets_up_signal->Eval(mass,NULL,"S")-1);}
-          if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale_up["QCDscale_signal"] = integral*(TG_QCDScaleVBFgeq1jets_up_signal->Eval(mass,NULL,"S")-1);} 
-          if(it->second.shortName.find("VBF_sonl")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale_up["QCDscale_signal"] = integral*(TG_QCDScaleVBFvbf_up_signal->Eval(mass,NULL,"S")-1);}
+          if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale_down["QCDscale_signal"]    = integral*(TG_QCDScaleVBFeq0jets_down_signal->Eval(mass,NULL,"S")-1);}
+          if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale_down["QCDscale_signal"] = integral*(TG_QCDScaleVBFgeq1jets_down_signal->Eval(mass,NULL,"S")-1);} 
+          if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale_down["QCDscale_signal"] = integral*(TG_QCDScaleVBFvbf_down_signal->Eval(mass,NULL,"S")-1);}
+          if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale_up["QCDscale_signal"]    = integral*(TG_QCDScaleVBFeq0jets_up_signal->Eval(mass,NULL,"S")-1);}
+          if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale_up["QCDscale_signal"] = integral*(TG_QCDScaleVBFgeq1jets_up_signal->Eval(mass,NULL,"S")-1);} 
+          if(it->second.shortName.find("qqH_sonl")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale_up["QCDscale_signal"] = integral*(TG_QCDScaleVBFvbf_up_signal->Eval(mass,NULL,"S")-1);}
           if(it->second.shortName.find("ggH_sonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale_down["QCDscale_signal"]    = integral*(TG_QCDScaleggHeq0jets_down_signal->Eval(mass,NULL,"S")-1);}
           if(it->second.shortName.find("ggH_sonl")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale_down["QCDscale_signal"] = integral*(TG_QCDScaleggHgeq1jets_down_signal->Eval(mass,NULL,"S")-1);} 
           if(it->second.shortName.find("ggH_sonl")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale_down["QCDscale_signal"] = integral*(TG_QCDScaleggHvbf_down_signal->Eval(mass,NULL,"S")-1);}
@@ -2017,7 +2017,7 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
             if(chbin.Contains("vbf" )){shapeInfo.uncScale_down["QCDscale_signal"]    = integral*(QCDscale_sand_down-1);}
             if(chbin.Contains("vbf" )){shapeInfo.uncScale_up["QCDscale_signal"]    = integral*(QCDscale_sand_up-1);}
           }
-          if(it->second.shortName.find("VBF_sand")!=string::npos){
+          if(it->second.shortName.find("qqH_sand")!=string::npos){
             double QCDscale_sand_up = integral_bonl_VBF[0]/integral_sand_VBF[0] + integral_sonl_VBF[0]/integral_sand_VBF[0] * TG_QCDScaleVBFeq0jets_up_signal->Eval(mass,NULL,"S") + fabs((integral_sand_VBF[0]-integral_bonl_VBF[0]-integral_sonl_VBF[0])/integral_sand_VBF[0]) * sqrt(TG_QCDScaleVBFeq0jets_up_signal->Eval(mass,NULL,"S")); //nothing on background, factor on signal, sqrt(factor) on interference.
             double QCDscale_sand_down = integral_bonl_VBF[0]/integral_sand_VBF[0] + integral_sonl_VBF[0]/integral_sand_VBF[0] * TG_QCDScaleVBFeq0jets_down_signal->Eval(mass,NULL,"S") - fabs((integral_sand_VBF[0]-integral_bonl_VBF[0]-integral_sonl_VBF[0])/integral_sand_VBF[0]) * sqrt(TG_QCDScaleVBFeq0jets_down_signal->Eval(mass,NULL,"S")); //nothing on background, factor on signal, sqrt(factor) on interference.
             if(chbin.Contains("eq0jet" )){shapeInfo.uncScale_down["QCDscale_signal"]    = integral*(QCDscale_sand_down-1);}
