@@ -1895,6 +1895,10 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
     double QCDScaleVBFeq0jets_down_signal  [] = {0.485, 1.081, 0.934, 0.957, 0.908, 1.024, 1.003, 1.059, 1.026, 1.001, 1.001};
     double QCDScaleVBFgeq1jets_down_signal [] = {1.029, 0.985, 0.987, 1.008, 1.018, 1.006, 0.999, 1.016, 1.008, 1.000, 1.000};
     double QCDScaleVBFvbf_down_signal      [] = {0.945, 0.956, 1.032, 0.990, 0.974, 0.988, 0.999, 0.939, 0.968, 0.998, 0.998};
+    //double QCDScaleggZZeq0jets              [] = {2.042, 1.416, 1.283, 1.335, 1.352, 1.425, 1.542, 1.627, 1.659, 1.638, 1.638};
+    double QCDScaleggZZeq0jets              [] = {2.042, 1.416, 1.283, 1.335, 1.352, 1.425, 1.542, 1.627, 1.659, 1.638, 1.638};
+    double QCDScaleggZZgeq1jets             [] = {1.305, 1.219, 1.181, 1.168, 1.172, 1.183, 1.201, 1.219, 1.220, 1.219, 1.219};
+    double QCDScaleggZZvbf                  [] = {1.217, 1.282, 1.200, 1.215, 1.178, 1.195, 1.201, 1.226, 1.232, 1.199, 1.199};
 
     double UEPSf0 []         = {0.952, 0.955, 0.958, 0.964, 0.966, 0.954, 0.946, 0.931, 0.920, 0.920, 0.920, 0.920, 0.920};
     double UEPSf1 []         = {1.055, 1.058, 1.061, 1.068, 1.078, 1.092, 1.102, 1.117, 1.121, 1.121, 1.121, 1.121, 1.121};
@@ -1912,6 +1916,9 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
     TGraph* TG_QCDScaleVBFeq0jets_down_signal  = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,  QCDScaleVBFeq0jets_down_signal);
     TGraph* TG_QCDScaleVBFgeq1jets_down_signal = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleVBFgeq1jets_down_signal);
     TGraph* TG_QCDScaleVBFvbf_down_signal      = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,      QCDScaleVBFvbf_down_signal);
+    TGraph* TG_QCDScaleggZZeq0jets  = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,  QCDScaleggZZeq0jets);
+    TGraph* TG_QCDScaleggZZgeq1jets = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, QCDScaleggZZgeq1jets);
+    TGraph* TG_QCDScaleggZZvbf      = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass,      QCDScaleggZZvbf);
     TGraph* TG_UEPSf0         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf0);
     TGraph* TG_UEPSf1         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf1);
     TGraph* TG_UEPSf2         = new TGraph(sizeof(QCDScaleMass)/sizeof(double), QCDScaleMass, UEPSf2);
@@ -1983,6 +1990,17 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
           if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["kfactor_ggZZ"] = integral*(kFactor_ggZZ_sand-1);} 
           kFactor_ggZZ_sand = integral_sonl_ggH[2]/integral_sand_ggH[2] + integral_bonl_ggH[2]/integral_sand_ggH[2] * 1.1 + (integral_sand_ggH[2]-integral_bonl_ggH[2]-integral_sonl_ggH[2])/integral_sand_ggH[2] * sqrt(1.1);
           if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["kfactor_ggZZ"] = integral*(kFactor_ggZZ_sand-1);}
+
+          //QCD scale for ggZZ continuum
+          if(it->second.shortName.find("ggH_bonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggZZ"]    = integral*(TG_QCDScaleggZZeq0jets->Eval(mass,NULL,"S")-1);}
+          if(it->second.shortName.find("ggH_bonl")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggZZ"] = integral*(TG_QCDScaleggZZgeq1jets->Eval(mass,NULL,"S")-1);} 
+          if(it->second.shortName.find("ggH_bonl")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggZZ"] = integral*(TG_QCDScaleggZZvbf->Eval(mass,NULL,"S")-1);}
+          double QCDscale_ggZZ_sand = integral_sonl_ggH[0]/integral_sand_ggH[0] + integral_bonl_ggH[0]/integral_sand_ggH[0] * TG_QCDScaleggZZeq0jets->Eval(mass,NULL,"S") + (integral_sand_ggH[0]-integral_bonl_ggH[0]-integral_sonl_ggH[0])/integral_sand_ggH[0] * sqrt(TG_QCDScaleggZZeq0jets->Eval(mass,NULL,"S")); //nothing on signal, factor on background, sqrt(factor) on interference.
+          if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_ggZZ"]    = integral*(QCDscale_ggZZ_sand-1);}
+          QCDscale_ggZZ_sand = integral_sonl_ggH[1]/integral_sand_ggH[1] + integral_bonl_ggH[1]/integral_sand_ggH[1] * TG_QCDScaleggZZgeq1jets->Eval(mass,NULL,"S") + (integral_sand_ggH[1]-integral_bonl_ggH[1]-integral_sonl_ggH[1])/integral_sand_ggH[1] * sqrt(TG_QCDScaleggZZgeq1jets->Eval(mass,NULL,"S"));
+          if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("eq1jet" )){shapeInfo.uncScale["QCDscale_ggZZ"] = integral*(QCDscale_ggZZ_sand-1);} 
+          QCDscale_ggZZ_sand = integral_sonl_ggH[2]/integral_sand_ggH[2] + integral_bonl_ggH[2]/integral_sand_ggH[2] * TG_QCDScaleggZZvbf->Eval(mass,NULL,"S") + (integral_sand_ggH[2]-integral_bonl_ggH[2]-integral_sonl_ggH[2])/integral_sand_ggH[2] * sqrt(TG_QCDScaleggZZvbf->Eval(mass,NULL,"S"));
+          if(it->second.shortName.find("ggH_sand")!=string::npos && chbin.Contains("vbf"    )){shapeInfo.uncScale["QCDscale_ggZZ"] = integral*(QCDscale_ggZZ_sand-1);}
 
           //bin migration at th level
           if(it->second.shortName.find("sonl")!=string::npos && chbin.Contains("eq0jet" )){shapeInfo.uncScale["QCDscale_signal"]    = integral*(TG_QCDScaleggHeq0jets_up_signal->Eval(mass,NULL,"S")-1);}//Just to put something
