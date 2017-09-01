@@ -52,17 +52,17 @@ for model in MODELS:
                    suffix = "_cp%4.2f_brn%4.2f" % (CP, BRN)
  
                    #Run limit for ShapeBased GG+VBF
-                   #signalSuffixVec += [ suffix ]
-                   #OUTName         += ["SB13TeV_SM"]
-                   #LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
-                   #BIN             += [bin]
-                   #MODEL           += [model]
-
                    signalSuffixVec += [ suffix ]
-                   OUTName         += ["SB13TeV_SM_GGF"]
-                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
+                   OUTName         += ["SB13TeV_SM"]
+                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + " --systpostfix _13TeV --shape "]  #as this combine ggF and VBF, we need to scale VBF to the SM ratio expectation
                    BIN             += [bin]
-                   MODEL          += [model]
+                   MODEL           += [model]
+
+#                   signalSuffixVec += [ suffix ]
+#                   OUTName         += ["SB13TeV_SM_GGF"]
+#                   LandSArgOptions += [" --histo " + shape + " --histoVBF " + shape + "  --systpostfix _13TeV --shape --skipQQH "]
+#                   BIN             += [bin]
+#                   MODEL          += [model]
 
                    #signalSuffixVec += [ suffix ]
                    #OUTName         += ["SB13TeV_SM_VBF"]
@@ -411,7 +411,7 @@ for signalSuffix in signalSuffixVec :
 	   #SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + " --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("computeLimit --m " + str(m) + " --in " + inUrl + " " + "--syst --index " + indexString + " --bins " + BIN[iConf] + " --json " + jsonUrl + " " + SideMassesArgs + " " + LandSArg + cutStr  +" ;\n")
            SCRIPT.writelines("sh combineCards.sh;\n"); 
-	   SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HiggsWidth:higgswidth --PO verbose --PO \'is2l2nu\' --PO m=\'" + str(m) + "\' --PO w=\'" + str(cp) + "\' \n")
+	   SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HeavyScalarMod:heavyscalarmod --PO verbose --PO \'is2l2nu\' --PO m=\'" + str(m) + "\' --PO w=\'" + str(cp) + "\' \n")
            #compute pvalue
            SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root > COMB.log;\n")
 	   SCRIPT.writelines("combine -M MaxLikelihoodFit workspace.root  \n")
@@ -420,7 +420,10 @@ for signalSuffix in signalSuffixVec :
 	   ##fvbf=0 for GGH and 1 for VBF
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root >>  COMB.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  >>  COMB.log;\n") 
+              SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ggH.root;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbfi  >>  COMB_VBF.log;\n") 
+              SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_qqH.root;\n") 
 
            ### THIS is for toy (hybridNew) fit
            else:
