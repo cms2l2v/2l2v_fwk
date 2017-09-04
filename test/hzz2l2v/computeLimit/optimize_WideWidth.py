@@ -413,8 +413,11 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines("sh combineCards.sh;\n"); 
 	   SCRIPT.writelines("text2workspace.py card_combined.dat -o workspace.root -P UserCode.llvv_fwk.HeavyScalarMod:heavyscalarmod --PO verbose --PO \'is2l2nu\' --PO m=\'" + str(m) + "\' --PO w=\'" + str(cp) + "\' \n")
            #compute pvalue
-           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root > COMB.log;\n")
-	   SCRIPT.writelines("combine -M MaxLikelihoodFit workspace.root  \n")
+           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf > COMB.log;\n")
+           SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_ggH.root;\n")
+           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf > COMB.log;\n")
+           SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_qqH.root;\n")
+	   SCRIPT.writelines("combine -M MaxLikelihoodFit workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  \n")
 	   SCRIPT.writelines("python " + CMSSW_BASE + "/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py  mlfit.root -g Nuisance_CrossCheck.root \n")
 
 	   ##fvbf=0 for GGH and 1 for VBF
@@ -461,17 +464,18 @@ for signalSuffix in signalSuffixVec :
 
    elif(phase == 5 ):
       print '# FINAL PLOT for ' + DataCardsDir + '#\n'
-      os.system("hadd -f "+DataCardsDir+"/PValueTree.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*.root > /dev/null")
-
+      os.system("hadd -f "+DataCardsDir+"/PValueTree_ggH.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_ggH.root > /dev/null")
+      os.system("hadd -f "+DataCardsDir+"/PValueTree_qqH.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_qqH.root > /dev/null")
       #THIS IS FOR ASYMPTOTIC
       if(ASYMTOTICLIMIT==True):
-         os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*.root > /dev/null")
+         os.system("hadd -f "+DataCardsDir+"/LimitTree_ggH.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_ggH.root > /dev/null")
+         os.system("hadd -f "+DataCardsDir+"/LimitTree_qqH.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_qqH.root > /dev/null")
       #THIS IS FOR HYBRIDNEW
       else:
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
 
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Stength_\",\""+DataCardsDir+"/LimitTree.root\",\"\", false, false, 13 , 35914.143 )'")
-
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_ggH_\",\""+DataCardsDir+"/LimitTree_ggH.root\",\"\", false, false, 13 , 35914.143 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_qqH_\",\""+DataCardsDir+"/LimitTree_qqH.root\",\"\", false, false, 13 , 35914.143 )'")
    ######################################################################
 
 
