@@ -22,9 +22,10 @@ cd ../..
 scramv1 b -j 16 
 ```
 
-## Submit the limit jobs on lxplus
+## Submit the limit jobs
 example for GGH only (for VBF few updates have still to be done by hand in the code)
 ```bash
+if [[ $HOSTNAME =~ "iihe" ]]; then yes | scp lxplus.cern.ch:/eos/cms/store/user/hbrun/analysis/plotters/plotter_2017_06_08_forLimits_JulyFromAlessio.root $CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/.; fi
 cd UserCode/llvv_fwk/test/hzz2l2v/computeLimit
 python optimize_WideWidth.py -p 4
 ```

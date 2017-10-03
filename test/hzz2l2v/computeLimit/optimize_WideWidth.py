@@ -31,7 +31,8 @@ phase=-1
 MODELS=["SM"] #,"RsGrav","BulkGrav","Rad"] #Models which can be used are: "RsGrav", "BulkGrav", "Rad", "SM"
 based_key="2l2v_datadriven_" #mcbased_" #to run limits on MC use: 2l2v_mcbased_, to use data driven obj use: 2l2v_datadriven_
 jsonPath='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/samples_full2016_GGH_VBF.json' #samples_full2016_GGH_WithoutBckg.json' #samples_full2016_GGH_WithoutWZ.json' #samples_full2016_GGH_WithoutWZandZVV.json' #samples_full2016_GGH_WithoutIrriducible.json' #samples_full2016_GGH.json'
-inUrl='/eos/cms/store/user/hbrun/analysis/plotters/plotter_2017_06_08_forLimits_JulyFromAlessio.root'
+if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0): inUrl='$CMSSW_BASE/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/plotter_2017_06_08_forLimits_JulyFromAlessio.root'
+else: inUrl='/eos/cms/store/user/hbrun/analysis/plotters/plotter_2017_06_08_forLimits_JulyFromAlessio.root'
 BESTDISCOVERYOPTIM=True #Set to True for best discovery optimization, Set to False for best limit optimization
 ASYMTOTICLIMIT=True #Set to True to compute asymptotic limits (faster) instead of toy based hybrid-new limits
 BINS = ["eq0jets,geq1jets,vbf"] # list individual analysis bins to consider as well as combined bins (separated with a coma but without space)
@@ -217,8 +218,17 @@ for signalSuffix in signalSuffixVec :
           LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_'+str(i)+'_'+str(shapeCutMin_)+'_'+str(shapeCutMax_)+'.sh'])
           i = i+1#increment the cut index
       FILE.close()
-      LaunchOnCondor.SendCluster_Submit()
-      
+      if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0):
+          LaunchOnCondor.KillProcess("big-submission")
+          LaunchOnCondor.KillProcess("sleep")
+          LaunchOnCondor.SendCluster_Submit()
+      else:
+          LaunchOnCondor.SendCluster_Submit()
+
+
+
+
+
    ###################################################
    ##   WRAPPING UP RESULTS                         ##
    ###################################################
@@ -457,7 +467,12 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.close()
            #os.system('sh ' + OUT+'script_mass_'+str(m)+'.sh ')  #uncomment this line to launch interactively (this may take a lot of time)
            LaunchOnCondor.SendCluster_Push(["BASH", 'sh ' + OUT+'script_mass_'+str(m)+'.sh'])
-      LaunchOnCondor.SendCluster_Submit()
+      if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0):
+          LaunchOnCondor.KillProcess("big-submission")
+          LaunchOnCondor.KillProcess("sleep")
+          LaunchOnCondor.SendCluster_Submit()
+      else:
+          LaunchOnCondor.SendCluster_Submit()
 
 
    ######################################################################
@@ -478,7 +493,8 @@ for signalSuffix in signalSuffixVec :
       os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_qqH_\",\""+DataCardsDir+"/LimitTree_qqH.root\",\"\", false, false, 13 , 35914.143 )'")
    ######################################################################
 
+#If IIHE, prompt for big-submission
+if( (phase == 1 or phase == 4) and (commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be")>0) ): os.system("big-submission "+FarmDirectory+"/inputs/big.cmd")
 
 if(phase>5):
       help()
-
