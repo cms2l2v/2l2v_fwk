@@ -133,7 +133,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
  
 
   //get the pValue
-  inputs = inputs.ReplaceAll("/LimitTree.root", "/PValueTree.root");
+  inputs = inputs.ReplaceAll("/LimitTree", "/PValueTree");
   file = TFile::Open(inputs);
   
   printf("Looping on %s\n",inputs.Data());
@@ -164,8 +164,8 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
 
 
   string prod = "pp";
-  if(outputDir.find("GGF")!=std::string::npos)prod="gg";
-  if(outputDir.find("VBF")!=std::string::npos)prod="qq";
+  if(outputDir.find("ggH")!=std::string::npos)prod="gg";
+  if(outputDir.find("qqH")!=std::string::npos)prod="qq";
 
   
   strengthLimit = false;
