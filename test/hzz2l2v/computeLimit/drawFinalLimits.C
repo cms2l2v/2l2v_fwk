@@ -41,23 +41,23 @@ TGraph *createTheLimitTGraph(TString inputFile,TString name, float limitType){
 }
 
 void drawTheCanvas(TString type){
-  TGraph *exp100 = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+".root", "exp100", 0.5);
+  TGraph *exp100 = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp100", 0.5);
   TGraph *obs100 = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+".root", "obs100", -1);
 
-  TGraph *exp100_1Sdown = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+".root", "exp100_1Sdown", 0.84);
-  TGraph *exp100_1Sup = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+".root", "exp100_1Sup", 0.16);
+  TGraph *exp100_1Sdown = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp100_1Sdown", 0.84);
+  TGraph *exp100_1Sup = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp100_1Sup", 0.16);
 
-  TGraph *exp100_2Sdown = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+".root", "exp100_2Sdown", 0.975);
-  TGraph *exp100_2Sup = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+".root", "exp100_2Sup", 0.025);
+  TGraph *exp100_2Sdown = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp100_2Sdown", 0.975);
+  TGraph *exp100_2Sup = createTheLimitTGraph("cards_SB13TeV_SM_cp100.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp100_2Sup", 0.025);
 
   TCutG* TGExpLimit1S  = GetErrorBand("1S", exp100_1Sup, exp100_1Sdown);
   TCutG* TGExpLimit2S  = GetErrorBand("2S", exp100_2Sup, exp100_2Sdown);
   TGExpLimit2S->SetFillColor(5);
 
-  TGraph *exp10 = createTheLimitTGraph("cards_SB13TeV_SM_cp10.00_brn0.00/LimitTree_"+type+".root", "exp10", 0.5);
+  TGraph *exp10 = createTheLimitTGraph("cards_SB13TeV_SM_cp10.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp10", 0.5);
   TGraph *obs10 = createTheLimitTGraph("cards_SB13TeV_SM_cp10.00_brn0.00/LimitTree_"+type+".root", "obs10", -1);
 
-  TGraph *exp5 = createTheLimitTGraph("cards_SB13TeV_SM_cp5.00_brn0.00/LimitTree_"+type+".root", "exp5", 0.5);
+  TGraph *exp5 = createTheLimitTGraph("cards_SB13TeV_SM_cp5.00_brn0.00/LimitTree_"+type+"_blinded.root", "exp5", 0.5);
   TGraph *obs5 = createTheLimitTGraph("cards_SB13TeV_SM_cp5.00_brn0.00/LimitTree_"+type+".root", "obs5", -1);
 
   TCanvas *c0 = new TCanvas("c0","coucou",800,800);
@@ -66,11 +66,21 @@ void drawTheCanvas(TString type){
   c0->SetLogy();
 
 
- exp100->SetMinimum(0.001);
+  exp100->SetMinimum(0.001);
   exp100->SetLineWidth(2);
   exp100->SetLineColor(kBlack);
   exp100->SetLineStyle(2);
   exp100->Draw("AC");
+ 
+ 	//X/Y axis legend
+ 	string prod = "";
+ 	if(type == "ggH") prod = "gg";
+ 	if(type == "qqH") prod = "qq";
+ 	exp100->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (pb)").c_str());
+ 	exp100->GetYaxis()->SetTitleOffset(1.40);
+ 	exp100->GetXaxis()->SetTitle("M_{H} [GeV]");
+ 	exp100->GetXaxis()->SetTitleOffset(1.20);
+  exp100->GetYaxis()->SetRangeUser(1E-3,6);
 
   /*exp100_1Sdown->SetLineWidth(2);
   exp100_1Sdown->SetLineColor(kGreen);
@@ -105,6 +115,31 @@ void drawTheCanvas(TString type){
   obs5->SetLineColor(kBlue);
   obs5->Draw("same");
 
+	TLegend* LEG = new TLegend(0.35,0.73,0.60,0.93);
+  LEG->SetHeader("");
+  LEG->SetFillColor(0);
+  LEG->SetFillStyle(0);
+  LEG->SetTextFont(42);
+  LEG->SetBorderSize(0);
+  LEG->AddEntry(exp100  , "median expected"  ,"L");
+  LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
+  LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");
+	LEG->AddEntry(obs100  , "observed"  ,"LP");
+  LEG->Draw();
+
+  TLegend* LEG2 = new TLegend(0.60,0.73,0.85,0.93);
+  LEG2->SetHeader("");
+  LEG2->SetFillColor(0);
+  LEG2->SetFillStyle(0);
+  LEG2->SetTextFont(42);
+  LEG2->SetBorderSize(0);
+  LEG2->AddEntry(obs5  , "#Gamma = 5 GeV"  ,"L");
+  LEG2->AddEntry(obs10  , "#Gamma = 10 GeV"  ,"L");
+  LEG2->AddEntry(obs100  , "#Gamma = 100 GeV"  ,"L");
+  LEG2->Draw();
+
+
+
   c0->Print("limit_"+type+".png");
 }
 
@@ -114,7 +149,6 @@ void drawFinalLimits(){
 
   drawTheCanvas("ggH");
   drawTheCanvas("qqH");
-
 
 
 }

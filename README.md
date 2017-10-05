@@ -33,7 +33,7 @@ python optimize_WideWidth.py -p 4
 (when the jobs are terminated)
 ```bash
 python optimize_WideWidth.py -p 5 
-root -l -b -q finalLimitPlot_WideWidth.C
+root -l -b -q drawFinalLimits.C
 ```
 
 

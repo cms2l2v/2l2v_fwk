@@ -427,16 +427,38 @@ for signalSuffix in signalSuffixVec :
            SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_ggH.root;\n")
            SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf > COMB.log;\n")
            SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_qqH.root;\n")
-	   SCRIPT.writelines("combine -M MaxLikelihoodFit workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  \n")
-	   SCRIPT.writelines("python " + CMSSW_BASE + "/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py  mlfit.root -g Nuisance_CrossCheck.root \n")
+           #SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf --run blind > COMB_blind.log;\n")
+           #SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_ggH_blinded.root;\n")
+           #SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf --run blind > COMB_blind.log;\n")
+           #SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_qqH_blinded.root;\n")
+
+
+     #SCRIPT.writelines("combine -M MaxLikelihoodFit workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  \n")
+	   #SCRIPT.writelines("python " + CMSSW_BASE + "/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py  mlfit.root -g Nuisance_CrossCheck.root \n")
+	   SCRIPT.writelines("combine -M MaxLikelihoodFit --saveNormalizations --saveShapes --saveWithUncertainties -m " + str(m) + " workspace.root  --setPhysicsModelParameters fvbf=0.0 --freezeNuisances fvbf  \n")
+	   SCRIPT.writelines("mv mlfit.root mlfit_ggH.root;\n")
+	   SCRIPT.writelines("python " + CMSSW_BASE + "/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py  mlfit_ggH.root -g Nuisance_CrossCheck_ggH.root \n")
+	   SCRIPT.writelines("sh " + CMSSW_BASE + "/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/produceThePerCategoryPlot.sh " + str(m) + " ggH \n")
+	   SCRIPT.writelines("combine -M MaxLikelihoodFit --saveNormalizations --saveShapes --saveWithUncertainties -m " + str(m) + " workspace.root  --setPhysicsModelParameters fvbf=1.0 --freezeNuisances fvbf  \n")
+	   SCRIPT.writelines("mv mlfit.root mlfit_qqH.root;\n")
+	   SCRIPT.writelines("python " + CMSSW_BASE + "/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py  mlfit_qqH.root -g Nuisance_CrossCheck_qqH.root \n")
+	   SCRIPT.writelines("sh " + CMSSW_BASE + "/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/produceThePerCategoryPlot.sh " + str(m) + " qqH \n")
+	   SCRIPT.writelines("combine -M MaxLikelihoodFit --saveNormalizations --saveShapes --saveWithUncertainties -m " + str(m) + " workspace.root  --setPhysicsModelParameters fvbf=1.0 \n")
+	   SCRIPT.writelines("mv mlfit.root mlfit_floating_ggH_and_qqH.root;\n")
+	   SCRIPT.writelines("python " + CMSSW_BASE + "/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py  mlfit_floating_ggH_and_qqH.root -g Nuisance_CrossCheck_floating_ggH_and_qqH.root \n")
+	   SCRIPT.writelines("sh " + CMSSW_BASE + "/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/produceThePerCategoryPlot.sh " + str(m) + " floating_ggH_and_qqH \n")
 
 	   ##fvbf=0 for GGH and 1 for VBF
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
               SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  >>  COMB.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ggH.root;\n") 
-              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbfi  >>  COMB_VBF.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf  >>  COMB_VBF.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_qqH.root;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf --run blind >>  COMB_blind.log;\n") 
+              SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ggH_blinded.root;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf --run blind  >>  COMB_VBF_blind.log;\n") 
+              SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_qqH_blinded.root;\n") 
 
            ### THIS is for toy (hybridNew) fit
            else:
@@ -480,17 +502,26 @@ for signalSuffix in signalSuffixVec :
    elif(phase == 5 ):
       print '# FINAL PLOT for ' + DataCardsDir + '#\n'
       os.system("hadd -f "+DataCardsDir+"/PValueTree_ggH.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_ggH.root > /dev/null")
+      #os.system("hadd -f "+DataCardsDir+"/PValueTree_ggH_blinded.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_ggH_blinded.root > /dev/null")
       os.system("hadd -f "+DataCardsDir+"/PValueTree_qqH.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_qqH.root > /dev/null")
+      #os.system("hadd -f "+DataCardsDir+"/PValueTree_qqH_blinded.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_qqH_blinded.root > /dev/null")
+      #os.system("hadd -f "+DataCardsDir+"/PValueTree_floating_ggH_and_qqH.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_floating_ggH_and_qqH.root > /dev/null")
+      #os.system("hadd -f "+DataCardsDir+"/PValueTree_floating_ggH_and_qqH_blinded.root "+DataCardsDir+"/*/higgsCombineTest.ProfileLikelihood.*_floating_ggH_and_qqH_blinded.root > /dev/null")
       #THIS IS FOR ASYMPTOTIC
       if(ASYMTOTICLIMIT==True):
          os.system("hadd -f "+DataCardsDir+"/LimitTree_ggH.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_ggH.root > /dev/null")
+         os.system("hadd -f "+DataCardsDir+"/LimitTree_ggH_blinded.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_ggH_blinded.root > /dev/null")
          os.system("hadd -f "+DataCardsDir+"/LimitTree_qqH.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_qqH.root > /dev/null")
+         os.system("hadd -f "+DataCardsDir+"/LimitTree_qqH_blinded.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_qqH_blinded.root > /dev/null")
+         #os.system("hadd -f "+DataCardsDir+"/LimitTree_floating_ggH_and_qqH.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_floating_ggH_and_qqH.root > /dev/null")
+         #os.system("hadd -f "+DataCardsDir+"/LimitTree_floating_ggH_and_qqH_blinded.root "+DataCardsDir+"/*/higgsCombineTest.Asymptotic.*_floating_ggH_and_qqH_blinded.root > /dev/null")
       #THIS IS FOR HYBRIDNEW
       else:
-         os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null")
+         os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null") #I guess this is broken in the current framework?
 
       os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_ggH_\",\""+DataCardsDir+"/LimitTree_ggH.root\",\"\", false, false, 13 , 35914.143 )'")
       os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_qqH_\",\""+DataCardsDir+"/LimitTree_qqH.root\",\"\", false, false, 13 , 35914.143 )'")
+      #os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_floating_ggH_and_qqH_\",\""+DataCardsDir+"/LimitTree_floating_ggH_and_qqH.root\",\"\", false, false, 13 , 35914.143 )'")
    ######################################################################
 
 #If IIHE, prompt for big-submission
