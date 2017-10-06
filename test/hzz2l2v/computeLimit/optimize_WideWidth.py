@@ -425,7 +425,7 @@ for signalSuffix in signalSuffixVec :
            #compute pvalue
            SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf > COMB.log;\n")
            SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_ggH.root;\n")
-           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf > COMB.log;\n")
+           SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf > COMB_VBF.log;\n")
            SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_qqH.root;\n")
            SCRIPT.writelines("combine -M ProfileLikelihood --signif --pvalue -m " +  str(m) + "  workspace.root --setPhysicsModelParameters fvbf=1.0 > COMB_float.log;\n")
            SCRIPT.writelines("mv higgsCombineTest.ProfileLikelihood.mH" + str(m) + ".root higgsCombineTest.ProfileLikelihood.mH" + str(m) + "_ppH.root;\n")
@@ -517,9 +517,9 @@ for signalSuffix in signalSuffixVec :
       else:
          os.system("hadd -f "+DataCardsDir+"/LimitTree.root "+DataCardsDir+"/*/higgsCombineTest.HybridNewMerged.*.root > /dev/null") 
 
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_ggH_\",\""+DataCardsDir+"/LimitTree_ggH.root\",\"\", false, false, 13 , 35914.143 )'")
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_qqH_\",\""+DataCardsDir+"/LimitTree_qqH.root\",\"\", false, false, 13 , 35914.143 )'")
-      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_ppH_\",\""+DataCardsDir+"/LimitTree_ppH.root\",\"\", false, false, 13 , 35914.143 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_ggH_\",\""+DataCardsDir+"/LimitTree_ggH.root\",\""+DataCardsDir+"/LimitTree_ggH_blinded.root\",\"\", false, false, 13 , 35914.143 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_qqH_\",\""+DataCardsDir+"/LimitTree_qqH.root\",\""+DataCardsDir+"/LimitTree_qqH_blinded.root\",\"\", false, false, 13 , 35914.143 )'")
+      os.system("root -l -b -q plotLimit.C+'(\""+DataCardsDir+"/Strenght_ppH_\",\""+DataCardsDir+"/LimitTree_ppH.root\",\""+DataCardsDir+"/LimitTree_ppH_blinded.root\",\"\", false, false, 13 , 35914.143 )'")
    ######################################################################
 
 #If IIHE, prompt for big-submission

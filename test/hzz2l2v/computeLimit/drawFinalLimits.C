@@ -116,15 +116,15 @@ void drawTheCanvas(TString type){
   obs5->SetLineColor(kBlue);
   obs5->Draw("same");
 
-	TLegend* LEG = new TLegend(0.35,0.73,0.60,0.93);
+	TLegend* LEG = new TLegend(0.25,0.73,0.60,0.93);
   LEG->SetHeader("");
   LEG->SetFillColor(0);
   LEG->SetFillStyle(0);
   LEG->SetTextFont(42);
   LEG->SetBorderSize(0);
   LEG->AddEntry(exp100  , "median expected"  ,"L");
-  LEG->AddEntry(TGExpLimit1S  , "expected #pm 1#sigma"  ,"F");
-  LEG->AddEntry(TGExpLimit2S  , "expected #pm 2#sigma"  ,"F");
+  LEG->AddEntry(TGExpLimit1S  , "expected (#Gamma=100 GeV) #pm 1#sigma"  ,"F");
+  LEG->AddEntry(TGExpLimit2S  , "expected (#Gamma=100 GeV) #pm 2#sigma"  ,"F");
 	LEG->AddEntry(obs100  , "observed"  ,"LP");
   LEG->Draw();
 
