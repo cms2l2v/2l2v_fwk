@@ -1,7 +1,5 @@
-
 #include <string>
 #include <vector>
-
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TFile.h"
@@ -73,7 +71,7 @@ void scaleGraph(TGraph* Limit, double scale){
    }   
 }
 
-void printLimits(FILE* pFile, TGraph* graph, double Mmin=200, double Mmax=600){
+void printLimits(FILE* pFile, TGraph* graph, double Mmin=300, double Mmax=3000){
    double previous = graph->Eval(Mmin);
    fprintf(pFile, "Exclude ");
    bool opened = false;
@@ -166,6 +164,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   string prod = "pp";
   if(outputDir.find("ggH")!=std::string::npos)prod="gg";
   if(outputDir.find("qqH")!=std::string::npos)prod="qq";
+  if(outputDir.find("ppH")!=std::string::npos)prod="pp";
 
   
   strengthLimit = false;

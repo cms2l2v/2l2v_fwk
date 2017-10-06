@@ -1,6 +1,6 @@
 
 
-int theMassPoints[13] = {200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000};
+int theMassPoints[12] = {300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000};
 
 TCutG* GetErrorBand(string name, TGraph* Low, TGraph* High)
 {
@@ -20,9 +20,9 @@ TGraph *createTheLimitTGraph(TString inputFile,TString name, float limitType){
   cout << "will do " << name << endl;
   TChain *chain = new TChain("limit");
   chain->Add(inputFile);
-  float x[13], y[13];
+  float x[12], y[12];
   int nbOfPoints=0;
-  for (int i=0; i<13 ; i++){
+  for (int i=0; i<12 ; i++){
     TH1F *expectedLimit = new TH1F("expected","",30000,0,10000);
     TString theCut = Form("mh==%i&&abs(quantileExpected-%f)<0.01",theMassPoints[i],limitType);
     chain->Draw("limit>>expected",theCut);
@@ -76,6 +76,7 @@ void drawTheCanvas(TString type){
  	string prod = "";
  	if(type == "ggH") prod = "gg";
  	if(type == "qqH") prod = "qq";
+ 	if(type == "ppH") prod = "pp";
  	exp100->GetYaxis()->SetTitle((string("#sigma_{95%} (") + prod +" #rightarrow H #rightarrow ZZ) (pb)").c_str());
  	exp100->GetYaxis()->SetTitleOffset(1.40);
  	exp100->GetXaxis()->SetTitle("M_{H} [GeV]");
@@ -149,6 +150,5 @@ void drawFinalLimits(){
 
   drawTheCanvas("ggH");
   drawTheCanvas("qqH");
-
-
+  drawTheCanvas("ppH");
 }

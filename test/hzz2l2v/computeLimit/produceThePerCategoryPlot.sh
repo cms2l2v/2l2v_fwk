@@ -3,9 +3,9 @@
 #help
 if [[ "$#" == "0" ]]; then
   echo "This command produces the final MT plots per category with uncertainties and for all cases (datacard_input, prefit, postfitB and postfitSandB).";
-    echo "Usage: 'produceThePerCategoryPlot.sh [mass] [ggH|qqH|floating]'";
+    echo "Usage: 'produceThePerCategoryPlot.sh [mass] [ggH|qqH|ppH]'";
     echo "#Mass  = the mass";
-    echo "#Mode  = the production mode (ggH only, qqH only, or a floating ratio between the two)           ";
+    echo "#Mode  = the production mode (ggH only, qqH only, or ppH, i.e a floating ratio between the two)           ";
     echo "";
     echo "Example: 'sh produceThePerCategoryPlot.sh 0800 ggH'";
     exit 0;
@@ -19,7 +19,7 @@ fi
 
 #store arguments
 mass_old=$1  #the mass, has to be given with 4 numbers (0100, 0200, ... 1000, 1500...)
-mode=$2  #the production mode (ggH only, qqH only or a floating ratio between the two)
+mode=$2  #the production mode (ggH only, qqH only, or ppH, i.e a floating ratio between the two)
 
 mass=$((10#$mass_old)) #small trick to remove leading zeros if mass is given in the format 0800
 
