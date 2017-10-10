@@ -37,6 +37,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_inputsDatacard
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_inputsDatacard.C 
 mkdir -p mt_plots/M${mass}_${mode}_inputsDatacard
+rm -r mt_plots/M${mass}_${mode}_inputsDatacard/*
 mv -f mtplots_* mt_plots/M${mass}_${mode}_inputsDatacard/.
 
 ##2. Normalisation and Error directly from prefit
@@ -49,6 +50,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_prefit/g \
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_prefit.C 
 mkdir -p mt_plots/M${mass}_${mode}_prefit
+rm -f mt_plots/M${mass}_${mode}_prefit/*
 mv -f mtplots_* mt_plots/M${mass}_${mode}_prefit/.
 
 
@@ -62,6 +64,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_postfitB/g \
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_postfitB.C 
 mkdir -p mt_plots/M${mass}_${mode}_postfitB
+rm -r mt_plots/M${mass}_${mode}_postfitB/*
 mv -f mtplots_* mt_plots/M${mass}_${mode}_postfitB/.
 
 
@@ -75,6 +78,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_postfitSandB/g
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_postfitSandB.C 
 mkdir -p mt_plots/M${mass}_${mode}_postfitSandB
+rm -r mt_plots/M${mass}_${mode}_postfitSandB/*
 mv -f mtplots_* mt_plots/M${mass}_${mode}_postfitSandB/.
 
 #Cleaning

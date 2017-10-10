@@ -1,5 +1,5 @@
-#include "/user/delannoy/HZZ2l2v/2_October_LimitsImprovement/CMSSW_7_4_7/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/tdrstyle.C"
-#include "/user/delannoy/HZZ2l2v/2_October_LimitsImprovement/CMSSW_7_4_7/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/CMS_lumi.C"
+#include "UserCode/llvv_fwk/test/hzz2l2v/computeLimit/tdrstyle.C"
+#include "UserCode/llvv_fwk/test/hzz2l2v/computeLimit/CMS_lumi.C"
 #include <map>
 #include "TH1D.h"
 #include "TCanvas.h"

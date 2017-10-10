@@ -447,18 +447,18 @@ for signalSuffix in signalSuffixVec :
 	   ##fvbf=0 for GGH and 1 for VBF
            ### THIS IS FOR Asymptotic fit
            if(ASYMTOTICLIMIT==True):
-              SCRIPT.writelines("combine -M Asymptotic --picky -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  >>  COMB.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf  >>  COMB.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ggH.root;\n") 
-              SCRIPT.writelines("combine -M Asymptotic --picky -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf  >>  COMB_VBF.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf  >>  COMB_VBF.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_qqH.root;\n") 
-              SCRIPT.writelines("combine -M Asymptotic --picky -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1  >>  COMB_float.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1  >>  COMB_float.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ppH.root;\n") 
 
-              SCRIPT.writelines("combine -M Asymptotic --picky -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf --run blind >>  COMB_blind.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=0 --freezeNuisances fvbf --run blind >>  COMB_blind.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ggH_blinded.root;\n") 
-              SCRIPT.writelines("combine -M Asymptotic --picky -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf --run blind  >>  COMB_VBF_blind.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --freezeNuisances fvbf --run blind  >>  COMB_VBF_blind.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_qqH_blinded.root;\n") 
-              SCRIPT.writelines("combine -M Asymptotic --picky -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --run blind  >>  COMB_float_blind.log;\n") 
+              SCRIPT.writelines("combine -M Asymptotic -m " +  str(m) + " workspace.root --setPhysicsModelParameters fvbf=1 --run blind  >>  COMB_float_blind.log;\n") 
               SCRIPT.writelines("mv higgsCombineTest.Asymptotic.mH" + str(m) + ".root higgsCombineTest.Asymptotic.mH" + str(m) + "_ppH_blinded.root;\n") 
 
            ### THIS is for toy (hybridNew) fit
