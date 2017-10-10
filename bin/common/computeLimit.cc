@@ -2139,7 +2139,11 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
         if(mass==125 && U->first=="CMS_hzz2l2v_lshape")continue;//skip lineshape uncertainty for 125GeV Higgs
 
         char line[2048];
-        sprintf(line,"%-45s %-10s ", U->first.c_str(), U->second?"shapeN2":"lnN");
+        TString nameBin = U->first.c_str();
+        string shapePdf = ((nameBin.Contains("instrmet"))?"shape2":"shapeN2");
+        string thePdf="lnN";
+        if (U->second) thePdf=shapePdf;
+        sprintf(line,"%-45s %-10s ", U->first.c_str(), thePdf.c_str());
         bool isNonNull = false;
         for(unsigned int j=0; j<clean_procs.size(); j++){
           ShapeData_t& shapeInfo = procs[clean_procs[j]].channels[C->first].shapes[histoName];
