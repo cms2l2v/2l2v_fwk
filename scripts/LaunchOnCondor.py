@@ -455,8 +455,7 @@ def SendCluster_Submit():
     else:                                        os.system("condor_submit " + Path_Cmd)  
         
     print '\n'+CopyRights
-    if(commands.getstatusoutput("hostname -f")[1].find("iihe.ac.be"       )>0): print '%i Job(s) has/have been added to the big.cmd list. Do not forget to launch it with big-submission script.' % Jobs_Count
-    else: print '%i Job(s) has/have been submitted on the Computing Cluster' % Jobs_Count
+    print '%i Job(s) has/have been submitted on the Computing Cluster' % Jobs_Count
 
 def SendCluster_CriminalSubmit():
     from multiprocessing import Pool
