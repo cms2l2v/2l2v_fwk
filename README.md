@@ -22,17 +22,17 @@ cd ../..
 scramv1 b -j 16 
 ```
 
-## Submit the limit jobs
+## Submit the limit jobs on lxplus
 example for GGH only (for VBF few updates have still to be done by hand in the code)
 ```bash
-cd UserCode/llvv_fwk/test/hzz2l2v/computeLimit
+UserCode/llvv_fwk/test/hzz2l2v/computeLimit
 python optimize_WideWidth.py -p 4
 ```
 ## Get the limit plots
 (when the jobs are terminated)
 ```bash
 python optimize_WideWidth.py -p 5 
-root -l -b -q drawFinalLimits.C
+root -l -b -q finalLimitPlot_WideWidth.C
 ```
 
 
