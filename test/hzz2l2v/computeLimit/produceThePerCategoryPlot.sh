@@ -37,7 +37,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_inputsDatacard
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_inputsDatacard.C 
 mkdir -p mt_plots/M${mass}_${mode}_inputsDatacard
-mv mtplots_* mt_plots/M${mass}_${mode}_inputsDatacard/.
+mv -f mtplots_* mt_plots/M${mass}_${mode}_inputsDatacard/.
 
 ##2. Normalisation and Error directly from prefit
 sed s/TEMPLATE_MASS/${mass}/g ${CMSSW_BASE}/src/UserCode/llvv_fwk/test/hzz2l2v/computeLimit/drawThePerCategoryPlot_TEMPLATE.C | \
@@ -49,7 +49,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_prefit/g \
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_prefit.C 
 mkdir -p mt_plots/M${mass}_${mode}_prefit
-mv mtplots_* mt_plots/M${mass}_${mode}_prefit/.
+mv -f mtplots_* mt_plots/M${mass}_${mode}_prefit/.
 
 
 ##3. Normalisation and Error directly from postfit with background only
@@ -62,7 +62,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_postfitB/g \
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_postfitB.C 
 mkdir -p mt_plots/M${mass}_${mode}_postfitB
-mv mtplots_* mt_plots/M${mass}_${mode}_postfitB/.
+mv -f mtplots_* mt_plots/M${mass}_${mode}_postfitB/.
 
 
 ##4. Normalisation and Error directly from postfit with backgrond+signal
@@ -75,7 +75,7 @@ sed s/TEMPLATE_MACRO_NAME/drawThePerCategoryPlot_M${mass}_${mode}_postfitSandB/g
 
 root -l -q -b drawThePerCategoryPlot_M${mass}_${mode}_postfitSandB.C 
 mkdir -p mt_plots/M${mass}_${mode}_postfitSandB
-mv mtplots_* mt_plots/M${mass}_${mode}_postfitSandB/.
+mv -f mtplots_* mt_plots/M${mass}_${mode}_postfitSandB/.
 
 #Cleaning
 rm -f drawThePerCategoryPlot_M${mass}_${mode}_inputsDatacard.C
