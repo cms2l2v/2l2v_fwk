@@ -2140,7 +2140,7 @@ void AllInfo_t::getYieldsFromShape(FILE* pFile, std::vector<TString>& selCh, str
 
         char line[2048];
         TString nameBin = U->first.c_str();
-        string shapePdf = ((nameBin.Contains("instrmet"))?"shape*":"shapeN2");
+        string shapePdf = ((nameBin.Contains("instrmet"))?"shape2":"shapeN2");
         string thePdf="lnN";
         if (U->second) thePdf=shapePdf;
         sprintf(line,"%-45s %-10s ", U->first.c_str(), thePdf.c_str());
