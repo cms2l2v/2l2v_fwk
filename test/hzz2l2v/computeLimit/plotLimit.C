@@ -109,7 +109,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputs_blinded=
   printf("Looping on %s\n",inputs_blinded.Data());
   if(!file_blinded) return;
   if(file_blinded->IsZombie()) return;
-	TTree* tree_blinded = (TTree*)file_blinded->Get("limit");
+  TTree* tree_blinded = (TTree*)file_blinded->Get("limit");
   tree_blinded->GetBranch("mh"              )->SetAddress(&Tmh      );
   tree_blinded->GetBranch("limit"           )->SetAddress(&Tlimit   );
   tree_blinded->GetBranch("limitErr"        )->SetAddress(&TlimitErr);
@@ -120,12 +120,12 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputs_blinded=
   TGraph* ExpLimitp1 = getLimitGraph(tree_blinded,0.840);
   TGraph* ExpLimitp2 = getLimitGraph(tree_blinded,0.975);
   file_blinded->Close(); 
-	TTree* tree = (TTree*)file->Get("limit");
+  TTree* tree = (TTree*)file->Get("limit");
   tree->GetBranch("mh"              )->SetAddress(&Tmh      );
   tree->GetBranch("limit"           )->SetAddress(&Tlimit   );
   tree->GetBranch("limitErr"        )->SetAddress(&TlimitErr);
   tree->GetBranch("quantileExpected")->SetAddress(&TquantExp);
-	TGraph* ObsLimit   = getLimitGraph(tree,-1   ); 
+  TGraph* ObsLimit   = getLimitGraph(tree,-1   ); 
   file->Close(); 
 
   FILE* pFileSStrenght = fopen((outputDir+"SignalStrenght").c_str(),"w");
