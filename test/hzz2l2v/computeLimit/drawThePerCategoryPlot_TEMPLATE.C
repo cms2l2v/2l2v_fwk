@@ -561,7 +561,7 @@ void makeThePlotForOneCat(TString categoryName, TFile *theFile, TString theLepto
 	map_globalUnc["wz"] = (std::vector<double>) {CMS_eff, QCDscale_WZ, lumi_13TeV}; 
 	map_globalUnc["zvv"] = (std::vector<double>) {CMS_eff, lumi_13TeV}; 
 	map_globalUnc["instrmet"] = (std::vector<double>) {1.0}; 
-	map_globalUnc[""] = (std::vector<double>) {CMS_hzz2l2v_sys_topwww_13TeV}; 
+	map_globalUnc["topwww"] = (std::vector<double>) {CMS_hzz2l2v_sys_topwww_13TeV}; 
 
   //Get all the MC histos for nominal values
 	std::map<TString, TH1D*> map_MCProcesses;
