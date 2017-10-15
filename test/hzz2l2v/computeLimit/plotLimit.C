@@ -1,7 +1,5 @@
-
 #include <string>
 #include <vector>
-
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TFile.h"
@@ -73,7 +71,7 @@ void scaleGraph(TGraph* Limit, double scale){
    }   
 }
 
-void printLimits(FILE* pFile, TGraph* graph, double Mmin=200, double Mmax=600){
+void printLimits(FILE* pFile, TGraph* graph, double Mmin=300, double Mmax=3000){
    double previous = graph->Eval(Mmin);
    fprintf(pFile, "Exclude ");
    bool opened = false;
@@ -89,7 +87,7 @@ void printLimits(FILE* pFile, TGraph* graph, double Mmin=200, double Mmax=600){
 
 
 
-void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", bool strengthLimit=true, bool blind=false, double energy=7, double luminosity=5.035, TString legendName="ee and #mu#mu channels")
+void plotLimit(string outputDir="./", TString inputs="", TString inputs_blinded="", TString inputXSec="", bool strengthLimit=true, bool blind=false, double energy=7, double luminosity=5.035, TString legendName="ee and #mu#mu channels")
 {
    setTDRStyle();  
    gStyle->SetPadTopMargin   (0.05);
@@ -107,17 +105,27 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   printf("Looping on %s\n",inputs.Data());
   if(!file) return;
   if(file->IsZombie()) return;
+  TFile* file_blinded = TFile::Open(inputs_blinded);
+  printf("Looping on %s\n",inputs_blinded.Data());
+  if(!file_blinded) return;
+  if(file_blinded->IsZombie()) return;
+  TTree* tree_blinded = (TTree*)file_blinded->Get("limit");
+  tree_blinded->GetBranch("mh"              )->SetAddress(&Tmh      );
+  tree_blinded->GetBranch("limit"           )->SetAddress(&Tlimit   );
+  tree_blinded->GetBranch("limitErr"        )->SetAddress(&TlimitErr);
+  tree_blinded->GetBranch("quantileExpected")->SetAddress(&TquantExp);
+  TGraph* ExpLimitm2 = getLimitGraph(tree_blinded,0.025);
+  TGraph* ExpLimitm1 = getLimitGraph(tree_blinded,0.160);
+  TGraph* ExpLimit   = getLimitGraph(tree_blinded,0.500);
+  TGraph* ExpLimitp1 = getLimitGraph(tree_blinded,0.840);
+  TGraph* ExpLimitp2 = getLimitGraph(tree_blinded,0.975);
+  file_blinded->Close(); 
   TTree* tree = (TTree*)file->Get("limit");
   tree->GetBranch("mh"              )->SetAddress(&Tmh      );
   tree->GetBranch("limit"           )->SetAddress(&Tlimit   );
   tree->GetBranch("limitErr"        )->SetAddress(&TlimitErr);
   tree->GetBranch("quantileExpected")->SetAddress(&TquantExp);
   TGraph* ObsLimit   = getLimitGraph(tree,-1   ); 
-  TGraph* ExpLimitm2 = getLimitGraph(tree,0.025);
-  TGraph* ExpLimitm1 = getLimitGraph(tree,0.160);
-  TGraph* ExpLimit   = getLimitGraph(tree,0.500);
-  TGraph* ExpLimitp1 = getLimitGraph(tree,0.840);
-  TGraph* ExpLimitp2 = getLimitGraph(tree,0.975);
   file->Close(); 
 
   FILE* pFileSStrenght = fopen((outputDir+"SignalStrenght").c_str(),"w");
@@ -133,7 +141,7 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
  
 
   //get the pValue
-  inputs = inputs.ReplaceAll("/LimitTree.root", "/PValueTree.root");
+  inputs = inputs.ReplaceAll("/LimitTree", "/PValueTree");
   file = TFile::Open(inputs);
   
   printf("Looping on %s\n",inputs.Data());
@@ -163,13 +171,14 @@ void plotLimit(string outputDir="./", TString inputs="", TString inputXSec="", b
   scaleGraph(THXSec, XSecScaleFactor);
 
 
-  string prod = "pp";
-  if(outputDir.find("GGF")!=std::string::npos)prod="gg";
-  if(outputDir.find("VBF")!=std::string::npos)prod="qq";
+  string prod = "pp_SM";
+  if(outputDir.find("ggH")!=std::string::npos)prod="gg";
+  if(outputDir.find("qqH")!=std::string::npos)prod="qq";
+  if(outputDir.find("ppH")!=std::string::npos)prod="pp";
 
   
   strengthLimit = false;
-  if(prod=="pp")strengthLimit=true;
+  if(prod=="pp_SM")strengthLimit=true;
  
   //TGraph *XSecMELA = Hxswg::utils::getXSecMELA(cprime);
 
