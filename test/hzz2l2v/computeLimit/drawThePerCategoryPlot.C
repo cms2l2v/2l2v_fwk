@@ -585,14 +585,14 @@ void makeThePlotForOneCat(TString categoryName, TFile *theFile, TString theLepto
   	ggH_Interf->Add(ggH_bonl,-1);
   	TH1D *ggH_sigInterf = (TH1D*) ggH_sonl->Clone("ggH_sigInterf");
   	ggH_sigInterf->Scale(mu_ggH);
-    ggH_sigInterf->Add(ggH_Interf, -1*sqrt(mu_ggH));
+    ggH_sigInterf->Add(ggH_Interf, 1*sqrt(mu_ggH));
 
 		TH1D *qqH_Interf = (TH1D*) qqH_sand->Clone("qqH_Interf");
   	qqH_Interf->Add(qqH_sonl,-1);
   	qqH_Interf->Add(qqH_bonl,-1);
   	TH1D *qqH_sigInterf = (TH1D*) qqH_sonl->Clone("qqH_sigInterf");
   	qqH_sigInterf->Scale(mu_qqH);
-    qqH_sigInterf->Add(qqH_Interf, -1*sqrt(mu_qqH));
+    qqH_sigInterf->Add(qqH_Interf, 1*sqrt(mu_qqH));
 
 
 		//Get the data for nominal value
