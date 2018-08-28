@@ -106,11 +106,11 @@ def getFileList(procData,DefaultNFilesPerJob):
       for site in listSites.split('\n'):
          if(localTier==""):continue;
          try:
-            MaxFraction = max(MaxFraction, float(site.split()[2].replace('%','').replace('"','')) )
+            MaxFraction = max(MaxFraction, float(site.split()[1].replace('%','').replace('"','')) )
          except:
             MaxFraction = max(MaxFraction, 0.0);
          if(localTier in site):
-            FractionOnLocal = float(site.split()[2].replace('%','').replace('"',''));
+            FractionOnLocal = float(site.split()[1].replace('%','').replace('"',''));
 
       if(FractionOnLocal == MaxFraction):
             IsOnLocalTier=True            
