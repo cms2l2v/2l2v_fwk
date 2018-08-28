@@ -58,7 +58,7 @@ def DASQuery(query):
       return fetched[0][0]
 
    #get the result from DAS and cache it for future usage (only if there was no error with DAS)
-   outputs = commands.getstatusoutput('/cvmfs/cms.cern.ch/common/das_client --query="' + query + '" --limit=0')
+   outputs = commands.getstatusoutput('dasgoclient --query=' + query)
    result = outputs[1]
    if(outputs[0]==0):cachedQueryDBcursor.execute("""INSERT INTO queries(date, query, result) VALUES(?, ?, ?)""", (time.strftime('%Y-%m-%d %H:%M:%S'), query, result))
    cachedQueryDB.commit()  #commit changes to the DB
@@ -100,7 +100,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       
       instance = ""
       if(len(getByLabel(procData,'dbsURL',''))>0): instance =  "instance=prod/"+ getByLabel(procData,'dbsURL','')
-      listSites = DASQuery('site dataset='+sample + ' ' + instance + ' | grep site.name,site.replica_fraction')
+      listSites = DASQuery('"site dataset='+sample + ' ' + instance + ' | grep site.name,site.replica_fraction" --limit=0 | grep %')
       IsOnLocalTier=False
       MaxFraction=0;  FractionOnLocal=-1;
       for site in listSites.split('\n'):
@@ -125,7 +125,7 @@ def getFileList(procData,DefaultNFilesPerJob):
       if(IsOnLocalTier or "/MINIAOD" in sample):
          list = []
          if(DatasetFileDB=="DAS"):
-            list = DASQuery('file dataset='+sample + ' ' + instance).split()
+            list = DASQuery('"file dataset='+sample + ' ' + instance + '" --limit=0').split()
          elif(DatasetFileDB=="DBS"):
             curlCommand="curl -ks --key $X509_USER_PROXY --cert $X509_USER_PROXY -X GET "
             dbsPath="https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
